@@ -145,6 +145,17 @@
                     ${referralOptions}
                   </select>
                 </div>
+                <div class="jcp-form-field jcp-form-field-full">
+                  <label for="founding-coupon">Coupon or promo code (optional)</label>
+                  <input
+                    type="text"
+                    id="founding-coupon"
+                    name="coupon_code"
+                    placeholder="earlybird"
+                    autocomplete="off"
+                  />
+                  <p class="jcp-form-field-helper" id="founding-coupon-helper">Founding crew: Enterprise lists at $399/mo yet locks at $125/mo with code <strong>earlybird</strong> during subscribe.</p>
+                </div>
                 <div class="jcp-form-field jcp-form-field-full jcp-form-field-consent">
                   <label class="jcp-form-consent-label">
                     <input type="checkbox" name="consent" id="founding-consent" required />
@@ -258,6 +269,17 @@
       // no-op
     }
 
+    try {
+      var params = new URLSearchParams(window.location.search);
+      var qpCoupon = params.get('coupon');
+      if (qpCoupon) {
+        var couponInput = document.getElementById('founding-coupon');
+        if (couponInput) couponInput.value = qpCoupon;
+      }
+    } catch (e) {
+      // no-op
+    }
+
     function showError(msg) {
       if (errorEl) {
         errorEl.textContent = msg;
@@ -291,6 +313,7 @@
       const demo_goals = Array.from(demoGoalsCheckboxes).map(function (cb) { return cb.value; }).filter(Boolean);
       const referral_source = (form.querySelector('[name="referral_source"]') || {}).value || '';
       const business_type = (form.querySelector('[name="business_type"]') || {}).value || '';
+      const coupon_code = ((form.querySelector('[name="coupon_code"]') || {}).value || '').trim();
 
       const requirePhone = form.getAttribute('data-require-phone') === '1';
       const requireCompany = form.getAttribute('data-require-company') === '1';
@@ -326,6 +349,7 @@
           business_type: business_type.trim(),
           demo_goals: demo_goals,
           referral_source: referral_source.trim(),
+          coupon_code: coupon_code,
         }),
       })
         .then((res) => {

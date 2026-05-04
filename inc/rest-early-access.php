@@ -66,6 +66,11 @@ function jcp_core_register_early_access_rest_routes(): void {
                 'type'              => 'string',
                 'sanitize_callback'  => 'sanitize_text_field',
             ],
+            'coupon_code'      => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback'  => 'sanitize_text_field',
+            ],
         ],
     ] );
 
@@ -101,9 +106,10 @@ function jcp_core_ghl_webhook_url(): string {
  * @param string $business_type_label Business Type (display label).
  * @param array  $referral_source Referral Source (at least one value).
  * @param string $use_case Use Case (comma-joined from demo_goals).
+ * @param string $message Optional Message field for CRM (coupon codes, notes).
  * @return string
  */
-function jcp_core_build_ghl_body( string $first_name, string $last_name, string $email, string $phone, string $company, string $business_type_label, array $referral_source, string $use_case ): string {
+function jcp_core_build_ghl_body( string $first_name, string $last_name, string $email, string $phone, string $company, string $business_type_label, array $referral_source, string $use_case, string $message = '' ): string {
     $scalar = [
         JCP_GHL_KEY_FIRST_NAME     => $first_name,
         JCP_GHL_KEY_LAST_NAME      => $last_name,
@@ -113,6 +119,9 @@ function jcp_core_build_ghl_body( string $first_name, string $last_name, string 
         JCP_GHL_KEY_BUSINESS_TYPE => $business_type_label,
         JCP_GHL_KEY_USE_CASE      => $use_case,
     ];
+    if ( $message !== '' ) {
+        $scalar[ JCP_GHL_KEY_MESSAGE ] = $message;
+    }
     $body = http_build_query( $scalar, '', '&', PHP_QUERY_RFC3986 );
     foreach ( $referral_source as $v ) {
         $v = trim( (string) $v );
@@ -138,6 +147,7 @@ function jcp_core_early_access_submit_handler( \WP_REST_Request $request ): \WP_
     $demo_goals      = $request->get_param( 'demo_goals' );
     $referral_source = $request->get_param( 'referral_source' );
     $business_type   = $request->get_param( 'business_type' );
+    $coupon_code     = $request->get_param( 'coupon_code' );
 
     $require_company = true;
     $require_phone   = true;
@@ -178,7 +188,16 @@ function jcp_core_early_access_submit_handler( \WP_REST_Request $request ): \WP_
         $business_type_label = $business_type;
     }
 
-    $body_string = jcp_core_build_ghl_body( $first_name, $last_name, $email, $phone, $company, $business_type_label, $referral_source, $use_case );
+    $coupon_trim = trim( (string) $coupon_code );
+    $coupon_note = '';
+    if ( $coupon_trim !== '' ) {
+        $coupon_note = 'Coupon / promo code: ' . $coupon_trim;
+        if ( strcasecmp( $coupon_trim, 'earlybird' ) === 0 ) {
+            $coupon_note .= ' (Early Bird: Enterprise $125/month offer vs $399)';
+        }
+    }
+
+    $body_string = jcp_core_build_ghl_body( $first_name, $last_name, $email, $phone, $company, $business_type_label, $referral_source, $use_case, $coupon_note );
     $url         = jcp_core_ghl_webhook_url();
 
     if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
