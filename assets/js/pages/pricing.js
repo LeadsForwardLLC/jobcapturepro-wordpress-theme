@@ -16,13 +16,12 @@
       description: 'Single-location companies',
       pill: 'Build trust fast',
       features: [
-        'Single location',
+        'Listed price covers 1 operating location',
         { text: 'Mobile app check-ins', tooltip: 'photo → AI content' },
         { text: 'SEO-optimized check-ins', tooltip: 'WebP images, filenames, schema' },
         'WordPress plugin (1 site)',
         'Review links + QR codes',
-        'Company dashboard',
-        '1 location included'
+        'Company dashboard'
       ]
     },
     scale: {
@@ -38,7 +37,7 @@
         { text: 'Auto-posting to social', tooltip: 'Facebook, Instagram, X' },
         'Google Business Profile auto-posting',
         { text: 'Monthly GeoGrid reports', tooltip: 'LocalFalcon' },
-        'Up to 3 locations'
+        'Add locations at $100/mo each beyond your first (up to 3 on Scale)'
       ],
       featured: true
     },
@@ -50,7 +49,7 @@
       pill: 'Scale across locations',
       features: [
         'Everything in Scale, plus:',
-        'Unlimited locations',
+        'Listed price covers 1 location · add unlimited extras at $100/mo each',
         'Org-level dashboard',
         { text: 'User roles & permissions', tooltip: 'Admin, manager, and crew access levels' },
         'API access',
@@ -219,19 +218,19 @@
               </div>
             </div>
             <div class="jcp-pricing-notes">
-              <p class="jcp-pricing-notes-label">All plans</p>
+              <p class="jcp-pricing-notes-label">Location pricing</p>
               <ul class="jcp-pricing-notes-list">
                 <li class="jcp-pricing-note-item">
                   <img src="${icon('map-pin')}" alt="" class="jcp-pricing-note-icon" width="18" height="18" />
-                  <span>Additional locations: +$100 / month per location</span>
-                </li>
-                <li class="jcp-pricing-note-item">
-                  <img src="${icon('users')}" alt="" class="jcp-pricing-note-icon" width="18" height="18" />
-                  <span>Unlimited users per location</span>
+                  <span>Each plan&apos;s advertised price covers <strong>one</strong> operating location.</span>
                 </li>
                 <li class="jcp-pricing-note-item">
                   <img src="${icon('dollar-sign')}" alt="" class="jcp-pricing-note-icon" width="18" height="18" />
-                  <span>Pricing is per location, not per user</span>
+                  <span>Each additional location is <strong>$100/month</strong> (priced per location).</span>
+                </li>
+                <li class="jcp-pricing-note-item">
+                  <img src="${icon('users')}" alt="" class="jcp-pricing-note-icon" width="18" height="18" />
+                  <span>Unlimited users per location · not billed per seat</span>
                 </li>
               </ul>
             </div>
