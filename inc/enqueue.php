@@ -140,6 +140,8 @@ function jcp_core_enqueue_assets(): void {
         || $pages['is_prototype'] || $pages['is_demo'] || $pages['is_directory'] || $pages['is_company'] || $pages['is_estimate'];
     if ( $needs_render ) {
         jcp_core_enqueue_script( $render_handle, 'js/core/jcp-render.js', $render_deps );
+        // Decorate onboarding CTAs with demo form values (from localStorage) when present.
+        jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ $render_handle ] );
         $globals = "window.JCP_ENV = 'live';\n";
         $globals .= "window.JCP_CONFIG = { env: 'live', baseUrl: '" . esc_url_raw( site_url() ) . "' };\n";
         $globals .= "window.JCP_ASSET_BASE = '" . esc_url_raw( get_stylesheet_directory_uri() . '/assets' ) . "';";
