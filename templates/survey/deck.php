@@ -117,23 +117,23 @@ $icon_phone  = esc_url( jcp_core_icon( 'phone-call' ) );
                 <span class="rank-num" id="surveyRankNumTop">1</span>
                 <div class="rank-content">
                   <span class="rank-name">Summit Roofing</span>
-                  <div class="rank-rating">★★★★★ <span>4.9 (128)</span></div>
-                  <div class="rank-meta">Active today · 82 jobs</div>
+                  <div class="rank-rating"><span class="rank-stars" aria-hidden="true">★★★★</span> <span>4.0 (12)</span></div>
+                  <div class="rank-meta">Active this month · 3 jobs</div>
                 </div>
               </div>
               <div class="rank-item is-mid" id="surveyRankMid">
                 <span class="rank-num" id="surveyRankNumMid">2</span>
                 <div class="rank-content">
                   <span class="rank-name">Lakeview Plumbing</span>
-                  <div class="rank-rating">★★★★★ <span>4.7 (64)</span></div>
-                  <div class="rank-meta">Active this week · 41 jobs</div>
+                  <div class="rank-rating"><span class="rank-stars" aria-hidden="true">★★★</span> <span>3.5 (8)</span></div>
+                  <div class="rank-meta">Active last month · 1 job</div>
                 </div>
               </div>
               <div class="rank-item rank-you" id="surveyRankYou">
                 <span class="rank-num" id="surveyRankNumYou">3</span>
                 <div class="rank-content">
                   <span class="rank-name" id="surveyRankName">Your Business</span>
-                  <div class="rank-rating">★★★★★ <span>New</span></div>
+                  <div class="rank-rating"><span class="rank-stars" aria-hidden="true">★★★★★</span> <span>4.9 (500)</span></div>
                   <div class="rank-meta">Rising fast · proof verified</div>
                   <div class="rank-earned">+ visibility after 1 job</div>
                 </div>

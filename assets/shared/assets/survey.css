@@ -752,6 +752,15 @@ body.survey-only #jcp-app {
   box-shadow: 0 12px 26px rgba(255, 138, 61, 0.22);
 }
 
+/* When Your Business reaches #1, make it feel dominant */
+.rank-list.promote-step-2 .rank-you {
+  border-color: rgba(251, 191, 36, 0.70);
+  background: rgba(251, 191, 36, 0.10);
+  box-shadow:
+    0 18px 44px rgba(251, 191, 36, 0.25),
+    0 10px 22px rgba(255, 138, 61, 0.18);
+}
+
 .rank-content {
   display: flex;
   flex-direction: column;
@@ -771,6 +780,11 @@ body.survey-only #jcp-app {
   gap: 6px;
 }
 
+.rank-stars {
+  letter-spacing: 0.5px;
+  color: #111827;
+}
+
 .rank-rating span {
   color: #6b7280;
   font-weight: 700;
@@ -786,6 +800,21 @@ body.survey-only #jcp-app {
   font-size: 12px;
   color: #0f766e;
   font-weight: 800;
+}
+
+.rank-list.promote-step-2 .rank-you .rank-stars {
+  color: #fbbf24;
+  text-shadow: 0 1px 0 rgba(0,0,0,0.06), 0 0 18px rgba(251, 191, 36, 0.38);
+}
+
+/* De-emphasize competitors */
+.rank-item.is-top,
+.rank-item.is-mid {
+  opacity: 0.86;
+}
+.rank-item.is-top .rank-stars,
+.rank-item.is-mid .rank-stars {
+  color: rgba(17, 24, 39, 0.65);
 }
 
 /* =====================================
