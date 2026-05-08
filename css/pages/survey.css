@@ -6,17 +6,17 @@
    imported file) so cache-busting works via this file's version querystring.
 ========================================================= */
 
-/* Slide 1 Redesign (Intro) — keep original 1-column layout */
+/* Slide card system (Slides 1–3, 6–8). Slide 4/5 are custom layouts. */
 
-.deck-slide--intro h2 {
+:is(.deck-slide--intro, .deck-slide--cards) h2 {
   line-height: 1.06;
 }
 
-.deck-slide--intro .deck-lead {
+:is(.deck-slide--intro, .deck-slide--cards) .deck-lead {
   max-width: 54ch;
 }
 
-.deck-slide--intro .deck-flow {
+:is(.deck-slide--intro, .deck-slide--cards) .deck-flow {
   position: relative;
   display: flex;
   flex-direction: column;
@@ -29,25 +29,25 @@
   align-items: stretch;
 }
 
-.deck-slide--intro .deck-flow-card {
+:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card {
   transform: translateY(0);
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
   opacity: 1;
 }
 
-.deck-slide.is-active.deck-slide--intro .deck-flow-card {
+.deck-slide.is-active:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card {
   animation: deckCardIn 520ms cubic-bezier(0.2, 0.95, 0.2, 1) both;
 }
-.deck-slide.is-active.deck-slide--intro .deck-flow-card:nth-child(1) { animation-delay: 40ms; }
-.deck-slide.is-active.deck-slide--intro .deck-flow-card:nth-child(2) { animation-delay: 120ms; }
-.deck-slide.is-active.deck-slide--intro .deck-flow-card:nth-child(3) { animation-delay: 200ms; }
+.deck-slide.is-active:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card:nth-child(1) { animation-delay: 40ms; }
+.deck-slide.is-active:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card:nth-child(2) { animation-delay: 120ms; }
+.deck-slide.is-active:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card:nth-child(3) { animation-delay: 200ms; }
 
 @keyframes deckCardIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.deck-slide--intro .deck-flow-card {
+:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card {
   position: relative;
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr);
@@ -60,13 +60,13 @@
   border: 1px solid rgba(226, 232, 240, 0.98);
   box-shadow: 0 18px 44px rgba(15, 23, 42, 0.10);
 }
-.deck-slide--intro .deck-flow-card:hover {
+:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card:hover {
   transform: translateY(-1px);
   border-color: rgba(255, 80, 62, 0.22);
   box-shadow: 0 22px 56px rgba(15, 23, 42, 0.12);
 }
 
-.deck-slide--intro .deck-flow-icon {
+:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-icon {
   position: relative;
   width: 42px;
   height: 42px;
@@ -76,13 +76,13 @@
   background: linear-gradient(180deg, rgba(255, 80, 62, 0.16), rgba(255, 138, 61, 0.12));
   border: 1px solid rgba(255, 80, 62, 0.20);
 }
-.deck-slide--intro .deck-flow-icon img {
+:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-icon img {
   width: 18px;
   height: 18px;
   display: block;
 }
 
-.deck-slide--intro .deck-flow-step {
+:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-step {
   position: absolute;
   top: -7px;
   right: -7px;
@@ -99,14 +99,14 @@
   box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
 }
 
-.deck-slide--intro .deck-flow-title {
+:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-title {
   font-size: 16px;
   font-weight: 950;
   color: #0f172a;
   letter-spacing: -0.01em;
   margin-top: 2px;
 }
-.deck-slide--intro .deck-flow-sub {
+:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-sub {
   margin-top: 4px;
   font-size: 14px;
   line-height: 1.5;
@@ -118,13 +118,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .deck-slide.is-active.deck-slide--intro .deck-flow-card {
+  .deck-slide.is-active:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card {
     animation: none !important;
   }
-  .deck-slide--intro .deck-flow-card {
+  :is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card {
     transition: none !important;
   }
-  .deck-slide--intro .deck-flow-card:hover {
+  :is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card:hover {
     transform: none !important;
   }
 }
