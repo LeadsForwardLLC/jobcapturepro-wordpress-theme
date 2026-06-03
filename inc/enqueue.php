@@ -30,7 +30,7 @@ function jcp_core_enqueue_assets(): void {
         }, 1 );
     }
 
-    $is_marketing = $pages['is_home'] || $pages['is_pricing'] || $pages['is_early_access'] || $pages['is_contact'];
+    $is_marketing = $pages['is_home'] || $pages['is_pricing'] || $pages['is_early_access'] || $pages['is_contact'] || ! empty( $pages['is_niche_landing'] );
 
     // Always load navigation JS (skip on prototype - no header/footer)
     if ( ! $pages['is_prototype'] ) {
@@ -93,6 +93,10 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_script( 'jcp-shared-faq', 'js/features/faq.js' );
         jcp_core_enqueue_script( 'jcp-core-pricing', 'js/pages/pricing.js', [ 'jcp-shared-faq' ] );
         $render_deps[] = 'jcp-core-pricing';
+    }
+
+    if ( ! empty( $pages['is_niche_landing'] ) ) {
+        jcp_core_enqueue_style( 'jcp-core-niche-landing', 'css/pages/niche-landing.css', [ 'jcp-core-sections' ] );
     }
 
     if ( $pages['is_early_access'] ) {

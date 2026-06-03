@@ -1,0 +1,161 @@
+{
+  "niche_key": "plumbing",
+  "niche_label": "Plumbing",
+  "seo": {
+    "title": "Plumber Marketing Automation Software | JobCapturePro",
+    "meta_description": "Turn completed plumbing jobs into Google updates, website proof, social posts, and review requests. Plumber marketing automation that works while your crew stays on the next call.",
+    "keywords": [
+      "plumber marketing automation software",
+      "plumbing reputation management",
+      "plumbing marketing automation",
+      "local marketing automation for plumbers",
+      "plumbing marketing software",
+      "plumbing seo software"
+    ]
+  },
+  "hero": {
+    "h1": "Turn emergency calls and plumbing repairs into more booked jobs",
+    "subheadline": "Most plumbing companies stay busy but still struggle to stay visible online. JobCapturePro is plumber marketing automation software that turns real service calls, repairs, and completed jobs into proof homeowners can see before they call.",
+    "cta_primary": { "label": "Start free trial", "url": "" },
+    "cta_secondary": { "label": "See how it works", "url": "#how-it-works" },
+    "trust_line": "No credit card · Free trial · Setup in under 10 minutes"
+  },
+  "what_it_is": {
+    "headline": "Built for plumbing companies that are too busy to keep up with marketing",
+    "subheadline": "JobCapturePro helps plumbers turn everyday service calls into online visibility automatically.",
+    "team_already": [
+      "fixing leaks",
+      "clearing drains",
+      "replacing water heaters",
+      "handling emergency calls",
+      "taking photos on jobs"
+    ],
+    "turns_into": [
+      "Google Business Profile updates",
+      "website job content",
+      "social media posts",
+      "customer review requests"
+    ],
+    "closing": "Instead of manually trying to “do marketing,” your completed plumbing jobs keep your business active online for you."
+  },
+  "core_mechanic": [
+    { "value": "1", "label": "completed job", "detail": "Proof published automatically" },
+    { "value": "4", "label": "channels", "detail": "Google, website, social, directory" },
+    { "value": "0", "label": "extra admin", "detail": "Nothing new for your crew to manage" }
+  ],
+  "how_it_works": {
+    "headline": "How plumbers use JobCapturePro in the field",
+    "subheadline": "Four simple steps that turn completed plumbing jobs into visibility and more calls",
+    "cta_label": "See it in action",
+    "cta_url": "/demo",
+    "steps": [
+      {
+        "title": "Capture",
+        "lines": [
+          "Your plumber finishes the job and snaps a few photos from the app",
+          "Leak fixed, drain cleared, water heater installed, done",
+          "No forms · No complicated process · Done in seconds"
+        ]
+      },
+      {
+        "title": "Check-In",
+        "lines": [
+          "JobCapturePro turns that service call into a customer-friendly check-in",
+          "What happened · What was fixed · What the homeowner needed",
+          "Everything is written automatically"
+        ]
+      },
+      {
+        "title": "Publish",
+        "lines": [
+          "That completed plumbing job gets published across Google Business Profile, your website, social media, and contractor directory listings",
+          "Homeowners can see real plumbing work your company actually completed in their area"
+        ]
+      },
+      {
+        "title": "Review",
+        "lines": [
+          "A review request goes out while the homeowner still remembers the experience",
+          "Right after the leak stops · Right after the water is back on · Right after the job is done",
+          "Five-star reviews go public · Anything lower comes to you first"
+        ]
+      }
+    ]
+  },
+  "check_ins": {
+    "headline": "Every plumbing job becomes visible proof",
+    "subheadline": "A check-in is a real completed job tied to a real address with real photos and real service details.",
+    "job_types": [
+      "Leak repairs",
+      "Drain cleaning",
+      "Water heater installs",
+      "Pipe replacements",
+      "Emergency calls"
+    ],
+    "features": [
+      { "title": "Geo-tagged to the service area", "body": "Shows up where homeowners search" },
+      { "title": "Before and after job photos", "body": "Organized automatically" },
+      { "title": "AI-written service summaries", "body": "Simple explanations customers understand" },
+      { "title": "Connected to customer reviews", "body": "Proof and reputation working together" }
+    ],
+    "closing": "Each check-in strengthens your plumbing marketing software visibility across Google and maps."
+  },
+  "problem": {
+    "headline": "Your plumbers are doing the work. Homeowners just are not seeing it.",
+    "subheadline": "Most plumbing companies lose visibility the moment the job is finished. That means fewer reviews, less trust, and fewer calls over time.",
+    "pain_points": [
+      { "title": "Photos stay buried in phones", "body": "Good work never gets seen online" },
+      { "title": "Review requests happen too late", "body": "Or never happen at all" },
+      { "title": "Google profiles look inactive", "body": "Even when crews are busy every day" },
+      { "title": "Competitors look bigger online", "body": "Even when they are not doing more work" }
+    ],
+    "closing": "This is where plumbing reputation management starts breaking down."
+  },
+  "benefits": {
+    "headline": "What happens when your plumbing jobs keep working after the job is done",
+    "items": [
+      { "title": "More local visibility", "body": "Recent service calls keep your Google listing active and visible" },
+      { "title": "More homeowner trust", "body": "Customers can see real plumbing jobs before they pick up the phone" },
+      { "title": "More reviews automatically", "body": "Requests go out while the homeowner is still relieved the issue is fixed" },
+      { "title": "More consistent online activity", "body": "Your jobs keep your website and Google presence active without manual posting" },
+      { "title": "Stronger local search presence", "body": "Real job activity supports long-term plumbing SEO software performance" },
+      { "title": "More booked jobs", "body": "Visible proof helps homeowners choose your company over competitors" }
+    ],
+    "closing": "Homeowners trust plumbers who show real work — especially when they are inviting someone into their home during a stressful situation."
+  },
+  "differentiation": {
+    "headline": "Not another CRM. Not another dispatch tool.",
+    "body": "You already have tools to schedule jobs and manage calls. What most plumbing companies do not have is a system that turns completed work into ongoing visibility. JobCapturePro is local marketing automation for plumbers that works alongside the tools you already use and helps your completed jobs keep bringing in new customers.",
+    "bullets": [
+      "No new workflow",
+      "No extra admin work",
+      "No marketing team required"
+    ]
+  },
+  "who_its_for": {
+    "headline": "Built for plumbing companies that run service calls every day",
+    "audiences": [
+      { "title": "Owners", "body": "Stay visible online without spending hours on marketing" },
+      { "title": "Technicians", "body": "Take a few photos and move on to the next call" },
+      { "title": "Growing plumbing companies", "body": "Turn completed work into consistent demand and more booked jobs" }
+    ]
+  },
+  "faq": {
+    "headline": "Common questions from plumbing companies",
+    "items": [
+      { "q": "Do my plumbers need to learn a new system?", "a": "No. Your crew snaps a few photos and moves on. That’s it." },
+      { "q": "Is this real job content?", "a": "Yes. Every update comes from actual plumbing jobs, photos, and service activity." },
+      { "q": "Will this help my Google visibility?", "a": "Yes. Consistent plumbing job activity helps keep your Google Business Profile active and visible locally." },
+      { "q": "Do I need to replace my current software?", "a": "No. JobCapturePro works alongside tools like Housecall Pro, CompanyCam, Workiz, and QuickBooks." },
+      { "q": "How do review requests work?", "a": "Review requests are sent automatically after the job while the experience is still fresh." },
+      { "q": "How long does setup take?", "a": "Most plumbing companies are live within a few days." },
+      { "q": "Does this work for small plumbing companies?", "a": "Yes. If you are consistently completing jobs, the system works. More jobs simply create more visibility over time." }
+    ]
+  },
+  "final_cta": {
+    "headline": "Every plumbing job should help bring in the next one",
+    "subheadline": "Turn completed service calls and repairs into visible proof that keeps bringing in more homeowners",
+    "cta_primary": { "label": "Start free trial", "url": "" },
+    "cta_secondary": { "label": "See how it works", "url": "/demo" }
+  }
+}

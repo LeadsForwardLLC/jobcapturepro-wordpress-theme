@@ -1,0 +1,215 @@
+/**
+ * Industry / niche landing pages
+ *
+ * @package JCP_Core
+ */
+
+.jcp-niche .jcp-niche-hero {
+  padding-top: calc(72px + var(--jcp-space-2xl)) !important;
+  padding-bottom: var(--jcp-space-4xl);
+  background-color: #fff;
+  background-image: url('https://jobcapturepro.com/wp-content/uploads/2025/12/jcp-map-bg-light.jpg');
+  background-size: auto 100%;
+  background-position: 50% 50%;
+  background-repeat: repeat-x;
+}
+
+.jcp-niche-hero-grid {
+  grid-template-columns: 1fr;
+  max-width: 52rem;
+}
+
+.jcp-niche-trust-line {
+  margin-top: var(--jcp-space-md);
+  font-size: var(--jcp-font-size-sm);
+  color: var(--jcp-color-text-secondary);
+}
+
+.jcp-niche-hero-stats {
+  margin-top: var(--jcp-space-xl);
+}
+
+.jcp-niche-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--jcp-space-xl);
+  margin-top: var(--jcp-space-2xl);
+}
+
+@media (max-width: 768px) {
+  .jcp-niche-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+.jcp-niche-card {
+  padding: var(--jcp-space-lg);
+  border-radius: var(--jcp-radius-lg);
+  border: 1px solid var(--jcp-color-border);
+  background: var(--jcp-color-bg-secondary, #f8fafc);
+}
+
+.jcp-niche-card-title {
+  font-size: var(--jcp-font-size-lg);
+  margin: 0 0 var(--jcp-space-md);
+}
+
+.jcp-niche-list {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.jcp-niche-list li {
+  margin-bottom: var(--jcp-space-xs);
+}
+
+.jcp-niche-lead {
+  margin: 0 0 var(--jcp-space-md);
+  color: var(--jcp-color-text-secondary);
+}
+
+.jcp-niche-closing {
+  margin-top: var(--jcp-space-xl);
+  font-size: var(--jcp-font-size-lg);
+  color: var(--jcp-color-text-primary);
+  max-width: 48rem;
+}
+
+.jcp-niche-closing--center {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.jcp-niche-mechanic-strip .proof-flow {
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--jcp-space-xl);
+}
+
+.jcp-niche-proof-flow .proof-flow-item {
+  flex: 1 1 10rem;
+  max-width: 14rem;
+  text-align: center;
+}
+
+.jcp-niche-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--jcp-space-sm);
+  list-style: none;
+  margin: var(--jcp-space-lg) 0 var(--jcp-space-xl);
+  padding: 0;
+}
+
+.jcp-niche-tags li {
+  padding: var(--jcp-space-xs) var(--jcp-space-md);
+  border-radius: var(--jcp-radius-full, 999px);
+  background: var(--jcp-color-bg-secondary, #f1f5f9);
+  font-size: var(--jcp-font-size-sm);
+  font-weight: 500;
+}
+
+.jcp-niche-feature-grid,
+.jcp-niche-pain-grid,
+.jcp-niche-benefit-grid,
+.jcp-niche-audience-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--jcp-space-lg);
+  margin-top: var(--jcp-space-xl);
+}
+
+.jcp-niche-feature-card,
+.jcp-niche-pain-card,
+.jcp-niche-benefit-card,
+.jcp-niche-audience-card {
+  padding: var(--jcp-space-lg);
+  border-radius: var(--jcp-radius-lg);
+  border: 1px solid var(--jcp-color-border);
+  background: #fff;
+}
+
+.jcp-niche-feature-card h3,
+.jcp-niche-pain-card h3,
+.jcp-niche-benefit-card h3,
+.jcp-niche-audience-card h3 {
+  margin: 0 0 var(--jcp-space-sm);
+  font-size: var(--jcp-font-size-base);
+}
+
+.jcp-niche-prose {
+  max-width: 48rem;
+  margin: var(--jcp-space-lg) auto 0;
+  text-align: center;
+  color: var(--jcp-color-text-secondary);
+  line-height: 1.6;
+}
+
+.jcp-niche-inline-bullets {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--jcp-space-md) var(--jcp-space-xl);
+  list-style: none;
+  margin: var(--jcp-space-xl) 0 0;
+  padding: 0;
+  font-weight: 600;
+}
+
+.jcp-niche-final .rankings-cta {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--jcp-space-lg);
+}
+
+.jcp-niche-final .cta-button-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--jcp-space-md);
+  justify-content: center;
+}
+
+.jcp-niche-archive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+  gap: var(--jcp-space-lg);
+  margin-top: var(--jcp-space-xl);
+}
+
+.jcp-niche-archive-card {
+  display: block;
+  padding: var(--jcp-space-xl);
+  border-radius: var(--jcp-radius-lg);
+  border: 1px solid var(--jcp-color-border);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.jcp-niche-archive-card:hover {
+  border-color: var(--jcp-color-primary, #2563eb);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.jcp-niche-archive-card h3 {
+  margin: 0 0 var(--jcp-space-sm);
+}
+
+.jcp-niche-archive-card p {
+  margin: 0;
+  font-size: var(--jcp-font-size-sm);
+  color: var(--jcp-color-text-secondary);
+}
+
+.jcp-niche-archive-link {
+  display: inline-block;
+  margin-top: var(--jcp-space-md);
+  font-weight: 600;
+  color: var(--jcp-color-primary, #2563eb);
+}
+
+.jcp-niche-archive-hero .jcp-hero-copy {
+  max-width: 48rem;
+}

@@ -30,6 +30,15 @@ require_once get_template_directory() . '/inc/seo-directory.php';
 // Load ACF configuration (if ACF is available)
 require_once get_template_directory() . '/inc/acf-config.php';
 
+// Industry / niche landing pages (CPT, JSON content, /industries/ archive)
+require_once get_template_directory() . '/inc/niche-landing/cpt.php';
+require_once get_template_directory() . '/inc/niche-landing/schema.php';
+require_once get_template_directory() . '/inc/niche-landing/render.php';
+require_once get_template_directory() . '/inc/niche-landing/seed.php';
+if ( is_admin() ) {
+	require_once get_template_directory() . '/inc/niche-landing/admin.php';
+}
+
 // Canonical form field names (REST params + GHL keys); Demo Survey = source of truth
 require_once get_template_directory() . '/inc/form-fields.php';
 

@@ -123,6 +123,7 @@ function jcp_core_get_page_detection(): array {
         'is_blog'         => is_home() || is_archive() || is_single() || is_search(),
         'is_single'       => is_single() && ! is_singular( 'jcp_company' ),
         'is_page'         => is_page() && ! is_page_template(),
+        'is_niche_landing' => is_singular( 'jcp_niche_landing' ) || is_post_type_archive( 'jcp_niche_landing' ),
     ];
 }
 
