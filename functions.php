@@ -34,6 +34,7 @@ require_once get_template_directory() . '/inc/acf-config.php';
 require_once get_template_directory() . '/inc/niche-landing/cpt.php';
 require_once get_template_directory() . '/inc/niche-landing/schema.php';
 require_once get_template_directory() . '/inc/niche-landing/partials.php';
+require_once get_template_directory() . '/inc/niche-landing/editable.php';
 require_once get_template_directory() . '/inc/niche-landing/render.php';
 require_once get_template_directory() . '/inc/niche-landing/rest-content.php';
 require_once get_template_directory() . '/inc/niche-landing/seed.php';

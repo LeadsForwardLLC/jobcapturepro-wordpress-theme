@@ -203,7 +203,11 @@
   max-width: 48rem;
 }
 
-/* Front-end editor chrome */
+/* Inline editor chrome */
+body.jcp-niche-editing {
+  padding-bottom: 64px;
+}
+
 .jcp-niche-edit-bar {
   position: fixed;
   bottom: 0;
@@ -212,84 +216,96 @@
   z-index: 99999;
   background: #0f172a;
   color: #fff;
-  padding: var(--jcp-space-sm) var(--jcp-space-lg);
+  padding: var(--jcp-space-md) var(--jcp-space-lg);
   display: flex;
   align-items: center;
   gap: var(--jcp-space-md);
   flex-wrap: wrap;
-  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.25);
 }
 
-.jcp-niche-edit-bar a,
-.jcp-niche-edit-bar button {
+.jcp-niche-edit-bar .btn {
   font-size: var(--jcp-font-size-sm);
+  padding: var(--jcp-space-xs) var(--jcp-space-md);
 }
 
-.jcp-niche-edit-panel {
+.jcp-niche-edit-bar #jcpNicheToggleEdit.is-active {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: #fff;
+}
+
+.jcp-niche-edit-status {
+  font-size: var(--jcp-font-size-sm);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.jcp-niche-edit-link {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: var(--jcp-font-size-sm);
+  margin-left: auto;
+}
+
+/* Click-to-edit highlights */
+body.jcp-inline-editing [data-jcp-path] {
+  outline: 2px dashed rgba(255, 80, 62, 0.45);
+  outline-offset: 3px;
+  border-radius: 4px;
+  cursor: text;
+}
+
+body.jcp-inline-editing [data-jcp-href-path] {
+  outline: 2px dashed rgba(59, 130, 246, 0.55);
+  outline-offset: 3px;
+  cursor: pointer;
+  position: relative;
+}
+
+body.jcp-inline-editing [data-jcp-href-path]::after {
+  content: 'Edit link';
+  position: absolute;
+  top: -1.4rem;
+  left: 0;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #3b82f6;
+  background: #eff6ff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.jcp-niche-link-popover {
   position: fixed;
-  top: 0;
-  right: 0;
-  width: min(420px, 100vw);
-  height: 100vh;
-  z-index: 100000;
+  z-index: 100001;
   background: #fff;
-  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.12);
-  overflow-y: auto;
-  padding: var(--jcp-space-lg);
-  display: none;
+  border: 1px solid var(--jcp-color-border);
+  border-radius: var(--jcp-radius-lg);
+  padding: var(--jcp-space-md);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+  width: min(320px, calc(100vw - 16px));
 }
 
-.jcp-niche-edit-panel.is-open {
-  display: block;
-}
-
-.jcp-niche-edit-panel h2 {
-  margin: 0 0 var(--jcp-space-md);
-  font-size: var(--jcp-font-size-xl);
-}
-
-.jcp-niche-edit-panel label {
+.jcp-niche-link-popover label {
   display: block;
   font-weight: 600;
-  margin: var(--jcp-space-md) 0 var(--jcp-space-xs);
   font-size: var(--jcp-font-size-sm);
+  margin-bottom: var(--jcp-space-xs);
 }
 
-.jcp-niche-edit-panel input[type="text"],
-.jcp-niche-edit-panel textarea {
+.jcp-niche-link-popover input {
   width: 100%;
   padding: var(--jcp-space-sm);
   border: 1px solid var(--jcp-color-border);
   border-radius: var(--jcp-radius-md);
   font-size: var(--jcp-font-size-sm);
+  box-sizing: border-box;
 }
 
-.jcp-niche-edit-panel textarea {
-  min-height: 4rem;
-}
-
-.jcp-niche-edit-tabs {
+.jcp-niche-link-popover-actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--jcp-space-xs);
-  margin-bottom: var(--jcp-space-md);
-}
-
-.jcp-niche-edit-tabs button {
-  padding: var(--jcp-space-xs) var(--jcp-space-sm);
-  border: 1px solid var(--jcp-color-border);
-  background: #f8fafc;
-  border-radius: var(--jcp-radius-md);
-  cursor: pointer;
-  font-size: var(--jcp-font-size-xs);
-}
-
-.jcp-niche-edit-tabs button.is-active {
-  background: var(--jcp-color-primary);
-  color: #fff;
-  border-color: var(--jcp-color-primary);
-}
-
-body.jcp-niche-editing {
-  padding-bottom: 56px;
+  gap: var(--jcp-space-sm);
+  margin-top: var(--jcp-space-md);
 }

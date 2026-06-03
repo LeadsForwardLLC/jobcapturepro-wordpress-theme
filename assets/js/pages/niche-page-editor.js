@@ -2,156 +2,163 @@
   const cfg = window.JCP_NICHE_EDITOR;
   if (!cfg || !cfg.postId || !cfg.restUrl) return;
 
-  const panel = document.createElement('aside');
-  panel.className = 'jcp-niche-edit-panel';
-  panel.setAttribute('aria-label', 'Edit industry page');
-  panel.innerHTML = `
-    <h2>Edit page</h2>
-    <div class="jcp-niche-edit-tabs" role="tablist"></div>
-    <form id="jcpNicheEditForm"></form>
-    <p style="margin-top:1rem;display:flex;gap:0.5rem;flex-wrap:wrap;">
-      <button type="button" class="btn btn-primary" id="jcpNicheSave">Save</button>
-      <button type="button" class="btn btn-secondary" id="jcpNicheClose">Close</button>
-    </p>
-    <p id="jcpNicheEditStatus" style="font-size:0.875rem;color:#64748b;"></p>
-  `;
+  let content = {};
+  let editing = false;
+  let dirty = false;
+
+  const setPath = (obj, path, value) => {
+    const parts = path.split('.');
+    let cur = obj;
+    for (let i = 0; i < parts.length - 1; i++) {
+      const key = parts[i];
+      const next = parts[i + 1];
+      if (/^\d+$/.test(next)) {
+        if (!Array.isArray(cur[key])) {
+          cur[key] = [];
+        }
+      } else if (cur[key] === undefined || cur[key] === null || typeof cur[key] !== 'object' || Array.isArray(cur[key])) {
+        cur[key] = {};
+      }
+      cur = cur[key];
+    }
+    const last = parts[parts.length - 1];
+    if (Array.isArray(cur)) {
+      const idx = parseInt(last, 10);
+      cur[idx] = value;
+    } else {
+      cur[last] = value;
+    }
+  };
+
+  const getPath = (obj, path) => {
+    return path.split('.').reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : undefined), obj);
+  };
 
   const bar = document.createElement('div');
   bar.className = 'jcp-niche-edit-bar';
   bar.innerHTML = `
     <strong>Industry page editor</strong>
-    <button type="button" class="btn btn-secondary" id="jcpNicheOpenPanel">Edit content</button>
-    <a href="${cfg.adminUrl || '#'}" class="btn btn-secondary">WP Admin</a>
-    <a href="${cfg.url || '#'}" class="btn btn-secondary">View live</a>
+    <button type="button" class="btn btn-primary" id="jcpNicheToggleEdit">Click to edit page</button>
+    <button type="button" class="btn btn-secondary" id="jcpNicheSave" disabled>Save changes</button>
+    <span id="jcpNicheStatus" class="jcp-niche-edit-status"></span>
+    <a href="${cfg.adminUrl || '#'}" class="jcp-niche-edit-link">WP Admin</a>
   `;
 
-  document.body.appendChild(panel);
+  const popover = document.createElement('div');
+  popover.className = 'jcp-niche-link-popover';
+  popover.hidden = true;
+  popover.innerHTML = `
+    <label>Button link URL</label>
+    <input type="text" id="jcpNicheLinkUrl" placeholder="/demo or https://..." />
+    <div class="jcp-niche-link-popover-actions">
+      <button type="button" class="btn btn-primary" id="jcpNicheLinkApply">Apply</button>
+      <button type="button" class="btn btn-secondary" id="jcpNicheLinkCancel">Cancel</button>
+    </div>
+  `;
+
   document.body.appendChild(bar);
+  document.body.appendChild(popover);
   document.body.classList.add('jcp-niche-editing');
 
-  const tabs = [
-    { id: 'seo', label: 'SEO' },
-    { id: 'hero', label: 'Hero' },
-    { id: 'what', label: 'What it is' },
-    { id: 'how', label: 'How it works' },
-    { id: 'final', label: 'Final CTA' },
-  ];
+  const statusEl = bar.querySelector('#jcpNicheStatus');
+  const saveBtn = bar.querySelector('#jcpNicheSave');
+  const toggleBtn = bar.querySelector('#jcpNicheToggleEdit');
+  let activeLink = null;
 
-  const tabEl = panel.querySelector('.jcp-niche-edit-tabs');
-  const form = panel.querySelector('#jcpNicheEditForm');
-  let content = {};
-  let activeTab = 'hero';
-
-  tabs.forEach((t) => {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.textContent = t.label;
-    b.dataset.tab = t.id;
-    if (t.id === activeTab) b.classList.add('is-active');
-    b.addEventListener('click', () => {
-      activeTab = t.id;
-      tabEl.querySelectorAll('button').forEach((x) => x.classList.toggle('is-active', x.dataset.tab === activeTab));
-      renderForm();
-    });
-    tabEl.appendChild(b);
-  });
-
-  const field = (label, name, value, rows) => {
-    const wrap = document.createElement('div');
-    wrap.dataset.field = name;
-    const lab = document.createElement('label');
-    lab.textContent = label;
-    lab.setAttribute('for', name);
-    let input;
-    if (rows) {
-      input = document.createElement('textarea');
-      input.rows = rows;
-    } else {
-      input = document.createElement('input');
-      input.type = 'text';
-    }
-    input.id = name;
-    input.name = name;
-    input.value = value || '';
-    wrap.appendChild(lab);
-    wrap.appendChild(input);
-    return wrap;
+  const markDirty = () => {
+    dirty = true;
+    saveBtn.disabled = false;
+    statusEl.textContent = 'Unsaved changes';
   };
-
-  const renderForm = () => {
-    form.innerHTML = '';
-    const c = content;
-    if (activeTab === 'seo') {
-      form.appendChild(field('SEO title', 'seo_title', c.seo?.title));
-      form.appendChild(field('Meta description', 'seo_desc', c.seo?.meta_description, 3));
-    }
-    if (activeTab === 'hero') {
-      form.appendChild(field('H1', 'hero_h1', c.hero?.h1));
-      form.appendChild(field('Subheadline', 'hero_sub', c.hero?.subheadline, 4));
-      form.appendChild(field('Trust line', 'hero_trust', c.hero?.trust_line));
-      form.appendChild(field('Primary CTA label', 'hero_cta1', c.hero?.cta_primary?.label));
-      form.appendChild(field('Secondary CTA label', 'hero_cta2', c.hero?.cta_secondary?.label));
-    }
-    if (activeTab === 'what') {
-      form.appendChild(field('Headline', 'what_h', c.what_it_is?.headline));
-      form.appendChild(field('Subheadline', 'what_sub', c.what_it_is?.subheadline, 3));
-      form.appendChild(field('Closing', 'what_close', c.what_it_is?.closing, 3));
-    }
-    if (activeTab === 'how') {
-      form.appendChild(field('Headline', 'how_h', c.how_it_works?.headline));
-      form.appendChild(field('Subheadline', 'how_sub', c.how_it_works?.subheadline, 3));
-    }
-    if (activeTab === 'final') {
-      form.appendChild(field('Headline', 'final_h', c.final_cta?.headline));
-      form.appendChild(field('Subheadline', 'final_sub', c.final_cta?.subheadline, 3));
-      form.appendChild(field('Button label', 'final_btn', c.final_cta?.cta_primary?.label));
-      form.appendChild(field('Button note', 'final_note', c.final_cta?.cta_note));
-    }
-  };
-
-  const collectForm = () => {
-    const g = (n) => form.querySelector(`[name="${n}"]`)?.value?.trim() || '';
-    content.seo = content.seo || {};
-    content.hero = content.hero || {};
-    content.what_it_is = content.what_it_is || {};
-    content.how_it_works = content.how_it_works || {};
-    content.final_cta = content.final_cta || {};
-    content.hero.cta_primary = content.hero.cta_primary || {};
-    content.hero.cta_secondary = content.hero.cta_secondary || {};
-    content.final_cta.cta_primary = content.final_cta.cta_primary || {};
-
-    if (activeTab === 'seo' || true) {
-      if (g('seo_title')) content.seo.title = g('seo_title');
-      if (g('seo_desc')) content.seo.meta_description = g('seo_desc');
-    }
-    if (g('hero_h1')) content.hero.h1 = g('hero_h1');
-    if (g('hero_sub')) content.hero.subheadline = g('hero_sub');
-    if (g('hero_trust')) content.hero.trust_line = g('hero_trust');
-    if (g('hero_cta1')) content.hero.cta_primary.label = g('hero_cta1');
-    if (g('hero_cta2')) content.hero.cta_secondary.label = g('hero_cta2');
-    if (g('what_h')) content.what_it_is.headline = g('what_h');
-    if (g('what_sub')) content.what_it_is.subheadline = g('what_sub');
-    if (g('what_close')) content.what_it_is.closing = g('what_close');
-    if (g('how_h')) content.how_it_works.headline = g('how_h');
-    if (g('how_sub')) content.how_it_works.subheadline = g('how_sub');
-    if (g('final_h')) content.final_cta.headline = g('final_h');
-    if (g('final_sub')) content.final_cta.subheadline = g('final_sub');
-    if (g('final_btn')) content.final_cta.cta_primary.label = g('final_btn');
-    if (g('final_note')) content.final_cta.cta_note = g('final_note');
-  };
-
-  const status = panel.querySelector('#jcpNicheEditStatus');
 
   const load = async () => {
-    const res = await fetch(cfg.restUrl, { credentials: 'same-origin', headers: { 'X-WP-Nonce': cfg.nonce } });
+    const res = await fetch(cfg.restUrl, {
+      credentials: 'same-origin',
+      headers: { 'X-WP-Nonce': cfg.nonce },
+    });
     const data = await res.json();
     content = data.content || {};
-    renderForm();
   };
 
-  panel.querySelector('#jcpNicheSave').addEventListener('click', async () => {
-    collectForm();
-    status.textContent = 'Saving…';
+  const collectFromDom = () => {
+    document.querySelectorAll('[data-jcp-path]').forEach((el) => {
+      const path = el.getAttribute('data-jcp-path');
+      if (!path) return;
+      const text = (el.textContent || '').trim();
+      setPath(content, path, text);
+    });
+    document.querySelectorAll('[data-jcp-href-path]').forEach((el) => {
+      const path = el.getAttribute('data-jcp-href-path');
+      if (!path) return;
+      setPath(content, path, el.getAttribute('href') || '');
+    });
+  };
+
+  const enableEditing = () => {
+    editing = true;
+    document.body.classList.add('jcp-inline-editing');
+    toggleBtn.textContent = 'Editing — click text to change';
+    toggleBtn.classList.add('is-active');
+
+    document.querySelectorAll('[data-jcp-path]').forEach((el) => {
+      el.setAttribute('contenteditable', 'true');
+      el.setAttribute('spellcheck', 'true');
+      el.addEventListener('input', markDirty);
+    });
+
+    document.querySelectorAll('[data-jcp-href-path]').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        if (!editing) return;
+        e.preventDefault();
+        e.stopPropagation();
+        activeLink = el;
+        const urlInput = popover.querySelector('#jcpNicheLinkUrl');
+        urlInput.value = el.getAttribute('href') || '';
+        popover.hidden = false;
+        const rect = el.getBoundingClientRect();
+        popover.style.top = `${Math.min(window.innerHeight - 120, rect.bottom + 8)}px`;
+        popover.style.left = `${Math.max(8, Math.min(window.innerWidth - 320, rect.left))}px`;
+      });
+    });
+  };
+
+  const disableEditing = () => {
+    editing = false;
+    document.body.classList.remove('jcp-inline-editing');
+    toggleBtn.textContent = 'Click to edit page';
+    toggleBtn.classList.remove('is-active');
+    popover.hidden = true;
+    document.querySelectorAll('[data-jcp-path]').forEach((el) => {
+      el.removeAttribute('contenteditable');
+      el.removeAttribute('spellcheck');
+    });
+  };
+
+  toggleBtn.addEventListener('click', () => {
+    if (editing) {
+      disableEditing();
+    } else {
+      enableEditing();
+    }
+  });
+
+  popover.querySelector('#jcpNicheLinkApply').addEventListener('click', () => {
+    if (!activeLink) return;
+    const url = popover.querySelector('#jcpNicheLinkUrl').value.trim();
+    activeLink.setAttribute('href', url);
+    popover.hidden = true;
+    markDirty();
+  });
+
+  popover.querySelector('#jcpNicheLinkCancel').addEventListener('click', () => {
+    popover.hidden = true;
+    activeLink = null;
+  });
+
+  saveBtn.addEventListener('click', async () => {
+    collectFromDom();
+    statusEl.textContent = 'Saving…';
+    saveBtn.disabled = true;
     const res = await fetch(cfg.restUrl, {
       method: 'POST',
       credentials: 'same-origin',
@@ -159,21 +166,18 @@
       body: JSON.stringify({ content }),
     });
     if (res.ok) {
-      status.textContent = 'Saved. Reloading…';
+      dirty = false;
+      statusEl.textContent = 'Saved';
       window.location.reload();
     } else {
-      status.textContent = 'Save failed.';
+      statusEl.textContent = 'Save failed';
+      saveBtn.disabled = false;
     }
   });
 
-  panel.querySelector('#jcpNicheClose').addEventListener('click', () => panel.classList.remove('is-open'));
-  document.getElementById('jcpNicheOpenPanel').addEventListener('click', () => {
-    panel.classList.add('is-open');
-    load();
+  load().then(() => {
+    if (new URLSearchParams(window.location.search).get('jcp_edit') === '1') {
+      enableEditing();
+    }
   });
-
-  if (new URLSearchParams(window.location.search).get('jcp_edit') === '1') {
-    panel.classList.add('is-open');
-    load();
-  }
 })();

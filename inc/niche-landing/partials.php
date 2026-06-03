@@ -102,12 +102,17 @@ function jcp_niche_render_conversion_points( array $lines ): void {
  * Centered closing line below a section.
  *
  * @param string $text Text.
+ * @param string $path Optional JSON path for inline editor.
  */
-function jcp_niche_render_section_closing( string $text ): void {
+function jcp_niche_render_section_closing( string $text, string $path = '' ): void {
 	if ( $text === '' ) {
 		return;
 	}
 	?>
-	<p class="rankings-supporting jcp-niche-section-closing"><?php echo esc_html( $text ); ?></p>
+	<p class="rankings-supporting jcp-niche-section-closing"<?php
+	if ( $path !== '' ) {
+		jcp_niche_editable_attr( $path );
+	}
+	?>><?php echo esc_html( $text ); ?></p>
 	<?php
 }

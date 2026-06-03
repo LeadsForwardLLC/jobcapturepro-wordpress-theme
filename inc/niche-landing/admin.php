@@ -41,8 +41,9 @@ function jcp_niche_render_quick_meta_box( WP_Post $post ): void {
 	?>
 	<p>
 		<a href="<?php echo esc_url( $edit ); ?>" class="button button-primary" target="_blank" rel="noopener">
-			<?php esc_html_e( 'Edit on live page (visual editor)', 'jcp-core' ); ?>
+			<?php esc_html_e( 'Edit on live page (click text & buttons)', 'jcp-core' ); ?>
 		</a>
+		<span class="description"><?php esc_html_e( 'On the live page: click “Click to edit page”, then click any highlighted text or button to edit.', 'jcp-core' ); ?></span>
 	</p>
 	<table class="form-table" role="presentation">
 		<tr>
