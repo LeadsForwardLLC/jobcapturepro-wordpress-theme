@@ -1,0 +1,159 @@
+{
+  "niche_key": "hvac",
+  "niche_label": "HVAC",
+  "seo": {
+    "title": "HVAC Marketing Automation Software | JobCapturePro",
+    "meta_description": "Turn completed HVAC repairs and installs into Google visibility, website proof, reviews, and social posts. HVAC marketing automation that works while your crew stays on the next call.",
+    "keywords": [
+      "hvac marketing software",
+      "hvac reputation management",
+      "hvac marketing automation",
+      "hvac review generation",
+      "hvac local digital marketing automation",
+      "hvac contractor marketing automation",
+      "local marketing automation for hvac",
+      "hvac marketing automation platform"
+    ]
+  },
+  "hero": {
+    "h1": "Turn every HVAC repair and install into more customers",
+    "subheadline": "Most HVAC companies stay busy but still lose jobs online. JobCapturePro is HVAC marketing automation software that captures real proof from every job and publishes it across Google, your website, and the places customers already search.",
+    "cta_primary": { "label": "Start free trial", "url": "" },
+    "cta_secondary": { "label": "See how it works", "url": "#how-it-works" },
+    "trust_line": "No credit card · Free trial · Setup in under 10 minutes"
+  },
+  "what_it_is": {
+    "headline": "Built for HVAC companies that want their work to show up online",
+    "subheadline": "JobCapturePro helps HVAC companies turn completed jobs into ongoing visibility without adding more marketing work to the day.",
+    "team_already_title": "Most HVAC companies are already",
+    "turns_into_title": "It turns real job activity into",
+    "team_already": [
+      "completing repairs and installs",
+      "taking job photos",
+      "serving customers every day"
+    ],
+    "turns_into": [
+      "Google Business Profile updates",
+      "website content",
+      "social media posts",
+      "customer reviews"
+    ],
+    "lead": "But very little of that work actually shows up online consistently. JobCapturePro fixes that.",
+    "closing": "Instead of manually trying to keep up with marketing, your completed jobs keep your business visible for you."
+  },
+  "core_mechanic": [
+    { "value": "1", "label": "photo", "detail": "Proof created instantly" },
+    { "value": "4", "label": "channels", "detail": "Google, website, social, directory" },
+    { "value": "0", "label": "busywork", "detail": "Nothing new for your crew" }
+  ],
+  "how_it_works": {
+    "headline": "How it works for your HVAC business",
+    "subheadline": "Four steps. One app. Zero busywork for your HVAC crew",
+    "cta_label": "See it in action",
+    "cta_url": "/demo",
+    "steps": [
+      {
+        "title": "Capture",
+        "lines": [
+          "Your technician tags the job from the truck or job site",
+          "Snap a few photos of the unit, system condition, and the repair or install, add a quick note, and move on",
+          "Done in under 30 seconds"
+        ]
+      },
+      {
+        "title": "Check-In",
+        "lines": [
+          "The system turns that job into a customer-ready check-in",
+          "What was not working, what system needed repair or replacement, and what you fixed",
+          "No writing, no back office work"
+        ]
+      },
+      {
+        "title": "Publish",
+        "lines": [
+          "That job becomes live proof across Google Business Profile, your website, social channels, and contractor directory",
+          "Homeowners can see the system you worked on and the results before they call",
+          "HVAC contractor marketing automation working in the background without manual posting"
+        ]
+      },
+      {
+        "title": "Review",
+        "lines": [
+          "Request a review while the job is still fresh — right after the system is running again or the install is complete",
+          "Five-star reviews go straight to listings that matter",
+          "Anything lower comes to you first"
+        ]
+      }
+    ]
+  },
+  "check_ins": {
+    "headline": "Every HVAC service call and install becomes a check-in",
+    "subheadline": "A check-in is a real job with real photos tied to a real address. It becomes permanent, public proof that your company did the work.",
+    "features": [
+      { "title": "Geo-tagged to the job location", "body": "Shows up where customers are actually searching" },
+      { "title": "Before and after photos", "body": "Clean, organized, and tied to the job" },
+      { "title": "AI-written job summary", "body": "Clear explanation homeowners understand" },
+      { "title": "Connected to real reviews", "body": "Proof and reputation working together" }
+    ],
+    "closing": "Each check-in strengthens your HVAC marketing software presence across search and maps."
+  },
+  "problem": {
+    "headline": "You are already doing the work. It just is not showing up",
+    "subheadline": "Most HVAC companies have a visibility problem, not a workload problem. That gap turns into lost calls every week.",
+    "pain_points": [
+      { "title": "Photos stay in phones", "body": "Your work never makes it online" },
+      { "title": "Posting never happens consistently", "body": "Marketing gets pushed off" },
+      { "title": "Reviews are missed", "body": "You forget or ask too late" },
+      { "title": "Your competitors look more active", "body": "Even when they are not" }
+    ],
+    "closing": "Customers are making high-dollar decisions and choosing companies they trust. This is where HVAC reputation management breaks down."
+  },
+  "benefits": {
+    "headline": "What happens when your HVAC work stays visible after the job is done",
+    "items": [
+      { "title": "More local visibility", "body": "Your recent jobs keep your Google listing active so you show up when customers search" },
+      { "title": "More trust on high-ticket jobs", "body": "Customers can see real repairs, installs, and system work before choosing you" },
+      { "title": "More reviews without chasing", "body": "HVAC review generation happens right after the job while the customer is still satisfied" },
+      { "title": "More consistent online presence", "body": "Your jobs keep your website, Google, and social active without manual posting" },
+      { "title": "Stronger local search presence", "body": "Real job activity improves your HVAC local digital marketing automation across search and maps" },
+      { "title": "More installs and service calls booked", "body": "When your work is visible, more customers choose you" }
+    ],
+    "closing": "Homeowners trust companies that show real work. When customers are comparing high-ticket repairs and installs, visible proof builds confidence before they call."
+  },
+  "differentiation": {
+    "headline": "Not another CRM. Not another scheduling tool",
+    "body": "You do not need another system to manage jobs. You need the work you are already doing to actually show up online. JobCapturePro is an HVAC marketing automation platform that works alongside the tools you already use and turns real job activity into visibility, reviews, and demand.",
+    "bullets": [
+      "No new process",
+      "No extra admin",
+      "No marketing workload"
+    ]
+  },
+  "who_its_for": {
+    "headline": "Built for HVAC companies that are already busy",
+    "audiences": [
+      { "title": "Owners", "body": "Get more calls and close more installs without managing marketing" },
+      { "title": "Technicians", "body": "Capture once and move on" },
+      { "title": "Growing teams", "body": "Turn consistent service calls and installs into consistent demand" }
+    ]
+  },
+  "faq": {
+    "headline": "Common questions from HVAC companies",
+    "items": [
+      { "q": "Do my technicians need to learn a new system?", "a": "No. Your team takes a photo and moves on. There are no forms, no extra steps, and no new workflow to manage." },
+      { "q": "Is this real or just marketing content?", "a": "It is real. Every post is based on actual jobs, real photos, and real locations. Nothing is staged or generated without proof." },
+      { "q": "Will this help my Google visibility?", "a": "Yes. Consistent job activity keeps your Google Business Profile active and supports stronger local visibility over time." },
+      { "q": "Do I need to replace my current software?", "a": "No. JobCapturePro works with tools like Housecall Pro, CompanyCam, Workiz, and QuickBooks. It adds value to what you already use." },
+      { "q": "How does HVAC review generation work?", "a": "Review requests are sent automatically right after the job while the experience is fresh. Five-star reviews go to Google, and anything lower comes to you first." },
+      { "q": "How long does setup take?", "a": "Most HVAC companies are up and running in under 10 minutes, with full setup completed within a few days." },
+      { "q": "What if we don't do a high volume of jobs?", "a": "This works best for companies consistently completing jobs. The more activity you have, the more visibility you generate." }
+    ]
+  },
+  "final_cta": {
+    "headline": "Every job you complete should help win the next one",
+    "subheadline": "Turn completed repairs and installs into proof that keeps bringing in more calls",
+    "cta_primary": { "label": "Start free trial", "url": "" },
+    "cta_note": "No credit card required. Setup in under 10 minutes.",
+    "cta_secondary": { "label": "See how it works", "url": "/demo" }
+  }
+}

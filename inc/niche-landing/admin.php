@@ -106,6 +106,10 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 		$preset  = jcp_niche_load_preset( 'plumbing' );
 		$display = wp_json_encode( $preset, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 	}
+	if ( $display === '' && $post->post_name === 'hvac' ) {
+		$preset  = jcp_niche_load_preset( 'hvac' );
+		$display = wp_json_encode( $preset, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+	}
 	if ( $display === '' && ( $post->post_name === 'referral-program' || get_page_template_slug( $post->ID ) === 'page-referral-program.php' ) ) {
 		$preset  = jcp_niche_load_preset( 'referral-program' );
 		$display = wp_json_encode( $preset, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
@@ -116,6 +120,7 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 	</p>
 	<p>
 		<button type="button" class="button" id="jcp-niche-load-plumbing-demo"><?php esc_html_e( 'Load plumbing demo JSON', 'jcp-core' ); ?></button>
+		<button type="button" class="button" id="jcp-niche-load-hvac-demo"><?php esc_html_e( 'Load HVAC demo JSON', 'jcp-core' ); ?></button>
 		<button type="button" class="button" id="jcp-niche-load-referral-demo"><?php esc_html_e( 'Load referral program JSON', 'jcp-core' ); ?></button>
 	</p>
 	<textarea name="jcp_niche_content_json" id="jcp_niche_content_json" rows="24" class="large-text code" style="width:100%;font-family:monospace;"><?php echo esc_textarea( $display ); ?></textarea>
@@ -135,6 +140,7 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 			});
 		}
 		bindPreset('jcp-niche-load-plumbing-demo', 'jcp_niche_plumbing_json');
+		bindPreset('jcp-niche-load-hvac-demo', 'jcp_niche_hvac_json');
 		bindPreset('jcp-niche-load-referral-demo', 'jcp_niche_referral_json');
 	})();
 	</script>
@@ -148,6 +154,14 @@ function jcp_niche_ajax_plumbing_json(): void {
 	jcp_niche_ajax_preset_json( 'plumbing' );
 }
 add_action( 'wp_ajax_jcp_niche_plumbing_json', 'jcp_niche_ajax_plumbing_json' );
+
+/**
+ * AJAX: return pretty-printed HVAC JSON for admin editor.
+ */
+function jcp_niche_ajax_hvac_json(): void {
+	jcp_niche_ajax_preset_json( 'hvac' );
+}
+add_action( 'wp_ajax_jcp_niche_hvac_json', 'jcp_niche_ajax_hvac_json' );
 
 /**
  * AJAX: return pretty-printed referral program JSON for admin editor.

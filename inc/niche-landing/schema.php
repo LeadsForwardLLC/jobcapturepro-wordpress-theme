@@ -105,6 +105,9 @@ function jcp_niche_get_content( int $post_id ): array {
 	if ( $slug === 'plumbing' ) {
 		return jcp_niche_load_preset( 'plumbing' );
 	}
+	if ( $slug === 'hvac' ) {
+		return jcp_niche_load_preset( 'hvac' );
+	}
 	if ( $slug === 'referral-program' || get_page_template_slug( $post_id ) === 'page-referral-program.php' ) {
 		return jcp_niche_load_preset( 'referral-program' );
 	}

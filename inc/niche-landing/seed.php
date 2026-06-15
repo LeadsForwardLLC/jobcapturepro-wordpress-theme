@@ -63,6 +63,63 @@ function jcp_niche_plumbing_exists(): bool {
 }
 
 /**
+ * Whether the HVAC industry post exists.
+ */
+function jcp_niche_hvac_exists(): bool {
+	$ids = get_posts(
+		[
+			'post_type'      => 'jcp_niche_landing',
+			'name'           => 'hvac',
+			'post_status'    => 'any',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+		]
+	);
+	return ! empty( $ids[0] );
+}
+
+/**
+ * Create HVAC industry page if missing.
+ *
+ * @return int Post ID or 0.
+ */
+function jcp_niche_seed_hvac(): int {
+	$existing = get_posts(
+		[
+			'post_type'      => 'jcp_niche_landing',
+			'name'           => 'hvac',
+			'post_status'    => 'any',
+			'posts_per_page' => 1,
+			'fields'         => 'ids',
+		]
+	);
+	if ( ! empty( $existing[0] ) ) {
+		$id = (int) $existing[0];
+		if ( ! get_post_meta( $id, jcp_niche_content_meta_key(), true ) ) {
+			jcp_niche_save_content( $id, jcp_niche_load_preset( 'hvac' ) );
+		}
+		return $id;
+	}
+
+	$preset = jcp_niche_load_preset( 'hvac' );
+	$id     = wp_insert_post(
+		[
+			'post_type'    => 'jcp_niche_landing',
+			'post_status'  => 'publish',
+			'post_name'    => 'hvac',
+			'post_title'   => ! empty( $preset['niche_label'] ) ? (string) $preset['niche_label'] : 'HVAC',
+			'post_excerpt' => ! empty( $preset['hero']['subheadline'] ) ? wp_strip_all_tags( (string) $preset['hero']['subheadline'] ) : '',
+		],
+		true
+	);
+	if ( is_wp_error( $id ) || ! $id ) {
+		return 0;
+	}
+	jcp_niche_save_content( (int) $id, $preset );
+	return (int) $id;
+}
+
+/**
  * Create referral program page if missing.
  *
  * @return int Post ID or 0.
@@ -118,6 +175,12 @@ function jcp_niche_maybe_seed(): void {
 			update_option( 'jcp_niche_plumbing_seeded', '1' );
 		}
 	}
+	if ( get_option( 'jcp_niche_hvac_seeded' ) !== '1' || ! jcp_niche_hvac_exists() ) {
+		$created = jcp_niche_seed_hvac();
+		if ( $created > 0 ) {
+			update_option( 'jcp_niche_hvac_seeded', '1' );
+		}
+	}
 	if ( get_option( 'jcp_niche_referral_seeded' ) !== '1' || ! jcp_niche_referral_exists() ) {
 		$created = jcp_niche_seed_referral_program();
 		if ( $created > 0 ) {
@@ -136,8 +199,10 @@ function jcp_niche_admin_seed_notice(): void {
 	}
 	check_admin_referer( 'jcp_niche_seed' );
 	jcp_niche_seed_plumbing();
+	jcp_niche_seed_hvac();
 	jcp_niche_seed_referral_program();
 	update_option( 'jcp_niche_plumbing_seeded', '1' );
+	update_option( 'jcp_niche_hvac_seeded', '1' );
 	update_option( 'jcp_niche_referral_seeded', '1' );
 	wp_safe_redirect( admin_url( 'edit.php?post_type=jcp_niche_landing&jcp_seeded=1' ) );
 	exit;
@@ -152,7 +217,7 @@ function jcp_niche_admin_list_extra( string $which ): void {
 		return;
 	}
 	$url = wp_nonce_url( admin_url( 'edit.php?post_type=jcp_niche_landing&jcp_niche_seed=1' ), 'jcp_niche_seed' );
-	echo '<a href="' . esc_url( $url ) . '" class="page-title-action">' . esc_html__( 'Seed plumbing demo', 'jcp-core' ) . '</a>';
+	echo '<a href="' . esc_url( $url ) . '" class="page-title-action">' . esc_html__( 'Seed industry demos', 'jcp-core' ) . '</a>';
 }
 add_action( 'manage_posts_extra_tablenav', 'jcp_niche_admin_list_extra' );
 
