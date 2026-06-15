@@ -130,100 +130,30 @@ function jcp_niche_save_content( int $post_id, array $content ): void {
 }
 
 /**
- * SEO title for a niche landing post.
+ * Admin list: show live URL for each industry page.
  *
- * @param int $post_id Post ID.
- * @return string
+ * @param string[] $columns Columns.
+ * @return string[]
  */
-function jcp_niche_seo_title( int $post_id ): string {
-	$c = jcp_niche_get_content( $post_id );
-	if ( ! empty( $c['seo']['title'] ) ) {
-		return (string) $c['seo']['title'];
-	}
-	return get_the_title( $post_id );
+function jcp_niche_admin_columns( array $columns ): array {
+	$columns['jcp_niche_url'] = __( 'URL', 'jcp-core' );
+	return $columns;
 }
+add_filter( 'manage_jcp_niche_landing_posts_columns', 'jcp_niche_admin_columns' );
 
 /**
- * Meta description for a niche landing post.
- *
- * @param int $post_id Post ID.
- * @return string
+ * @param string $column Column key.
+ * @param int    $post_id Post ID.
  */
-function jcp_niche_meta_description( int $post_id ): string {
-	$c = jcp_niche_get_content( $post_id );
-	if ( ! empty( $c['seo']['meta_description'] ) ) {
-		return (string) $c['seo']['meta_description'];
-	}
-	$hero = $c['hero']['subheadline'] ?? '';
-	return is_string( $hero ) ? wp_strip_all_tags( $hero ) : '';
-}
-
-/**
- * SEO title for the industries hub archive.
- */
-function jcp_niche_archive_seo_title(): string {
-	return __( 'Marketing Software for Home Service Contractors by Trade', 'jcp-core' ) . ' | ' . get_bloginfo( 'name' );
-}
-
-/**
- * Meta description for the industries hub archive.
- */
-function jcp_niche_archive_meta_description(): string {
-	return __( 'Browse marketing software built for your trade. See how JobCapturePro helps plumbers, roofers, HVAC companies, electricians, and home service contractors turn completed jobs into Google visibility, website proof, reviews, and more booked work.', 'jcp-core' );
-}
-
-/**
- * Output meta description in head.
- */
-function jcp_niche_output_meta_description(): void {
-	if ( is_post_type_archive( 'jcp_niche_landing' ) ) {
-		$desc = jcp_niche_archive_meta_description();
-		if ( $desc !== '' ) {
-			echo '<meta name="description" content="' . esc_attr( $desc ) . '">' . "\n";
-		}
+function jcp_niche_admin_column_content( string $column, int $post_id ): void {
+	if ( $column !== 'jcp_niche_url' ) {
 		return;
 	}
-	if ( ! jcp_niche_is_content_page() ) {
+	$url = get_permalink( $post_id );
+	if ( ! $url ) {
+		echo '—';
 		return;
 	}
-	$desc = jcp_niche_meta_description( (int) get_queried_object_id() );
-	if ( $desc === '' ) {
-		return;
-	}
-	echo '<meta name="description" content="' . esc_attr( $desc ) . '">' . "\n";
+	echo '<a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">' . esc_html( wp_make_link_relative( $url ) ) . '</a>';
 }
-add_action( 'wp_head', 'jcp_niche_output_meta_description', 2 );
-
-/**
- * Filter document title for niche landings.
- *
- * @param array<int, string> $parts Title parts.
- * @return array<int, string>
- */
-function jcp_niche_document_title( array $parts ): array {
-	if ( jcp_niche_is_content_page() && is_singular() ) {
-		$parts['title'] = jcp_niche_seo_title( (int) get_queried_object_id() );
-	}
-	if ( is_post_type_archive( 'jcp_niche_landing' ) ) {
-		$parts['title'] = jcp_niche_archive_seo_title();
-	}
-	return $parts;
-}
-add_filter( 'document_title_parts', 'jcp_niche_document_title' );
-
-/**
- * Override full document title (wins over SEO plugins in many cases).
- *
- * @param string $title Document title.
- * @return string
- */
-function jcp_niche_pre_get_document_title( string $title ): string {
-	if ( jcp_niche_is_content_page() && is_singular() ) {
-		return jcp_niche_seo_title( (int) get_queried_object_id() );
-	}
-	if ( is_post_type_archive( 'jcp_niche_landing' ) ) {
-		return jcp_niche_archive_seo_title();
-	}
-	return $title;
-}
-add_filter( 'pre_get_document_title', 'jcp_niche_pre_get_document_title', 100 );
+add_action( 'manage_jcp_niche_landing_posts_custom_column', 'jcp_niche_admin_column_content', 10, 2 );

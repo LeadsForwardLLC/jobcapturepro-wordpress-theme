@@ -55,10 +55,18 @@ function jcp_niche_render_quick_meta_box( WP_Post $post ): void {
 	}
 	$c     = jcp_niche_get_content( (int) $post->ID );
 	$edit  = add_query_arg( 'jcp_edit', '1', get_permalink( $post ) );
-	$seo   = $c['seo'] ?? [];
 	$hero  = $c['hero'] ?? [];
 	$final = $c['final_cta'] ?? [];
+	$is_industry = $post->post_type === 'jcp_niche_landing';
 	?>
+	<?php if ( $is_industry ) : ?>
+		<div class="notice notice-info inline" style="margin: 0 0 1em; padding: 0.75em 1em;">
+			<p style="margin: 0;">
+				<strong><?php esc_html_e( 'Add a new trade page', 'jcp-core' ); ?></strong><br />
+				<?php esc_html_e( '1. Set the URL slug (e.g. roofing). 2. Load a template in Advanced JSON below and save. 3. Use “Edit on live page” to customize copy. SEO title and meta description are managed in Rank Math.', 'jcp-core' ); ?>
+			</p>
+		</div>
+	<?php endif; ?>
 	<p>
 		<a href="<?php echo esc_url( $edit ); ?>" class="button button-primary" target="_blank" rel="noopener">
 			<?php esc_html_e( 'Edit on live page (click text & buttons)', 'jcp-core' ); ?>
@@ -66,10 +74,6 @@ function jcp_niche_render_quick_meta_box( WP_Post $post ): void {
 		<span class="description"><?php esc_html_e( 'On the live page: click “Click to edit page”, then click any highlighted text or button to edit.', 'jcp-core' ); ?></span>
 	</p>
 	<table class="form-table" role="presentation">
-		<tr>
-			<th><label for="jcp_niche_seo_title"><?php esc_html_e( 'SEO title', 'jcp-core' ); ?></label></th>
-			<td><input type="text" class="large-text" id="jcp_niche_seo_title" name="jcp_niche_quick[seo_title]" value="<?php echo esc_attr( $seo['title'] ?? '' ); ?>" /></td>
-		</tr>
 		<tr>
 			<th><label for="jcp_niche_hero_h1"><?php esc_html_e( 'Hero H1', 'jcp-core' ); ?></label></th>
 			<td><input type="text" class="large-text" id="jcp_niche_hero_h1" name="jcp_niche_quick[hero_h1]" value="<?php echo esc_attr( $hero['h1'] ?? '' ); ?>" /></td>
@@ -116,13 +120,24 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 	}
 	?>
 	<p class="description">
-		<?php esc_html_e( 'Structured page content. Edit JSON directly or use a preset loader below.', 'jcp-core' ); ?>
+		<?php
+		if ( $post->post_type === 'jcp_niche_landing' ) {
+			esc_html_e( 'Page content as JSON. Load a trade template to start, then customize. The page appears on /industries/ automatically when published.', 'jcp-core' );
+		} else {
+			esc_html_e( 'Structured page content. Edit JSON directly or use a preset loader below.', 'jcp-core' );
+		}
+		?>
 	</p>
+	<?php if ( $post->post_type === 'jcp_niche_landing' ) : ?>
 	<p>
-		<button type="button" class="button" id="jcp-niche-load-plumbing-demo"><?php esc_html_e( 'Load plumbing demo JSON', 'jcp-core' ); ?></button>
-		<button type="button" class="button" id="jcp-niche-load-hvac-demo"><?php esc_html_e( 'Load HVAC demo JSON', 'jcp-core' ); ?></button>
+		<button type="button" class="button" id="jcp-niche-load-plumbing-demo"><?php esc_html_e( 'Use plumbing as template', 'jcp-core' ); ?></button>
+		<button type="button" class="button" id="jcp-niche-load-hvac-demo"><?php esc_html_e( 'Use HVAC as template', 'jcp-core' ); ?></button>
+	</p>
+	<?php else : ?>
+	<p>
 		<button type="button" class="button" id="jcp-niche-load-referral-demo"><?php esc_html_e( 'Load referral program JSON', 'jcp-core' ); ?></button>
 	</p>
+	<?php endif; ?>
 	<textarea name="jcp_niche_content_json" id="jcp_niche_content_json" rows="24" class="large-text code" style="width:100%;font-family:monospace;"><?php echo esc_textarea( $display ); ?></textarea>
 	<script>
 	(function () {
@@ -205,13 +220,9 @@ function jcp_niche_save_meta_box( int $post_id ): void {
 	$content = jcp_niche_get_content( $post_id );
 	if ( isset( $_POST['jcp_niche_quick'] ) && is_array( $_POST['jcp_niche_quick'] ) ) {
 		$q = wp_unslash( $_POST['jcp_niche_quick'] );
-		$content['seo']       = $content['seo'] ?? [];
 		$content['hero']      = $content['hero'] ?? [];
 		$content['final_cta'] = $content['final_cta'] ?? [];
 		$content['final_cta']['cta_primary'] = $content['final_cta']['cta_primary'] ?? [];
-		if ( ! empty( $q['seo_title'] ) ) {
-			$content['seo']['title'] = sanitize_text_field( $q['seo_title'] );
-		}
 		if ( ! empty( $q['hero_h1'] ) ) {
 			$content['hero']['h1'] = sanitize_text_field( $q['hero_h1'] );
 		}
@@ -239,6 +250,15 @@ function jcp_niche_save_meta_box( int $post_id ): void {
 	$decoded = json_decode( $json, true );
 	if ( ! is_array( $decoded ) ) {
 		return;
+	}
+	$post = get_post( $post_id );
+	if ( $post instanceof WP_Post && $post->post_type === 'jcp_niche_landing' ) {
+		if ( empty( $decoded['niche_key'] ) ) {
+			$decoded['niche_key'] = $post->post_name;
+		}
+		if ( empty( $decoded['niche_label'] ) ) {
+			$decoded['niche_label'] = get_the_title( $post_id );
+		}
 	}
 	jcp_niche_save_content( $post_id, $decoded );
 }
