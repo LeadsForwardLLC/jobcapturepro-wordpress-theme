@@ -73,8 +73,9 @@ $dir_trust = $dir_url . '/#trust';
           <h4>Product</h4>
           <a href="<?php echo esc_url( home_url( '/#how-it-works' ) ); ?>">How it Works</a>
           <a href="<?php echo esc_url( home_url( '/#features' ) ); ?>">Features</a>
-          <a href="<?php echo esc_url( home_url( '/directory' ) ); ?>">Directory</a>
+          <a href="<?php echo esc_url( home_url( '/industries/' ) ); ?>"><?php esc_html_e( 'By Trade', 'jcp-core' ); ?></a>
           <a href="<?php echo esc_url( home_url( '/pricing' ) ); ?>">Pricing</a>
+          <a href="<?php echo esc_url( home_url( '/directory' ) ); ?>">Directory</a>
         </div>
         <div class="jcp-footer-col">
           <h4>Resources</h4>

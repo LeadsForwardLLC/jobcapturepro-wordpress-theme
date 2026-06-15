@@ -205,9 +205,13 @@
 
       const pathname = (window.location.pathname || '/').replace(/\/$/, '') || '/';
 
-      // Primary nav pages: how-it-works, features, directory, pricing (by data-page or pathname)
-      const primaryPages = ['how-it-works', 'features', 'directory', 'pricing'];
-      const activePrimary = primaryPages.find((p) => page === p || pathname === '/' + p);
+      // Primary nav pages: how-it-works, features, industries, pricing (by data-page or pathname)
+      const primaryPages = ['how-it-works', 'features', 'industries', 'pricing'];
+      const isIndustriesPage = page === 'industries' || pathname === '/industries' || pathname.indexOf('/industries/') === 0;
+      const activePrimary = primaryPages.find((p) => {
+        if (p === 'industries') return isIndustriesPage;
+        return page === p || pathname === '/' + p;
+      });
       if (activePrimary) {
         document.querySelectorAll('.nav-link[data-page="' + activePrimary + '"]').forEach((link) => link.classList.add('is-active'));
         document.querySelectorAll('.mobile-nav-link[data-page="' + activePrimary + '"]').forEach((link) => link.classList.add('is-active'));
@@ -260,7 +264,7 @@
       if (href.charAt(0) !== '/') {
         try { host = new URL(href, window.location.href).hostname.toLowerCase(); } catch (err) {}
       }
-      isTargetHref = path === '/demo' || path === '/early-access' || path === '/referral-program';
+      isTargetHref = path === '/demo' || path === '/early-access' || path === '/referral-program' || path === '/industries' || path.indexOf('/industries/') === 0;
       isReferralOutbound = host.indexOf('firstpromoter.com') !== -1;
     }
     if (!ctaName && !isTargetHref && !isReferralOutbound) return;

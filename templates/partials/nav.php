@@ -16,6 +16,7 @@ $home_how = $is_home ? '#how-it-works' : esc_url( home_url( '/#how-it-works' ) )
 $home_features = $is_home ? '#features' : esc_url( home_url( '/#features' ) );
 $home_who = $is_home ? '#who-its-for' : esc_url( home_url( '/#who-its-for' ) );
 $dir_url = home_url( '/directory' );
+$industries_url = home_url( '/industries/' );
 $dir_search = $dir_url . '/#search';
 $dir_how = $dir_url . '/#how-it-works';
 $dir_trust = $dir_url . '/#trust';
@@ -50,7 +51,7 @@ $dir_trust = $dir_url . '/#trust';
     <?php else : ?>
       <a href="<?php echo $home_how; ?>" class="nav-link" data-home-anchor="#how-it-works">How it works</a>
       <a href="<?php echo $home_features; ?>" class="nav-link" data-home-anchor="#features">Features</a>
-      <a href="<?php echo esc_url( $dir_url ); ?>" class="nav-link" data-page="directory">Directory</a>
+      <a href="<?php echo esc_url( $industries_url ); ?>" class="nav-link" data-page="industries"><?php esc_html_e( 'By Trade', 'jcp-core' ); ?></a>
       <a href="<?php echo esc_url( home_url( '/pricing' ) ); ?>" class="nav-link" data-page="pricing">Pricing</a>
       <div class="nav-dropdown" id="navResourcesDropdown">
         <button type="button" class="nav-dropdown-trigger nav-link" id="navResourcesTrigger" aria-haspopup="true" aria-expanded="false" aria-controls="navResourcesMenu">Resources <svg class="nav-dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -228,12 +229,13 @@ $dir_trust = $dir_url . '/#trust';
           </svg>
           <span>Features</span>
         </a>
-        <a href="<?php echo esc_url( $dir_url ); ?>" class="mobile-nav-link" data-page="directory">
+        <a href="<?php echo esc_url( $industries_url ); ?>" class="mobile-nav-link" data-page="industries">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+            <path d="M2 20h20"></path>
+            <path d="M5 20V10l7-6 7 6v10"></path>
+            <path d="M9 20v-6h6v6"></path>
           </svg>
-          <span><?php esc_html_e( 'Directory', 'jcp-core' ); ?></span>
+          <span><?php esc_html_e( 'By Trade', 'jcp-core' ); ?></span>
         </a>
         <a href="<?php echo esc_url( home_url( '/pricing' ) ); ?>" class="mobile-nav-link" data-page="pricing">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
