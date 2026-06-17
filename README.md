@@ -1,97 +1,69 @@
 # JobCapturePro Core Theme
 
-WordPress theme for JobCapturePro public website, directory, and estimator.
+WordPress theme for JobCapturePro public website, directory, estimator, and block-based marketing pages.
 
-## 📚 Documentation
+## Documentation
 
-**👉 See [DOCUMENTATION.md](./DOCUMENTATION.md) for complete documentation**
+**Start with [DOCUMENTATION.md](./DOCUMENTATION.md)** — especially the [Developer Handoff](./DOCUMENTATION.md#developer-handoff) section.
 
-The master documentation includes:
-- Project overview and architecture
-- Complete file organization
-- Asset management guide
-- Template system explanation
-- Development guidelines
-- Quick reference
+| Topic | Where |
+|-------|--------|
+| Block pages & editor | DOCUMENTATION.md → JCP Page Block System, Live Page Editor |
+| Editor SOP (for content team) | WP Admin → **JCP** → **Page System** |
+| Block catalog | WP Admin → **JCP** → **Block Library** |
+| Architecture migration | `docs/superpowers/specs/2026-06-15-jcp-block-page-system-design.md` |
+| Companies / directory API | DOCUMENTATION.md → JCP Companies CPT & API Sync |
 
 ## Quick Start
 
-### Theme Structure
+### Theme structure
 
-- **Theme Root:** `/wp-content/themes/jobcapturepro-core/`
-- **CSS:** `/css/` (organized: base → layout → components → sections → utilities → pages)
-- **JavaScript:** `/assets/js/` (organized: core → features → pages)
-- **Templates:** Root PHP files + `/templates/global/` for header/footer/nav. The header and footer support a **Directory Mode** variant: on directory and company profile pages, the same global header and footer show contextual links and CTAs (header: Find contractors, How rankings work, Trust & verification; footer: Directory, For homeowners, For contractors link groups; logo links to `/directory`; “Powered by LeadsForward” hidden in Directory Mode). Detection: `jcp_is_directory_mode()` in `inc/helpers.php`.
-- **Assets:** `/assets/` (HTML templates, icons, images, third-party libraries)
+- **CSS:** `/css/` — `base.css` (tokens) → layout → components → sections → pages
+- **JavaScript:** `/assets/js/` — core → features → pages (enqueue paths use `js/…`; resolved via `jcp_core_asset_path()`)
+- **Block system:** `/inc/page-blocks/` (registry, schema, REST) + `/inc/niche-landing/` (section renderers)
+- **Templates:** Root `page-*.php` + `/templates/global/`, `/templates/partials/`, `/templates/survey/`
 
-### Key Files
+### Deploy
 
-- `functions.php` - Theme bootstrap and initialization (loads company-data, jcp-api-cpt, enqueue, routes, etc.)
-- `inc/enqueue.php` - Asset loading logic
-- `inc/helpers.php` - Utility functions, page detection, and `jcp_is_directory_mode()` (Directory Mode for header/nav)
-- `inc/template-routes.php` - URL routing (directory/company via rewrite + template_include; others via 404 fallback), 404 handling
-- `inc/company-data.php` - Company data helpers, description resolution, generated descriptions
-- `inc/jcp-api-cpt.php` - JCP Companies CPT, API sync (Import from API, daily cron), shortcode `[jcp_companies]`. **Requires `JCP_API_TOKEN` in wp-config.php.** See DOCUMENTATION.md → Setup & Integrations → JCP Companies CPT & API Sync.
-- `page-directory.php` - Directory listing (standard WP template; get_header/get_footer)
-- `single-jcp_company.php` - Company profile (standard WP template; get_header/get_footer)
-- `inc/form-fields.php` - Canonical REST param names and GHL payload keys (Demo Survey = source of truth)
-- `inc/rest-early-access.php` - Early Access form → GHL webhook
-- `inc/rest-demo-survey.php` - Demo Survey form → GHL webhook (separate from Early Access)
-- `DOCUMENTATION.md` - Complete technical documentation
+Push to `main` → GitHub Actions (`.github/workflows/deploy-main.yml`) → SiteGround production.
+
+### Key files
+
+| File | Purpose |
+|------|---------|
+| `functions.php` | Theme bootstrap |
+| `inc/helpers.php` | Assets, page detection, block editor enqueue |
+| `inc/enqueue.php` | Styles/scripts per page type |
+| `inc/page-blocks/` | Block page system |
+| `inc/niche-landing/` | Section HTML + doc import + industry CPT |
+| `inc/jcp-api-cpt.php` | Companies CPT + API sync (needs `JCP_API_TOKEN` in wp-config) |
+| `inc/form-fields.php` | Canonical form field names for GHL webhooks |
 
 ### Forms & GoHighLevel
 
-Two critical forms submit to GoHighLevel via separate webhooks:
+| Form | REST endpoint |
+|------|---------------|
+| Early Access | `POST /wp-json/jcp/v1/early-access-submit` |
+| Demo Survey | `POST /wp-json/jcp/v1/demo-survey-submit`, `demo-viewed-submit` |
+| Contact | `POST /wp-json/jcp/v1/contact-submit` |
 
-| Form | Purpose | REST endpoint |
-|------|---------|---------------|
-| **Early Access** | Founding crew signup (contact, business type, why interested, referral). One submit → one webhook. | `POST /wp-json/jcp/v1/early-access-submit` |
-| **Demo Survey** | Demo opt-in ("Continue to preview") and viewed-demo ("Skip" / "Launch"). Same webhook; GHL branches on Event (demo-opt-in vs demo-viewed). | `POST /wp-json/jcp/v1/demo-survey-submit`, `POST /wp-json/jcp/v1/demo-viewed-submit` |
+See DOCUMENTATION.md → Forms & GoHighLevel for payload keys and GHL workflow notes.
 
-- **Data flow:** Frontend → REST (validate, build body) → `wp_remote_post()` to form’s GHL webhook. Payloads are `application/x-www-form-urlencoded`, flat key-value. Mapping to contact/custom fields is done in GHL workflows.
-- **Field naming:** Shared concepts (first_name, email, company, business_type) use consistent REST params; GHL payload keys are documented in DOCUMENTATION.md → Forms & GoHighLevel. Do not change webhook payload keys without updating GHL.
+### ACF scope
 
-### Setup & Integrations
+- **Removed:** Theme-level Homepage Settings and JCP Theme Settings (nav CTAs, form copy, footer are hardcoded in templates).
+- **Active:** Per-page **Bottom CTA** on standard Pages only (`inc/acf-config.php`).
 
-- **Local:** Run WordPress locally (e.g. Local by Flywheel). Use a tunnel for GHL webhook testing if needed.
-- **JCP Companies (directory):** The theme includes the JCP Companies CPT and sync with the JobCapture Pro API. **API key is stored in wp-config.php**, not in the theme: add `define( 'JCP_API_TOKEN', 'your_key' );` in the “Add any custom values” section of wp-config.php (above “That’s all, stop editing!”). Without it, Import from API and daily cron will not work. Do not run the old “Companies Directory” Code Snippet—the theme replaces it. See DOCUMENTATION.md → Setup & Integrations → JCP Companies CPT & API Sync.
-- **GoHighLevel:** Two webhooks—Early Access (`rest-early-access.php`) and Demo Survey (`rest-demo-survey.php`). Do not swap URLs; see DOCUMENTATION.md → Setup & Integrations and Forms & GoHighLevel.
-- **ACF:** Required for Homepage Settings, **JCP Theme Settings** (global CTAs, form copy, footer basics), and **per-page bottom CTA** on Pages. Early Access and Demo Survey copy can be overridden via Theme Settings.
+### Block page editor (logged-in editors)
 
-### Development
+Scripts: `page-media-editor.js` → `niche-page-editor.js` → `page-collection-editor.js`  
+REST: `GET/POST /wp-json/jcp/v1/page/{id}`  
+Bootstrap global: `JCP_NICHE_EDITOR`
 
-1. **CSS Development:** Use design tokens from `css/base.css`, add reusable components to `css/components.css`, page-specific styles to `css/pages/`
-2. **JavaScript Development:** Core behavior in `assets/js/core/`, features in `assets/js/features/`, page renderers in `assets/js/pages/`
-3. **Template Development:** WordPress-required files stay in root, reusable parts in `templates/`
+### Setup
 
-### Theme Settings (ACF Options)
+- **Local:** WordPress via Local by Flywheel (or similar)
+- **API token:** `define( 'JCP_API_TOKEN', '…' );` in wp-config.php (not in theme repo)
+- **GHL:** Two webhooks — Early Access and Demo Survey (do not swap URLs)
 
-**JCP Theme Settings** (WP Admin → JCP Theme Settings) controls:
-
-- **Global CTAs:** Primary and secondary CTA labels and URLs (used in nav and CTA blocks).
-- **Early Access Form Copy:** Headline, subhead, button label, success message.
-- **Demo Survey Copy:** Headline, subhead, button label (Step 1), success message.
-- **Footer Basics:** Support email, sales email, optional address line (shown in footer when set).
-
-### Demo Analytics
-
-**JCP → Demo Analytics** (under JCP Theme Settings) shows a read-only funnel: total sessions, completion rate, CTA click counts, and step-by-step completion and drop-off. **Demo → Early Access Conversion** counts sessions that started the demo and later reached the early-access-success page (same session); conversion is session-based, not user-based. **Data since** shows the first tracked session date or, after a reset, the reset timestamp. **Reset demo analytics** clears all stored events and sets a new “data since” date; a confirmation modal requires explicit confirmation. No charts, filters, or export. **Session-level demo analytics:** WordPress stores lightweight session records (session ID, optional business name/type, timestamps, completion/conversion flags) for drill-down only—no full emails or phone numbers, no CRM. Clicking **Total sessions started** or **Demo conversions** opens a read-only modal listing up to 25 sessions. Reset clears both event and session records.
-
-### Per-Page Bottom CTA
-
-On any **Page** (post type `page`), editors can enable an optional **Bottom CTA** that appears at the end of the page content. It uses the same global CTA component (`.rankings-cta`) and classes—no new design or CSS.
-
-- **Where:** Bottom of the page, after the main content (standard `page.php` template only).
-- **How to enable:** Edit the page → **Bottom CTA** meta box → turn on “Enable bottom CTA” and fill headline, supporting text (optional), button label, and button URL.
-- **Behavior:** If disabled or required fields (headline, button label, URL) are empty, nothing is output—no empty spacing.
-
-### Current Status
-
-✅ **All refactoring complete** - Clean, organized structure  
-✅ **No duplicate files** - Single source of truth for all components  
-✅ **WordPress-ready** - Template Name headers, text domain, escaping, layout for standard pages  
-✅ **Blog & single post** - Single-section layout (no double gaps), author + avatar in meta, compact comments  
-✅ **Real Job Proof section** - Homepage section under "How JobCapturePro works"; shows proof outputs (Google, Website, Directory, Reviews) and reinforces the verified directory. See DOCUMENTATION.md.  
-✅ **Fully documented** - See DOCUMENTATION.md for details
-
-For detailed information, see [DOCUMENTATION.md](./DOCUMENTATION.md).
+For full details, see [DOCUMENTATION.md](./DOCUMENTATION.md).

@@ -1,23 +1,77 @@
 # JobCapturePro Core Theme - Master Documentation
 
-**Last Updated:** January 28, 2026  
-**Version:** 1.2  
-**For:** Project Managers, Developers, Designers
+**Last Updated:** June 17, 2026  
+**Version:** 2.0  
+**For:** Developers taking over the theme (see [Developer Handoff](#developer-handoff) first)
 
 ---
 
 ## 📋 TABLE OF CONTENTS
 
-1. [Project Overview](#project-overview)
-2. [Architecture & Structure](#architecture--structure)
-3. [File Organization](#file-organization)
-4. [Asset Management](#asset-management)
-5. [Template System](#template-system)
-6. [Development Guidelines](#development-guidelines)
-7. [Current Status](#current-status)
-8. [Quick Reference](#quick-reference)
-9. [Setup & Integrations](#setup--integrations) — includes [JCP Companies CPT & API key (wp-config)](#jcp-companies-cpt--api-sync)
-10. [Forms & GoHighLevel](#forms--gohighlevel)
+1. [Developer Handoff](#developer-handoff)
+2. [Project Overview](#project-overview)
+3. [JCP Page Block System](#jcp-page-block-system)
+4. [Live Page Editor](#live-page-editor)
+5. [Architecture & Structure](#architecture--structure)
+6. [File Organization](#file-organization)
+7. [Asset Management](#asset-management)
+8. [Template System](#template-system)
+9. [Development Guidelines](#development-guidelines)
+10. [Current Status](#current-status)
+11. [Quick Reference](#quick-reference)
+12. [Setup & Integrations](#setup--integrations) — includes [JCP Companies CPT & API key (wp-config)](#jcp-companies-cpt--api-sync)
+13. [Forms & GoHighLevel](#forms--gohighlevel)
+
+---
+
+## 🚀 DEVELOPER HANDOFF
+
+### Start here
+
+| If you need to… | Read / open |
+|-----------------|-------------|
+| Understand structured marketing pages | [JCP Page Block System](#jcp-page-block-system) |
+| Work on click-to-edit, undo, add/remove cards | [Live Page Editor](#live-page-editor) |
+| Change section HTML or new block types | `inc/niche-landing/render.php`, `inc/page-blocks/registry.php` |
+| Editor save/load API | `inc/page-blocks/rest-content.php` |
+| Operational guide for editors | WP Admin → **JCP** → **Page System** (`inc/admin-theme-docs.php`) |
+| Block catalog for editors | WP Admin → **JCP** → **Block Library** (`inc/admin-block-library.php`) |
+| Architecture migration notes | `docs/superpowers/specs/2026-06-15-jcp-block-page-system-design.md` |
+
+### Two systems (intentional, mid-migration)
+
+The theme is **mid-migration** from legacy niche landing to a unified block page system. **Both** `inc/page-blocks/` and `inc/niche-landing/` are required at runtime:
+
+- **`inc/page-blocks/`** — Block registry, content schema, `jcp_page_render()`, REST API, `jcp_page` CPT, migrations.
+- **`inc/niche-landing/`** — Section PHP renderers (~1,280 lines), doc import parser, `jcp_niche_landing` CPT, admin meta boxes, editable attributes, shared partials.
+
+Do **not** delete `inc/niche-landing/` until section renderers are fully moved into page-blocks.
+
+### CPTs for structured content
+
+| CPT | Archive URL | Template | Use when |
+|-----|-------------|----------|----------|
+| `jcp_niche_landing` | `/industries/` | `single-jcp_niche_landing.php` | Industry/niche landing pages |
+| `jcp_page` | `/pages/` | `single-jcp_page.php`, `page-jcp-blocks.php` | Generic block pages |
+| WP `page` + template | — | `page-home.php`, `page-referral-program.php` | Homepage, referral program |
+
+Content is stored in post meta `_jcp_page_content` (canonical). Legacy `_jcp_niche_content` is adapted via `jcp_page_legacy_to_blocks()`.
+
+### Deploy
+
+Pushing to `main` triggers GitHub Actions (`.github/workflows/deploy-main.yml`) → SiteGround production.
+
+### Known intentional shims (do not delete)
+
+- `css/buttons.css` — Empty enqueue shim; preserves CSS load order.
+- `assets/js/pages/home.js` — Legacy JS homepage fallback when front page has no block content meta.
+- `inc/page-blocks/doc-parser.php` — Thin wrapper; real parser is `inc/niche-landing/doc-parser.php`.
+
+### Repo hygiene
+
+- `.DS_Store` is gitignored; do not commit macOS metadata.
+- `docs/superpowers/` — Internal implementation plans; safe to keep for context.
+- `assets/shared/assets/icons/lucide/` — **Only** icon set used by the theme (~1,667 SVGs). Root-level icon JSON files under `assets/shared/assets/icons/` are legacy/unused bloat; candidate for removal after staging verification.
 
 ---
 
@@ -27,10 +81,101 @@
 WordPress theme for JobCapturePro public website, directory, and estimator. The theme uses **client-side rendering** for most pages - WordPress acts as the host/CMS, while JavaScript handles UI rendering.
 
 ### Key Characteristics
-- **Hybrid Architecture**: WordPress PHP templates + JavaScript rendering + static HTML templates
-- **Modular CSS**: Design tokens → base → layout → components → sections → utilities → pages
-- **Organized JavaScript**: Core → Features → Pages structure
-- **Clean Structure**: All unused files removed, everything documented
+- **Hybrid Architecture**: WordPress PHP templates + JavaScript rendering + PHP block-rendered marketing pages
+- **Block page system**: Structured JSON content + PHP section renderers + live front-end editor
+- **Modular CSS**: Design tokens (in `base.css`) → base → layout → components → sections → utilities → pages
+- **Organized JavaScript**: Core → Features → Pages structure under `assets/js/`
+- **Documented shims**: Legacy fallbacks are intentional; see [Developer Handoff](#developer-handoff)
+
+---
+
+## 🧱 JCP PAGE BLOCK SYSTEM
+
+### Data model
+
+Each structured page stores a JSON document in post meta `_jcp_page_content`:
+
+```json
+{
+  "blocks": [
+    { "id": "b1", "type": "hero", "props": {} },
+    { "id": "b2", "type": "how_it_works", "props": {} }
+  ],
+  "content": {
+    "hero": { "headline": "...", "subheadline": "..." },
+    "how_it_works": { "headline": "...", "steps": [ { "title": "...", "lines": ["..."] } ] }
+  }
+}
+```
+
+- **`blocks`** — Ordered section stack (type, id, optional per-page label, layout props).
+- **`content`** — Flat keyed section payloads consumed by PHP renderers.
+
+Helpers live in `inc/page-blocks/schema.php` (`jcp_page_get_content`, `jcp_page_get_content_flat`, adapters). Block types are defined in `inc/page-blocks/registry.php`.
+
+### Render pipeline
+
+```
+Template (page-home.php, single-jcp_page.php, …)
+  → jcp_niche_render_page() or jcp_page_render()
+    → inc/page-blocks/render.php (orchestration, block loop)
+      → inc/niche-landing/render.php (section HTML: hero, benefits, FAQ, …)
+        → partials.php / components.php / editable.php (shared markup + editor attrs)
+```
+
+Homepage default path: `page-home.php` calls `jcp_niche_render_page()` which delegates to `jcp_page_render()`. Legacy `home.js` string-template homepage is used **only** when the front page has no `_jcp_page_content` meta (pre-migration).
+
+### Key files
+
+| File | Role |
+|------|------|
+| `inc/page-blocks/registry.php` | Block type catalog |
+| `inc/page-blocks/schema.php` | Content storage, presets, flat content |
+| `inc/page-blocks/render.php` | `jcp_page_render()` orchestration |
+| `inc/page-blocks/rest-content.php` | `GET/POST /wp-json/jcp/v1/page/{id}` |
+| `inc/page-blocks/migrate-pages.php` | One-time homepage / referral migrations |
+| `inc/page-blocks/presets.php` | Default block stacks per page kind |
+| `inc/niche-landing/render.php` | Section HTML for each block type |
+| `inc/niche-landing/editable.php` | `data-jcp-path`, `data-jcp-array`, collection attrs |
+| `inc/niche-landing/dummy-*.json` | Preset content samples |
+
+### Document import
+
+Google Doc → paste in admin meta box → `jcp_niche_parse_document()` (`inc/niche-landing/doc-parser.php`) → JSON content. Wrapper alias: `jcp_page_parse_document()` in `inc/page-blocks/doc-parser.php`.
+
+---
+
+## ✏️ LIVE PAGE EDITOR
+
+Logged-in users with `edit_post` capability see a front-end toolbar on structured pages (`jcp_core_enqueue_page_block_editor()` in `inc/helpers.php`).
+
+### Scripts (load order)
+
+1. `assets/js/pages/page-media-editor.js` — Image/video slots via `wp.media`
+2. `assets/js/pages/niche-page-editor.js` — Toolbar, undo/redo, structure panel, inline text, save
+3. `assets/js/pages/page-collection-editor.js` — Add/remove cards, FAQ items, steps, optional CTAs
+
+Global bootstrap: `window.JCP_NICHE_EDITOR` (REST URL, nonce, blocks, flat content, registry). Editor API: `window.__JCP_EDITOR_API__`.
+
+### Editable regions
+
+- **Text** — `[data-jcp-path]` → keys in `content` JSON
+- **Links** — `[data-jcp-href-path]`
+- **Media** — `[data-jcp-media-url-path]`, `[data-jcp-media-alt-path]`
+- **Collections** — `[data-jcp-array]` container + `[data-jcp-array-item]` items (benefits cards, FAQ, timeline steps, bullets)
+- **Optional CTAs** — `[data-jcp-optional]` slots (delete restores placeholder)
+
+### History / undo
+
+Snapshots store `{ pageDocument, flatContent }`. Undo restores JSON then calls `JCP_SYNC_COLLECTIONS_FROM_CONTENT()` to rebuild deleted DOM nodes, then reapplies text. Timeline step numbers renumber via `updateTimelineStepNumbers()` on every collection refresh.
+
+### Caching
+
+Editor sets `DONOTCACHEPAGE` so page caches do not serve stale content to editors.
+
+### Not editable (by design)
+
+Live CPT/directory listings, decorative icons, demo phone mockup chrome.
 
 ---
 
@@ -38,47 +183,58 @@ WordPress theme for JobCapturePro public website, directory, and estimator. The 
 
 ### Rendering Patterns
 
-#### Pattern 1: JavaScript String Templates (Homepage, Pricing, Early Access)
+#### Pattern 1: Block-rendered Homepage (current default)
 ```php
 // page-home.php
 <?php get_header(); ?>
-<div id="jcp-app" data-jcp-page="home"></div>
+<?php jcp_niche_render_page(); ?>
 <?php get_footer(); ?>
 ```
-- JavaScript (`js/pages/home.js`) renders HTML via string templates
-- Content is dynamically generated client-side
-- Used for: Homepage, Pricing, Early Access
+- PHP block system renders all sections server-side (`inc/page-blocks/render.php` → `inc/niche-landing/render.php`)
+- `assets/js/pages/home-interactions.js` handles scroll/anchor behavior
+- **Legacy fallback:** If front page has no `_jcp_page_content` meta, `assets/js/pages/home.js` renders via JS string templates
 
-#### Pattern 2: Static HTML Templates (Demo, Directory, Estimate, Survey)
+#### Pattern 1b: JavaScript String Templates (Pricing, Early Access)
+```php
+// page-pricing.php, page-early-access.php
+<?php get_header(); ?>
+<div id="jcp-app" data-jcp-page="pricing"></div>
+<?php get_footer(); ?>
+```
+- JavaScript in `assets/js/pages/pricing.js` / `early-access.js` renders HTML via string templates
+
+#### Pattern 2: PHP Survey + Demo App Shell
 ```php
 // page-demo.php
 <?php get_header(); ?>
-<div id="jcp-app" data-jcp-page="demo"></div>
+<?php /* PHP survey templates or demo app container */ ?>
 <?php get_footer(); ?>
 ```
-- JavaScript (`js/core/jcp-render.js`) loads HTML files via XMLHttpRequest
-- HTML templates in `assets/demo/index.html`, `assets/directory/index.html`, etc.
-- Used for: Demo, Directory, Estimate, Survey, Company Profile
+- **Survey** (`/demo` without `?mode=run`): PHP templates in `templates/survey/` + `assets/js/pages/survey.js`
+- **Demo app** (`/demo?mode=run`): `assets/demo/index.html` loaded via `jcp-render.js`
 
-#### Pattern 3: WordPress Content Templates (page.php, home.php, single.php)
-- **Standard page** (`page.php`): One section, one container; title and body in same block to avoid double vertical padding.
-- **Blog archive** (`home.php`): One section; blog title/tagline and post grid in same block.
-- **Single post** (`single.php`): One section; title, meta (author + avatar, date, categories), content, tags, post nav, comments in one block. Meta uses dot separators; author links to author archive with round Gravatar.
-
-#### Pattern 4: PHP Templates (Design System, UI Library)
+#### Pattern 3: Static HTML Templates (Directory, Estimate, Company profile)
 ```php
-// page-design-system.php
+// page-directory.php, page-estimate.php, single-jcp_company.php
 <?php get_header(); ?>
-<!-- Full PHP-rendered content -->
+<div id="jcp-app" data-jcp-page="directory"></div>
 <?php get_footer(); ?>
 ```
-- Traditional WordPress PHP templates
-- Used for: Design System documentation, UI Library
+- `assets/js/core/jcp-render.js` loads HTML from `assets/directory/`, `assets/estimate/`, etc.
+- WordPress enqueues replace stripped `<script>` / `<link>` tags from templates
+
+#### Pattern 4: WordPress Content Templates (page.php, home.php, single.php)
+- **Standard page** (`page.php`): One section, one container; optional ACF bottom CTA
+- **Blog archive** (`home.php`): Post grid in one section block
+- **Single post** (`single.php`): Title, meta, content, tags, nav, comments in one block
+
+#### Pattern 5: PHP reference pages (UI Library)
+- `page-ui-library.php` — Component gallery for designers/developers
 
 #### Blog & single post styling (`css/pages/blog.css`)
-- **Single post meta:** Author (round 36px avatar + name link), date, categories; dot separators; compact spacing.
-- **Comments:** One divider line before comments; reduced spacing; compact form (smaller inputs, 4-row textarea); comment list and form margins tightened.
-- **Post navigation:** No top border (single divider is comments only); reduced margin above.
+- **Single post meta:** Author (round 36px avatar + name link), date, categories; dot separators
+- **Comments:** Compact form and list spacing
+- **Post navigation:** No extra top border above nav
 
 ---
 
@@ -88,22 +244,24 @@ WordPress theme for JobCapturePro public website, directory, and estimator. The 
 
 ```
 jobcapturepro-core/
-├── assets/              # Static assets (JS, HTML templates, icons, images)
+├── assets/              # JS, HTML templates, icons (see assets/js/ for canonical JS)
 ├── css/                 # All stylesheets
-├── inc/                 # PHP includes (enqueue, helpers, ACF config)
-├── templates/           # PHP template parts
-├── archive/             # Legacy/archived files (not used)
+├── docs/superpowers/    # Internal architecture plans (block system, etc.)
+├── inc/
+│   ├── page-blocks/     # Block registry, schema, render orchestration, REST
+│   └── niche-landing/   # Section renderers, doc parser, industry CPT
+├── templates/           # PHP template parts (header, footer, nav, survey)
 ├── *.php                # WordPress template files (MUST be in root)
-└── DOCUMENTATION.md     # This file (master documentation)
+├── DOCUMENTATION.md     # This file
+└── README.md            # Quick start + pointers
 ```
 
 ### CSS Structure
 
 ```
 css/
-├── tokens.css           # Design tokens (CSS variables) - colors, spacing, typography
-├── base.css             # Resets, typography defaults, global element rules
-├── layout.css           # Containers, grids, section spacing, responsive primitives
+├── base.css             # Design tokens (CSS variables) + resets + typography
+├── layout.css           # Containers, grids, section spacing
 ├── buttons.css          # Empty shim (button styles moved to components.css)
 ├── components.css       # Buttons, cards, badges, pills, accordions (single source of truth)
 ├── sections.css          # Homepage section styles (hero, FAQ, CTA, etc.)
@@ -144,38 +302,45 @@ assets/js/
 │   │   └── requests.js
 │   └── faq.js
 └── pages/
-    ├── home.js          # Homepage renderer (string templates)
     ├── pricing.js       # Pricing page renderer (string templates)
     ├── early-access.js  # Early access renderer (string templates)
-    └── survey.js        # Demo survey (opt-in + viewed-demo) renderer
+    ├── survey.js        # Demo survey (PHP template companion)
+    ├── niche-page-editor.js   # Live page editor (toolbar, undo, structure)
+    ├── page-collection-editor.js  # Add/remove list items, cards, steps
+    ├── page-media-editor.js   # Image/video slot editor
+    ├── home-interactions.js   # Homepage anchors/interactions (block homepage)
+    ├── home.js                # Legacy homepage renderer (fallback only)
+    ├── industries-archive.js  # /industries/ archive
+    ├── contact.js             # Contact form page
+    ├── early-access-success.js
+    └── wp-plugin-prototype.js
 ```
+
+**Note:** Enqueue paths use `js/pages/foo.js`; `jcp_core_asset_path()` resolves to `assets/js/pages/foo.js`. All theme JS lives under `assets/js/`.
 
 ### Assets Structure
 
 ```
 assets/
 ├── demo/
-│   ├── index.html       # Demo page HTML template
-│   └── leaflet/         # Leaflet mapping library (CSS, JS, images)
+│   ├── index.html       # Demo app shell (?mode=run)
+│   └── leaflet/         # Leaflet mapping library
 ├── directory/
-│   ├── index.html       # Directory listing HTML template
-│   ├── profile.html     # Company profile HTML template
-│   └── directory.css    # Directory-specific CSS (imported)
+│   ├── index.html       # Directory listing
+│   └── profile.html     # Company profile
 ├── estimate/
-│   ├── index.html       # Estimate builder HTML template
-│   ├── estimate-builder.css  # Estimate CSS (imported)
-│   └── fontawesome/     # FontAwesome icon library
-├── survey/
-│   └── index.html       # Survey HTML template
-├── js/                  # All JavaScript (see JS structure above)
+│   └── index.html       # Estimate builder
+├── js/                  # All theme JavaScript (canonical location)
 └── shared/
     ├── assets/
-    │   ├── demo.css     # Shared demo CSS (imported)
-    │   └── survey.css   # Survey CSS (imported)
-    ├── icons/           # 3,200+ Lucide icon JSON files
-    ├── img/             # Shared images
-    └── video/           # Shared videos
+    │   ├── demo.css
+    │   └── survey.css
+    ├── assets/icons/lucide/  # Lucide SVGs used by jcp_core_icon() and editor
+    ├── img/
+    └── video/
 ```
+
+**Survey UI** is PHP-rendered (`templates/survey/`), not `assets/survey/index.html`.
 
 ### Template Structure
 
@@ -185,24 +350,29 @@ Root (WordPress REQUIRES these in root):
 ├── header.php                   # Wrapper → templates/global/header.php
 ├── footer.php                   # Wrapper → templates/global/footer.php
 ├── functions.php                # Theme bootstrap
-├── page-home.php                # Homepage (JS-rendered)
+├── page-home.php                # Homepage (block-rendered PHP; legacy JS fallback)
 ├── page-pricing.php             # Pricing (JS-rendered)
 ├── page-early-access.php        # Early access (JS-rendered)
-├── page-demo.php                # Demo (loads HTML template)
+├── page-demo.php                # Demo survey (PHP) + demo app (?mode=run)
 ├── page-directory.php           # Directory (loads HTML template)
 ├── page-estimate.php            # Estimate (loads HTML template)
-├── page-company.php             # Company (loads HTML template)
-├── page-design-system.php       # Design system docs (PHP-rendered)
-├── page-ui-library.php          # UI library docs (PHP-rendered)
+├── page-contact.php             # Contact form
+├── page-help.php                # Help articles
+├── page-jcp-blocks.php          # Generic block page template
+├── page-referral-program.php    # Referral program block page
+├── page-ui-library.php          # UI component library (PHP-rendered)
+├── archive-jcp_niche_landing.php # /industries/ archive
+├── single-jcp_niche_landing.php  # Industry landing pages
+├── single-jcp_page.php          # Generic block pages
 └── single-jcp_company.php       # Company profile (loads HTML template)
 
 templates/
 ├── global/
 │   ├── header.php               # Full HTML header (called by root header.php)
-│   ├── footer.php               # Full HTML footer (called by root footer.php)
-│   └── nav.php                  # Navigation (called by header.php)
-└── partials/
-    └── nav.php                  # Nav partial (called by global/header.php)
+│   └── footer.php               # Full HTML footer (called by root footer.php)
+├── partials/
+│   └── nav.php                  # Marketing + directory nav
+└── survey/                      # Demo survey step templates
 ```
 
 **Why Root Files Can't Be Moved:**
@@ -265,11 +435,12 @@ The main marketing nav (desktop) is defined in `templates/partials/nav.php`: **H
   - Survey: `js/pages/survey.js`
 
 #### HTML Template Loading (via `jcp-render.js`)
-- Demo page (`/demo?mode=run`): `assets/demo/index.html`
-- Survey mode (`/demo` without `mode=run`): `assets/survey/index.html`
-- Directory page (`/directory`): `assets/directory/index.html`. The badge legend ("What do these badges mean?") is collapsible by default; clicking the toggle expands the panel. Once expanded, it remains open for the current session (sessionStorage).
+- Demo app (`/demo?mode=run`): `assets/demo/index.html`
+- Directory page (`/directory`): `assets/directory/index.html`
 - Company profile (`/directory/[slug]` or legacy `/company?id=[slug]`): `assets/directory/profile.html`
 - Estimate page (`/estimate`): `assets/estimate/index.html`
+
+**Survey** (`/demo` without `mode=run`) uses PHP templates in `templates/survey/`, not `jcp-render.js`.
 
 **Note:** HTML templates have their `<script>` and `<link>` tags stripped by `jcp-render.js` and replaced by WordPress enqueues.
 
@@ -316,7 +487,6 @@ $pages = [
     'is_directory'    => is_page_template('page-directory.php') || $path === 'directory',
     'is_estimate'     => is_page_template('page-estimate.php') || $path === 'estimate',
     'is_company'      => is_singular('jcp_company') || $path === 'company',
-    'is_design_system' => is_page_template('page-design-system.php') || $path === 'design-system',
     'is_ui_library'   => is_page_template('page-ui-library.php') || $path === 'ui-library',
 ];
 ```
@@ -335,7 +505,7 @@ Located in `inc/template-routes.php`:
 ### CSS Development Rules
 
 #### ✅ DO:
-- Use CSS variables from `tokens.css` (e.g., `var(--jcp-color-primary)`)
+- Use CSS variables from `base.css` (e.g., `var(--jcp-color-primary)`)
 - Use spacing scale (e.g., `var(--jcp-space-lg)` = 24px)
 - Put reusable components in `components.css`
 - Put homepage sections in `sections.css`
@@ -438,8 +608,13 @@ Located in `inc/template-routes.php`:
 
 #### ✅ Phase C - Stage 4: Legacy Asset Decommissioning
 - Empty folders removed (`assets/core/`, `assets/css/`)
-- Legacy CSS files archived to `archive/legacy/css/`
-- Legacy JS files archived to `archive/legacy/js/`
+- Legacy CSS/JS archived and later removed from repo
+
+#### ✅ JCP Page Block System (June 2026)
+- Unified block registry, schema, and REST API (`inc/page-blocks/`)
+- Live front-end editor with undo/redo, media slots, collection add/remove
+- Homepage migrated to PHP block render; `home.js` kept as legacy fallback
+- Industry pages (`jcp_niche_landing`) and generic block pages (`jcp_page`)
 
 #### ✅ Template Cleanup
 - Deleted `front-page.php` (duplicate)
@@ -567,19 +742,23 @@ Located in `inc/template-routes.php`:
 
 | URL | Template | Rendering Method |
 |-----|----------|------------------|
-| `/` or `/home` | `page-home.php` | JS string templates |
+| `/` or `/home` | `page-home.php` | PHP block render (+ `home-interactions.js`); legacy `home.js` if no block meta |
 | `/pricing` | `page-pricing.php` | JS string templates |
 | `/early-access` | `page-early-access.php` | JS string templates |
+| `/early-access-success` | `page-early-access-success.php` | PHP template |
 | `/demo?mode=run` | `page-demo.php` | HTML template (`assets/demo/index.html`) |
-| `/demo` | `page-demo.php` | HTML template (`assets/survey/index.html`) |
+| `/demo` | `page-demo.php` | PHP survey (`templates/survey/`) + `survey.js` |
 | `/directory` | `page-directory.php` | HTML template (`assets/directory/index.html`) |
 | `/directory/[slug]` | `single-jcp_company.php` | HTML template (`assets/directory/profile.html`) |
 | `/estimate` | `page-estimate.php` | HTML template (`assets/estimate/index.html`) |
-| `/design-system` | `page-design-system.php` | PHP template |
+| `/contact` | `page-contact.php` | PHP + `contact.js` |
+| `/industries/` | `archive-jcp_niche_landing.php` | PHP archive |
+| `/industries/[slug]` | `single-jcp_niche_landing.php` | PHP block render |
+| `/pages/[slug]` | `single-jcp_page.php` | PHP block render |
 | `/ui-library` | `page-ui-library.php` | PHP template |
-| Generic page (e.g. Sample page) | `page.php` | PHP template (one section, one container) |
-| Blog archive | `home.php` | PHP template (one section, post grid) |
-| Single post | `single.php` | PHP template (one section, author meta, comments) |
+| Generic page | `page.php` | PHP template |
+| Blog archive | `home.php` | PHP template |
+| Single post | `single.php` | PHP template |
 
 ---
 
