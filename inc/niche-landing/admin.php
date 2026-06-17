@@ -99,7 +99,7 @@ function jcp_niche_render_quick_meta_box( WP_Post $post ): void {
 				<strong><?php echo $is_industry ? esc_html__( 'Add a new trade page', 'jcp-core' ) : esc_html__( 'Build a marketing page', 'jcp-core' ); ?></strong><br />
 				<?php
 				printf(
-					esc_html__( '1. Set the URL slug. 2. Paste your Google/Word doc below and click Build page. 3. Publish — or use “Edit on live page” to tweak copy. SEO is managed in Rank Math. %s', 'jcp-core' ),
+					esc_html__( '1. Set the URL slug. 2. Paste the writer template (see JCP → Page System) or upload .docx/.txt, then click Build page. 3. Publish — add photos on the live page editor. SEO is in Rank Math. %s', 'jcp-core' ),
 					'<a href="' . esc_url( admin_url( 'admin.php?page=jcp-theme-settings' ) ) . '">' . esc_html__( 'Full SOP →', 'jcp-core' ) . '</a>'
 				);
 				?>
@@ -147,7 +147,7 @@ function jcp_niche_render_import_meta_box( WP_Post $post ): void {
 	wp_nonce_field( 'jcp_niche_import_doc', 'jcp_niche_import_nonce' );
 	?>
 	<p class="description">
-		<?php esc_html_e( 'Paste a Google Doc or Word export using the standard section template (HERO, WHAT IT IS, HOW IT WORKS, etc.). The theme builds the page JSON automatically.', 'jcp-core' ); ?>
+		<?php esc_html_e( 'Paste plain text using the writer template (JCP → Page System → copy template), or upload a .docx / .txt export from Google Docs or Word. Random Word formatting is stripped — section headers must be ALL CAPS (HERO, WHAT IT IS, etc.). Images are added on the live page after publish.', 'jcp-core' ); ?>
 	</p>
 	<p>
 		<label for="jcp_niche_import_doc"><strong><?php esc_html_e( 'Paste document text', 'jcp-core' ); ?></strong></label>

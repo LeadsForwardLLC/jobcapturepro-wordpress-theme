@@ -153,8 +153,8 @@ function jcp_block_registry(): array {
 			'description'  => __( 'Checklist + image conversion band', 'jcp-core' ),
 			'category'     => 'cta',
 			'legacy_key'   => 'conversion',
-			'doc_sections' => [],
-			'page_kinds'   => [ 'home', 'marketing' ],
+			'doc_sections' => [ 'CONVERSION' ],
+			'page_kinds'   => [ 'home', 'marketing', 'industry' ],
 		],
 		'final_cta' => [
 			'type'         => 'final_cta',

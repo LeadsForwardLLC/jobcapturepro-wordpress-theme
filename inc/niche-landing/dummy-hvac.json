@@ -131,10 +131,29 @@
   },
   "who_its_for": {
     "headline": "Built for HVAC companies that are already busy",
+    "variant": "guarantees",
     "audiences": [
-      { "title": "Owners", "body": "Get more calls and close more installs without managing marketing" },
-      { "title": "Technicians", "body": "Capture once and move on" },
-      { "title": "Growing teams", "body": "Turn consistent service calls and installs into consistent demand" }
+      {
+        "title": "Owners",
+        "body": "Get more calls and close more installs without managing marketing",
+        "badge": "For Owners",
+        "image_url": "",
+        "image_alt": "HVAC business owner"
+      },
+      {
+        "title": "Technicians",
+        "body": "Capture once and move on",
+        "badge": "For Technicians",
+        "image_url": "",
+        "image_alt": "HVAC technician on a job"
+      },
+      {
+        "title": "Growing teams",
+        "body": "Turn consistent service calls and installs into consistent demand",
+        "badge": "For Growing Teams",
+        "image_url": "",
+        "image_alt": "HVAC crew at work"
+      }
     ]
   },
   "faq": {
@@ -148,6 +167,20 @@
       { "q": "How long does setup take?", "a": "Most HVAC companies are up and running in under 10 minutes, with full setup completed within a few days." },
       { "q": "What if we don't do a high volume of jobs?", "a": "This works best for companies consistently completing jobs. The more activity you have, the more visibility you generate." }
     ]
+  },
+  "conversion": {
+    "headline": "This works when the HVAC work is real",
+    "subheadline": "JobCapturePro is built for HVAC companies that already complete real repairs and installs and move on to the next call. It turns finished work into quiet, ongoing visibility so today's jobs keep bringing in tomorrow's calls.",
+    "points": [
+      "You're already completing HVAC jobs on a regular basis",
+      "You want more calls without adding admin or marketing tasks",
+      "You want past work to keep generating future work"
+    ],
+    "cta_primary": { "label": "See how this works for your business", "url": "/demo" },
+    "media_type": "image",
+    "media_position": "right",
+    "image_url": "",
+    "image_alt": "HVAC technician completing a service call"
   },
   "final_cta": {
     "headline": "Every job you complete should help win the next one",

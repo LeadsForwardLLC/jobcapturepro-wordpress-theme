@@ -80,6 +80,7 @@ function jcp_niche_parse_document( string $text, string $niche_key = '', string 
 		"WHO IT'S FOR",
 		'WHO ITS FOR',
 		'FAQ',
+		'CONVERSION',
 		'FINAL CTA',
 	];
 
@@ -138,6 +139,9 @@ function jcp_niche_parse_document( string $text, string $niche_key = '', string 
 	}
 	if ( ! empty( $sections['FAQ'] ) ) {
 		$content['faq'] = jcp_niche_doc_parse_faq( $sections['FAQ'] );
+	}
+	if ( ! empty( $sections['CONVERSION'] ) ) {
+		$content['conversion'] = jcp_niche_doc_parse_conversion( $sections['CONVERSION'] );
 	}
 	if ( ! empty( $sections['FINAL CTA'] ) ) {
 		$content['final_cta'] = jcp_niche_doc_parse_final_cta( $sections['FINAL CTA'] );
@@ -674,6 +678,58 @@ function jcp_niche_doc_parse_benefits( array $lines ): array {
 		'headline' => $fields['headline'] ?? '',
 		'items'    => $items,
 		'closing'  => $closing,
+	];
+}
+
+/**
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_conversion( array $lines ): array {
+	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
+	$points = [];
+	$cta    = '';
+	$mode   = 'points';
+	$skip   = false;
+
+	foreach ( $lines as $line ) {
+		$trim = trim( $line );
+		$low  = strtolower( $trim );
+		if ( in_array( $low, [ 'headline', 'subheadline' ], true ) ) {
+			$skip = true;
+			continue;
+		}
+		if ( $skip ) {
+			$skip = false;
+			continue;
+		}
+		if ( $low === 'cta' ) {
+			$mode = 'cta';
+			continue;
+		}
+		if ( $mode === 'cta' && $trim !== '' ) {
+			$cta = $trim;
+			continue;
+		}
+		if ( $trim !== '' ) {
+			$points[] = $trim;
+		}
+	}
+
+	return [
+		'headline'        => $fields['headline'] ?? '',
+		'subheadline'     => $fields['subheadline'] ?? '',
+		'points'          => $points,
+		'cta_primary'     => [
+			'label' => $cta !== '' ? $cta : ( $fields['cta'] ?? __( 'See how this works for your business', 'jcp-core' ) ),
+			'url'   => '/demo',
+		],
+		'media_type'      => 'image',
+		'media_position'  => 'right',
+		'image_url'       => '',
+		'image_alt'       => '',
+		'media_url'       => '',
+		'media_alt'       => '',
 	];
 }
 

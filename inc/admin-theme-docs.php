@@ -210,6 +210,7 @@ function jcp_theme_docs_render_page(): void {
 					<tr><td><code>DIFFERENTIATION</code></td><td><?php esc_html_e( 'Body copy + short bullets', 'jcp-core' ); ?></td></tr>
 					<tr><td><code>WHO IT'S FOR</code></td><td><?php esc_html_e( 'Audience cards (Owners, Technicians, etc.)', 'jcp-core' ); ?></td></tr>
 					<tr><td><code>FAQ</code></td><td><?php esc_html_e( 'Question / answer pairs', 'jcp-core' ); ?></td></tr>
+					<tr><td><code>CONVERSION</code></td><td><?php esc_html_e( 'Checklist + image band (headline, bullets, CTA — add photo on live page)', 'jcp-core' ); ?></td></tr>
 					<tr><td><code>FINAL CTA</code></td><td><?php esc_html_e( 'Bottom conversion band', 'jcp-core' ); ?></td></tr>
 				</tbody>
 			</table>
@@ -602,6 +603,17 @@ Common questions from [trade] companies
 
 [Question ending with ?]
 [Answer paragraph]
+
+CONVERSION
+Headline
+[Headline — e.g. This works when the work is real]
+Subheadline
+[Supporting paragraph]
+[Checklist bullet one]
+[Checklist bullet two]
+[Checklist bullet three]
+CTA
+See how this works for your business
 
 FINAL CTA
 Headline

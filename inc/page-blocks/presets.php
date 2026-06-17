@@ -27,6 +27,7 @@ function jcp_page_presets(): array {
 				'differentiation',
 				'who_its_for',
 				'faq',
+				'conversion',
 				'final_cta',
 			],
 		],

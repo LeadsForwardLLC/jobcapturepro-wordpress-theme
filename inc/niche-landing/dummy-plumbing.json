@@ -134,10 +134,29 @@
   },
   "who_its_for": {
     "headline": "Built for plumbing companies that run service calls every day",
+    "variant": "guarantees",
     "audiences": [
-      { "title": "Owners", "body": "Stay visible online without spending hours on marketing" },
-      { "title": "Technicians", "body": "Take a few photos and move on to the next call" },
-      { "title": "Growing plumbing companies", "body": "Turn completed work into consistent demand and more booked jobs" }
+      {
+        "title": "Owners",
+        "body": "Stay visible online without spending hours on marketing",
+        "badge": "For Owners",
+        "image_url": "",
+        "image_alt": "Plumbing company owner"
+      },
+      {
+        "title": "Technicians",
+        "body": "Take a few photos and move on to the next call",
+        "badge": "For Technicians",
+        "image_url": "",
+        "image_alt": "Plumber on a service call"
+      },
+      {
+        "title": "Growing plumbing companies",
+        "body": "Turn completed work into consistent demand and more booked jobs",
+        "badge": "For Growing Teams",
+        "image_url": "",
+        "image_alt": "Plumbing crew at work"
+      }
     ]
   },
   "faq": {
@@ -151,6 +170,20 @@
       { "q": "How long does setup take?", "a": "Most plumbing companies are live within a few days." },
       { "q": "Does this work for small plumbing companies?", "a": "Yes. If you are consistently completing jobs, the system works. More jobs simply create more visibility over time." }
     ]
+  },
+  "conversion": {
+    "headline": "This works when the plumbing work is real",
+    "subheadline": "JobCapturePro is built for plumbing companies that already complete real service calls and move on to the next one. It turns finished work into quiet, ongoing visibility so the jobs you complete today continue to bring in calls later.",
+    "points": [
+      "You're already completing plumbing jobs on a regular basis",
+      "You want more calls without adding admin or marketing tasks",
+      "You want past work to keep generating future work"
+    ],
+    "cta_primary": { "label": "See how this works for your business", "url": "/demo" },
+    "media_type": "image",
+    "media_position": "right",
+    "image_url": "",
+    "image_alt": "Plumber completing a service call"
   },
   "final_cta": {
     "headline": "Every plumbing job should help bring in the next one",
