@@ -6,6 +6,13 @@
  */
 
 /**
+ * Admin notice when a WP page needs a block template assigned.
+ */
+function jcp_niche_block_template_admin_hint(): string {
+	return __( 'Assign the “JCP Block Page” template (or “Referral Program” for referral landers) to use structured block content, document import, and the live page editor.', 'jcp-core' );
+}
+
+/**
  * Register meta box.
  */
 function jcp_niche_register_meta_box(): void {
@@ -36,22 +43,36 @@ function jcp_niche_register_meta_box(): void {
 			'default'
 		);
 	}
-	add_meta_box(
-		'jcp_niche_quick',
-		__( 'Landing Page — Quick Edit', 'jcp-core' ),
-		'jcp_niche_render_quick_meta_box',
-		'page',
-		'normal',
-		'high'
-	);
-	add_meta_box(
-		'jcp_niche_content',
-		__( 'Landing Page — Advanced JSON', 'jcp-core' ),
-		'jcp_niche_render_meta_box',
-		'page',
-		'normal',
-		'default'
-	);
+	$page_boxes = [
+		[
+			'id'       => 'jcp_niche_import',
+			'title'    => __( 'Landing Page — Import from Document', 'jcp-core' ),
+			'callback' => 'jcp_niche_render_import_meta_box',
+			'priority' => 'high',
+		],
+		[
+			'id'       => 'jcp_niche_quick',
+			'title'    => __( 'Landing Page — Quick Edit', 'jcp-core' ),
+			'callback' => 'jcp_niche_render_quick_meta_box',
+			'priority' => 'high',
+		],
+		[
+			'id'       => 'jcp_niche_content',
+			'title'    => __( 'Landing Page — Advanced JSON', 'jcp-core' ),
+			'callback' => 'jcp_niche_render_meta_box',
+			'priority' => 'default',
+		],
+	];
+	foreach ( $page_boxes as $box ) {
+		add_meta_box(
+			$box['id'],
+			$box['title'],
+			$box['callback'],
+			'page',
+			'normal',
+			$box['priority']
+		);
+	}
 }
 
 /**
@@ -60,16 +81,17 @@ function jcp_niche_register_meta_box(): void {
  * @param WP_Post $post Post.
  */
 function jcp_niche_render_quick_meta_box( WP_Post $post ): void {
-	if ( $post->post_type === 'page' && get_page_template_slug( $post->ID ) !== 'page-referral-program.php' ) {
-		echo '<p class="description">' . esc_html__( 'Assign the “Referral Program” page template to use structured landing content.', 'jcp-core' ) . '</p>';
+	if ( $post->post_type === 'page' && ! jcp_page_uses_block_template( (int) $post->ID ) ) {
+		echo '<p class="description">' . esc_html( jcp_niche_block_template_admin_hint() ) . '</p>';
 		return;
 	}
 	$c     = jcp_page_get_content_flat( (int) $post->ID );
 	$edit  = add_query_arg( 'jcp_edit', '1', get_permalink( $post ) );
 	$hero  = $c['hero'] ?? [];
 	$final = $c['final_cta'] ?? [];
-	$is_industry = $post->post_type === 'jcp_niche_landing';
-	$is_marketing = $post->post_type === 'jcp_page';
+	$is_industry  = $post->post_type === 'jcp_niche_landing';
+	$is_marketing = $post->post_type === 'jcp_page'
+		|| ( $post->post_type === 'page' && get_page_template_slug( $post->ID ) === 'page-jcp-blocks.php' );
 	?>
 	<?php if ( $is_industry || $is_marketing ) : ?>
 		<div class="notice notice-info inline" style="margin: 0 0 1em; padding: 0.75em 1em;">
@@ -118,6 +140,10 @@ add_action( 'add_meta_boxes', 'jcp_niche_register_meta_box' );
  * @param WP_Post $post Post.
  */
 function jcp_niche_render_import_meta_box( WP_Post $post ): void {
+	if ( $post->post_type === 'page' && ! jcp_page_uses_block_template( (int) $post->ID ) ) {
+		echo '<p class="description">' . esc_html( jcp_niche_block_template_admin_hint() ) . '</p>';
+		return;
+	}
 	wp_nonce_field( 'jcp_niche_import_doc', 'jcp_niche_import_nonce' );
 	?>
 	<p class="description">
@@ -212,8 +238,10 @@ function jcp_niche_ajax_parse_document(): void {
 	if ( $post instanceof WP_Post ) {
 		if ( $post->post_type === 'jcp_niche_landing' ) {
 			$page_kind = 'industry';
-		} elseif ( get_page_template_slug( $post ) === 'page-referral-program.php' ) {
+		} elseif ( get_page_template_slug( $post ) === 'page-referral-program.php' || $post->post_name === 'referral-program' ) {
 			$page_kind = 'referral';
+		} elseif ( $post->post_type === 'jcp_page' || jcp_page_uses_block_template( (int) $post->ID ) ) {
+			$page_kind = 'marketing';
 		}
 	}
 	$parsed = jcp_page_parse_document( $text, $niche_key, $niche_label, $page_kind );
@@ -232,8 +260,8 @@ add_action( 'wp_ajax_jcp_page_parse_document', 'jcp_niche_ajax_parse_document' )
  * @param WP_Post $post Post.
  */
 function jcp_niche_render_meta_box( WP_Post $post ): void {
-	if ( $post->post_type === 'page' && get_page_template_slug( $post->ID ) !== 'page-referral-program.php' ) {
-		echo '<p class="description">' . esc_html__( 'Assign the “Referral Program” page template to edit JSON content.', 'jcp-core' ) . '</p>';
+	if ( $post->post_type === 'page' && ! jcp_page_uses_block_template( (int) $post->ID ) ) {
+		echo '<p class="description">' . esc_html( jcp_niche_block_template_admin_hint() ) . '</p>';
 		return;
 	}
 	wp_nonce_field( 'jcp_niche_content_save', 'jcp_niche_content_nonce' );
@@ -261,6 +289,19 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 		$empty['blocks'] = jcp_page_blocks_from_preset( 'marketing' );
 		$display         = wp_json_encode( $empty, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 	}
+	if ( $display === '' && $post->post_type === 'page' && get_page_template_slug( $post->ID ) === 'page-jcp-blocks.php' ) {
+		$empty = jcp_page_legacy_to_blocks(
+			[
+				'page_kind'  => 'marketing',
+				'page_key'   => $post->post_name,
+				'page_label' => get_the_title( $post ),
+				'preset'     => 'marketing',
+			],
+			(int) $post->ID
+		);
+		$empty['blocks'] = jcp_page_blocks_from_preset( 'marketing' );
+		$display         = wp_json_encode( $empty, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+	}
 	?>
 	<p class="description">
 		<?php
@@ -268,6 +309,8 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 			esc_html_e( 'Page content as JSON blocks. Load a trade template to start. Published pages appear on /industries/ automatically.', 'jcp-core' );
 		} elseif ( $post->post_type === 'jcp_page' ) {
 			esc_html_e( 'Page content as JSON blocks. Load a preset or import a writer document. Published at /pages/{slug}/.', 'jcp-core' );
+		} elseif ( get_page_template_slug( $post->ID ) === 'page-jcp-blocks.php' ) {
+			esc_html_e( 'Page content as JSON blocks. Load a preset or import a writer document. Published at this page’s existing URL — SEO in Rank Math is unchanged.', 'jcp-core' );
 		} else {
 			esc_html_e( 'Structured page content. Edit JSON directly or use a preset loader below.', 'jcp-core' );
 		}
@@ -278,7 +321,7 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 		<button type="button" class="button" id="jcp-niche-load-plumbing-demo"><?php esc_html_e( 'Use plumbing as template', 'jcp-core' ); ?></button>
 		<button type="button" class="button" id="jcp-niche-load-hvac-demo"><?php esc_html_e( 'Use HVAC as template', 'jcp-core' ); ?></button>
 	</p>
-	<?php elseif ( $post->post_type === 'jcp_page' ) : ?>
+	<?php elseif ( $post->post_type === 'jcp_page' || get_page_template_slug( $post->ID ) === 'page-jcp-blocks.php' ) : ?>
 	<p>
 		<button type="button" class="button" id="jcp-niche-load-marketing-demo"><?php esc_html_e( 'Use marketing preset', 'jcp-core' ); ?></button>
 		<button type="button" class="button" id="jcp-niche-load-minimal-demo"><?php esc_html_e( 'Use minimal preset', 'jcp-core' ); ?></button>
@@ -382,6 +425,15 @@ add_action( 'wp_ajax_jcp_page_minimal_json', 'jcp_page_ajax_minimal_json' );
  * @param int $post_id Post ID.
  */
 function jcp_niche_save_meta_box( int $post_id ): void {
+	$post = get_post( $post_id );
+	if ( ! $post instanceof WP_Post ) {
+		return;
+	}
+	$is_structured = in_array( $post->post_type, [ 'jcp_niche_landing', 'jcp_page' ], true )
+		|| jcp_page_uses_block_template( $post_id );
+	if ( ! $is_structured ) {
+		return;
+	}
 	if ( ! isset( $_POST['jcp_niche_content_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['jcp_niche_content_nonce'] ) ), 'jcp_niche_content_save' ) ) {
 		return;
 	}
@@ -440,6 +492,12 @@ function jcp_niche_save_meta_box( int $post_id ): void {
 			$decoded['page_kind'] = 'industry';
 		}
 		if ( empty( $decoded['page_kind'] ) && $post->post_type === 'jcp_page' ) {
+			$decoded['page_kind'] = 'marketing';
+		}
+		if ( empty( $decoded['page_kind'] ) && get_page_template_slug( $post_id ) === 'page-referral-program.php' ) {
+			$decoded['page_kind'] = 'referral';
+		}
+		if ( empty( $decoded['page_kind'] ) && get_page_template_slug( $post_id ) === 'page-jcp-blocks.php' ) {
 			$decoded['page_kind'] = 'marketing';
 		}
 	}

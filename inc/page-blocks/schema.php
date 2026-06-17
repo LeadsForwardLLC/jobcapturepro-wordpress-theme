@@ -27,6 +27,31 @@ function jcp_niche_content_meta_key(): string {
 }
 
 /**
+ * Page templates that use the JCP block page system.
+ *
+ * @return array<int, string>
+ */
+function jcp_page_block_page_templates(): array {
+	return [
+		'page-jcp-blocks.php',
+		'page-referral-program.php',
+	];
+}
+
+/**
+ * Whether a WordPress page uses a JCP block page template.
+ *
+ * @param int $post_id Post ID.
+ */
+function jcp_page_uses_block_template( int $post_id ): bool {
+	$post = get_post( $post_id );
+	if ( ! $post instanceof WP_Post || $post->post_type !== 'page' ) {
+		return false;
+	}
+	return in_array( get_page_template_slug( $post_id ), jcp_page_block_page_templates(), true );
+}
+
+/**
  * Whether post uses structured JCP page content.
  *
  * @param int|null $post_id Post ID.
@@ -46,7 +71,7 @@ function jcp_page_is_content_page( ?int $post_id = null ): bool {
 	if ( in_array( $post->post_type, [ 'jcp_niche_landing', 'jcp_page' ], true ) ) {
 		return true;
 	}
-	return $post->post_type === 'page' && get_page_template_slug( $id ) === 'page-referral-program.php';
+	return jcp_page_uses_block_template( $id );
 }
 
 /**
@@ -79,8 +104,11 @@ function jcp_page_resolve_kind( array $content, int $post_id ): string {
 		if ( $post->post_type === 'jcp_niche_landing' ) {
 			return 'industry';
 		}
-		if ( get_page_template_slug( $post_id ) === 'page-referral-program.php' ) {
+		if ( get_page_template_slug( $post_id ) === 'page-referral-program.php' || $post->post_name === 'referral-program' ) {
 			return 'referral';
+		}
+		if ( jcp_page_uses_block_template( $post_id ) ) {
+			return 'marketing';
 		}
 	}
 	return 'marketing';

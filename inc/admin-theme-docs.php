@@ -58,7 +58,8 @@ function jcp_theme_docs_render_page(): void {
 			<strong><?php esc_html_e( 'On this page', 'jcp-core' ); ?></strong>
 			<ul>
 				<li><a href="#overview"><?php esc_html_e( 'Overview', 'jcp-core' ); ?></a></li>
-				<li><a href="#quick-start"><?php esc_html_e( 'Quick start (new page)', 'jcp-core' ); ?></a></li>
+				<li><a href="#quick-start"><?php esc_html_e( 'Quick start (WP block page)', 'jcp-core' ); ?></a></li>
+				<li><a href="#quick-start-industry"><?php esc_html_e( 'Quick start (industry page)', 'jcp-core' ); ?></a></li>
 				<li><a href="#document-import"><?php esc_html_e( 'Document import', 'jcp-core' ); ?></a></li>
 				<li><a href="#document-template"><?php esc_html_e( 'Writer document template', 'jcp-core' ); ?></a></li>
 				<li><a href="#backend-editor"><?php esc_html_e( 'Backend editor (WP Admin)', 'jcp-core' ); ?></a></li>
@@ -97,6 +98,14 @@ function jcp_theme_docs_render_page(): void {
 						<td><?php esc_html_e( 'Main nav “By Trade” links to /industries/', 'jcp-core' ); ?></td>
 					</tr>
 					<tr>
+						<td><?php esc_html_e( 'Marketing / internal pages (WP Pages)', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Pages → assign “JCP Block Page” template — keeps existing URL and Rank Math SEO', 'jcp-core' ); ?></td>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Referral program', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Pages → “Referral Program” template (same block system)', 'jcp-core' ); ?></td>
+					</tr>
+					<tr>
 						<td><?php esc_html_e( 'SEO title & meta description', 'jcp-core' ); ?></td>
 						<td><?php esc_html_e( 'Rank Math panel on each Industry post (not in the theme JSON)', 'jcp-core' ); ?></td>
 					</tr>
@@ -105,6 +114,24 @@ function jcp_theme_docs_render_page(): void {
 		</section>
 
 		<section id="quick-start" class="jcp-theme-docs__section">
+			<h2><?php esc_html_e( 'Quick start — WP Page (About, Features, etc.)', 'jcp-core' ); ?></h2>
+			<ol class="jcp-theme-docs__steps">
+				<li>
+					<strong><?php esc_html_e( 'Use an existing page or create one', 'jcp-core' ); ?></strong><br />
+					<?php esc_html_e( 'WP Admin → Pages. Keep the same slug if converting an existing page — URL and SEO stay intact.', 'jcp-core' ); ?>
+				</li>
+				<li>
+					<strong><?php esc_html_e( 'Assign template', 'jcp-core' ); ?></strong><br />
+					<?php esc_html_e( 'In Page attributes, choose “JCP Block Page”. Update the page.', 'jcp-core' ); ?>
+				</li>
+				<li>
+					<strong><?php esc_html_e( 'Build content', 'jcp-core' ); ?></strong><br />
+					<?php esc_html_e( 'Import a document, load the marketing preset, or use “Edit on live page”. Rank Math SEO is unchanged.', 'jcp-core' ); ?>
+				</li>
+			</ol>
+		</section>
+
+		<section id="quick-start-industry" class="jcp-theme-docs__section">
 			<h2><?php esc_html_e( 'Quick start — new trade page', 'jcp-core' ); ?></h2>
 			<ol class="jcp-theme-docs__steps">
 				<li>
