@@ -455,7 +455,7 @@ body.jcp-structure-open {
   display: flex;
   align-items: center;
   gap: var(--jcp-space-sm);
-  cursor: grab;
+  cursor: pointer;
 }
 
 .jcp-block-structure__item.is-dragging {
@@ -471,6 +471,45 @@ body.jcp-structure-open {
   font-size: 12px;
   letter-spacing: -2px;
   user-select: none;
+  cursor: grab;
+  flex-shrink: 0;
+}
+
+.jcp-block-structure__handle:active {
+  cursor: grabbing;
+}
+
+.jcp-block-structure__label-input {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 2px 4px;
+  border: 1px solid transparent;
+  border-radius: var(--jcp-radius-sm);
+  background: transparent;
+  font: inherit;
+  font-size: var(--jcp-font-size-sm);
+  font-weight: var(--jcp-font-weight-semibold);
+  color: inherit;
+  cursor: text;
+}
+
+.jcp-block-structure__label-input:hover,
+.jcp-block-structure__label-input:focus {
+  border-color: var(--jcp-color-border);
+  background: #f8fafc;
+  outline: none;
+}
+
+.jcp-block-structure__label-input::placeholder {
+  color: var(--jcp-color-text-secondary);
+  font-weight: var(--jcp-font-weight-medium);
+}
+
+.jcp-block-scroll-target {
+  outline: 2px solid var(--jcp-color-primary, #e85d04);
+  outline-offset: 4px;
+  transition: outline-color 0.2s ease;
 }
 
 .jcp-block-structure__layout {
@@ -762,12 +801,6 @@ body.jcp-has-unsaved .jcp-niche-edit-status {
   font-size: 12px;
   letter-spacing: -2px;
   user-select: none;
-}
-
-.jcp-block-structure__label {
-  flex: 1;
-  font-size: var(--jcp-font-size-sm);
-  font-weight: var(--jcp-font-weight-semibold);
 }
 
 .jcp-block-structure__remove {

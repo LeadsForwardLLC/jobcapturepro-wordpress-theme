@@ -134,7 +134,7 @@
       <h2>Page structure</h2>
       <button type="button" class="jcp-block-structure__close" id="jcpStructureClose" aria-label="Close">×</button>
     </div>
-    <p class="jcp-block-structure__hint">Drag to reorder. The page previews your changes — click Save to publish.</p>
+    <p class="jcp-block-structure__hint">Drag to reorder. Click a section to scroll the preview. Rename titles for this page only — click Save to publish.</p>
     <ul class="jcp-block-structure__list" id="jcpBlockList"></ul>
     <button type="button" class="btn btn-secondary jcp-block-structure__add" id="jcpAddBlockBtn">+ Add block</button>
   `;
@@ -184,6 +184,34 @@
   const blockLabel = (type) => {
     const found = registry.find((b) => b.type === type);
     return found ? found.label : type;
+  };
+
+  const blockDisplayLabel = (block) => {
+    const custom = typeof block.label === 'string' ? block.label.trim() : '';
+    return custom || blockLabel(block.type);
+  };
+
+  const scrollToBlock = (block) => {
+    const main = getMain();
+    if (!main || !block?.id) return;
+    const el = main.querySelector(`[data-jcp-block-id="${block.id}"]`);
+    if (!el) return;
+    const bar = document.querySelector('.jcp-niche-edit-bar');
+    const offset = (bar?.offsetHeight || 0) + 16;
+    const top = el.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    el.classList.add('jcp-block-scroll-target');
+    window.setTimeout(() => el.classList.remove('jcp-block-scroll-target'), 1500);
+  };
+
+  const setBlockInstanceLabel = (block, value) => {
+    const trimmed = value.trim();
+    const defaultLabel = blockLabel(block.type);
+    if (!trimmed || trimmed === defaultLabel) {
+      delete block.label;
+    } else {
+      block.label = trimmed;
+    }
   };
 
   const LAYOUT_CLASS_NAMES = [
@@ -536,24 +564,54 @@
       const li = document.createElement('li');
       li.className = 'jcp-block-structure__item';
       li.dataset.index = String(index);
+      const defaultLabel = blockLabel(block.type);
       li.innerHTML = `
         <div class="jcp-block-structure__row">
-          <span class="jcp-block-structure__handle" aria-hidden="true">⋮⋮</span>
-          <span class="jcp-block-structure__label">${blockLabel(block.type)}</span>
+          <span class="jcp-block-structure__handle" aria-hidden="true" title="Drag to reorder">⋮⋮</span>
+          <input
+            type="text"
+            class="jcp-block-structure__label-input"
+            aria-label="Section title on this page"
+            title="Rename for this page only"
+          >
           <button type="button" class="jcp-block-structure__remove" data-index="${index}" aria-label="Remove block">Remove</button>
         </div>
         ${buildLayoutControlsHtml(block)}
       `;
-      const row = li.querySelector('.jcp-block-structure__row');
-      row.draggable = true;
-      row.addEventListener('dragstart', (e) => {
+      const handle = li.querySelector('.jcp-block-structure__handle');
+      const labelInput = li.querySelector('.jcp-block-structure__label-input');
+      labelInput.value = blockDisplayLabel(block);
+      labelInput.placeholder = defaultLabel;
+
+      handle.draggable = true;
+      handle.addEventListener('dragstart', (e) => {
         dragIndex = index;
         li.classList.add('is-dragging');
         e.dataTransfer.effectAllowed = 'move';
       });
-      row.addEventListener('dragend', () => {
+      handle.addEventListener('dragend', () => {
         dragIndex = null;
         li.classList.remove('is-dragging');
+      });
+
+      li.addEventListener('click', (e) => {
+        if (e.target.closest('input, button, .jcp-block-structure__handle, .jcp-block-structure__layout')) return;
+        scrollToBlock(block);
+      });
+
+      labelInput.addEventListener('click', (e) => e.stopPropagation());
+      labelInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          labelInput.blur();
+        }
+      });
+      labelInput.addEventListener('blur', () => {
+        const next = labelInput.value.trim();
+        const prev = blockDisplayLabel(block);
+        setBlockInstanceLabel(block, next);
+        labelInput.value = blockDisplayLabel(block);
+        if (blockDisplayLabel(block) !== prev) recordChange();
       });
       li.addEventListener('dragover', (e) => {
         e.preventDefault();
@@ -571,8 +629,9 @@
         dragIndex = null;
         applyStructureChange();
       });
-      li.querySelector('.jcp-block-structure__remove').addEventListener('click', () => {
-        if (!window.confirm(`Remove "${blockLabel(block.type)}" from this page?`)) return;
+      li.querySelector('.jcp-block-structure__remove').addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!window.confirm(`Remove "${blockDisplayLabel(block)}" from this page?`)) return;
         pageDocument.blocks = pageDocument.blocks.filter((_, i) => i !== index);
         applyStructureChange();
       });
