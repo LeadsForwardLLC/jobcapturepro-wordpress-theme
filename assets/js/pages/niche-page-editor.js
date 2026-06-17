@@ -448,6 +448,12 @@
     applyStructureToDom();
     applyMediaPositionToDom();
     renderBlockList();
+    if (typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
+      window.JCP_REFRESH_COLLECTIONS();
+    }
+    if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+      window.JCP_REFRESH_INLINE_EDITABLE();
+    }
     suppressRecord = false;
     updateDirtyState();
     updateUndoRedoButtons();
@@ -808,6 +814,9 @@
     if (typeof window.JCP_REFRESH_PAGE_MEDIA_UI === 'function') {
       window.JCP_REFRESH_PAGE_MEDIA_UI();
     }
+    if (typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
+      window.JCP_REFRESH_COLLECTIONS();
+    }
   };
 
   const disableEditing = () => {
@@ -816,6 +825,9 @@
     toggleBtn.textContent = 'Click to edit page';
     toggleBtn.classList.remove('is-active');
     popover.hidden = true;
+    if (typeof window.JCP_TEARDOWN_COLLECTIONS === 'function') {
+      window.JCP_TEARDOWN_COLLECTIONS();
+    }
     bindEditableFields();
   };
 
@@ -981,6 +993,9 @@
     };
     window.__JCP_EDITOR_API__ = editorApi;
     window.JCP_INIT_PAGE_MEDIA_EDITOR(editorApi);
+    if (typeof window.JCP_INIT_COLLECTION_EDITOR === 'function') {
+      window.JCP_INIT_COLLECTION_EDITOR(editorApi);
+    }
   }
 
   if (new URLSearchParams(window.location.search).get('jcp_edit') === '1') {
@@ -999,6 +1014,9 @@
     }
     if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
       window.JCP_REFRESH_INLINE_EDITABLE();
+    }
+    if (typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
+      window.JCP_REFRESH_COLLECTIONS();
     }
     if (structureOpen) renderBlockList();
   });

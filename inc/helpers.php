@@ -245,6 +245,7 @@ function jcp_core_enqueue_page_block_editor( int $post_id ): void {
 	wp_enqueue_media();
 	jcp_core_enqueue_script( 'jcp-page-media-editor', 'js/pages/page-media-editor.js', [ 'media-models', 'media-views' ] );
 	jcp_core_enqueue_script( 'jcp-niche-page-editor', 'js/pages/niche-page-editor.js', [ 'jcp-page-media-editor' ] );
+	jcp_core_enqueue_script( 'jcp-page-collection-editor', 'js/pages/page-collection-editor.js', [ 'jcp-niche-page-editor' ] );
 	$page_doc  = jcp_page_get_content( $post_id );
 	$page_kind = jcp_page_resolve_kind( $page_doc, $post_id );
 	wp_localize_script(

@@ -305,7 +305,7 @@ function jcp_component_audience_guarantee_card( array $aud, int $index = 0 ): vo
 	$path       = 'who_its_for.audiences.' . $index;
 	$href       = $faq_target !== '' ? '#' . ltrim( $faq_target, '#' ) : '#faq';
 	?>
-	<a href="<?php echo esc_url( $href ); ?>" class="guarantee-item"<?php echo $faq_target !== '' ? ' data-faq-target="' . esc_attr( $faq_target ) . '"' : ''; ?>>
+	<a href="<?php echo esc_url( $href ); ?>" class="guarantee-item"<?php echo $faq_target !== '' ? ' data-faq-target="' . esc_attr( $faq_target ) . '"' : ''; jcp_niche_array_item_attr( $index ); ?>>
 		<div class="guarantee-image-wrapper jcp-editable-media-wrap">
 			<?php if ( $image_url !== '' ) : ?>
 				<img

@@ -42,6 +42,38 @@ function jcp_niche_editable_link_paths( string $label_path, string $url_path ): 
 }
 
 /**
+ * Marks a repeatable list container (add/remove items in the page editor).
+ *
+ * @param string $path JSON array path (e.g. conversion.points).
+ */
+function jcp_niche_array_attr( string $path ): void {
+	echo ' data-jcp-array="' . esc_attr( $path ) . '"';
+}
+
+/**
+ * Marks one item inside a repeatable list.
+ *
+ * @param int $index Item index.
+ */
+function jcp_niche_array_item_attr( int $index ): void {
+	echo ' data-jcp-array-item="' . esc_attr( (string) $index ) . '"';
+}
+
+/**
+ * Marks an optional slot (button, card row) that can be removed and restored.
+ *
+ * @param string $path  JSON path (e.g. conversion.cta_primary).
+ * @param string $kind  Slot kind: cta, link, or box.
+ * @param string $label Placeholder label when removed.
+ */
+function jcp_niche_optional_slot_attr( string $path, string $kind = 'cta', string $label = '' ): void {
+	echo ' data-jcp-optional="' . esc_attr( $path ) . '" data-jcp-optional-kind="' . esc_attr( $kind ) . '"';
+	if ( $label !== '' ) {
+		echo ' data-jcp-optional-label="' . esc_attr( $label ) . '"';
+	}
+}
+
+/**
  * Matomo CTA tracking attributes for outbound / key conversion links.
  *
  * @param string $url       Link URL.

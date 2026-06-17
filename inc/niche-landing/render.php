@@ -293,9 +293,12 @@ function jcp_niche_render_what_it_is( array $c ): void {
 					'',
 					'',
 					function () use ( $w ) {
-						echo '<ul class="jcp-niche-checklist">';
+						echo '<ul class="jcp-niche-checklist"';
+						jcp_niche_array_attr( 'what_it_is.team_already' );
+						echo '>';
 						foreach ( (array) ( $w['team_already'] ?? [] ) as $ti => $line ) {
 							echo '<li';
+							jcp_niche_array_item_attr( (int) $ti );
 							jcp_niche_editable_attr( 'what_it_is.team_already.' . $ti );
 							echo '>' . esc_html( (string) $line ) . '</li>';
 						}
@@ -312,9 +315,12 @@ function jcp_niche_render_what_it_is( array $c ): void {
 						echo '<p class="jcp-niche-card-lead"';
 						jcp_niche_editable_attr( 'what_it_is.lead' );
 						echo '>' . esc_html( $lead ) . '</p>';
-						echo '<ul class="jcp-niche-checklist">';
+						echo '<ul class="jcp-niche-checklist"';
+						jcp_niche_array_attr( 'what_it_is.turns_into' );
+						echo '>';
 						foreach ( (array) ( $w['turns_into'] ?? [] ) as $ti => $line ) {
 							echo '<li';
+							jcp_niche_array_item_attr( (int) $ti );
 							jcp_niche_editable_attr( 'what_it_is.turns_into.' . $ti );
 							echo '>' . esc_html( (string) $line ) . '</li>';
 						}
@@ -368,7 +374,7 @@ function jcp_niche_render_how_it_works( array $c, string $niche_key ): void {
 					<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'how_it_works.subheadline' ); ?>><?php jcp_niche_e( (string) $h['subheadline'] ); ?></p>
 				<?php endif; ?>
 			</div>
-			<div class="timeline-steps">
+			<div class="timeline-steps"<?php jcp_niche_array_attr( 'how_it_works.steps' ); ?>>
 				<?php
 				$steps = (array) ( $h['steps'] ?? [] );
 				foreach ( $steps as $i => $step ) :
@@ -384,7 +390,7 @@ function jcp_niche_render_how_it_works( array $c, string $niche_key ): void {
 						}
 					}
 					?>
-					<div class="timeline-step">
+					<div class="timeline-step"<?php jcp_niche_array_item_attr( (int) $i ); ?>>
 						<div class="step-number"><?php echo esc_html( $num ); ?></div>
 						<div class="step-content">
 							<h4 class="step-title"<?php jcp_niche_editable_attr( 'how_it_works.steps.' . $i . '.title' ); ?>><?php jcp_niche_e( (string) ( $step['title'] ?? '' ) ); ?></h4>
@@ -432,14 +438,14 @@ function jcp_niche_render_check_ins( array $c ): void {
 			</div>
 			<?php if ( ! empty( $ch['job_types'] ) ) : ?>
 				<div class="jcp-niche-tags-wrap">
-					<ul class="jcp-niche-tags">
+					<ul class="jcp-niche-tags"<?php jcp_niche_array_attr( 'check_ins.job_types' ); ?>>
 						<?php foreach ( (array) $ch['job_types'] as $ti => $tag ) : ?>
-							<li<?php jcp_niche_editable_attr( 'check_ins.job_types.' . $ti ); ?>><?php jcp_niche_e( (string) $tag ); ?></li>
+							<li<?php jcp_niche_array_item_attr( (int) $ti ); jcp_niche_editable_attr( 'check_ins.job_types.' . $ti ); ?>><?php jcp_niche_e( (string) $tag ); ?></li>
 						<?php endforeach; ?>
 					</ul>
 				</div>
 			<?php endif; ?>
-			<div class="ranking-factors-grid">
+			<div class="ranking-factors-grid"<?php jcp_niche_array_attr( 'check_ins.features' ); ?>>
 				<?php
 				$feat_icons = [ 'map-pin', 'camera', 'sparkles', 'star' ];
 				foreach ( (array) ( $ch['features'] ?? [] ) as $fi => $feat ) :
@@ -456,7 +462,10 @@ function jcp_niche_render_check_ins( array $c ): void {
 							jcp_niche_editable_attr( 'check_ins.features.' . $fi . '.body' );
 							echo '>' . esc_html( (string) ( $feat['body'] ?? '' ) ) . '</p>';
 						},
-						'check_ins.features.' . $fi . '.title'
+						'check_ins.features.' . $fi . '.title',
+						'',
+						'',
+						(int) $fi
 					);
 				endforeach;
 				?>
@@ -488,7 +497,7 @@ function jcp_niche_render_problem( array $c ): void {
 					<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'problem.subheadline' ); ?>><?php jcp_niche_e( (string) $p['subheadline'] ); ?></p>
 				<?php endif; ?>
 			</div>
-			<div class="ranking-factors-grid">
+			<div class="ranking-factors-grid"<?php jcp_niche_array_attr( 'problem.pain_points' ); ?>>
 				<?php
 				$pain_icons = [ 'image-off', 'clock', 'map-pin', 'users' ];
 				foreach ( (array) ( $p['pain_points'] ?? [] ) as $pi => $pain ) :
@@ -505,7 +514,10 @@ function jcp_niche_render_problem( array $c ): void {
 							jcp_niche_editable_attr( 'problem.pain_points.' . $pi . '.body' );
 							echo '>' . esc_html( (string) ( $pain['body'] ?? '' ) ) . '</p>';
 						},
-						'problem.pain_points.' . $pi . '.title'
+						'problem.pain_points.' . $pi . '.title',
+						'',
+						'',
+						(int) $pi
 					);
 				endforeach;
 				?>
@@ -539,7 +551,7 @@ function jcp_niche_render_benefits( array $c ): void {
 					<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'benefits.subheadline' ); ?>><?php jcp_niche_e( (string) $b['subheadline'] ); ?></p>
 				<?php endif; ?>
 			</div>
-			<div class="ranking-factors-grid">
+			<div class="ranking-factors-grid"<?php jcp_niche_array_attr( 'benefits.items' ); ?>>
 				<?php
 				$benefit_icons = [ 'badge-check', 'map-pin', 'message-square', 'star', 'building-2', 'phone' ];
 				foreach ( (array) ( $b['items'] ?? [] ) as $bi => $item ) :
@@ -559,7 +571,8 @@ function jcp_niche_render_benefits( array $c ): void {
 						},
 						'benefits.items.' . $bi . '.title',
 						'benefits.items.' . $bi . '.stat_value',
-						'benefits.items.' . $bi . '.stat_label'
+						'benefits.items.' . $bi . '.stat_label',
+						(int) $bi
 					);
 				endforeach;
 				?>
@@ -568,20 +581,24 @@ function jcp_niche_render_benefits( array $c ): void {
 			if ( ! empty( $b['closing'] ) ) {
 				jcp_niche_render_section_closing( (string) $b['closing'], 'benefits.closing' );
 			}
-			if ( $variant === 'cta_row' && ( ! empty( $b['cta_primary'] ) || ! empty( $b['cta_secondary'] ) ) ) :
+			if ( $variant === 'cta_row' ) :
 				$primary   = jcp_niche_resolve_cta( $b['cta_primary'] ?? [], '' );
 				$secondary = jcp_niche_resolve_cta( $b['cta_secondary'] ?? [], '' );
 				?>
 				<div class="benefits-cta-row">
-					<?php if ( $primary['label'] !== '' ) : ?>
-						<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary"<?php jcp_niche_editable_link_attr( 'benefits.cta_primary' ); ?>><?php echo esc_html( $primary['label'] ); ?></a>
-					<?php endif; ?>
-					<?php if ( $secondary['label'] !== '' ) : ?>
-						<a href="<?php echo esc_url( $secondary['url'] ); ?>" class="benefits-cta-link"<?php jcp_niche_editable_link_attr( 'benefits.cta_secondary' ); ?>>
-							<?php echo esc_html( $secondary['label'] ); ?>
-							<?php jcp_component_chevron_svg(); ?>
-						</a>
-					<?php endif; ?>
+					<div class="benefits-cta-slot"<?php jcp_niche_optional_slot_attr( 'benefits.cta_primary', 'cta', 'Primary button' ); ?>>
+						<?php if ( $primary['label'] !== '' ) : ?>
+							<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary"<?php jcp_niche_editable_link_attr( 'benefits.cta_primary' ); ?>><?php echo esc_html( $primary['label'] ); ?></a>
+						<?php endif; ?>
+					</div>
+					<div class="benefits-cta-slot"<?php jcp_niche_optional_slot_attr( 'benefits.cta_secondary', 'link', 'Secondary link' ); ?>>
+						<?php if ( $secondary['label'] !== '' ) : ?>
+							<a href="<?php echo esc_url( $secondary['url'] ); ?>" class="benefits-cta-link"<?php jcp_niche_editable_link_attr( 'benefits.cta_secondary' ); ?>>
+								<?php echo esc_html( $secondary['label'] ); ?>
+								<?php jcp_component_chevron_svg(); ?>
+							</a>
+						<?php endif; ?>
+					</div>
 				</div>
 			<?php endif; ?>
 		</div>
@@ -766,7 +783,7 @@ function jcp_niche_render_who_its_for( array $c ): void {
 				<?php endif; ?>
 			</div>
 			<?php if ( $variant === 'guarantees' ) : ?>
-				<div class="guarantees-grid">
+				<div class="guarantees-grid"<?php jcp_niche_array_attr( 'who_its_for.audiences' ); ?>>
 					<?php foreach ( (array) ( $w['audiences'] ?? [] ) as $ai => $aud ) : ?>
 						<?php
 						if ( ! is_array( $aud ) ) {
@@ -777,7 +794,7 @@ function jcp_niche_render_who_its_for( array $c ): void {
 					<?php endforeach; ?>
 				</div>
 			<?php else : ?>
-			<div class="ranking-factors-grid jcp-niche-split-grid">
+			<div class="ranking-factors-grid jcp-niche-split-grid"<?php jcp_niche_array_attr( 'who_its_for.audiences' ); ?>>
 				<?php
 				$aud_icons = [ 'briefcase', 'hard-hat', 'trending-up' ];
 				foreach ( (array) ( $w['audiences'] ?? [] ) as $ai => $aud ) :
@@ -794,7 +811,10 @@ function jcp_niche_render_who_its_for( array $c ): void {
 							jcp_niche_editable_attr( 'who_its_for.audiences.' . $ai . '.body' );
 							echo '>' . esc_html( (string) ( $aud['body'] ?? '' ) ) . '</p>';
 						},
-						'who_its_for.audiences.' . $ai . '.title'
+						'who_its_for.audiences.' . $ai . '.title',
+						'',
+						'',
+						(int) $ai
 					);
 				endforeach;
 				?>
@@ -811,7 +831,7 @@ function jcp_niche_render_who_its_for( array $c ): void {
 function jcp_niche_render_faq( array $c ): void {
 	$f = $c['faq'] ?? [];
 	$items = (array) ( $f['items'] ?? [] );
-	if ( empty( $f['headline'] ) || empty( $items ) ) {
+	if ( empty( $f['headline'] ) ) {
 		return;
 	}
 	?>
@@ -823,7 +843,7 @@ function jcp_niche_render_faq( array $c ): void {
 					<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'faq.subheadline' ); ?>><?php jcp_niche_e( (string) $f['subheadline'] ); ?></p>
 				<?php endif; ?>
 			</div>
-			<div class="faq-grid">
+			<div class="faq-grid"<?php jcp_niche_array_attr( 'faq.items' ); ?>>
 				<?php foreach ( $items as $i => $item ) : ?>
 					<?php
 					if ( ! is_array( $item ) ) {
@@ -831,7 +851,7 @@ function jcp_niche_render_faq( array $c ): void {
 					}
 					$faq_id = ! empty( $item['id'] ) ? (string) $item['id'] : 'faq-' . $i;
 					?>
-					<details class="faq-item" id="<?php echo esc_attr( $faq_id ); ?>">
+					<details class="faq-item" id="<?php echo esc_attr( $faq_id ); ?>"<?php jcp_niche_array_item_attr( (int) $i ); ?>>
 						<summary<?php jcp_niche_editable_attr( 'faq.items.' . $i . '.q' ); ?>><?php jcp_niche_e( (string) ( $item['q'] ?? '' ) ); ?></summary>
 						<?php
 						$answer = $item['a'] ?? '';
@@ -1110,11 +1130,11 @@ function jcp_niche_render_conversion( array $props, string $niche_key = '' ): vo
 						<?php endif; ?>
 					</div>
 					<?php jcp_niche_render_conversion_points( $points, 'conversion.points' ); ?>
-					<?php if ( $primary['label'] !== '' ) : ?>
-						<div class="conversion-cta">
+					<div class="conversion-cta"<?php jcp_niche_optional_slot_attr( 'conversion.cta_primary', 'cta', 'Call-to-action button' ); ?>>
+						<?php if ( $primary['label'] !== '' ) : ?>
 							<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary conversion-cta-btn"<?php jcp_niche_editable_link_attr( 'conversion.cta_primary' ); ?>><?php echo esc_html( $primary['label'] ); ?></a>
-						</div>
-					<?php endif; ?>
+						<?php endif; ?>
+					</div>
 				</div>
 				<div class="conversion-visual jcp-split-col jcp-split-col--media" data-jcp-split-col="media">
 						<div class="conversion-image-wrapper">

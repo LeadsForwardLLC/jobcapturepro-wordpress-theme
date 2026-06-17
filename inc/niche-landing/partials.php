@@ -19,10 +19,11 @@
  * @param string               $title_path       JSON path for title.
  * @param string               $stat_value_path  JSON path for stat value.
  * @param string               $stat_label_path  JSON path for stat label.
+ * @param int                  $array_index      Optional list index for add/remove UI (-1 = none).
  */
-function jcp_niche_factor_card( string $title, string $icon, string $stat_value = '', string $stat_label = '', ?callable $body_cb = null, string $title_path = '', string $stat_value_path = '', string $stat_label_path = '' ): void {
+function jcp_niche_factor_card( string $title, string $icon, string $stat_value = '', string $stat_label = '', ?callable $body_cb = null, string $title_path = '', string $stat_value_path = '', string $stat_label_path = '', int $array_index = -1 ): void {
 	?>
-	<div class="ranking-factor-card">
+	<div class="ranking-factor-card"<?php if ( $array_index >= 0 ) { jcp_niche_array_item_attr( $array_index ); } ?>>
 		<div class="factor-icon-wrapper">
 			<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="factor-icon" alt="" width="32" height="32" />
 		</div>
@@ -96,11 +97,12 @@ function jcp_niche_render_meta_strip( array $items, string $path_prefix = '' ): 
  * @param string                                   $path_prefix JSON path prefix (e.g. conversion.points).
  */
 function jcp_niche_render_conversion_points( array $lines, string $path_prefix = '' ): void {
-	if ( empty( $lines ) ) {
-		return;
-	}
 	?>
-	<div class="conversion-points jcp-niche-conversion-points">
+	<div class="conversion-points jcp-niche-conversion-points"<?php
+	if ( $path_prefix !== '' ) {
+		jcp_niche_array_attr( $path_prefix );
+	}
+	?>>
 		<?php foreach ( $lines as $i => $line ) : ?>
 			<?php
 			$text = is_array( $line ) ? (string) ( $line['text'] ?? '' ) : (string) $line;
@@ -109,7 +111,7 @@ function jcp_niche_render_conversion_points( array $lines, string $path_prefix =
 			}
 			$path = $path_prefix !== '' ? $path_prefix . '.' . $i : '';
 			?>
-			<div class="conversion-point">
+			<div class="conversion-point"<?php if ( $path_prefix !== '' ) { jcp_niche_array_item_attr( (int) $i ); } ?>>
 				<div class="conversion-point-icon">
 					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
 						<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>

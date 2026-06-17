@@ -331,6 +331,92 @@ body.jcp-inline-editing .timeline-step::after {
   pointer-events: none;
 }
 
+/* Collection add/remove controls (lists, FAQ, cards, optional buttons) */
+body.jcp-inline-editing .jcp-collection-item,
+body.jcp-inline-editing .jcp-optional-slot {
+  position: relative;
+}
+
+body.jcp-inline-editing .jcp-collection-remove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  width: 28px;
+  height: 28px;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  background: #fff;
+  color: #64748b;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+body.jcp-inline-editing .jcp-collection-remove:hover {
+  color: #ef4444;
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+body.jcp-inline-editing .jcp-collection-remove--optional {
+  top: -10px;
+  right: -6px;
+}
+
+body.jcp-inline-editing .jcp-collection-add,
+body.jcp-inline-editing .jcp-optional-restore {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 52px;
+  margin-top: var(--jcp-space-md, 1rem);
+  padding: 0.75rem 1rem;
+  border: 2px dashed rgba(255, 80, 62, 0.35);
+  border-radius: var(--jcp-radius-lg, 12px);
+  background: rgba(255, 80, 62, 0.04);
+  color: var(--jcp-color-primary, #ff503e);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+body.jcp-inline-editing .ranking-factors-grid > .jcp-collection-add,
+body.jcp-inline-editing .faq-grid > .jcp-collection-add,
+body.jcp-inline-editing .timeline-steps > .jcp-collection-add {
+  grid-column: 1 / -1;
+}
+
+body.jcp-inline-editing .conversion-points > .jcp-collection-add {
+  margin-top: var(--jcp-space-sm, 0.5rem);
+}
+
+body.jcp-inline-editing .jcp-collection-add:hover,
+body.jcp-inline-editing .jcp-optional-restore:hover {
+  background: rgba(255, 80, 62, 0.08);
+  border-color: rgba(255, 80, 62, 0.55);
+}
+
+body.jcp-inline-editing .jcp-optional-slot.is-empty {
+  min-height: 52px;
+}
+
+body.jcp-inline-editing .benefits-cta-slot.is-empty {
+  min-width: 10rem;
+  flex: 1;
+}
+
+body.jcp-inline-editing .benefits-cta-row {
+  flex-wrap: wrap;
+  gap: var(--jcp-space-md, 1rem);
+}
+
 body.jcp-inline-editing [data-jcp-href-path] {
   outline: 2px dashed rgba(59, 130, 246, 0.55);
   outline-offset: 3px;
