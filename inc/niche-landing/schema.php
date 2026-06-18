@@ -16,6 +16,10 @@ function jcp_niche_resolve_cta( array $cta, string $niche_key ): array {
 	$label = isset( $cta['label'] ) ? (string) $cta['label'] : '';
 	$url   = isset( $cta['url'] ) ? trim( (string) $cta['url'] ) : '';
 
+	if ( function_exists( 'jcp_global_resolve_cta' ) ) {
+		return jcp_global_resolve_cta( $label, $url, 'industry_' . $niche_key );
+	}
+
 	if ( $url === '' && stripos( $label, 'trial' ) !== false ) {
 		$utm = function_exists( 'jcp_core_onboarding_utm_defaults' )
 			? jcp_core_onboarding_utm_defaults( 'industry_' . $niche_key )

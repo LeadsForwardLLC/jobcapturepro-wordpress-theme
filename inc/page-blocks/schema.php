@@ -366,6 +366,7 @@ function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 		],
 		'blocks'          => $blocks,
 		'page_type'       => $legacy['page_type'] ?? ( $page_kind === 'referral' ? 'referral' : '' ),
+		'nav_cta'         => is_array( $legacy['nav_cta'] ?? null ) ? $legacy['nav_cta'] : [],
 	];
 }
 
@@ -387,6 +388,9 @@ function jcp_page_blocks_to_legacy( array $content ): array {
 		'seo'              => $content['seo'] ?? [ 'keywords' => [] ],
 		'hide_breadcrumb'  => ! empty( $content['settings']['hide_breadcrumb'] ),
 	];
+	if ( ! empty( $content['nav_cta'] ) && is_array( $content['nav_cta'] ) ) {
+		$legacy['nav_cta'] = $content['nav_cta'];
+	}
 
 	foreach ( (array) ( $content['blocks'] ?? [] ) as $block ) {
 		if ( ! is_array( $block ) ) {

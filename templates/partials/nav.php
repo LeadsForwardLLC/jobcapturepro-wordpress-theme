@@ -86,12 +86,17 @@ $dir_trust = $dir_url . '/#trust';
       <a href="<?php echo esc_url( $primary_url ); ?>" class="btn btn-primary"><?php echo esc_html( $primary_label ); ?></a>
     <?php else : ?>
       <?php
-      $secondary_label = 'Online Demo';
-      $secondary_url   = home_url( '/demo' );
-      $primary_label   = 'Get Started';
-      $primary_url     = function_exists( 'jcp_core_onboarding_app_url' ) && function_exists( 'jcp_core_onboarding_utm_defaults' )
-        ? jcp_core_onboarding_app_url( jcp_core_onboarding_utm_defaults( 'nav_get_started' ) )
-        : ( function_exists( 'jcp_core_onboarding_app_url' ) ? jcp_core_onboarding_app_url() : home_url( '/demo' ) );
+      $nav_post_id = is_singular() ? (int) get_queried_object_id() : 0;
+      $nav_ctas    = function_exists( 'jcp_global_resolve_nav_ctas' )
+        ? jcp_global_resolve_nav_ctas( $nav_post_id > 0 ? $nav_post_id : null )
+        : [
+          'primary'   => [ 'label' => 'Get Started', 'url' => home_url( '/demo' ) ],
+          'secondary' => [ 'label' => 'Online Demo', 'url' => home_url( '/demo' ) ],
+        ];
+      $secondary_label = $nav_ctas['secondary']['label'];
+      $secondary_url   = $nav_ctas['secondary']['url'];
+      $primary_label   = $nav_ctas['primary']['label'];
+      $primary_url     = $nav_ctas['primary']['url'];
       ?>
       <a href="<?php echo esc_url( $secondary_url ); ?>" class="btn btn-secondary" id="dynamicBackBtn">
         <span><?php echo esc_html( $secondary_label ); ?></span>

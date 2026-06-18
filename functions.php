@@ -12,6 +12,9 @@ require_once get_template_directory() . '/inc/helpers.php';
 // App onboarding handoff URLs (marketing site → SaaS signup)
 require_once get_template_directory() . '/inc/onboarding.php';
 
+// Sitewide settings (banner, signup URL, nav CTAs)
+require_once get_template_directory() . '/inc/global-settings.php';
+
 // Load company data functions (description resolution, demo companies, save_post description generation)
 require_once get_template_directory() . '/inc/company-data.php';
 
@@ -51,6 +54,8 @@ require_once get_template_directory() . '/inc/niche-landing/seed.php';
 require_once get_template_directory() . '/inc/page-blocks/migrate-pages.php';
 if ( is_admin() ) {
 	require_once get_template_directory() . '/inc/niche-landing/admin.php';
+	require_once get_template_directory() . '/inc/page-blocks/seo-audit.php';
+	require_once get_template_directory() . '/inc/page-blocks/admin-structure.php';
 }
 
 // Canonical form field names (REST params + GHL keys); Demo Survey = source of truth
@@ -72,6 +77,8 @@ if ( is_admin() ) {
     require_once get_template_directory() . '/inc/admin-theme-docs.php';
     require_once get_template_directory() . '/inc/admin-block-library.php';
     require_once get_template_directory() . '/inc/admin-demo-analytics.php';
+    require_once get_template_directory() . '/inc/admin-global-settings.php';
+    require_once get_template_directory() . '/inc/admin-page-templates.php';
 }
 
 /**

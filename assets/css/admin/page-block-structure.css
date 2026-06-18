@@ -1,0 +1,95 @@
+.jcp-admin-block-structure {
+  margin-top: 8px;
+}
+
+.jcp-admin-structure__list {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.jcp-admin-structure__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #dcdcde;
+}
+
+.jcp-admin-structure__item:last-child {
+  border-bottom: 0;
+}
+
+.jcp-admin-structure__item.is-dragging {
+  opacity: 0.55;
+}
+
+.jcp-admin-structure__handle {
+  cursor: grab;
+  color: #646970;
+  user-select: none;
+  font-weight: 700;
+  letter-spacing: -2px;
+}
+
+.jcp-admin-structure__type {
+  font-weight: 600;
+  color: #1d2327;
+  min-width: 120px;
+}
+
+.jcp-admin-structure__label {
+  flex: 1;
+  min-width: 0;
+}
+
+.jcp-admin-structure__empty {
+  padding: 14px 12px;
+  color: #646970;
+  font-style: italic;
+}
+
+.jcp-admin-structure__error {
+  color: #b32d2e;
+  margin: 0 0 10px;
+}
+
+.jcp-admin-structure__toolbar {
+  margin-top: 8px;
+}
+
+.jcp-admin-structure__modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.jcp-admin-structure__modal-panel {
+  background: #fff;
+  border-radius: 6px;
+  padding: 20px 24px;
+  width: min(420px, 100%);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.jcp-admin-structure__modal-panel h3 {
+  margin: 0 0 12px;
+}
+
+.jcp-admin-structure__select {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.jcp-admin-structure__modal-actions {
+  display: flex;
+  gap: 8px;
+}

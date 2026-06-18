@@ -219,7 +219,7 @@ body.admin-bar {
 
 @media (max-width: 640px) {
   body.has-top-banner {
-    --jcp-banner-offset: 56px;
+    --jcp-banner-offset: 48px;
   }
 }
 

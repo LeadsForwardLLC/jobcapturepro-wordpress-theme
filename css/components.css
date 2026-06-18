@@ -6,11 +6,13 @@
   top: var(--jcp-adminbar-offset, 0px);
   left: 0;
   right: 0;
-  z-index: calc(var(--jcp-z-sticky) + 5);
+  z-index: 1005;
   width: 100%;
   background: linear-gradient(90deg, rgba(17, 24, 39, 0.98), rgba(17, 24, 39, 0.92));
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
+  font-size: 14px;
+  line-height: 1.35;
 }
 
 /* Push fixed header below the fixed banner (and WP admin bar when present). */
@@ -25,12 +27,12 @@ body.admin-bar:not(.has-top-banner) .directory-header {
 .jcp-top-banner__inner {
   max-width: var(--jcp-container-width);
   margin: 0 auto;
-  padding: 10px var(--jcp-space-lg);
+  padding: 8px var(--jcp-space-lg);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--jcp-space-md);
-  min-height: 44px;
+  gap: 12px;
+  min-height: 40px;
   color: rgba(255, 255, 255, 0.92);
 }
 
@@ -38,28 +40,34 @@ body.admin-bar:not(.has-top-banner) .directory-header {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 10px;
+  gap: 6px 10px;
   min-width: 0;
+  flex: 1;
 }
 
 .jcp-top-banner__headline {
   color: #fff;
+  font-size: 14px;
+  font-weight: 700;
 }
 
 .jcp-top-banner__text {
   color: rgba(255, 255, 255, 0.86);
+  font-size: 14px;
 }
 
 .jcp-top-banner__code {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
+  gap: 4px;
+  padding: 3px 10px;
   border-radius: 999px;
   background: rgba(255, 80, 54, 0.14);
   border: 1px solid rgba(255, 80, 54, 0.25);
   color: rgba(255, 255, 255, 0.92);
   white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .jcp-top-banner__actions {
@@ -74,10 +82,10 @@ body.admin-bar:not(.has-top-banner) .directory-header {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 30px;
-  padding: 0 12px;
+  height: 32px;
+  padding: 0 14px;
   border-radius: 999px;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: -0.01em;
   color: rgba(255, 255, 255, 0.92);
@@ -103,6 +111,7 @@ body.admin-bar:not(.has-top-banner) .directory-header {
   color: rgba(255, 255, 255, 0.9);
   width: 32px;
   height: 32px;
+  flex-shrink: 0;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
@@ -123,9 +132,40 @@ body.admin-bar:not(.has-top-banner) .directory-header {
 
 @media (max-width: 640px) {
   .jcp-top-banner__inner {
-    padding: 10px var(--jcp-space-md);
-    min-height: 56px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 8px 12px;
+    min-height: 0;
   }
+
+  .jcp-top-banner__copy {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .jcp-top-banner__headline,
+  .jcp-top-banner__text {
+    font-size: 13px;
+  }
+
+  .jcp-top-banner__actions {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .jcp-top-banner__cta {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* Keep header + menu above banner; hide banner while mobile nav is open */
+body.mobile-menu-open .jcp-top-banner {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 /**
@@ -400,7 +440,7 @@ body.admin-bar:not(.has-top-banner) .directory-header {
   top: 0 !important;
   left: 0 !important;
   right: 0 !important;
-  z-index: 1000 !important;
+  z-index: 1030 !important;
   background: rgba(255, 255, 255, 0.95) !important;
   backdrop-filter: blur(12px) !important;
   border-bottom: 2px solid #e5e7eb !important;

@@ -16,12 +16,14 @@
     const closeMenu = () => {
       menuOverlay.classList.remove('active');
       menuToggle.classList.remove('active');
+      document.body.classList.remove('mobile-menu-open');
       document.body.style.overflow = '';
     };
 
     menuToggle.addEventListener('click', () => {
       menuOverlay.classList.add('active');
       menuToggle.classList.add('active');
+      document.body.classList.add('mobile-menu-open');
       document.body.style.overflow = 'hidden';
     });
 

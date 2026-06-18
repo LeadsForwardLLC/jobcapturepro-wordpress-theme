@@ -1,0 +1,34 @@
+.jcp-admin-page-editor__heading {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.jcp-admin-page-editor__divider {
+  margin: 20px 0;
+  border: 0;
+  border-top: 1px solid #dcdcde;
+}
+
+.jcp-admin-page-editor__details {
+  margin-top: 4px;
+}
+
+.jcp-admin-page-editor__details summary {
+  cursor: pointer;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.jcp-admin-page-setup__steps {
+  margin: 8px 0 16px 20px;
+}
+
+.jcp-admin-page-setup p {
+  margin: 0 0 12px;
+}
+
+/* Collapse developer JSON by default */
+#jcp_page_advanced .inside {
+  max-height: 280px;
+  overflow: auto;
+}

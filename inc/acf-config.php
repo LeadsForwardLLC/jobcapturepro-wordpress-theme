@@ -102,6 +102,11 @@ function jcp_core_register_acf_field_groups() {
                         'operator' => '==',
                         'value'    => 'page',
                     ],
+                    [
+                        'param'    => 'page_template',
+                        'operator' => '==',
+                        'value'    => 'default',
+                    ],
                 ],
             ],
             'menu_order' => 5,

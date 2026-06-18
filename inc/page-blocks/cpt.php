@@ -14,7 +14,7 @@ function jcp_page_register_post_type(): void {
 	$labels = [
 		'name'               => __( 'Marketing Pages', 'jcp-core' ),
 		'singular_name'      => __( 'Marketing Page', 'jcp-core' ),
-		'menu_name'          => __( 'Marketing Pages', 'jcp-core' ),
+		'menu_name'          => __( 'Legacy (/pages/)', 'jcp-core' ),
 		'add_new'            => __( 'Add Page', 'jcp-core' ),
 		'add_new_item'       => __( 'Add Marketing Page', 'jcp-core' ),
 		'edit_item'          => __( 'Edit Marketing Page', 'jcp-core' ),
@@ -32,9 +32,8 @@ function jcp_page_register_post_type(): void {
 			'public'              => true,
 			'publicly_queryable'  => true,
 			'show_ui'             => true,
-			'show_in_menu'        => true,
+			'show_in_menu'        => 'jcp-theme-settings',
 			'menu_icon'           => 'dashicons-media-document',
-			'menu_position'       => 22,
 			'has_archive'         => false,
 			'rewrite'             => [
 				'slug'       => 'pages',
@@ -88,3 +87,31 @@ function jcp_page_admin_column_content( string $column, int $post_id ): void {
 	echo '<a href="' . esc_url( $url ) . '" target="_blank" rel="noopener">' . esc_html( wp_make_link_relative( $url ) ) . '</a>';
 }
 add_action( 'manage_jcp_page_posts_custom_column', 'jcp_page_admin_column_content', 10, 2 );
+
+/**
+ * Explain legacy CPT on list + edit screens.
+ */
+function jcp_page_legacy_admin_notice(): void {
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( ! $screen || $screen->post_type !== 'jcp_page' ) {
+		return;
+	}
+	$pages_url = admin_url( 'post-new.php?post_type=page' );
+	$docs_url  = admin_url( 'admin.php?page=jcp-theme-settings' );
+	?>
+	<div class="notice notice-warning">
+		<p>
+			<strong><?php esc_html_e( 'Legacy area — do not use for new marketing pages.', 'jcp-core' ); ?></strong>
+			<?php
+			printf(
+				/* translators: 1: Pages admin URL, 2: docs URL */
+				esc_html__( 'New content belongs in %1$s with the “JCP Block Page” template (keeps your URL and SEO). This CPT only exists for older pages at /pages/{slug}/. %2$s', 'jcp-core' ),
+				'<a href="' . esc_url( $pages_url ) . '">' . esc_html__( 'Pages → Add New', 'jcp-core' ) . '</a>',
+				'<a href="' . esc_url( $docs_url ) . '">' . esc_html__( 'Read the page system guide →', 'jcp-core' ) . '</a>'
+			);
+			?>
+		</p>
+	</div>
+	<?php
+}
+add_action( 'admin_notices', 'jcp_page_legacy_admin_notice' );

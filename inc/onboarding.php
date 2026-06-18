@@ -11,6 +11,11 @@
  * @return string
  */
 function jcp_core_onboarding_hardcoded_session_id(): string {
+	$settings = function_exists( 'jcp_global_settings' ) ? jcp_global_settings()['signup'] ?? [] : [];
+	$session  = trim( (string) ( $settings['session_id'] ?? '' ) );
+	if ( $session !== '' ) {
+		return $session;
+	}
 	return '75ad8454-312e-4224-95b7-8f48f5cd0277';
 }
 
@@ -40,11 +45,19 @@ function jcp_core_onboarding_utm_defaults( string $utm_content = '' ): array {
  * @return string Absolute URL.
  */
 function jcp_core_onboarding_app_url_raw( array $query_extra = [] ): string {
-	$base = 'https://app.jobcapturepro.com/onboarding';
+	$settings = function_exists( 'jcp_global_settings' ) ? jcp_global_settings()['signup'] ?? [] : [];
+	$base     = trim( (string) ( $settings['base_url'] ?? '' ) );
+	if ( $base === '' ) {
+		$base = 'https://app.jobcapturepro.com/onboarding';
+	}
+	$step = trim( (string) ( $settings['step'] ?? '1' ) );
+	if ( $step === '' ) {
+		$step = '1';
+	}
 	$args = array_merge(
 		[
 			'sessionId' => jcp_core_onboarding_hardcoded_session_id(),
-			'step'      => '1',
+			'step'      => $step,
 		],
 		$query_extra
 	);

@@ -35,29 +35,78 @@ function jcp_theme_docs_render_page(): void {
 	$industries_url = admin_url( 'edit.php?post_type=jcp_niche_landing' );
 	$add_new_url    = admin_url( 'post-new.php?post_type=jcp_niche_landing' );
 	$hub_url        = home_url( '/industries/' );
-	$marketing_url = admin_url( 'edit.php?post_type=jcp_page' );
-	$marketing_new = admin_url( 'post-new.php?post_type=jcp_page' );
-	$block_lib_url = admin_url( 'admin.php?page=jcp-block-library' );
-	$docs_url      = admin_url( 'admin.php?page=jcp-theme-settings' );
+	$pages_new_url  = admin_url( 'post-new.php?post_type=page' );
+	$pages_url      = admin_url( 'edit.php?post_type=page' );
+	$marketing_url  = admin_url( 'edit.php?post_type=jcp_page' );
+	$block_lib_url  = admin_url( 'admin.php?page=jcp-block-library' );
+	$docs_url       = admin_url( 'admin.php?page=jcp-theme-settings' );
 	?>
 	<div class="wrap jcp-theme-docs">
 		<h1><?php esc_html_e( 'JCP Page System — Standard Operating Procedure', 'jcp-core' ); ?></h1>
+
+		<div class="notice notice-info jcp-theme-docs__start-here" style="margin: 16px 0 20px; padding: 16px 20px;">
+			<h2 style="margin: 0 0 10px; font-size: 1.15em;"><?php esc_html_e( 'Start here — which menu do I use?', 'jcp-core' ); ?></h2>
+			<table class="widefat striped" style="background: #fff;">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'I need to build…', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'Go to', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'Template?', 'jcp-core' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><?php esc_html_e( 'Marketing page (About, Features, Partners, etc.)', 'jcp-core' ); ?></td>
+						<td><strong><a href="<?php echo esc_url( $pages_new_url ); ?>"><?php esc_html_e( 'Pages → Add New', 'jcp-core' ); ?></a></strong></td>
+						<td><strong><?php esc_html_e( 'JCP Block Page', 'jcp-core' ); ?></strong></td>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Trade / industry page (Plumbing, HVAC, etc.)', 'jcp-core' ); ?></td>
+						<td><strong><a href="<?php echo esc_url( $add_new_url ); ?>"><?php esc_html_e( 'Industries → Add Industry', 'jcp-core' ); ?></a></strong></td>
+						<td><?php esc_html_e( '(none — automatic)', 'jcp-core' ); ?></td>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Homepage', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Pages → your homepage', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Home (front page only)', 'jcp-core' ); ?></td>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Referral program page', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Pages → referral-program', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Referral Program', 'jcp-core' ); ?></td>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Simple text page (legal, policies)', 'jcp-core' ); ?></td>
+						<td><a href="<?php echo esc_url( $pages_new_url ); ?>"><?php esc_html_e( 'Pages → Add New', 'jcp-core' ); ?></a></td>
+						<td><?php esc_html_e( 'Default template', 'jcp-core' ); ?></td>
+					</tr>
+				</tbody>
+			</table>
+			<p style="margin: 12px 0 0;">
+				<strong><?php esc_html_e( 'Not this:', 'jcp-core' ); ?></strong>
+				<?php esc_html_e( 'JCP → Legacy (/pages/) is an old system. Do not create new marketing pages there — use Pages + JCP Block Page instead.', 'jcp-core' ); ?>
+			</p>
+		</div>
+
 		<p class="description">
-			<?php esc_html_e( 'How to build structured marketing pages using the global block library: industry trade pages, marketing landers, and referral pages.', 'jcp-core' ); ?>
+			<?php esc_html_e( 'Structured landing pages built from reusable blocks. Industry pages and block pages share the same editor — only the admin menu and URL differ.', 'jcp-core' ); ?>
 		</p>
 
 		<div class="jcp-theme-docs__actions">
+			<a href="<?php echo esc_url( $pages_new_url ); ?>" class="button button-primary"><?php esc_html_e( 'Add Page (marketing)', 'jcp-core' ); ?></a>
 			<a href="<?php echo esc_url( $add_new_url ); ?>" class="button button-primary"><?php esc_html_e( 'Add Industry Page', 'jcp-core' ); ?></a>
-			<a href="<?php echo esc_url( $marketing_new ); ?>" class="button button-primary"><?php esc_html_e( 'Add Marketing Page', 'jcp-core' ); ?></a>
+			<a href="<?php echo esc_url( $pages_url ); ?>" class="button"><?php esc_html_e( 'All Pages', 'jcp-core' ); ?></a>
 			<a href="<?php echo esc_url( $industries_url ); ?>" class="button"><?php esc_html_e( 'All Industries', 'jcp-core' ); ?></a>
-			<a href="<?php echo esc_url( $marketing_url ); ?>" class="button"><?php esc_html_e( 'All Marketing Pages', 'jcp-core' ); ?></a>
 			<a href="<?php echo esc_url( $hub_url ); ?>" class="button" target="_blank" rel="noopener"><?php esc_html_e( 'View /industries/ hub', 'jcp-core' ); ?></a>
+			<a href="<?php echo esc_url( $marketing_url ); ?>" class="button" style="margin-left: 8px;"><?php esc_html_e( 'Legacy /pages/ only', 'jcp-core' ); ?></a>
 		</div>
 
 		<nav class="jcp-theme-docs__toc" aria-label="<?php esc_attr_e( 'On this page', 'jcp-core' ); ?>">
 			<strong><?php esc_html_e( 'On this page', 'jcp-core' ); ?></strong>
 			<ul>
 				<li><a href="#overview"><?php esc_html_e( 'Overview', 'jcp-core' ); ?></a></li>
+				<li><a href="#page-types"><?php esc_html_e( 'Which page type to use', 'jcp-core' ); ?></a></li>
+				<li><a href="#component-model"><?php esc_html_e( 'How components stay consistent', 'jcp-core' ); ?></a></li>
 				<li><a href="#quick-start"><?php esc_html_e( 'Quick start (WP block page)', 'jcp-core' ); ?></a></li>
 				<li><a href="#quick-start-industry"><?php esc_html_e( 'Quick start (industry page)', 'jcp-core' ); ?></a></li>
 				<li><a href="#document-import"><?php esc_html_e( 'Document import', 'jcp-core' ); ?></a></li>
@@ -98,8 +147,12 @@ function jcp_theme_docs_render_page(): void {
 						<td><?php esc_html_e( 'Main nav “By Trade” links to /industries/', 'jcp-core' ); ?></td>
 					</tr>
 					<tr>
-						<td><?php esc_html_e( 'Marketing / internal pages (WP Pages)', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Pages → assign “JCP Block Page” template — keeps existing URL and Rank Math SEO', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Marketing / internal pages (recommended)', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'WP Admin → Pages → assign “JCP Block Page” template — keeps your existing URL and Rank Math SEO', 'jcp-core' ); ?></td>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Marketing CPT (legacy / optional)', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'JCP → Marketing Pages — URLs live at /pages/{slug}/. Use WP Pages instead for new content unless you need that URL pattern.', 'jcp-core' ); ?></td>
 					</tr>
 					<tr>
 						<td><?php esc_html_e( 'Referral program', 'jcp-core' ); ?></td>
@@ -111,6 +164,67 @@ function jcp_theme_docs_render_page(): void {
 					</tr>
 				</tbody>
 			</table>
+		</section>
+
+		<section id="page-types" class="jcp-theme-docs__section">
+			<h2><?php esc_html_e( 'Which page type to use', 'jcp-core' ); ?></h2>
+			<table class="widefat striped jcp-theme-docs__table">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'You are building…', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'Use', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'URL', 'jcp-core' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><?php esc_html_e( 'Trade / industry landing page', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Industries → Add Industry', 'jcp-core' ); ?></td>
+						<td><code>/industries/{slug}/</code></td>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Marketing page (About, Features, Partners, etc.)', 'jcp-core' ); ?></td>
+						<td><strong><?php esc_html_e( 'Pages → “JCP Block Page” template', 'jcp-core' ); ?></strong></td>
+						<td><?php esc_html_e( 'Your chosen page slug (unchanged)', 'jcp-core' ); ?></td>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Homepage', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Settings → Reading → static front page with “Home” template', 'jcp-core' ); ?></td>
+						<td><code>/</code></td>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Referral program', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Pages → “Referral Program” template', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Existing referral URL', 'jcp-core' ); ?></td>
+					</tr>
+				</tbody>
+			</table>
+			<p class="description" style="margin-top:12px;">
+				<strong><?php esc_html_e( 'Templates explained:', 'jcp-core' ); ?></strong>
+				<?php esc_html_e( 'Most marketing pages use only “JCP Block Page”. “Home” and “Referral Program” are reserved for those specific URLs. Demo, Pricing, Directory, and other special templates are assigned automatically when you edit those pages — you will not see all 16 templates in the dropdown anymore.', 'jcp-core' ); ?>
+			</p>
+			<p><?php esc_html_e( 'The old “Marketing Pages” admin menu (now JCP → Legacy (/pages/)) is not used for new work.', 'jcp-core' ); ?></p>
+		</section>
+
+		<section id="component-model" class="jcp-theme-docs__section">
+			<h2><?php esc_html_e( 'How components stay consistent', 'jcp-core' ); ?></h2>
+			<p><?php esc_html_e( 'Every section on the site is a registered block type (Hero, FAQ, Final CTA, etc.). Each block type has:', 'jcp-core' ); ?></p>
+			<ul>
+				<li><?php esc_html_e( 'One PHP renderer — outputs the same HTML structure everywhere', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Shared CSS in css/sections.css and component sheets (e.g. hero live-demo phone)', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Per-page content stored as JSON props (headlines, bullets, images)', 'jcp-core' ); ?></li>
+			</ul>
+			<p><?php esc_html_e( 'When developers update a component’s design in PHP or CSS, every page using that block updates automatically — only the text and media inside each instance change per page.', 'jcp-core' ); ?></p>
+			<p>
+				<?php
+				printf(
+					/* translators: %s: block library link */
+					esc_html__( 'See %s for the full list of block types and which page kinds can use them.', 'jcp-core' ),
+					'<a href="' . esc_url( $block_lib_url ) . '">' . esc_html__( 'JCP → Block Library', 'jcp-core' ) . '</a>'
+				);
+				?>
+			</p>
+			<p><?php esc_html_e( 'Document import maps writer sections (HERO, FAQ, etc.) directly onto these blocks and fills their props — it does not create one-off HTML.', 'jcp-core' ); ?></p>
 		</section>
 
 		<section id="quick-start" class="jcp-theme-docs__section">
@@ -158,7 +272,7 @@ function jcp_theme_docs_render_page(): void {
 				</li>
 				<li>
 					<strong><?php esc_html_e( 'Polish copy on the live page (optional)', 'jcp-core' ); ?></strong><br />
-					<?php esc_html_e( 'Use “Edit on live page” in Quick Edit to open the front-end editor for click-to-edit tweaks.', 'jcp-core' ); ?>
+					<?php esc_html_e( 'Use “Edit on live page” in the JCP Page Editor box for front-end tweaks.', 'jcp-core' ); ?>
 				</li>
 			</ol>
 		</section>
@@ -176,11 +290,11 @@ function jcp_theme_docs_render_page(): void {
 
 			<h3><?php esc_html_e( 'Import workflow', 'jcp-core' ); ?></h3>
 			<ol>
-				<li><?php esc_html_e( 'Open the Industry post in WP Admin.', 'jcp-core' ); ?></li>
-				<li><?php esc_html_e( 'Expand “Landing Page — Import from Document”.', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Open the page in WP Admin (Industries or Pages with JCP Block Page template).', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'In the “JCP Page Editor” box, expand “Import from writer document”.', 'jcp-core' ); ?></li>
 				<li><?php esc_html_e( 'Paste or upload the writer file.', 'jcp-core' ); ?></li>
 				<li><?php esc_html_e( 'Click “Build page from document”.', 'jcp-core' ); ?></li>
-				<li><?php esc_html_e( 'Review JSON in “Advanced JSON” (optional).', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Review “Developer: page JSON” at the bottom of the screen (optional).', 'jcp-core' ); ?></li>
 				<li><?php esc_html_e( 'Click Update / Publish to save.', 'jcp-core' ); ?></li>
 			</ol>
 
@@ -234,26 +348,24 @@ function jcp_theme_docs_render_page(): void {
 
 		<section id="backend-editor" class="jcp-theme-docs__section">
 			<h2><?php esc_html_e( 'Backend editor (WP Admin)', 'jcp-core' ); ?></h2>
-			<p><?php esc_html_e( 'Each Industry post has three content meta boxes:', 'jcp-core' ); ?></p>
+			<p><?php esc_html_e( 'On Industries posts and Pages with the JCP Block Page template, you get one main panel — JCP Page Editor — plus optional developer tools.', 'jcp-core' ); ?></p>
 
-			<h3><?php esc_html_e( '1. Import from Document', 'jcp-core' ); ?></h3>
-			<p><?php esc_html_e( 'Paste or upload the writer file and click “Build page from document”. Use this for initial page creation or full rewrites.', 'jcp-core' ); ?></p>
-
-			<h3><?php esc_html_e( '2. Quick Edit', 'jcp-core' ); ?></h3>
-			<p><?php esc_html_e( 'Fast fields for the most-edited copy:', 'jcp-core' ); ?></p>
+			<h3><?php esc_html_e( 'JCP Page Editor (main panel)', 'jcp-core' ); ?></h3>
 			<ul>
-				<li><?php esc_html_e( 'Hero H1', 'jcp-core' ); ?></li>
-				<li><?php esc_html_e( 'Hero subheadline', 'jcp-core' ); ?></li>
-				<li><?php esc_html_e( 'Final CTA headline', 'jcp-core' ); ?></li>
-				<li><?php esc_html_e( 'Final CTA button label', 'jcp-core' ); ?></li>
+				<li><strong><?php esc_html_e( 'Edit on live page', 'jcp-core' ); ?></strong> — <?php esc_html_e( 'opens click-to-edit on the published URL', 'jcp-core' ); ?></li>
+				<li><strong><?php esc_html_e( 'Key fields', 'jcp-core' ); ?></strong> — <?php esc_html_e( 'hero headline, final CTA, optional nav button overrides', 'jcp-core' ); ?></li>
+				<li><strong><?php esc_html_e( 'Page sections', 'jcp-core' ); ?></strong> — <?php esc_html_e( 'drag to reorder, add, or remove blocks', 'jcp-core' ); ?></li>
+				<li><strong><?php esc_html_e( 'Import from writer document', 'jcp-core' ); ?></strong> — <?php esc_html_e( 'collapsed section for .docx / paste import', 'jcp-core' ); ?></li>
 			</ul>
-			<p><?php esc_html_e( 'Also includes “Edit on live page” — opens the published page with the front-end editor ready.', 'jcp-core' ); ?></p>
 
-			<h3><?php esc_html_e( '3. Advanced JSON', 'jcp-core' ); ?></h3>
-			<p><?php esc_html_e( 'Full page content as JSON. Developers or advanced users can edit directly. Template buttons load plumbing or HVAC as a starting point.', 'jcp-core' ); ?></p>
-			<div class="notice notice-info inline jcp-theme-docs__notice">
-				<p><?php esc_html_e( 'JSON is the source of truth. Quick Edit fields merge into JSON on save. Import fills JSON via the Build button.', 'jcp-core' ); ?></p>
-			</div>
+			<h3><?php esc_html_e( 'SEO Health (block pages only)', 'jcp-core' ); ?></h3>
+			<p><?php esc_html_e( 'Checks Rank Math focus keyword, title, meta description, and hero copy. Only appears after you assign a block template.', 'jcp-core' ); ?></p>
+
+			<h3><?php esc_html_e( 'Developer: page JSON', 'jcp-core' ); ?></h3>
+			<p><?php esc_html_e( 'Raw JSON at the bottom of the screen. Ignore unless you are a developer — the Page Editor panel is the normal workflow.', 'jcp-core' ); ?></p>
+
+			<h3><?php esc_html_e( 'Standard Pages (default template)', 'jcp-core' ); ?></h3>
+			<p><?php esc_html_e( 'If you have not chosen JCP Block Page, you only see a short setup guide in the JCP panel. Use the WordPress title/content editor above. Optional “Bottom CTA” adds a signup strip at the end.', 'jcp-core' ); ?></p>
 		</section>
 
 		<section id="frontend-editor" class="jcp-theme-docs__section">
@@ -262,7 +374,7 @@ function jcp_theme_docs_render_page(): void {
 
 			<h3><?php esc_html_e( 'How to open', 'jcp-core' ); ?></h3>
 			<ul>
-				<li><?php esc_html_e( 'From WP Admin: Quick Edit → “Edit on live page (click text & buttons)”', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'From WP Admin: JCP Page Editor → “Edit on live page”', 'jcp-core' ); ?></li>
 				<li><?php esc_html_e( 'Or visit the live URL while logged in and click “Click to edit page” on the toolbar', 'jcp-core' ); ?></li>
 			</ul>
 
@@ -357,9 +469,23 @@ function jcp_theme_docs_render_page(): void {
 		</section>
 
 		<section id="seo" class="jcp-theme-docs__section">
-			<h2><?php esc_html_e( 'SEO (Rank Math)', 'jcp-core' ); ?></h2>
-			<p><?php esc_html_e( 'SEO title and meta description are not stored in theme JSON. Set them in the Rank Math panel on each Industry post after publishing.', 'jcp-core' ); ?></p>
-			<p><?php esc_html_e( 'The “Primary Keyword” line in writer documents is used only for search on the /industries/ hub — not for meta tags.', 'jcp-core' ); ?></p>
+			<h2><?php esc_html_e( 'SEO (Rank Math + JCP)', 'jcp-core' ); ?></h2>
+			<p><?php esc_html_e( 'Every structured page needs a primary focus keyword and full Rank Math optimization before publish.', 'jcp-core' ); ?></p>
+
+			<h3><?php esc_html_e( 'Rank Math (required)', 'jcp-core' ); ?></h3>
+			<ol>
+				<li><?php esc_html_e( 'Set Focus Keyword — one primary phrase per page (e.g. “HVAC marketing software”).', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Write SEO Title — include the keyword near the start (~50–60 characters).', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Write Meta Description — benefit-led summary with keyword (~140–160 characters).', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Use Rank Math’s score suggestions until green where possible.', 'jcp-core' ); ?></li>
+			</ol>
+
+			<h3><?php esc_html_e( 'JCP SEO Health box', 'jcp-core' ); ?></h3>
+			<p><?php esc_html_e( 'On each block page edit screen, the “SEO Health” meta box cross-checks Rank Math settings against your hero H1 and subheadline. The Industries / Pages list table also shows an SEO column (OK / Needs work / Incomplete).', 'jcp-core' ); ?></p>
+
+			<h3><?php esc_html_e( 'On-page copy', 'jcp-core' ); ?></h3>
+			<p><?php esc_html_e( 'Use the focus keyword naturally in the hero H1, subheadline, and at least one section headline. Document import fills body copy; you still set Rank Math meta separately.', 'jcp-core' ); ?></p>
+			<p><?php esc_html_e( 'The “Primary Keyword” line in writer documents is saved for hub search on /industries/ — copy it into Rank Math as the focus keyword.', 'jcp-core' ); ?></p>
 		</section>
 
 		<section id="hub" class="jcp-theme-docs__section">

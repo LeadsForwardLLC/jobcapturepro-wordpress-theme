@@ -9,71 +9,144 @@
  * Admin notice when a WP page needs a block template assigned.
  */
 function jcp_niche_block_template_admin_hint(): string {
-	return __( 'Assign the “JCP Block Page”, “Home”, or “Referral Program” template to use structured block content, document import, and the live page editor.', 'jcp-core' );
+	return __( 'Choose the “JCP Block Page” template in Page Attributes (right sidebar), then click Update.', 'jcp-core' );
+}
+
+/**
+ * Whether this post uses the JCP block page editor in admin.
+ *
+ * @param WP_Post $post Post.
+ */
+function jcp_admin_page_uses_editor( WP_Post $post ): bool {
+	if ( in_array( $post->post_type, [ 'jcp_niche_landing', 'jcp_page' ], true ) ) {
+		return true;
+	}
+	return $post->post_type === 'page' && jcp_page_uses_block_template( (int) $post->ID );
 }
 
 /**
  * Register meta box.
  */
 function jcp_niche_register_meta_box(): void {
-	$structured_types = [ 'jcp_niche_landing', 'jcp_page' ];
-	foreach ( $structured_types as $post_type ) {
+	$types = [ 'jcp_niche_landing', 'jcp_page', 'page' ];
+	foreach ( $types as $post_type ) {
 		add_meta_box(
-			'jcp_niche_import',
-			__( 'Landing Page — Import from Document', 'jcp-core' ),
-			'jcp_niche_render_import_meta_box',
+			'jcp_page_editor',
+			__( 'JCP Page Editor', 'jcp-core' ),
+			'jcp_niche_render_unified_editor_meta_box',
 			$post_type,
 			'normal',
 			'high'
 		);
 		add_meta_box(
-			'jcp_niche_quick',
-			__( 'Landing Page — Quick Edit', 'jcp-core' ),
-			'jcp_niche_render_quick_meta_box',
-			$post_type,
-			'normal',
-			'high'
-		);
-		add_meta_box(
-			'jcp_niche_content',
-			__( 'Landing Page — Advanced JSON', 'jcp-core' ),
+			'jcp_page_advanced',
+			__( 'Developer: page JSON', 'jcp-core' ),
 			'jcp_niche_render_meta_box',
 			$post_type,
 			'normal',
-			'default'
-		);
-	}
-	$page_boxes = [
-		[
-			'id'       => 'jcp_niche_import',
-			'title'    => __( 'Landing Page — Import from Document', 'jcp-core' ),
-			'callback' => 'jcp_niche_render_import_meta_box',
-			'priority' => 'high',
-		],
-		[
-			'id'       => 'jcp_niche_quick',
-			'title'    => __( 'Landing Page — Quick Edit', 'jcp-core' ),
-			'callback' => 'jcp_niche_render_quick_meta_box',
-			'priority' => 'high',
-		],
-		[
-			'id'       => 'jcp_niche_content',
-			'title'    => __( 'Landing Page — Advanced JSON', 'jcp-core' ),
-			'callback' => 'jcp_niche_render_meta_box',
-			'priority' => 'default',
-		],
-	];
-	foreach ( $page_boxes as $box ) {
-		add_meta_box(
-			$box['id'],
-			$box['title'],
-			$box['callback'],
-			'page',
-			'normal',
-			$box['priority']
+			'low'
 		);
 	}
 }
+
+/**
+ * Unified editor: setup guide on standard pages, full tools on block pages.
+ *
+ * @param WP_Post $post Post.
+ */
+function jcp_niche_render_unified_editor_meta_box( WP_Post $post ): void {
+	if ( ! jcp_admin_page_uses_editor( $post ) ) {
+		jcp_niche_render_standard_page_setup_meta_box( $post );
+		return;
+	}
+	?>
+	<div class="jcp-admin-page-editor">
+		<?php jcp_niche_render_quick_meta_box_content( $post ); ?>
+		<hr class="jcp-admin-page-editor__divider" />
+		<h3 class="jcp-admin-page-editor__heading"><?php esc_html_e( 'Page sections', 'jcp-core' ); ?></h3>
+		<p class="description"><?php esc_html_e( 'Drag to reorder, add, or remove blocks. Saves with the page.', 'jcp-core' ); ?></p>
+		<?php jcp_page_block_structure_render_panel( $post ); ?>
+		<hr class="jcp-admin-page-editor__divider" />
+		<details class="jcp-admin-page-editor__details">
+			<summary><?php esc_html_e( 'Import from writer document', 'jcp-core' ); ?></summary>
+			<?php jcp_niche_render_import_meta_box_content( $post ); ?>
+		</details>
+	</div>
+	<?php
+}
+
+/**
+ * Friendly guide when a WP Page still uses the default template.
+ *
+ * @param WP_Post $post Post.
+ */
+function jcp_niche_render_standard_page_setup_meta_box( WP_Post $post ): void {
+	$sop_url = admin_url( 'admin.php?page=jcp-theme-settings' );
+	?>
+	<div class="jcp-admin-page-setup">
+		<p><strong><?php esc_html_e( 'This is a standard WordPress page.', 'jcp-core' ); ?></strong>
+			<?php esc_html_e( 'The title and content editor above are what visitors see.', 'jcp-core' ); ?></p>
+
+		<p><strong><?php esc_html_e( 'Want the block builder instead?', 'jcp-core' ); ?></strong></p>
+		<ol class="jcp-admin-page-setup__steps">
+			<li><?php esc_html_e( 'Right sidebar → Page Attributes → Template', 'jcp-core' ); ?></li>
+			<li><?php esc_html_e( 'Choose JCP Block Page', 'jcp-core' ); ?></li>
+			<li><?php esc_html_e( 'Click Update — one “JCP Page Editor” panel replaces this guide', 'jcp-core' ); ?></li>
+		</ol>
+
+		<p class="description">
+			<?php esc_html_e( 'Use Pages (not JCP → Legacy (/pages/)). Home and Referral Program templates are only for those specific pages — everything else uses JCP Block Page.', 'jcp-core' ); ?>
+		</p>
+
+		<p class="description">
+			<?php esc_html_e( 'Bottom CTA below: optional signup strip for simple pages. Block pages use section CTAs instead.', 'jcp-core' ); ?>
+		</p>
+
+		<p>
+			<a href="<?php echo esc_url( $sop_url ); ?>" class="button button-primary"><?php esc_html_e( 'Which menu should I use?', 'jcp-core' ); ?></a>
+			<?php if ( $post->ID > 0 ) : ?>
+				<a href="<?php echo esc_url( get_permalink( $post ) ); ?>" class="button" target="_blank" rel="noopener"><?php esc_html_e( 'View live page', 'jcp-core' ); ?></a>
+			<?php endif; ?>
+		</p>
+	</div>
+	<?php
+}
+
+/**
+ * Hide developer JSON + SEO panels when they do not apply.
+ */
+function jcp_admin_cleanup_page_meta_boxes(): void {
+	global $post;
+	if ( ! $post instanceof WP_Post || $post->post_type !== 'page' ) {
+		return;
+	}
+	if ( ! jcp_admin_page_uses_editor( $post ) ) {
+		remove_meta_box( 'jcp_page_advanced', 'page', 'normal' );
+	}
+}
+add_action( 'add_meta_boxes', 'jcp_admin_cleanup_page_meta_boxes', 100 );
+
+/**
+ * Admin styles for consolidated page editor UI.
+ *
+ * @param string $hook Hook.
+ */
+function jcp_admin_page_editor_styles( string $hook ): void {
+	if ( ! in_array( $hook, [ 'post.php', 'post-new.php' ], true ) ) {
+		return;
+	}
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+	if ( ! $screen || ! in_array( $screen->post_type, [ 'jcp_niche_landing', 'jcp_page', 'page' ], true ) ) {
+		return;
+	}
+	wp_enqueue_style(
+		'jcp-admin-page-editor',
+		get_template_directory_uri() . '/assets/css/admin/page-editor.css',
+		[],
+		function_exists( 'jcp_core_asset_version' ) ? jcp_core_asset_version( 'assets/css/admin/page-editor.css' ) : null
+	);
+}
+add_action( 'admin_enqueue_scripts', 'jcp_admin_page_editor_styles' );
 
 /**
  * Quick-edit fields (merged into JSON on save).
@@ -81,10 +154,13 @@ function jcp_niche_register_meta_box(): void {
  * @param WP_Post $post Post.
  */
 function jcp_niche_render_quick_meta_box( WP_Post $post ): void {
-	if ( $post->post_type === 'page' && ! jcp_page_uses_block_template( (int) $post->ID ) ) {
-		echo '<p class="description">' . esc_html( jcp_niche_block_template_admin_hint() ) . '</p>';
-		return;
-	}
+	jcp_niche_render_quick_meta_box_content( $post );
+}
+
+/**
+ * @param WP_Post $post Post.
+ */
+function jcp_niche_render_quick_meta_box_content( WP_Post $post ): void {
 	$c     = jcp_page_get_content_flat( (int) $post->ID );
 	$edit  = add_query_arg( 'jcp_edit', '1', get_permalink( $post ) );
 	$hero  = $c['hero'] ?? [];
@@ -129,6 +205,30 @@ function jcp_niche_render_quick_meta_box( WP_Post $post ): void {
 			<th><label for="jcp_niche_final_btn"><?php esc_html_e( 'Final CTA button', 'jcp-core' ); ?></label></th>
 			<td><input type="text" class="regular-text" id="jcp_niche_final_btn" name="jcp_niche_quick[final_btn]" value="<?php echo esc_attr( $final['cta_primary']['label'] ?? '' ); ?>" /></td>
 		</tr>
+		<?php
+		$nav_cta = $c['nav_cta'] ?? [];
+		?>
+		<tr>
+			<th colspan="2"><strong><?php esc_html_e( 'Nav bar CTA override (optional)', 'jcp-core' ); ?></strong>
+				<p class="description" style="font-weight:normal;margin:4px 0 0;"><?php esc_html_e( 'Leave blank to use JCP → Global Settings defaults.', 'jcp-core' ); ?></p>
+			</th>
+		</tr>
+		<tr>
+			<th><label for="jcp_nav_primary_label"><?php esc_html_e( 'Primary nav label', 'jcp-core' ); ?></label></th>
+			<td><input type="text" class="regular-text" id="jcp_nav_primary_label" name="jcp_niche_quick[nav_primary_label]" value="<?php echo esc_attr( $nav_cta['primary_label'] ?? '' ); ?>" /></td>
+		</tr>
+		<tr>
+			<th><label for="jcp_nav_primary_url"><?php esc_html_e( 'Primary nav URL', 'jcp-core' ); ?></label></th>
+			<td><input type="text" class="large-text" id="jcp_nav_primary_url" name="jcp_niche_quick[nav_primary_url]" value="<?php echo esc_attr( $nav_cta['primary_url'] ?? '' ); ?>" placeholder="/demo or https://…" /></td>
+		</tr>
+		<tr>
+			<th><label for="jcp_nav_secondary_label"><?php esc_html_e( 'Secondary nav label', 'jcp-core' ); ?></label></th>
+			<td><input type="text" class="regular-text" id="jcp_nav_secondary_label" name="jcp_niche_quick[nav_secondary_label]" value="<?php echo esc_attr( $nav_cta['secondary_label'] ?? '' ); ?>" /></td>
+		</tr>
+		<tr>
+			<th><label for="jcp_nav_secondary_url"><?php esc_html_e( 'Secondary nav URL', 'jcp-core' ); ?></label></th>
+			<td><input type="text" class="large-text" id="jcp_nav_secondary_url" name="jcp_niche_quick[nav_secondary_url]" value="<?php echo esc_attr( $nav_cta['secondary_url'] ?? '' ); ?>" placeholder="/demo" /></td>
+		</tr>
 	</table>
 	<?php
 }
@@ -140,10 +240,13 @@ add_action( 'add_meta_boxes', 'jcp_niche_register_meta_box' );
  * @param WP_Post $post Post.
  */
 function jcp_niche_render_import_meta_box( WP_Post $post ): void {
-	if ( $post->post_type === 'page' && ! jcp_page_uses_block_template( (int) $post->ID ) ) {
-		echo '<p class="description">' . esc_html( jcp_niche_block_template_admin_hint() ) . '</p>';
-		return;
-	}
+	jcp_niche_render_import_meta_box_content( $post );
+}
+
+/**
+ * @param WP_Post $post Post.
+ */
+function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 	wp_nonce_field( 'jcp_niche_import_doc', 'jcp_niche_import_nonce' );
 	?>
 	<p class="description">
@@ -273,10 +376,6 @@ add_action( 'wp_ajax_jcp_page_parse_document', 'jcp_niche_ajax_parse_document' )
  * @param WP_Post $post Post.
  */
 function jcp_niche_render_meta_box( WP_Post $post ): void {
-	if ( $post->post_type === 'page' && ! jcp_page_uses_block_template( (int) $post->ID ) ) {
-		echo '<p class="description">' . esc_html( jcp_niche_block_template_admin_hint() ) . '</p>';
-		return;
-	}
 	wp_nonce_field( 'jcp_niche_content_save', 'jcp_niche_content_nonce' );
 	$stored  = jcp_page_get_content( (int) $post->ID );
 	$display = ! empty( $stored['blocks'] ) ? wp_json_encode( $stored, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) : '';
@@ -320,17 +419,7 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 	}
 	?>
 	<p class="description">
-		<?php
-		if ( $post->post_type === 'jcp_niche_landing' ) {
-			esc_html_e( 'Page content as JSON blocks. Load a trade template to start. Published pages appear on /industries/ automatically.', 'jcp-core' );
-		} elseif ( $post->post_type === 'jcp_page' ) {
-			esc_html_e( 'Page content as JSON blocks. Load a preset or import a writer document. Published at /pages/{slug}/.', 'jcp-core' );
-		} elseif ( get_page_template_slug( $post->ID ) === 'page-jcp-blocks.php' ) {
-			esc_html_e( 'Page content as JSON blocks. Load a preset or import a writer document. Published at this page’s existing URL — SEO in Rank Math is unchanged.', 'jcp-core' );
-		} else {
-			esc_html_e( 'Structured page content. Edit JSON directly or use a preset loader below.', 'jcp-core' );
-		}
-		?>
+		<?php esc_html_e( 'Raw page data for developers. Most edits should use JCP Page Editor above or the live page editor — only edit JSON if you know the block schema.', 'jcp-core' ); ?>
 	</p>
 	<?php if ( $post->post_type === 'jcp_niche_landing' ) : ?>
 	<p>
@@ -476,6 +565,28 @@ function jcp_niche_save_meta_box( int $post_id ): void {
 		}
 		if ( ! empty( $q['final_btn'] ) ) {
 			$content['final_cta']['cta_primary']['label'] = sanitize_text_field( $q['final_btn'] );
+		}
+		$content['nav_cta'] = $content['nav_cta'] ?? [];
+		foreach (
+			[
+				'nav_primary_label'   => 'primary_label',
+				'nav_primary_url'     => 'primary_url',
+				'nav_secondary_label' => 'secondary_label',
+				'nav_secondary_url'   => 'secondary_url',
+			] as $field => $key
+		) {
+			if ( ! array_key_exists( $field, $q ) ) {
+				continue;
+			}
+			$val = trim( (string) $q[ $field ] );
+			if ( $val === '' ) {
+				unset( $content['nav_cta'][ $key ] );
+			} else {
+				$content['nav_cta'][ $key ] = sanitize_text_field( $val );
+			}
+		}
+		if ( empty( $content['nav_cta'] ) ) {
+			unset( $content['nav_cta'] );
 		}
 		jcp_page_save_content( $post_id, $content );
 	}

@@ -1,6 +1,6 @@
 # JobCapturePro Core Theme - Master Documentation
 
-**Last Updated:** June 17, 2026  
+**Last Updated:** June 20, 2026  
 **Version:** 2.0  
 **For:** Developers taking over the theme (see [Developer Handoff](#developer-handoff) first)
 
@@ -49,13 +49,48 @@ Do **not** delete `inc/niche-landing/` until section renderers are fully moved i
 
 ### CPTs for structured content
 
-| CPT | Archive URL | Template | Use when |
-|-----|-------------|----------|----------|
-| `jcp_niche_landing` | `/industries/` | `single-jcp_niche_landing.php` | Industry/niche landing pages |
-| `jcp_page` | `/pages/` | `single-jcp_page.php`, `page-jcp-blocks.php` | Generic block pages |
-| WP `page` + template | — | `page-home.php`, `page-referral-program.php` | Homepage, referral program |
+| CPT / template | URL | Use when |
+|----------------|-----|----------|
+| `jcp_niche_landing` | `/industries/{slug}/` | **Industry/trade pages** at scale (programmatic SEO hub) |
+| WP `page` + **JCP Block Page** template | Existing page slug | **Default for new marketing pages** (About, Features, etc.) — preserves URL + Rank Math |
+| WP `page` + Home / Referral templates | As configured | Homepage, referral program |
+| `jcp_page` CPT | `/pages/{slug}/` | Optional legacy path; prefer WP Pages for new marketing content |
 
 Content is stored in post meta `_jcp_page_content` (canonical). Legacy `_jcp_niche_content` is adapted via `jcp_page_legacy_to_blocks()`.
+
+### SEO (Rank Math + theme)
+
+- **Rank Math** owns focus keyword, SEO title, meta description, and schema on each post.
+- **`inc/page-blocks/seo-audit.php`** — “SEO Health” meta box on block page edit screens; list-table SEO column; checks keyword in hero copy vs Rank Math settings.
+- Document import `seo.keywords` → hub search on `/industries/` only; editors should copy primary keyword into Rank Math.
+
+### Editor workflow (who uses what)
+
+| Task | WP Admin (backend) | Live page (frontend) |
+|------|-------------------|----------------------|
+| Document import / presets | ✓ | — |
+| SEO Health + Rank Math | ✓ | — |
+| Quick hero / final CTA fields | ✓ | — |
+| Click-to-edit copy & CTAs | — | ✓ |
+| Media picker & images | — | ✓ |
+| Add / remove / reorder blocks | JSON only* | ✓ Page structure panel |
+| FAQ/step card add-delete | — | ✓ |
+
+\* Visual block canvas in WP Admin is planned (Phase 2).
+
+### Component consistency
+
+Each block type = one PHP renderer (`inc/niche-landing/render.php` + `components.php`) + shared CSS (`css/sections.css`, `css/components/*`). JSON stores **content only** (props). Design changes to a block update every page using that type.
+
+### Cleanup audit (June 2026)
+
+| Priority | Item |
+|----------|------|
+| High | ~3,300 duplicate icon files at `assets/shared/assets/icons/*.{json,svg}` (root) — only `lucide/` is used |
+| Medium | Remove `home.js` fallback after all envs use block homepage |
+| Low | Remove unused alias functions in `schema.php` / `doc-parser.php` |
+| Keep | `inc/page-blocks/` + `inc/niche-landing/` dual system until renderers merge |
+
 
 ### Deploy
 
