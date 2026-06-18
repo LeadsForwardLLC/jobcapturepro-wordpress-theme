@@ -241,7 +241,11 @@ function jcp_page_get_content( int $post_id ): array {
 	}
 	$content = jcp_page_normalize_content( $raw, $post_id );
 	$cleaned = jcp_page_sanitize_content_document( $content );
-	if ( wp_json_encode( $cleaned ) !== wp_json_encode( $content ) ) {
+	$upgraded = jcp_page_upgrade_industry_media_blocks( $cleaned, $post_id );
+	if ( wp_json_encode( $upgraded ) !== wp_json_encode( $cleaned ) ) {
+		jcp_page_save_content( $post_id, $upgraded );
+		$cleaned = $upgraded;
+	} elseif ( wp_json_encode( $cleaned ) !== wp_json_encode( $content ) ) {
 		jcp_page_save_content( $post_id, $cleaned );
 	}
 	return $cleaned;
@@ -316,18 +320,23 @@ function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 	$order     = $preset_def['block_types'] ?? [];
 
 	$blocks = [];
-	foreach ( $order as $type ) {
-		$def = jcp_block_get( (string) $type );
+	foreach ( $order as $entry ) {
+		$parsed = jcp_page_parse_preset_block_entry( $entry );
+		$type   = $parsed['type'];
+		if ( $type === '' ) {
+			continue;
+		}
+		$def = jcp_block_get( $type );
 		if ( ! $def ) {
 			continue;
 		}
-		$key = $def['legacy_key'] ?? null;
+		$key = $parsed['legacy_key'] !== '' ? $parsed['legacy_key'] : ( $def['legacy_key'] ?? null );
 		if ( $type === 'breadcrumb' ) {
 			if ( ! empty( $legacy['hide_breadcrumb'] ) ) {
 				continue;
 			}
 			$blocks[] = [
-				'id'     => 'b-breadcrumb',
+				'id'     => $parsed['id'],
 				'type'   => 'breadcrumb',
 				'layout' => jcp_block_default_layout( 'breadcrumb', $page_kind ),
 				'props'  => [],
@@ -352,12 +361,16 @@ function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 		} else {
 			$block_layout = jcp_block_default_layout( (string) $type, $page_kind );
 		}
-		$blocks[] = [
-			'id'     => 'b-' . sanitize_title( (string) $type ),
+		$block = [
+			'id'     => $parsed['id'],
 			'type'   => (string) $type,
 			'layout' => $block_layout,
 			'props'  => is_array( $props ) ? $props : [ 'value' => $props ],
 		];
+		if ( $parsed['legacy_key'] !== '' ) {
+			$block['legacy_key'] = $parsed['legacy_key'];
+		}
+		$blocks[] = $block;
 	}
 
 	return [
@@ -414,7 +427,9 @@ function jcp_page_blocks_to_legacy( array $content ): array {
 		if ( $type === 'breadcrumb' ) {
 			continue;
 		}
-		$key = $def['legacy_key'] ?? $type;
+		$key = ! empty( $block['legacy_key'] )
+			? (string) $block['legacy_key']
+			: ( $def['legacy_key'] ?? $type );
 		if ( $key ) {
 			$legacy[ $key ] = $props;
 		}

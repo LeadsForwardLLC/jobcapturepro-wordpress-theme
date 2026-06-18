@@ -59,7 +59,7 @@
 }
 
 .jcp-niche-hero--internal .jcp-hero-title {
-  font-size: clamp(32px, 4vw, 48px);
+  font-size: clamp(44px, 5.5vw, 72px);
   font-weight: var(--jcp-font-weight-extrabold);
   line-height: var(--jcp-line-height-tight);
   letter-spacing: -0.02em;
@@ -126,7 +126,7 @@
   }
 
   .jcp-niche-hero--internal .jcp-hero-title {
-    font-size: clamp(28px, 7vw, 36px);
+    font-size: clamp(34px, 8vw, 46px);
   }
 
   .jcp-niche-hero--internal .jcp-niche-breadcrumb--in-hero {
@@ -278,7 +278,7 @@
 }
 
 .jcp-niche-hero--condensed .jcp-hero-title {
-  font-size: clamp(28px, 3.5vw, 40px);
+  font-size: clamp(38px, 4.8vw, 58px);
 }
 
 .jcp-niche-hero--condensed .jcp-hero-subtitle {
@@ -1158,6 +1158,15 @@ body.jcp-structure-open {
   display: flex;
   flex-direction: column;
   gap: var(--jcp-space-md);
+}
+
+.jcp-media-text-copy h2 {
+  font-size: clamp(34px, 4.2vw, 52px);
+  font-weight: var(--jcp-font-weight-extrabold);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  margin: 0;
+  color: var(--jcp-color-text-primary);
 }
 
 .jcp-media-text-body {

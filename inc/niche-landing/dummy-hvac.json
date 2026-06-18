@@ -46,6 +46,16 @@
     { "value": "4", "label": "channels", "detail": "Google, website, social, directory" },
     { "value": "0", "label": "busywork", "detail": "Nothing new for your crew" }
   ],
+  "media_text": {
+    "headline": "Your crew already takes the photos — now they work for you",
+    "subheadline": "Turn everyday HVAC job activity into proof homeowners trust.",
+    "body": "Technicians snap a few photos in under 30 seconds. JobCapturePro handles the check-in, publishing, and review follow-up across Google, your website, and social — without adding marketing work to the day.",
+    "media_type": "image",
+    "media_url": "",
+    "media_alt": "HVAC technician capturing job photos on site",
+    "media_position": "right",
+    "cta": { "label": "See how it works", "url": "#how-it-works" }
+  },
   "how_it_works": {
     "headline": "How it works for your HVAC business",
     "subheadline": "Four steps. One app. Zero busywork for your HVAC crew",
@@ -97,6 +107,16 @@
     ],
     "closing": "Each check-in strengthens your HVAC marketing software presence across search and maps."
   },
+  "media_text_check_ins": {
+    "headline": "Every service call becomes a check-in customers can find",
+    "subheadline": "",
+    "body": "Geo-tagged job photos, before-and-after shots, and AI-written summaries — tied to real addresses and published where local customers search. Each check-in strengthens your listing and builds trust before the phone rings.",
+    "media_type": "image",
+    "media_url": "",
+    "media_alt": "HVAC check-in with before and after photos",
+    "media_position": "left",
+    "cta": { "label": "", "url": "" }
+  },
   "problem": {
     "headline": "You are already doing the work. It just is not showing up",
     "subheadline": "Most HVAC companies have a visibility problem, not a workload problem. That gap turns into lost calls every week.",
@@ -107,6 +127,16 @@
       { "title": "Your competitors look more active", "body": "Even when they are not" }
     ],
     "closing": "Customers are making high-dollar decisions and choosing companies they trust. This is where HVAC reputation management breaks down."
+  },
+  "media_text_problem": {
+    "headline": "You're doing the work — customers just can't see it",
+    "subheadline": "",
+    "body": "Photos stay on phones, posting gets pushed off, and reviews are missed. Meanwhile competitors look more active online. JobCapturePro closes that visibility gap so completed repairs and installs keep working for you after the truck leaves.",
+    "media_type": "image",
+    "media_url": "",
+    "media_alt": "Busy HVAC company losing online visibility",
+    "media_position": "right",
+    "cta": { "label": "", "url": "" }
   },
   "benefits": {
     "headline": "What happens when your HVAC work stays visible after the job is done",

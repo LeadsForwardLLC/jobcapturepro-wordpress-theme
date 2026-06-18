@@ -20,10 +20,24 @@ function jcp_page_presets(): array {
 				'hero',
 				'what_it_is',
 				'core_mechanic',
-				'media_text',
+				[
+					'type'       => 'media_text',
+					'id'         => 'b-media-text-core',
+					'legacy_key' => 'media_text',
+				],
 				'how_it_works',
 				'check_ins',
+				[
+					'type'       => 'media_text',
+					'id'         => 'b-media-text-check-ins',
+					'legacy_key' => 'media_text_check_ins',
+				],
 				'problem',
+				[
+					'type'       => 'media_text',
+					'id'         => 'b-media-text-problem',
+					'legacy_key' => 'media_text_problem',
+				],
 				'benefits',
 				'differentiation',
 				'who_its_for',
@@ -110,12 +124,50 @@ function jcp_page_blocks_from_preset( string $preset ): array {
 		return [];
 	}
 	$blocks = [];
-	foreach ( (array) ( $def['block_types'] ?? [] ) as $type ) {
-		$blocks[] = [
-			'id'    => 'b-' . sanitize_title( (string) $type ),
-			'type'  => (string) $type,
+	foreach ( (array) ( $def['block_types'] ?? [] ) as $entry ) {
+		$parsed = jcp_page_parse_preset_block_entry( $entry );
+		if ( $parsed['type'] === '' ) {
+			continue;
+		}
+		$block = [
+			'id'    => $parsed['id'],
+			'type'  => $parsed['type'],
 			'props' => [],
 		];
+		if ( $parsed['legacy_key'] !== '' ) {
+			$block['legacy_key'] = $parsed['legacy_key'];
+		}
+		$blocks[] = $block;
 	}
 	return $blocks;
+}
+
+/**
+ * Normalize a preset block entry (string type or array definition).
+ *
+ * @param string|array<string, string> $entry Preset block entry.
+ * @return array{type: string, id: string, legacy_key: string}
+ */
+function jcp_page_parse_preset_block_entry( string|array $entry ): array {
+	if ( is_string( $entry ) ) {
+		$type = trim( $entry );
+		return [
+			'type'       => $type,
+			'id'         => 'b-' . sanitize_title( $type ),
+			'legacy_key' => '',
+		];
+	}
+
+	$type       = trim( (string) ( $entry['type'] ?? '' ) );
+	$legacy_key = trim( (string) ( $entry['legacy_key'] ?? '' ) );
+	$id         = trim( (string) ( $entry['id'] ?? '' ) );
+	if ( $id === '' ) {
+		$id = 'b-' . sanitize_title( $legacy_key !== '' ? $legacy_key : $type );
+	}
+
+	return [
+		'type'       => $type,
+		'id'         => $id,
+		'legacy_key' => $legacy_key,
+	];
 }

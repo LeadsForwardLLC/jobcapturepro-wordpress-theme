@@ -100,7 +100,8 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 			jcp_niche_render_hero( $c, $page_key );
 			break;
 		case 'media_text':
-			jcp_niche_render_media_text( $props );
+			$path = ! empty( $block['legacy_key'] ) ? (string) $block['legacy_key'] : 'media_text';
+			jcp_niche_render_media_text( $props, $path );
 			break;
 		case 'what_it_is':
 			$c_what = $c;

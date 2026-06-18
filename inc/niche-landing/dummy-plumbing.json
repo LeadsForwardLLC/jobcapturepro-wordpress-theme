@@ -43,6 +43,16 @@
     { "value": "4", "label": "channels", "detail": "Google, website, social, directory" },
     { "value": "0", "label": "extra admin", "detail": "Nothing new for your crew to manage" }
   ],
+  "media_text": {
+    "headline": "Every completed plumbing job should bring in the next call",
+    "subheadline": "Turn real service calls into proof homeowners trust before they dial.",
+    "body": "Your plumbers already take job photos. JobCapturePro turns those into check-ins, Google updates, website proof, and review requests — without adding admin work to the office or the truck.",
+    "media_type": "image",
+    "media_url": "",
+    "media_alt": "Plumber capturing job photos on site",
+    "media_position": "right",
+    "cta": { "label": "See how it works", "url": "#how-it-works" }
+  },
   "how_it_works": {
     "headline": "How plumbers use JobCapturePro in the field",
     "subheadline": "Four simple steps that turn completed plumbing jobs into visibility and more calls",
@@ -100,6 +110,16 @@
     ],
     "closing": "Each check-in strengthens your plumbing marketing software visibility across Google and maps."
   },
+  "media_text_check_ins": {
+    "headline": "Real jobs, real addresses, real proof online",
+    "subheadline": "",
+    "body": "Each check-in combines geo-tagged photos, a clear job summary, and a permanent record of the work — published where local homeowners search for a plumber they can trust.",
+    "media_type": "image",
+    "media_url": "",
+    "media_alt": "Plumbing check-in with before and after photos",
+    "media_position": "left",
+    "cta": { "label": "", "url": "" }
+  },
   "problem": {
     "headline": "Your plumbers are doing the work. Homeowners just are not seeing it.",
     "subheadline": "Most plumbing companies lose visibility the moment the job is finished. That means fewer reviews, less trust, and fewer calls over time.",
@@ -110,6 +130,16 @@
       { "title": "Competitors look bigger online", "body": "Even when they are not doing more work" }
     ],
     "closing": "This is where plumbing reputation management starts breaking down."
+  },
+  "media_text_problem": {
+    "headline": "Busy crews. Invisible online presence.",
+    "subheadline": "",
+    "body": "Emergency calls get handled, repairs get done, and photos stay on phones. Marketing slips, reviews get missed, and competitors look more active. JobCapturePro keeps your completed work visible after the job is done.",
+    "media_type": "image",
+    "media_url": "",
+    "media_alt": "Plumbing company missing online visibility",
+    "media_position": "right",
+    "cta": { "label": "", "url": "" }
   },
   "benefits": {
     "headline": "What happens when your plumbing jobs keep working after the job is done",

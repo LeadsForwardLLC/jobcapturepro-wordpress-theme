@@ -453,13 +453,13 @@ body.mobile-menu-open .jcp-top-banner {
 }
 
 .jcp-hero-title {
-  font-size: clamp(32px, 4vw, 52px);
+  font-size: clamp(44px, 5.5vw, 72px);
   line-height: var(--jcp-line-height-tight);
   font-weight: var(--jcp-font-weight-extrabold);
 }
 
 .jcp-hero h1 {
-  font-size: clamp(32px, 4vw, 52px);
+  font-size: clamp(44px, 5.5vw, 72px);
   line-height: var(--jcp-line-height-tight);
   font-weight: var(--jcp-font-weight-extrabold);
   margin-bottom: var(--jcp-space-md);

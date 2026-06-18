@@ -38,6 +38,7 @@ require_once get_template_directory() . '/inc/page-blocks/registry.php';
 require_once get_template_directory() . '/inc/page-blocks/layout.php';
 require_once get_template_directory() . '/inc/page-blocks/presets.php';
 require_once get_template_directory() . '/inc/page-blocks/schema.php';
+require_once get_template_directory() . '/inc/page-blocks/industry-media.php';
 require_once get_template_directory() . '/inc/niche-landing/cpt.php';
 require_once get_template_directory() . '/inc/niche-landing/schema.php';
 require_once get_template_directory() . '/inc/niche-landing/doc-parser.php';
