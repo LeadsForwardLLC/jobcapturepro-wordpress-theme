@@ -89,7 +89,7 @@ function jcp_block_library_render_page(): void {
 			<?php esc_html_e( 'Blocks are full page sections (Hero, Proof flow, FAQ, etc.) you add, reorder, and edit on a page. Components are smaller building blocks inside them (demo phone mockup, directory card, factor card) — shared PHP partials, not separate blocks.', 'jcp-core' ); ?>
 		</p>
 		<p class="description">
-			<?php esc_html_e( 'Industry, marketing, referral, and homepage page types each show only the blocks allowed for that kind. No duplicate entries — one registry, one renderer per block.', 'jcp-core' ); ?>
+			<?php esc_html_e( 'Industry, block-built, referral, and homepage page types each show only the blocks allowed for that kind. No duplicate entries — one registry, one renderer per block.', 'jcp-core' ); ?>
 		</p>
 		<p>
 			<a href="<?php echo esc_url( $page_system_url ); ?>" class="button"><?php esc_html_e( 'Page System SOP', 'jcp-core' ); ?></a>

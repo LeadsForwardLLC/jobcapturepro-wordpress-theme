@@ -95,7 +95,7 @@ function jcp_niche_render_standard_page_setup_meta_box( WP_Post $post ): void {
 		</ol>
 
 		<p class="description">
-			<?php esc_html_e( 'Home and Referral Program templates are only for those specific pages — everything else marketing uses JCP Block Page.', 'jcp-core' ); ?>
+			<?php esc_html_e( 'Home and Referral Program templates are only for those specific pages. For everything else you build from blocks, use JCP Block Page.', 'jcp-core' ); ?>
 		</p>
 
 		<p class="description">
@@ -171,7 +171,7 @@ function jcp_niche_render_quick_meta_box_content( WP_Post $post ): void {
 	<?php if ( $is_industry || $is_marketing ) : ?>
 		<div class="notice notice-info inline" style="margin: 0 0 1em; padding: 0.75em 1em;">
 			<p style="margin: 0;">
-				<strong><?php echo $is_industry ? esc_html__( 'Add a new trade page', 'jcp-core' ) : esc_html__( 'Build a marketing page', 'jcp-core' ); ?></strong><br />
+				<strong><?php echo $is_industry ? esc_html__( 'Add a new trade page', 'jcp-core' ) : esc_html__( 'Build a block page', 'jcp-core' ); ?></strong><br />
 				<?php
 				printf(
 					esc_html__( '1. Set the URL slug. 2. Paste the writer template (see JCP → Page System) or upload .docx/.txt, then click Build page. 3. Publish — add photos on the live page editor. SEO is in Rank Math. %s', 'jcp-core' ),
@@ -414,7 +414,7 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 	</p>
 	<?php elseif ( get_page_template_slug( $post->ID ) === 'page-jcp-blocks.php' ) : ?>
 	<p>
-		<button type="button" class="button" id="jcp-niche-load-marketing-demo"><?php esc_html_e( 'Use marketing preset', 'jcp-core' ); ?></button>
+		<button type="button" class="button" id="jcp-niche-load-marketing-demo"><?php esc_html_e( 'Use block page preset', 'jcp-core' ); ?></button>
 		<button type="button" class="button" id="jcp-niche-load-minimal-demo"><?php esc_html_e( 'Use minimal preset', 'jcp-core' ); ?></button>
 	</p>
 	<?php else : ?>

@@ -99,12 +99,12 @@ function jcp_admin_page_template_help(): void {
 		p.className = 'description jcp-template-help';
 		p.style.marginTop = '8px';
 		<?php if ( $uses_editor ) : ?>
-		p.textContent = <?php echo wp_json_encode( __( 'This page uses the JCP block editor. Use “JCP Block Page” for marketing landers, or the special template that matches this URL (Home, Referral Program, etc.).', 'jcp-core' ) ); ?>;
+		p.textContent = <?php echo wp_json_encode( __( 'This page uses the JCP block editor. Use “JCP Block Page” for new landers you build from blocks, or the special template that matches this URL (Home, Referral Program, etc.).', 'jcp-core' ) ); ?>;
 		<?php else : ?>
 		p.innerHTML = <?php echo wp_json_encode(
 			sprintf(
 				/* translators: %s: template name */
-				__( '<strong>Building a marketing page?</strong> Choose <em>JCP Block Page</em> and click Update. Default template is for simple text pages only.', 'jcp-core' )
+				__( '<strong>Building a new lander from blocks?</strong> Choose <em>JCP Block Page</em> and click Update. Default template is for simple text pages only.', 'jcp-core' )
 			)
 		); ?>;
 		<?php endif; ?>

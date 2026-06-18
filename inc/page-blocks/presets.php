@@ -59,7 +59,7 @@ function jcp_page_presets(): array {
 			],
 		],
 		'marketing' => [
-			'label'      => __( 'Marketing page', 'jcp-core' ),
+			'label'      => __( 'Block page', 'jcp-core' ),
 			'page_kind'  => 'marketing',
 			'block_types' => [
 				'hero',
