@@ -15,7 +15,68 @@ function jcp_niche_e( string $text ): void {
 }
 
 /**
- * Whether the industries hub breadcrumb should render.
+ * Resolve page kind for breadcrumb parent link.
+ *
+ * @param array<string, mixed> $c Content.
+ */
+function jcp_niche_breadcrumb_page_kind( array $c ): string {
+	if ( ! empty( $c['page_kind'] ) ) {
+		return (string) $c['page_kind'];
+	}
+	if ( is_singular( 'jcp_niche_landing' ) ) {
+		return 'industry';
+	}
+	$page_type = (string) ( $c['page_type'] ?? '' );
+	if ( $page_type === 'referral' ) {
+		return 'referral';
+	}
+	if ( $page_type === 'home' || $page_type === 'homepage' ) {
+		return 'home';
+	}
+	return 'marketing';
+}
+
+/**
+ * Current page label for breadcrumb trail.
+ *
+ * @param array<string, mixed> $c Content.
+ */
+function jcp_niche_breadcrumb_current_label( array $c ): string {
+	if ( ! empty( $c['page_label'] ) ) {
+		return (string) $c['page_label'];
+	}
+	if ( ! empty( $c['niche_label'] ) ) {
+		return (string) $c['niche_label'];
+	}
+	return '';
+}
+
+/**
+ * Parent crumb (Home vs Industries hub) for the current page kind.
+ *
+ * @param array<string, mixed> $c Content.
+ * @return array{label: string, url: string}
+ */
+function jcp_niche_breadcrumb_parent( array $c ): array {
+	if ( jcp_niche_breadcrumb_page_kind( $c ) === 'industry' ) {
+		$hub = get_post_type_archive_link( 'jcp_niche_landing' );
+		if ( ! $hub ) {
+			$hub = home_url( '/industries/' );
+		}
+		return [
+			'label' => __( 'Industries', 'jcp-core' ),
+			'url'   => $hub,
+		];
+	}
+
+	return [
+		'label' => __( 'Home', 'jcp-core' ),
+		'url'   => home_url( '/' ),
+	];
+}
+
+/**
+ * Whether the breadcrumb should render.
  *
  * @param array<string, mixed> $c Content.
  */
@@ -23,8 +84,10 @@ function jcp_niche_should_show_breadcrumb( array $c ): bool {
 	if ( ! empty( $c['hide_breadcrumb'] ) ) {
 		return false;
 	}
-	$label = ! empty( $c['niche_label'] ) ? (string) $c['niche_label'] : '';
-	return $label !== '';
+	if ( jcp_niche_breadcrumb_page_kind( $c ) === 'home' ) {
+		return false;
+	}
+	return jcp_niche_breadcrumb_current_label( $c ) !== '';
 }
 
 /**
@@ -35,18 +98,15 @@ function jcp_niche_render_breadcrumb( array $c, bool $inside_hero = false ): voi
 	if ( ! jcp_niche_should_show_breadcrumb( $c ) ) {
 		return;
 	}
-	$label = (string) $c['niche_label'];
-	$hub = get_post_type_archive_link( 'jcp_niche_landing' );
-	if ( ! $hub ) {
-		$hub = home_url( '/industries/' );
-	}
+	$label  = jcp_niche_breadcrumb_current_label( $c );
+	$parent = jcp_niche_breadcrumb_parent( $c );
 	$classes = 'jcp-niche-breadcrumb jcp-container';
 	if ( $inside_hero ) {
 		$classes .= ' jcp-niche-breadcrumb--in-hero';
 	}
 	?>
 	<nav class="<?php echo esc_attr( $classes ); ?>" aria-label="<?php esc_attr_e( 'Breadcrumb', 'jcp-core' ); ?>">
-		<a href="<?php echo esc_url( $hub ); ?>"><?php esc_html_e( 'Industries', 'jcp-core' ); ?></a>
+		<a href="<?php echo esc_url( $parent['url'] ); ?>"><?php echo esc_html( $parent['label'] ); ?></a>
 		<span aria-hidden="true">/</span>
 		<span><?php echo esc_html( $label ); ?></span>
 	</nav>

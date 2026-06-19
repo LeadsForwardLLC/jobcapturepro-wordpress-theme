@@ -15,7 +15,7 @@ function jcp_block_registry(): array {
 		'breadcrumb' => [
 			'type'         => 'breadcrumb',
 			'label'        => __( 'Breadcrumb', 'jcp-core' ),
-			'description'  => __( 'Industries hub breadcrumb', 'jcp-core' ),
+			'description'  => __( 'Home or Industries parent + page title (rendered in hero)', 'jcp-core' ),
 			'category'     => 'nav',
 			'legacy_key'   => null,
 			'doc_sections' => [],
