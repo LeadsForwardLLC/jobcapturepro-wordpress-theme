@@ -32,14 +32,11 @@ function jcp_theme_docs_render_page(): void {
 		return;
 	}
 
-	$industries_url = admin_url( 'edit.php?post_type=jcp_niche_landing' );
 	$add_new_url    = admin_url( 'post-new.php?post_type=jcp_niche_landing' );
 	$hub_url        = home_url( '/industries/' );
 	$pages_new_url  = admin_url( 'post-new.php?post_type=page' );
 	$posts_new_url  = admin_url( 'post-new.php' );
-	$pages_url      = admin_url( 'edit.php?post_type=page' );
 	$block_lib_url  = admin_url( 'admin.php?page=jcp-block-library' );
-	$docs_url       = admin_url( 'admin.php?page=jcp-theme-settings' );
 	?>
 	<div class="wrap jcp-theme-docs">
 		<h1><?php esc_html_e( 'JCP Page System — Standard Operating Procedure', 'jcp-core' ); ?></h1>
