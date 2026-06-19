@@ -36,6 +36,7 @@ function jcp_theme_docs_render_page(): void {
 	$add_new_url    = admin_url( 'post-new.php?post_type=jcp_niche_landing' );
 	$hub_url        = home_url( '/industries/' );
 	$pages_new_url  = admin_url( 'post-new.php?post_type=page' );
+	$posts_new_url  = admin_url( 'post-new.php' );
 	$pages_url      = admin_url( 'edit.php?post_type=page' );
 	$block_lib_url  = admin_url( 'admin.php?page=jcp-block-library' );
 	$docs_url       = admin_url( 'admin.php?page=jcp-theme-settings' );
@@ -44,73 +45,53 @@ function jcp_theme_docs_render_page(): void {
 		<h1><?php esc_html_e( 'JCP Page System — Standard Operating Procedure', 'jcp-core' ); ?></h1>
 
 		<div class="notice notice-info jcp-theme-docs__start-here" style="margin: 16px 0 20px; padding: 16px 20px;">
-			<h2 style="margin: 0 0 10px; font-size: 1.15em;"><?php esc_html_e( 'Start here — which menu do I use?', 'jcp-core' ); ?></h2>
-			<p style="margin: 0 0 12px;"><?php esc_html_e( 'Almost everything on the site is a WordPress Page or Post. What matters is how each one is built — some are fixed templates (pricing, demo), some you assemble from blocks (About, Features), and trade pages live under Industries.', 'jcp-core' ); ?></p>
-			<table class="widefat striped" style="background: #fff;">
+			<h2 style="margin: 0 0 10px; font-size: 1.15em;"><?php esc_html_e( 'Start here — what are you adding?', 'jcp-core' ); ?></h2>
+			<table class="widefat striped" style="background: #fff; margin-top: 12px;">
 				<thead>
 					<tr>
 						<th><?php esc_html_e( 'I need to…', 'jcp-core' ); ?></th>
 						<th><?php esc_html_e( 'Go to', 'jcp-core' ); ?></th>
-						<th><?php esc_html_e( 'Template?', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'Template', 'jcp-core' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
-						<td><?php esc_html_e( 'Edit an existing site page (pricing, demo, directory, contact, help)', 'jcp-core' ); ?></td>
-						<td><strong><a href="<?php echo esc_url( $pages_url ); ?>"><?php esc_html_e( 'Pages → find the page', 'jcp-core' ); ?></a></strong></td>
-						<td><?php esc_html_e( 'Built-in (automatic — do not create a duplicate)', 'jcp-core' ); ?></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Write a blog post', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Posts → Add New', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( '(default)', 'jcp-core' ); ?></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Create a new block-built page (About, Features, Partners, etc.)', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Add a new page (About, Features, etc.)', 'jcp-core' ); ?></td>
 						<td><strong><a href="<?php echo esc_url( $pages_new_url ); ?>"><?php esc_html_e( 'Pages → Add New', 'jcp-core' ); ?></a></strong></td>
 						<td><strong><?php esc_html_e( 'JCP Block Page', 'jcp-core' ); ?></strong></td>
 					</tr>
 					<tr>
-						<td><?php esc_html_e( 'Create a trade / industry page (Plumbing, HVAC, etc.)', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Add an industry page (Plumbing, HVAC, etc.)', 'jcp-core' ); ?></td>
 						<td><strong><a href="<?php echo esc_url( $add_new_url ); ?>"><?php esc_html_e( 'Industries → Add Industry', 'jcp-core' ); ?></a></strong></td>
-						<td><?php esc_html_e( '(none — automatic)', 'jcp-core' ); ?></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Edit the homepage', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Pages → your homepage', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Home (front page only)', 'jcp-core' ); ?></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Edit the referral program page', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Pages → referral-program', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Referral Program (reserved — has referral-only blocks)', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( '—', 'jcp-core' ); ?></td>
 					</tr>
 					<tr>
 						<td><?php esc_html_e( 'Add a simple text page (legal, policies)', 'jcp-core' ); ?></td>
 						<td><a href="<?php echo esc_url( $pages_new_url ); ?>"><?php esc_html_e( 'Pages → Add New', 'jcp-core' ); ?></a></td>
 						<td><?php esc_html_e( 'Default template', 'jcp-core' ); ?></td>
 					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Write a blog post', 'jcp-core' ); ?></td>
+						<td><a href="<?php echo esc_url( $posts_new_url ); ?>"><?php esc_html_e( 'Posts → Add New', 'jcp-core' ); ?></a></td>
+						<td><?php esc_html_e( '—', 'jcp-core' ); ?></td>
+					</tr>
 				</tbody>
 			</table>
 		</div>
 
 		<p class="description">
-			<?php esc_html_e( 'Block-built pages and industry pages share the same JCP editor — only the admin menu and URL differ. Pricing, demo, directory, and similar pages already exist; edit them in Pages, don’t create new ones.', 'jcp-core' ); ?>
+			<?php esc_html_e( 'Block pages and industry pages use the same JCP editor — import a writer doc or edit on the live page. Details below.', 'jcp-core' ); ?>
 		</p>
 
 		<div class="jcp-theme-docs__actions">
-			<a href="<?php echo esc_url( $pages_new_url ); ?>" class="button button-primary"><?php esc_html_e( 'Add Block Page', 'jcp-core' ); ?></a>
-			<a href="<?php echo esc_url( $add_new_url ); ?>" class="button button-primary"><?php esc_html_e( 'Add Industry Page', 'jcp-core' ); ?></a>
-			<a href="<?php echo esc_url( $pages_url ); ?>" class="button"><?php esc_html_e( 'All Pages', 'jcp-core' ); ?></a>
-			<a href="<?php echo esc_url( $industries_url ); ?>" class="button"><?php esc_html_e( 'All Industries', 'jcp-core' ); ?></a>
-			<a href="<?php echo esc_url( $hub_url ); ?>" class="button" target="_blank" rel="noopener"><?php esc_html_e( 'View /industries/ hub', 'jcp-core' ); ?></a>
+			<a href="<?php echo esc_url( $pages_new_url ); ?>" class="button button-primary"><?php esc_html_e( 'Add Page', 'jcp-core' ); ?></a>
+			<a href="<?php echo esc_url( $add_new_url ); ?>" class="button button-primary"><?php esc_html_e( 'Add Industry', 'jcp-core' ); ?></a>
 		</div>
 
 		<nav class="jcp-theme-docs__toc" aria-label="<?php esc_attr_e( 'On this page', 'jcp-core' ); ?>">
 			<strong><?php esc_html_e( 'On this page', 'jcp-core' ); ?></strong>
 			<ul>
 				<li><a href="#overview"><?php esc_html_e( 'Overview', 'jcp-core' ); ?></a></li>
-				<li><a href="#page-types"><?php esc_html_e( 'Which page type to use', 'jcp-core' ); ?></a></li>
 				<li><a href="#component-model"><?php esc_html_e( 'How components stay consistent', 'jcp-core' ); ?></a></li>
 				<li><a href="#quick-start"><?php esc_html_e( 'Quick start (WP block page)', 'jcp-core' ); ?></a></li>
 				<li><a href="#quick-start-industry"><?php esc_html_e( 'Quick start (industry page)', 'jcp-core' ); ?></a></li>
@@ -128,105 +109,8 @@ function jcp_theme_docs_render_page(): void {
 
 		<section id="overview" class="jcp-theme-docs__section">
 			<h2><?php esc_html_e( 'Overview', 'jcp-core' ); ?></h2>
-			<p><?php esc_html_e( 'Industry pages are trade-specific landing pages built from structured JSON. Each published page lives at:', 'jcp-core' ); ?></p>
-			<pre class="jcp-theme-docs__code">/industries/{slug}/</pre>
-			<p><?php esc_html_e( 'All published trades also appear on the hub:', 'jcp-core' ); ?> <a href="<?php echo esc_url( $hub_url ); ?>" target="_blank" rel="noopener">/industries/</a></p>
-			<table class="widefat striped jcp-theme-docs__table">
-				<thead>
-					<tr>
-						<th><?php esc_html_e( 'What', 'jcp-core' ); ?></th>
-						<th><?php esc_html_e( 'Where', 'jcp-core' ); ?></th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><?php esc_html_e( 'Manage pages', 'jcp-core' ); ?></td>
-						<td><a href="<?php echo esc_url( $industries_url ); ?>"><?php esc_html_e( 'WP Admin → Industries', 'jcp-core' ); ?></a></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'This SOP', 'jcp-core' ); ?></td>
-						<td><a href="<?php echo esc_url( $docs_url ); ?>"><?php esc_html_e( 'WP Admin → JCP → Page System', 'jcp-core' ); ?></a></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Existing site pages (pricing, demo, directory, contact, help)', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'WP Admin → Pages → edit the existing page at that slug', 'jcp-core' ); ?></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Blog', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'WP Admin → Posts', 'jcp-core' ); ?></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Site navigation', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Main nav “By Trade” links to /industries/', 'jcp-core' ); ?></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'New block-built pages (About, Features, etc.)', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'WP Admin → Pages → assign “JCP Block Page” template — keeps your URL and Rank Math SEO', 'jcp-core' ); ?></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Referral program', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Pages → referral-program → “Referral Program” template (referral-only blocks)', 'jcp-core' ); ?></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'SEO title & meta description', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Rank Math panel on each Industry post (not in the theme JSON)', 'jcp-core' ); ?></td>
-					</tr>
-				</tbody>
-			</table>
-		</section>
-
-		<section id="page-types" class="jcp-theme-docs__section">
-			<h2><?php esc_html_e( 'Which page type to use', 'jcp-core' ); ?></h2>
-			<table class="widefat striped jcp-theme-docs__table">
-				<thead>
-					<tr>
-						<th><?php esc_html_e( 'You are building…', 'jcp-core' ); ?></th>
-						<th><?php esc_html_e( 'Use', 'jcp-core' ); ?></th>
-						<th><?php esc_html_e( 'URL', 'jcp-core' ); ?></th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><?php esc_html_e( 'Existing site page (pricing, demo, directory, contact, help)', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Pages → edit the page at that slug', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Built-in template (automatic)', 'jcp-core' ); ?></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Blog post', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Posts → Add New', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( '(default)', 'jcp-core' ); ?></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Trade / industry landing page', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Industries → Add Industry', 'jcp-core' ); ?></td>
-						<td><code>/industries/{slug}/</code></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'New block-built page (About, Features, Partners, etc.)', 'jcp-core' ); ?></td>
-						<td><strong><?php esc_html_e( 'Pages → “JCP Block Page” template', 'jcp-core' ); ?></strong></td>
-						<td><?php esc_html_e( 'Your chosen page slug', 'jcp-core' ); ?></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Homepage', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Settings → Reading → static front page with “Home” template', 'jcp-core' ); ?></td>
-						<td><code>/</code></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Referral program', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Pages → referral-program → “Referral Program” template', 'jcp-core' ); ?></td>
-						<td><code>/referral-program/</code></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Simple text page (legal, policies)', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Pages → Add New → Default template', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Any slug you choose', 'jcp-core' ); ?></td>
-					</tr>
-				</tbody>
-			</table>
-			<p class="description" style="margin-top:12px;">
-				<strong><?php esc_html_e( 'Templates explained:', 'jcp-core' ); ?></strong>
-				<?php esc_html_e( 'For new pages, the template dropdown only shows Default template and JCP Block Page — that is normal. Home, Referral Program, and fixed routes (Pricing, Demo, etc.) appear only when you edit a page whose URL slug already matches that route. Do not create a second Pricing or Demo page.', 'jcp-core' ); ?>
-			</p>
+			<p><?php esc_html_e( 'Block pages and industry pages are built from the same section library (Hero, FAQ, Final CTA, etc.). Industry pages publish at /industries/{slug}/ and appear on the hub:', 'jcp-core' ); ?> <a href="<?php echo esc_url( $hub_url ); ?>" target="_blank" rel="noopener">/industries/</a></p>
+			<p><?php esc_html_e( 'SEO title and meta description are set in Rank Math on each post — not in the writer document or JCP editor.', 'jcp-core' ); ?></p>
 		</section>
 
 		<section id="component-model" class="jcp-theme-docs__section">
