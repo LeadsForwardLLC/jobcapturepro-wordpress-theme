@@ -276,9 +276,79 @@
     syncFlatProp(idPath, id);
   };
 
-  const isEmbedVideoUrl = (url) => {
-    if (!url) return false;
-    return /(?:youtube\.com|youtu\.be|vimeo\.com)/i.test(String(url));
+  const parseEmbedVideo = (url) => {
+    const value = String(url || '').trim();
+    if (!value) return null;
+    const yt = value.match(/(?:youtube\.com\/(?:watch\?(?:[^&\s]+&)*v=|embed\/|shorts\/|v\/)|youtu\.be\/)([a-zA-Z0-9_-]+)/i);
+    if (yt) {
+      return {
+        provider: 'youtube',
+        id: yt[1],
+        isShort: /\/shorts\//i.test(value),
+        embedUrl: `https://www.youtube.com/embed/${yt[1]}`,
+      };
+    }
+    const vm = value.match(/vimeo\.com\/(?:video\/)?(\d+)/i);
+    if (vm) {
+      return {
+        provider: 'vimeo',
+        id: vm[1],
+        isShort: false,
+        embedUrl: `https://player.vimeo.com/video/${vm[1]}`,
+      };
+    }
+    return null;
+  };
+
+  const isEmbedVideoUrl = (url) => !!parseEmbedVideo(url);
+
+  const ensureVideoEmbed = (videoVariant, url) => {
+    if (!videoVariant || !url) return;
+    const parsed = parseEmbedVideo(url);
+    let wrap = videoVariant.querySelector('.jcp-media-video-wrap, .jcp-media-text-video-wrap');
+
+    if (parsed) {
+      if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.className = 'jcp-media-text-video-wrap jcp-media-video-wrap';
+        videoVariant.innerHTML = '';
+        videoVariant.appendChild(wrap);
+      }
+      wrap.classList.toggle('jcp-media-video-wrap--short', parsed.isShort);
+      let iframe = wrap.querySelector('iframe');
+      if (!iframe) {
+        wrap.innerHTML = '';
+        iframe = document.createElement('iframe');
+        iframe.setAttribute('allowfullscreen', '');
+        iframe.setAttribute('loading', 'lazy');
+        iframe.setAttribute(
+          'allow',
+          'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'
+        );
+        wrap.appendChild(iframe);
+      }
+      if (iframe.src !== parsed.embedUrl) iframe.src = parsed.embedUrl;
+      return;
+    }
+
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.className = 'jcp-media-text-video-wrap jcp-media-video-wrap';
+      videoVariant.innerHTML = '';
+      videoVariant.appendChild(wrap);
+    }
+    wrap.classList.remove('jcp-media-video-wrap--short');
+    let video = wrap.querySelector('video');
+    if (!video) {
+      wrap.innerHTML = '';
+      video = document.createElement('video');
+      video.className = 'jcp-media-text-video jcp-media-video-file';
+      video.controls = true;
+      video.playsInline = true;
+      video.preload = 'metadata';
+      wrap.appendChild(video);
+    }
+    if (video.src !== url) video.src = url;
   };
 
   const resolveMediaUrlPaths = (paths) => {
@@ -368,7 +438,7 @@
 
   const updateMediaDom = (urlPath, url, altPath, alt, slot = null) => {
     if (!urlPath) return;
-    const isVideo = isEmbedVideoUrl(url);
+    const isVideo = isVideoMediaUrl(url);
     const targetSlot = slot || document.querySelector(
       `.jcp-media-slot[data-jcp-media-url-path="${urlPath}"], .jcp-media-slot[data-jcp-media-path="${urlPath.replace(/\.(media_url|image_url|phone_image_url)$/, '')}"]`
     );
@@ -403,15 +473,7 @@
       const videoSlot = targetSlot || document.querySelector(`.jcp-media-slot[data-jcp-media-path="${base}"]`);
       const videoWrap = videoSlot?.querySelector('.jcp-media-variant--video');
       if (videoWrap && isVideo) {
-        const iframe = videoWrap.querySelector('iframe');
-        const video = videoWrap.querySelector('video');
-        if (video) video.src = url;
-        if (iframe) {
-          const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-          const vm = url.match(/vimeo\.com\/(\d+)/);
-          if (yt) iframe.src = `https://www.youtube.com/embed/${yt[1]}`;
-          else if (vm) iframe.src = `https://player.vimeo.com/video/${vm[1]}`;
-        }
+        ensureVideoEmbed(videoWrap, url);
       }
     }
   };
@@ -442,7 +504,7 @@
         </label>
         <label class="jcp-media-popover__field jcp-media-popover__field--video" hidden>
           <span>Video URL</span>
-          <input type="url" id="jcpMediaVideoUrlInput" placeholder="YouTube, Vimeo, or MP4 URL">
+          <input type="url" id="jcpMediaVideoUrlInput" placeholder="YouTube, YouTube Shorts, Vimeo, or MP4 URL">
         </label>
         <label class="jcp-media-popover__field jcp-media-popover__field--link">
           <span>Link URL <small>(optional)</small></span>

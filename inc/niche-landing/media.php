@@ -113,6 +113,40 @@ function jcp_media_editable_attrs( string $path, array $extra = [] ): void {
 }
 
 /**
+ * Parse a YouTube or Vimeo URL into embed metadata.
+ *
+ * @param string $url Video URL.
+ * @return array{provider:string,id:string,is_short:bool,embed_url:string}|null
+ */
+function jcp_media_parse_embed_video( string $url ): ?array {
+	$url = trim( $url );
+	if ( $url === '' ) {
+		return null;
+	}
+
+	if ( preg_match( '#(?:youtube\.com/(?:watch\?(?:[^&\s]+&)*v=|embed/|shorts/|v/)|youtu\.be/)([a-zA-Z0-9_-]+)#i', $url, $yt ) ) {
+		$id = $yt[1];
+		return [
+			'provider'   => 'youtube',
+			'id'         => $id,
+			'is_short'   => (bool) preg_match( '#/shorts/#i', $url ),
+			'embed_url'  => 'https://www.youtube.com/embed/' . rawurlencode( $id ),
+		];
+	}
+
+	if ( preg_match( '#vimeo\.com/(?:video/)?(\d+)#i', $url, $vm ) ) {
+		return [
+			'provider'   => 'vimeo',
+			'id'         => $vm[1],
+			'is_short'   => false,
+			'embed_url'  => 'https://player.vimeo.com/video/' . rawurlencode( $vm[1] ),
+		];
+	}
+
+	return null;
+}
+
+/**
  * Render a video embed or file player.
  *
  * @param string $url   Video URL.
@@ -124,12 +158,22 @@ function jcp_media_render_video( string $url, string $title = '' ): void {
 	if ( $url === '' ) {
 		return;
 	}
+
+	$embed = jcp_media_parse_embed_video( $url );
+	$wrap_class = 'jcp-media-text-video-wrap jcp-media-video-wrap';
+	if ( $embed && ! empty( $embed['is_short'] ) ) {
+		$wrap_class .= ' jcp-media-video-wrap--short';
+	}
 	?>
-	<div class="jcp-media-text-video-wrap jcp-media-video-wrap">
-		<?php if ( preg_match( '/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/', $url, $yt ) ) : ?>
-			<iframe src="https://www.youtube.com/embed/<?php echo esc_attr( $yt[1] ); ?>" title="<?php echo esc_attr( $title ); ?>" allowfullscreen loading="lazy"></iframe>
-		<?php elseif ( preg_match( '/vimeo\.com\/(\d+)/', $url, $vm ) ) : ?>
-			<iframe src="https://player.vimeo.com/video/<?php echo esc_attr( $vm[1] ); ?>" title="<?php echo esc_attr( $title ); ?>" allowfullscreen loading="lazy"></iframe>
+	<div class="<?php echo esc_attr( $wrap_class ); ?>">
+		<?php if ( $embed ) : ?>
+			<iframe
+				src="<?php echo esc_url( $embed['embed_url'] ); ?>"
+				title="<?php echo esc_attr( $title ); ?>"
+				allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+				allowfullscreen
+				loading="lazy"
+			></iframe>
 		<?php else : ?>
 			<video class="jcp-media-text-video jcp-media-video-file" src="<?php echo esc_url( $url ); ?>" controls playsinline preload="metadata"></video>
 		<?php endif; ?>
