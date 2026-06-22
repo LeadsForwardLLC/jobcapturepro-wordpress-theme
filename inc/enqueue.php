@@ -104,7 +104,7 @@ function jcp_core_enqueue_assets(): void {
         $render_deps[] = 'jcp-core-pricing';
     }
 
-    if ( ! empty( $pages['is_niche_landing'] ) && empty( $pages['is_home'] ) ) {
+    if ( ! empty( $pages['is_niche_landing'] ) ) {
         jcp_core_enqueue_style( 'jcp-core-niche-landing', 'css/pages/niche-landing.css', [ 'jcp-core-sections', 'jcp-core-hero-live-demo' ] );
         if ( is_post_type_archive( 'jcp_niche_landing' ) ) {
             jcp_core_enqueue_style( 'jcp-core-blog', 'css/pages/blog.css', [ 'jcp-core-sections' ] );

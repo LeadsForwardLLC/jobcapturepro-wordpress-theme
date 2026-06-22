@@ -2960,3 +2960,10 @@
     font-size: var(--jcp-font-size-base);
   }
 }
+
+/* Front-end editor chrome — hide from visitors (belt-and-suspenders; buttons omitted in PHP when logged out). */
+.jcp-collection-add,
+.jcp-collection-remove,
+.jcp-optional-restore {
+  display: none;
+}

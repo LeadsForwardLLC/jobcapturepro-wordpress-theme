@@ -65,6 +65,9 @@ function jcp_niche_array_item_attr( int $index ): void {
  * @param bool $list_item Use compact positioning for checklist rows.
  */
 function jcp_niche_collection_remove_btn( bool $list_item = false ): void {
+	if ( ! jcp_niche_user_can_inline_edit() ) {
+		return;
+	}
 	$class = 'jcp-collection-remove' . ( $list_item ? ' jcp-collection-remove--list-item' : '' );
 	printf(
 		'<button type="button" class="%1$s" aria-label="%2$s" title="%3$s" tabindex="-1" onclick="return window.jcpCollectionRemoveClick&amp;&amp;window.jcpCollectionRemoveClick(this,event)">×</button>',
@@ -80,6 +83,9 @@ function jcp_niche_collection_remove_btn( bool $list_item = false ): void {
  * @param string $label Button label.
  */
 function jcp_niche_collection_add_btn( string $label = '' ): void {
+	if ( ! jcp_niche_user_can_inline_edit() ) {
+		return;
+	}
 	if ( $label === '' ) {
 		$label = __( '+ Add item', 'jcp-core' );
 	}
