@@ -18,6 +18,7 @@
   const deckProgressText = document.getElementById('deckProgressText');
   const deckLaunchBtn = document.getElementById('deckLaunchBtn');
   const deckNextBtn = document.getElementById('deckNextBtn');
+  const deckSkipHeader = document.getElementById('deckSkipHeader');
   const rankName = document.getElementById('surveyRankName');
   const rankList = document.getElementById('surveyRankList');
   const rankNumTop = document.getElementById('surveyRankNumTop');
@@ -337,6 +338,9 @@
     if (progressWrap && !progressWrap.classList.contains('is-hidden')) {
       updateProgress();
     }
+    if (deckSection?.classList.contains('active')) {
+      setDeckUI();
+    }
   });
 
   const getSurveyFormMetadata = () => {
@@ -355,6 +359,7 @@
     });
     deckSection?.classList.remove('active');
     progressWrap?.classList.remove('is-hidden');
+    if (deckSkipHeader) deckSkipHeader.hidden = true;
     currentIndex = index;
     updateProgress();
     updateDesktopHandoff();
@@ -406,6 +411,11 @@
     const shown = deckIndex + 1;
     if (deckProgressText) deckProgressText.textContent = `${shown} / ${total}`;
     if (deckProgressBar) deckProgressBar.style.width = `${(shown / total) * 100}%`;
+    if (stepIndicator && isMobileSurvey()) {
+      stepIndicator.textContent = `${shown}/${total}`;
+      stepIndicator.hidden = false;
+    }
+    if (deckSkipHeader) deckSkipHeader.hidden = !isMobileSurvey();
     const isLast = deckIndex === total - 1;
     if (deckLaunchBtn) deckLaunchBtn.classList.toggle('is-hidden', !isLast);
     if (deckNextBtn) deckNextBtn.classList.toggle('is-hidden', isLast);
@@ -426,7 +436,7 @@
     steps.forEach((step) => step.classList.remove('active'));
     deckSection?.classList.add('active');
     progressWrap?.classList.add('is-hidden');
-    if (stepIndicator) stepIndicator.hidden = true;
+    if (deckSkipHeader) deckSkipHeader.hidden = !isMobileSurvey();
     deckIndex = Math.min(Math.max(0, startIndex), Math.max(0, deckSlides.length - 1));
     setDeckUI();
 

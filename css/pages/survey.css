@@ -116,6 +116,29 @@
 @media (max-width: 920px) {
 }
 
+@media (max-width: 768px) {
+  :is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card {
+    box-shadow: none !important;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+  }
+
+  :is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card:hover {
+    box-shadow: none !important;
+    transform: none;
+  }
+
+  :is(.deck-slide--intro, .deck-slide--cards) .deck-flow-icon {
+    background: rgba(255, 80, 62, 0.1);
+    border: 1px solid rgba(255, 80, 62, 0.16);
+  }
+
+  :is(.deck-slide--intro, .deck-slide--cards) .deck-flow-step {
+    box-shadow: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .deck-slide.is-active:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card {
     animation: none !important;

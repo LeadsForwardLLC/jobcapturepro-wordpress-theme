@@ -25,6 +25,7 @@ $icon_play = esc_url( jcp_core_icon( 'play' ) );
 $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
 ?>
 <section class="survey-deck" id="surveyDeck">
+  <button type="button" class="deck-skip deck-skip--header" data-action="launch" id="deckSkipHeader" hidden>Skip →</button>
   <div class="deck">
     <div class="deck-top">
       <div class="deck-progress">
