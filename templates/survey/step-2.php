@@ -26,16 +26,8 @@
       <span>More customer reviews</span>
     </label>
     <label class="survey-goal">
-      <input type="checkbox" value="trust">
-      <span>Stronger website trust</span>
-    </label>
-    <label class="survey-goal">
       <input type="checkbox" value="busywork">
       <span>Less marketing busywork</span>
-    </label>
-    <label class="survey-goal">
-      <input type="checkbox" value="showcase">
-      <span>Showcase my work</span>
     </label>
   </div>
 

@@ -128,9 +128,7 @@ function jcp_core_early_access_default_why_interested_options(): array {
         [ 'label' => 'More inbound calls', 'value' => 'More inbound calls' ],
         [ 'label' => 'Better Google visibility', 'value' => 'Better Google visibility' ],
         [ 'label' => 'More customer reviews', 'value' => 'More customer reviews' ],
-        [ 'label' => 'Stronger website trust', 'value' => 'Stronger website trust' ],
         [ 'label' => 'Less marketing busywork', 'value' => 'Less marketing busywork' ],
-        [ 'label' => 'Showcase my work', 'value' => 'Showcase my work' ],
     ];
 }
 
