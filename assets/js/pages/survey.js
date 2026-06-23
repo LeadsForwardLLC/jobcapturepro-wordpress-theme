@@ -7,6 +7,7 @@
   const progressWrap = document.querySelector('.survey-progress');
   const progressText = document.getElementById('surveyProgressText');
   const progressFill = document.getElementById('surveyProgressFill');
+  const stepIndicator = document.getElementById('surveyStepIndicator');
   const stepButtons = Array.from(document.querySelectorAll('.stepper-step'));
   const closeBtn = document.getElementById('surveyClose');
   const goalsWrap = document.getElementById('surveyGoals');
@@ -318,7 +319,11 @@
     const stepNum = currentIndex + 1;
     const isMobile = window.matchMedia('(max-width: 768px)').matches;
     if (progressText) {
-      progressText.textContent = isMobile ? `${stepNum} / 3` : `Step ${stepNum} of 3`;
+      progressText.textContent = `Step ${stepNum} of 3`;
+    }
+    if (stepIndicator) {
+      stepIndicator.textContent = `Step ${stepNum}/3`;
+      stepIndicator.hidden = !isMobile;
     }
     if (progressFill) {
       progressFill.style.width = `${(stepNum / 3) * 100}%`;
@@ -421,6 +426,7 @@
     steps.forEach((step) => step.classList.remove('active'));
     deckSection?.classList.add('active');
     progressWrap?.classList.add('is-hidden');
+    if (stepIndicator) stepIndicator.hidden = true;
     deckIndex = Math.min(Math.max(0, startIndex), Math.max(0, deckSlides.length - 1));
     setDeckUI();
 
