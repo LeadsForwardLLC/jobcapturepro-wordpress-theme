@@ -6,6 +6,7 @@
 
   const progressWrap = document.querySelector('.survey-progress');
   const progressText = document.getElementById('surveyProgressText');
+  const progressFill = document.getElementById('surveyProgressFill');
   const stepButtons = Array.from(document.querySelectorAll('.stepper-step'));
   const closeBtn = document.getElementById('surveyClose');
   const goalsWrap = document.getElementById('surveyGoals');
@@ -314,13 +315,24 @@
   };
 
   const updateProgress = () => {
+    const stepNum = currentIndex + 1;
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
     if (progressText) {
-      progressText.textContent = `Step ${currentIndex + 1} of 3`;
+      progressText.textContent = isMobile ? `${stepNum} / 3` : `Step ${stepNum} of 3`;
+    }
+    if (progressFill) {
+      progressFill.style.width = `${(stepNum / 3) * 100}%`;
     }
     stepButtons.forEach((btn, idx) => {
       btn.classList.toggle('is-active', idx === currentIndex);
     });
   };
+
+  window.addEventListener('resize', () => {
+    if (progressWrap && !progressWrap.classList.contains('is-hidden')) {
+      updateProgress();
+    }
+  });
 
   const getSurveyFormMetadata = () => {
     const meta = { company: getValue('businessName'), business_type: getValue('niche') };

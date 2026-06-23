@@ -19,19 +19,24 @@ $logo_url = esc_url( 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCa
       <img src="<?php echo $logo_url; ?>" alt="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>" width="180" height="40" />
     </div>
 
-    <div class="survey-progress">
-      <span id="surveyProgressText">Step 1 of 3</span>
-      <div class="survey-stepper" role="tablist">
-        <button class="stepper-step is-active" type="button" data-step="0">1</button>
-        <button class="stepper-step" type="button" data-step="1">2</button>
-        <button class="stepper-step" type="button" data-step="2">3</button>
-      </div>
-    </div>
-
     <?php get_template_part( 'templates/survey/step-1' ); ?>
     <?php get_template_part( 'templates/survey/step-2' ); ?>
     <?php get_template_part( 'templates/survey/step-3' ); ?>
     <?php get_template_part( 'templates/survey/deck' ); ?>
     <?php get_template_part( 'templates/survey/desktop-handoff' ); ?>
+
+    <div class="survey-progress" id="surveyProgress">
+      <div class="survey-progress-track" aria-hidden="true">
+        <span class="survey-progress-fill" id="surveyProgressFill"></span>
+      </div>
+      <div class="survey-progress-row">
+        <span class="survey-progress-label" id="surveyProgressText">Step 1 of 3</span>
+        <div class="survey-stepper" role="tablist" aria-label="<?php esc_attr_e( 'Survey steps', 'jcp-core' ); ?>">
+          <button class="stepper-step is-active" type="button" data-step="0">1</button>
+          <button class="stepper-step" type="button" data-step="1">2</button>
+          <button class="stepper-step" type="button" data-step="2">3</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
