@@ -453,10 +453,23 @@ body.survey-only #jcp-app {
   border-radius: 14px;
   border: 2px solid #d1d5db;
   font-size: 16px;
+  line-height: 1.25;
+  min-height: 54px;
+  box-sizing: border-box;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
   background: #fff;
   color: #111827;
+}
+
+select.survey-input {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px 16px;
 }
 
 .survey-input:focus {
@@ -2045,7 +2058,7 @@ input::-webkit-textfield-decoration-container {
     border-radius: 0;
     box-shadow: none;
     padding:
-      max(52px, calc(env(safe-area-inset-top, 0px) + 44px))
+      max(72px, calc(env(safe-area-inset-top, 0px) + 64px))
       max(16px, env(safe-area-inset-right, 0px))
       max(16px, calc(env(safe-area-inset-bottom, 0px) + 12px))
       max(16px, env(safe-area-inset-left, 0px));
@@ -2124,6 +2137,8 @@ input::-webkit-textfield-decoration-container {
 
   .survey-head {
     margin-bottom: 12px;
+    margin-top: 8px;
+    padding-right: 60px;
   }
 
   .survey-title {
@@ -2197,6 +2212,7 @@ input::-webkit-textfield-decoration-container {
     line-height: 1.2;
     margin-top: 0;
     margin-bottom: 8px;
+    padding-right: 60px;
   }
 
   .deck-lead {
