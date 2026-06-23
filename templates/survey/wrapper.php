@@ -14,6 +14,8 @@ $logo_url = esc_url( 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCa
     </svg>
   </button>
 
+  <p class="survey-step-indicator" id="surveyStepIndicator" aria-live="polite" hidden>Step 1/3</p>
+
   <div class="survey-card">
     <div class="survey-brand">
       <img src="<?php echo $logo_url; ?>" alt="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>" width="180" height="40" />

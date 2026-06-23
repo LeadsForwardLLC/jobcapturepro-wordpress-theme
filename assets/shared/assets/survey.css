@@ -82,6 +82,10 @@ body.survey-only #jcp-app {
   box-shadow: none;
 }
 
+.survey-step-indicator {
+  display: none;
+}
+
 /* =====================================
    RESTORE DECK BUTTON STYLES (CRITICAL)
 ===================================== */
@@ -2039,7 +2043,7 @@ input::-webkit-textfield-decoration-container {
     padding:
       max(52px, calc(env(safe-area-inset-top, 0px) + 44px))
       max(16px, env(safe-area-inset-right, 0px))
-      max(88px, calc(env(safe-area-inset-bottom, 0px) + 72px))
+      max(16px, calc(env(safe-area-inset-bottom, 0px) + 12px))
       max(16px, env(safe-area-inset-left, 0px));
     display: flex;
     flex-direction: column;
@@ -2062,6 +2066,24 @@ input::-webkit-textfield-decoration-container {
     display: none !important;
   }
 
+  .survey-step-indicator {
+    display: block;
+    position: fixed;
+    top: max(22px, calc(env(safe-area-inset-top, 0px) + 14px));
+    left: max(16px, env(safe-area-inset-left, 0px));
+    z-index: 10002;
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    letter-spacing: 0.01em;
+    pointer-events: none;
+  }
+
+  .survey-step-indicator[hidden] {
+    display: none !important;
+  }
+
   .survey-progress {
     position: fixed;
     bottom: 0;
@@ -2071,39 +2093,28 @@ input::-webkit-textfield-decoration-container {
     order: 0;
     margin: 0;
     z-index: 10001;
-    gap: 8px;
-    padding:
-      12px max(20px, env(safe-area-inset-right, 0px))
-      max(12px, env(safe-area-inset-bottom, 0px))
-      max(20px, env(safe-area-inset-left, 0px));
-    background: rgba(255, 255, 255, 0.94);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid rgba(15, 23, 42, 0.06);
+    gap: 0;
+    padding: 0 0 env(safe-area-inset-bottom, 0px);
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border: none;
     pointer-events: none;
   }
 
   .survey-progress-track {
     display: block;
-    height: 2px;
-    border-radius: 999px;
+    height: 3px;
+    border-radius: 0;
     background: #f1f5f9;
     overflow: hidden;
   }
 
   .survey-progress-row {
-    justify-content: center;
+    display: none;
   }
 
-  .survey-progress-label {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #94a3b8;
-  }
-
-  .survey-stepper {
+  .survey-eyebrow {
     display: none;
   }
 
@@ -2122,10 +2133,8 @@ input::-webkit-textfield-decoration-container {
     margin-bottom: 14px;
   }
 
-  .survey-eyebrow {
-    font-size: 11px;
-    padding: 5px 12px;
-    margin-bottom: 10px;
+  .survey-stepper {
+    display: none;
   }
 
   .survey-step.active {
@@ -2142,7 +2151,7 @@ input::-webkit-textfield-decoration-container {
 
   .survey-actions-row {
     margin-top: 24px;
-    margin-bottom: max(72px, calc(env(safe-area-inset-bottom, 0px) + 56px));
+    margin-bottom: 8px;
     padding-top: 0;
     position: static;
     flex-shrink: 0;
