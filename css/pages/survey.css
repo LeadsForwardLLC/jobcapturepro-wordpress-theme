@@ -1,9 +1,8 @@
-@import url("../../assets/shared/assets/survey.css");
-
 /* =========================================================
    Survey Page Overrides
-   NOTE: We intentionally duplicate Slide 1 styling here (instead of only in the
-   imported file) so cache-busting works via this file's version querystring.
+   Base survey styles load via jcp-core-survey-shared (enqueue.php) so
+   filemtime cache-busting applies. Slide 1 deck styles are duplicated here
+   for the same reason — @import URLs are cached without ?ver= on CDN.
 ========================================================= */
 
 /* Slide card system (Slides 1–3, 6–8). Slide 4/5 are custom layouts. */

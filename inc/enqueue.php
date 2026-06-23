@@ -196,7 +196,8 @@ function jcp_core_enqueue_assets(): void {
             // Demo mode: restricted access
             wp_add_inline_script( 'jcp-core-demo', 'window.JCP_IS_DEMO_MODE = true;', 'before' );
         } else {
-            jcp_core_enqueue_style( 'jcp-core-survey', 'css/pages/survey.css', [ 'jcp-core-demo' ] );
+            jcp_core_enqueue_style( 'jcp-core-survey-shared', 'assets/shared/assets/survey.css' );
+            jcp_core_enqueue_style( 'jcp-core-survey', 'css/pages/survey.css', [ 'jcp-core-demo', 'jcp-core-survey-shared' ] );
             jcp_core_enqueue_script( 'jcp-core-survey', 'js/pages/survey.js', [ $render_handle ] );
             wp_localize_script( 'jcp-core-survey', 'JCP_DEMO_SURVEY', [
                 'rest_url'        => rest_url( 'jcp/v1/demo-survey-submit' ),
