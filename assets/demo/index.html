@@ -78,20 +78,17 @@
                             </div>
                             <div class="home-checkin-list" id="home-checkin-list"></div>
 
-                            <div class="demo-review-toast" id="demoReviewToast" hidden>
-                              <span class="demo-review-toast-icon" aria-hidden="true">✉️</span>
-                              <div>
-                                <strong>Review request sent</strong>
-                                <span>Automated SMS with job photos</span>
-                              </div>
-                            </div>
-
-                            <div class="demo-review-received" id="demoReviewReceived" hidden>
-                              <div class="demo-review-received-stars" aria-hidden="true">★★★★★</div>
-                              <div>
-                                <strong>New 5-star review</strong>
-                                <p>"Great service — fast and professional!"</p>
-                                <small>Arrived automatically after your request</small>
+                            <div class="demo-outcomes" id="demoOutcomes" hidden>
+                              <p class="demo-outcomes-eyebrow">Automations completed</p>
+                              <h3 class="demo-outcomes-title">This job ran on autopilot</h3>
+                              <ul class="demo-outcomes-list" id="demoOutcomesList" aria-live="polite"></ul>
+                              <div class="demo-review-received demo-review-received--recap" id="demoReviewReceived" hidden>
+                                <div class="demo-review-received-stars" aria-hidden="true">★★★★★</div>
+                                <div>
+                                  <strong>New 5-star review</strong>
+                                  <p>"Great service — fast and professional!"</p>
+                                  <small>Arrived right after your request</small>
+                                </div>
                               </div>
                             </div>
                         </div>
@@ -465,7 +462,7 @@
         <div class="modal-overlay" id="review-modal">
             <div class="modal modal--review-demo">
                 <h3>Send review request</h3>
-                <p class="modal-sub">Automated when the job wraps up — includes photos from this check-in.</p>
+                <p class="modal-sub">Runs automatically on every completed job</p>
                 <div class="demo-review-job" id="demoReviewJob">
                     <img id="demoReviewPhoto" src="" alt="" width="72" height="72" loading="lazy">
                     <div class="demo-review-job-copy">
@@ -474,7 +471,6 @@
                     </div>
                 </div>
                 <textarea class="input-field" id="demoReviewMessage" rows="3" placeholder="Add a personal note (optional)"></textarea>
-                <p class="demo-review-auto-note">Runs automatically on every completed job — no chasing customers.</p>
                 <div class="modal-actions">
                     <button class="btn btn-ghost" type="button" onclick="closeReviewDialog()">Cancel</button>
                     <button class="btn btn-primary" type="button" id="btnDemoReviewSend"><img src="../../shared/assets/icons/lucide/send.svg" class="lucide-icon lucide-icon-sm" alt=""> Send request</button>
@@ -671,7 +667,8 @@
       <img src="../../shared/assets/icons/lucide/x.svg" class="lucide-icon lucide-icon-sm" alt="">
     </button>
 
-    <h2 class="post-demo-simple-title">This is how JobCapturePro turns jobs into revenue</h2>
+    <h2 class="post-demo-simple-title">Turn every job into more calls</h2>
+    <p class="post-demo-simple-body">Your crew checks in once. JobCapturePro publishes everywhere and collects reviews — so you win more work without chasing follow-ups.</p>
 
     <div class="post-demo-actions">
       <a class="btn btn-primary post-demo-primary-cta" href="https://app.jobcapturepro.com/onboarding?sessionId=75ad8454-312e-4224-95b7-8f48f5cd0277&amp;step=1&amp;utm_source=jobcapturepro.com&amp;utm_medium=website&amp;utm_campaign=onboarding&amp;utm_content=demo_static_assets">

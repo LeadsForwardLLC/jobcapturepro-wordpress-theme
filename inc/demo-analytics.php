@@ -108,6 +108,10 @@ function jcp_demo_analytics_register_rest_route(): void {
                         'slideshow_skipped',
                         'demo_run_started',
                         'demo_step_viewed',
+                        'demo_publish_completed',
+                        'demo_review_sent',
+                        'demo_coach_minimized',
+                        'demo_replayed',
                         'post_demo_modal_shown',
                         'cta_clicked',
                         'demo_converted',
@@ -406,8 +410,13 @@ function jcp_demo_analytics_get_stats(): array {
         [ 'label' => 'Demo step 2', 'type' => 'demo_step_viewed', 'num' => 2 ],
         [ 'label' => 'Demo step 3', 'type' => 'demo_step_viewed', 'num' => 3 ],
         [ 'label' => 'Demo step 4', 'type' => 'demo_step_viewed', 'num' => 4 ],
+        [ 'label' => 'Publish completed', 'type' => 'demo_publish_completed', 'num' => 4 ],
         [ 'label' => 'Demo step 5', 'type' => 'demo_step_viewed', 'num' => 5 ],
+        [ 'label' => 'Review sent', 'type' => 'demo_review_sent', 'num' => 5 ],
+        [ 'label' => 'Demo step 6', 'type' => 'demo_step_viewed', 'num' => 6 ],
         [ 'label' => 'Post-demo modal shown', 'type' => 'post_demo_modal_shown', 'num' => null ],
+        [ 'label' => 'Demo replayed', 'type' => 'demo_replayed', 'num' => null ],
+        [ 'label' => 'Converted (Get Started)', 'type' => 'demo_converted', 'num' => null ],
     ];
 
     $prev_count = $total_sessions;

@@ -499,6 +499,14 @@ const LOCATION_STORAGE_KEY = 'jcp_active_location_id';
 /* ---------------------------
    Guide Content
 ---------------------------- */
+const DEMO_OUTCOME_ITEMS = [
+  'Published on your website',
+  'Posted to Facebook',
+  'Live on Google Business',
+  'Added to JobCapturePro directory',
+  'Review request sent',
+];
+
 const demoGuideContent = {
   step1: {
     pill: 'Step 1',
@@ -527,8 +535,8 @@ const demoGuideContent = {
   },
   step6: {
     pill: 'Final step',
-    title: 'You\'re ready to grow',
-    body: 'Every completed job can drive more calls automatically. Start free whenever you\'re ready.'
+    title: 'One job. Full automation.',
+    body: 'Every finished job can drive more calls — without extra work. Tap below to start free.'
   }
 };
 
@@ -1030,6 +1038,10 @@ function setMobileGuideCollapsed(collapsed) {
   if (stepper) stepper.classList.toggle('is-collapsed', collapsed);
   if (pill) pill.hidden = !collapsed || state.isFinalStep;
   updateGuidedCoachBackdrop();
+  if (collapsed && isGuidedDemoRun()) {
+    const stepNum = tour.stepKey && /^step(\d)$/.test(tour.stepKey) ? parseInt(tour.stepKey.slice(-1), 10) : null;
+    jcpDemoTrack('demo_coach_minimized', stepNum);
+  }
   if (collapsed) {
     hideMobileSpotlight();
   } else {
@@ -1098,7 +1110,7 @@ const tour = {
       step3: '#submit-btn',
       step4: '#btnSavePublish',
       step5: '#btnRequestReview',
-      step6: '#btnViewDirectory',
+      step6: '#demoOutcomes',
     }
 };
 
@@ -1173,11 +1185,16 @@ function setTourStep(stepKey) {
       tourEl.classList.toggle('final-step', state.isFinalStep);
     }
   tour.stepKey = stepKey;
+  if (stepKey) {
+    document.body.dataset.tourStep = stepKey;
+  } else {
+    delete document.body.dataset.tourStep;
+  }
   if (isGuidedDemoRun()) {
     setMobileGuideCollapsed(false);
   }
   const stepNum = stepKey && stepKey.match(/^step(\d)$/) ? parseInt(stepKey.slice(-1), 10) : null;
-  if (stepNum >= 1 && stepNum <= 5) {
+  if (stepNum >= 1 && stepNum <= 6) {
     jcpDemoTrack('demo_step_viewed', stepNum);
   }
   updateTourNextLabel(getNextLabelForStep(stepKey));
@@ -2231,6 +2248,7 @@ async function runGuidedPublishSequence() {
   await wait(650);
   overlay.classList.remove('active');
   document.body.classList.remove('jcp-publish-modal-open');
+  jcpDemoTrack('demo_publish_completed', 4);
 }
 
 async function publishToSocial() {
@@ -2309,48 +2327,67 @@ async function confirmDemoReviewSend() {
 async function completeGuidedReviewFlow() {
   state.metrics.reviews++;
   safeText('metric-reviews', String(state.metrics.reviews));
-
-  document.getElementById('review-empty')?.remove();
+  jcpDemoTrack('demo_review_sent', 5);
 
   setScreen('home-screen');
   renderHomeCheckins();
-  showDemoReviewToast();
 
-  await wait(1400);
+  setTourStep('step6');
+  applyFocalPoint();
+  syncMobileGuideChrome();
 
-  hideDemoReviewToast();
-  showDemoReviewReceivedCard();
+  await showDemoOutcomesRecap();
 
   lockBackButtons(false);
   document.querySelectorAll('.is-disabled').forEach((el) => {
     el.classList.remove('is-disabled');
     el.disabled = false;
   });
-
-  setTourStep('step6');
-  applyFocalPoint();
-  syncMobileGuideChrome();
 }
 
-function showDemoReviewToast() {
-  const toast = $('demoReviewToast');
-  if (!toast) return;
-  toast.hidden = false;
-  toast.classList.add('is-visible');
+function hideDemoOutcomes() {
+  const panel = $('demoOutcomes');
+  const review = $('demoReviewReceived');
+  if (panel) {
+    panel.hidden = true;
+    panel.classList.remove('is-visible');
+  }
+  if (review) {
+    review.hidden = true;
+    review.classList.remove('is-visible');
+  }
+  const list = $('demoOutcomesList');
+  if (list) list.innerHTML = '';
 }
 
-function hideDemoReviewToast() {
-  const toast = $('demoReviewToast');
-  if (!toast) return;
-  toast.classList.remove('is-visible');
-  setTimeout(() => { toast.hidden = true; }, 300);
-}
+async function showDemoOutcomesRecap() {
+  const panel = $('demoOutcomes');
+  const list = $('demoOutcomesList');
+  const review = $('demoReviewReceived');
+  if (!panel || !list) return;
 
-function showDemoReviewReceivedCard() {
-  const card = $('demoReviewReceived');
-  if (!card) return;
-  card.hidden = false;
-  card.classList.add('is-visible');
+  hideDemoOutcomes();
+  panel.hidden = false;
+  panel.classList.add('is-visible');
+
+  const contentArea = document.querySelector('#home-screen .content-area');
+  const screenEl = document.querySelector('.iphone-frame .screen');
+  if (contentArea) contentArea.scrollTop = 0;
+  if (screenEl) screenEl.scrollTop = 0;
+
+  for (let i = 0; i < DEMO_OUTCOME_ITEMS.length; i++) {
+    await wait(260);
+    const li = document.createElement('li');
+    li.className = 'demo-outcomes-item is-done';
+    li.innerHTML = `<span class="demo-outcomes-check" aria-hidden="true"></span><span>${DEMO_OUTCOME_ITEMS[i]}</span>`;
+    list.appendChild(li);
+  }
+
+  await wait(480);
+  if (review) {
+    review.hidden = false;
+    requestAnimationFrame(() => review.classList.add('is-visible'));
+  }
 }
 
 function buildDirectoryPreview() {
@@ -2696,8 +2733,89 @@ function advanceDemo() {
   }
 }
 
+function resetGuidedDemoFeeds() {
+  initializeWebsite();
+  const feedResets = [
+    {
+      id: 'feed-google',
+      html: `<div class="empty-state" id="google-empty"><h3>No posts yet</h3><p>Posts appear after a job is published.</p></div>`,
+    },
+    {
+      id: 'feed-facebook',
+      html: `<div class="empty-state" id="facebook-empty"><h3>No updates yet</h3><p>Updates appear after a job is published.</p></div>`,
+    },
+    {
+      id: 'feed-review',
+      html: `<div class="empty-state" id="review-empty"><h3>No reviews yet</h3><p>Reviews appear after a request is sent.</p></div>`,
+    },
+  ];
+  feedResets.forEach(({ id, html }) => {
+    const el = $(id);
+    if (el) el.innerHTML = html;
+  });
+}
+
+function resetGuidedEditScreen() {
+  const publishBtn = $('btnSavePublish');
+  if (publishBtn) {
+    publishBtn.disabled = false;
+    publishBtn.classList.remove('is-disabled');
+    publishBtn.innerHTML = `<img src="${assetBase}/shared/assets/icons/lucide/upload.svg" class="lucide-icon lucide-icon-sm" alt=""> Publish Everywhere`;
+    publishBtn.onclick = saveCheckin;
+  }
+  state.photoCount = 0;
+  state.activeCheckinIndex = null;
+  state.activeCheckinFromArchived = false;
+  state.comingFromProcessPhotos = false;
+  const editGrid = $('edit-photo-grid');
+  if (editGrid) editGrid.innerHTML = '';
+  const desc = $('description-field');
+  if (desc) desc.value = descriptions[0];
+}
+
+function restartGuidedDemo() {
+  jcpDemoTrack('demo_replayed', null, { source: 'post_demo_panel' });
+
+  state.isFinalStep = false;
+  hidePostDemoPanel();
+  document.getElementById('post-demo-bubble')?.classList.add('is-hidden');
+  hideDemoOutcomes();
+  closeReviewDialog();
+  $('demoPublishOverlay')?.classList.remove('active');
+  document.body.classList.remove('jcp-publish-modal-open');
+
+  state.hasPublished = false;
+  state.guideDisabled = false;
+  state.savedCheckins = [];
+  state.metrics = { checkins: 12, posts: 36, reviews: 48 };
+  safeText('metric-checkins', '12');
+  safeText('metric-posts', '36');
+  safeText('metric-reviews', '48');
+  tour.stepKey = 'step1';
+  tour.isHidden = false;
+  tour.isMinimized = false;
+  mobileGuideCollapsed = false;
+
+  resetGuidedDemoFeeds();
+  resetGuidedEditScreen();
+
+  document.querySelectorAll('.app-screen').forEach((s) => s.classList.remove('active'));
+  $('login-screen')?.classList.add('active');
+  state.currentScreen = 'login-screen';
+
+  $('btnStartDemo')?.classList.add('wiggle-attention');
+  setTourStep('step1');
+  showTour();
+  applyFocalPoint();
+  syncMobileGuideChrome();
+  renderHomeCheckins();
+}
+
 function restartTour() {
-  // Hard reset = cleanest, safest restart
+  if (isGuidedDemoRun()) {
+    restartGuidedDemo();
+    return;
+  }
   window.location.reload();
 }
 
@@ -3026,7 +3144,11 @@ function hidePostDemoPanel() {
   if (!panel || !bubble) return;
 
   panel.classList.remove('active');
-  bubble.classList.remove('is-hidden');
+  if (state.isFinalStep && tour.stepKey === 'step6') {
+    bubble.classList.remove('is-hidden');
+  } else {
+    bubble.classList.add('is-hidden');
+  }
 
   panel.removeEventListener('click', postDemoOverlayClose);
   document.removeEventListener('keydown', postDemoEscClose);
@@ -3094,7 +3216,8 @@ function wirePostDemoPanel() {
   if (primaryCta) {
     primaryCta.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
     primaryCta.addEventListener('click', function() {
-      jcpDemoTrack('cta_clicked', null, { cta: 'early_access' });
+      jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free' });
+      jcpDemoTrack('demo_converted');
       // Matomo: Post Demo CTA Click (Early Access), once per session
       try {
         if (typeof _paq !== 'undefined' && !sessionStorage.getItem('jcp_matomo_demo_cta_early_access')) {
@@ -3108,8 +3231,7 @@ function wirePostDemoPanel() {
   document
     .getElementById('btnReplayDemo')
     ?.addEventListener('click', () => {
-      jcpDemoTrack('cta_clicked', null, { cta: 'replay_demo' });
-      window.location.reload();
+      restartGuidedDemo();
     });
 }
 

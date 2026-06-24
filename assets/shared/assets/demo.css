@@ -3617,11 +3617,21 @@ body.jcp-publish-modal-open .guided-coach-backdrop {
 }
 
 .post-demo-simple-title {
-  margin: 8px 0 20px;
+  margin: 8px 0 12px;
   font-size: 24px;
   font-weight: 800;
   line-height: 1.2;
   color: #111827;
+}
+
+.post-demo-simple-body {
+  margin: 0 0 20px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #4b5563;
+  hyphens: none;
+  -webkit-hyphens: none;
+  overflow-wrap: break-word;
 }
 
 .post-demo-card--simple .post-demo-primary-cta {
@@ -3651,5 +3661,130 @@ body.jcp-guided-demo #post-demo-panel.active {
 body.jcp-guided-demo #post-demo-panel .post-demo-card--simple {
   width: min(400px, 100%);
   max-height: none;
+}
+
+/* Step 6 — outcomes recap + compact home layout */
+.demo-outcomes {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.demo-outcomes[hidden] {
+  display: none !important;
+}
+
+.demo-outcomes-eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #ff503e;
+}
+
+.demo-outcomes-title {
+  margin: 0 0 12px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1.25;
+}
+
+.demo-outcomes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.demo-outcomes-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #9ca3af;
+  line-height: 1.35;
+}
+
+.demo-outcomes-item.is-done {
+  color: #111827;
+}
+
+.demo-outcomes-check {
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  border: 2px solid #e5e7eb;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.demo-outcomes-item.is-done .demo-outcomes-check {
+  border-color: #ff503e;
+  background: #ff503e;
+}
+
+.demo-outcomes-item.is-done .demo-outcomes-check::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.demo-review-received--recap {
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
+body.jcp-guided-demo[data-tour-step="step6"] #home-screen .greeting,
+body.jcp-guided-demo[data-tour-step="step6"] #home-screen .action-tiles,
+body.jcp-guided-demo[data-tour-step="step6"] #home-screen .empty-state,
+body.jcp-guided-demo[data-tour-step="step6"] #home-screen .home-checkin-list {
+  display: none !important;
+}
+
+body.jcp-guided-demo[data-tour-step="step6"] #home-screen {
+  height: auto;
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+body.jcp-guided-demo[data-tour-step="step6"] #home-screen .content-area {
+  flex: 0 0 auto;
+  padding-top: 12px;
+  padding-bottom: 8px;
+  overflow: visible;
+}
+
+body.is-mobile-mode.jcp-phone-shell.jcp-guided-demo[data-tour-step="step6"]:not(.jcp-prototype-page) .iphone-frame .screen {
+  min-height: 0;
+  height: auto;
+}
+
+body.is-mobile-mode.jcp-phone-shell.jcp-guided-demo[data-tour-step="step6"]:not(.jcp-prototype-page) .iphone-frame .screen #home-screen {
+  min-height: 0;
+}
+
+body.jcp-guided-demo[data-tour-step="step6"] .iphone-frame .screen {
+  display: flex;
+  flex-direction: column;
+}
+
+body.jcp-guided-demo .mobile-stepper-body {
+  hyphens: none;
+  -webkit-hyphens: none;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
