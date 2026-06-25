@@ -23,7 +23,8 @@
 
 .jcp-home .jcp-hero {
   position: relative;
-  padding-top: calc(72px + var(--jcp-space-2xl)) !important;
+  /* Body already offsets the fixed header stack — don't double-pad here */
+  padding-top: var(--jcp-space-xl) !important;
   padding-bottom: var(--jcp-space-5xl);
   padding-left: 0;
   padding-right: 0;
@@ -416,8 +417,8 @@
   }
 
   .jcp-home .jcp-hero {
-    padding-top: calc(72px + var(--jcp-space-xl)) !important;
-    padding-bottom: var(--jcp-space-4xl);
+    padding-top: var(--jcp-space-lg) !important;
+    padding-bottom: var(--jcp-space-3xl);
     padding-left: 0;
     padding-right: 0;
   }
@@ -437,7 +438,50 @@
 
 @media (max-width: 768px) {
   .jcp-home .jcp-hero {
-    padding-top: calc(72px + var(--jcp-space-md)) !important;
+    padding-top: var(--jcp-space-md) !important;
+    padding-bottom: var(--jcp-space-2xl);
+  }
+
+  .jcp-hero-copy {
+    gap: var(--jcp-space-md);
+  }
+
+  .jcp-hero-grid {
+    gap: var(--jcp-space-xl);
+  }
+
+  .directory-cta-row {
+    margin-top: var(--jcp-space-sm);
+    gap: var(--jcp-space-sm);
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .jcp-hero-primary-cta {
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .jcp-hero-primary-cta .btn,
+  .directory-cta-row > .btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 52px;
+  }
+
+  .jcp-hero-cta-microcopy {
+    text-align: center;
+    width: 100%;
+  }
+
+  .directory-meta {
+    margin-top: var(--jcp-space-md);
+    gap: var(--jcp-space-md);
+  }
+
+  .jcp-home .jcp-hero-subtitle {
+    line-height: 1.5;
   }
 }
 

@@ -543,6 +543,12 @@ const demoGuideContent = {
     title: 'See everything that published',
     body: 'Swipe the dots to explore what happened automatically for this job.',
     interactHint: ''
+  },
+  step6Dock: {
+    pill: 'Final step',
+    title: 'Ready to get started?',
+    body: 'Start free and turn every completed job into proof that drives more calls.',
+    interactHint: ''
   }
 };
 
@@ -1087,7 +1093,9 @@ function syncMobileGuideChrome() {
   }
 
   const stepKey = tour.stepKey;
-  const step = stepKey ? demoGuideContent[stepKey] : null;
+  const step = stepKey === 'step6' && !outcomesSlideshow.isOpen
+    ? demoGuideContent.step6Dock
+    : (stepKey ? demoGuideContent[stepKey] : null);
   const stepNum = stepKey && /^step(\d)$/.test(stepKey) ? parseInt(stepKey.slice(-1), 10) : null;
   const total = 6;
 
@@ -1144,6 +1152,12 @@ function updateMobileStepperLabel() {
 
   const hideNext = tour.stepKey !== 'step6' || outcomesSlideshow.isOpen;
   btn.style.display = hideNext ? 'none' : '';
+
+  const reopen = $('demoOutcomesReopenCta');
+  if (reopen) {
+    const showReopen = tour.stepKey === 'step6' && !outcomesSlideshow.isOpen;
+    reopen.hidden = !showReopen;
+  }
 
   if (hint) {
     const step = tour.stepKey ? demoGuideContent[tour.stepKey] : null;
@@ -2682,6 +2696,63 @@ function updateOutcomesSlideshowUi() {
 
   safeText('demoOutcomesSlideCounter', `${index + 1} of ${total}`);
   safeText('demoOutcomesSlideLabel', OUTCOMES_SLIDE_LABELS[index] || '');
+
+  const isLast = index >= total - 1;
+  const nextBtn = $('demoOutcomesNextCta');
+  const finishBtn = $('demoOutcomesFinishCta');
+  if (nextBtn) {
+    nextBtn.hidden = isLast;
+    nextBtn.disabled = isLast;
+  }
+  if (finishBtn) {
+    finishBtn.classList.toggle('demo-outcomes-modal__finish--solo', isLast);
+  }
+}
+
+function handleOutcomesModalAction(action) {
+  if (action === 'next') {
+    if (outcomesSlideshow.index < outcomesSlideshow.total - 1) {
+      setOutcomesSlide(outcomesSlideshow.index + 1);
+    }
+    return;
+  }
+  if (action === 'finish') {
+    completeDemoConversion();
+  }
+}
+
+function onOutcomesModalClick(e) {
+  if (e.target.closest('#demoOutcomesModalClose')) {
+    e.preventDefault();
+    closeOutcomesSlideshow();
+    return;
+  }
+  if (e.target.closest('#demoOutcomesModalBackdrop')) {
+    closeOutcomesSlideshow();
+    return;
+  }
+
+  const actionBtn = e.target.closest('[data-outcomes-action]');
+  if (actionBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    handleOutcomesModalAction(actionBtn.dataset.outcomesAction);
+    return;
+  }
+
+  // Legacy markup (cached demo/index.html)
+  if (e.target.closest('#demoOutcomesNext, #demoOutcomesPrev')) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.target.closest('#demoOutcomesPrev')) return;
+    handleOutcomesModalAction('next');
+    return;
+  }
+  if (e.target.closest('#demoOutcomesFinish, #demoOutcomesStartCta, #demoOutcomesPrimaryCta')) {
+    e.preventDefault();
+    e.stopPropagation();
+    handleOutcomesModalAction('finish');
+  }
 }
 
 function setOutcomesSlide(index, { trackAnalytics = true } = {}) {
@@ -2702,11 +2773,13 @@ function openOutcomesSlideshow() {
   outcomesSlideshow.index = 0;
 
   renderOutcomesSlides();
+  wireOutcomesSlideshow();
   setOutcomesSlide(0, { trackAnalytics: false });
 
   modal.hidden = false;
   modal.setAttribute('aria-hidden', 'false');
   document.body.classList.add('jcp-outcomes-modal-open');
+  hideOutcomesCtaDock();
   setMobileGuideCollapsed(true);
   updateMobileLayoutMetrics();
   hideMobileSpotlight();
@@ -2717,7 +2790,29 @@ function openOutcomesSlideshow() {
   syncMobileGuideChrome();
 }
 
-function closeOutcomesSlideshow() {
+function showOutcomesCtaDock() {
+  if (tour.stepKey !== 'step6' || !isGuidedDemoRun()) return;
+  document.body.classList.add('jcp-outcomes-cta-dock');
+  setMobileGuideCollapsed(false);
+  updateMobileLayoutMetrics();
+  syncMobileGuideChrome();
+}
+
+function hideOutcomesCtaDock() {
+  document.body.classList.remove('jcp-outcomes-cta-dock');
+}
+
+function completeDemoConversion() {
+  jcpDemoTrack('demo_outcomes_completed', 6);
+  if (outcomesSlideshow.isOpen) {
+    closeOutcomesSlideshow({ keepDock: false });
+  }
+  hideOutcomesCtaDock();
+  state.isFinalStep = true;
+  showPostDemoPanel();
+}
+
+function closeOutcomesSlideshow({ keepDock = true } = {}) {
   const modal = $('demoOutcomesModal');
   if (!modal || modal.hidden) return;
 
@@ -2726,61 +2821,99 @@ function closeOutcomesSlideshow() {
   modal.hidden = true;
   modal.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('jcp-outcomes-modal-open');
-  syncMobileGuideChrome();
+  if (keepDock && tour.stepKey === 'step6' && isGuidedDemoRun()) {
+    showOutcomesCtaDock();
+  } else {
+    syncMobileGuideChrome();
+  }
 }
 
 function finishOutcomesSlideshow() {
-  jcpDemoTrack('demo_outcomes_completed', 6);
-  closeOutcomesSlideshow();
-  showPostDemoPanel();
+  completeDemoConversion();
+}
+
+function ensureOutcomesFooterButtons() {
+  const modal = $('demoOutcomesModal');
+  if (!modal) return;
+
+  const card = modal.querySelector('.demo-outcomes-modal__card');
+  if (!card) return;
+
+  let footer = card.querySelector('.demo-outcomes-modal__footer');
+  if (!footer) {
+    footer = document.createElement('div');
+    footer.className = 'demo-outcomes-modal__footer';
+    card.appendChild(footer);
+  }
+
+  if (!$('demoOutcomesNextCta')) {
+    const next = document.createElement('button');
+    next.type = 'button';
+    next.id = 'demoOutcomesNextCta';
+    next.className = 'btn btn-secondary demo-outcomes-modal__next';
+    next.dataset.outcomesAction = 'next';
+    next.textContent = 'Next';
+    footer.appendChild(next);
+  }
+
+  if (!$('demoOutcomesFinishCta')) {
+    const finish = document.createElement('button');
+    finish.type = 'button';
+    finish.id = 'demoOutcomesFinishCta';
+    finish.className = 'btn btn-primary demo-outcomes-modal__finish';
+    finish.dataset.outcomesAction = 'finish';
+    finish.textContent = 'Get Started Free';
+    footer.appendChild(finish);
+  }
 }
 
 function wireOutcomesSlideshow() {
   const modal = $('demoOutcomesModal');
-  if (!modal || modal.dataset.bound === '1') return;
-  modal.dataset.bound = '1';
+  if (!modal) return;
 
-  const callCta = $('demoOutcomesCallCta');
-  if (callCta) callCta.href = getDemoSalesPhoneHref();
+  ensureOutcomesFooterButtons();
 
-  $('demoOutcomesModalClose')?.addEventListener('click', closeOutcomesSlideshow);
-  $('demoOutcomesModalBackdrop')?.addEventListener('click', closeOutcomesSlideshow);
-  $('demoOutcomesStartCta')?.addEventListener('click', finishOutcomesSlideshow);
-  callCta?.addEventListener('click', () => {
-    jcpDemoTrack('cta_clicked', null, { cta: 'call_now', source: 'demo_outcomes_modal' });
+  modal.querySelectorAll('.demo-outcomes-modal__actions').forEach((el) => el.remove());
+  modal.querySelectorAll('#demoOutcomesStartCta, #demoOutcomesPrimaryCta, #demoOutcomesPrev, #demoOutcomesNext, #demoOutcomesFinish').forEach((el) => {
+    el.remove();
   });
 
-  $('demoOutcomesDots')?.addEventListener('click', (e) => {
-    const btn = e.target.closest('[data-slide]');
-    if (!btn) return;
-    setOutcomesSlide(parseInt(btn.dataset.slide, 10));
-  });
+  if (modal.dataset.bound !== '1') {
+    modal.dataset.bound = '1';
+    modal.addEventListener('click', onOutcomesModalClick);
 
-  $('demoOutcomesTrack')?.addEventListener('click', (e) => {
-    const link = e.target.closest('.outcomes-directory-view-link');
-    if (!link) return;
-    jcpDemoTrack('cta_clicked', null, { cta: 'view_directory', source: 'demo_outcomes_modal' });
-  });
+    $('demoOutcomesDots')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-slide]');
+      if (!btn) return;
+      setOutcomesSlide(parseInt(btn.dataset.slide, 10));
+    });
 
-  const viewport = $('demoOutcomesViewport');
-  if (viewport) {
-    viewport.addEventListener('touchstart', (e) => {
-      outcomesSlideshow.touchStartX = e.changedTouches[0].screenX;
-    }, { passive: true });
-    viewport.addEventListener('touchend', (e) => {
-      const delta = e.changedTouches[0].screenX - outcomesSlideshow.touchStartX;
-      if (Math.abs(delta) < 40) return;
-      if (delta < 0) setOutcomesSlide(outcomesSlideshow.index + 1);
-      else setOutcomesSlide(outcomesSlideshow.index - 1);
-    }, { passive: true });
+    $('demoOutcomesTrack')?.addEventListener('click', (e) => {
+      const link = e.target.closest('.outcomes-directory-view-link');
+      if (!link) return;
+      jcpDemoTrack('cta_clicked', null, { cta: 'view_directory', source: 'demo_outcomes_modal' });
+    });
+
+    const viewport = $('demoOutcomesViewport');
+    if (viewport) {
+      viewport.addEventListener('touchstart', (e) => {
+        outcomesSlideshow.touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      viewport.addEventListener('touchend', (e) => {
+        const delta = e.changedTouches[0].screenX - outcomesSlideshow.touchStartX;
+        if (Math.abs(delta) < 40) return;
+        if (delta < 0) setOutcomesSlide(outcomesSlideshow.index + 1);
+        else setOutcomesSlide(outcomesSlideshow.index - 1);
+      }, { passive: true });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (!outcomesSlideshow.isOpen) return;
+      if (e.key === 'Escape') closeOutcomesSlideshow();
+      if (e.key === 'ArrowRight') setOutcomesSlide(outcomesSlideshow.index + 1);
+      if (e.key === 'ArrowLeft') setOutcomesSlide(outcomesSlideshow.index - 1);
+    });
   }
-
-  document.addEventListener('keydown', (e) => {
-    if (!outcomesSlideshow.isOpen) return;
-    if (e.key === 'Escape') closeOutcomesSlideshow();
-    if (e.key === 'ArrowRight') setOutcomesSlide(outcomesSlideshow.index + 1);
-    if (e.key === 'ArrowLeft') setOutcomesSlide(outcomesSlideshow.index - 1);
-  });
 }
 
 function getDemoAppScrollParents() {
@@ -3269,6 +3402,7 @@ function restartGuidedDemo() {
   hidePostDemoPanel();
   document.getElementById('post-demo-bubble')?.classList.add('is-hidden');
   hideDemoOutcomes();
+  hideOutcomesCtaDock();
   closeReviewDialog();
   $('demoPublishOverlay')?.classList.remove('active');
   document.body.classList.remove('jcp-publish-modal-open');
@@ -3333,7 +3467,19 @@ function wireControls() {
     state.activeCheckinIndex = null;
   });
 
-  $('btnMobileNext')?.addEventListener('click', () => advanceDemo());
+  $('btnMobileNext')?.addEventListener('click', () => {
+    if (tour.stepKey === 'step6' && !outcomesSlideshow.isOpen) {
+      completeDemoConversion();
+      return;
+    }
+    advanceDemo();
+  });
+
+  $('demoOutcomesReopenCta')?.addEventListener('click', () => {
+    if (tour.stepKey === 'step6' && !outcomesSlideshow.isOpen) {
+      openOutcomesSlideshow();
+    }
+  });
 
   $('mobileDemoClose')?.addEventListener('click', () => {
     const returnUrl = sessionStorage.getItem('jcp_survey_return_url') || '/demo/';
@@ -3646,6 +3792,10 @@ function hidePostDemoPanel() {
   const dir = document.getElementById('directory-collapsible');
   if (dir) dir.style.display = 'none';
   document.getElementById('directory-hint')?.classList.add('is-hidden');
+
+  if (tour.stepKey === 'step6' && isGuidedDemoRun() && !outcomesSlideshow.isOpen) {
+    showOutcomesCtaDock();
+  }
 }
 
 function postDemoOverlayClose(e) {

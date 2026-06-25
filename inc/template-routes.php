@@ -16,8 +16,8 @@
  *   single-jcp_company.php, inc/enqueue.php, assets/js/core/jcp-render.js.
  * - No plugin template override; theme owns directory/profile rendering.
  *
- * Directory and company now use rewrite rules + template_include so they are served
- * as 200 with correct title (Rank Math / Yoast compatible) without going through 404.
+ * Directory, company, and demo use rewrite rules + template_include so they are served
+ * as 200 with correct title (Rank Math compatible) without going through 404.
  *
  * @package JCP_Core
  */
@@ -53,6 +53,15 @@ function jcp_core_register_route_query_var( array $vars ): array {
  */
 function jcp_core_directory_route_template_redirect(): void {
     $route = get_query_var( 'jcp_route', '' );
+
+    if ( $route === 'demo' ) {
+        global $wp_query;
+        $wp_query->is_404 = false;
+        status_header( 200 );
+        jcp_core_prime_demo_page_query();
+        return;
+    }
+
     if ( $route !== 'directory' && $route !== 'company' ) {
         return;
     }
@@ -120,6 +129,12 @@ function jcp_core_directory_route_template_redirect(): void {
  */
 function jcp_core_directory_route_template_include( string $template ): string {
     $route = get_query_var( 'jcp_route', '' );
+    if ( $route === 'demo' ) {
+        $path = get_stylesheet_directory() . '/page-demo.php';
+        if ( file_exists( $path ) ) {
+            return $path;
+        }
+    }
     if ( $route === 'directory' ) {
         $path = get_stylesheet_directory() . '/page-directory.php';
         if ( file_exists( $path ) ) {
@@ -321,8 +336,11 @@ function jcp_core_fallback_template_routes(): void {
     $wp_query->is_404 = false;
     status_header( 200 );
 
+    if ( $path_segment === 'demo' ) {
+        jcp_core_prime_demo_page_query();
+    }
+
     $route_titles = [
-        'demo'            => __( 'Demo', 'jcp-core' ),
         'pricing'         => __( 'Pricing', 'jcp-core' ),
         'contact'         => __( 'Contact', 'jcp-core' ),
         'contact-success' => __( 'Message sent', 'jcp-core' ),

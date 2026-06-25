@@ -42,7 +42,7 @@
   width: 100% !important;
   max-width: 100% !important;
   margin: 0 !important;
-  padding-top: calc(72px + var(--jcp-space-2xl)) !important;
+  padding-top: var(--jcp-space-xl) !important;
   padding-bottom: var(--jcp-space-5xl) !important;
   background-color: #ffffff !important;
   border-bottom: none !important;
@@ -54,10 +54,12 @@
   overflow: hidden !important;
 }
 
-/* Mobile: compact space above H1 */
+/* Mobile: compact space above H1 (header offset lives on body) */
 @media (max-width: 768px) {
-  .jcp-home .directory-hero {
-    padding-top: calc(72px + var(--jcp-space-md)) !important;
+  .jcp-home .directory-hero,
+  .jcp-home .jcp-hero {
+    padding-top: var(--jcp-space-md) !important;
+    padding-bottom: var(--jcp-space-2xl) !important;
   }
 }
 
@@ -119,9 +121,15 @@
   max-width: 100% !important;
 }
 
-/* Hero CTA row: align buttons to top so primary (with microcopy) and secondary line up */
+/* Hero CTA row: desktop aligns tops; mobile stacks full-width in sections.css */
 .jcp-home .jcp-hero .directory-cta-row {
   align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+  .jcp-home .jcp-hero .directory-cta-row {
+    align-items: stretch;
+  }
 }
 
 /* Microcopy under primary CTA in hero */
@@ -181,32 +189,31 @@
 }
 
 @media (max-width: 768px) {
-  .jcp-home .directory-hero {
-    padding-bottom: var(--jcp-space-4xl) !important;
-  }
-
   .jcp-home .jcp-hero-grid {
-    gap: var(--jcp-space-2xl);
+    gap: var(--jcp-space-lg);
   }
 
   .jcp-home .jcp-hero h1,
-  .jcp-home .directory-hero h1 {
-    font-size: clamp(34px, 8vw, 46px) !important;
+  .jcp-home .directory-hero h1,
+  .jcp-home .jcp-hero-title {
+    font-size: clamp(30px, 8vw, 42px) !important;
+    line-height: 1.08 !important;
   }
 
   .jcp-home .jcp-hero p,
   .jcp-home .jcp-hero .jcp-hero-subtitle {
-    font-size: var(--jcp-font-size-lg) !important;
+    font-size: var(--jcp-font-size-base) !important;
+    line-height: 1.5 !important;
   }
 
-  .jcp-home .hero-copy ,
+  .jcp-home .hero-copy,
   .jcp-niche .hero-copy {
     gap: var(--jcp-space-md);
   }
 
   .jcp-home .directory-meta {
-    gap: var(--jcp-space-xl);
-    margin-top: var(--jcp-space-md);
+    gap: var(--jcp-space-md);
+    margin-top: var(--jcp-space-sm);
   }
 
   .jcp-home .meta-label strong {

@@ -155,6 +155,10 @@ function jcp_core_enqueue_assets(): void {
         $globals = "window.JCP_ENV = 'live';\n";
         $globals .= "window.JCP_CONFIG = { env: 'live', baseUrl: '" . esc_url_raw( site_url() ) . "' };\n";
         $globals .= "window.JCP_ASSET_BASE = '" . esc_url_raw( get_stylesheet_directory_uri() . '/assets' ) . "';";
+        $demo_tpl_ver = jcp_core_asset_version( 'assets/demo/index.html' );
+        if ( $demo_tpl_ver ) {
+            $globals .= "\nwindow.JCP_DEMO_TEMPLATE_VERSION = '" . esc_js( $demo_tpl_ver ) . "';";
+        }
         if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {
             $onb = [
                 'url'         => jcp_core_onboarding_app_url_raw(),

@@ -1123,21 +1123,28 @@ select.survey-input {
   font-weight: 900;
 }
 
-/* Channel tiles (slide 5) */
-.deck-tiles {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
+/* Channel tiles (slide 5) — vertical list on all viewports */
+.deck-slide--channels .deck-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   margin-top: 14px;
+  width: 100%;
 }
 
-.deck-tile {
+.deck-slide--channels .deck-tile {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
   border-radius: 14px;
   border: 1px solid #e5e7eb;
   background: #ffffff;
   padding: 14px;
-  text-align: center;
-  font-weight: 900;
+  text-align: left;
+  font-weight: 800;
+  font-size: 15px;
   color: #111827;
   box-shadow: none;
   position: relative;
@@ -1145,9 +1152,43 @@ select.survey-input {
   animation: none;
 }
 
-.deck-tile:nth-child(2) { animation-delay: 0.2s; }
-.deck-tile:nth-child(3) { animation-delay: 0.4s; }
-.deck-tile:nth-child(4) { animation-delay: 0.6s; }
+.deck-slide--channels .deck-tile:nth-child(2) { animation-delay: 0.2s; }
+.deck-slide--channels .deck-tile:nth-child(3) { animation-delay: 0.4s; }
+.deck-slide--channels .deck-tile:nth-child(4) { animation-delay: 0.6s; }
+
+.deck-slide--channels .tile-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  flex-shrink: 0;
+  border-radius: 14px;
+  background: rgba(255, 80, 62, 0.1);
+  border: 1px solid rgba(255, 80, 62, 0.16);
+  box-shadow: none;
+}
+
+.deck-slide--channels .tile-icon img {
+  width: 22px;
+  height: 22px;
+  filter: hue-rotate(-8deg) saturate(1.05);
+}
+
+.deck-slide--channels .deck-tile::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(255, 80, 62, 0.08), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.deck-slide--channels .deck-tile:hover::after {
+  opacity: 1;
+}
 
 .deck-slide--channels.is-sequencing .deck-tile {
   opacity: 0;
@@ -1161,94 +1202,42 @@ select.survey-input {
   transform: translateY(0);
 }
 
-@media (max-width: 768px) {
-  .survey-deck .deck-slide--channels .deck-tiles {
-    display: flex !important;
-    flex-direction: column !important;
-    grid-template-columns: unset !important;
-    gap: 10px;
-    width: 100%;
-    margin-top: 12px;
-  }
-
-  .survey-deck .deck-slide--channels .deck-tile {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 14px;
-    font-size: 15px;
-    font-weight: 800;
-    text-align: left;
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    background: #ffffff;
-    animation: none !important;
-    transform: none;
-  }
-
-  .survey-deck .deck-slide--channels .tile-icon {
-    width: 44px;
-    height: 44px;
-    margin: 0 !important;
-    flex-shrink: 0;
-  }
-
-  .survey-deck .deck-slide--channels .tile-icon img {
-    width: 22px;
-    height: 22px;
-  }
+/* Legacy alias — only used on channels slide */
+.deck-tiles {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
+  width: 100%;
 }
 
-.tile-icon {
-  display: inline-flex;
+.deck-tile {
+  display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  margin: 0 auto 10px;
+  gap: 12px;
+  width: 100%;
   border-radius: 14px;
-  background: rgba(255, 80, 62, 0.1);
-  border: 1px solid rgba(255, 80, 62, 0.16);
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 14px;
+  text-align: left;
+  font-weight: 800;
+  font-size: 15px;
+  color: #111827;
   box-shadow: none;
+  position: relative;
+  overflow: hidden;
+  animation: none;
 }
 
-.tile-icon img {
-  width: 22px;
-  height: 22px;
-  filter: hue-rotate(-8deg) saturate(1.05);
-}
-
-.deck-tile::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at top, rgba(255, 80, 62, 0.08), transparent 55%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.deck-tile:hover::after {
-  opacity: 1;
-}
+.deck-tile:nth-child(2) { animation-delay: 0.2s; }
+.deck-tile:nth-child(3) { animation-delay: 0.4s; }
+.deck-tile:nth-child(4) { animation-delay: 0.6s; }
 
 @keyframes tileFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-6px); }
-}
-
-@media (max-width: 900px) {
-  .deck-tiles {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 640px) {
-  .deck-tiles {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* Directory preview (slide 5) */
@@ -2076,12 +2065,13 @@ input::-webkit-textfield-decoration-container {
     border-radius: 0;
     box-shadow: none;
     padding:
-      max(72px, calc(env(safe-area-inset-top, 0px) + 64px))
+      max(52px, calc(env(safe-area-inset-top, 0px) + 44px))
       max(16px, env(safe-area-inset-right, 0px))
       max(16px, calc(env(safe-area-inset-bottom, 0px) + 12px))
       max(16px, env(safe-area-inset-left, 0px));
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -2207,7 +2197,7 @@ input::-webkit-textfield-decoration-container {
   .survey-step.active {
     display: flex;
     flex-direction: column;
-    flex: 1 1 auto;
+    flex: 0 0 auto;
     min-height: 0;
     gap: 0;
   }
@@ -2254,7 +2244,7 @@ input::-webkit-textfield-decoration-container {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     padding-top: 2px;
-    padding-bottom: calc(var(--deck-footer-h) + 24px);
+    padding-bottom: calc(var(--deck-footer-h) + 12px);
   }
 
   .deck-slide h2 {
@@ -2357,43 +2347,24 @@ input::-webkit-textfield-decoration-container {
     margin-top: 8px;
   }
 
-  .deck-tiles {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+  .deck-slide--channels .deck-tiles {
+    gap: 8px;
     margin-top: 10px;
   }
 
-  .deck-slide--channels .deck-tiles {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 12px;
-    overflow: visible;
-  }
-
   .deck-slide--channels .deck-tile {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 14px;
-    font-size: 15px;
-    text-align: left;
-    border: 1px solid #e5e7eb;
-    border-radius: 14px;
-    background: #ffffff;
+    padding: 12px;
+    font-size: 14px;
   }
 
   .deck-slide--channels .tile-icon {
-    width: 44px;
-    height: 44px;
-    margin: 0;
-    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
   }
 
   .deck-slide--channels .tile-icon img {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
   }
 
   .deck-tile {
@@ -2410,7 +2381,7 @@ input::-webkit-textfield-decoration-container {
   .tile-icon {
     width: 40px;
     height: 40px;
-    margin-bottom: 8px;
+    margin-bottom: 0;
     background: rgba(255, 80, 62, 0.1);
     border: 1px solid rgba(255, 80, 62, 0.16);
     box-shadow: none;

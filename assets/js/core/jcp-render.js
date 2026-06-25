@@ -61,7 +61,12 @@
   // Reserve layout space to reduce CLS while template loads
   root.style.minHeight = '50vh';
 
-  fetch(templateUrl)
+  let fetchUrl = templateUrl;
+  if ((page === 'demo' || page === 'prototype') && window.JCP_DEMO_TEMPLATE_VERSION) {
+    fetchUrl = `${templateUrl}?v=${encodeURIComponent(window.JCP_DEMO_TEMPLATE_VERSION)}`;
+  }
+
+  fetch(fetchUrl, { cache: 'no-store' })
     .then((res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.text();

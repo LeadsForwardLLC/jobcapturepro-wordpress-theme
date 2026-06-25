@@ -333,7 +333,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
       </article>
 
       <article class="deck-slide deck-slide--cards">
-        <h2 id="deckPersonalTitle">Watch one job publish everywhere for your business.</h2>
+        <h2 id="deckPersonalTitle">Ready? See one job publish everywhere.</h2>
         <p class="deck-lead" id="deckPersonalLead">
           See the live workflow end to end: one job turning into proof that builds rankings, trust, and calls.
         </p>

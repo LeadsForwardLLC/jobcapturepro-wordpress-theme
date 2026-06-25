@@ -30,6 +30,9 @@ require_once get_template_directory() . '/inc/template-routes.php';
 // SEO for directory and contractor profile pages (meta description, profile titles, schema)
 require_once get_template_directory() . '/inc/seo-directory.php';
 
+// SEO for /demo (noindex, title/meta; uses WP page when published)
+require_once get_template_directory() . '/inc/seo-demo.php';
+
 // Load ACF configuration (if ACF is available)
 require_once get_template_directory() . '/inc/acf-config.php';
 
