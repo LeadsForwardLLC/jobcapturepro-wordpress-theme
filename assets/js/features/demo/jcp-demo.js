@@ -335,6 +335,20 @@ function getDemoSessionId() {
   }
 }
 
+function getDemoContactPayload() {
+  try {
+    const user = JSON.parse(localStorage.getItem('demoUser') || 'null');
+    if (!user || !user.email) return {};
+    return {
+      email: String(user.email).trim(),
+      first_name: String(user.firstName || '').trim(),
+      last_name: String(user.lastName || '').trim(),
+    };
+  } catch (e) {
+    return {};
+  }
+}
+
 function jcpDemoTrack(eventType, stepNumber, metadata) {
   const url = window.JCP_DEMO_EVENT && window.JCP_DEMO_EVENT.rest_url;
   if (!url) return;
@@ -343,7 +357,8 @@ function jcpDemoTrack(eventType, stepNumber, metadata) {
       session_id: getDemoSessionId(),
       event_type: eventType,
       step_number: stepNumber != null ? stepNumber : undefined,
-      metadata: metadata || undefined
+      metadata: metadata || undefined,
+      ...getDemoContactPayload(),
     };
     fetch(url, {
       method: 'POST',

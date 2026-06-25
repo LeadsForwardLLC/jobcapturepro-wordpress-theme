@@ -127,6 +127,21 @@ function jcp_demo_analytics_register_rest_route(): void {
                 'required' => false,
                 'type'    => 'object',
             ],
+            'email'        => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_email',
+            ],
+            'first_name'   => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
+            'last_name'    => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
         ],
     ] );
 }
@@ -194,6 +209,21 @@ function jcp_demo_analytics_handle_event( \WP_REST_Request $request ) {
     }
 
     jcp_demo_analytics_upsert_session_from_event( $session_id, $event_type, $metadata, $meta_json );
+
+    if ( function_exists( 'jcp_demo_ghl_maybe_forward_demo_milestone' ) ) {
+        $email      = trim( (string) $request->get_param( 'email' ) );
+        $first_name = trim( (string) $request->get_param( 'first_name' ) );
+        $last_name  = trim( (string) $request->get_param( 'last_name' ) );
+        jcp_demo_ghl_maybe_forward_demo_milestone(
+            $session_id,
+            $event_type,
+            is_array( $metadata ) ? $metadata : null,
+            $email,
+            $first_name,
+            $last_name
+        );
+    }
+
     return new \WP_REST_Response( [ 'ok' => true ], 200 );
 }
 
