@@ -9,6 +9,9 @@
 // Load helper functions (asset paths, URLs, ACF helpers)
 require_once get_template_directory() . '/inc/helpers.php';
 
+// Brand favicon on all front-end pages (demo, survey, marketing).
+require_once get_template_directory() . '/inc/favicon.php';
+
 // App onboarding handoff URLs (marketing site → SaaS signup)
 require_once get_template_directory() . '/inc/onboarding.php';
 
