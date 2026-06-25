@@ -540,10 +540,25 @@ const demoGuideContent = {
   },
   step6: {
     pill: 'Final step',
-    title: 'One job. Full automation.',
-    body: 'Every finished job can drive more calls without extra work. Tap below to start free.',
+    title: 'See everything that published',
+    body: 'Swipe through real examples from this job. Tap Get Started Free when you are ready.',
     interactHint: ''
   }
+};
+
+const OUTCOMES_SLIDE_LABELS = [
+  'Live on your website',
+  'Posted to social media',
+  'Live on Google Business',
+  'Added to JobCapturePro directory',
+  'New 5-star review received',
+];
+
+const outcomesSlideshow = {
+  index: 0,
+  total: 5,
+  isOpen: false,
+  touchStartX: 0,
 };
 
 
@@ -1114,7 +1129,10 @@ function updateMobileStepperLabel() {
   const hint = $('mobileStepInteractHint');
   if (!btn || !isGuidedDemoRun()) return;
 
-  const label = tour.stepKey ? getNextLabelForStep(tour.stepKey) : 'Next →';
+  let label = tour.stepKey ? getNextLabelForStep(tour.stepKey) : 'Next →';
+  if (tour.stepKey === 'step6' && outcomesSlideshow.isOpen) {
+    label = outcomesSlideshow.index >= outcomesSlideshow.total - 1 ? 'Get Started Free' : 'Next →';
+  }
   btn.textContent = label;
 
   const hideNext = tour.stepKey !== 'step6';
@@ -1145,7 +1163,7 @@ const tour = {
       step3: '#submit-btn',
       step4: '#btnSavePublish',
       step5: '#btnRequestReview',
-      step6: '#demoOutcomes',
+      step6: '#demoOutcomesModal',
     }
 };
 
@@ -1225,7 +1243,7 @@ function setTourStep(stepKey) {
   } else {
     delete document.body.dataset.tourStep;
   }
-  if (isGuidedDemoRun()) {
+  if (isGuidedDemoRun() && stepKey !== 'step6') {
     setMobileGuideCollapsed(false);
   }
   const stepNum = stepKey && stepKey.match(/^step(\d)$/) ? parseInt(stepKey.slice(-1), 10) : null;
@@ -2403,7 +2421,7 @@ async function completeGuidedReviewFlow() {
   applyFocalPoint();
   syncMobileGuideChrome();
 
-  await showDemoOutcomesRecap();
+  await openOutcomesSlideshow();
 
   lockBackButtons(false);
   document.querySelectorAll('.is-disabled').forEach((el) => {
@@ -2413,6 +2431,11 @@ async function completeGuidedReviewFlow() {
 }
 
 function hideDemoOutcomes() {
+  hideDemoOutcomesInline();
+  closeOutcomesSlideshow();
+}
+
+function hideDemoOutcomesInline() {
   const panel = $('demoOutcomes');
   const review = $('demoReviewReceived');
   if (panel) {
@@ -2425,6 +2448,284 @@ function hideDemoOutcomes() {
   }
   const list = $('demoOutcomesList');
   if (list) list.innerHTML = '';
+}
+
+function getOutcomesJobContext() {
+  const checkin = getCurrentCheckinForReview();
+  const businessName = demoUser.businessName || 'Your Business';
+  const image = checkin?.image || demoPhotos[0] || '';
+  const address = checkin?.address || '105 Walnut St';
+  const location = checkin?.location || 'Austin, TX';
+  const title = checkin?.title || 'Water Heater Replacement';
+  const summary = checkin?.summary || excerptText(descriptions[0], 22);
+  const nicheLabel = demoUser.niche
+    ? demoUser.niche.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+    : 'Plumbing';
+  const slug = businessName.toLowerCase().replace(/[^a-z0-9]+/g, '') || 'yourbusiness';
+  return {
+    businessName,
+    image,
+    address,
+    location,
+    title,
+    summary,
+    nicheLabel,
+    slug,
+    firstName: demoUser.firstName || 'John',
+  };
+}
+
+function buildOutcomesSlideHtml(index, ctx) {
+  const e = escapeHtml;
+  const img = e(ctx.image);
+  const title = e(ctx.title);
+  const business = e(ctx.businessName);
+  const address = e(ctx.address);
+  const location = e(ctx.location);
+  const summary = e(ctx.summary);
+  const niche = e(ctx.nicheLabel);
+  const slug = e(ctx.slug);
+  const first = e(ctx.firstName);
+
+  switch (index) {
+    case 0:
+      return `
+        <article class="demo-outcomes-slide" data-slide="0">
+          <div class="outcomes-preview outcomes-preview--website">
+            <div class="outcomes-browser">
+              <div class="outcomes-browser__bar">
+                <span></span><span></span><span></span>
+                <div class="outcomes-browser__url">${slug}.com/jobs</div>
+              </div>
+              <div class="outcomes-browser__body">
+                <p class="outcomes-browser__heading">Recent work from ${business}</p>
+                <div class="outcomes-job-card">
+                  <img src="${img}" alt="" width="120" height="90" loading="lazy">
+                  <div>
+                    <strong>${title}</strong>
+                    <span>${address}, ${location}</span>
+                    <p>${summary}</p>
+                    <em>Published just now</em>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>`;
+    case 1:
+      return `
+        <article class="demo-outcomes-slide" data-slide="1">
+          <div class="outcomes-preview outcomes-preview--social">
+            <div class="outcomes-social-card">
+              <div class="outcomes-social-card__head">
+                <span class="outcomes-social-card__avatar">${business.charAt(0)}</span>
+                <div>
+                  <strong>${business}</strong>
+                  <span>Just now · ${location}</span>
+                </div>
+              </div>
+              <p class="outcomes-social-card__copy">${summary}</p>
+              <img class="outcomes-social-card__photo" src="${img}" alt="" width="400" height="220" loading="lazy">
+              <div class="outcomes-social-card__reactions">
+                <span>👍 Like</span><span>💬 Comment</span><span>↗ Share</span>
+              </div>
+            </div>
+          </div>
+        </article>`;
+    case 2:
+      return `
+        <article class="demo-outcomes-slide" data-slide="2">
+          <div class="outcomes-preview outcomes-preview--google">
+            <div class="outcomes-gbp-card">
+              <div class="outcomes-gbp-card__brand">
+                <img src="${assetBase}/shared/assets/icons/lucide/map-pin.svg" class="lucide-icon lucide-icon-sm" alt="">
+                <strong>${business}</strong>
+                <span>Google Business Profile</span>
+              </div>
+              <img class="outcomes-gbp-card__photo" src="${img}" alt="" width="400" height="200" loading="lazy">
+              <h4>${title} completed in ${location}</h4>
+              <p>${summary}</p>
+              <span class="outcomes-gbp-card__meta">Posted automatically · Verified job</span>
+            </div>
+          </div>
+        </article>`;
+    case 3:
+      return `
+        <article class="demo-outcomes-slide" data-slide="3">
+          <div class="outcomes-preview outcomes-preview--directory">
+            <div class="outcomes-directory-card">
+              <div class="outcomes-directory-card__badge">
+                <img src="${assetBase}/shared/assets/icons/lucide/badge-check.svg" class="lucide-icon lucide-icon-sm" alt="">
+                Verified on JobCapturePro
+              </div>
+              <div class="outcomes-directory-card__row">
+                <img class="outcomes-directory-card__photo" src="${img}" alt="" width="88" height="88" loading="lazy">
+                <div>
+                  <strong>${business}</strong>
+                  <span>${niche} · ${location}</span>
+                  <p>${title} added with live proof</p>
+                  <em>Owner: ${first} · Active now</em>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>`;
+    default:
+      return `
+        <article class="demo-outcomes-slide" data-slide="4">
+          <div class="outcomes-preview outcomes-preview--review">
+            <div class="outcomes-review-card">
+              <div class="outcomes-review-card__stars" aria-hidden="true">★★★★★</div>
+              <div class="outcomes-review-card__body">
+                <img class="outcomes-review-card__thumb" src="${img}" alt="" width="56" height="56" loading="lazy">
+                <div class="outcomes-review-card__copy">
+                  <strong>New 5-star review</strong>
+                  <p>"Great service, fast and very professional!"</p>
+                  <small>Arrived right after your review request</small>
+                </div>
+              </div>
+              <div class="outcomes-review-card__sent">
+                <img src="${assetBase}/shared/assets/icons/lucide/send.svg" class="lucide-icon lucide-icon-sm" alt="">
+                Review request sent automatically after the job
+              </div>
+            </div>
+          </div>
+        </article>`;
+  }
+}
+
+function renderOutcomesSlides() {
+  const track = $('demoOutcomesTrack');
+  const dots = $('demoOutcomesDots');
+  if (!track || !dots) return;
+
+  const ctx = getOutcomesJobContext();
+  track.innerHTML = Array.from({ length: outcomesSlideshow.total }, (_, i) => buildOutcomesSlideHtml(i, ctx)).join('');
+  dots.innerHTML = Array.from({ length: outcomesSlideshow.total }, (_, i) => (
+    `<button type="button" class="demo-outcomes-dot${i === 0 ? ' is-active' : ''}" data-slide="${i}" aria-label="Slide ${i + 1}" role="tab"></button>`
+  )).join('');
+}
+
+function updateOutcomesSlideshowUi() {
+  const { index, total } = outcomesSlideshow;
+  const track = $('demoOutcomesTrack');
+  if (track) track.style.transform = `translateX(-${index * 100}%)`;
+
+  document.querySelectorAll('.demo-outcomes-slide').forEach((slide, i) => {
+    slide.classList.toggle('is-active', i === index);
+  });
+  document.querySelectorAll('.demo-outcomes-dot').forEach((dot, i) => {
+    dot.classList.toggle('is-active', i === index);
+    dot.setAttribute('aria-selected', i === index ? 'true' : 'false');
+  });
+
+  safeText('demoOutcomesSlideCounter', `${index + 1} of ${total}`);
+  safeText('demoOutcomesSlideLabel', OUTCOMES_SLIDE_LABELS[index] || '');
+
+  const prev = $('demoOutcomesPrev');
+  const next = $('demoOutcomesNext');
+  const finish = $('demoOutcomesFinish');
+  if (prev) prev.hidden = index === 0;
+  if (next) next.hidden = index >= total - 1;
+  if (finish) finish.hidden = index < total - 1;
+
+  const mobileNext = $('btnMobileNext');
+  if (mobileNext && isGuidedDemoRun() && tour.stepKey === 'step6') {
+    mobileNext.textContent = index >= total - 1 ? 'Get Started Free' : 'Next →';
+  }
+
+  const skip = $('demoOutcomesSkipCta');
+  if (skip) skip.hidden = index >= total - 1;
+
+  syncMobileGuideChrome();
+}
+
+function setOutcomesSlide(index, { trackAnalytics = true } = {}) {
+  const clamped = Math.min(Math.max(0, index), outcomesSlideshow.total - 1);
+  outcomesSlideshow.index = clamped;
+  updateOutcomesSlideshowUi();
+  if (trackAnalytics && outcomesSlideshow.isOpen) {
+    jcpDemoTrack('demo_outcomes_slide', clamped + 1);
+  }
+}
+
+function openOutcomesSlideshow() {
+  const modal = $('demoOutcomesModal');
+  if (!modal) return;
+
+  hideDemoOutcomesInline();
+  outcomesSlideshow.isOpen = true;
+  outcomesSlideshow.index = 0;
+
+  renderOutcomesSlides();
+  setOutcomesSlide(0, { trackAnalytics: false });
+
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('jcp-outcomes-modal-open');
+  setMobileGuideCollapsed(false);
+  updateMobileLayoutMetrics();
+  hideMobileSpotlight();
+  updateGuidedCoachBackdrop();
+  jcpDemoTrack('demo_outcomes_opened', 6);
+
+  requestAnimationFrame(() => modal.classList.add('is-visible'));
+}
+
+function closeOutcomesSlideshow() {
+  const modal = $('demoOutcomesModal');
+  if (!modal || modal.hidden) return;
+
+  outcomesSlideshow.isOpen = false;
+  modal.classList.remove('is-visible');
+  modal.hidden = true;
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('jcp-outcomes-modal-open');
+}
+
+function finishOutcomesSlideshow() {
+  jcpDemoTrack('demo_outcomes_completed', 6);
+  closeOutcomesSlideshow();
+  showPostDemoPanel();
+}
+
+function wireOutcomesSlideshow() {
+  const modal = $('demoOutcomesModal');
+  if (!modal || modal.dataset.bound === '1') return;
+  modal.dataset.bound = '1';
+
+  $('demoOutcomesModalClose')?.addEventListener('click', closeOutcomesSlideshow);
+  $('demoOutcomesModalBackdrop')?.addEventListener('click', closeOutcomesSlideshow);
+  $('demoOutcomesPrev')?.addEventListener('click', () => setOutcomesSlide(outcomesSlideshow.index - 1));
+  $('demoOutcomesNext')?.addEventListener('click', () => setOutcomesSlide(outcomesSlideshow.index + 1));
+  $('demoOutcomesFinish')?.addEventListener('click', finishOutcomesSlideshow);
+  $('demoOutcomesSkipCta')?.addEventListener('click', finishOutcomesSlideshow);
+
+  $('demoOutcomesDots')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-slide]');
+    if (!btn) return;
+    setOutcomesSlide(parseInt(btn.dataset.slide, 10));
+  });
+
+  const viewport = $('demoOutcomesViewport');
+  if (viewport) {
+    viewport.addEventListener('touchstart', (e) => {
+      outcomesSlideshow.touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    viewport.addEventListener('touchend', (e) => {
+      const delta = e.changedTouches[0].screenX - outcomesSlideshow.touchStartX;
+      if (Math.abs(delta) < 40) return;
+      if (delta < 0) setOutcomesSlide(outcomesSlideshow.index + 1);
+      else setOutcomesSlide(outcomesSlideshow.index - 1);
+    }, { passive: true });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (!outcomesSlideshow.isOpen) return;
+    if (e.key === 'Escape') closeOutcomesSlideshow();
+    if (e.key === 'ArrowRight') setOutcomesSlide(outcomesSlideshow.index + 1);
+    if (e.key === 'ArrowLeft') setOutcomesSlide(outcomesSlideshow.index - 1);
+  });
 }
 
 function getDemoAppScrollParents() {
@@ -2517,52 +2818,6 @@ function scrollDemoTargetIntoView(target, extraGap = 16) {
       });
     }
   });
-}
-
-async function showDemoOutcomesRecap() {
-  const panel = $('demoOutcomes');
-  const list = $('demoOutcomesList');
-  const review = $('demoReviewReceived');
-  if (!panel || !list) return;
-
-  hideDemoOutcomes();
-  panel.hidden = false;
-  panel.classList.add('is-visible');
-
-  const scrollParent = document.querySelector('.iphone-frame .screen')
-    || document.querySelector('#home-screen .content-area');
-  if (scrollParent) scrollParent.scrollTop = 0;
-
-  for (let i = 0; i < DEMO_OUTCOME_ITEMS.length; i++) {
-    await wait(520);
-    const li = document.createElement('li');
-    li.className = 'demo-publish-item';
-    li.innerHTML = `<span class="demo-publish-check" aria-hidden="true"></span>${DEMO_OUTCOME_ITEMS[i]}`;
-    list.appendChild(li);
-    requestAnimationFrame(() => li.classList.add('is-done'));
-
-    if (i === 2) {
-      await wait(120);
-      scrollDemoTargetIntoView(list);
-    }
-  }
-
-  await wait(560);
-  if (review) {
-    const checkin = getCurrentCheckinForReview();
-    const photo = $('demoReviewReceivedPhoto');
-    if (photo) {
-      photo.src = checkin?.image || demoPhotos[0] || '';
-      photo.alt = checkin?.title || 'Completed check-in';
-    }
-    review.hidden = false;
-    requestAnimationFrame(() => review.classList.add('is-visible'));
-  }
-
-  await wait(500);
-  scrollDemoTargetIntoView(review || panel, 20);
-  await wait(700);
-  scrollDemoTargetIntoView(review || panel, 20);
 }
 
 function buildDirectoryPreview() {
@@ -2900,7 +3155,15 @@ function advanceDemo() {
       break;
 
     case 'step6':
-      showPostDemoPanel();
+      if (outcomesSlideshow.isOpen) {
+        if (outcomesSlideshow.index < outcomesSlideshow.total - 1) {
+          setOutcomesSlide(outcomesSlideshow.index + 1);
+        } else {
+          finishOutcomesSlideshow();
+        }
+      } else {
+        openOutcomesSlideshow();
+      }
       break;
 
     default:
@@ -3132,6 +3395,7 @@ function init() {
   // Wire UI
   wireControls();
   wirePostDemoPanel();
+  wireOutcomesSlideshow();
 
   // Apply demo mode restrictions if in demo mode (not on prototype)
   applyDemoRestrictions();

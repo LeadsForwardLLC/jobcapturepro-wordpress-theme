@@ -3341,6 +3341,557 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   color: #9ca3af;
 }
 
+/* Step 6 outcomes slideshow modal */
+.demo-outcomes-modal:not([hidden]) {
+  display: flex;
+}
+
+.demo-outcomes-modal[hidden] {
+  display: none !important;
+}
+
+.demo-outcomes-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 92;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+.demo-outcomes-modal.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.demo-outcomes-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.62);
+}
+
+.demo-outcomes-modal__card {
+  position: relative;
+  width: min(440px, 100%);
+  max-height: min(78vh, 640px);
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 22px;
+  box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
+  padding: 18px 18px 14px;
+  overflow: hidden;
+}
+
+.demo-outcomes-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 999px;
+  background: #f3f4f6;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.demo-outcomes-modal__header {
+  padding-right: 36px;
+  margin-bottom: 12px;
+}
+
+.demo-outcomes-modal__eyebrow {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.demo-outcomes-modal__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #111827;
+}
+
+.demo-outcomes-modal__subtitle {
+  margin: 6px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ff503e;
+}
+
+.demo-outcomes-modal__counter {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.demo-outcomes-modal__viewport {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.demo-outcomes-modal__track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.38s cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.demo-outcomes-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
+  height: 100%;
+  padding: 12px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.outcomes-preview {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Slide 1: website */
+.outcomes-browser {
+  width: 100%;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+
+.outcomes-browser__bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: #f3f4f6;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.outcomes-browser__bar span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #d1d5db;
+}
+
+.outcomes-browser__url {
+  flex: 1;
+  margin-left: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #fff;
+  font-size: 10px;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.outcomes-browser__body {
+  padding: 12px;
+}
+
+.outcomes-browser__heading {
+  margin: 0 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #374151;
+}
+
+.outcomes-job-card {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.outcomes-job-card img {
+  width: 88px;
+  height: 66px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.outcomes-job-card strong {
+  display: block;
+  font-size: 12px;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.outcomes-job-card span {
+  display: block;
+  font-size: 10px;
+  color: #6b7280;
+}
+
+.outcomes-job-card p {
+  margin: 6px 0 4px;
+  font-size: 10px;
+  line-height: 1.35;
+  color: #4b5563;
+}
+
+.outcomes-job-card em {
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 600;
+  color: #ff503e;
+}
+
+/* Slide 2: social */
+.outcomes-social-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+.outcomes-social-card__head {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.outcomes-social-card__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff503e, #ff7a59);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.outcomes-social-card__head strong {
+  display: block;
+  font-size: 12px;
+  color: #111827;
+}
+
+.outcomes-social-card__head span {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+.outcomes-social-card__copy {
+  margin: 0 0 10px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #374151;
+}
+
+.outcomes-social-card__photo {
+  width: 100%;
+  height: auto;
+  max-height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+}
+
+.outcomes-social-card__reactions {
+  display: flex;
+  gap: 14px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #f3f4f6;
+  font-size: 10px;
+  color: #6b7280;
+}
+
+/* Slide 3: Google Business */
+.outcomes-gbp-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+.outcomes-gbp-card__brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  font-size: 10px;
+  color: #6b7280;
+}
+
+.outcomes-gbp-card__brand strong {
+  font-size: 12px;
+  color: #111827;
+}
+
+.outcomes-gbp-card__photo {
+  width: 100%;
+  height: auto;
+  max-height: 130px;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.outcomes-gbp-card h4 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.outcomes-gbp-card p {
+  margin: 0;
+  font-size: 10px;
+  line-height: 1.4;
+  color: #4b5563;
+}
+
+.outcomes-gbp-card__meta {
+  display: block;
+  margin-top: 8px;
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+/* Slide 4: directory */
+.outcomes-directory-card {
+  width: 100%;
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+}
+
+.outcomes-directory-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ff503e;
+}
+
+.outcomes-directory-card__row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.outcomes-preview--directory {
+  padding-top: 0;
+}
+
+.outcomes-directory-card__photo {
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.outcomes-directory-card strong {
+  display: block;
+  font-size: 13px;
+  color: #111827;
+}
+
+.outcomes-directory-card span {
+  display: block;
+  font-size: 10px;
+  color: #6b7280;
+  margin: 2px 0 6px;
+}
+
+.outcomes-directory-card p {
+  margin: 0;
+  font-size: 11px;
+  color: #374151;
+}
+
+.outcomes-directory-card em {
+  display: block;
+  margin-top: 6px;
+  font-size: 10px;
+  font-style: normal;
+  color: #9ca3af;
+}
+
+/* Slide 5: review with job thumbnail */
+.outcomes-review-card {
+  width: 100%;
+  background: linear-gradient(180deg, #fff7f5 0%, #ffffff 100%);
+  border: 1px solid #fecaca;
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 10px 28px rgba(255, 80, 62, 0.1);
+}
+
+.outcomes-review-card__stars {
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: #ff503e;
+  margin-bottom: 10px;
+}
+
+.outcomes-review-card__body {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.outcomes-review-card__thumb {
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  flex-shrink: 0;
+}
+
+.outcomes-review-card__copy strong {
+  display: block;
+  font-size: 13px;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.outcomes-review-card__copy p {
+  margin: 0;
+  font-size: 12px;
+  font-style: italic;
+  line-height: 1.35;
+  color: #4b5563;
+}
+
+.outcomes-review-card__copy small {
+  display: block;
+  margin-top: 6px;
+  font-size: 10px;
+  color: #9ca3af;
+}
+
+.outcomes-review-card__sent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 80, 62, 0.12);
+  font-size: 10px;
+  color: #6b7280;
+}
+
+.demo-outcomes-modal__dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px 0 10px;
+}
+
+.demo-outcomes-dot {
+  width: 8px;
+  height: 8px;
+  border: none;
+  border-radius: 999px;
+  background: #e5e7eb;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.demo-outcomes-dot.is-active {
+  background: #ff503e;
+  transform: scale(1.15);
+}
+
+.demo-outcomes-modal__actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.demo-outcomes-modal__actions .btn {
+  flex: 1;
+}
+
+.demo-outcomes-modal__back {
+  flex: 0 0 auto !important;
+}
+
+.demo-outcomes-modal__skip {
+  margin-top: 8px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.demo-outcomes-modal__skip:hover {
+  color: #ff503e;
+}
+
+body.jcp-outcomes-modal-open .mobile-stepper {
+  z-index: 93;
+}
+
+body.is-mobile-mode.jcp-phone-shell.jcp-outcomes-modal-open .demo-outcomes-modal {
+  align-items: flex-end;
+  padding: 12px 12px calc(var(--jcp-stepper-height, 168px) + 8px);
+  z-index: 91;
+}
+
+body.is-mobile-mode.jcp-phone-shell.jcp-outcomes-modal-open .demo-outcomes-modal__card {
+  width: 100%;
+  max-height: min(62vh, 520px);
+}
+
+body.jcp-guided-demo:not(.is-mobile-mode).jcp-outcomes-modal-open .demo-outcomes-modal {
+  padding-bottom: calc(var(--jcp-mobile-bottom, 148px) + 16px);
+}
+
+body.jcp-guided-demo:not(.is-mobile-mode) .demo-outcomes-modal__card {
+  width: min(480px, calc(100vw - 40px));
+}
+
 body.is-mobile-mode.jcp-guided-demo[data-tour-step="step6"] #home-screen .content-area {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
