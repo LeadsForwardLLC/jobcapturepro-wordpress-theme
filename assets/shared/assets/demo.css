@@ -3472,6 +3472,33 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
   padding: 18px 18px 14px;
   overflow: hidden;
+  transform: translateY(40px);
+  opacity: 0;
+  transition:
+    transform 0.52s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.36s ease;
+}
+
+.demo-outcomes-modal.is-visible .demo-outcomes-modal__card {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.demo-outcomes-confetti {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10250;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-outcomes-modal__card {
+    transform: none;
+    opacity: 1;
+    transition: none;
+  }
 }
 
 .demo-outcomes-modal__close {
@@ -3499,7 +3526,7 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 
 .demo-outcomes-modal__header {
   padding-right: 48px;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   flex-shrink: 0;
 }
 
@@ -3528,7 +3555,7 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 }
 
 .demo-outcomes-modal__counter {
-  margin: 4px 0 0;
+  margin: 4px 0 14px;
   font-size: 12px;
   color: #9ca3af;
 }
@@ -3573,9 +3600,9 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 /* Slide 1: website */
 .outcomes-browser {
   width: 100%;
-  background: transparent;
-  border-radius: 0;
-  border: none;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 20px;
   overflow: hidden;
   box-shadow: none;
 }
@@ -3661,10 +3688,10 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 /* Slide 2: social */
 .outcomes-social-card {
   width: 100%;
-  background: transparent;
-  border-radius: 0;
-  border: none;
-  padding: 0;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 14px 16px;
   box-shadow: none;
 }
 
@@ -3678,7 +3705,7 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 .outcomes-social-card__head {
   display: flex;
   gap: 10px;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 10px;
 }
 
@@ -3686,24 +3713,36 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #ff503e, #ff7a59);
-  color: #fff;
+  background: #ff503e;
+  color: #ffffff;
   font-weight: 800;
   font-size: 14px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+}
+
+.outcomes-social-card__head > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
 }
 
 .outcomes-social-card__head strong {
   display: block;
   font-size: 12px;
   color: #111827;
+  line-height: 1.15;
+  margin: 0;
 }
 
 .outcomes-social-card__head span {
   font-size: 10px;
   color: #6b7280;
+  line-height: 1.15;
+  margin-top: 1px;
 }
 
 .outcomes-social-card__copy {
@@ -3739,10 +3778,10 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 /* Slide 3: Google Business */
 .outcomes-gbp-card {
   width: 100%;
-  background: transparent;
-  border-radius: 0;
-  border: none;
-  padding: 0;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 14px 16px;
   box-shadow: none;
 }
 
@@ -3813,12 +3852,29 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   margin: 0;
   cursor: default;
   text-decoration: none;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 20px;
+  box-shadow: none;
+}
+
+.outcomes-preview--directory .directory-card.is-demo {
+  background: #ffffff;
+  border-color: #e5e7eb;
+  box-shadow: none;
 }
 
 .outcomes-preview--directory .directory-card:hover {
   transform: none;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
-  border-color: rgba(255, 80, 62, 0.45);
+  box-shadow: none;
+  border-color: #e5e7eb;
+}
+
+.outcomes-preview--directory .company-avatar,
+.outcomes-demo-avatar {
+  background: #ff503e !important;
+  color: #ffffff;
+  box-shadow: none;
 }
 
 .outcomes-preview--directory .card-name {
@@ -3854,17 +3910,17 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 /* Slide 5: review with job thumbnail */
 .outcomes-review-card {
   width: 100%;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  padding: 0;
+  background: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 20px;
+  padding: 14px 16px;
   box-shadow: none;
 }
 
 .outcomes-review-card__stars {
   font-size: 16px;
   letter-spacing: 1px;
-  color: #ff503e;
+  color: #fbbf24;
   margin-bottom: 10px;
 }
 
@@ -4140,7 +4196,11 @@ body.is-mobile-mode .demo-outcomes-modal__title {
 }
 
 body.is-mobile-mode .demo-outcomes-modal__header {
-  margin-bottom: 8px;
+  margin-bottom: 4px;
+}
+
+body.is-mobile-mode .demo-outcomes-modal__counter {
+  margin-bottom: 12px;
 }
 
 body.is-mobile-mode .demo-outcomes-modal__card {

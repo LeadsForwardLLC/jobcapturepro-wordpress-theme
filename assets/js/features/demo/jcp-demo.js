@@ -577,6 +577,8 @@ const outcomesSlideshow = {
   touchStartX: 0,
 };
 
+let outcomesConfettiFrame = null;
+
 
 /* ---------------------------
    DOM Helpers
@@ -2543,7 +2545,6 @@ function buildOutcomesSlideHtml(index, ctx) {
   const slug = e(ctx.slug);
   const first = e(ctx.firstName);
   const initial = e(ctx.initial);
-  const avatarColor = e(ctx.avatarColor);
   const jobsCount = Number(ctx.jobsCount) || 12;
   const reviewsCount = Number(ctx.reviewsCount) || 48;
   const rating = e(ctx.rating);
@@ -2620,7 +2621,7 @@ function buildOutcomesSlideHtml(index, ctx) {
               <span class="directory-badge verified">Verified</span>
               <div class="card-header">
                 <div class="company-mark">
-                  <div class="company-avatar" style="background:${avatarColor}">${initial}</div>
+                  <div class="company-avatar outcomes-demo-avatar">${initial}</div>
                 </div>
                 <div class="card-header-content">
                   <h3 class="card-name">${business}</h3>
@@ -2777,6 +2778,99 @@ function setOutcomesSlide(index, { trackAnalytics = true } = {}) {
   }
 }
 
+function stopOutcomesConfetti() {
+  if (outcomesConfettiFrame) {
+    cancelAnimationFrame(outcomesConfettiFrame);
+    outcomesConfettiFrame = null;
+  }
+  const canvas = document.getElementById('demoOutcomesConfetti');
+  if (canvas) canvas.remove();
+}
+
+function fireOutcomesConfetti() {
+  stopOutcomesConfetti();
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const canvas = document.createElement('canvas');
+  canvas.id = 'demoOutcomesConfetti';
+  canvas.className = 'demo-outcomes-confetti';
+  canvas.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(canvas);
+
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const colors = ['#ff503e', '#ff7a59', '#fbbf24', '#34d399', '#60a5fa', '#ffffff', '#f472b6'];
+  const particleCount = width < 768 ? 90 : 140;
+  const particles = [];
+
+  for (let i = 0; i < particleCount; i++) {
+    particles.push({
+      x: Math.random() * width,
+      y: -20 - Math.random() * height * 0.4,
+      vx: (Math.random() - 0.5) * 5,
+      vy: Math.random() * 4 + 3,
+      w: Math.random() * 7 + 4,
+      h: Math.random() * 4 + 3,
+      rot: Math.random() * Math.PI * 2,
+      vr: (Math.random() - 0.5) * 0.25,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      gravity: 0.18 + Math.random() * 0.1,
+      drag: 0.992,
+      life: 1,
+      decay: 0.005 + Math.random() * 0.004,
+      sway: Math.random() * Math.PI * 2,
+      swaySpeed: 0.04 + Math.random() * 0.03,
+    });
+  }
+
+  const start = performance.now();
+  const maxDuration = 3200;
+
+  function tick(now) {
+    ctx.clearRect(0, 0, width, height);
+    let alive = 0;
+
+    for (const particle of particles) {
+      particle.sway += particle.swaySpeed;
+      particle.vx += Math.sin(particle.sway) * 0.08;
+      particle.vy += particle.gravity;
+      particle.vx *= particle.drag;
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+      particle.rot += particle.vr;
+      particle.life -= particle.decay;
+
+      if (particle.life <= 0 || particle.y > height + 40) continue;
+      alive++;
+
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, particle.life);
+      ctx.translate(particle.x, particle.y);
+      ctx.rotate(particle.rot);
+      ctx.fillStyle = particle.color;
+      ctx.fillRect(-particle.w / 2, -particle.h / 2, particle.w, particle.h);
+      ctx.restore();
+    }
+
+    if (alive > 0 && now - start < maxDuration) {
+      outcomesConfettiFrame = requestAnimationFrame(tick);
+    } else {
+      stopOutcomesConfetti();
+    }
+  }
+
+  outcomesConfettiFrame = requestAnimationFrame(tick);
+}
+
 function openOutcomesSlideshow() {
   const modal = $('demoOutcomesModal');
   if (!modal) return;
@@ -2799,7 +2893,10 @@ function openOutcomesSlideshow() {
   updateGuidedCoachBackdrop();
   jcpDemoTrack('demo_outcomes_opened', 6);
 
-  requestAnimationFrame(() => modal.classList.add('is-visible'));
+  requestAnimationFrame(() => {
+    modal.classList.add('is-visible');
+    fireOutcomesConfetti();
+  });
   syncMobileGuideChrome();
 }
 
@@ -2830,6 +2927,7 @@ function closeOutcomesSlideshow({ keepDock = true } = {}) {
   const modal = $('demoOutcomesModal');
   if (!modal || modal.hidden) return;
 
+  stopOutcomesConfetti();
   outcomesSlideshow.isOpen = false;
   modal.classList.remove('is-visible');
   modal.hidden = true;
