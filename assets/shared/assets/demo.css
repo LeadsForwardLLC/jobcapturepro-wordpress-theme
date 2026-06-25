@@ -3684,71 +3684,56 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   color: #9ca3af;
 }
 
-/* Slide 4: directory */
-.outcomes-directory-card {
-  width: 100%;
-  background: #fff;
-  border-radius: 14px;
-  border: 1px solid #e5e7eb;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
-}
-
-.outcomes-directory-card__badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  color: #ff503e;
-}
-
-.outcomes-directory-card__row {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-
+/* Slide 4: directory (uses assets/directory/directory.css card styles) */
 .outcomes-preview--directory {
-  padding-top: 0;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  padding: 2px 0 0;
 }
 
-.outcomes-directory-card__photo {
-  width: 72px;
-  height: 72px;
-  object-fit: cover;
-  border-radius: 12px;
-  flex-shrink: 0;
-}
-
-.outcomes-directory-card strong {
-  display: block;
-  font-size: 13px;
-  color: #111827;
-}
-
-.outcomes-directory-card span {
-  display: block;
-  font-size: 10px;
-  color: #6b7280;
-  margin: 2px 0 6px;
-}
-
-.outcomes-directory-card p {
+.outcomes-preview--directory .directory-card {
+  width: 100%;
   margin: 0;
-  font-size: 11px;
-  color: #374151;
+  cursor: default;
+  text-decoration: none;
 }
 
-.outcomes-directory-card em {
+.outcomes-preview--directory .directory-card:hover {
+  transform: none;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+  border-color: rgba(255, 80, 62, 0.45);
+}
+
+.outcomes-preview--directory .card-name {
+  font-size: 17px;
+}
+
+.outcomes-preview--directory .card-location,
+.outcomes-preview--directory .card-meta-row,
+.outcomes-preview--directory .rating-text {
+  font-size: 11px;
+}
+
+.outcomes-preview--directory .stars {
+  font-size: 12px;
+}
+
+.outcomes-directory-view-link {
   display: block;
-  margin-top: 6px;
-  font-size: 10px;
-  font-style: normal;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
   color: #9ca3af;
+  text-decoration: none;
+  padding: 2px 0 4px;
+  transition: color 0.15s ease;
+}
+
+.outcomes-directory-view-link:hover {
+  color: #2563eb;
+  text-decoration: underline;
 }
 
 /* Slide 5: review with job thumbnail */

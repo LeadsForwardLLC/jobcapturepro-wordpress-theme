@@ -2457,6 +2457,21 @@ function hideDemoOutcomesInline() {
   if (list) list.innerHTML = '';
 }
 
+function getDemoDirectoryUrl() {
+  return `${(baseUrl || '').replace(/\/$/, '')}/directory/`;
+}
+
+function getCompanyInitial(name) {
+  const trimmed = String(name || '').trim();
+  return trimmed ? trimmed.charAt(0).toUpperCase() : '?';
+}
+
+function getAvatarColor(initial) {
+  const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'];
+  const code = String(initial || 'A').charCodeAt(0);
+  return colors[code % colors.length];
+}
+
 function getOutcomesJobContext() {
   const checkin = getCurrentCheckinForReview();
   const businessName = demoUser.businessName || 'Your Business';
@@ -2469,6 +2484,7 @@ function getOutcomesJobContext() {
     ? demoUser.niche.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
     : 'Plumbing';
   const slug = businessName.toLowerCase().replace(/[^a-z0-9]+/g, '') || 'yourbusiness';
+  const initial = getCompanyInitial(businessName);
   return {
     businessName,
     image,
@@ -2479,6 +2495,12 @@ function getOutcomesJobContext() {
     nicheLabel,
     slug,
     firstName: demoUser.firstName || 'John',
+    initial,
+    avatarColor: getAvatarColor(initial),
+    jobsCount: state.metrics?.checkins ?? 12,
+    reviewsCount: state.metrics?.reviews ?? 48,
+    rating: '5.0',
+    directoryUrl: getDemoDirectoryUrl(),
   };
 }
 
@@ -2493,6 +2515,12 @@ function buildOutcomesSlideHtml(index, ctx) {
   const niche = e(ctx.nicheLabel);
   const slug = e(ctx.slug);
   const first = e(ctx.firstName);
+  const initial = e(ctx.initial);
+  const avatarColor = e(ctx.avatarColor);
+  const jobsCount = Number(ctx.jobsCount) || 12;
+  const reviewsCount = Number(ctx.reviewsCount) || 48;
+  const rating = e(ctx.rating);
+  const directoryUrl = e(ctx.directoryUrl);
 
   switch (index) {
     case 0:
@@ -2560,21 +2588,47 @@ function buildOutcomesSlideHtml(index, ctx) {
       return `
         <article class="demo-outcomes-slide" data-slide="3">
           <div class="outcomes-preview outcomes-preview--directory">
-            <div class="outcomes-directory-card">
-              <div class="outcomes-directory-card__badge">
-                <img src="${assetBase}/shared/assets/icons/lucide/badge-check.svg" class="lucide-icon lucide-icon-sm" alt="">
-                Verified on JobCapturePro
-              </div>
-              <div class="outcomes-directory-card__row">
-                <img class="outcomes-directory-card__photo" src="${img}" alt="" width="88" height="88" loading="lazy">
-                <div>
-                  <strong>${business}</strong>
-                  <span>${niche} · ${location}</span>
-                  <p>${title} added with live proof</p>
-                  <em>Owner: ${first} · Active now</em>
+            <div class="directory-card is-demo outcomes-directory-card" role="article">
+              <span class="demo-flag">Demo Listing</span>
+              <span class="directory-badge verified">Verified</span>
+              <div class="card-header">
+                <div class="company-mark">
+                  <div class="company-avatar" style="background:${avatarColor}">${initial}</div>
+                </div>
+                <div class="card-header-content">
+                  <h3 class="card-name">${business}</h3>
                 </div>
               </div>
+              <div class="card-location">
+                <span class="card-location-segment">
+                  <img src="${assetBase}/shared/assets/icons/lucide/map-pin.svg" class="lucide-icon lucide-icon-xs" alt="">
+                  <span>${location}</span>
+                </span>
+                <span class="card-location-segment">
+                  <img src="${assetBase}/shared/assets/icons/lucide/briefcase.svg" class="lucide-icon lucide-icon-xs" alt="">
+                  <span>${niche}</span>
+                </span>
+              </div>
+              <div class="card-meta-row">
+                <span class="meta-inline">
+                  <img src="${assetBase}/shared/assets/icons/lucide/camera.svg" class="lucide-icon lucide-icon-xs" alt="">
+                  ${jobsCount} jobs
+                </span>
+                <span class="meta-divider">·</span>
+                <span class="meta-inline">
+                  <img src="${assetBase}/shared/assets/icons/lucide/clock.svg" class="lucide-icon lucide-icon-xs" alt="">
+                  Active just now
+                </span>
+              </div>
+              <div class="card-rating">
+                <div class="stars">★★★★★</div>
+                <span class="rating-text">${rating} (${reviewsCount})</span>
+              </div>
+              <div class="card-footer">
+                <span class="view-profile">View activity</span>
+              </div>
             </div>
+            <a href="${directoryUrl}" target="_blank" rel="noopener noreferrer" class="outcomes-directory-view-link">View the directory</a>
           </div>
         </article>`;
     default:
@@ -2700,6 +2754,12 @@ function wireOutcomesSlideshow() {
     const btn = e.target.closest('[data-slide]');
     if (!btn) return;
     setOutcomesSlide(parseInt(btn.dataset.slide, 10));
+  });
+
+  $('demoOutcomesTrack')?.addEventListener('click', (e) => {
+    const link = e.target.closest('.outcomes-directory-view-link');
+    if (!link) return;
+    jcpDemoTrack('cta_clicked', null, { cta: 'view_directory', source: 'demo_outcomes_modal' });
   });
 
   const viewport = $('demoOutcomesViewport');

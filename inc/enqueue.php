@@ -188,6 +188,7 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-demo', 'css/pages/demo.css', [ 'jcp-core-demo-shared' ] );
         if ( $demo_mode ) {
             jcp_core_enqueue_style( 'jcp-core-leaflet', 'demo/leaflet/leaflet.css', [ 'jcp-core-demo' ] );
+            jcp_core_enqueue_style( 'jcp-core-directory-cards', 'assets/directory/directory.css', [ 'jcp-core-demo' ] );
             jcp_core_enqueue_script( 'jcp-core-leaflet', 'demo/leaflet/leaflet.js', [ $render_handle ] );
             jcp_core_enqueue_script( 'jcp-core-demo', 'js/features/demo/jcp-demo.js', [ 'jcp-core-leaflet' ] );
             wp_localize_script( 'jcp-core-demo', 'JCP_DEMO_EVENT', [
