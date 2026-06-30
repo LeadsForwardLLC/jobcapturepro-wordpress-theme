@@ -354,7 +354,7 @@ function jcp_nav_render_desktop_trade_mega_panel( string $industries_url ): void
 			<?php if ( ! empty( $items ) ) : ?>
 				<div class="nav-mega-grid nav-mega-grid--trades" role="list">
 					<?php foreach ( $items as $item ) : ?>
-						<?php jcp_nav_render_feature_mega_card( $item, 'desktop', true ); ?>
+						<?php jcp_nav_render_mega_card( $item, 'desktop', true ); ?>
 					<?php endforeach; ?>
 				</div>
 			<?php else : ?>
@@ -489,7 +489,7 @@ function jcp_nav_render_mobile_features_panel( string $features_url ): void {
 			<p class="mobile-nav-panel-lead"><?php esc_html_e( 'Explore what JobCapturePro publishes from every completed job.', 'jcp-core' ); ?></p>
 			<div class="mobile-mega-list">
 				<?php foreach ( $items as $item ) : ?>
-					<?php jcp_nav_render_mega_card( $item, 'mobile', true ); ?>
+					<?php jcp_nav_render_feature_mega_card( $item, 'mobile', true ); ?>
 				<?php endforeach; ?>
 			</div>
 			<a class="mobile-nav-panel-footer" href="<?php echo esc_url( $features_url ); ?>" data-home-anchor="#features"><?php esc_html_e( 'See all features', 'jcp-core' ); ?> →</a>
