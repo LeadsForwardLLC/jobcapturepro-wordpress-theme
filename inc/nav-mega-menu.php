@@ -101,12 +101,21 @@ function jcp_nav_get_trade_items(): array {
 }
 
 /**
+ * Default benefit icons (matches homepage benefits section).
+ *
+ * @return array<int, string>
+ */
+function jcp_nav_feature_default_icons(): array {
+	return [ 'badge-check', 'map-pin', 'message-square', 'star', 'building-2', 'phone' ];
+}
+
+/**
  * Feature cards for Features mega menu (benefits block until dedicated feature pages exist).
  *
- * @return array<int, array{label: string, url: string, excerpt: string, image: string, image_alt: string, slug: string}>
+ * @return array<int, array{label: string, url: string, excerpt: string, icon: string, slug: string}>
  */
 function jcp_nav_get_feature_items(): array {
-	$cached = get_transient( 'jcp_nav_feature_items_v2' );
+	$cached = get_transient( 'jcp_nav_feature_items_v3' );
 	if ( is_array( $cached ) ) {
 		return apply_filters( 'jcp_nav_feature_items', $cached );
 	}
@@ -125,9 +134,9 @@ function jcp_nav_get_feature_items(): array {
 		$benefit_items = [];
 	}
 
-	$benefit_icons = [ 'badge-check', 'map-pin', 'message-square', 'star', 'building-2', 'phone' ];
-	$items   = [];
-	$index   = 0;
+	$benefit_icons = jcp_nav_feature_default_icons();
+	$items         = [];
+	$index         = 0;
 
 	foreach ( $benefit_items as $item ) {
 		if ( ! is_array( $item ) ) {
@@ -142,18 +151,16 @@ function jcp_nav_get_feature_items(): array {
 		$feature = jcp_nav_resolve_feature_page( $slug );
 
 		$items[] = [
-			'label'     => $title,
-			'url'       => $feature['url'],
-			'excerpt'   => jcp_nav_trim_intro( (string) ( $item['body'] ?? '' ), 12 ),
-			'icon'      => $icon,
-			'image'     => $feature['image'],
-			'image_alt' => $feature['image_alt'] !== '' ? $feature['image_alt'] : $title,
-			'slug'      => $slug,
+			'label'   => $title,
+			'url'     => $feature['url'],
+			'excerpt' => jcp_nav_trim_intro( (string) ( $item['body'] ?? '' ), 12 ),
+			'icon'    => $icon,
+			'slug'    => $slug,
 		];
 		++$index;
 	}
 
-	set_transient( 'jcp_nav_feature_items_v2', $items, HOUR_IN_SECONDS );
+	set_transient( 'jcp_nav_feature_items_v3', $items, HOUR_IN_SECONDS );
 
 	return apply_filters( 'jcp_nav_feature_items', $items );
 }
@@ -201,11 +208,13 @@ function jcp_nav_resolve_feature_page( string $slug ): array {
  */
 function jcp_nav_clear_mega_menu_cache(): void {
 	delete_transient( 'jcp_nav_trade_items_v1' );
-	delete_transient( 'jcp_nav_feature_items_v2' );
 	delete_transient( 'jcp_nav_feature_items_v1' );
+	delete_transient( 'jcp_nav_feature_items_v2' );
+	delete_transient( 'jcp_nav_feature_items_v3' );
 }
 add_action( 'save_post_jcp_niche_landing', 'jcp_nav_clear_mega_menu_cache' );
 add_action( 'save_post_page', 'jcp_nav_clear_mega_menu_cache' );
+add_action( 'after_switch_theme', 'jcp_nav_clear_mega_menu_cache' );
 
 /**
  * Render a single mega menu card.
@@ -229,18 +238,12 @@ function jcp_nav_render_mega_card( array $item, string $variant = 'desktop', boo
 
 	$tag = $variant === 'mobile' ? 'a' : 'a';
 	$class = $variant === 'mobile' ? 'mobile-mega-card' : 'nav-mega-card';
-	$use_icon = $icon !== '' && function_exists( 'jcp_core_icon' );
 	?>
 	<<?php echo esc_html( $tag ); ?>
 		class="<?php echo esc_attr( $class ); ?>"
 		href="<?php echo esc_url( $url ); ?>"
 		data-nav-card-slug="<?php echo esc_attr( $slug ); ?>"
 	>
-		<?php if ( $use_icon ) : ?>
-			<span class="factor-icon-wrapper nav-mega-card-icon" aria-hidden="true">
-				<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="factor-icon" alt="" width="24" height="24" />
-			</span>
-		<?php else : ?>
 		<span class="nav-mega-card-thumb<?php echo $image === '' ? ' nav-mega-card-thumb--placeholder' : ''; ?>" aria-hidden="true">
 			<?php if ( $image !== '' ) : ?>
 				<img src="<?php echo esc_url( $image ); ?>" alt="" loading="lazy" decoding="async" width="72" height="72" />
@@ -253,7 +256,51 @@ function jcp_nav_render_mega_card( array $item, string $variant = 'desktop', boo
 				?></span>
 			<?php endif; ?>
 		</span>
-		<?php endif; ?>
+		<span class="nav-mega-card-body">
+			<strong class="nav-mega-card-title"><?php echo esc_html( $label ); ?></strong>
+			<?php if ( $show_excerpt && $excerpt !== '' ) : ?>
+				<span class="nav-mega-card-excerpt"><?php echo esc_html( $excerpt ); ?></span>
+			<?php endif; ?>
+		</span>
+	</a>
+	<?php
+}
+
+/**
+ * Render a Features mega menu card (homepage benefit icons only — never photos).
+ *
+ * @param array<string, string> $item         Card data.
+ * @param string                $variant      desktop|mobile.
+ * @param bool                  $show_excerpt Whether to show excerpt line.
+ */
+function jcp_nav_render_feature_mega_card( array $item, string $variant = 'desktop', bool $show_excerpt = true ): void {
+	$label   = $item['label'] ?? '';
+	$url     = $item['url'] ?? '';
+	$excerpt = $item['excerpt'] ?? '';
+	$icon    = $item['icon'] ?? '';
+	$slug    = $item['slug'] ?? sanitize_title( $label );
+
+	if ( $label === '' || $url === '' ) {
+		return;
+	}
+
+	if ( $icon === '' || ! function_exists( 'jcp_core_icon' ) ) {
+		$icons = jcp_nav_feature_default_icons();
+		$icon  = $icons[0];
+	}
+
+	$class = $variant === 'mobile' ? 'mobile-mega-card' : 'nav-mega-card';
+	$icon_size = $variant === 'mobile' ? 22 : 24;
+	?>
+	<a
+		class="<?php echo esc_attr( $class ); ?>"
+		href="<?php echo esc_url( $url ); ?>"
+		data-nav-card-slug="<?php echo esc_attr( $slug ); ?>"
+		data-nav-card-type="feature"
+	>
+		<span class="factor-icon-wrapper nav-mega-card-icon" aria-hidden="true">
+			<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="factor-icon" alt="" width="<?php echo (int) $icon_size; ?>" height="<?php echo (int) $icon_size; ?>" />
+		</span>
 		<span class="nav-mega-card-body">
 			<strong class="nav-mega-card-title"><?php echo esc_html( $label ); ?></strong>
 			<?php if ( $show_excerpt && $excerpt !== '' ) : ?>
@@ -307,7 +354,7 @@ function jcp_nav_render_desktop_trade_mega_panel( string $industries_url ): void
 			<?php if ( ! empty( $items ) ) : ?>
 				<div class="nav-mega-grid nav-mega-grid--trades" role="list">
 					<?php foreach ( $items as $item ) : ?>
-						<?php jcp_nav_render_mega_card( $item, 'desktop', true ); ?>
+						<?php jcp_nav_render_feature_mega_card( $item, 'desktop', true ); ?>
 					<?php endforeach; ?>
 				</div>
 			<?php else : ?>
@@ -370,7 +417,7 @@ function jcp_nav_render_desktop_features_mega_panel( string $features_url ): voi
 			<?php if ( ! empty( $items ) ) : ?>
 				<div class="nav-mega-grid nav-mega-grid--features" role="list">
 					<?php foreach ( $items as $item ) : ?>
-						<?php jcp_nav_render_mega_card( $item, 'desktop', true ); ?>
+						<?php jcp_nav_render_feature_mega_card( $item, 'desktop', true ); ?>
 					<?php endforeach; ?>
 				</div>
 			<?php else : ?>
