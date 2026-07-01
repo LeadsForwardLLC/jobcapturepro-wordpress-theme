@@ -23,7 +23,6 @@ get_header();
     $share_url  = rawurlencode( $post_url );
     $share_text = rawurlencode( $post_title );
     $icon_base  = get_stylesheet_directory_uri() . '/assets/shared/assets/icons/lucide';
-    $default_featured_url = 'https://jobcapturepro.com/wp-content/uploads/2025/12/jcp-user-photo.jpg';
     $content    = get_the_content();
     $content    = wp_strip_all_tags( $content );
     $word_count = str_word_count( $content );
@@ -57,14 +56,6 @@ get_header();
               <span class="jcp-post-reading-time"><?php echo esc_html( sprintf( __( '%1$s min read', 'jcp-core' ), (int) $read_mins ) ); ?></span>
             </div>
           </header>
-
-          <figure class="jcp-single-hero-image-wrapper">
-            <?php if ( has_post_thumbnail() ) : ?>
-              <?php the_post_thumbnail( 'full', [ 'class' => 'jcp-single-post-featured-img', 'alt' => esc_attr( $post_title ), 'loading' => 'eager', 'fetchpriority' => 'high' ] ); ?>
-            <?php else : ?>
-              <img src="<?php echo esc_url( $default_featured_url ); ?>" alt="" class="jcp-single-post-featured-img" width="800" height="520" loading="eager" fetchpriority="high" />
-            <?php endif; ?>
-          </figure>
 
           <div class="jcp-post-content">
             <?php
