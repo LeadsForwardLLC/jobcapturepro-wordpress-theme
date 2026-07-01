@@ -586,9 +586,13 @@
   transition: width 0.12s ease-out;
 }
 
-/* Single post hero: title/meta left, featured image right (compact).
-   No horizontal padding so hero title/meta aligns with post content (both in 800px band). */
-.jcp-single-hero .jcp-container {
+/* Single post: stacked title, featured image, and content in one section */
+.jcp-single-post-section.jcp-section {
+  padding-top: var(--jcp-space-2xl);
+  padding-bottom: var(--jcp-space-5xl);
+}
+
+.jcp-single-post-container {
   max-width: 800px;
   margin-left: auto;
   margin-right: auto;
@@ -596,25 +600,17 @@
   padding-right: 0;
 }
 
-.jcp-single-hero {
-  padding-top: var(--jcp-space-3xl);
-  padding-bottom: var(--jcp-space-2xl);
+.jcp-single-post {
+  display: flex;
+  flex-direction: column;
+  gap: var(--jcp-space-lg);
 }
 
-/* Tighter gap between hero and post content (no divider line) */
-.jcp-single-content-section {
-  padding-top: var(--jcp-space-2xl);
-}
-
-.jcp-single-hero-grid {
-  gap: var(--jcp-space-2xl);
-  align-items: center;
-}
-
-.jcp-single-hero-copy {
+.jcp-single-post-header {
   display: flex;
   flex-direction: column;
   gap: var(--jcp-space-sm);
+  margin: 0;
 }
 
 .jcp-single-hero-title {
@@ -659,27 +655,37 @@
   color: var(--jcp-color-text-secondary);
 }
 
-/* Hero image: wrapper like guarantee-image-wrapper, no shadow */
-.jcp-single-hero-visual {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-}
-
 .jcp-single-hero-image-wrapper {
   position: relative;
   width: 100%;
-  max-width: 280px;
-  height: 200px;
+  max-width: 100%;
+  margin: 0;
+  border: 2px solid var(--jcp-color-border);
   border-radius: var(--jcp-radius-lg);
   overflow: hidden;
+  background: var(--jcp-color-bg-secondary, #f9fafb);
+  line-height: 0;
 }
 
 .jcp-single-hero-image-wrapper .jcp-single-post-featured-img {
   display: block;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: 100%;
+  height: auto;
+}
+
+.jcp-single-post .jcp-post-content {
+  margin-top: 0;
+}
+
+.jcp-single-post .jcp-post-content > *:first-child,
+.jcp-single-post .jcp-post-content > .video-embed:first-child,
+.jcp-single-post .jcp-post-content > p:first-child + .video-embed {
+  margin-top: 0;
+}
+
+.jcp-single-post .jcp-post-content .video-embed {
+  margin-top: 0;
 }
 
 /* Share section at bottom of post */
@@ -841,6 +847,10 @@
 
 .jcp-post-content > * {
   margin-bottom: var(--jcp-space-lg);
+}
+
+.jcp-post-content > *:first-child {
+  margin-top: 0;
 }
 
 .jcp-post-content > *:last-child {
@@ -1176,29 +1186,22 @@
     gap: var(--jcp-space-2xl);
   }
 
-  .jcp-single-hero {
-    padding-top: var(--jcp-space-2xl);
-    padding-bottom: var(--jcp-space-2xl);
+  .jcp-single-post-section.jcp-section {
+    padding-top: var(--jcp-space-xl);
+    padding-bottom: var(--jcp-space-4xl);
   }
 
-  /* Restore horizontal padding on narrow viewports so hero doesn't touch edges */
-  .jcp-single-hero .jcp-container {
+  .jcp-single-post-container {
     padding-left: var(--jcp-space-md);
     padding-right: var(--jcp-space-md);
   }
 
-  .jcp-single-hero-grid {
-    gap: var(--jcp-space-xl);
+  .jcp-single-post {
+    gap: var(--jcp-space-md);
   }
 
   .jcp-single-hero-title {
     font-size: clamp(22px, 5vw, 28px);
-  }
-
-  .jcp-single-hero-image-wrapper {
-    max-width: 200px;
-    margin-left: auto;
-    margin-right: auto;
   }
 
   .jcp-post-navigation {

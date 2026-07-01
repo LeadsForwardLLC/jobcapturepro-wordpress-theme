@@ -29,57 +29,50 @@ get_header();
     $word_count = str_word_count( $content );
     $read_mins  = max( 1, (int) ceil( $word_count / 200 ) );
     ?>
-  <section class="jcp-section jcp-single-hero">
-    <div class="jcp-container">
-      <div class="jcp-hero-grid jcp-single-hero-grid">
-        <div class="jcp-hero-copy jcp-single-hero-copy">
-          <h1 class="jcp-single-hero-title"><?php echo esc_html( $post_title ); ?></h1>
-          <div class="jcp-post-meta jcp-single-hero-meta">
-            <div class="jcp-post-meta-line jcp-post-meta-author-line">
-              <a href="<?php echo esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ); ?>" class="jcp-post-meta-author" rel="author">
-                <?php echo get_avatar( get_the_author_meta( 'ID' ), 32, '', get_the_author(), [ 'class' => 'jcp-post-meta-avatar' ] ); ?>
-                <span class="jcp-post-meta-author-name"><?php echo esc_html( get_the_author() ); ?></span>
-              </a>
-            </div>
-            <div class="jcp-post-meta-line jcp-post-meta-details">
-              <time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>" class="jcp-post-date">
-                <?php echo esc_html( get_the_date() ); ?>
-              </time>
-              <?php
-              $categories = get_the_category();
-              if ( ! empty( $categories ) ) :
-                ?>
-                <span class="jcp-post-meta-sep" aria-hidden="true">·</span>
-                <span class="jcp-post-categories">
-                  <?php
-                  foreach ( $categories as $category ) {
-                    echo '<a href="' . esc_url( get_category_link( $category->term_id ) ) . '" class="jcp-post-category">' . esc_html( $category->name ) . '</a>';
-                  }
+  <section class="jcp-section jcp-single-post-section">
+    <div class="jcp-container jcp-single-post-container">
+      <div class="jcp-single-post-wrapper">
+        <article id="post-<?php the_ID(); ?>" <?php post_class( 'jcp-single-post' ); ?>>
+          <header class="jcp-single-post-header">
+            <h1 class="jcp-single-hero-title"><?php echo esc_html( $post_title ); ?></h1>
+            <div class="jcp-post-meta jcp-single-hero-meta">
+              <div class="jcp-post-meta-line jcp-post-meta-author-line">
+                <a href="<?php echo esc_url( get_author_posts_url( get_the_author_meta( 'ID' ) ) ); ?>" class="jcp-post-meta-author" rel="author">
+                  <?php echo get_avatar( get_the_author_meta( 'ID' ), 32, '', get_the_author(), [ 'class' => 'jcp-post-meta-avatar' ] ); ?>
+                  <span class="jcp-post-meta-author-name"><?php echo esc_html( get_the_author() ); ?></span>
+                </a>
+              </div>
+              <div class="jcp-post-meta-line jcp-post-meta-details">
+                <time datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>" class="jcp-post-date">
+                  <?php echo esc_html( get_the_date() ); ?>
+                </time>
+                <?php
+                $categories = get_the_category();
+                if ( ! empty( $categories ) ) :
                   ?>
-                </span>
-              <?php endif; ?>
-              <span class="jcp-post-meta-sep" aria-hidden="true">·</span>
-              <span class="jcp-post-reading-time"><?php echo esc_html( sprintf( __( '%1$s min read', 'jcp-core' ), (int) $read_mins ) ); ?></span>
+                  <span class="jcp-post-meta-sep" aria-hidden="true">·</span>
+                  <span class="jcp-post-categories">
+                    <?php
+                    foreach ( $categories as $category ) {
+                      echo '<a href="' . esc_url( get_category_link( $category->term_id ) ) . '" class="jcp-post-category">' . esc_html( $category->name ) . '</a>';
+                    }
+                    ?>
+                  </span>
+                <?php endif; ?>
+                <span class="jcp-post-meta-sep" aria-hidden="true">·</span>
+                <span class="jcp-post-reading-time"><?php echo esc_html( sprintf( __( '%1$s min read', 'jcp-core' ), (int) $read_mins ) ); ?></span>
+              </div>
             </div>
-          </div>
-        </div>
-        <div class="jcp-hero-visual jcp-single-hero-visual">
-          <div class="jcp-single-hero-image-wrapper">
+          </header>
+
+          <figure class="jcp-single-hero-image-wrapper">
             <?php if ( has_post_thumbnail() ) : ?>
-              <?php the_post_thumbnail( 'large', [ 'class' => 'jcp-single-post-featured-img', 'alt' => esc_attr( $post_title ), 'loading' => 'eager', 'fetchpriority' => 'high' ] ); ?>
+              <?php the_post_thumbnail( 'full', [ 'class' => 'jcp-single-post-featured-img', 'alt' => esc_attr( $post_title ), 'loading' => 'eager', 'fetchpriority' => 'high' ] ); ?>
             <?php else : ?>
               <img src="<?php echo esc_url( $default_featured_url ); ?>" alt="" class="jcp-single-post-featured-img" width="800" height="520" loading="eager" fetchpriority="high" />
             <?php endif; ?>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+          </figure>
 
-  <section class="jcp-section jcp-single-content-section">
-    <div class="jcp-container">
-      <div class="jcp-single-post-wrapper">
-        <article id="post-<?php the_ID(); ?>" <?php post_class( 'jcp-single-post' ); ?>>
           <div class="jcp-post-content">
             <?php
             the_content();
