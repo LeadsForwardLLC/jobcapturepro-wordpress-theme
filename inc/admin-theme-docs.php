@@ -549,6 +549,9 @@ automatically.
 Closing Line
 [Closing sentence for this section]
 
+CTA
+[Optional — leave blank to hide section button]
+
 CORE MECHANIC
 1 photo
  Proof created instantly
@@ -608,6 +611,9 @@ Subheadline
 [Feature title two]
  [Feature body]
 
+CTA
+[Optional — leave blank to hide]
+
 MEDIA CHECK-INS
 Headline
 [Optional — auto-filled from Check-Ins if omitted]
@@ -628,6 +634,9 @@ Subheadline
 [Closing sentence one]
 [Closing sentence two]
 
+CTA
+[Optional — leave blank to hide]
+
 MEDIA PROBLEM
 Headline
 [Optional — auto-filled from Problem if omitted]
@@ -646,6 +655,10 @@ Headline
 [Closing paragraph title]
  [Closing paragraph body]
 
+CTA
+[Optional primary button]
+[Optional secondary link]
+
 DIFFERENTIATION
 Headline
 [Headline]
@@ -658,6 +671,9 @@ No new process
  No extra admin
  No marketing workload
 
+CTA
+[Optional — leave blank to hide]
+
 WHO IT'S FOR
 Headline
 [Headline]
@@ -669,12 +685,18 @@ Technicians
 Growing teams
  [Growing teams body]
 
+CTA
+[Optional — leave blank to hide]
+
 FAQ
 Headline
 Common questions from [trade] companies
 
 [Question ending with ?]
 [Answer paragraph]
+
+CTA
+[Optional — leave blank to hide]
 
 CONVERSION
 Headline

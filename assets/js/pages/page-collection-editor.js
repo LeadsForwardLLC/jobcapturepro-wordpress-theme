@@ -77,8 +77,17 @@
 
   const OPTIONAL_DEFAULTS = {
     'conversion.cta_primary': () => ({ label: 'Button label', url: '/demo' }),
+    'what_it_is.cta_primary': () => ({ label: 'Learn more', url: '/demo' }),
+    'what_it_is.cta_secondary': () => ({ label: 'See how it works', url: '#how-it-works' }),
+    'how_it_works.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
+    'how_it_works.cta_secondary': () => ({ label: 'View pricing', url: '/pricing' }),
+    'check_ins.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
+    'problem.cta_primary': () => ({ label: 'Fix this with JobCapturePro', url: '/demo' }),
     'benefits.cta_primary': () => ({ label: 'See it in the demo', url: '/demo' }),
     'benefits.cta_secondary': () => ({ label: 'Learn more', url: '/pricing' }),
+    'differentiation.cta_primary': () => ({ label: 'Get started', url: '/demo' }),
+    'who_its_for.cta_primary': () => ({ label: 'Start free trial', url: '/demo' }),
+    'faq.cta_primary': () => ({ label: 'Still have questions? Book a demo', url: '/demo' }),
     'hero.cta_primary': () => ({ label: 'View the live demo', url: '/demo' }),
     'hero.cta_secondary': () => ({ label: 'Learn how it works', url: '#how-it-works' }),
     'final_cta.cta_primary': () => ({ label: 'Get started', url: '/demo' }),

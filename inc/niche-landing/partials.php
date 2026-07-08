@@ -269,3 +269,39 @@ function jcp_niche_render_section_closing( string $text, string $path = '' ): vo
 	?>><?php echo esc_html( $text ); ?></p>
 	<?php
 }
+
+/**
+ * Optional primary (+ optional secondary) CTA row for any section.
+ *
+ * @param array<string, mixed> $props     Section props (cta_primary, cta_secondary).
+ * @param string               $base_path JSON path prefix (e.g. check_ins).
+ * @param string               $niche_key Page key for URL resolution.
+ * @param array<string, mixed> $options   secondary (bool), secondary_kind (cta|link).
+ */
+function jcp_niche_render_section_optional_ctas( array $props, string $base_path, string $niche_key = '', array $options = [] ): void {
+	$allow_secondary  = ! empty( $options['secondary'] );
+	$secondary_kind   = (string) ( $options['secondary_kind'] ?? 'link' );
+	$primary          = jcp_niche_resolve_cta( $props['cta_primary'] ?? [], $niche_key );
+	$secondary        = jcp_niche_resolve_cta( $props['cta_secondary'] ?? [], $niche_key );
+	$primary_label    = __( 'Section button', 'jcp-core' );
+	$secondary_label  = __( 'Secondary link', 'jcp-core' );
+	?>
+	<div class="jcp-section-cta-row benefits-cta-row">
+		<div class="benefits-cta-slot jcp-section-cta-slot"<?php jcp_niche_optional_slot_attr( $base_path . '.cta_primary', 'cta', $primary_label ); ?>>
+			<?php if ( $primary['label'] !== '' ) : ?>
+				<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary"<?php jcp_niche_editable_link_attr( $base_path . '.cta_primary' ); ?>><?php echo esc_html( $primary['label'] ); ?></a>
+			<?php endif; ?>
+		</div>
+		<?php if ( $allow_secondary ) : ?>
+			<div class="benefits-cta-slot jcp-section-cta-slot"<?php jcp_niche_optional_slot_attr( $base_path . '.cta_secondary', $secondary_kind, $secondary_label ); ?>>
+				<?php if ( $secondary['label'] !== '' ) : ?>
+					<a href="<?php echo esc_url( $secondary['url'] ); ?>" class="benefits-cta-link"<?php jcp_niche_editable_link_attr( $base_path . '.cta_secondary' ); ?>>
+						<?php echo esc_html( $secondary['label'] ); ?>
+						<?php jcp_component_chevron_svg(); ?>
+					</a>
+				<?php endif; ?>
+			</div>
+		<?php endif; ?>
+	</div>
+	<?php
+}

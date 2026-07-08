@@ -23,6 +23,15 @@ function jcp_niche_editable_attr( string $path ): void {
 }
 
 /**
+ * Editable rich text (allows inline links in the live editor).
+ *
+ * @param string $path e.g. what_it_is.subheadline.
+ */
+function jcp_niche_editable_rich_attr( string $path ): void {
+	echo ' data-jcp-path="' . esc_attr( $path ) . '" data-jcp-rich="true"';
+}
+
+/**
  * Data attributes for editable link (label + url paths).
  *
  * @param string $base_path e.g. hero.cta_primary (maps to .label and .url).

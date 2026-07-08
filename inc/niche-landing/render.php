@@ -15,6 +15,24 @@ function jcp_niche_e( string $text ): void {
 }
 
 /**
+ * Echo text that may contain safe inline links (for rich inline editing).
+ *
+ * @param string $text Text (may include `<a>` tags).
+ */
+function jcp_niche_rich_e( string $text ): void {
+	$allowed = [
+		'a' => [
+			'href'   => true,
+			'title'  => true,
+			'target' => true,
+			'rel'    => true,
+			'class'  => true,
+		],
+	];
+	echo wp_kses( $text, $allowed );
+}
+
+/**
  * Resolve page kind for breadcrumb parent link.
  *
  * Uses the WordPress post (type + template) first so imported JSON cannot
@@ -312,7 +330,7 @@ function jcp_niche_render_what_it_is( array $c ): void {
 			<div class="rankings-header">
 				<h2<?php jcp_niche_editable_attr( 'what_it_is.headline' ); ?>><?php jcp_niche_e( (string) $w['headline'] ); ?></h2>
 				<?php if ( ! empty( $w['subheadline'] ) ) : ?>
-					<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'what_it_is.subheadline' ); ?>><?php jcp_niche_e( (string) $w['subheadline'] ); ?></p>
+					<p class="rankings-subtitle"<?php jcp_niche_editable_rich_attr( 'what_it_is.subheadline' ); ?>><?php jcp_niche_rich_e( (string) $w['subheadline'] ); ?></p>
 				<?php endif; ?>
 			</div>
 			<div class="ranking-factors-grid jcp-niche-split-grid">
@@ -380,6 +398,7 @@ function jcp_niche_render_what_it_is( array $c ): void {
 				jcp_niche_render_core_mechanic_strip( $mechanic, 'core_mechanic' );
 				echo '</div>';
 			}
+			jcp_niche_render_section_optional_ctas( $w, 'what_it_is', (string) ( $c['niche_key'] ?? $c['page_key'] ?? '' ) );
 			?>
 		</div>
 	</section>
@@ -395,16 +414,14 @@ function jcp_niche_render_how_it_works( array $c, string $niche_key ): void {
 	if ( empty( $h['headline'] ) ) {
 		return;
 	}
-	$has_cta = ! empty( $h['cta_label'] ) || ! empty( $h['cta_url'] ) || ! empty( $h['cta_primary'] );
-	$cta     = $has_cta
-		? jcp_niche_resolve_cta(
-			[
-				'label' => $h['cta_label'] ?? ( $h['cta_primary']['label'] ?? 'See it in action' ),
-				'url'   => $h['cta_url'] ?? ( $h['cta_primary']['url'] ?? '/demo' ),
-			],
-			$niche_key
-		)
-		: [ 'label' => '', 'url' => '' ];
+	$primary = jcp_niche_resolve_cta(
+		$h['cta_primary'] ?? [
+			'label' => $h['cta_label'] ?? '',
+			'url'   => $h['cta_url'] ?? '',
+		],
+		$niche_key
+	);
+	$secondary = jcp_niche_resolve_cta( $h['cta_secondary'] ?? [], $niche_key );
 	$numeric_steps = ! empty( $h['numeric_steps'] );
 	$section_id    = ! empty( $h['section_id'] ) ? (string) $h['section_id'] : 'how-it-works';
 	?>
@@ -441,14 +458,17 @@ function jcp_niche_render_how_it_works( array $c, string $niche_key ): void {
 					</div>
 				<?php endforeach; ?>
 			</div>
-			<?php if ( $cta['label'] !== '' ) : ?>
-				<div class="timeline-cta">
-					<a href="<?php echo esc_url( $cta['url'] ); ?>" class="timeline-cta-link"<?php jcp_niche_editable_link_paths( 'how_it_works.cta_label', 'how_it_works.cta_url' ); ?>>
-						<?php jcp_niche_e( $cta['label'] ); ?>
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-					</a>
-				</div>
-			<?php endif; ?>
+			<?php
+			jcp_niche_render_section_optional_ctas(
+				[
+					'cta_primary'   => [ 'label' => $primary['label'], 'url' => $primary['url'] ],
+					'cta_secondary' => $secondary,
+				],
+				'how_it_works',
+				$niche_key,
+				[ 'secondary' => true ]
+			);
+			?>
 			<?php
 			if ( ! empty( $h['demo_preview'] ) && is_array( $h['demo_preview'] ) ) {
 				jcp_niche_render_demo_preview( $h['demo_preview'], $niche_key, 'how_it_works.demo_preview' );
@@ -512,6 +532,7 @@ function jcp_niche_render_check_ins( array $c ): void {
 			if ( ! empty( $ch['closing'] ) ) {
 				jcp_niche_render_section_closing( (string) $ch['closing'], 'check_ins.closing' );
 			}
+			jcp_niche_render_section_optional_ctas( $ch, 'check_ins', (string) ( $c['niche_key'] ?? $c['page_key'] ?? '' ) );
 			?>
 		</div>
 	</section>
@@ -564,6 +585,7 @@ function jcp_niche_render_problem( array $c ): void {
 			if ( ! empty( $p['closing'] ) ) {
 				jcp_niche_render_section_closing( (string) $p['closing'], 'problem.closing' );
 			}
+			jcp_niche_render_section_optional_ctas( $p, 'problem', (string) ( $c['niche_key'] ?? $c['page_key'] ?? '' ) );
 			?>
 		</div>
 	</section>
@@ -579,7 +601,6 @@ function jcp_niche_render_benefits( array $c ): void {
 		return;
 	}
 	$section_id = ! empty( $b['section_id'] ) ? (string) $b['section_id'] : '';
-	$variant      = (string) ( $b['variant'] ?? '' );
 	?>
 	<section class="jcp-section rankings-section jcp-niche-benefits<?php echo $section_id !== '' ? '' : ''; ?>"<?php echo $section_id !== '' ? ' id="' . esc_attr( $section_id ) . '"' : ''; ?>>
 		<div class="jcp-container">
@@ -619,26 +640,8 @@ function jcp_niche_render_benefits( array $c ): void {
 			if ( ! empty( $b['closing'] ) ) {
 				jcp_niche_render_section_closing( (string) $b['closing'], 'benefits.closing' );
 			}
-			if ( $variant === 'cta_row' ) :
-				$primary   = jcp_niche_resolve_cta( $b['cta_primary'] ?? [], '' );
-				$secondary = jcp_niche_resolve_cta( $b['cta_secondary'] ?? [], '' );
-				?>
-				<div class="benefits-cta-row">
-					<div class="benefits-cta-slot"<?php jcp_niche_optional_slot_attr( 'benefits.cta_primary', 'cta', 'Primary button' ); ?>>
-						<?php if ( $primary['label'] !== '' ) : ?>
-							<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary"<?php jcp_niche_editable_link_attr( 'benefits.cta_primary' ); ?>><?php echo esc_html( $primary['label'] ); ?></a>
-						<?php endif; ?>
-					</div>
-					<div class="benefits-cta-slot"<?php jcp_niche_optional_slot_attr( 'benefits.cta_secondary', 'link', 'Secondary link' ); ?>>
-						<?php if ( $secondary['label'] !== '' ) : ?>
-							<a href="<?php echo esc_url( $secondary['url'] ); ?>" class="benefits-cta-link"<?php jcp_niche_editable_link_attr( 'benefits.cta_secondary' ); ?>>
-								<?php echo esc_html( $secondary['label'] ); ?>
-								<?php jcp_component_chevron_svg(); ?>
-							</a>
-						<?php endif; ?>
-					</div>
-				</div>
-			<?php endif; ?>
+			jcp_niche_render_section_optional_ctas( $b, 'benefits', '', [ 'secondary' => true ] );
+			?>
 		</div>
 	</section>
 	<?php
@@ -793,10 +796,11 @@ function jcp_niche_render_differentiation( array $c ): void {
 			</div>
 			<div class="real-job-proof-callout jcp-niche-diff-callout">
 				<?php if ( ! empty( $d['body'] ) ) : ?>
-					<p class="real-job-proof-callout-text"<?php jcp_niche_editable_attr( 'differentiation.body' ); ?>><?php jcp_niche_e( (string) $d['body'] ); ?></p>
+					<p class="real-job-proof-callout-text"<?php jcp_niche_editable_rich_attr( 'differentiation.body' ); ?>><?php jcp_niche_rich_e( (string) $d['body'] ); ?></p>
 				<?php endif; ?>
 				<?php jcp_niche_render_conversion_points( (array) ( $d['bullets'] ?? [] ), 'differentiation.bullets' ); ?>
 			</div>
+			<?php jcp_niche_render_section_optional_ctas( $d, 'differentiation', (string) ( $c['niche_key'] ?? $c['page_key'] ?? '' ) ); ?>
 		</div>
 	</section>
 	<?php
@@ -858,6 +862,7 @@ function jcp_niche_render_who_its_for( array $c ): void {
 				?>
 			</div>
 			<?php endif; ?>
+			<?php jcp_niche_render_section_optional_ctas( $w, 'who_its_for', (string) ( $c['niche_key'] ?? $c['page_key'] ?? '' ) ); ?>
 		</div>
 	</section>
 	<?php
@@ -901,13 +906,25 @@ function jcp_niche_render_faq( array $c ): void {
 							}
 							$apath = is_array( $answer ) ? 'faq.items.' . $i . '.a.' . $pi : ( $pi === 0 ? 'faq.items.' . $i . '.a' : 'faq.items.' . $i . '.a.' . $pi );
 							echo '<p';
-							jcp_niche_editable_attr( $apath );
-							echo '>' . esc_html( $para ) . '</p>';
+							jcp_niche_editable_rich_attr( $apath );
+							echo '>' . wp_kses(
+								$para,
+								[
+									'a' => [
+										'href'   => true,
+										'title'  => true,
+										'target' => true,
+										'rel'    => true,
+										'class'  => true,
+									],
+								]
+							) . '</p>';
 						}
 						?>
 					</details>
 				<?php endforeach; ?>
 			</div>
+			<?php jcp_niche_render_section_optional_ctas( $f, 'faq', (string) ( $c['niche_key'] ?? $c['page_key'] ?? '' ) ); ?>
 		</div>
 	</section>
 	<?php

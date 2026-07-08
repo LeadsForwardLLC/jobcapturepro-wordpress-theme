@@ -138,6 +138,7 @@
     <button type="button" class="btn btn-secondary" id="jcpNicheUndo" disabled aria-label="Undo">Undo</button>
     <button type="button" class="btn btn-secondary" id="jcpNicheRedo" disabled aria-label="Redo">Redo</button>
     <button type="button" class="btn btn-secondary" id="jcpNicheStructureBtn">Page structure</button>
+    <button type="button" class="btn btn-secondary" id="jcpNicheTextLink" hidden>Add text link</button>
     <button type="button" class="btn btn-primary" id="jcpNicheToggleEdit">Click to edit page</button>
     <button type="button" class="btn btn-secondary" id="jcpNicheSave" disabled aria-label="Save changes">Save changes</button>
     <span id="jcpNicheStatus" class="jcp-niche-edit-status" aria-live="polite"></span>
@@ -180,10 +181,23 @@
     </div>
   `;
 
+  const textLinkPopover = document.createElement('div');
+  textLinkPopover.className = 'jcp-niche-link-popover jcp-niche-text-link-popover';
+  textLinkPopover.hidden = true;
+  textLinkPopover.innerHTML = `
+    <label>Link URL (e.g. /industries/plumbing/)</label>
+    <input type="text" id="jcpNicheTextLinkUrl" placeholder="/pricing" />
+    <div class="jcp-niche-link-popover-actions">
+      <button type="button" class="btn btn-primary" id="jcpNicheTextLinkApply">Apply link</button>
+      <button type="button" class="btn btn-secondary" id="jcpNicheTextLinkCancel">Cancel</button>
+    </div>
+  `;
+
   document.body.appendChild(bar);
   document.body.appendChild(structurePanel);
   document.body.appendChild(addModal);
   document.body.appendChild(popover);
+  document.body.appendChild(textLinkPopover);
   document.body.classList.add('jcp-niche-editing');
 
   const statusEl = bar.querySelector('#jcpNicheStatus');
@@ -195,7 +209,26 @@
   const blockListEl = structurePanel.querySelector('#jcpBlockList');
   const addBlockListEl = addModal.querySelector('#jcpAddBlockList');
   const adminLink = bar.querySelector('.jcp-niche-edit-link');
+  const textLinkBtn = bar.querySelector('#jcpNicheTextLink');
   let activeLink = null;
+  let activeRichField = null;
+
+  const isRichField = (el) => el && el.getAttribute('data-jcp-rich') === 'true';
+
+  const sanitizeRichHtml = (html) => {
+    const doc = new DOMParser().parseFromString(`<div>${html || ''}</div>`, 'text/html');
+    const root = doc.body.firstElementChild;
+    if (!root) return '';
+    const walk = (node) => {
+      if (node.nodeType === Node.TEXT_NODE) return node.textContent || '';
+      if (node.nodeName === 'A') {
+        const href = (node.getAttribute('href') || '#').replace(/"/g, '&quot;');
+        return `<a href="${href}">${node.textContent || ''}</a>`;
+      }
+      return Array.from(node.childNodes).map(walk).join('');
+    };
+    return walk(root);
+  };
 
   const getMain = () => document.querySelector('main.jcp-home, main.jcp-niche, main[data-page-kind]');
 
@@ -811,7 +844,11 @@
       if (!path) return;
       const val = getPath(flatContent, path);
       if (val === undefined || val === null) return;
-      el.textContent = isListLinePath(path) ? cleanStepLineText(String(val)) : String(val);
+      if (isRichField(el)) {
+        el.innerHTML = sanitizeRichHtml(String(val));
+      } else {
+        el.textContent = isListLinePath(path) ? cleanStepLineText(String(val)) : String(val);
+      }
     });
     document.querySelectorAll('[data-jcp-href-path]').forEach((el) => {
       const path = el.getAttribute('data-jcp-href-path');
@@ -1170,6 +1207,10 @@
       if (isStringArrayItemPath(el) || isObjectArrayItemPath(el)) return;
       const path = el.getAttribute('data-jcp-path');
       if (!path) return;
+      if (isRichField(el)) {
+        setPath(flatContent, path, sanitizeRichHtml(el.innerHTML));
+        return;
+      }
       const raw = (el.textContent || '').trim();
       const value = isListLinePath(path) ? cleanStepLineText(raw) : raw;
       setPath(flatContent, path, value);
@@ -1201,7 +1242,8 @@
     document.body.classList.add('jcp-inline-editing');
     toggleBtn.textContent = 'Editing — click text to change';
     toggleBtn.classList.add('is-active');
-    if (!dirty) statusEl.textContent = 'Click text or images to edit. Drag ⋮⋮ on a column to swap sides.';
+    if (textLinkBtn) textLinkBtn.hidden = false;
+    if (!dirty) statusEl.textContent = 'Click text or images to edit. Select text and use Add text link for internal links.';
     bindEditableFields();
     applyCleanLinesToDom();
     refreshEditorChrome();
@@ -1213,7 +1255,9 @@
     document.body.classList.remove('jcp-inline-editing');
     toggleBtn.textContent = 'Click to edit page';
     toggleBtn.classList.remove('is-active');
+    if (textLinkBtn) textLinkBtn.hidden = true;
     popover.hidden = true;
+    textLinkPopover.hidden = true;
     if (typeof window.JCP_TEARDOWN_COLLECTIONS === 'function') {
       window.JCP_TEARDOWN_COLLECTIONS();
     }
@@ -1296,6 +1340,63 @@
     popover.hidden = true;
     popover.setAttribute('hidden', '');
     activeLink = null;
+  });
+
+  const openTextLinkPopover = () => {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const node = sel.anchorNode;
+    const field = node && node.nodeType === Node.ELEMENT_NODE
+      ? node.closest('[data-jcp-rich="true"]')
+      : node?.parentElement?.closest('[data-jcp-rich="true"]');
+    if (!field) {
+      statusEl.textContent = 'Select text inside a paragraph first (subheadlines, FAQ answers, etc.).';
+      return;
+    }
+    activeRichField = field;
+    textLinkPopover.hidden = false;
+    textLinkPopover.removeAttribute('hidden');
+    textLinkPopover.querySelector('#jcpNicheTextLinkUrl').value = '';
+    const rect = field.getBoundingClientRect();
+    textLinkPopover.style.top = `${Math.min(window.innerHeight - 140, rect.bottom + 8)}px`;
+    textLinkPopover.style.left = `${Math.max(8, Math.min(window.innerWidth - 320, rect.left))}px`;
+  };
+
+  if (textLinkBtn) {
+    textLinkBtn.addEventListener('click', openTextLinkPopover);
+  }
+
+  textLinkPopover.querySelector('#jcpNicheTextLinkApply').addEventListener('click', () => {
+    const url = textLinkPopover.querySelector('#jcpNicheTextLinkUrl').value.trim();
+    if (!url || !activeRichField) return;
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (!activeRichField.contains(range.commonAncestorContainer)) return;
+    const label = sel.toString() || url;
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.textContent = label;
+    range.deleteContents();
+    range.insertNode(anchor);
+    textLinkPopover.hidden = true;
+    textLinkPopover.setAttribute('hidden', '');
+    activeRichField = null;
+    recordChange();
+  });
+
+  textLinkPopover.querySelector('#jcpNicheTextLinkCancel').addEventListener('click', () => {
+    textLinkPopover.hidden = true;
+    textLinkPopover.setAttribute('hidden', '');
+    activeRichField = null;
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!editing) return;
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      openTextLinkPopover();
+    }
   });
 
   saveBtn.addEventListener('click', async () => {

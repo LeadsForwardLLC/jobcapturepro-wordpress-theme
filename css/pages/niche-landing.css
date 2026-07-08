@@ -807,9 +807,21 @@ body.jcp-inline-editing .benefits-cta-slot.is-empty {
   flex: 1;
 }
 
-body.jcp-inline-editing .benefits-cta-row {
+body.jcp-inline-editing .benefits-cta-row,
+body.jcp-inline-editing .jcp-section-cta-row {
   flex-wrap: wrap;
   gap: var(--jcp-space-md, 1rem);
+  margin-top: var(--jcp-space-xl, 2rem);
+}
+
+body.jcp-inline-editing [data-jcp-rich="true"] a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+body.jcp-inline-editing [data-jcp-rich="true"] {
+  outline: 1px dashed rgba(59, 130, 246, 0.35);
+  outline-offset: 2px;
 }
 
 body.jcp-inline-editing [data-jcp-href-path] {

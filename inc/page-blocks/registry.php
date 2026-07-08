@@ -308,40 +308,49 @@ function jcp_page_default_block_props( string $type ): array {
 		'what_it_is' => [
 			'headline'    => __( 'Section headline', 'jcp-core' ),
 			'subheadline' => '',
+			'cta_primary' => [ 'label' => '', 'url' => '' ],
+			'cta_secondary' => [ 'label' => '', 'url' => '' ],
 		],
 		'how_it_works' => [
 			'headline'    => __( 'How it works', 'jcp-core' ),
 			'subheadline' => '',
-			'cta_label'   => __( 'See it in action', 'jcp-core' ),
-			'cta_url'     => '/demo',
+			'cta_primary' => [ 'label' => '', 'url' => '/demo' ],
+			'cta_secondary' => [ 'label' => '', 'url' => '#how-it-works' ],
 			'steps'       => [],
 		],
 		'check_ins' => [
 			'headline'    => __( 'Section headline', 'jcp-core' ),
 			'subheadline' => '',
+			'cta_primary' => [ 'label' => '', 'url' => '' ],
 			'features'    => [],
 		],
 		'problem' => [
 			'headline'    => __( 'Section headline', 'jcp-core' ),
 			'subheadline' => '',
+			'cta_primary' => [ 'label' => '', 'url' => '' ],
 			'pain_points' => [],
 		],
 		'benefits' => [
 			'headline' => __( 'Section headline', 'jcp-core' ),
+			'cta_primary' => [ 'label' => '', 'url' => '' ],
+			'cta_secondary' => [ 'label' => '', 'url' => '' ],
 			'items'    => [],
 		],
 		'differentiation' => [
 			'headline' => __( 'Section headline', 'jcp-core' ),
 			'body'     => '',
 			'bullets'  => [],
+			'cta_primary' => [ 'label' => '', 'url' => '' ],
 		],
 		'who_its_for' => [
 			'headline'  => __( 'Who it\'s for', 'jcp-core' ),
 			'audiences' => [],
+			'cta_primary' => [ 'label' => '', 'url' => '' ],
 		],
 		'faq' => [
 			'headline' => __( 'Frequently asked questions', 'jcp-core' ),
 			'items'    => [],
+			'cta_primary' => [ 'label' => '', 'url' => '' ],
 		],
 		'final_cta' => [
 			'headline'    => __( 'Ready to get started?', 'jcp-core' ),
