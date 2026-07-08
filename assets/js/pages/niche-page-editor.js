@@ -134,14 +134,18 @@
   const bar = document.createElement('div');
   bar.className = 'jcp-niche-edit-bar';
   bar.innerHTML = `
-    <strong class="jcp-niche-edit-bar-title">Page editor</strong>
-    <button type="button" class="btn btn-secondary" id="jcpNicheUndo" disabled aria-label="Undo">Undo</button>
-    <button type="button" class="btn btn-secondary" id="jcpNicheRedo" disabled aria-label="Redo">Redo</button>
-    <button type="button" class="btn btn-secondary" id="jcpNicheStructureBtn">Page structure</button>
-    <button type="button" class="btn btn-secondary" id="jcpNicheTextLink" hidden>Add text link</button>
-    <button type="button" class="btn btn-primary" id="jcpNicheToggleEdit">Click to edit page</button>
-    <button type="button" class="btn btn-secondary" id="jcpNicheSave" disabled aria-label="Save changes">Save changes</button>
-    <span id="jcpNicheStatus" class="jcp-niche-edit-status" aria-live="polite"></span>
+    <div class="jcp-niche-edit-bar__start">
+      <strong class="jcp-niche-edit-bar-title">Page editor</strong>
+      <span id="jcpNicheStatus" class="jcp-niche-edit-status" aria-live="polite"></span>
+    </div>
+    <div class="jcp-niche-edit-bar__actions">
+      <button type="button" class="btn btn-secondary jcp-niche-edit-bar__icon-btn" id="jcpNicheUndo" disabled aria-label="Undo" title="Undo">↶</button>
+      <button type="button" class="btn btn-secondary jcp-niche-edit-bar__icon-btn" id="jcpNicheRedo" disabled aria-label="Redo" title="Redo">↷</button>
+      <button type="button" class="btn btn-secondary" id="jcpNicheStructureBtn">Structure</button>
+      <button type="button" class="btn btn-secondary" id="jcpNicheTextLink" hidden>Link</button>
+      <button type="button" class="btn btn-primary" id="jcpNicheToggleEdit">Edit page</button>
+      <button type="button" class="btn btn-secondary" id="jcpNicheSave" disabled aria-label="Save changes">Save</button>
+    </div>
     <a href="${cfg.adminUrl || '#'}" class="jcp-niche-edit-link">WP Admin</a>
   `;
 
@@ -153,7 +157,7 @@
       <h2>Page structure</h2>
       <button type="button" class="jcp-block-structure__close" id="jcpStructureClose" aria-label="Close">×</button>
     </div>
-    <p class="jcp-block-structure__hint">Drag to reorder. Click a section to scroll the preview. Rename titles for this page only — click Save to publish.</p>
+    <p class="jcp-block-structure__hint">Drag to reorder. Click a section to jump to it on the page — or click a section on the page to select it here.</p>
     <ul class="jcp-block-structure__list" id="jcpBlockList"></ul>
     <button type="button" class="btn btn-secondary jcp-block-structure__add" id="jcpAddBlockBtn">+ Add block</button>
   `;
@@ -212,6 +216,7 @@
   const textLinkBtn = bar.querySelector('#jcpNicheTextLink');
   let activeLink = null;
   let activeRichField = null;
+  let activeBlockId = null;
 
   const isRichField = (el) => el && el.getAttribute('data-jcp-rich') === 'true';
 
@@ -242,17 +247,40 @@
     return custom || blockLabel(block.type);
   };
 
-  const scrollToBlock = (block) => {
+  const focusStructureBlock = (block, { scrollPage = false, expand = true } = {}) => {
+    if (!block?.id) return;
+    activeBlockId = block.id;
+    if (!structureOpen) openStructure();
+
+    blockListEl.querySelectorAll('.jcp-block-structure__item').forEach((el) => {
+      const isTarget = el.dataset.blockId === block.id;
+      el.classList.toggle('is-active', isTarget);
+      if (isTarget) {
+        if (expand) {
+          el.querySelector('.jcp-block-structure__layout')?.classList.remove('is-collapsed');
+        }
+        el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    });
+
+    document.querySelectorAll('[data-jcp-block-id]').forEach((el) => {
+      el.classList.toggle('jcp-block-is-selected', el.dataset.jcpBlockId === block.id);
+    });
+
+    if (!scrollPage) return;
     const main = getMain();
-    if (!main || !block?.id) return;
-    const el = main.querySelector(`[data-jcp-block-id="${block.id}"]`);
+    const el = main?.querySelector(`[data-jcp-block-id="${block.id}"]`);
     if (!el) return;
-    const bar = document.querySelector('.jcp-niche-edit-bar');
-    const offset = (bar?.offsetHeight || 0) + 16;
+    const barEl = document.querySelector('.jcp-niche-edit-bar');
+    const offset = (barEl?.offsetHeight || 0) + 16;
     const top = el.getBoundingClientRect().top + window.scrollY - offset;
     window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
     el.classList.add('jcp-block-scroll-target');
     window.setTimeout(() => el.classList.remove('jcp-block-scroll-target'), 1500);
+  };
+
+  const scrollToBlock = (block) => {
+    focusStructureBlock(block, { scrollPage: true, expand: true });
   };
 
   const setBlockInstanceLabel = (block, value) => {
@@ -503,7 +531,7 @@
   const buildLayoutControlsHtml = (block) => {
     const layout = resolveLayout(block);
     const options = layoutOptionsFor(block.type);
-    let html = '<div class="jcp-block-structure__layout">';
+    let html = '';
 
     if (options.hero_variant) {
       const variant = resolveHeroVariant(block);
@@ -558,14 +586,14 @@
     if (block.type === 'hero') {
       block.props = block.props || {};
       const toggles = [
-        { key: 'show_cta_primary', label: 'Primary button' },
-        { key: 'show_cta_secondary', label: 'Secondary button' },
+        { key: 'show_cta_primary', label: 'Primary' },
+        { key: 'show_cta_secondary', label: 'Secondary' },
         { key: 'show_trust_line', label: 'Trust line' },
       ];
-      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Show</span><div class="jcp-layout-toggles">';
+      html += '<div class="jcp-layout-group jcp-layout-group--toggles"><span class="jcp-layout-group__label">Show</span><div class="jcp-layout-chips">';
       toggles.forEach(({ key, label }) => {
-        const checked = block.props[key] !== false ? ' checked' : '';
-        html += `<label class="jcp-layout-toggle"><input type="checkbox" data-hero-toggle="${key}"${checked}> ${label}</label>`;
+        const on = block.props[key] !== false ? ' is-on' : '';
+        html += `<button type="button" class="jcp-layout-chip${on}" data-hero-toggle="${key}">${label}</button>`;
       });
       html += '</div></div>';
     }
@@ -575,21 +603,21 @@
       const toggles = [
         { key: 'show_badge', label: 'Badge' },
         { key: 'show_subheadline', label: 'Subheadline' },
-        { key: 'show_cue', label: 'Lead line' },
+        { key: 'show_cue', label: 'Lead' },
         { key: 'show_body', label: 'Body' },
         { key: 'show_cta', label: 'Button' },
-        { key: 'show_cta_note', label: 'Button note' },
+        { key: 'show_cta_note', label: 'Note' },
       ];
-      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Show</span><div class="jcp-layout-toggles">';
+      html += '<div class="jcp-layout-group jcp-layout-group--toggles"><span class="jcp-layout-group__label">Show</span><div class="jcp-layout-chips">';
       toggles.forEach(({ key, label }) => {
-        const checked = isSplitToggleOn(block, key) ? ' checked' : '';
-        html += `<label class="jcp-layout-toggle"><input type="checkbox" data-split-toggle="${key}"${checked}> ${label}</label>`;
+        const on = isSplitToggleOn(block, key) ? ' is-on' : '';
+        html += `<button type="button" class="jcp-layout-chip${on}" data-split-toggle="${key}">${label}</button>`;
       });
       html += '</div></div>';
     }
 
-    html += '</div>';
-    return html;
+    if (!html) return '';
+    return `<div class="jcp-block-structure__layout is-collapsed">${html}</div>`;
   };
 
   const SPLIT_TOGGLE_DEFAULTS = {
@@ -601,11 +629,70 @@
     show_cta_note: false,
   };
 
+  const SPLIT_TOGGLE_KEYS = [
+    'show_badge',
+    'show_subheadline',
+    'show_cue',
+    'show_body',
+    'show_cta',
+    'show_cta_note',
+  ];
+
   const isSplitToggleOn = (block, key) => {
-    const val = block.props?.[key];
-    if (val === true) return true;
-    if (val === false) return false;
+    if (block.props && (block.props[key] === true || block.props[key] === false)) {
+      return block.props[key] === true;
+    }
+    const lk = blockLegacyKey(block);
+    if (lk) {
+      const val = getPath(flatContent, `${lk}.${key}`);
+      if (val === true || val === false) return val === true;
+    }
     return SPLIT_TOGGLE_DEFAULTS[key] ?? false;
+  };
+
+  const syncSplitBlockPropsFromFlat = (block) => {
+    const lk = blockLegacyKey(block);
+    if (!lk) return;
+    block.props = block.props || {};
+    SPLIT_TOGGLE_KEYS.forEach((key) => {
+      const val = getPath(flatContent, `${lk}.${key}`);
+      if (val === true || val === false) block.props[key] = val;
+    });
+  };
+
+  const syncSplitTogglesToDom = () => {
+    (pageDocument.blocks || []).forEach((block) => {
+      if (!block || (block.type !== 'media_text' && block.type !== 'demo_preview')) return;
+      syncSplitBlockPropsFromFlat(block);
+      const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
+      if (!root) return;
+
+      SPLIT_TOGGLE_KEYS.forEach((key) => {
+        if (key === 'show_cta' || key === 'show_cta_note') return;
+        const selector = SPLIT_TOGGLE_SELECTORS[key];
+        if (!selector) return;
+        const enabled = isSplitToggleOn(block, key);
+        root.querySelectorAll(selector).forEach((el) => {
+          el.style.display = enabled ? '' : 'none';
+        });
+      });
+
+      const showCta = isSplitToggleOn(block, 'show_cta');
+      const showNote = isSplitToggleOn(block, 'show_cta_note');
+      const wrapper = root.querySelector('.demo-cta-wrapper');
+      if (wrapper) wrapper.style.display = (showCta || showNote) ? '' : 'none';
+      const slot = root.querySelector('.demo-cta-slot');
+      if (slot) slot.style.display = showCta ? '' : 'none';
+      if (showNote) {
+        root.querySelectorAll('.demo-cta-note').forEach((el) => {
+          el.style.display = '';
+        });
+      } else {
+        root.querySelectorAll('.demo-cta-note').forEach((el) => {
+          el.style.display = 'none';
+        });
+      }
+    });
   };
 
   const SPLIT_TOGGLE_SELECTORS = {
@@ -613,8 +700,30 @@
     show_subheadline: '.jcp-split-subheadline',
     show_cue: '.demo-preview-cue',
     show_body: '.demo-preview-description',
-    show_cta: '.demo-cta-primary',
+    show_cta: '.demo-cta-slot',
     show_cta_note: '.demo-cta-note',
+  };
+
+  const ensureSplitCtaSlot = (root, block) => {
+    if (!root || !block) return;
+    const lk = blockLegacyKey(block);
+    if (!lk) return;
+    let wrapper = root.querySelector('.demo-cta-wrapper');
+    if (!wrapper) return;
+    let slot = root.querySelector('.demo-cta-slot');
+    if (!slot) {
+      slot = document.createElement('div');
+      slot.className = 'demo-cta-slot benefits-cta-slot';
+      slot.dataset.jcpOptional = `${lk}.cta_primary`;
+      slot.dataset.jcpOptionalKind = 'cta';
+      slot.dataset.jcpOptionalLabel = 'Button';
+      wrapper.insertBefore(slot, wrapper.querySelector('.demo-cta-note'));
+    }
+    if (!slot.querySelector('.demo-cta-primary, .jcp-optional-restore') && isSplitToggleOn(block, 'show_cta')) {
+      if (typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
+        window.JCP_REFRESH_COLLECTIONS();
+      }
+    }
   };
 
   const setBlockSplitToggle = (block, key, enabled) => {
@@ -624,19 +733,48 @@
     if (lk) setPath(flatContent, `${lk}.${key}`, enabled);
 
     const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
+    if (!root) {
+      recordChange();
+      return;
+    }
+
+    if (key === 'show_cta' || key === 'show_cta_note') {
+      const wrapper = root.querySelector('.demo-cta-wrapper');
+      const showCta = key === 'show_cta' ? enabled : isSplitToggleOn(block, 'show_cta');
+      const showNote = key === 'show_cta_note' ? enabled : isSplitToggleOn(block, 'show_cta_note');
+      if (wrapper) wrapper.style.display = (showCta || showNote) ? '' : 'none';
+      const slot = root.querySelector('.demo-cta-slot');
+      if (slot) slot.style.display = showCta ? '' : 'none';
+      if (showCta) ensureSplitCtaSlot(root, block);
+      if (showCta && lk) {
+        const ctaPath = `${lk}.cta_primary`;
+        const cta = getPath(flatContent, ctaPath);
+        if (!cta || !String(cta.label || '').trim()) {
+          const defaults = {
+            label: block.type === 'demo_preview' ? 'View the live demo' : 'See it in action',
+            url: '/demo',
+          };
+          setPath(flatContent, ctaPath, defaults);
+          if (typeof window.JCP_SYNC_COLLECTIONS_FROM_CONTENT === 'function') {
+            window.JCP_SYNC_COLLECTIONS_FROM_CONTENT();
+          }
+        }
+      }
+      if (showCta && typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
+        window.JCP_REFRESH_COLLECTIONS();
+      }
+      if (enabled && typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+        window.JCP_REFRESH_INLINE_EDITABLE();
+      }
+      recordChange();
+      return;
+    }
+
     const selector = SPLIT_TOGGLE_SELECTORS[key];
-    if (root && selector) {
+    if (selector) {
       root.querySelectorAll(selector).forEach((el) => {
         el.style.display = enabled ? '' : 'none';
       });
-      if (key === 'show_cta' || key === 'show_cta_note') {
-        const wrapper = root.querySelector('.demo-cta-wrapper');
-        if (wrapper) {
-          const showCta = isSplitToggleOn(block, 'show_cta');
-          const showNote = isSplitToggleOn(block, 'show_cta_note');
-          wrapper.style.display = (showCta || showNote) ? '' : 'none';
-        }
-      }
     }
     if (enabled && typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
       window.JCP_REFRESH_INLINE_EDITABLE();
@@ -873,26 +1011,37 @@
     (pageDocument.blocks || []).forEach((block, index) => {
       if (!block || typeof block !== 'object') return;
       const li = document.createElement('li');
-      li.className = 'jcp-block-structure__item';
+      const isActive = block.id === activeBlockId;
+      li.className = `jcp-block-structure__item${isActive ? ' is-active' : ''}`;
       li.dataset.index = String(index);
+      li.dataset.blockId = block.id;
       const defaultLabel = blockLabel(block.type);
+      const layoutHtml = buildLayoutControlsHtml(block);
       li.innerHTML = `
         <div class="jcp-block-structure__row">
           <span class="jcp-block-structure__handle" aria-hidden="true" title="Drag to reorder">⋮⋮</span>
-          <input
-            type="text"
-            class="jcp-block-structure__label-input"
-            aria-label="Section title on this page"
-            title="Rename for this page only"
-          >
-          <button type="button" class="jcp-block-structure__remove" data-index="${index}" aria-label="Remove block">Remove</button>
+          <div class="jcp-block-structure__meta">
+            <span class="jcp-block-structure__type">${defaultLabel}</span>
+            <input
+              type="text"
+              class="jcp-block-structure__label-input"
+              aria-label="Section title on this page"
+              title="Rename for this page only"
+            >
+          </div>
+          ${layoutHtml ? '<button type="button" class="jcp-block-structure__settings" aria-label="Section settings" title="Settings">⚙</button>' : ''}
+          <button type="button" class="jcp-block-structure__remove" data-index="${index}" aria-label="Remove section">×</button>
         </div>
-        ${buildLayoutControlsHtml(block)}
+        ${layoutHtml}
       `;
       const handle = li.querySelector('.jcp-block-structure__handle');
       const labelInput = li.querySelector('.jcp-block-structure__label-input');
       labelInput.value = blockDisplayLabel(block);
       labelInput.placeholder = defaultLabel;
+
+      if (isActive) {
+        li.querySelector('.jcp-block-structure__layout')?.classList.remove('is-collapsed');
+      }
 
       handle.draggable = true;
       handle.addEventListener('dragstart', (e) => {
@@ -909,6 +1058,15 @@
         if (e.target.closest('input, button, .jcp-block-structure__handle, .jcp-block-structure__layout')) return;
         scrollToBlock(block);
       });
+
+      const settingsBtn = li.querySelector('.jcp-block-structure__settings');
+      if (settingsBtn) {
+        settingsBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          li.querySelector('.jcp-block-structure__layout')?.classList.toggle('is-collapsed');
+          focusStructureBlock(block, { scrollPage: false, expand: false });
+        });
+      }
 
       labelInput.addEventListener('click', (e) => e.stopPropagation());
       labelInput.addEventListener('keydown', (e) => {
@@ -962,16 +1120,22 @@
           setBlockLayout(block, setting, value);
         });
       });
-      li.querySelectorAll('[data-hero-toggle]').forEach((input) => {
-        input.addEventListener('change', (e) => {
+      li.querySelectorAll('[data-hero-toggle]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          setBlockHeroToggle(block, input.dataset.heroToggle, input.checked);
+          const key = btn.dataset.heroToggle;
+          const enabled = block.props[key] === false;
+          setBlockHeroToggle(block, key, enabled);
+          btn.classList.toggle('is-on', enabled);
         });
       });
-      li.querySelectorAll('[data-split-toggle]').forEach((input) => {
-        input.addEventListener('change', (e) => {
+      li.querySelectorAll('[data-split-toggle]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          setBlockSplitToggle(block, input.dataset.splitToggle, input.checked);
+          const key = btn.dataset.splitToggle;
+          const enabled = !isSplitToggleOn(block, key);
+          setBlockSplitToggle(block, key, enabled);
+          btn.classList.toggle('is-on', enabled);
         });
       });
       blockListEl.appendChild(li);
@@ -1021,6 +1185,7 @@
   };
 
   const refreshEditorChrome = () => {
+    syncSplitTogglesToDom();
     if (typeof window.JCP_REFRESH_PAGE_MEDIA_UI === 'function') {
       window.JCP_REFRESH_PAGE_MEDIA_UI();
     }
@@ -1037,6 +1202,7 @@
     structurePanel.hidden = false;
     structurePanel.removeAttribute('hidden');
     document.body.classList.add('jcp-structure-open');
+    structureBtn.classList.add('is-active');
     renderBlockList();
     if (editing) refreshEditorChrome();
   };
@@ -1046,6 +1212,7 @@
     structurePanel.hidden = true;
     structurePanel.setAttribute('hidden', '');
     document.body.classList.remove('jcp-structure-open');
+    structureBtn.classList.remove('is-active');
     closeAddModal();
   };
 
@@ -1253,7 +1420,7 @@
   const disableEditing = () => {
     editing = false;
     document.body.classList.remove('jcp-inline-editing');
-    toggleBtn.textContent = 'Click to edit page';
+    toggleBtn.textContent = 'Edit page';
     toggleBtn.classList.remove('is-active');
     if (textLinkBtn) textLinkBtn.hidden = true;
     popover.hidden = true;
@@ -1452,6 +1619,24 @@
     return UNSAVED_MSG;
   });
 
+  const bindBlockSelection = () => {
+    const main = getMain();
+    if (!main || main.dataset.jcpBlockSelectBound === '1') return;
+    main.dataset.jcpBlockSelectBound = '1';
+    main.addEventListener('click', (e) => {
+      if (!editing) return;
+      if (e.target.closest(
+        '[data-jcp-path], [data-jcp-href-path], .jcp-collection-add, .jcp-collection-remove, '
+        + '.jcp-optional-restore, .jcp-media-picker, .jcp-split-col-handle, .jcp-niche-link-popover, '
+        + 'button:not([data-jcp-block-id]), input, textarea, select, summary, details'
+      )) return;
+      const root = e.target.closest('[data-jcp-block-id]');
+      if (!root) return;
+      const block = (pageDocument.blocks || []).find((entry) => entry.id === root.dataset.jcpBlockId);
+      if (block) focusStructureBlock(block, { scrollPage: false, expand: true });
+    });
+  };
+
   initHistory();
   normalizePageDocumentBlocks();
   sanitizeFlatContentInPlace();
@@ -1483,6 +1668,7 @@
     }
   };
   initSubEditors();
+  bindBlockSelection();
 
   if (new URLSearchParams(window.location.search).get('jcp_edit') === '1') {
     enableEditing();
@@ -1503,5 +1689,7 @@
       requestAnimationFrame(refreshEditorChrome);
     }
     if (structureOpen) renderBlockList();
+    bindBlockSelection();
+    syncSplitTogglesToDom();
   });
 })();

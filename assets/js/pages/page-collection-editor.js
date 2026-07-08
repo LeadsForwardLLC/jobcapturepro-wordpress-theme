@@ -91,15 +91,28 @@
     'hero.cta_primary': () => ({ label: 'View the live demo', url: '/demo' }),
     'hero.cta_secondary': () => ({ label: 'Learn how it works', url: '#how-it-works' }),
     'final_cta.cta_primary': () => ({ label: 'Get started', url: '/demo' }),
+    'media_text.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
+    'media_text_check_ins.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
+    'media_text_problem.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
+    'demo_preview.cta_primary': () => ({ label: 'View the live demo', url: '/demo' }),
   };
 
   const OPTIONAL_TEMPLATES = {
     cta: (path, data) => {
-      const cls = path.includes('conversion') ? 'btn btn-primary conversion-cta-btn'
-        : path.includes('benefits') ? 'btn btn-primary'
-          : path.includes('final_cta') ? 'btn btn-primary rankings-cta-btn'
-            : 'btn btn-primary';
-      return `<a href="${esc(data.url)}" class="${cls}" data-jcp-path="${path}.label" data-jcp-href-path="${path}.url">${esc(data.label)}</a>`;
+      const isDemo = /\.(cta_primary)$/.test(path) && (path.includes('media_text') || path.includes('demo_preview'));
+      const cls = path.includes('conversion')
+        ? 'btn btn-primary conversion-cta-btn'
+        : path.includes('benefits')
+          ? 'btn btn-primary'
+          : path.includes('final_cta')
+            ? 'btn btn-primary rankings-cta-btn'
+            : isDemo
+              ? 'btn btn-primary demo-cta-primary'
+              : 'btn btn-primary';
+      const chevron = isDemo
+        ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>'
+        : '';
+      return `<a href="${esc(data.url)}" class="${cls}" data-jcp-path="${path}.label" data-jcp-href-path="${path}.url"><span>${esc(data.label)}</span>${chevron}</a>`;
     },
     link: (path, data) => `<a href="${esc(data.url)}" class="benefits-cta-link" data-jcp-path="${path}.label" data-jcp-href-path="${path}.url">${esc(data.label)}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>`,
   };
@@ -481,7 +494,6 @@
       btn.setAttribute('aria-label', 'Remove item');
       btn.title = 'Remove';
     btn.textContent = '×';
-    btn.setAttribute('onclick', 'return window.jcpCollectionRemoveClick&&window.jcpCollectionRemoveClick(this,event)');
     item.appendChild(btn);
     }
     const container = item.closest('[data-jcp-array]');
@@ -517,7 +529,6 @@
       btn = document.createElement('button');
       btn.className = 'jcp-collection-add';
       btn.textContent = addButtonLabel(container);
-      btn.setAttribute('onclick', 'return window.jcpCollectionAddClick&&window.jcpCollectionAddClick(this,event)');
       container.appendChild(btn);
     }
     bindAddButton(btn, container);
