@@ -501,9 +501,9 @@ function jcp_theme_docs_render_page(): void {
 }
 
 /**
- * Writer document skeleton for copy/paste.
+ * Full industry trade page writer skeleton.
  */
-function jcp_theme_docs_get_writer_template(): string {
+function jcp_theme_docs_get_industry_writer_template(): string {
 	return <<<'TEMPLATE'
 Word count:
 
@@ -719,6 +719,15 @@ CTA
 Start free trial
 See how it works
 TEMPLATE;
+}
+
+/**
+ * Writer document skeleton for copy/paste (any layout preset).
+ *
+ * @param string $preset Optional preset slug.
+ */
+function jcp_theme_docs_get_writer_template( string $preset = 'industry' ): string {
+	return jcp_writer_get_document_template( $preset );
 }
 
 /**

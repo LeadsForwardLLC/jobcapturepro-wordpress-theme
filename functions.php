@@ -44,6 +44,7 @@ require_once get_template_directory() . '/inc/acf-config.php';
 require_once get_template_directory() . '/inc/page-blocks/registry.php';
 require_once get_template_directory() . '/inc/page-blocks/layout.php';
 require_once get_template_directory() . '/inc/page-blocks/presets.php';
+require_once get_template_directory() . '/inc/page-blocks/writer-tools.php';
 require_once get_template_directory() . '/inc/page-blocks/schema.php';
 require_once get_template_directory() . '/inc/page-blocks/industry-media.php';
 require_once get_template_directory() . '/inc/page-blocks/doc-sections.php';
@@ -64,6 +65,7 @@ require_once get_template_directory() . '/inc/niche-landing/seed.php';
 require_once get_template_directory() . '/inc/page-blocks/migrate-pages.php';
 if ( is_admin() ) {
 	require_once get_template_directory() . '/inc/niche-landing/admin.php';
+	require_once get_template_directory() . '/inc/niche-landing/bulk-create.php';
 	require_once get_template_directory() . '/inc/page-blocks/seo-audit.php';
 	require_once get_template_directory() . '/inc/page-blocks/admin-structure.php';
 }

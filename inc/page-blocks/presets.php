@@ -85,6 +85,33 @@ function jcp_page_presets(): array {
 				'final_cta',
 			],
 		],
+		'features' => [
+			'label'       => __( 'Features page', 'jcp-core' ),
+			'page_kind'   => 'marketing',
+			'description' => __( 'Product capability / feature detail pages', 'jcp-core' ),
+			'block_types' => [
+				'hero',
+				'what_it_is',
+				'how_it_works',
+				'benefits',
+				'faq',
+				'final_cta',
+			],
+		],
+		'comparison' => [
+			'label'       => __( 'Comparison page', 'jcp-core' ),
+			'page_kind'   => 'marketing',
+			'description' => __( 'Vs competitors or alternative solutions', 'jcp-core' ),
+			'block_types' => [
+				'hero',
+				'problem',
+				'differentiation',
+				'benefits',
+				'faq',
+				'conversion',
+				'final_cta',
+			],
+		],
 		'home' => [
 			'label'       => __( 'Homepage', 'jcp-core' ),
 			'page_kind'   => 'home',

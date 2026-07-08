@@ -199,17 +199,20 @@ function jcp_page_doc_section_label( string $section ): string {
  * Section headers writers should use for a page kind (import guide).
  *
  * @param string $page_kind industry|marketing|referral|home.
+ * @param string $preset    Optional layout preset slug.
  * @return array<int, array{header:string,label:string,on_page:bool}>
  */
-function jcp_page_doc_sections_for_kind( string $page_kind ): array {
+function jcp_page_doc_sections_for_kind( string $page_kind, string $preset = '' ): array {
 	$out       = [];
 	$seen      = [];
-	$preset    = match ( $page_kind ) {
-		'referral' => 'referral',
-		'industry' => 'industry',
-		'home'     => 'home',
-		default    => 'marketing',
-	};
+	if ( $preset === '' ) {
+		$preset = match ( $page_kind ) {
+			'referral' => 'referral',
+			'industry' => 'industry',
+			'home'     => 'home',
+			default    => 'marketing',
+		};
+	}
 	$preset_def = jcp_page_get_preset( $preset );
 	$preset_types = [];
 	foreach ( (array) ( $preset_def['block_types'] ?? [] ) as $entry ) {
@@ -280,6 +283,18 @@ function jcp_page_doc_sections_for_kind( string $page_kind ): array {
 	);
 
 	return $out;
+}
+
+/**
+ * Doc sections for a layout preset slug.
+ *
+ * @param string $preset Preset slug.
+ * @return array<int, array{header:string,label:string,on_page:bool}>
+ */
+function jcp_page_doc_sections_for_preset( string $preset ): array {
+	$def = jcp_page_get_preset( $preset );
+	$page_kind = $def ? (string) ( $def['page_kind'] ?? 'marketing' ) : 'marketing';
+	return jcp_page_doc_sections_for_kind( $page_kind, $preset );
 }
 
 /**
@@ -364,9 +379,10 @@ function jcp_page_doc_section_in_blocks( array $blocks, string $section ): bool 
  * @param array<string, mixed> $legacy    Parsed legacy content.
  * @param array<string, mixed> $blocks_doc Blocks document.
  * @param string               $page_kind Page kind.
+ * @param string               $preset    Optional layout preset slug.
  * @return array<string, mixed>
  */
-function jcp_page_doc_build_import_report( array $legacy, array $blocks_doc, string $page_kind ): array {
+function jcp_page_doc_build_import_report( array $legacy, array $blocks_doc, string $page_kind, string $preset = '' ): array {
 	$blocks       = (array) ( $blocks_doc['blocks'] ?? [] );
 	$imported     = [];
 	$skipped      = [];
@@ -397,9 +413,12 @@ function jcp_page_doc_build_import_report( array $legacy, array $blocks_doc, str
 	}
 
 	$applicable = array_values( array_filter(
-		jcp_page_doc_sections_for_kind( $page_kind ),
+		jcp_page_doc_sections_for_kind( $page_kind, $preset ),
 		static fn( array $row ): bool => ! empty( $row['on_page'] )
 	) );
+
+	$preset_def   = $preset !== '' ? jcp_page_get_preset( $preset ) : null;
+	$preset_label = $preset_def ? (string) ( $preset_def['label'] ?? $preset ) : jcp_page_kind_label( $page_kind );
 
 	$message_parts = [];
 	if ( $imported ) {
@@ -422,7 +441,8 @@ function jcp_page_doc_build_import_report( array $legacy, array $blocks_doc, str
 
 	return [
 		'page_kind'       => $page_kind,
-		'page_kind_label' => jcp_page_kind_label( $page_kind ),
+		'page_kind_label' => $preset_label,
+		'preset'          => $preset,
 		'imported'        => $imported,
 		'skipped'         => $skipped,
 		'blocks'          => $block_labels,

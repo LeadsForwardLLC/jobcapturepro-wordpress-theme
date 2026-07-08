@@ -1,3 +1,49 @@
+.jcp-admin-page-editor__json-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.jcp-writer-workflow {
+  margin: 0 0 20px;
+  padding: 14px 16px;
+  background: #f0f6fc;
+  border: 1px solid #c3d9ed;
+  border-radius: 4px;
+}
+
+.jcp-writer-workflow__title {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.jcp-writer-workflow__steps {
+  margin: 0 0 10px 20px;
+}
+
+.jcp-writer-workflow__steps li {
+  margin-bottom: 4px;
+}
+
+.jcp-layout-picker select {
+  min-width: 220px;
+  margin-right: 8px;
+}
+
+.jcp-admin-page-editor__details--advanced summary {
+  color: #646970;
+}
+
+.jcp-admin-page-editor__advanced {
+  margin-top: 12px;
+}
+
 .jcp-admin-page-editor__heading {
   margin: 0 0 8px;
   font-size: 14px;

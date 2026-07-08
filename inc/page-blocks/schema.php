@@ -332,12 +332,20 @@ function jcp_niche_save_content( int $post_id, array $content ): void {
  */
 function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 	$page_kind = jcp_page_resolve_kind( $legacy, $post_id );
-	$preset    = match ( $page_kind ) {
+	$preset    = ! empty( $legacy['preset'] ) ? sanitize_key( (string) $legacy['preset'] ) : match ( $page_kind ) {
 		'referral' => 'referral',
 		'industry' => 'industry',
 		'home'     => 'home',
 		default    => 'marketing',
 	};
+	if ( ! jcp_page_get_preset( $preset ) ) {
+		$preset = match ( $page_kind ) {
+			'referral' => 'referral',
+			'industry' => 'industry',
+			'home'     => 'home',
+			default    => 'marketing',
+		};
+	}
 	$preset_def = jcp_page_get_preset( $preset );
 	$order     = $preset_def['block_types'] ?? [];
 
@@ -493,6 +501,69 @@ function jcp_page_merge_parsed_content( array $parsed, array $existing = [] ): a
 				$parsed['blocks'][ $i ]['props']['cta_url'] = $exist['cta_url'];
 			}
 		}
+	}
+
+	return $parsed;
+}
+
+/**
+ * Merge imported blocks into an existing skeleton document.
+ *
+ * Keeps empty section slots from the skeleton while filling props from import.
+ *
+ * @param array<string, mixed> $parsed   Parsed import document.
+ * @param array<string, mixed> $existing Existing stored content.
+ * @return array<string, mixed>
+ */
+function jcp_page_merge_import_content( array $parsed, array $existing = [] ): array {
+	$parsed = jcp_page_merge_parsed_content( $parsed, $existing );
+
+	if ( empty( $existing['blocks'] ) || empty( $parsed['blocks'] ) ) {
+		return $parsed;
+	}
+
+	$imported_by_key = [];
+	foreach ( (array) $parsed['blocks'] as $block ) {
+		if ( ! is_array( $block ) ) {
+			continue;
+		}
+		$type = (string) ( $block['type'] ?? '' );
+		$key  = $type;
+		if ( ! empty( $block['legacy_key'] ) ) {
+			$key .= ':' . (string) $block['legacy_key'];
+		}
+		$imported_by_key[ $key ] = $block;
+	}
+
+	$merged_blocks = [];
+	foreach ( (array) $existing['blocks'] as $skeleton ) {
+		if ( ! is_array( $skeleton ) ) {
+			continue;
+		}
+		$type = (string) ( $skeleton['type'] ?? '' );
+		$key  = $type;
+		if ( ! empty( $skeleton['legacy_key'] ) ) {
+			$key .= ':' . (string) $skeleton['legacy_key'];
+		}
+		if ( isset( $imported_by_key[ $key ] ) ) {
+			$hit = $imported_by_key[ $key ];
+			unset( $imported_by_key[ $key ] );
+			$skeleton['props']  = $hit['props'] ?? $skeleton['props'] ?? [];
+			$skeleton['layout'] = $hit['layout'] ?? $skeleton['layout'] ?? [];
+			if ( ! empty( $hit['label'] ) ) {
+				$skeleton['label'] = $hit['label'];
+			}
+		}
+		$merged_blocks[] = $skeleton;
+	}
+
+	foreach ( $imported_by_key as $block ) {
+		$merged_blocks[] = $block;
+	}
+
+	$parsed['blocks'] = $merged_blocks;
+	if ( ! empty( $existing['preset'] ) && empty( $parsed['preset'] ) ) {
+		$parsed['preset'] = $existing['preset'];
 	}
 
 	return $parsed;
