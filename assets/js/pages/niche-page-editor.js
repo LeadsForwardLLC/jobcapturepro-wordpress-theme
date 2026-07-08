@@ -189,11 +189,24 @@
   textLinkPopover.className = 'jcp-niche-link-popover jcp-niche-text-link-popover';
   textLinkPopover.hidden = true;
   textLinkPopover.innerHTML = `
-    <label>Link URL (e.g. /industries/plumbing/)</label>
-    <input type="text" id="jcpNicheTextLinkUrl" placeholder="/pricing" />
+    <div class="jcp-niche-link-popover__header">
+      <strong>Internal link</strong>
+      <div class="jcp-niche-link-popover__hint" id="jcpNicheTextLinkHint"></div>
+    </div>
+
+    <div class="jcp-niche-link-popover__seo" id="jcpNicheLinkSeo"></div>
+
+    <div class="jcp-niche-link-popover__suggestions">
+      <div class="jcp-niche-link-popover__suggestions-title">Suggested pages</div>
+      <div class="jcp-niche-link-popover__suggestions-list" id="jcpNicheLinkSuggestions"></div>
+    </div>
+
+    <label>Link URL</label>
+    <input type="text" id="jcpNicheTextLinkUrl" placeholder="/industries/plumbing/" />
+
     <div class="jcp-niche-link-popover-actions">
-      <button type="button" class="btn btn-primary" id="jcpNicheTextLinkApply">Apply link</button>
-      <button type="button" class="btn btn-secondary" id="jcpNicheTextLinkCancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="jcpNicheTextLinkApply">Insert link</button>
+      <button type="button" class="btn btn-secondary" id="jcpNicheTextLinkCancel">Close</button>
     </div>
   `;
 
@@ -1292,8 +1305,8 @@
 
   const isStringArrayItemPath = (el) => {
     const item = el.closest('[data-jcp-array-item]');
-    const container = item?.parentElement;
-    if (!item || !container?.matches('[data-jcp-array]')) return false;
+    const container = item?.closest('[data-jcp-array]');
+    if (!item || !container) return false;
     const basePath = container.dataset.jcpArray;
     const path = el.getAttribute('data-jcp-path');
     if (!basePath || !path?.startsWith(`${basePath}.`)) return false;
@@ -1351,7 +1364,8 @@
     document.querySelectorAll('[data-jcp-array]').forEach((container) => {
       const basePath = container.dataset.jcpArray;
       if (!basePath || basePath === 'core_mechanic') return;
-      const items = [...container.querySelectorAll(':scope > [data-jcp-array-item]')];
+      const host = container.querySelector(':scope > .conversion-points__columns') || container;
+      const items = [...host.querySelectorAll(':scope > [data-jcp-array-item]')];
       if (!items.length) {
         setPath(flatContent, basePath, []);
         return;
@@ -1410,7 +1424,7 @@
     toggleBtn.textContent = 'Editing — click text to change';
     toggleBtn.classList.add('is-active');
     if (textLinkBtn) textLinkBtn.hidden = false;
-    if (!dirty) statusEl.textContent = 'Click text or images to edit. Select text and use Add text link for internal links.';
+    if (!dirty) statusEl.textContent = '';
     bindEditableFields();
     applyCleanLinesToDom();
     refreshEditorChrome();
@@ -1509,22 +1523,173 @@
     activeLink = null;
   });
 
+  const normalizeInternalHref = (href) => {
+    if (!href) return '';
+    let h = String(href).trim();
+    if (h === '' || h.startsWith('#') || h.startsWith('javascript:')) return '';
+    if (!h.startsWith('/')) {
+      try {
+        const u = new URL(h, window.location.origin);
+        h = u.pathname + u.search + u.hash;
+      } catch (e) {
+        return '';
+      }
+    }
+    return h.startsWith('/') ? h : '';
+  };
+
+  const getCurrentInternalLinkCounts = () => {
+    const counts = new Map();
+    document.querySelectorAll('[data-jcp-rich="true"] a[href]').forEach((a) => {
+      const raw = a.getAttribute('href');
+      const href = normalizeInternalHref(raw);
+      if (!href) return;
+      counts.set(href, (counts.get(href) || 0) + 1);
+    });
+    return counts;
+  };
+
+  const getSuggestedInternalPages = (counts) => {
+    // Heuristic: suggested pages come from industry links already present in page chrome/nav.
+    const anchors = [...document.querySelectorAll('a[href*="/industries/"]')];
+    const targets = new Map(); // href -> label
+
+    anchors.forEach((a) => {
+      const href = normalizeInternalHref(a.getAttribute('href'));
+      if (!href || !href.includes('/industries/')) return;
+      const label = (a.textContent || '').trim();
+      if (!targets.has(href) && label) targets.set(href, label);
+      else if (!targets.has(href)) targets.set(href, href);
+    });
+
+    // Always include already-linked targets so guidance matches reality.
+    counts.forEach((_, href) => {
+      if (!targets.has(href)) targets.set(href, href);
+    });
+
+    const out = [...targets.entries()].map(([href, label]) => ({
+      href,
+      label,
+      count: counts.get(href) || 0,
+    }));
+    out.sort((a, b) => (b.count - a.count) || a.label.localeCompare(b.label));
+    return out.slice(0, 30);
+  };
+
+  const expandCollapsedRangeToWord = (range) => {
+    try {
+      if (!range || !range.collapsed) return range;
+      const sc = range.startContainer;
+      if (!sc || sc.nodeType !== Node.TEXT_NODE) return range;
+      const text = sc.textContent || '';
+      if (!text) return range;
+      const offset = Math.max(0, Math.min(range.startOffset, text.length));
+      if (offset >= text.length) return range;
+
+      const isWord = (ch) => /[A-Za-z0-9]/.test(ch);
+      let start = offset;
+      let end = offset;
+      while (start > 0 && isWord(text[start - 1])) start -= 1;
+      while (end < text.length && isWord(text[end])) end += 1;
+      if (start === end) return range;
+
+      const r = document.createRange();
+      r.setStart(sc, start);
+      r.setEnd(sc, end);
+      return r;
+    } catch (e) {
+      return range;
+    }
+  };
+
   const openTextLinkPopover = () => {
     const sel = window.getSelection();
-    if (!sel || !sel.rangeCount) return;
-    const node = sel.anchorNode;
-    const field = node && node.nodeType === Node.ELEMENT_NODE
-      ? node.closest('[data-jcp-rich="true"]')
-      : node?.parentElement?.closest('[data-jcp-rich="true"]');
-    if (!field) {
-      statusEl.textContent = 'Select text inside a paragraph first (subheadlines, FAQ answers, etc.).';
-      return;
+    const node = sel?.rangeCount ? sel.anchorNode : null;
+    const selField = node
+      ? node.nodeType === Node.ELEMENT_NODE
+        ? node.closest('[data-jcp-rich="true"]')
+        : node?.parentElement?.closest('[data-jcp-rich="true"]')
+      : null;
+
+    const activeEl = document.activeElement;
+    const focusField = activeEl?.closest?.('[data-jcp-rich="true"]') || null;
+    const field = selField || focusField;
+
+    activeRichField = field || null;
+    statusEl.textContent = '';
+
+    const counts = getCurrentInternalLinkCounts();
+    const suggestions = getSuggestedInternalPages(counts);
+
+    const hintEl = textLinkPopover.querySelector('#jcpNicheTextLinkHint');
+    const seoEl = textLinkPopover.querySelector('#jcpNicheLinkSeo');
+    const listEl = textLinkPopover.querySelector('#jcpNicheLinkSuggestions');
+
+    const totalLinks = [...counts.values()].reduce((a, b) => a + b, 0);
+    const uniqueLinks = counts.size;
+
+    hintEl.textContent = field ? 'Select a phrase (or click inside) then insert.' : 'Click inside a text paragraph first.';
+
+    // SEO guidance (local to this page edit).
+    seoEl.innerHTML = '';
+    const seoTop = document.createElement('div');
+    seoTop.innerHTML = `<strong>Current internal links:</strong> ${totalLinks} (unique ${uniqueLinks})`;
+    seoEl.appendChild(seoTop);
+
+    const topTargets = suggestions
+      .filter((s) => s.count > 0)
+      .slice(0, 3)
+      .map((s) => `${s.label} (${s.count})`)
+      .join(', ');
+    if (topTargets) {
+      const t = document.createElement('div');
+      t.textContent = `Top targets: ${topTargets}`;
+      t.className = 'jcp-niche-link-popover__seo-top';
+      seoEl.appendChild(t);
     }
-    activeRichField = field;
+
+    // Suggested pages.
+    listEl.innerHTML = '';
+    if (!suggestions.length) {
+      const empty = document.createElement('div');
+      empty.className = 'jcp-niche-link-popover__empty';
+      empty.textContent = 'No suggested pages found.';
+      listEl.appendChild(empty);
+    } else {
+      suggestions.forEach((s) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'jcp-niche-link-popover__suggestion-btn';
+        btn.dataset.href = s.href;
+
+        const label = document.createElement('span');
+        label.className = 'jcp-niche-link-popover__suggestion-label';
+        label.textContent = s.label;
+
+        btn.appendChild(label);
+        if (s.count) {
+          const c = document.createElement('span');
+          c.className = 'jcp-niche-link-popover__suggestion-count';
+          c.textContent = String(s.count);
+          btn.appendChild(c);
+        }
+
+        btn.addEventListener('click', () => {
+          const urlInput = textLinkPopover.querySelector('#jcpNicheTextLinkUrl');
+          if (urlInput) urlInput.value = s.href;
+        });
+
+        listEl.appendChild(btn);
+      });
+    }
+
     textLinkPopover.hidden = false;
     textLinkPopover.removeAttribute('hidden');
-    textLinkPopover.querySelector('#jcpNicheTextLinkUrl').value = '';
-    const rect = field.getBoundingClientRect();
+
+    const urlInput = textLinkPopover.querySelector('#jcpNicheTextLinkUrl');
+    if (urlInput) urlInput.value = '';
+
+    const rect = field ? field.getBoundingClientRect() : bar.getBoundingClientRect();
     textLinkPopover.style.top = `${Math.min(window.innerHeight - 140, rect.bottom + 8)}px`;
     textLinkPopover.style.left = `${Math.max(8, Math.min(window.innerWidth - 320, rect.left))}px`;
   };
@@ -1535,12 +1700,36 @@
 
   textLinkPopover.querySelector('#jcpNicheTextLinkApply').addEventListener('click', () => {
     const url = textLinkPopover.querySelector('#jcpNicheTextLinkUrl').value.trim();
-    if (!url || !activeRichField) return;
+    if (!url) return;
     const sel = window.getSelection();
-    if (!sel || !sel.rangeCount) return;
-    const range = sel.getRangeAt(0);
-    if (!activeRichField.contains(range.commonAncestorContainer)) return;
-    const label = sel.toString() || url;
+    if (!sel || !sel.rangeCount) {
+      statusEl.textContent = 'Select the text you want to link first.';
+      return;
+    }
+
+    let range = sel.getRangeAt(0);
+    let rich = activeRichField;
+    if (!rich) {
+      const node = sel.anchorNode;
+      rich = node && node.nodeType === Node.ELEMENT_NODE
+        ? node.closest('[data-jcp-rich="true"]')
+        : node?.parentElement?.closest('[data-jcp-rich="true"]');
+    }
+    if (!rich) {
+      statusEl.textContent = 'Click inside a text paragraph first.';
+      return;
+    }
+
+    if (!rich.contains(range.commonAncestorContainer)) {
+      statusEl.textContent = 'Selection must be inside the paragraph you clicked Link from.';
+      return;
+    }
+
+    range = expandCollapsedRangeToWord(range);
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    const label = range.toString() || url;
     const anchor = document.createElement('a');
     anchor.href = url;
     anchor.textContent = label;
@@ -1549,6 +1738,7 @@
     textLinkPopover.hidden = true;
     textLinkPopover.setAttribute('hidden', '');
     activeRichField = null;
+    statusEl.textContent = '';
     recordChange();
   });
 

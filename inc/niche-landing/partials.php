@@ -210,43 +210,83 @@ function jcp_niche_render_core_mechanic_strip( array $items, string $path_prefix
 }
 
 /**
- * Checkmark list for differentiation bullets.
+ * Single checkmark bullet row.
  *
- * @param array<int, string|array<string, string>> $lines        Lines.
- * @param string                                   $path_prefix JSON path prefix (e.g. conversion.points).
+ * @param string $text        Display text.
+ * @param string $path        Optional JSON path for inline editor.
+ * @param int    $index       Array index.
+ * @param bool   $editable    Whether remove control is shown.
  */
-function jcp_niche_render_conversion_points( array $lines, string $path_prefix = '' ): void {
-	if ( empty( $lines ) && $path_prefix === '' ) {
+function jcp_niche_render_conversion_point( string $text, string $path, int $index, bool $editable ): void {
+	if ( $text === '' && ! $editable ) {
 		return;
 	}
 	?>
-	<div class="conversion-points jcp-niche-conversion-points"<?php
-	if ( $path_prefix !== '' ) {
+	<div class="conversion-point jcp-collection-item"<?php if ( $editable ) { jcp_niche_array_item_attr( $index ); } ?>>
+		<div class="conversion-point-icon" aria-hidden="true">
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+				<polyline points="22 4 12 14.01 9 11.01"/>
+			</svg>
+		</div>
+		<div class="conversion-point-text">
+			<strong<?php if ( $path !== '' ) { jcp_niche_editable_attr( $path ); } ?>><?php echo esc_html( $text !== '' ? $text : __( 'New point', 'jcp-core' ) ); ?></strong>
+		</div>
+		<?php if ( $editable ) { jcp_niche_collection_remove_btn(); } ?>
+	</div>
+	<?php
+}
+
+/**
+ * Checkmark list for differentiation bullets and conversion points.
+ *
+ * @param array<int, string|array<string, string>> $lines        Lines.
+ * @param string                                   $path_prefix JSON path prefix (e.g. conversion.points).
+ * @param array<string, mixed>                     $options     {
+ *   @type string $layout     stack|columns — columns fills down then across.
+ *   @type int    $per_column Max items per column when layout is columns.
+ * }
+ */
+function jcp_niche_render_conversion_points( array $lines, string $path_prefix = '', array $options = [] ): void {
+	if ( empty( $lines ) && $path_prefix === '' ) {
+		return;
+	}
+
+	$layout     = (string) ( $options['layout'] ?? 'stack' );
+	$per_column = max( 1, min( 8, (int) ( $options['per_column'] ?? 5 ) ) );
+	$columns    = $layout === 'columns';
+	$editable   = $path_prefix !== '';
+
+	$classes = 'conversion-points jcp-niche-conversion-points';
+	if ( $columns ) {
+		$classes .= ' conversion-points--columns jcp-niche-diff-points';
+	}
+	?>
+	<div class="<?php echo esc_attr( $classes ); ?>"<?php
+	if ( $editable ) {
 		jcp_niche_array_attr( $path_prefix );
 	}
+	if ( $columns ) {
+		printf( ' data-jcp-per-column="%d"', $per_column );
+	}
 	?>>
+		<?php if ( $columns ) : ?>
+			<div class="conversion-points__columns" style="<?php printf( '--jcp-points-per-column:%d;', $per_column ); ?>">
+		<?php endif; ?>
 		<?php foreach ( $lines as $i => $line ) : ?>
 			<?php
 			$text = is_array( $line ) ? (string) ( $line['text'] ?? '' ) : (string) $line;
-			if ( $text === '' ) {
+			if ( $text === '' && ! $editable ) {
 				continue;
 			}
-			$path = $path_prefix !== '' ? $path_prefix . '.' . $i : '';
+			$path = $editable ? $path_prefix . '.' . $i : '';
+			jcp_niche_render_conversion_point( $text, $path, (int) $i, $editable );
 			?>
-			<div class="conversion-point jcp-collection-item"<?php if ( $path_prefix !== '' ) { jcp_niche_array_item_attr( (int) $i ); } ?>>
-				<div class="conversion-point-icon">
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-						<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-						<polyline points="22 4 12 14.01 9 11.01"/>
-					</svg>
-				</div>
-				<div class="conversion-point-text">
-					<strong<?php if ( $path !== '' ) { jcp_niche_editable_attr( $path ); } ?>><?php echo esc_html( $text ); ?></strong>
-				</div>
-				<?php if ( $path_prefix !== '' ) { jcp_niche_collection_remove_btn(); } ?>
-			</div>
 		<?php endforeach; ?>
-		<?php if ( $path_prefix !== '' ) { jcp_niche_collection_add_btn( __( '+ Add point', 'jcp-core' ) ); } ?>
+		<?php if ( $columns ) : ?>
+			</div>
+		<?php endif; ?>
+		<?php if ( $editable ) { jcp_niche_collection_add_btn( __( '+ Add point', 'jcp-core' ) ); } ?>
 	</div>
 	<?php
 }

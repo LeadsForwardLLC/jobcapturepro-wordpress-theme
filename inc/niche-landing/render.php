@@ -791,14 +791,23 @@ function jcp_niche_render_differentiation( array $c ): void {
 	?>
 	<section class="jcp-section rankings-section jcp-niche-diff">
 		<div class="jcp-container">
-			<div class="rankings-header">
+			<div class="rankings-header jcp-niche-diff-header">
 				<h2<?php jcp_niche_editable_attr( 'differentiation.headline' ); ?>><?php jcp_niche_e( (string) $d['headline'] ); ?></h2>
 			</div>
-			<div class="real-job-proof-callout jcp-niche-diff-callout">
+			<div class="jcp-niche-diff-panel">
 				<?php if ( ! empty( $d['body'] ) ) : ?>
-					<p class="real-job-proof-callout-text"<?php jcp_niche_editable_rich_attr( 'differentiation.body' ); ?>><?php jcp_niche_rich_e( (string) $d['body'] ); ?></p>
+					<p class="jcp-niche-diff-lead"<?php jcp_niche_editable_rich_attr( 'differentiation.body' ); ?>><?php jcp_niche_rich_e( (string) $d['body'] ); ?></p>
 				<?php endif; ?>
-				<?php jcp_niche_render_conversion_points( (array) ( $d['bullets'] ?? [] ), 'differentiation.bullets' ); ?>
+				<?php
+				jcp_niche_render_conversion_points(
+					(array) ( $d['bullets'] ?? [] ),
+					'differentiation.bullets',
+					[
+						'layout'     => 'columns',
+						'per_column' => 5,
+					]
+				);
+				?>
 			</div>
 			<?php jcp_niche_render_section_optional_ctas( $d, 'differentiation', (string) ( $c['niche_key'] ?? $c['page_key'] ?? '' ) ); ?>
 		</div>

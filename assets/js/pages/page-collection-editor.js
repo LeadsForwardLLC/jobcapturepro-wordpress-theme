@@ -296,17 +296,40 @@
 
   const arrayPathFrom = (el) => el.getAttribute('data-jcp-array') || el.dataset.jcpArray || '';
 
+  const arrayItemsHost = (container) => {
+    if (!container) return null;
+    let host = container.querySelector(':scope > .conversion-points__columns');
+    if (!host && container.classList.contains('conversion-points--columns')) {
+      host = document.createElement('div');
+      host.className = 'conversion-points__columns';
+      const perCol = parseInt(container.getAttribute('data-jcp-per-column') || '5', 10);
+      host.style.setProperty('--jcp-points-per-column', String(perCol));
+      const addBtn = container.querySelector(':scope > .jcp-collection-add');
+      if (addBtn) container.insertBefore(host, addBtn);
+      else container.appendChild(host);
+    }
+    return host || container;
+  };
+
+  const arrayItemsIn = (container) => {
+    const host = arrayItemsHost(container);
+    if (!host) return [];
+    return [...host.querySelectorAll(':scope > [data-jcp-array-item]')];
+  };
+
   const rebuildArrayContainer = (container) => {
     const basePath = arrayPathFrom(container);
     if (!basePath || !api) return;
     const arr = getArray(basePath);
-    container.querySelectorAll(':scope > [data-jcp-array-item], :scope > .jcp-collection-add').forEach((el) => el.remove());
+    const host = arrayItemsHost(container);
+    host.querySelectorAll(':scope > [data-jcp-array-item]').forEach((el) => el.remove());
+    container.querySelectorAll(':scope > .jcp-collection-add').forEach((el) => el.remove());
     const temp = document.createElement('div');
     arr.forEach((item, index) => {
       const html = buildItemHtml(basePath, index, item, container);
       if (!html) return;
       temp.innerHTML = html.trim();
-      if (temp.firstElementChild) container.appendChild(temp.firstElementChild);
+      if (temp.firstElementChild) host.appendChild(temp.firstElementChild);
     });
     if (basePath === 'how_it_works.steps') updateTimelineStepNumbers(container);
   };
@@ -475,7 +498,7 @@
   const bindCollectionControls = (container) => {
     if (!container) return;
     container.querySelectorAll(':scope > .jcp-collection-add').forEach((btn) => bindAddButton(btn, container));
-    container.querySelectorAll(':scope > [data-jcp-array-item]').forEach((item) => {
+    arrayItemsIn(container).forEach((item) => {
       item.classList.add('jcp-collection-item');
       const removeBtn = item.querySelector(':scope > .jcp-collection-remove')
         || item.querySelector('.jcp-collection-remove');
@@ -556,7 +579,7 @@
     if (!isEditingActive()) return;
 
     arrayContainers().forEach((container) => {
-      container.querySelectorAll(':scope > [data-jcp-array-item]').forEach(injectRemoveButton);
+      arrayItemsIn(container).forEach(injectRemoveButton);
       injectAddButton(container);
       bindCollectionControls(container);
     });
