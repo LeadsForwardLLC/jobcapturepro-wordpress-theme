@@ -713,7 +713,9 @@ FINAL CTA
 Headline
 [Final headline]
 Subheadline
-[Final subheadline]
+[Final subheadline — optional; hide in Page Structure if unused]
+CTA Note
+[Text under the button — optional]
 
 CTA
 Start free trial

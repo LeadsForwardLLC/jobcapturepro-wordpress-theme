@@ -319,6 +319,9 @@ function jcp_niche_render_section_closing( string $text, string $path = '' ): vo
  * @param array<string, mixed> $options   secondary (bool), secondary_kind (cta|link).
  */
 function jcp_niche_render_section_optional_ctas( array $props, string $base_path, string $niche_key = '', array $options = [] ): void {
+	if ( ! jcp_niche_show_field( $props, 'show_cta', true ) ) {
+		return;
+	}
 	$allow_secondary  = ! empty( $options['secondary'] );
 	$secondary_kind   = (string) ( $options['secondary_kind'] ?? 'link' );
 	$primary          = jcp_niche_resolve_cta( $props['cta_primary'] ?? [], $niche_key );

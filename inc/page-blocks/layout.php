@@ -40,14 +40,17 @@ function jcp_block_column_types(): array {
 function jcp_block_default_layout( string $type, string $page_kind = 'industry' ): array {
 	if ( $type === 'hero' ) {
 		return [
-			'hero_variant' => $page_kind === 'referral' ? 'centered' : ( $page_kind === 'home' ? 'home' : 'condensed' ),
+			'hero_variant'    => $page_kind === 'referral' ? 'centered' : ( $page_kind === 'home' ? 'home' : 'condensed' ),
+			'align'           => $page_kind === 'referral' ? 'center' : 'left',
+			'section_surface' => jcp_section_surface_defaults(),
 		];
 	}
 
 	$layout = [
-		'align'   => 'center',
-		'width'   => 'contained',
-		'columns' => 0,
+		'align'           => 'center',
+		'width'           => 'contained',
+		'columns'         => 0,
+		'section_surface' => jcp_section_surface_defaults(),
 	];
 
 	if ( $type === 'breadcrumb' ) {
@@ -94,6 +97,9 @@ function jcp_block_resolve_layout( array $block, string $page_kind = 'industry' 
 
 	if ( $type === 'hero' ) {
 		$layout['hero_variant'] = jcp_block_resolve_hero_variant( $layout );
+		$align                  = (string) ( $layout['align'] ?? 'center' );
+		$layout['align']        = in_array( $align, [ 'left', 'center', 'right' ], true ) ? $align : 'center';
+		$layout['section_surface'] = jcp_section_surface_resolve( $layout );
 		return $layout;
 	}
 
@@ -104,6 +110,7 @@ function jcp_block_resolve_layout( array $block, string $page_kind = 'industry' 
 
 	$columns = (int) ( $layout['columns'] ?? 0 );
 	$layout['columns'] = ( $columns >= 1 && $columns <= 4 ) ? $columns : 0;
+	$layout['section_surface'] = jcp_section_surface_resolve( $layout );
 
 	return $layout;
 }
@@ -117,7 +124,9 @@ function jcp_block_resolve_layout( array $block, string $page_kind = 'industry' 
 function jcp_block_layout_classes( array $layout, string $type ): string {
 	if ( $type === 'hero' ) {
 		$variant = jcp_block_resolve_hero_variant( $layout );
-		return 'jcp-block-root jcp-hero-variant-' . $variant;
+		$align   = (string) ( $layout['align'] ?? 'center' );
+		$align   = in_array( $align, [ 'left', 'center', 'right' ], true ) ? $align : 'center';
+		return 'jcp-block-root jcp-hero-variant-' . $variant . ' jcp-layout-align-' . $align;
 	}
 
 	$classes = [

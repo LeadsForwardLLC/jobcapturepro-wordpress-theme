@@ -382,8 +382,8 @@ function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 		}
 		if ( $type === 'hero' && is_array( $props ) ) {
 			$block_layout = jcp_block_default_layout( (string) $type, $page_kind );
-			if ( isset( $props['show_visual'] ) ) {
-				$block_layout['hero_variant'] = ! empty( $props['show_visual'] ) ? 'split' : 'centered';
+			if ( isset( $props['show_visual'] ) && empty( $props['show_visual'] ) ) {
+				$block_layout['hero_variant'] = 'centered';
 			}
 			if ( ! empty( $props['rotating_words'] ) ) {
 				$block_layout['hero_variant'] = 'home';

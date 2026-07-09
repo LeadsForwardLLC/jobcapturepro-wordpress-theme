@@ -83,12 +83,20 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 
 	$block_id = esc_attr( (string) ( $block['id'] ?? 'b-' . $type ) );
 	$layout   = jcp_block_resolve_layout( $block, (string) ( $ctx['page_kind'] ?? 'industry' ) );
-	$classes  = 'jcp-block-root ' . jcp_block_layout_classes( $layout, $type );
+	$surface  = jcp_section_surface_block_attrs( $layout );
+	$classes  = trim( 'jcp-block-root ' . jcp_block_layout_classes( $layout, $type ) . ' ' . $surface['class'] );
+	$data_str = '';
+	foreach ( $surface['data'] as $key => $val ) {
+		$data_str .= sprintf( ' data-%s="%s"', esc_attr( $key ), esc_attr( $val ) );
+	}
+	$style_attr = $surface['style'] !== '' ? ' style="' . esc_attr( $surface['style'] ) . '"' : '';
 	printf(
-		'<div class="%1$s" data-jcp-block-id="%2$s" data-jcp-block-type="%3$s">',
+		'<div class="%1$s" data-jcp-block-id="%2$s" data-jcp-block-type="%3$s"%4$s%5$s>',
 		esc_attr( $classes ),
 		$block_id,
-		esc_attr( $type )
+		esc_attr( $type ),
+		$style_attr,
+		$data_str
 	);
 
 	switch ( $type ) {
@@ -96,7 +104,9 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 			// Breadcrumb markup is rendered inside the industry hero section.
 			break;
 		case 'hero':
-			$c['_hero_variant'] = jcp_block_resolve_hero_variant( $layout );
+			$hero_layout          = jcp_block_resolve_layout( $block, (string) ( $ctx['page_kind'] ?? 'marketing' ) );
+			$c['_hero_variant']   = jcp_block_resolve_hero_variant( $hero_layout );
+			$c['_hero_align']     = (string) ( $hero_layout['align'] ?? 'center' );
 			jcp_niche_render_hero( $c, $page_key );
 			break;
 		case 'media_text':

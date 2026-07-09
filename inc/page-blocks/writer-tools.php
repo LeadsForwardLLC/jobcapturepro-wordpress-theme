@@ -191,6 +191,11 @@ SEO Title (website/blogs only):
 
 Meta Description (website/blogs only):
 
+Page options (set in Page Structure after import — not written in this doc):
+- Breadcrumb show/hide
+- Per-section background (white, off-white, dark, image + overlay, custom color with opacity)
+- Show/hide subheadlines, section buttons, supporting text, and CTA notes
+
 ↓ Write Content Here ↓
 
 
@@ -348,7 +353,9 @@ FINAL CTA
 Headline
 [Final headline]
 Subheadline
-[Final subheadline]
+[Final subheadline — optional; hide in Page Structure if unused]
+CTA Note
+[Text under the button — optional]
 CTA
 Start free trial
 See how it works

@@ -39,6 +39,65 @@
     { value: 'home', label: 'Homepage', hint: 'Rotating headline + live phone' },
   ];
 
+  const SECTION_SURFACE_PRESETS = [
+    { value: 'default', label: 'Default' },
+    { value: 'white', label: 'White' },
+    { value: 'off_white', label: 'Off-white' },
+    { value: 'dark', label: 'Dark' },
+    { value: 'image', label: 'Image' },
+    { value: 'custom', label: 'Custom' },
+  ];
+
+  const BLOCK_VISIBILITY_TOGGLES = {
+    hero: [
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-hero-subtitle', defaultOn: true },
+    ],
+    what_it_is: [
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
+    ],
+    how_it_works: [
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: true },
+    ],
+    check_ins: [
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+    ],
+    problem: [
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+    ],
+    benefits: [
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+    ],
+    differentiation: [
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+    ],
+    who_its_for: [
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+    ],
+    faq: [
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+    ],
+    final_cta: [
+      { key: 'show_subheadline', label: 'Supporting text', selector: '.cta-paragraph', defaultOn: true },
+      { key: 'show_cta_note', label: 'Text under button', selector: '.cta-note', defaultOn: true },
+    ],
+    conversion: [
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+    ],
+    proof_flow: [
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+    ],
+    directory_preview: [
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+    ],
+  };
+
   let flatContent = bootstrap.content && typeof bootstrap.content === 'object' ? bootstrap.content : {};
   let pageDocument = bootstrap.blocks && Array.isArray(bootstrap.blocks.blocks)
     ? bootstrap.blocks
@@ -158,6 +217,10 @@
       <button type="button" class="jcp-block-structure__close" id="jcpStructureClose" aria-label="Close">×</button>
     </div>
     <p class="jcp-block-structure__hint">Drag to reorder. Click a section to jump to it on the page — or click a section on the page to select it here.</p>
+    <div class="jcp-block-structure__page-options">
+      <span class="jcp-layout-group__label">Page</span>
+      <button type="button" class="jcp-layout-chip" id="jcpToggleBreadcrumb" title="Show breadcrumb trail in the hero">Breadcrumb</button>
+    </div>
     <ul class="jcp-block-structure__list" id="jcpBlockList"></ul>
     <button type="button" class="btn btn-secondary jcp-block-structure__add" id="jcpAddBlockBtn">+ Add block</button>
   `;
@@ -224,6 +287,7 @@
   const toggleBtn = bar.querySelector('#jcpNicheToggleEdit');
   const structureBtn = bar.querySelector('#jcpNicheStructureBtn');
   const blockListEl = structurePanel.querySelector('#jcpBlockList');
+  const breadcrumbToggleBtn = structurePanel.querySelector('#jcpToggleBreadcrumb');
   const addBlockListEl = addModal.querySelector('#jcpAddBlockList');
   const adminLink = bar.querySelector('.jcp-niche-edit-link');
   const textLinkBtn = bar.querySelector('#jcpNicheTextLink');
@@ -232,6 +296,83 @@
   let activeBlockId = null;
 
   const isRichField = (el) => el && el.getAttribute('data-jcp-rich') === 'true';
+
+  const isLinkableTextField = (el) => {
+    if (!el?.hasAttribute?.('data-jcp-path')) return false;
+    if (el.hasAttribute('data-jcp-href-path')) return false;
+    if (el.closest('.jcp-collection-add, .jcp-collection-remove, .jcp-optional-restore')) return false;
+    const tag = el.tagName;
+    if (['BUTTON', 'INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return false;
+    return true;
+  };
+
+  const findLinkableFieldFromNode = (node) => {
+    if (!node) return null;
+    const start = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+    if (!start) return null;
+    let el = start;
+    while (el) {
+      if (el.matches?.('[data-jcp-path]') && isLinkableTextField(el)) return el;
+      el = el.parentElement;
+    }
+    return null;
+  };
+
+  const promoteFieldToRichIfNeeded = (el) => {
+    if (!el || isRichField(el)) return;
+    if (/<a[\s>]/i.test(el.innerHTML || '')) {
+      el.setAttribute('data-jcp-rich', 'true');
+    }
+  };
+
+  let pendingLinkRange = null;
+  let pendingLinkField = null;
+
+  const rememberLinkSelection = () => {
+    if (!editing) return;
+    const sel = window.getSelection();
+    if (!sel?.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) return;
+    const field = findLinkableFieldFromNode(range.commonAncestorContainer);
+    if (!field) return;
+    try {
+      pendingLinkRange = range.cloneRange();
+      pendingLinkField = field;
+    } catch (e) {
+      // ignore range clone errors
+    }
+  };
+
+  const getLinkContext = () => {
+    const sel = window.getSelection();
+    let range = null;
+    let field = null;
+
+    if (sel?.rangeCount && !sel.isCollapsed) {
+      range = sel.getRangeAt(0);
+      field = findLinkableFieldFromNode(range.commonAncestorContainer);
+    }
+
+    if ((!field || !range || range.collapsed) && pendingLinkField && pendingLinkRange) {
+      range = pendingLinkRange;
+      field = pendingLinkField;
+    }
+
+    if (!field) {
+      field = findLinkableFieldFromNode(sel?.anchorNode)
+        || findLinkableFieldFromNode(document.activeElement);
+    }
+
+    return { range, field };
+  };
+
+  const markExistingInlineLinks = () => {
+    document.querySelectorAll('[data-jcp-path]').forEach((el) => {
+      if (!isLinkableTextField(el)) return;
+      promoteFieldToRichIfNeeded(el);
+    });
+  };
 
   const sanitizeRichHtml = (html) => {
     const doc = new DOMParser().parseFromString(`<div>${html || ''}</div>`, 'text/html');
@@ -367,15 +508,243 @@
     return root;
   };
 
+  const SECTION_SURFACE_DEFAULTS = {
+    preset: 'default',
+    color: '#ffffff',
+    opacity: 100,
+    image_url: '',
+  };
+
   const defaultLayout = (type) => {
+    const surface = { ...SECTION_SURFACE_DEFAULTS };
     if (type === 'hero') {
-      if (PAGE_KIND === 'referral') return { hero_variant: 'centered' };
-      if (PAGE_KIND === 'home') return { hero_variant: 'home' };
-      return { hero_variant: 'condensed' };
+      if (PAGE_KIND === 'referral') return { hero_variant: 'centered', align: 'center', section_surface: surface };
+      if (PAGE_KIND === 'home') return { hero_variant: 'home', align: 'center', section_surface: surface };
+      return { hero_variant: 'condensed', align: 'center', section_surface: surface };
     }
-    const layout = { align: 'center', width: 'contained' };
+    const layout = {
+      align: 'center',
+      width: 'contained',
+      section_surface: surface,
+    };
     if (type === 'breadcrumb') layout.align = 'left';
     return layout;
+  };
+
+  const isHeroVisualOn = (block) => {
+    block.props = block.props || {};
+    if (block.props.show_visual === true || block.props.show_visual === false) {
+      return block.props.show_visual === true;
+    }
+    return resolveHeroVariant(block) !== 'centered';
+  };
+
+  const heroMediaMode = (block) => {
+    if (!isHeroVisualOn(block)) return 'hide';
+    return block.props?.media_position === 'left' ? 'left' : 'right';
+  };
+
+  const resolveHeroCtaMode = (block) => {
+    const primary = block.props?.show_cta_primary !== false;
+    const secondary = block.props?.show_cta_secondary !== false;
+    if (!primary && !secondary) return 'none';
+    if (primary && secondary) return 'both';
+    if (primary) return 'primary';
+    return 'secondary';
+  };
+
+  const resolveSectionSurface = (block) => {
+    const layout = block.layout || {};
+    return { ...SECTION_SURFACE_DEFAULTS, ...(layout.section_surface || {}) };
+  };
+
+  const isBlockFieldVisible = (block, key, defaultOn = true) => {
+    if (block.props && (block.props[key] === true || block.props[key] === false)) {
+      return block.props[key] === true;
+    }
+    const lk = blockLegacyKey(block);
+    if (lk) {
+      const val = getPath(flatContent, `${lk}.${key}`);
+      if (val === true || val === false) return val === true;
+    }
+    return defaultOn;
+  };
+
+  const setBlockFieldVisible = (block, key, enabled, selector) => {
+    block.props = block.props || {};
+    block.props[key] = enabled;
+    const lk = blockLegacyKey(block);
+    if (lk) setPath(flatContent, `${lk}.${key}`, enabled);
+    const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
+    if (root && selector) {
+      root.querySelectorAll(selector).forEach((el) => {
+        el.style.display = enabled ? '' : 'none';
+      });
+    }
+    recordChange();
+  };
+
+  const applySectionSurfaceToDom = (block, root) => {
+    if (!root || block.type === 'breadcrumb') return;
+    const surface = resolveSectionSurface(block);
+    const preset = surface.preset || 'default';
+    root.classList.remove(
+      'jcp-has-section-surface',
+      'jcp-section-surface--white',
+      'jcp-section-surface--off_white',
+      'jcp-section-surface--dark',
+      'jcp-section-surface--image',
+      'jcp-section-surface--custom'
+    );
+    root.removeAttribute('data-jcp-surface');
+    root.removeAttribute('data-jcp-surface-color');
+    root.removeAttribute('data-jcp-surface-opacity');
+    root.removeAttribute('data-jcp-surface-image');
+    root.style.removeProperty('--jcp-section-bg-color');
+    root.style.removeProperty('--jcp-section-bg-opacity');
+    root.style.removeProperty('--jcp-section-bg-image');
+    if (preset === 'default') return;
+    root.classList.add('jcp-has-section-surface', `jcp-section-surface--${preset}`);
+    root.dataset.jcpSurface = preset;
+    root.dataset.jcpSurfaceOpacity = String(surface.opacity ?? 100);
+    const alpha = Math.max(0, Math.min(100, Number(surface.opacity ?? 100))) / 100;
+    root.style.setProperty('--jcp-section-bg-opacity', String(alpha));
+    if (preset === 'custom') {
+      const color = surface.color || '#ffffff';
+      root.dataset.jcpSurfaceColor = color;
+      root.style.setProperty('--jcp-section-bg-color', color);
+    }
+    if (preset === 'image' && surface.image_url) {
+      root.dataset.jcpSurfaceImage = surface.image_url;
+      root.style.setProperty('--jcp-section-bg-image', `url(${surface.image_url})`);
+    }
+  };
+
+  const setSectionSurface = (block, patch, { refreshList = true } = {}) => {
+    const liveBlock = (pageDocument.blocks || []).find((entry) => entry.id === block.id) || block;
+    liveBlock.layout = liveBlock.layout || defaultLayout(liveBlock.type);
+    liveBlock.layout.section_surface = {
+      ...resolveSectionSurface(liveBlock),
+      ...patch,
+    };
+    const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
+    applySectionSurfaceToDom(liveBlock, root);
+    if (refreshList) renderBlockList();
+    recordChange();
+  };
+
+  const isBreadcrumbVisible = () => {
+    if (pageDocument.settings && typeof pageDocument.settings.hide_breadcrumb === 'boolean') {
+      return !pageDocument.settings.hide_breadcrumb;
+    }
+    return !flatContent.hide_breadcrumb;
+  };
+
+  const setBreadcrumbVisible = (visible) => {
+    pageDocument.settings = pageDocument.settings || {};
+    pageDocument.settings.hide_breadcrumb = !visible;
+    flatContent.hide_breadcrumb = !visible;
+    document.querySelectorAll('.jcp-niche-breadcrumb').forEach((el) => {
+      el.style.display = visible ? '' : 'none';
+    });
+    recordChange();
+  };
+
+  const buildSectionSurfaceHtml = (block) => {
+    if (block.type === 'breadcrumb') return '';
+    const surface = resolveSectionSurface(block);
+    const preset = surface.preset || 'default';
+    let html = '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Background</span><div class="jcp-layout-btns jcp-layout-btns--wrap" data-setting="section_surface_preset">';
+    SECTION_SURFACE_PRESETS.forEach((item) => {
+      const active = preset === item.value ? ' is-active' : '';
+      html += `<button type="button" class="jcp-layout-btn${active}" data-section-surface-preset="${item.value}">${item.label}</button>`;
+    });
+    html += '</div></div>';
+
+    const colorPresets = ['white', 'off_white', 'dark', 'custom'];
+    if (colorPresets.includes(preset)) {
+      if (preset === 'custom') {
+        html += `<div class="jcp-layout-group jcp-layout-group--surface-custom">
+          <label class="jcp-surface-color"><span>Color</span>
+            <input type="color" class="jcp-surface-color__picker" data-section-surface-color value="${surface.color || '#ffffff'}" />
+            <input type="text" class="jcp-surface-color__hex" data-section-surface-color-hex value="${surface.color || '#ffffff'}" maxlength="7" />
+          </label>
+        </div>`;
+      }
+      html += `<div class="jcp-layout-group jcp-layout-group--surface-opacity">
+        <label class="jcp-surface-opacity"><span>Opacity</span>
+          <input type="range" min="0" max="100" step="5" value="${Number(surface.opacity ?? 100)}" data-section-surface-opacity />
+          <span class="jcp-surface-opacity__val">${Number(surface.opacity ?? 100)}%</span>
+        </label>
+      </div>`;
+    }
+
+    if (preset === 'image') {
+      html += `<div class="jcp-layout-group jcp-layout-group--surface-image">
+        <label><span>Background image URL</span>
+          <input type="url" class="jcp-surface-image__url" data-section-surface-image value="${surface.image_url || ''}" placeholder="https://..." />
+        </label>
+        <button type="button" class="button jcp-surface-image__pick" data-section-surface-pick>Choose image</button>
+      </div>`;
+    }
+
+    return html;
+  };
+
+  const buildBlockVisibilityHtml = (block) => {
+    const toggles = BLOCK_VISIBILITY_TOGGLES[block.type];
+    if (!toggles || !toggles.length) return '';
+    let html = '<div class="jcp-layout-group jcp-layout-group--toggles"><span class="jcp-layout-group__label">Show</span><div class="jcp-layout-chips">';
+    toggles.forEach(({ key, label, defaultOn }) => {
+      const on = isBlockFieldVisible(block, key, defaultOn !== false) ? ' is-on' : '';
+      html += `<button type="button" class="jcp-layout-chip${on}" data-block-field-toggle="${key}">${label}</button>`;
+    });
+    html += '</div></div>';
+    return html;
+  };
+
+  const syncBlockVisibilityToDom = (block) => {
+    const toggles = BLOCK_VISIBILITY_TOGGLES[block.type];
+    if (!toggles) return;
+    const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
+    if (!root) return;
+    toggles.forEach(({ key, selector, defaultOn }) => {
+      if (!selector) return;
+      const enabled = isBlockFieldVisible(block, key, defaultOn !== false);
+      root.querySelectorAll(selector).forEach((el) => {
+        el.style.display = enabled ? '' : 'none';
+      });
+    });
+  };
+
+  let surfaceImageFrame = null;
+  const openSurfaceImagePicker = (block) => {
+    if (!window.wp?.media) {
+      window.alert('Media library is not available. Try refreshing the page.');
+      return;
+    }
+    if (!surfaceImageFrame) {
+      surfaceImageFrame = window.wp.media({
+        title: 'Section background image',
+        button: { text: 'Use image' },
+        multiple: false,
+        library: { type: 'image' },
+      });
+      surfaceImageFrame.on('select', () => {
+        const targetBlock = surfaceImageFrame._jcpSurfaceBlock;
+        if (!targetBlock) return;
+        const attachment = surfaceImageFrame.state().get('selection').first().toJSON();
+        const url = attachment.url || '';
+        if (url) setSectionSurface(targetBlock, { image_url: url });
+      });
+    }
+    surfaceImageFrame._jcpSurfaceBlock = block;
+    surfaceImageFrame.open();
+  };
+
+  const syncBreadcrumbToggleUi = () => {
+    if (!breadcrumbToggleBtn) return;
+    breadcrumbToggleBtn.classList.toggle('is-on', isBreadcrumbVisible());
   };
 
   const normalizePageDocumentBlocks = () => {
@@ -399,12 +768,21 @@
         if (!block.layout.hero_variant) {
           block.layout.hero_variant = resolveHeroVariant(block);
         }
+        if (!block.layout.align) {
+          block.layout.align = PAGE_KIND === 'referral' ? 'center' : 'center';
+        }
         block.props = block.props || {};
-        block.props.show_visual = block.layout.hero_variant !== 'centered';
+        if (block.props.show_visual !== true && block.props.show_visual !== false) {
+          block.props.show_visual = block.layout.hero_variant !== 'centered';
+        }
       }
       if (block.type === 'media_text' && !block.props?.media_position) {
         block.props = { ...defaultProps.media_text, ...(block.props || {}) };
       }
+      block.layout.section_surface = {
+        ...SECTION_SURFACE_DEFAULTS,
+        ...(block.layout.section_surface || {}),
+      };
     });
   };
 
@@ -418,7 +796,9 @@
 
   const resolveLayout = (block) => {
     if (block.type === 'hero') {
-      return { hero_variant: resolveHeroVariant(block) };
+      const layout = { ...defaultLayout('hero'), ...(block.layout || {}) };
+      const align = ['left', 'center', 'right'].includes(layout.align) ? layout.align : 'center';
+      return { hero_variant: resolveHeroVariant(block), align };
     }
     const layout = { ...defaultLayout(block.type), ...(block.layout || {}) };
     if (block.type !== 'hero' && layout.columns === undefined) layout.columns = 0;
@@ -427,7 +807,8 @@
 
   const layoutClassNames = (block) => {
     if (block.type === 'hero') {
-      return `jcp-hero-variant-${resolveHeroVariant(block)}`;
+      const layout = resolveLayout(block);
+      return `jcp-hero-variant-${resolveHeroVariant(block)} jcp-layout-align-${layout.align}`;
     }
     const layout = resolveLayout(block);
     const classes = [
@@ -492,27 +873,56 @@
 
       if (block.type === 'hero') {
         const variant = resolveHeroVariant(block);
+        const layout = resolveLayout(block);
         ['split', 'centered', 'stacked', 'condensed', 'home'].forEach((v) => {
           root.classList.remove(`jcp-hero-variant-${v}`);
           root.querySelector('.jcp-niche-hero')?.classList.remove(`jcp-hero-variant-${v}`);
         });
-        root.classList.add(`jcp-hero-variant-${variant}`);
-        root.querySelector('.jcp-niche-hero')?.classList.add(`jcp-hero-variant-${variant}`);
-        const visual = root.querySelector('.jcp-hero-visual');
-        if (visual) visual.setAttribute('aria-hidden', variant === 'centered' ? 'true' : 'false');
-        return;
+        ['left', 'center', 'right'].forEach((a) => {
+          root.classList.remove(`jcp-layout-align-${a}`);
+          root.querySelector('.jcp-niche-hero')?.classList.remove(`jcp-layout-align-${a}`);
+        });
+        root.classList.add(`jcp-hero-variant-${variant}`, `jcp-layout-align-${layout.align}`);
+        const heroSection = root.querySelector('.jcp-niche-hero') || root;
+        heroSection.classList.add(`jcp-hero-variant-${variant}`, `jcp-layout-align-${layout.align}`);
+        heroSection.classList.toggle('jcp-hero-has-visual', isHeroVisualOn(block));
+        heroSection.classList.toggle('jcp-hero--no-visual', !isHeroVisualOn(block));
+        const visualCol = root.querySelector('.jcp-hero-visual-column');
+        if (visualCol) {
+          visualCol.style.display = isHeroVisualOn(block) ? '' : 'none';
+          visualCol.setAttribute('aria-hidden', isHeroVisualOn(block) ? 'false' : 'true');
+        }
+        const grid = root.querySelector('[data-jcp-media-position-path="hero.media_position"]');
+        if (grid) {
+          const pos = block.props?.media_position === 'left' ? 'left' : 'right';
+          grid.classList.remove('jcp-split-layout--media-left', 'jcp-split-layout--media-right');
+          grid.classList.add(`jcp-split-layout--media-${pos}`);
+        }
+        const showPrimary = block.props?.show_cta_primary !== false;
+        const showSecondary = block.props?.show_cta_secondary !== false;
+        const actions = root.querySelector('.jcp-actions');
+        if (actions) actions.style.display = (showPrimary || showSecondary) ? '' : 'none';
+        root.querySelector('.jcp-hero-primary-cta')?.style.setProperty('display', showPrimary ? '' : 'none');
+        root.querySelector('.jcp-actions .btn-secondary')?.style.setProperty('display', showSecondary ? '' : 'none');
+      } else {
+        LAYOUT_CLASS_NAMES.filter((cls) => cls.startsWith('jcp-layout-') || cls.startsWith('jcp-block-cols-')).forEach((cls) => root.classList.remove(cls));
+        layoutClassNames(block).split(' ').filter(Boolean).forEach((cls) => root.classList.add(cls));
+        applyColumnGrids(root, resolveLayout(block).columns);
+
+        if (block.type === 'media_text') {
+          const section = root.querySelector('.jcp-media-text') || root;
+          section.classList.remove('jcp-media-text--media-left', 'jcp-media-text--media-right');
+          const pos = block.props?.media_position === 'left' ? 'left' : 'right';
+          section.classList.add(`jcp-media-text--media-${pos}`);
+        }
       }
 
-      LAYOUT_CLASS_NAMES.filter((cls) => cls.startsWith('jcp-layout-') || cls.startsWith('jcp-block-cols-')).forEach((cls) => root.classList.remove(cls));
-      layoutClassNames(block).split(' ').filter(Boolean).forEach((cls) => root.classList.add(cls));
-      applyColumnGrids(root, resolveLayout(block).columns);
+      applySectionSurfaceToDom(block, root);
+      syncBlockVisibilityToDom(block);
+    });
 
-      if (block.type === 'media_text') {
-        const section = root.querySelector('.jcp-media-text') || root;
-        section.classList.remove('jcp-media-text--media-left', 'jcp-media-text--media-right');
-        const pos = block.props?.media_position === 'left' ? 'left' : 'right';
-        section.classList.add(`jcp-media-text--media-${pos}`);
-      }
+    document.querySelectorAll('.jcp-niche-breadcrumb').forEach((el) => {
+      el.style.display = isBreadcrumbVisible() ? '' : 'none';
     });
   };
 
@@ -534,7 +944,16 @@
     }
     if (liveBlock.type === 'hero' && key === 'hero_variant') {
       liveBlock.props = liveBlock.props || {};
-      liveBlock.props.show_visual = value !== 'centered';
+      if (liveBlock.props.show_visual !== true && liveBlock.props.show_visual !== false) {
+        liveBlock.props.show_visual = value !== 'centered';
+      }
+    }
+    if (liveBlock.type === 'hero' && key === 'align') {
+      liveBlock.layout = { ...resolveLayout(liveBlock), align: value };
+      applyLayoutToDom();
+      renderBlockList();
+      recordChange();
+      return;
     }
     applyLayoutToDom();
     renderBlockList();
@@ -546,9 +965,9 @@
     const options = layoutOptionsFor(block.type);
     let html = '';
 
-    if (options.hero_variant) {
+    if (options.hero_variant && block.type === 'hero' && PAGE_KIND === 'home') {
       const variant = resolveHeroVariant(block);
-      const variants = PAGE_KIND === 'home' ? HERO_VARIANTS : HERO_VARIANTS.filter((v) => v.value !== 'home');
+      const variants = HERO_VARIANTS.filter((v) => v.value === 'home');
       html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Hero style</span><div class="jcp-layout-btns jcp-layout-btns--stacked" data-setting="hero_variant">';
       variants.forEach((item) => {
         const active = variant === item.value ? ' is-active' : '';
@@ -557,7 +976,7 @@
       html += '</div></div>';
     }
 
-    if (options.media_position) {
+    if (options.media_position && block.type !== 'hero') {
       const pos = block.props?.media_position === 'left' ? 'left' : 'right';
       html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Media</span><div class="jcp-layout-btns" data-setting="media_position">';
       html += `<button type="button" class="jcp-layout-btn${pos === 'left' ? ' is-active' : ''}" data-value="left">Left</button>`;
@@ -596,18 +1015,39 @@
       html += '</div></div>';
     }
 
-    if (block.type === 'hero') {
+    if (block.type === 'hero' && PAGE_KIND !== 'home') {
       block.props = block.props || {};
-      const toggles = [
-        { key: 'show_cta_primary', label: 'Primary' },
-        { key: 'show_cta_secondary', label: 'Secondary' },
-        { key: 'show_trust_line', label: 'Trust line' },
-      ];
+      const heroLayout = resolveLayout(block);
+      const align = heroLayout.align || 'center';
+      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Layout</span><div class="jcp-layout-btns" data-setting="align">';
+      html += ['left', 'center', 'right'].map((value) => {
+        const label = value === 'left' ? 'Left' : value === 'center' ? 'Centered' : 'Right';
+        const active = align === value ? ' is-active' : '';
+        return `<button type="button" class="jcp-layout-btn${active}" data-value="${value}">${label}</button>`;
+      }).join('');
+      html += '</div></div>';
+
+      const mediaMode = heroMediaMode(block);
+      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Media</span><div class="jcp-layout-btns" data-setting="hero_media_mode">';
+      html += ['hide', 'left', 'right'].map((value) => {
+        const label = value === 'hide' ? 'Hide' : value === 'left' ? 'Left' : 'Right';
+        const active = mediaMode === value ? ' is-active' : '';
+        return `<button type="button" class="jcp-layout-btn${active}" data-hero-media-mode="${value}">${label}</button>`;
+      }).join('');
+      html += '</div></div>';
+
+      const ctaMode = resolveHeroCtaMode(block);
+      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Buttons</span><div class="jcp-layout-btns" data-setting="hero_cta_mode">';
+      html += ['none', 'primary', 'secondary', 'both'].map((value) => {
+        const label = value === 'none' ? 'None' : value.charAt(0).toUpperCase() + value.slice(1);
+        const active = ctaMode === value ? ' is-active' : '';
+        return `<button type="button" class="jcp-layout-btn${active}" data-hero-cta-mode="${value}">${label}</button>`;
+      }).join('');
+      html += '</div></div>';
+
+      const trustOn = block.props.show_trust_line !== false ? ' is-on' : '';
       html += '<div class="jcp-layout-group jcp-layout-group--toggles"><span class="jcp-layout-group__label">Show</span><div class="jcp-layout-chips">';
-      toggles.forEach(({ key, label }) => {
-        const on = block.props[key] !== false ? ' is-on' : '';
-        html += `<button type="button" class="jcp-layout-chip${on}" data-hero-toggle="${key}">${label}</button>`;
-      });
+      html += `<button type="button" class="jcp-layout-chip${trustOn}" data-hero-toggle="show_trust_line">Trust line</button>`;
       html += '</div></div>';
     }
 
@@ -628,6 +1068,11 @@
       });
       html += '</div></div>';
     }
+
+    if (block.type !== 'breadcrumb') {
+      html += buildSectionSurfaceHtml(block);
+    }
+    html += buildBlockVisibilityHtml(block);
 
     if (!html) return '';
     return `<div class="jcp-block-structure__layout is-collapsed">${html}</div>`;
@@ -812,8 +1257,44 @@
       if (key === 'show_trust_line') {
         root.querySelector('.jcp-niche-trust-line')?.style.setProperty('display', enabled ? '' : 'none');
       }
+      const showPrimary = block.props.show_cta_primary !== false;
+      const showSecondary = block.props.show_cta_secondary !== false;
+      const actions = root.querySelector('.jcp-actions');
+      if (actions) actions.style.display = (showPrimary || showSecondary) ? '' : 'none';
     }
     recordChange();
+  };
+
+  const setHeroMediaMode = (block, mode) => {
+    const liveBlock = (pageDocument.blocks || []).find((entry) => entry.id === block.id) || block;
+    liveBlock.props = liveBlock.props || {};
+    const lk = blockLegacyKey(liveBlock) || 'hero';
+    if (mode === 'hide') {
+      liveBlock.props.show_visual = false;
+      setPath(flatContent, `${lk}.show_visual`, false);
+    } else {
+      liveBlock.props.show_visual = true;
+      liveBlock.props.media_position = mode;
+      setPath(flatContent, `${lk}.show_visual`, true);
+      setPath(flatContent, `${lk}.media_position`, mode);
+    }
+    applyLayoutToDom();
+    applyMediaPositionToDom();
+    renderBlockList();
+    recordChange();
+  };
+
+  const setHeroCtaMode = (block, mode) => {
+    const flags = {
+      none: [false, false],
+      primary: [true, false],
+      secondary: [false, true],
+      both: [true, true],
+    };
+    const pair = flags[mode] || flags.both;
+    setBlockHeroToggle(block, 'show_cta_primary', pair[0]);
+    setBlockHeroToggle(block, 'show_cta_secondary', pair[1]);
+    renderBlockList();
   };
 
   const updateDirtyState = () => {
@@ -1120,6 +1601,7 @@
       li.querySelectorAll('.jcp-layout-btn').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
+          if (btn.dataset.sectionSurfacePreset) return;
           const setting = btn.closest('[data-setting]').dataset.setting;
           let value = btn.dataset.value;
           if (setting === 'hero_variant') {
@@ -1133,6 +1615,59 @@
           setBlockLayout(block, setting, value);
         });
       });
+      li.querySelectorAll('[data-section-surface-preset]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setSectionSurface(block, { preset: btn.dataset.sectionSurfacePreset });
+        });
+      });
+      li.querySelectorAll('[data-section-surface-color]').forEach((input) => {
+        input.addEventListener('input', (e) => {
+          e.stopPropagation();
+          setSectionSurface(block, { color: input.value }, { refreshList: false });
+          const hex = li.querySelector('[data-section-surface-color-hex]');
+          if (hex) hex.value = input.value;
+        });
+      });
+      li.querySelectorAll('[data-section-surface-color-hex]').forEach((input) => {
+        input.addEventListener('change', (e) => {
+          e.stopPropagation();
+          const val = input.value.trim();
+          if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(val)) return;
+          setSectionSurface(block, { color: val });
+          const picker = li.querySelector('[data-section-surface-color]');
+          if (picker) picker.value = val;
+        });
+      });
+      li.querySelectorAll('[data-section-surface-opacity]').forEach((input) => {
+        input.addEventListener('input', (e) => {
+          e.stopPropagation();
+          const opacity = parseInt(input.value, 10) || 0;
+          const valEl = input.closest('.jcp-surface-opacity')?.querySelector('.jcp-surface-opacity__val');
+          if (valEl) valEl.textContent = `${opacity}%`;
+          setSectionSurface(block, { opacity }, { refreshList: false });
+        });
+      });
+      li.querySelectorAll('[data-section-surface-image]').forEach((input) => {
+        input.addEventListener('change', (e) => {
+          e.stopPropagation();
+          setSectionSurface(block, { image_url: input.value.trim() });
+        });
+      });
+      li.querySelector('[data-section-surface-pick]')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openSurfaceImagePicker(block);
+      });
+      li.querySelectorAll('[data-block-field-toggle]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const key = btn.dataset.blockFieldToggle;
+          const config = (BLOCK_VISIBILITY_TOGGLES[block.type] || []).find((entry) => entry.key === key);
+          const enabled = !isBlockFieldVisible(block, key, config?.defaultOn !== false);
+          setBlockFieldVisible(block, key, enabled, config?.selector || '');
+          btn.classList.toggle('is-on', enabled);
+        });
+      });
       li.querySelectorAll('[data-hero-toggle]').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -1140,6 +1675,18 @@
           const enabled = block.props[key] === false;
           setBlockHeroToggle(block, key, enabled);
           btn.classList.toggle('is-on', enabled);
+        });
+      });
+      li.querySelectorAll('[data-hero-media-mode]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setHeroMediaMode(block, btn.dataset.heroMediaMode);
+        });
+      });
+      li.querySelectorAll('[data-hero-cta-mode]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setHeroCtaMode(block, btn.dataset.heroCtaMode);
         });
       });
       li.querySelectorAll('[data-split-toggle]').forEach((btn) => {
@@ -1199,6 +1746,7 @@
 
   const refreshEditorChrome = () => {
     syncSplitTogglesToDom();
+    syncBreadcrumbToggleUi();
     if (typeof window.JCP_REFRESH_PAGE_MEDIA_UI === 'function') {
       window.JCP_REFRESH_PAGE_MEDIA_UI();
     }
@@ -1388,7 +1936,8 @@
       if (isStringArrayItemPath(el) || isObjectArrayItemPath(el)) return;
       const path = el.getAttribute('data-jcp-path');
       if (!path) return;
-      if (isRichField(el)) {
+      if (isRichField(el) || /<a[\s>]/i.test(el.innerHTML || '')) {
+        if (!isRichField(el)) el.setAttribute('data-jcp-rich', 'true');
         setPath(flatContent, path, sanitizeRichHtml(el.innerHTML));
         return;
       }
@@ -1425,6 +1974,7 @@
     toggleBtn.classList.add('is-active');
     if (textLinkBtn) textLinkBtn.hidden = false;
     if (!dirty) statusEl.textContent = '';
+    markExistingInlineLinks();
     bindEditableFields();
     applyCleanLinesToDom();
     refreshEditorChrome();
@@ -1460,6 +2010,11 @@
   });
 
   structurePanel.querySelector('#jcpStructureClose').addEventListener('click', closeStructure);
+  breadcrumbToggleBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setBreadcrumbVisible(!isBreadcrumbVisible());
+    syncBreadcrumbToggleUi();
+  });
   structurePanel.querySelector('#jcpAddBlockBtn').addEventListener('click', openAddModal);
   addModal.querySelector('#jcpAddBlockCancel').addEventListener('click', closeAddModal);
   addModal.querySelector('.jcp-block-add-modal__dialog').addEventListener('click', (e) => e.stopPropagation());
@@ -1540,7 +2095,8 @@
 
   const getCurrentInternalLinkCounts = () => {
     const counts = new Map();
-    document.querySelectorAll('[data-jcp-rich="true"] a[href]').forEach((a) => {
+    document.querySelectorAll('[data-jcp-path] a[href]').forEach((a) => {
+      if (a.hasAttribute('data-jcp-href-path')) return;
       const raw = a.getAttribute('href');
       const href = normalizeInternalHref(raw);
       if (!href) return;
@@ -1550,19 +2106,17 @@
   };
 
   const getSuggestedInternalPages = (counts) => {
-    // Heuristic: suggested pages come from industry links already present in page chrome/nav.
-    const anchors = [...document.querySelectorAll('a[href*="/industries/"]')];
-    const targets = new Map(); // href -> label
+    const anchors = [...document.querySelectorAll('header a[href], nav a[href], footer a[href], main a[href]')];
+    const targets = new Map();
 
     anchors.forEach((a) => {
       const href = normalizeInternalHref(a.getAttribute('href'));
-      if (!href || !href.includes('/industries/')) return;
+      if (!href || href === window.location.pathname) return;
       const label = (a.textContent || '').trim();
       if (!targets.has(href) && label) targets.set(href, label);
       else if (!targets.has(href)) targets.set(href, href);
     });
 
-    // Always include already-linked targets so guidance matches reality.
     counts.forEach((_, href) => {
       if (!targets.has(href)) targets.set(href, href);
     });
@@ -1603,18 +2157,7 @@
   };
 
   const openTextLinkPopover = () => {
-    const sel = window.getSelection();
-    const node = sel?.rangeCount ? sel.anchorNode : null;
-    const selField = node
-      ? node.nodeType === Node.ELEMENT_NODE
-        ? node.closest('[data-jcp-rich="true"]')
-        : node?.parentElement?.closest('[data-jcp-rich="true"]')
-      : null;
-
-    const activeEl = document.activeElement;
-    const focusField = activeEl?.closest?.('[data-jcp-rich="true"]') || null;
-    const field = selField || focusField;
-
+    const { range, field } = getLinkContext();
     activeRichField = field || null;
     statusEl.textContent = '';
 
@@ -1628,7 +2171,13 @@
     const totalLinks = [...counts.values()].reduce((a, b) => a + b, 0);
     const uniqueLinks = counts.size;
 
-    hintEl.textContent = field ? 'Select a phrase (or click inside) then insert.' : 'Click inside a text paragraph first.';
+    if (!field) {
+      hintEl.textContent = 'Click inside a text paragraph first.';
+    } else if (range && !range.collapsed) {
+      hintEl.textContent = `Link “${range.toString().slice(0, 48)}${range.toString().length > 48 ? '…' : ''}” — pick a page or paste a URL.`;
+    } else {
+      hintEl.textContent = 'Select the words you want to link, then choose a URL.';
+    }
 
     // SEO guidance (local to this page edit).
     seoEl.innerHTML = '';
@@ -1695,46 +2244,55 @@
   };
 
   if (textLinkBtn) {
+    textLinkBtn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      rememberLinkSelection();
+    });
     textLinkBtn.addEventListener('click', openTextLinkPopover);
   }
 
   textLinkPopover.querySelector('#jcpNicheTextLinkApply').addEventListener('click', () => {
     const url = textLinkPopover.querySelector('#jcpNicheTextLinkUrl').value.trim();
     if (!url) return;
-    const sel = window.getSelection();
-    if (!sel || !sel.rangeCount) {
-      statusEl.textContent = 'Select the text you want to link first.';
-      return;
-    }
 
-    let range = sel.getRangeAt(0);
-    let rich = activeRichField;
-    if (!rich) {
-      const node = sel.anchorNode;
-      rich = node && node.nodeType === Node.ELEMENT_NODE
-        ? node.closest('[data-jcp-rich="true"]')
-        : node?.parentElement?.closest('[data-jcp-rich="true"]');
-    }
+    const { range, field } = getLinkContext();
+    const rich = field || activeRichField;
     if (!rich) {
       statusEl.textContent = 'Click inside a text paragraph first.';
       return;
     }
 
-    if (!rich.contains(range.commonAncestorContainer)) {
-      statusEl.textContent = 'Selection must be inside the paragraph you clicked Link from.';
+    let linkRange = range;
+    if (!linkRange || linkRange.collapsed) {
+      statusEl.textContent = 'Select the text you want to link first.';
       return;
     }
 
-    range = expandCollapsedRangeToWord(range);
-    sel.removeAllRanges();
-    sel.addRange(range);
+    if (!rich.contains(linkRange.commonAncestorContainer)) {
+      statusEl.textContent = 'Selection must be inside the same paragraph.';
+      return;
+    }
 
-    const label = range.toString() || url;
+    linkRange = expandCollapsedRangeToWord(linkRange);
+    const sel = window.getSelection();
+    if (sel) {
+      sel.removeAllRanges();
+      sel.addRange(linkRange);
+    }
+
+    const label = linkRange.toString() || url;
     const anchor = document.createElement('a');
     anchor.href = url;
     anchor.textContent = label;
-    range.deleteContents();
-    range.insertNode(anchor);
+    linkRange.deleteContents();
+    linkRange.insertNode(anchor);
+
+    if (!isRichField(rich)) {
+      rich.setAttribute('data-jcp-rich', 'true');
+    }
+
+    pendingLinkRange = null;
+    pendingLinkField = null;
     textLinkPopover.hidden = true;
     textLinkPopover.setAttribute('hidden', '');
     activeRichField = null;
@@ -1748,10 +2306,15 @@
     activeRichField = null;
   });
 
+  document.addEventListener('selectionchange', () => {
+    rememberLinkSelection();
+  });
+
   document.addEventListener('keydown', (e) => {
     if (!editing) return;
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
+      rememberLinkSelection();
       openTextLinkPopover();
     }
   });
@@ -1834,6 +2397,7 @@
   applyCleanLinesToDom();
   applyLayoutToDom();
   applyMediaPositionToDom();
+  markExistingInlineLinks();
 
   const editorApi = {
     getPath,

@@ -43,6 +43,7 @@ require_once get_template_directory() . '/inc/acf-config.php';
 // Industry / niche landing pages (CPT, JSON content, /industries/ archive)
 require_once get_template_directory() . '/inc/page-blocks/registry.php';
 require_once get_template_directory() . '/inc/page-blocks/layout.php';
+require_once get_template_directory() . '/inc/page-blocks/section-surface.php';
 require_once get_template_directory() . '/inc/page-blocks/presets.php';
 require_once get_template_directory() . '/inc/page-blocks/writer-tools.php';
 require_once get_template_directory() . '/inc/page-blocks/schema.php';
@@ -68,6 +69,7 @@ if ( is_admin() ) {
 	require_once get_template_directory() . '/inc/niche-landing/bulk-create.php';
 	require_once get_template_directory() . '/inc/page-blocks/seo-audit.php';
 	require_once get_template_directory() . '/inc/page-blocks/admin-structure.php';
+	require_once get_template_directory() . '/inc/admin-post-editor.php';
 }
 
 // Canonical form field names (REST params + GHL keys); Demo Survey = source of truth

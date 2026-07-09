@@ -168,7 +168,7 @@ function jcp_niche_doc_parse_keywords( array $lines ): array {
  * @return array<string, mixed>
  */
 function jcp_niche_doc_parse_labeled_fields( array $lines ): array {
-	$labels = [ 'h1', 'subheadline', 'headline', 'cta', 'trust line', 'closing line' ];
+	$labels = [ 'h1', 'subheadline', 'headline', 'cta', 'cta note', 'trust line', 'closing line' ];
 	$out    = [];
 	$count  = count( $lines );
 
@@ -956,7 +956,7 @@ function jcp_niche_doc_parse_final_cta( array $lines ): array {
 			$mode = 'cta';
 			continue;
 		}
-		if ( in_array( $low, [ 'headline', 'subheadline' ], true ) ) {
+		if ( in_array( $low, [ 'headline', 'subheadline', 'cta note' ], true ) ) {
 			$mode = 'fields';
 			continue;
 		}
@@ -966,17 +966,19 @@ function jcp_niche_doc_parse_final_cta( array $lines ): array {
 	}
 
 	return [
-		'headline'    => $fields['headline'] ?? '',
-		'subheadline' => $fields['subheadline'] ?? '',
-		'cta_primary' => [
+		'headline'         => $fields['headline'] ?? '',
+		'subheadline'      => $fields['subheadline'] ?? '',
+		'cta_primary'      => [
 			'label' => $ctas[0] ?? 'Start free trial',
 			'url'   => '',
 		],
-		'cta_secondary' => [
+		'cta_secondary'    => [
 			'label' => $ctas[1] ?? 'See how it works',
 			'url'   => '/demo',
 		],
-		'cta_note' => 'No credit card required. Setup in under 10 minutes.',
+		'cta_note'         => trim( (string) ( $fields['cta note'] ?? 'No credit card required. Setup in under 10 minutes.' ) ),
+		'show_subheadline' => trim( (string) ( $fields['subheadline'] ?? '' ) ) !== '',
+		'show_cta_note'    => trim( (string) ( $fields['cta note'] ?? '' ) ) !== '',
 	];
 }
 
