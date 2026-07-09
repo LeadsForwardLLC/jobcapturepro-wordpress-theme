@@ -124,6 +124,9 @@ function jcp_niche_render_unified_editor_meta_box( WP_Post $post ): void {
 		</details>
 	</div>
 	<?php
+	if ( $post->post_type === 'page' && get_page_template_slug( $post->ID ) === 'page-jcp-blocks.php' ) {
+		jcp_niche_render_layout_template_picker_script( $post );
+	}
 }
 
 /**
@@ -152,58 +155,154 @@ function jcp_niche_render_layout_template_picker( WP_Post $post, string $preset 
 			<span class="description" id="jcp-apply-layout-status"></span>
 		</p>
 	</div>
+	<?php
+}
+
+/**
+ * Writer resources for a layout preset (template, AI prompt, section guide).
+ *
+ * @param string        $preset Preset slug.
+ * @param WP_Post|null  $post   Post for AI prompt context.
+ * @return array<string, string>
+ */
+function jcp_page_layout_writer_resources( string $preset, ?WP_Post $post = null ): array {
+	$preset = sanitize_key( $preset );
+	if ( ! jcp_page_get_preset( $preset ) ) {
+		return [];
+	}
+
+	return [
+		'preset'          => $preset,
+		'preset_label'    => jcp_writer_preset_label( $preset ),
+		'writer_template' => jcp_writer_get_document_template( $preset ),
+		'ai_prompt'       => jcp_writer_get_ai_prompt( $preset, $post ),
+		'sections_html'   => jcp_page_doc_sections_guide_html( $preset ),
+	];
+}
+
+/**
+ * Print hidden JSON script payload for admin copy buttons.
+ *
+ * @param string $id    Element id.
+ * @param string $value String value.
+ */
+function jcp_page_print_json_script_payload( string $id, string $value ): void {
+	if ( $id === '' ) {
+		return;
+	}
+	printf(
+		'<script type="application/json" id="%1$s">%2$s</script>',
+		esc_attr( $id ),
+		wp_json_encode( $value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON in script tag.
+	);
+}
+
+/**
+ * Footer script: apply layout preset + sync writer template on layout change.
+ *
+ * @param WP_Post $post Post.
+ */
+function jcp_niche_render_layout_template_picker_script( WP_Post $post ): void {
+	if ( $post->post_type !== 'page' || get_page_template_slug( $post->ID ) !== 'page-jcp-blocks.php' ) {
+		return;
+	}
+	?>
 	<script>
 	(function () {
-		var btn = document.getElementById('jcp-apply-layout-preset');
-		var select = document.getElementById('jcp_page_layout_preset');
-		var status = document.getElementById('jcp-apply-layout-status');
-		var ta = document.getElementById('jcp_niche_content_json');
-		if (!btn || !select || !ta || typeof ajaxurl === 'undefined') return;
-		btn.addEventListener('click', function () {
-			if (!confirm('<?php echo esc_js( __( 'Replace the section list with this layout template? Unsaved import text is kept in the paste box above.', 'jcp-core' ) ); ?>')) return;
-			var preset = select.value;
-			status.textContent = '<?php echo esc_js( __( 'Applying…', 'jcp-core' ) ); ?>';
-			btn.disabled = true;
+		function setJsonScriptText(id, value) {
+			if (!value && value !== '') return;
+			var el = document.getElementById(id);
+			if (!el) {
+				el = document.createElement('script');
+				el.type = 'application/json';
+				el.id = id;
+				document.body.appendChild(el);
+			}
+			el.textContent = JSON.stringify(value);
+		}
+
+		function applyWriterResources(data, options) {
+			options = options || {};
+			if (!data) return false;
+			if (options.replaceContent && data.content) {
+				var ta = document.getElementById('jcp_niche_content_json');
+				if (!ta) return false;
+				ta.value = data.content;
+				ta.dispatchEvent(new Event('input', { bubbles: true }));
+				var devTa = document.getElementById('jcp_niche_content_json_dev');
+				if (devTa) devTa.value = data.content;
+			}
+			if (data.writer_template) setJsonScriptText('jcp-writer-template-json', data.writer_template);
+			if (data.ai_prompt) setJsonScriptText('jcp-writer-ai-prompt-json', data.ai_prompt);
+			var sectionsList = document.querySelector('.jcp-doc-import__sections');
+			if (sectionsList && data.sections_html) sectionsList.innerHTML = data.sections_html;
+			var workflowLabel = document.querySelector('.jcp-writer-workflow .description strong');
+			if (workflowLabel && data.preset_label) workflowLabel.textContent = data.preset_label;
+			return true;
+		}
+
+		function fetchLayoutResources(preset, replaceContent) {
+			if (typeof ajaxurl === 'undefined') return Promise.reject();
 			var body = new FormData();
 			body.append('action', 'jcp_page_apply_layout_preset');
 			body.append('_wpnonce', '<?php echo esc_js( wp_create_nonce( 'jcp_page_apply_layout_preset' ) ); ?>');
 			body.append('preset', preset);
 			body.append('post_id', '<?php echo (int) $post->ID; ?>');
-			fetch(ajaxurl, { method: 'POST', body: body, credentials: 'same-origin' })
+			return fetch(ajaxurl, { method: 'POST', body: body, credentials: 'same-origin' })
 				.then(function (r) { return r.json(); })
 				.then(function (data) {
-					btn.disabled = false;
-					if (!data || !data.success || !data.data || !data.data.content) {
-						status.textContent = '<?php echo esc_js( __( 'Could not apply layout.', 'jcp-core' ) ); ?>';
-						return;
-					}
-					ta.value = data.data.content;
-					ta.dispatchEvent(new Event('input', { bubbles: true }));
-					var devTa = document.getElementById('jcp_niche_content_json_dev');
-					if (devTa) devTa.value = data.data.content;
-					var templateEl = document.getElementById('jcp-writer-template-json');
-					if (templateEl && data.data.writer_template) {
-						templateEl.textContent = JSON.stringify(data.data.writer_template);
-					}
-					var aiPromptEl = document.getElementById('jcp-writer-ai-prompt-json');
-					if (aiPromptEl && data.data.ai_prompt) {
-						aiPromptEl.textContent = JSON.stringify(data.data.ai_prompt);
-					}
-					var sectionsList = document.querySelector('.jcp-doc-import__sections');
-					if (sectionsList && data.data.sections_html) {
-						sectionsList.innerHTML = data.data.sections_html;
-					}
-					var workflowLabel = document.querySelector('.jcp-writer-workflow .description strong');
-					if (workflowLabel && data.data.preset_label) {
-						workflowLabel.textContent = data.data.preset_label;
-					}
-					status.textContent = '<?php echo esc_js( __( 'Layout applied — click Update to save.', 'jcp-core' ) ); ?>';
-				})
-				.catch(function () {
-					btn.disabled = false;
-					status.textContent = '<?php echo esc_js( __( 'Could not apply layout.', 'jcp-core' ) ); ?>';
+					if (!data || !data.success || !data.data) return false;
+					return applyWriterResources(data.data, { replaceContent: !!replaceContent });
 				});
-		});
+		}
+
+		function initLayoutPicker() {
+			var btn = document.getElementById('jcp-apply-layout-preset');
+			var select = document.getElementById('jcp_page_layout_preset');
+			var status = document.getElementById('jcp-apply-layout-status');
+			if (!select || typeof ajaxurl === 'undefined') return;
+
+			select.addEventListener('change', function () {
+				if (status) status.textContent = '<?php echo esc_js( __( 'Updating writer template…', 'jcp-core' ) ); ?>';
+				fetchLayoutResources(select.value, false)
+					.then(function (ok) {
+						if (status) {
+							status.textContent = ok
+								? '<?php echo esc_js( __( 'Writer template updated for this layout.', 'jcp-core' ) ); ?>'
+								: '<?php echo esc_js( __( 'Could not update writer template.', 'jcp-core' ) ); ?>';
+						}
+					})
+					.catch(function () {
+						if (status) status.textContent = '<?php echo esc_js( __( 'Could not update writer template.', 'jcp-core' ) ); ?>';
+					});
+			});
+
+			if (!btn) return;
+			btn.addEventListener('click', function () {
+				if (!confirm('<?php echo esc_js( __( 'Replace the section list with this layout template? Unsaved import text is kept in the paste box above.', 'jcp-core' ) ); ?>')) return;
+				if (status) status.textContent = '<?php echo esc_js( __( 'Applying…', 'jcp-core' ) ); ?>';
+				btn.disabled = true;
+				fetchLayoutResources(select.value, true)
+					.then(function (ok) {
+						btn.disabled = false;
+						if (status) {
+							status.textContent = ok
+								? '<?php echo esc_js( __( 'Layout applied — click Update to save.', 'jcp-core' ) ); ?>'
+								: '<?php echo esc_js( __( 'Could not apply layout.', 'jcp-core' ) ); ?>';
+						}
+					})
+					.catch(function () {
+						btn.disabled = false;
+						if (status) status.textContent = '<?php echo esc_js( __( 'Could not apply layout.', 'jcp-core' ) ); ?>';
+					});
+			});
+		}
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', initLayoutPicker);
+		} else {
+			initLayoutPicker();
+		}
 	})();
 	</script>
 	<?php
@@ -451,12 +550,10 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 		</p>
 		<div id="jcp-niche-import-status" class="jcp-doc-import__status" aria-live="polite"></div>
 	</div>
-	<?php if ( $template !== '' ) : ?>
-	<script type="application/json" id="jcp-writer-template-json"><?php echo wp_json_encode( $template ); ?></script>
-	<?php endif; ?>
-	<?php if ( $ai_prompt !== '' ) : ?>
-	<script type="application/json" id="jcp-writer-ai-prompt-json"><?php echo wp_json_encode( $ai_prompt ); ?></script>
-	<?php endif; ?>
+	<?php
+	jcp_page_print_json_script_payload( 'jcp-writer-template-json', $template );
+	jcp_page_print_json_script_payload( 'jcp-writer-ai-prompt-json', $ai_prompt );
+	?>
 	<script>
 	(function () {
 		var btn = document.getElementById('jcp-niche-build-from-doc');
@@ -824,15 +921,14 @@ function jcp_page_ajax_apply_layout_preset(): void {
 	}
 
 	$skeleton = jcp_page_create_skeleton_document( $post, $preset );
+	$resources = jcp_page_layout_writer_resources( $preset, $post instanceof WP_Post ? $post : null );
 	wp_send_json_success(
-		[
-			'content'         => wp_json_encode( $skeleton, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ),
-			'preset'          => $preset,
-			'preset_label'    => jcp_writer_preset_label( $preset ),
-			'writer_template' => jcp_writer_get_document_template( $preset ),
-			'ai_prompt'       => jcp_writer_get_ai_prompt( $preset, $post instanceof WP_Post ? $post : null ),
-			'sections_html'   => jcp_page_doc_sections_guide_html( $preset ),
-		]
+		array_merge(
+			$resources,
+			[
+				'content' => wp_json_encode( $skeleton, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ),
+			]
+		)
 	);
 }
 add_action( 'wp_ajax_jcp_page_apply_layout_preset', 'jcp_page_ajax_apply_layout_preset' );
