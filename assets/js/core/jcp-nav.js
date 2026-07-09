@@ -367,6 +367,7 @@
     var href = el.getAttribute('href');
     var isTargetHref = false;
     var isReferralOutbound = false;
+    var isOnboardingOutbound = false;
     if (el.tagName === 'A' && href) {
       var path = (href.charAt(0) === '/' ? href.split('?')[0] : (function () { try { return new URL(href, window.location.href).pathname; } catch (err) { return href; } })()).replace(/\/$/, '') || '/';
       var host = '';
@@ -375,14 +376,18 @@
       }
       isTargetHref = path === '/demo' || path === '/referral-program' || path === '/industries' || path.indexOf('/industries/') === 0;
       isReferralOutbound = host.indexOf('firstpromoter.com') !== -1;
+      isOnboardingOutbound = host.indexOf('jobcapturepro.com') !== -1 && path.indexOf('/onboarding') === 0;
     }
-    if (!ctaName && !isTargetHref && !isReferralOutbound) return;
-    ctaName = ctaName || (isReferralOutbound ? 'Join Referral Program' : (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80) || 'CTA');
+    if (!ctaName && !isTargetHref && !isReferralOutbound && !isOnboardingOutbound) return;
+    ctaName = ctaName || (isReferralOutbound ? 'Join Referral Program' : isOnboardingOutbound ? 'Start free trial' : (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80) || 'CTA');
     var pathname = (window.location.pathname || '/').replace(/\/$/, '') || '/';
     var ctaLocation = el.getAttribute('data-cta-location') || (el.closest('header') || el.closest('#jcpGlobalHeader') ? 'header' : el.closest('footer') ? 'footer' : pathname === '/' || pathname === '/home' ? 'homepage' : pathname === '/referral-program' ? 'referral_program' : 'page');
     try {
       if (typeof _paq !== 'undefined') {
         _paq.push(['trackEvent', 'CTA Clicked', ctaName, ctaLocation]);
+        if (isOnboardingOutbound) {
+          _paq.push(['trackEvent', 'Onboarding CTA', ctaName, ctaLocation]);
+        }
       }
     } catch (err) {}
   });

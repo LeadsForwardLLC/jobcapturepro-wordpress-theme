@@ -1327,6 +1327,92 @@
   padding-top: var(--jcp-space-2xl);
 }
 
+/* Blog archive sticky conversion bar (bottom) */
+.jcp-blog-sticky-cta {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: calc(var(--jcp-z-sticky, 100) + 2);
+  padding: var(--jcp-space-md) var(--jcp-space-lg);
+  padding-bottom: calc(var(--jcp-space-md) + env(safe-area-inset-bottom, 0px));
+  background: color-mix(in srgb, var(--jcp-color-surface, #fff) 92%, transparent);
+  border-top: 1px solid var(--jcp-color-border, #e5e7eb);
+  box-shadow: 0 -8px 28px color-mix(in srgb, var(--jcp-color-text-primary) 10%, transparent);
+  backdrop-filter: blur(10px);
+  transform: translateY(110%);
+  opacity: 0;
+  transition: transform 0.22s ease, opacity 0.22s ease;
+  pointer-events: none;
+}
+
+.jcp-blog-sticky-cta.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.jcp-blog-sticky-cta__inner {
+  max-width: var(--jcp-container-width, 1120px);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--jcp-space-md);
+}
+
+.jcp-blog-sticky-cta__copy {
+  margin: 0;
+  font-size: var(--jcp-font-size-sm, 0.875rem);
+  line-height: var(--jcp-line-height-snug, 1.4);
+  color: var(--jcp-color-text-secondary);
+}
+
+.jcp-blog-sticky-cta__copy strong {
+  color: var(--jcp-color-text-primary);
+  font-weight: var(--jcp-font-weight-bold, 700);
+}
+
+.jcp-blog-sticky-cta__sep {
+  margin: 0 0.35em;
+  opacity: 0.55;
+}
+
+.jcp-blog-sticky-cta__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--jcp-space-sm);
+  flex-shrink: 0;
+}
+
+.jcp-blog-sticky-cta__btn {
+  white-space: nowrap;
+}
+
+.jcp-blog-sticky-cta__close {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--jcp-color-text-secondary);
+  font-size: 1.35rem;
+  line-height: 1;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--jcp-radius-md, 8px);
+  cursor: pointer;
+}
+
+.jcp-blog-sticky-cta__close:hover,
+.jcp-blog-sticky-cta__close:focus-visible {
+  color: var(--jcp-color-text-primary);
+  background: color-mix(in srgb, var(--jcp-color-text-primary) 6%, transparent);
+  outline: none;
+}
+
+body.has-blog-sticky-cta {
+  padding-bottom: 5.5rem;
+}
+
 /* ============================================================
    RESPONSIVE
    ============================================================ */
@@ -1338,6 +1424,25 @@
 
   .jcp-blog-mid-cta {
     padding: var(--jcp-space-xl) var(--jcp-space-lg);
+  }
+
+  .jcp-blog-sticky-cta__inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--jcp-space-sm);
+  }
+
+  .jcp-blog-sticky-cta__actions {
+    justify-content: space-between;
+  }
+
+  .jcp-blog-sticky-cta__btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  body.has-blog-sticky-cta {
+    padding-bottom: 7.5rem;
   }
 
   .jcp-blog-grid {

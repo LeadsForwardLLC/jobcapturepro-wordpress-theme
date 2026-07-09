@@ -502,3 +502,60 @@ function jcp_blog_conversion_render_archive_strip(): void {
 	</section>
 	<?php
 }
+
+/**
+ * Whether the blog-archive sticky bar should render (posts index only, not singles).
+ */
+function jcp_blog_conversion_should_show_sticky(): bool {
+	if ( ! jcp_blog_conversion_enabled() ) {
+		return false;
+	}
+	// Posts page / blog home only — not single posts (mid + end CTAs already cover those).
+	return is_home() && ! is_singular();
+}
+
+/**
+ * Render slim sticky conversion bar markup for the blog archive (hidden until JS reveals).
+ */
+function jcp_blog_conversion_render_sticky(): void {
+	if ( ! jcp_blog_conversion_should_show_sticky() ) {
+		return;
+	}
+	$ctas = jcp_blog_conversion_ctas( 'sticky' );
+	$demo = $ctas['demo'];
+	?>
+	<div
+		id="jcpBlogStickyCta"
+		class="jcp-blog-sticky-cta"
+		hidden
+		data-jcp-blog-cta="sticky"
+		role="region"
+		aria-label="<?php esc_attr_e( 'Demo call to action', 'jcp-core' ); ?>"
+	>
+		<div class="jcp-blog-sticky-cta__inner">
+			<p class="jcp-blog-sticky-cta__copy">
+				<strong><?php esc_html_e( 'See it in 2 minutes', 'jcp-core' ); ?></strong>
+				<span class="jcp-blog-sticky-cta__sep" aria-hidden="true">·</span>
+				<span><?php esc_html_e( 'Interactive demo — no signup required', 'jcp-core' ); ?></span>
+			</p>
+			<div class="jcp-blog-sticky-cta__actions">
+				<a
+					class="btn btn-primary jcp-blog-sticky-cta__btn"
+					href="<?php echo esc_url( $demo['url'] ); ?>"
+					<?php
+					if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+						jcp_niche_cta_tracking_attr( $demo['url'], 'blog_sticky', $demo['label'] );
+					}
+					?>
+				><?php echo esc_html( $demo['label'] ); ?></a>
+				<button
+					type="button"
+					class="jcp-blog-sticky-cta__close"
+					id="jcpBlogStickyCtaClose"
+					aria-label="<?php esc_attr_e( 'Dismiss', 'jcp-core' ); ?>"
+				>×</button>
+			</div>
+		</div>
+	</div>
+	<?php
+}

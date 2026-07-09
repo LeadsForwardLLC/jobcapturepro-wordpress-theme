@@ -140,6 +140,11 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-blog', 'css/pages/blog.css', [ 'jcp-core-sections' ] );
     }
 
+    // Blog archive sticky CTA (posts index only — markup gated in PHP).
+    if ( is_home() && ! is_singular() && ! $pages['is_prototype'] ) {
+        jcp_core_enqueue_script( 'jcp-core-blog-sticky-cta', 'js/core/jcp-blog-sticky-cta.js', [ 'jcp-core-nav' ] );
+    }
+
     // Load render dispatcher only on JS app-shell pages (not block-rendered homepage).
     $home_uses_blocks = false;
     if ( $pages['is_home'] ) {

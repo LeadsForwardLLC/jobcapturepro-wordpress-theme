@@ -60,9 +60,17 @@ $dir_trust = $dir_url . '/#trust';
         </div>
         <div class="jcp-footer-col">
           <h4><?php esc_html_e( 'For contractors', 'jcp-core' ); ?></h4>
-          <a href="<?php echo esc_url( $jcp_onboarding_url_dir_listed ); ?>"><?php esc_html_e( 'Get listed', 'jcp-core' ); ?></a>
+          <a href="<?php echo esc_url( $jcp_onboarding_url_dir_listed ); ?>"<?php
+            if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+              jcp_niche_cta_tracking_attr( $jcp_onboarding_url_dir_listed, 'footer', 'Get listed' );
+            }
+          ?>><?php esc_html_e( 'Get listed', 'jcp-core' ); ?></a>
           <a href="<?php echo esc_url( home_url( '/demo' ) ); ?>"><?php esc_html_e( 'See the live demo', 'jcp-core' ); ?></a>
-          <a href="<?php echo esc_url( $jcp_onboarding_url_dir_started ); ?>"><?php esc_html_e( 'Get started', 'jcp-core' ); ?></a>
+          <a href="<?php echo esc_url( $jcp_onboarding_url_dir_started ); ?>"<?php
+            if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+              jcp_niche_cta_tracking_attr( $jcp_onboarding_url_dir_started, 'footer', 'Get started' );
+            }
+          ?>><?php esc_html_e( 'Get started', 'jcp-core' ); ?></a>
         </div>
       <?php else : ?>
         <div class="jcp-footer-brand">
@@ -87,7 +95,11 @@ $dir_trust = $dir_url . '/#trust';
         <div class="jcp-footer-col">
           <h4>Company</h4>
           <a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a>
-          <a href="<?php echo esc_url( $jcp_onboarding_url ); ?>"><?php esc_html_e( 'Sign up', 'jcp-core' ); ?></a>
+          <a href="<?php echo esc_url( $jcp_onboarding_url ); ?>"<?php
+            if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+              jcp_niche_cta_tracking_attr( $jcp_onboarding_url, 'footer', 'Sign up' );
+            }
+          ?>><?php esc_html_e( 'Sign up', 'jcp-core' ); ?></a>
           <?php
           $about_page = get_page_by_path( 'about' );
           if ( $about_page && $about_page->post_status === 'publish' ) :

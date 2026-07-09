@@ -238,13 +238,16 @@ function jcp_niche_cta_tracking_attr( string $url, string $location, string $cta
 	$path = is_string( $path ) ? rtrim( $path, '/' ) : '';
 
 	$is_referral_outbound = $host !== '' && str_contains( $host, 'firstpromoter.com' );
+	$is_onboarding        = $host !== '' && str_contains( $host, 'jobcapturepro.com' ) && str_contains( $path, '/onboarding' );
 	$is_key_conversion    = in_array( $path, [ '/demo', '/referral-program' ], true );
 
-	if ( ! $is_referral_outbound && ! $is_key_conversion ) {
+	if ( ! $is_referral_outbound && ! $is_onboarding && ! $is_key_conversion ) {
 		return;
 	}
 
-	$name = $cta_name !== '' ? $cta_name : ( $is_referral_outbound ? 'Join Referral Program' : '' );
+	$name = $cta_name !== ''
+		? $cta_name
+		: ( $is_referral_outbound ? 'Join Referral Program' : ( $is_onboarding ? 'Start free trial' : '' ) );
 	if ( $name !== '' ) {
 		echo ' data-cta="' . esc_attr( $name ) . '"';
 	}

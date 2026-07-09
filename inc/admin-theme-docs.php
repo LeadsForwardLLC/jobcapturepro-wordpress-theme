@@ -70,7 +70,7 @@ function jcp_theme_docs_render_page(): void {
 					<tr>
 						<td><?php esc_html_e( 'Write a blog post', 'jcp-core' ); ?></td>
 						<td><a href="<?php echo esc_url( $posts_new_url ); ?>"><?php esc_html_e( 'Posts → Add New', 'jcp-core' ); ?></a></td>
-						<td><?php esc_html_e( 'Auto mid + end demo CTAs (trade-aware when keywords match industries)', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Auto mid + end demo CTAs (trade-aware when keywords match industries). Blog archive also gets a sticky demo bar after scroll/time.', 'jcp-core' ); ?></td>
 					</tr>
 				</tbody>
 			</table>
@@ -518,7 +518,7 @@ function jcp_theme_docs_render_page(): void {
 				<tbody>
 					<tr>
 						<td><?php esc_html_e( 'Blog post missing demo CTA / related hubs', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Automatic mid-content + end CTAs load on published posts (no per-post setup). Trade-aware copy needs industry keywords in the title, tags, categories, or Rank Math focus keyword. Mid CTA needs at least 3 paragraphs.', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Automatic mid-content + end CTAs load on published posts (no per-post setup). Trade-aware copy needs industry keywords in the title, tags, categories, or Rank Math focus keyword. Mid CTA needs at least 3 paragraphs. The sticky demo bar appears on the blog archive only (not single posts).', 'jcp-core' ); ?></td>
 					</tr>
 					<tr>
 						<td><?php esc_html_e( 'Import says “Paste document text or upload…”', 'jcp-core' ); ?></td>

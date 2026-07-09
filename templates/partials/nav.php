@@ -100,13 +100,21 @@ $dir_trust = $dir_url . '/#trust';
       $primary_label   = $nav_ctas['primary']['label'];
       $primary_url     = $nav_ctas['primary']['url'];
       ?>
-      <a href="<?php echo esc_url( $secondary_url ); ?>" class="btn btn-secondary" id="dynamicBackBtn">
+      <a href="<?php echo esc_url( $secondary_url ); ?>" class="btn btn-secondary" id="dynamicBackBtn"<?php
+        if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+          jcp_niche_cta_tracking_attr( $secondary_url, 'header', $secondary_label );
+        }
+      ?>>
         <span><?php echo esc_html( $secondary_label ); ?></span>
         <svg id="dynamicBackIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M5 12h14M13 5l7 7-7 7"/>
         </svg>
       </a>
-      <a href="<?php echo esc_url( $primary_url ); ?>" class="btn btn-primary"><?php echo esc_html( $primary_label ); ?></a>
+      <a href="<?php echo esc_url( $primary_url ); ?>" class="btn btn-primary"<?php
+        if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+          jcp_niche_cta_tracking_attr( $primary_url, 'header', $primary_label );
+        }
+      ?>><?php echo esc_html( $primary_label ); ?></a>
     <?php endif; ?>
   </div>
 
@@ -155,11 +163,19 @@ $dir_trust = $dir_url . '/#trust';
         </a>
         <a href="<?php echo esc_url( $dir_search ); ?>" class="mobile-btn mobile-btn-primary"><?php echo esc_html__( 'Find a contractor', 'jcp-core' ); ?></a>
       <?php else : ?>
-        <a href="<?php echo esc_url( home_url( '/demo' ) ); ?>" class="mobile-btn mobile-btn-secondary">
+        <a href="<?php echo esc_url( $secondary_url ); ?>" class="mobile-btn mobile-btn-secondary"<?php
+          if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+            jcp_niche_cta_tracking_attr( $secondary_url, 'header_mobile', $secondary_label );
+          }
+        ?>>
           <span><?php echo esc_html( $secondary_label ); ?></span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
         </a>
-        <a href="<?php echo esc_url( $primary_url ); ?>" class="mobile-btn mobile-btn-primary"><?php echo esc_html( $primary_label ); ?></a>
+        <a href="<?php echo esc_url( $primary_url ); ?>" class="mobile-btn mobile-btn-primary"<?php
+          if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+            jcp_niche_cta_tracking_attr( $primary_url, 'header_mobile', $primary_label );
+          }
+        ?>><?php echo esc_html( $primary_label ); ?></a>
       <?php endif; ?>
     </div>
 
