@@ -102,7 +102,19 @@ get_header();
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  </section>
 
+  <?php
+  if ( function_exists( 'jcp_blog_conversion_render_end' ) ) {
+    jcp_blog_conversion_render_end( (int) get_the_ID() );
+  }
+  ?>
+
+  <section class="jcp-section jcp-single-post-section jcp-single-post-footer-section">
+    <div class="jcp-container jcp-single-post-container">
+      <div class="jcp-single-post-wrapper">
         <nav class="jcp-post-navigation">
           <?php
           $prev_post = get_previous_post();

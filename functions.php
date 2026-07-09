@@ -63,6 +63,7 @@ require_once get_template_directory() . '/inc/niche-landing/render.php';
 require_once get_template_directory() . '/inc/page-blocks/render.php';
 require_once get_template_directory() . '/inc/page-blocks/rest-content.php';
 require_once get_template_directory() . '/inc/page-blocks/internal-link-index.php';
+require_once get_template_directory() . '/inc/blog-conversion.php';
 require_once get_template_directory() . '/inc/niche-landing/seed.php';
 require_once get_template_directory() . '/inc/page-blocks/migrate-pages.php';
 if ( is_admin() ) {

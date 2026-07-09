@@ -97,6 +97,12 @@ get_header();
       ?>
     </div>
   </section>
+
+  <?php
+  if ( ! empty( $blog_has_posts ) && function_exists( 'jcp_blog_conversion_render_archive_strip' ) ) {
+    jcp_blog_conversion_render_archive_strip();
+  }
+  ?>
 </main>
 
 <?php if ( ! empty( $blog_has_posts ) ) : ?>
