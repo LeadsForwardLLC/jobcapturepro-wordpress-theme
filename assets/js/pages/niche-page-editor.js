@@ -89,6 +89,7 @@
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     differentiation: [
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-niche-diff-lead', defaultOn: true },
       { key: 'show_icons', label: 'Checkmarks', selector: '.conversion-point-icon', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
@@ -113,10 +114,13 @@
     ],
     proof_flow: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     directory_preview: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
+    core_mechanic: [],
   };
 
   let flatContent = bootstrap.content && typeof bootstrap.content === 'object' ? bootstrap.content : {};
@@ -342,10 +346,11 @@
 
   const openEditorModal = (modalEl, { focusSelector } = {}) => {
     if (!modalEl) return;
-    document.body.appendChild(modalEl);
+    (document.documentElement || document.body).appendChild(modalEl);
     modalEl.hidden = false;
     modalEl.removeAttribute('hidden');
     document.body.classList.add('jcp-editor-modal-open');
+    document.documentElement.classList.add('jcp-editor-modal-open');
     document.querySelectorAll('.jcp-editor-modal').forEach((el) => {
       if (el !== modalEl) {
         el.hidden = true;
@@ -364,6 +369,7 @@
     modalEl.setAttribute('hidden', '');
     if (!document.querySelector('.jcp-editor-modal:not([hidden])')) {
       document.body.classList.remove('jcp-editor-modal-open');
+      document.documentElement.classList.remove('jcp-editor-modal-open');
     }
   };
 
@@ -401,6 +407,15 @@
       const path = activeIconTarget.dataset.jcpIconPath;
       if (!path) return;
       setPath(flatContent, path, name);
+      const blockRoot = activeIconTarget.closest('[data-jcp-block-id]');
+      const blockId = blockRoot?.dataset?.jcpBlockId;
+      const block = (pageDocument.blocks || []).find((entry) => entry.id === blockId);
+      if (block) {
+        block.props = block.props || {};
+        const lk = blockLegacyKey(block);
+        const relPath = lk && path.startsWith(`${lk}.`) ? path.slice(lk.length + 1) : path;
+        setPath(block.props, relPath, name);
+      }
       const img = activeIconTarget.querySelector('.factor-icon, .meta-icon');
       if (img) img.src = `${iconAssetBase()}/shared/assets/icons/lucide/${name}.svg`;
       closeIconPicker();
@@ -425,6 +440,14 @@
     if (!wrapper) return;
     e.preventDefault();
     e.stopPropagation();
+    openIconPicker(wrapper);
+  }, true);
+
+  document.addEventListener('keydown', (e) => {
+    if (!editing || e.key !== 'Enter' && e.key !== ' ') return;
+    const wrapper = e.target.closest('[data-jcp-icon-path]');
+    if (!wrapper) return;
+    e.preventDefault();
     openIconPicker(wrapper);
   }, true);
 
@@ -1075,11 +1098,18 @@
           root.classList.remove(`jcp-layout-align-${a}`);
           root.querySelector('.jcp-niche-hero')?.classList.remove(`jcp-layout-align-${a}`);
         });
+        root.classList.remove('jcp-hero-has-visual', 'jcp-hero--no-visual');
         root.classList.add(`jcp-hero-variant-${variant}`, `jcp-layout-align-${layout.align}`);
         const heroSection = root.querySelector('.jcp-niche-hero') || root;
+        heroSection.classList.remove('jcp-hero-variant-split', 'jcp-hero-variant-centered', 'jcp-hero-variant-stacked', 'jcp-hero-variant-condensed', 'jcp-hero-variant-home');
+        heroSection.classList.remove('jcp-layout-align-left', 'jcp-layout-align-center', 'jcp-layout-align-right');
         heroSection.classList.add(`jcp-hero-variant-${variant}`, `jcp-layout-align-${layout.align}`);
+        heroSection.classList.toggle('jcp-niche-hero--internal', variant === 'condensed');
+        heroSection.classList.toggle('jcp-niche-hero--condensed', variant === 'condensed');
         heroSection.classList.toggle('jcp-hero-has-visual', isHeroVisualOn(block));
         heroSection.classList.toggle('jcp-hero--no-visual', !isHeroVisualOn(block));
+        root.classList.toggle('jcp-hero-has-visual', isHeroVisualOn(block));
+        root.classList.toggle('jcp-hero--no-visual', !isHeroVisualOn(block));
         const visualCol = root.querySelector('.jcp-hero-visual-column');
         if (visualCol) {
           visualCol.style.display = isHeroVisualOn(block) ? '' : 'none';
@@ -1137,8 +1167,28 @@
     }
     if (liveBlock.type === 'hero' && key === 'hero_variant') {
       liveBlock.props = liveBlock.props || {};
-      if (liveBlock.props.show_visual !== true && liveBlock.props.show_visual !== false) {
-        liveBlock.props.show_visual = value !== 'centered';
+      const lk = blockLegacyKey(liveBlock) || 'hero';
+      if (value === 'centered') {
+        liveBlock.props.show_visual = false;
+        liveBlock.layout.align = 'center';
+        setPath(flatContent, `${lk}.show_visual`, false);
+      } else if (value === 'stacked') {
+        liveBlock.props.show_visual = true;
+        if (!['left', 'center', 'right'].includes(liveBlock.layout?.align)) {
+          liveBlock.layout.align = 'center';
+        }
+        setPath(flatContent, `${lk}.show_visual`, true);
+      } else if (value === 'split') {
+        liveBlock.props.show_visual = true;
+        setPath(flatContent, `${lk}.show_visual`, true);
+      } else if (value === 'condensed') {
+        if (liveBlock.props.show_visual !== true && liveBlock.props.show_visual !== false) {
+          liveBlock.props.show_visual = false;
+          setPath(flatContent, `${lk}.show_visual`, false);
+        }
+        if (!liveBlock.layout?.align) {
+          liveBlock.layout.align = 'left';
+        }
       }
     }
     if (liveBlock.type === 'hero' && key === 'align') {
@@ -1171,11 +1221,20 @@
 
     if (block.type === 'hero' && PAGE_KIND !== 'home') {
       block.props = block.props || {};
+      const variant = resolveHeroVariant(block);
       const heroLayout = resolveLayout(block);
       const align = heroLayout.align || 'center';
-      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Layout</span><div class="jcp-layout-btns" data-setting="align">';
+      const heroStyles = HERO_VARIANTS.filter((v) => v.value !== 'home');
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Hero style</span><div class="jcp-layout-btns jcp-layout-btns--stacked" data-setting="hero_variant">';
+      heroStyles.forEach((item) => {
+        const active = variant === item.value ? ' is-active' : '';
+        layoutBody += `<button type="button" class="jcp-layout-btn jcp-layout-btn--variant${active}" data-value="${item.value}" title="${item.hint}">${item.label}</button>`;
+      });
+      layoutBody += '</div></div>';
+
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Text align</span><div class="jcp-layout-btns" data-setting="align">';
       layoutBody += ['left', 'center', 'right'].map((value) => {
-        const label = value === 'left' ? 'Left' : value === 'center' ? 'Centered' : 'Right';
+        const label = value === 'left' ? 'Left' : value === 'center' ? 'Center' : 'Right';
         const active = align === value ? ' is-active' : '';
         return `<button type="button" class="jcp-layout-btn${active}" data-value="${value}">${label}</button>`;
       }).join('');
@@ -2410,16 +2469,24 @@
     ];
 
     scored.forEach((item) => {
+      if (anchorTokens.length && item.relevance < 6 && item.gapScore < 14) {
+        return;
+      }
       if (item.relevance >= 12 && groups[0].items.length < 6) {
         groups[0].items.push(item);
       } else if (item.gapScore >= 20 && groups[1].items.length < 6) {
         groups[1].items.push(item);
-      } else if (groups[2].items.length < 8) {
+      } else if (item.relevance >= 6 && groups[2].items.length < 8) {
+        groups[2].items.push(item);
+      } else if (!anchorTokens.length && groups[2].items.length < 8) {
         groups[2].items.push(item);
       }
     });
 
-    if (!groups[0].items.length && scored.length) {
+    if (!groups[0].items.length && anchorTokens.length && scored.length) {
+      const fallback = scored.filter((item) => item.relevance >= 6 || item.gapScore >= 14);
+      groups[0].items = (fallback.length ? fallback : scored).slice(0, 5);
+    } else if (!groups[0].items.length && scored.length) {
       groups[0].items = scored.slice(0, 5);
     }
 

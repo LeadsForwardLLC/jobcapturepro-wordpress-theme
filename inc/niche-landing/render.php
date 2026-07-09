@@ -267,7 +267,7 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 		? ! empty( $h['show_visual'] )
 		: ( $variant !== 'centered' );
 	$is_condensed = $variant === 'condensed';
-	$is_internal  = $variant !== 'home';
+	$is_internal  = $variant === 'condensed';
 	$show_primary = ! array_key_exists( 'show_cta_primary', $h ) || ! empty( $h['show_cta_primary'] );
 	$show_secondary = ! array_key_exists( 'show_cta_secondary', $h ) || ! empty( $h['show_cta_secondary'] );
 	$show_trust   = ! array_key_exists( 'show_trust_line', $h ) || ! empty( $h['show_trust_line'] );

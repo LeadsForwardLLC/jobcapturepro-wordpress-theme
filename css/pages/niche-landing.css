@@ -1001,10 +1001,23 @@ body.jcp-inline-editing [data-jcp-href-path]::after {
   box-sizing: border-box;
 }
 
+body.jcp-editor-modal-open,
+html.jcp-editor-modal-open {
+  overflow: hidden;
+}
+
+body.jcp-editor-modal-open .jcp-niche-edit-bar {
+  z-index: 1000 !important;
+}
+
+body.jcp-editor-modal-open .jcp-block-structure {
+  z-index: 1000 !important;
+}
+
 .jcp-editor-modal {
   position: fixed;
   inset: 0;
-  z-index: 2147483646;
+  z-index: 2147483647;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -2403,13 +2416,25 @@ body.jcp-inline-editing .jcp-split-col .jcp-col-drag-handle {
   position: relative;
   z-index: 1;
   background: transparent !important;
+  background-color: transparent !important;
   background-image: none !important;
+}
+
+.jcp-block-root.jcp-has-section-surface .jcp-niche-hero--internal,
+.jcp-block-root.jcp-has-section-surface .jcp-niche-hero--condensed,
+.jcp-block-root.jcp-has-section-surface .rankings-section,
+.jcp-block-root.jcp-has-section-surface .conversion-section {
+  background: transparent !important;
+  background-color: transparent !important;
 }
 
 .jcp-block-root.jcp-has-section-surface > section::before,
 .jcp-block-root.jcp-has-section-surface > .jcp-niche-hero::before,
-.jcp-block-root.jcp-has-section-surface > .rankings-section::before {
+.jcp-block-root.jcp-has-section-surface > .rankings-section::before,
+.jcp-block-root.jcp-has-section-surface .jcp-niche-hero--internal::before,
+.jcp-block-root.jcp-has-section-surface .rankings-section::before {
   display: none !important;
+  content: none !important;
 }
 
 .jcp-block-root.jcp-section-surface--white::before {

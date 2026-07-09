@@ -272,7 +272,7 @@ function jcp_internal_link_collect_posts(): array {
  * @return array{pages: array<int, array<string, mixed>>, inbound: array<string, int>}
  */
 function jcp_internal_link_build_index(): array {
-	$cached = get_transient( 'jcp_internal_link_index_v1' );
+	$cached = get_transient( 'jcp_internal_link_index_v2' );
 	if ( is_array( $cached ) && isset( $cached['pages'], $cached['inbound'] ) ) {
 		return $cached;
 	}
@@ -346,7 +346,7 @@ function jcp_internal_link_build_index(): array {
 		'pages'   => $pages,
 		'inbound' => $inbound,
 	];
-	set_transient( 'jcp_internal_link_index_v1', $data, HOUR_IN_SECONDS );
+	set_transient( 'jcp_internal_link_index_v2', $data, HOUR_IN_SECONDS );
 
 	return $data;
 }
@@ -397,6 +397,7 @@ function jcp_internal_link_clear_cache( int $post_id ): void {
 		return;
 	}
 	delete_transient( 'jcp_internal_link_index_v1' );
+	delete_transient( 'jcp_internal_link_index_v2' );
 }
 add_action( 'save_post_jcp_niche_landing', 'jcp_internal_link_clear_cache' );
 add_action( 'save_post_page', 'jcp_internal_link_clear_cache' );
