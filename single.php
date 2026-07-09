@@ -115,24 +115,24 @@ get_header();
   <section class="jcp-section jcp-single-post-section jcp-single-post-footer-section">
     <div class="jcp-container jcp-single-post-container">
       <div class="jcp-single-post-wrapper">
-        <nav class="jcp-post-navigation">
+        <nav class="jcp-post-navigation" aria-label="<?php esc_attr_e( 'Post navigation', 'jcp-core' ); ?>">
           <?php
           $prev_post = get_previous_post();
           $next_post = get_next_post();
           ?>
           <?php if ( $prev_post ) : ?>
-            <div class="jcp-post-nav-prev">
-              <a href="<?php echo esc_url( get_permalink( $prev_post->ID ) ); ?>" class="btn btn-secondary">
-                ← Previous: <?php echo esc_html( get_the_title( $prev_post->ID ) ); ?>
-              </a>
-            </div>
+            <a class="jcp-post-nav-link jcp-post-nav-prev" href="<?php echo esc_url( get_permalink( $prev_post->ID ) ); ?>">
+              <span class="jcp-post-nav-dir"><?php esc_html_e( 'Previous', 'jcp-core' ); ?></span>
+              <span class="jcp-post-nav-title"><?php echo esc_html( get_the_title( $prev_post->ID ) ); ?></span>
+            </a>
+          <?php else : ?>
+            <span class="jcp-post-nav-spacer" aria-hidden="true"></span>
           <?php endif; ?>
           <?php if ( $next_post ) : ?>
-            <div class="jcp-post-nav-next">
-              <a href="<?php echo esc_url( get_permalink( $next_post->ID ) ); ?>" class="btn btn-secondary">
-                Next: <?php echo esc_html( get_the_title( $next_post->ID ) ); ?> →
-              </a>
-            </div>
+            <a class="jcp-post-nav-link jcp-post-nav-next" href="<?php echo esc_url( get_permalink( $next_post->ID ) ); ?>">
+              <span class="jcp-post-nav-dir"><?php esc_html_e( 'Next', 'jcp-core' ); ?></span>
+              <span class="jcp-post-nav-title"><?php echo esc_html( get_the_title( $next_post->ID ) ); ?></span>
+            </a>
           <?php endif; ?>
         </nav>
 

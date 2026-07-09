@@ -213,7 +213,7 @@ function jcp_blog_conversion_ctas( string $utm_suffix = 'blog' ): array {
 }
 
 /**
- * Related hub cards for a post (trade + demo + features hub).
+ * Related hub cards for a post (trade/industries + features — demo lives in the CTA band).
  *
  * @param int $post_id Post ID.
  * @return array<int, array{label:string,url:string,excerpt:string,type:string}>
@@ -237,17 +237,20 @@ function jcp_blog_conversion_related_hubs( int $post_id ): array {
 			),
 			'type'    => 'trade',
 		];
+	} else {
+		$industries = get_post_type_archive_link( 'jcp_niche_landing' );
+		if ( ! is_string( $industries ) || $industries === '' ) {
+			$industries = home_url( '/industries/' );
+		}
+		$cards[] = [
+			'label'   => __( 'Solutions by trade', 'jcp-core' ),
+			'url'     => $industries,
+			'excerpt' => __( 'Browse industry pages for plumbers, HVAC, roofers, and more home-service trades.', 'jcp-core' ),
+			'type'    => 'trade',
+		];
 	}
 
-	$cards[] = [
-		'label'   => __( 'Interactive product demo', 'jcp-core' ),
-		'url'     => home_url( '/demo/' ),
-		'excerpt' => __( 'Walk through capture → check-in → publish in about two minutes. No signup required.', 'jcp-core' ),
-		'type'    => 'demo',
-	];
-
-	$features_url = home_url( '/features/' );
-	// Prefer a published Features page if it exists.
+	$features_url  = home_url( '/features/' );
 	$features_page = get_page_by_path( 'features' );
 	if ( $features_page instanceof WP_Post && $features_page->post_status === 'publish' ) {
 		$features_url = get_permalink( $features_page );
@@ -259,23 +262,7 @@ function jcp_blog_conversion_related_hubs( int $post_id ): array {
 		'type'    => 'feature',
 	];
 
-	if ( ! $trade ) {
-		$industries = get_post_type_archive_link( 'jcp_niche_landing' );
-		if ( ! is_string( $industries ) || $industries === '' ) {
-			$industries = home_url( '/industries/' );
-		}
-		array_unshift(
-			$cards,
-			[
-				'label'   => __( 'Solutions by trade', 'jcp-core' ),
-				'url'     => $industries,
-				'excerpt' => __( 'Browse industry pages for plumbers, HVAC, roofers, and more home-service trades.', 'jcp-core' ),
-				'type'    => 'trade',
-			]
-		);
-	}
-
-	return array_slice( $cards, 0, 3 );
+	return array_slice( $cards, 0, 2 );
 }
 
 /**
@@ -436,15 +423,6 @@ function jcp_blog_conversion_render_end( int $post_id ): void {
 						}
 						?>
 					><?php echo esc_html( $ctas['demo']['label'] ); ?></a>
-					<a
-						class="btn btn-secondary jcp-blog-end-cta__secondary"
-						href="<?php echo esc_url( $ctas['trial']['url'] ); ?>"
-						<?php
-						if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
-							jcp_niche_cta_tracking_attr( $ctas['trial']['url'], 'blog_end_trial', $ctas['trial']['label'] );
-						}
-						?>
-					><?php echo esc_html( $ctas['trial']['label'] ); ?></a>
 					<p class="cta-note"><?php echo esc_html( $copy['note'] ); ?></p>
 				</div>
 			</div>

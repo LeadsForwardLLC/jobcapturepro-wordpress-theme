@@ -59,7 +59,7 @@ if ( post_password_required() ) {
       'title_reply_to'     => esc_html__( 'Leave a Reply to %s', 'jcp-core' ),
       'cancel_reply_link'  => esc_html__( 'Cancel Reply', 'jcp-core' ),
       'label_submit'       => esc_html__( 'Post Comment', 'jcp-core' ),
-      'class_submit'       => 'btn btn-primary',
+      'class_submit'       => 'btn btn-secondary jcp-comment-submit',
       'class_form'         => 'comment-form',
       'comment_field'     => '<p class="comment-form-comment"><label for="comment">' . esc_html__( 'Comment', 'jcp-core' ) . ' <span class="required">*</span></label><textarea id="comment" name="comment" cols="45" rows="4" required></textarea></p>',
       'fields'             => [
