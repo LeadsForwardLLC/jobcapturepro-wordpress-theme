@@ -75,12 +75,62 @@
 
 .jcp-page-body ul,
 .jcp-page-body ol {
-  margin-bottom: var(--jcp-space-lg);
-  padding-left: var(--jcp-space-3xl);
+  margin: var(--jcp-space-lg) 0;
+  padding: var(--jcp-space-md) var(--jcp-space-lg) var(--jcp-space-md) var(--jcp-space-xl);
+  list-style: none;
+  border-left: 3px solid color-mix(in srgb, var(--jcp-color-primary, #ff503e) 55%, transparent);
+  background: color-mix(in srgb, var(--jcp-color-bg-secondary, #f8fafc) 80%, transparent);
+  border-radius: 0 var(--jcp-radius-md, 8px) var(--jcp-radius-md, 8px) 0;
 }
 
 .jcp-page-body li {
-  margin-bottom: var(--jcp-space-sm);
+  position: relative;
+  margin: 0 0 var(--jcp-space-sm);
+  padding-left: 1.35rem;
+  line-height: 1.55;
+}
+
+.jcp-page-body li:last-child {
+  margin-bottom: 0;
+}
+
+.jcp-page-body ul > li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--jcp-color-primary, #ff503e);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--jcp-color-primary, #ff503e) 16%, transparent);
+}
+
+.jcp-page-body ol {
+  counter-reset: jcp-page-ol;
+}
+
+.jcp-page-body ol > li {
+  counter-increment: jcp-page-ol;
+  padding-left: 1.75rem;
+}
+
+.jcp-page-body ol > li::before {
+  content: counter(jcp-page-ol);
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  width: 1.35rem;
+  height: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--jcp-color-primary, #ff503e) 12%, transparent);
+  color: var(--jcp-color-primary, #ff503e);
+  font-size: 0.7rem;
+  font-weight: var(--jcp-font-weight-bold, 700);
+  line-height: 1;
 }
 
 .jcp-page-body a {
@@ -922,6 +972,84 @@
   margin: var(--jcp-space-xl) 0;
   font-style: italic;
   color: var(--jcp-color-text-secondary);
+}
+
+/* Content lists */
+.jcp-post-content ul,
+.jcp-post-content ol {
+  margin: var(--jcp-space-lg) 0 var(--jcp-space-xl);
+  padding: var(--jcp-space-md) var(--jcp-space-lg) var(--jcp-space-md) var(--jcp-space-xl);
+  list-style: none;
+  border-left: 3px solid color-mix(in srgb, var(--jcp-color-primary, #ff503e) 55%, transparent);
+  background: color-mix(in srgb, var(--jcp-color-bg-secondary, #f8fafc) 80%, transparent);
+  border-radius: 0 var(--jcp-radius-md, 8px) var(--jcp-radius-md, 8px) 0;
+}
+
+.jcp-post-content li {
+  position: relative;
+  margin: 0 0 var(--jcp-space-sm);
+  padding-left: 1.35rem;
+  line-height: 1.55;
+  color: var(--jcp-color-text-primary);
+}
+
+.jcp-post-content li:last-child {
+  margin-bottom: 0;
+}
+
+.jcp-post-content ul > li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--jcp-color-primary, #ff503e);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--jcp-color-primary, #ff503e) 16%, transparent);
+}
+
+.jcp-post-content ol {
+  counter-reset: jcp-post-ol;
+}
+
+.jcp-post-content ol > li {
+  counter-increment: jcp-post-ol;
+  padding-left: 1.75rem;
+}
+
+.jcp-post-content ol > li::before {
+  content: counter(jcp-post-ol);
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  width: 1.35rem;
+  height: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--jcp-color-primary, #ff503e) 12%, transparent);
+  color: var(--jcp-color-primary, #ff503e);
+  font-size: 0.7rem;
+  font-weight: var(--jcp-font-weight-bold, 700);
+  line-height: 1;
+}
+
+.jcp-post-content li > ul,
+.jcp-post-content li > ol {
+  margin: var(--jcp-space-sm) 0 0;
+  padding: var(--jcp-space-sm) 0 var(--jcp-space-sm) var(--jcp-space-md);
+  border-left-color: color-mix(in srgb, var(--jcp-color-border, #e5e7eb) 80%, var(--jcp-color-primary, #ff503e));
+  background: transparent;
+  border-radius: 0;
+}
+
+.jcp-post-content li > ul > li::before {
+  width: 0.35rem;
+  height: 0.35rem;
+  box-shadow: none;
+  background: var(--jcp-color-text-tertiary, #9ca3af);
 }
 
 /* Comparison / content tables */
