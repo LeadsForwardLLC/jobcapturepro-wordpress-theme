@@ -68,7 +68,7 @@
 
 .jcp-hero-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: var(--jcp-hero-grid-columns);
   gap: calc(var(--jcp-space-5xl) + var(--jcp-space-lg));
   align-items: center;
   position: relative;
@@ -154,7 +154,7 @@
 .meta-item {
   display: flex;
   flex-direction: column;
-  gap: var(--jcp-space-xs);
+  gap: 2px;
 }
 
 .meta-label {
@@ -171,6 +171,24 @@
   transition: transform 0.3s ease;
 }
 
+/* Hero / stat-row icon badges: white glyph on brand orange (not ranking-card layout) */
+.directory-meta .factor-icon-wrapper,
+.directory-meta .jcp-hero-meta-icon {
+  width: 44px;
+  height: 44px;
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.directory-meta .factor-icon-wrapper .meta-icon,
+.directory-meta .factor-icon-wrapper .factor-icon,
+.directory-meta .jcp-hero-meta-icon .meta-icon {
+  width: 22px;
+  height: 22px;
+  opacity: 1;
+  filter: brightness(0) invert(1);
+}
+
 .meta-item:hover .meta-icon {
   transform: scale(1.1);
   opacity: 1;
@@ -183,7 +201,7 @@
   line-height: 1.2;
   letter-spacing: -0.02em;
   display: block;
-  margin-bottom: 2px;
+  margin-bottom: 0;
 }
 
 .meta-item span,

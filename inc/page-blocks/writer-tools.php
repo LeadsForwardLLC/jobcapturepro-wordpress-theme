@@ -67,7 +67,7 @@ function jcp_writer_resolve_preset( ?WP_Post $post, array $content = [] ): strin
  * @return array<string, string> slug => label
  */
 function jcp_writer_selectable_layout_presets(): array {
-	$choices = [ 'marketing', 'features', 'comparison', 'minimal' ];
+	$choices = [ 'industry', 'marketing', 'features', 'comparison', 'minimal' ];
 	$out     = [];
 	foreach ( $choices as $slug ) {
 		$def = jcp_page_get_preset( $slug );

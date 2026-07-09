@@ -206,7 +206,7 @@
 
 /* Hero grid: wider left column (copy), narrower right column (phone) */
 .jcp-home .jcp-hero-grid {
-  grid-template-columns: 1.08fr 0.92fr;
+  grid-template-columns: var(--jcp-hero-grid-columns);
 }
 
 /* Centered + no media: full-width single column, centered on screen */

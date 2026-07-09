@@ -27,6 +27,9 @@
   
   --jcp-color-border: #e5e7eb;
   --jcp-color-border-light: #f3f4f6;
+
+  /* Hero copy + media split (copy ~60%, media ~40%) */
+  --jcp-hero-grid-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
   
   /* ========================
      TYPOGRAPHY

@@ -11,6 +11,7 @@
     "cta_primary": { "label": "View the live demo", "url": "/demo" },
     "cta_secondary": { "label": "Learn how it works", "url": "#how-it-works" },
     "cta_microcopy": "No signup. Takes under 5 mins.",
+    "show_trust_line": true,
     "meta_stats": [
       { "icon": "camera", "label": "1 photo", "detail": "proof everywhere", "css_class": "meta-stat-photo" },
       { "icon": "map", "label": "4 channels", "detail": "shared on website + social", "css_class": "meta-stat-channels" },

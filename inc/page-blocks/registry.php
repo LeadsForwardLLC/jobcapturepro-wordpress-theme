@@ -351,6 +351,7 @@ function jcp_page_default_block_props( string $type ): array {
 		'differentiation' => [
 			'headline'    => __( 'Section headline', 'jcp-core' ),
 			'show_icons'  => true,
+			'show_cta'    => false,
 			'body'        => '',
 			'bullets'     => [],
 			'cta_primary' => [ 'label' => '', 'url' => '' ],
@@ -358,12 +359,14 @@ function jcp_page_default_block_props( string $type ): array {
 		'who_its_for' => [
 			'headline'    => __( 'Who it\'s for', 'jcp-core' ),
 			'show_icons'  => true,
+			'show_cta'    => false,
 			'audiences'   => [],
 			'cta_primary' => [ 'label' => '', 'url' => '' ],
 		],
 		'faq' => [
-			'headline' => __( 'Frequently asked questions', 'jcp-core' ),
-			'items'    => [],
+			'headline'    => __( 'Frequently asked questions', 'jcp-core' ),
+			'show_cta'    => false,
+			'items'       => [],
 			'cta_primary' => [ 'label' => '', 'url' => '' ],
 		],
 		'final_cta' => [

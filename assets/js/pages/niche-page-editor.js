@@ -60,6 +60,35 @@
   const SECTION_CTA_PRIMARY_SELECTOR = '.jcp-section-cta-row [data-jcp-optional$=".cta_primary"]';
   const SECTION_CTA_SECONDARY_SELECTOR = '.jcp-section-cta-row [data-jcp-optional$=".cta_secondary"]';
 
+  const SECTION_CTA_PRIMARY_DEFAULTS = {
+    what_it_is: { label: 'Learn more', url: '/demo' },
+    how_it_works: { label: 'See it in action', url: '/demo' },
+    check_ins: { label: 'See it in action', url: '/demo' },
+    problem: { label: 'Fix this with JobCapturePro', url: '/demo' },
+    benefits: { label: 'See it in the demo', url: '/demo' },
+    differentiation: { label: 'Get started', url: '/demo' },
+    who_its_for: { label: 'Start free trial', url: '/demo' },
+    faq: { label: 'Still have questions? Book a demo', url: '/demo' },
+  };
+
+  const SECTION_CTA_SECONDARY_DEFAULTS = {
+    how_it_works: { label: 'View pricing', url: '/pricing' },
+    benefits: { label: 'Learn more', url: '/pricing' },
+    what_it_is: { label: 'See how it works', url: '#how-it-works' },
+  };
+
+  const syncOptionalCtaSlotsFromContent = () => {
+    if (typeof window.JCP_SYNC_COLLECTIONS_FROM_CONTENT === 'function') {
+      window.JCP_SYNC_COLLECTIONS_FROM_CONTENT();
+    }
+    if (typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
+      window.JCP_REFRESH_COLLECTIONS();
+    }
+    if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+      window.JCP_REFRESH_INLINE_EDITABLE();
+    }
+  };
+
   const BLOCK_VISIBILITY_TOGGLES = {
     hero: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-hero-subtitle', defaultOn: true },
@@ -432,7 +461,20 @@
   ];
 
   const iconGridEl = iconPopover.querySelector('#jcpNicheIconGrid');
-  const iconAssetBase = () => window.JCP_ASSET_BASE || '';
+  const resolveIconAssetBase = () => {
+    if (window.JCP_ASSET_BASE) return window.JCP_ASSET_BASE;
+    if (cfg.assetBase) return cfg.assetBase;
+    const src = document.currentScript?.src
+      || document.querySelector('script[src*="niche-page-editor"]')?.src
+      || '';
+    if (src.includes('/js/pages/')) return src.split('/js/pages/')[0];
+    return '';
+  };
+  if (!window.JCP_ASSET_BASE) {
+    window.JCP_ASSET_BASE = resolveIconAssetBase();
+  }
+  const iconAssetBase = () => window.JCP_ASSET_BASE || resolveIconAssetBase();
+  const iconUrl = (name) => `${iconAssetBase()}/shared/assets/icons/lucide/${name}.svg`;
   let activeIconTarget = null;
 
   ICON_CHOICES.forEach((name) => {
@@ -441,7 +483,7 @@
     btn.className = 'jcp-niche-icon-popover__btn';
     btn.dataset.iconName = name;
     btn.title = name;
-    btn.innerHTML = `<img src="${iconAssetBase()}/shared/assets/icons/lucide/${name}.svg" alt="" width="20" height="20" />`;
+    btn.innerHTML = `<img src="${iconUrl(name)}" alt="" width="20" height="20" />`;
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       if (!activeIconTarget) return;
@@ -458,7 +500,7 @@
         setPath(block.props, relPath, name);
       }
       const img = activeIconTarget.querySelector('.factor-icon, .meta-icon');
-      if (img) img.src = `${iconAssetBase()}/shared/assets/icons/lucide/${name}.svg`;
+      if (img) img.src = iconUrl(name);
       closeIconPicker();
       recordChange();
     });
@@ -789,6 +831,28 @@
     });
   };
 
+  const ensureSectionCtaRow = (root, block) => {
+    if (!root || !block) return;
+    const lk = blockLegacyKey(block);
+    if (!lk) return;
+    const host = root.querySelector('.jcp-container') || root;
+    let row = root.querySelector('.jcp-section-cta-row');
+    if (!row) {
+      row = document.createElement('div');
+      row.className = 'jcp-section-cta-row benefits-cta-row jcp-section-cta-row--solo';
+      host.appendChild(row);
+    }
+    let slot = row.querySelector('[data-jcp-optional$=".cta_primary"]');
+    if (!slot) {
+      slot = document.createElement('div');
+      slot.className = 'benefits-cta-slot jcp-section-cta-slot';
+      slot.dataset.jcpOptional = `${lk}.cta_primary`;
+      slot.dataset.jcpOptionalKind = 'cta';
+      slot.dataset.jcpOptionalLabel = 'Section button';
+      row.appendChild(slot);
+    }
+  };
+
   const setBlockFieldVisible = (block, key, enabled, selector) => {
     const liveBlock = getLiveBlock(block);
     liveBlock.props = liveBlock.props || {};
@@ -796,15 +860,29 @@
     const lk = blockLegacyKey(liveBlock);
     if (lk) setPath(flatContent, `${lk}.${key}`, enabled);
 
+    const root = ensureBlockRoot(findBlockRootEl(liveBlock));
+    if (key === 'show_cta' && enabled && lk) {
+      const primaryPath = `${lk}.cta_primary`;
+      const primary = getPath(flatContent, primaryPath);
+      if (!primary || !String(primary.label || '').trim()) {
+        const defaults = SECTION_CTA_PRIMARY_DEFAULTS[lk] || { label: 'Learn more', url: '/demo' };
+        setPath(flatContent, primaryPath, { ...defaults });
+        liveBlock.props.cta_primary = { ...defaults };
+      }
+      if (root) ensureSectionCtaRow(root, liveBlock);
+      syncOptionalCtaSlotsFromContent();
+    }
+
     if (key === 'show_cta_secondary' && enabled && lk) {
       const secPath = `${lk}.cta_secondary`;
       const sec = getPath(flatContent, secPath);
       if (!sec || !String(sec.label || '').trim()) {
-        setPath(flatContent, secPath, { label: 'Learn more', url: '/pricing' });
+        const defaults = SECTION_CTA_SECONDARY_DEFAULTS[lk] || { label: 'Learn more', url: '/pricing' };
+        setPath(flatContent, secPath, { ...defaults });
+        liveBlock.props.cta_secondary = { ...defaults };
       }
-      if (typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
-        window.JCP_REFRESH_COLLECTIONS();
-      }
+      if (root) ensureSectionCtaRow(root, liveBlock);
+      syncOptionalCtaSlotsFromContent();
     }
 
     syncBlockVisibilityToDom(liveBlock);
@@ -1083,6 +1161,11 @@
           : isBlockFieldVisible(block, 'show_cta_secondary', (BLOCK_VISIBILITY_TOGGLES[block.type] || []).find((e) => e.key === 'show_cta_secondary')?.defaultOn !== false);
         const row = root.querySelector('.jcp-section-cta-row');
         if (row) row.style.display = (showPrimary || showSecondary) ? '' : 'none';
+        if (showPrimary) {
+          root.querySelectorAll(SECTION_CTA_PRIMARY_SELECTOR).forEach((el) => {
+            el.style.display = '';
+          });
+        }
       }
     });
   };

@@ -193,7 +193,9 @@ function jcp_niche_render_core_mechanic_strip( array $items, string $path_prefix
 			?>
 			<div class="meta-item jcp-collection-item<?php echo $class !== '' ? ' ' . esc_attr( $class ) : ''; ?>"<?php if ( $path_prefix !== '' ) { jcp_niche_array_item_attr( (int) $i ); } ?>>
 				<div class="meta-label">
-					<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="meta-icon" alt="" width="20" height="20" />
+					<span class="factor-icon-wrapper jcp-hero-meta-icon"<?php if ( $base !== '' ) { ?> data-jcp-icon-path="<?php echo esc_attr( $base . '.icon' ); ?>" title="<?php esc_attr_e( 'Click to change icon', 'jcp-core' ); ?>" role="button" tabindex="0"<?php } ?>>
+						<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="meta-icon" alt="" width="20" height="20" />
+					</span>
 					<strong>
 						<?php if ( $base !== '' && ( $value !== '' || $word !== '' ) ) : ?>
 							<span<?php jcp_niche_editable_attr( $base . '.value' ); ?>><?php echo esc_html( $value ); ?></span><?php if ( $word !== '' ) : ?><span<?php jcp_niche_editable_attr( $base . '.label' ); ?>><?php echo esc_html( ' ' . $word ); ?></span><?php endif; ?>
@@ -324,26 +326,29 @@ function jcp_niche_render_section_closing( string $text, string $path = '' ): vo
  */
 function jcp_niche_render_section_optional_ctas( array $props, string $base_path, string $niche_key = '', array $options = [] ): void {
 	$allow_secondary = ! empty( $options['secondary'] );
-	$show_primary    = jcp_niche_show_field( $props, 'show_cta', true );
-	$show_secondary  = $allow_secondary && jcp_niche_show_field( $props, 'show_cta_secondary', true );
-	if ( ! $show_primary && ! $show_secondary ) {
+	$inline_edit     = jcp_niche_user_can_inline_edit();
+	$secondary_kind  = (string) ( $options['secondary_kind'] ?? 'link' );
+	$primary         = jcp_niche_resolve_cta( $props['cta_primary'] ?? [], $niche_key );
+	$secondary       = jcp_niche_resolve_cta( $props['cta_secondary'] ?? [], $niche_key );
+	$has_primary     = $primary['label'] !== '';
+	$show_primary    = jcp_niche_show_field( $props, 'show_cta', $has_primary );
+	$show_secondary  = $allow_secondary && jcp_niche_show_field( $props, 'show_cta_secondary', false );
+	if ( ! $show_primary && ! $show_secondary && ! $inline_edit ) {
 		return;
 	}
-	$secondary_kind   = (string) ( $options['secondary_kind'] ?? 'link' );
-	$primary          = jcp_niche_resolve_cta( $props['cta_primary'] ?? [], $niche_key );
-	$secondary        = jcp_niche_resolve_cta( $props['cta_secondary'] ?? [], $niche_key );
-	$primary_label    = __( 'Section button', 'jcp-core' );
-	$secondary_label  = __( 'Secondary link', 'jcp-core' );
-	$has_secondary    = $allow_secondary && $secondary['label'] !== '';
-	$row_classes      = 'jcp-section-cta-row benefits-cta-row';
-	if ( $primary['label'] !== '' && ! $has_secondary ) {
+	$primary_label   = __( 'Section button', 'jcp-core' );
+	$secondary_label = __( 'Secondary link', 'jcp-core' );
+	$has_secondary   = $allow_secondary && $secondary['label'] !== '';
+	$row_classes     = 'jcp-section-cta-row benefits-cta-row';
+	if ( $has_primary && ! $has_secondary ) {
 		$row_classes .= ' jcp-section-cta-row--solo';
 	}
+	$row_style = ( $inline_edit && ! $show_primary && ! $show_secondary ) ? ' style="display:none"' : '';
 	?>
-	<div class="<?php echo esc_attr( $row_classes ); ?>">
-		<?php if ( $show_primary ) : ?>
+	<div class="<?php echo esc_attr( $row_classes ); ?>"<?php echo $row_style; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+		<?php if ( $show_primary || $inline_edit ) : ?>
 		<div class="benefits-cta-slot jcp-section-cta-slot"<?php jcp_niche_optional_slot_attr( $base_path . '.cta_primary', 'cta', $primary_label ); ?>>
-			<?php if ( $primary['label'] !== '' ) : ?>
+			<?php if ( $has_primary ) : ?>
 				<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary"<?php jcp_niche_editable_link_attr( $base_path . '.cta_primary' ); ?>><?php echo esc_html( $primary['label'] ); ?></a>
 			<?php endif; ?>
 		</div>

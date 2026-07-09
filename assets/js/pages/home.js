@@ -148,7 +148,7 @@
                 <div class="jcp-actions directory-cta-row">
                   <div class="jcp-hero-primary-cta">
                     <a class="btn btn-primary" href="${heroCtas.primaryUrl}">${heroCtas.primaryText}</a>
-                    <span class="jcp-hero-cta-microcopy">No signup. Takes under 5 mins.</span>
+                    <span class="jcp-hero-cta-microcopy jcp-niche-trust-line">No signup. Takes under 5 mins.</span>
                   </div>
                   <a class="btn btn-secondary" href="${heroCtas.secondaryUrl}">${heroCtas.secondaryText}</a>
                 </div>

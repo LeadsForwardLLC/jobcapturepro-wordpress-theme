@@ -181,6 +181,22 @@ function jcp_niche_render_layout_template_picker( WP_Post $post, string $preset 
 					ta.dispatchEvent(new Event('input', { bubbles: true }));
 					var devTa = document.getElementById('jcp_niche_content_json_dev');
 					if (devTa) devTa.value = data.data.content;
+					var templateEl = document.getElementById('jcp-writer-template-json');
+					if (templateEl && data.data.writer_template) {
+						templateEl.textContent = JSON.stringify(data.data.writer_template);
+					}
+					var aiPromptEl = document.getElementById('jcp-writer-ai-prompt-json');
+					if (aiPromptEl && data.data.ai_prompt) {
+						aiPromptEl.textContent = JSON.stringify(data.data.ai_prompt);
+					}
+					var sectionsList = document.querySelector('.jcp-doc-import__sections');
+					if (sectionsList && data.data.sections_html) {
+						sectionsList.innerHTML = data.data.sections_html;
+					}
+					var workflowLabel = document.querySelector('.jcp-writer-workflow .description strong');
+					if (workflowLabel && data.data.preset_label) {
+						workflowLabel.textContent = data.data.preset_label;
+					}
 					status.textContent = '<?php echo esc_js( __( 'Layout applied — click Update to save.', 'jcp-core' ) ); ?>';
 				})
 				.catch(function () {
@@ -361,7 +377,7 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 	wp_nonce_field( 'jcp_niche_import_doc', 'jcp_niche_import_nonce' );
 	$stored      = jcp_page_get_content( (int) $post->ID );
 	$preset      = jcp_writer_resolve_preset( $post, $stored );
-	$page_kind   = jcp_page_resolve_admin_page_kind( $post );
+	$page_kind   = jcp_page_resolve_admin_page_kind( $post, $stored );
 	$kind_label  = jcp_writer_preset_label( $preset );
 	$sections    = jcp_page_doc_sections_for_preset( $preset );
 	$template    = function_exists( 'jcp_writer_get_document_template' ) ? jcp_writer_get_document_template( $preset ) : '';
@@ -516,6 +532,13 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 				if (status) status.innerHTML = '<p class="jcp-doc-import__error"><?php echo esc_js( __( 'Admin scripts not loaded. Refresh the page and try again.', 'jcp-core' ) ); ?></p>';
 				return;
 			}
+			var hasFile = fileInput && fileInput.files && fileInput.files[0];
+			if (!ta.value.trim() && !hasFile) {
+				if (status) {
+					status.innerHTML = '<p class="jcp-doc-import__error"><?php echo esc_js( __( 'Paste document text or choose a .docx / .txt file to upload.', 'jcp-core' ) ); ?></p>';
+				}
+				return;
+			}
 			var body = new FormData();
 			body.append('action', 'jcp_niche_parse_document');
 			body.append('_wpnonce', '<?php echo esc_js( wp_create_nonce( 'jcp_niche_parse_document' ) ); ?>');
@@ -571,10 +594,18 @@ function jcp_niche_ajax_parse_document(): void {
 		$name = isset( $file['name'] ) ? (string) $file['name'] : '';
 		$ext  = strtolower( pathinfo( $name, PATHINFO_EXTENSION ) );
 		if ( $ext === 'docx' ) {
+			if ( ! class_exists( 'ZipArchive' ) ) {
+				wp_send_json_error( [ 'message' => __( 'This server cannot read .docx files (ZipArchive missing). Paste the document text instead.', 'jcp-core' ) ] );
+			}
 			$text = jcp_niche_extract_docx_text( (string) $file['tmp_name'] );
+			if ( $text === '' ) {
+				wp_send_json_error( [ 'message' => __( 'Could not read that .docx file. Try File → Download → Plain text (.txt), or paste the document below.', 'jcp-core' ) ] );
+			}
 		} elseif ( $ext === 'txt' ) {
 			$raw = file_get_contents( $file['tmp_name'] );
 			$text = is_string( $raw ) ? jcp_niche_normalize_document_text( $raw ) : '';
+		} else {
+			wp_send_json_error( [ 'message' => __( 'Upload a .docx or .txt file, or paste document text.', 'jcp-core' ) ] );
 		}
 	}
 
@@ -593,7 +624,7 @@ function jcp_niche_ajax_parse_document(): void {
 		}
 	}
 	$preset      = jcp_writer_resolve_preset( $post, $existing );
-	$page_kind   = jcp_page_resolve_admin_page_kind( $post );
+	$page_kind   = jcp_page_resolve_admin_page_kind( $post, $existing );
 	$parsed      = jcp_page_parse_document_with_report( $text, $niche_key, $niche_label, $page_kind, $preset );
 	$content     = jcp_page_merge_import_content( $parsed['content'], $existing );
 	$report      = jcp_page_doc_build_import_report(
@@ -629,6 +660,7 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 	</p>
 	<?php elseif ( get_page_template_slug( $post->ID ) === 'page-jcp-blocks.php' ) : ?>
 	<p>
+		<button type="button" class="button" id="jcp-niche-load-industry-demo"><?php esc_html_e( 'Use industry trade preset', 'jcp-core' ); ?></button>
 		<button type="button" class="button" id="jcp-niche-load-marketing-demo"><?php esc_html_e( 'Use block page preset', 'jcp-core' ); ?></button>
 		<button type="button" class="button" id="jcp-niche-load-features-demo"><?php esc_html_e( 'Use features preset', 'jcp-core' ); ?></button>
 		<button type="button" class="button" id="jcp-niche-load-comparison-demo"><?php esc_html_e( 'Use comparison preset', 'jcp-core' ); ?></button>
@@ -664,11 +696,11 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 				fetch(ajaxurl + '?action=' + action + '&_wpnonce=<?php echo esc_js( wp_create_nonce( 'jcp_niche_preset_json' ) ); ?>')
 					.then(function (r) { return r.json(); })
 					.then(function (data) {
-						if (data && data.content) {
-							ta.value = data.content;
+						if (data && data.success && data.data && data.data.content) {
+							ta.value = data.data.content;
 							ta.dispatchEvent(new Event('input', { bubbles: true }));
 							var other = ta.id === 'jcp_niche_content_json' ? devTa : primary;
-							if (other) other.value = data.content;
+							if (other) other.value = data.data.content;
 						}
 					});
 			});
@@ -676,6 +708,7 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 		bindPreset('jcp-niche-load-plumbing-demo', 'jcp_niche_plumbing_json');
 		bindPreset('jcp-niche-load-hvac-demo', 'jcp_niche_hvac_json');
 		bindPreset('jcp-niche-load-referral-demo', 'jcp_niche_referral_json');
+		bindPreset('jcp-niche-load-industry-demo', 'jcp_page_industry_json');
 		bindPreset('jcp-niche-load-marketing-demo', 'jcp_page_marketing_json');
 		bindPreset('jcp-niche-load-features-demo', 'jcp_page_features_json');
 		bindPreset('jcp-niche-load-comparison-demo', 'jcp_page_comparison_json');
@@ -738,6 +771,11 @@ function jcp_niche_ajax_preset_json( string $preset ): void {
 /**
  * AJAX: marketing / minimal empty presets.
  */
+function jcp_page_ajax_industry_json(): void {
+	jcp_niche_ajax_preset_json( 'industry' );
+}
+add_action( 'wp_ajax_jcp_page_industry_json', 'jcp_page_ajax_industry_json' );
+
 function jcp_page_ajax_marketing_json(): void {
 	jcp_niche_ajax_preset_json( 'marketing' );
 }
@@ -788,7 +826,12 @@ function jcp_page_ajax_apply_layout_preset(): void {
 	$skeleton = jcp_page_create_skeleton_document( $post, $preset );
 	wp_send_json_success(
 		[
-			'content' => wp_json_encode( $skeleton, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ),
+			'content'         => wp_json_encode( $skeleton, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ),
+			'preset'          => $preset,
+			'preset_label'    => jcp_writer_preset_label( $preset ),
+			'writer_template' => jcp_writer_get_document_template( $preset ),
+			'ai_prompt'       => jcp_writer_get_ai_prompt( $preset, $post instanceof WP_Post ? $post : null ),
+			'sections_html'   => jcp_page_doc_sections_guide_html( $preset ),
 		]
 	);
 }

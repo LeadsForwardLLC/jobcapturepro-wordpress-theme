@@ -76,7 +76,7 @@
 
 .jcp-niche-hero--internal .jcp-hero-grid {
   gap: var(--jcp-space-2xl);
-  grid-template-columns: 1.05fr 0.95fr;
+  grid-template-columns: var(--jcp-hero-grid-columns);
   align-items: center;
 }
 
@@ -1810,7 +1810,7 @@ body.jcp-structure-open {
 /* Hero layout variants */
 .jcp-block-root.jcp-hero-variant-condensed .jcp-hero-grid,
 .jcp-hero-variant-condensed .jcp-hero-grid {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: var(--jcp-hero-grid-columns);
 }
 
 .jcp-block-root.jcp-hero-variant-condensed .jcp-hero-copy,
@@ -1826,7 +1826,7 @@ body.jcp-structure-open {
 
 .jcp-block-root.jcp-hero-variant-split .jcp-hero-grid,
 .jcp-hero-variant-split .jcp-hero-grid {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: var(--jcp-hero-grid-columns);
 }
 
 .jcp-block-root.jcp-hero-variant-split .jcp-hero-copy,
@@ -1887,7 +1887,7 @@ body.jcp-structure-open {
 
 .jcp-block-root.jcp-hero-variant-centered.jcp-hero-has-visual .jcp-hero-grid,
 .jcp-hero-variant-centered.jcp-hero-has-visual .jcp-hero-grid {
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: var(--jcp-hero-grid-columns);
   max-width: none;
 }
 

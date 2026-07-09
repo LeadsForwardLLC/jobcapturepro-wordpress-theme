@@ -270,7 +270,7 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 	$is_internal  = $variant === 'condensed';
 	$show_primary = ! array_key_exists( 'show_cta_primary', $h ) || ! empty( $h['show_cta_primary'] );
 	$show_secondary = ! array_key_exists( 'show_cta_secondary', $h ) || ! empty( $h['show_cta_secondary'] );
-	$show_trust   = ! array_key_exists( 'show_trust_line', $h ) || ! empty( $h['show_trust_line'] );
+	$show_trust   = jcp_niche_show_field( $h, 'show_trust_line', true );
 	$hero_align   = in_array( (string) ( $c['_hero_align'] ?? '' ), [ 'left', 'center', 'right' ], true )
 		? (string) $c['_hero_align']
 		: ( $variant === 'centered' ? 'center' : 'left' );
@@ -302,8 +302,11 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 						<?php if ( $show_primary && $primary['label'] !== '' ) : ?>
 							<div class="jcp-hero-primary-cta">
 								<a class="btn btn-primary" href="<?php echo esc_url( $primary['url'] ); ?>"<?php jcp_niche_editable_link_attr( 'hero.cta_primary' ); jcp_niche_cta_tracking_attr( $primary['url'], str_contains( $primary['url'], 'firstpromoter.com' ) ? 'referral_hero' : 'niche_hero', $primary['label'] ); ?>><?php jcp_niche_e( $primary['label'] ); ?></a>
-								<?php if ( ! empty( $h['cta_microcopy'] ) ) : ?>
-									<span class="jcp-hero-cta-microcopy"<?php jcp_niche_editable_attr( 'hero.cta_microcopy' ); ?>><?php jcp_niche_e( (string) $h['cta_microcopy'] ); ?></span>
+								<?php
+								$cta_microcopy = trim( (string) ( $h['cta_microcopy'] ?? '' ) );
+								if ( $is_home && $cta_microcopy !== '' && $show_trust ) :
+									?>
+									<span class="jcp-hero-cta-microcopy jcp-niche-trust-line"<?php jcp_niche_editable_attr( 'hero.cta_microcopy' ); ?>><?php jcp_niche_e( $cta_microcopy ); ?></span>
 								<?php endif; ?>
 							</div>
 						<?php endif; ?>
@@ -311,7 +314,7 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 							<a class="btn btn-secondary" href="<?php echo esc_url( $secondary['url'] ); ?>"<?php jcp_niche_editable_link_attr( 'hero.cta_secondary' ); ?>><?php jcp_niche_e( $secondary['label'] ); ?></a>
 						<?php endif; ?>
 					</div>
-					<?php if ( $show_trust && ! empty( $h['trust_line'] ) ) : ?>
+					<?php if ( ! $is_home && $show_trust && ! empty( $h['trust_line'] ) ) : ?>
 						<p class="jcp-niche-trust-line"<?php jcp_niche_editable_attr( 'hero.trust_line' ); ?>><?php jcp_niche_e( (string) $h['trust_line'] ); ?></p>
 					<?php endif; ?>
 					<?php if ( $is_home && ! empty( $h['meta_stats'] ) && jcp_niche_show_field( $h, 'show_meta_stats', true ) ) : ?>

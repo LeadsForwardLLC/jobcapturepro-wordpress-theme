@@ -200,7 +200,9 @@
     return `
       <div class="meta-item jcp-collection-item ${cssClass}" data-jcp-array-item="${index}">
         <div class="meta-label">
-          <img src="${iconUrl(icon)}" class="meta-icon" alt="" width="20" height="20" />
+          <span class="factor-icon-wrapper jcp-hero-meta-icon" data-jcp-icon-path="${path}.icon" title="Click to change icon" role="button" tabindex="0">
+            <img src="${iconUrl(icon)}" class="meta-icon" alt="" width="20" height="20" />
+          </span>
           <strong>${labelHtml}</strong>
         </div>
         ${detailHtml}

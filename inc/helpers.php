@@ -311,11 +311,17 @@ function jcp_core_enqueue_page_block_editor( int $post_id ): void {
 	jcp_core_enqueue_script( 'jcp-niche-page-editor', 'js/pages/niche-page-editor.js', [ 'jcp-page-media-editor', 'jcp-page-collection-editor' ] );
 	$page_doc  = jcp_page_get_content( $post_id );
 	$page_kind = jcp_page_resolve_kind( $page_doc, $post_id );
+	wp_add_inline_script(
+		'jcp-niche-page-editor',
+		"window.JCP_ASSET_BASE = window.JCP_ASSET_BASE || '" . esc_url_raw( get_stylesheet_directory_uri() . '/assets' ) . "';",
+		'before'
+	);
 	wp_localize_script(
 		'jcp-niche-page-editor',
 		'JCP_NICHE_EDITOR',
 		[
 			'postId'    => $post_id,
+			'assetBase' => get_stylesheet_directory_uri() . '/assets',
 			'restUrl'   => rest_url( 'jcp/v1/page/' . $post_id ),
 			'nonce'     => wp_create_nonce( 'wp_rest' ),
 			'adminUrl'  => get_edit_post_link( $post_id, 'raw' ),

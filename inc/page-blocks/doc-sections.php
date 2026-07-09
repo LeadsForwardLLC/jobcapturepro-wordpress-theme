@@ -314,11 +314,33 @@ function jcp_page_doc_sections_for_preset( string $preset ): array {
 }
 
 /**
+ * HTML list items for the admin import section guide.
+ *
+ * @param string $preset Preset slug.
+ */
+function jcp_page_doc_sections_guide_html( string $preset ): string {
+	$html     = '';
+	$sections = jcp_page_doc_sections_for_preset( $preset );
+	foreach ( $sections as $row ) {
+		$class = ! empty( $row['on_page'] ) ? 'is-on-page' : 'is-extra';
+		$html .= '<li class="' . esc_attr( $class ) . '">';
+		$html .= '<code>' . esc_html( (string) $row['header'] ) . '</code>';
+		$html .= '<span>' . esc_html( (string) $row['label'] ) . '</span>';
+		if ( empty( $row['on_page'] ) ) {
+			$html .= '<em>' . esc_html__( 'optional on this page', 'jcp-core' ) . '</em>';
+		}
+		$html .= '</li>';
+	}
+	return $html;
+}
+
+/**
  * Resolve page kind for admin import UI.
  *
- * @param WP_Post|null $post Post.
+ * @param WP_Post|null         $post    Post.
+ * @param array<string, mixed> $content Stored content (optional).
  */
-function jcp_page_resolve_admin_page_kind( ?WP_Post $post ): string {
+function jcp_page_resolve_admin_page_kind( ?WP_Post $post, array $content = [] ): string {
 	if ( ! $post instanceof WP_Post ) {
 		return 'marketing';
 	}
@@ -331,10 +353,7 @@ function jcp_page_resolve_admin_page_kind( ?WP_Post $post ): string {
 	if ( get_page_template_slug( $post ) === 'page-home.php' || (int) get_option( 'page_on_front' ) === (int) $post->ID ) {
 		return 'home';
 	}
-	if ( jcp_page_uses_block_template( (int) $post->ID ) ) {
-		return 'marketing';
-	}
-	return 'marketing';
+	return jcp_page_resolve_kind( $content, (int) $post->ID );
 }
 
 /**

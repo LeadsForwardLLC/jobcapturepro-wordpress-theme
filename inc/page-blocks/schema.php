@@ -99,6 +99,27 @@ function jcp_niche_is_content_page( ?int $post_id = null ): bool {
  * @param int                  $post_id Post ID.
  */
 function jcp_page_resolve_kind( array $content, int $post_id ): string {
+	if ( ! empty( $content['page_kind'] ) ) {
+		$kind = sanitize_key( (string) $content['page_kind'] );
+		if ( in_array( $kind, [ 'industry', 'marketing', 'referral', 'home' ], true ) ) {
+			return $kind;
+		}
+	}
+
+	$preset_slug = ! empty( $content['preset'] ) ? sanitize_key( (string) $content['preset'] ) : '';
+	if ( $preset_slug === '' && $post_id > 0 ) {
+		$post = get_post( $post_id );
+		if ( $post instanceof WP_Post ) {
+			$preset_slug = jcp_writer_resolve_preset( $post, $content );
+		}
+	}
+	if ( $preset_slug !== '' ) {
+		$preset_def = jcp_page_get_preset( $preset_slug );
+		if ( $preset_def && ! empty( $preset_def['page_kind'] ) ) {
+			return (string) $preset_def['page_kind'];
+		}
+	}
+
 	if ( $post_id > 0 ) {
 		$post = get_post( $post_id );
 		if ( $post instanceof WP_Post ) {
@@ -117,9 +138,6 @@ function jcp_page_resolve_kind( array $content, int $post_id ): string {
 				}
 			}
 		}
-	}
-	if ( ! empty( $content['page_kind'] ) ) {
-		return (string) $content['page_kind'];
 	}
 	if ( ( $content['page_type'] ?? '' ) === 'home' || ( $content['page_type'] ?? '' ) === 'homepage' ) {
 		return 'home';
