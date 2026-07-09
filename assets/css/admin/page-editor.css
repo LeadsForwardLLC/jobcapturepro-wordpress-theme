@@ -143,3 +143,31 @@
 .jcp-doc-import__error {
   color: #b32d2e;
 }
+
+.jcp-writer-ai-workflow {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  background: #f0f6fc;
+  border: 1px solid #c3d9ed;
+  border-radius: 4px;
+}
+
+.jcp-writer-ai-workflow__title {
+  margin: 0 0 8px;
+}
+
+.jcp-writer-ai-workflow__steps {
+  margin: 0 0 10px 20px;
+}
+
+.jcp-writer-ai-workflow__steps li {
+  margin-bottom: 4px;
+}
+
+.jcp-writer-ai-workflow__actions {
+  margin: 0;
+}
+
+.jcp-doc-import__template-note {
+  margin: 8px 0 0;
+}

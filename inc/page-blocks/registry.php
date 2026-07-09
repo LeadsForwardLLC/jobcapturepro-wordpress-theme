@@ -308,10 +308,15 @@ function jcp_page_default_block_props( string $type ): array {
 			'show_divider'       => false,
 		],
 		'what_it_is' => [
-			'headline'    => __( 'Section headline', 'jcp-core' ),
-			'subheadline' => '',
-			'cta_primary' => [ 'label' => '', 'url' => '' ],
-			'cta_secondary' => [ 'label' => '', 'url' => '' ],
+			'headline'          => __( 'Section headline', 'jcp-core' ),
+			'subheadline'       => '',
+			'show_icons'        => true,
+			'show_subheadline'  => true,
+			'show_closing'      => true,
+			'team_already_icon' => 'wrench',
+			'turns_into_icon'   => 'sparkles',
+			'cta_primary'       => [ 'label' => '', 'url' => '' ],
+			'cta_secondary'     => [ 'label' => '', 'url' => '' ],
 		],
 		'how_it_works' => [
 			'headline'    => __( 'How it works', 'jcp-core' ),
@@ -323,12 +328,14 @@ function jcp_page_default_block_props( string $type ): array {
 		'check_ins' => [
 			'headline'    => __( 'Section headline', 'jcp-core' ),
 			'subheadline' => '',
+			'show_icons'  => true,
 			'cta_primary' => [ 'label' => '', 'url' => '' ],
 			'features'    => [],
 		],
 		'problem' => [
 			'headline'    => __( 'Section headline', 'jcp-core' ),
 			'subheadline' => '',
+			'show_icons'  => true,
 			'cta_primary' => [ 'label' => '', 'url' => '' ],
 			'pain_points' => [],
 		],
@@ -342,9 +349,10 @@ function jcp_page_default_block_props( string $type ): array {
 			'items'         => [],
 		],
 		'differentiation' => [
-			'headline' => __( 'Section headline', 'jcp-core' ),
-			'body'     => '',
-			'bullets'  => [],
+			'headline'    => __( 'Section headline', 'jcp-core' ),
+			'show_icons'  => true,
+			'body'        => '',
+			'bullets'     => [],
 			'cta_primary' => [ 'label' => '', 'url' => '' ],
 		],
 		'who_its_for' => [

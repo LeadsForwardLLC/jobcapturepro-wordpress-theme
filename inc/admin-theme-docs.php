@@ -93,6 +93,7 @@ function jcp_theme_docs_render_page(): void {
 				<li><a href="#quick-start"><?php esc_html_e( 'Quick start (WP block page)', 'jcp-core' ); ?></a></li>
 				<li><a href="#quick-start-industry"><?php esc_html_e( 'Quick start (industry page)', 'jcp-core' ); ?></a></li>
 				<li><a href="#document-import"><?php esc_html_e( 'Document import', 'jcp-core' ); ?></a></li>
+				<li><a href="#ai-writing"><?php esc_html_e( 'AI-assisted writing', 'jcp-core' ); ?></a></li>
 				<li><a href="#document-template"><?php esc_html_e( 'Writer document template', 'jcp-core' ); ?></a></li>
 				<li><a href="#backend-editor"><?php esc_html_e( 'Backend editor (WP Admin)', 'jcp-core' ); ?></a></li>
 				<li><a href="#frontend-editor"><?php esc_html_e( 'Front-end editor (live page)', 'jcp-core' ); ?></a></li>
@@ -240,7 +241,41 @@ function jcp_theme_docs_render_page(): void {
 			<p><?php esc_html_e( 'Put each label on its own line, then the content on the next line(s):', 'jcp-core' ); ?></p>
 			<p><code>H1</code> · <code>Subheadline</code> · <code>Headline</code> · <code>CTA</code> · <code>Trust Line</code> · <code>Closing Line</code></p>
 			<p><?php esc_html_e( 'For title + body pairs (benefits, problem, check-ins, who it’s for): put the title on one line and the body on the next line with a leading space (indent).', 'jcp-core' ); ?></p>
-			<p><?php esc_html_e( 'Primary Keyword in the doc header is saved for hub search filtering only — not for meta tags.', 'jcp-core' ); ?></p>
+			<p><?php esc_html_e( 'Primary Keyword in the doc header is saved for hub search filtering only — not for meta tags. Set SEO title and meta description in Rank Math after import.', 'jcp-core' ); ?></p>
+			<p><?php esc_html_e( 'Templates include AI formatting rules, length targets, and list counts at the top — see AI-assisted writing below.', 'jcp-core' ); ?></p>
+		</section>
+
+		<section id="ai-writing" class="jcp-theme-docs__section">
+			<h2><?php esc_html_e( 'AI-assisted writing (ChatGPT / Claude)', 'jcp-core' ); ?></h2>
+			<p><?php esc_html_e( 'Writers often draft in ChatGPT or Claude. Use the sample prompt below — it includes editorial standards, exact list counts, length targets, and the full writer template so the AI returns import-ready text.', 'jcp-core' ); ?></p>
+
+			<h3><?php esc_html_e( 'Recommended workflow', 'jcp-core' ); ?></h3>
+			<ol class="jcp-theme-docs__steps">
+				<li><?php esc_html_e( 'Open the page in WP Admin and note the page title and URL slug.', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Click “Copy AI prompt” below (or use the same button in Import from writer document on the page).', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Paste into ChatGPT or Claude. Fill in trade, state, and keyword placeholders at the top of the prompt before sending.', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Review the draft: read aloud, edit for natural flow, and customize so it could not be reused on another trade with find-and-replace.', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Paste the finished document into Import from writer document → Build page from document → Update / Publish.', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Set focus keyword, SEO title (50–60 chars), and meta description (140–160 chars) in Rank Math.', 'jcp-core' ); ?></li>
+			</ol>
+
+			<div class="notice notice-info inline jcp-theme-docs__notice">
+				<p>
+					<strong><?php esc_html_e( 'Remember:', 'jcp-core' ); ?></strong>
+					<?php esc_html_e( 'AI is a drafting tool, not the final product. Every section should answer a different reader question. Read only the H1, H2s, and CTAs — if they sound generic, add more trade/location specificity.', 'jcp-core' ); ?>
+				</p>
+			</div>
+
+			<h3><?php esc_html_e( 'Editorial standards (built into the prompt)', 'jcp-core' ); ?></h3>
+			<pre class="jcp-theme-docs__template jcp-theme-docs__template--light"><?php echo esc_html( jcp_writer_editorial_guidelines_text() ); ?></pre>
+
+			<h3><?php esc_html_e( 'Sample AI prompt', 'jcp-core' ); ?></h3>
+			<p class="description"><?php esc_html_e( 'Industry/trade preset shown. On block pages, use the Copy AI prompt button on that page — it matches the page’s layout preset.', 'jcp-core' ); ?></p>
+			<pre class="jcp-theme-docs__template" id="jcp-ai-prompt-preview"><?php echo esc_html( jcp_writer_get_ai_prompt( 'industry' ) ); ?></pre>
+			<p>
+				<button type="button" class="button button-primary" id="jcp-copy-ai-prompt"><?php esc_html_e( 'Copy AI prompt', 'jcp-core' ); ?></button>
+				<span id="jcp-copy-prompt-status" class="description" style="margin-left:8px;"></span>
+			</p>
 		</section>
 
 		<section id="document-template" class="jcp-theme-docs__section">
@@ -470,31 +505,47 @@ function jcp_theme_docs_render_page(): void {
 		.jcp-theme-docs__steps li { margin-bottom: 12px; }
 		.jcp-theme-docs__code { display: inline-block; background: #f6f7f7; padding: 6px 10px; border-radius: 3px; }
 		.jcp-theme-docs__template { background: #1d2327; color: #f0f0f1; padding: 16px; overflow: auto; max-height: 420px; font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+		.jcp-theme-docs__template--light { background: #f6f7f7; color: #1d2327; border: 1px solid #dcdcde; max-height: 280px; }
 		.jcp-theme-docs__table { margin-top: 12px; }
 		.jcp-theme-docs__notice { margin: 16px 0 0; padding: 10px 12px; }
 	</style>
 	<script>
 	(function () {
-		var btn = document.getElementById('jcp-copy-writer-template');
-		var pre = document.querySelector('.jcp-theme-docs__template');
-		var status = document.getElementById('jcp-copy-template-status');
-		if (!btn || !pre) return;
-		btn.addEventListener('click', function () {
-			var text = pre.textContent || '';
+		function copyText(text, statusEl, okMsg) {
+			if (!text) return;
+			var done = function () {
+				if (statusEl) statusEl.textContent = okMsg;
+			};
 			if (navigator.clipboard && navigator.clipboard.writeText) {
-				navigator.clipboard.writeText(text).then(function () {
-					status.textContent = '<?php echo esc_js( __( 'Copied!', 'jcp-core' ) ); ?>';
-				});
-			} else {
-				var ta = document.createElement('textarea');
-				ta.value = text;
-				document.body.appendChild(ta);
-				ta.select();
-				document.execCommand('copy');
-				document.body.removeChild(ta);
-				status.textContent = '<?php echo esc_js( __( 'Copied!', 'jcp-core' ) ); ?>';
+				navigator.clipboard.writeText(text).then(done);
+				return;
 			}
-		});
+			var ta = document.createElement('textarea');
+			ta.value = text;
+			document.body.appendChild(ta);
+			ta.select();
+			document.execCommand('copy');
+			document.body.removeChild(ta);
+			done();
+		}
+
+		var templateBtn = document.getElementById('jcp-copy-writer-template');
+		var templatePre = document.querySelector('#document-template .jcp-theme-docs__template');
+		var templateStatus = document.getElementById('jcp-copy-template-status');
+		if (templateBtn && templatePre) {
+			templateBtn.addEventListener('click', function () {
+				copyText(templatePre.textContent || '', templateStatus, '<?php echo esc_js( __( 'Copied!', 'jcp-core' ) ); ?>');
+			});
+		}
+
+		var promptBtn = document.getElementById('jcp-copy-ai-prompt');
+		var promptPre = document.getElementById('jcp-ai-prompt-preview');
+		var promptStatus = document.getElementById('jcp-copy-prompt-status');
+		if (promptBtn && promptPre) {
+			promptBtn.addEventListener('click', function () {
+				copyText(promptPre.textContent || '', promptStatus, '<?php echo esc_js( __( 'AI prompt copied!', 'jcp-core' ) ); ?>');
+			});
+		}
 	})();
 	</script>
 	<?php
@@ -502,225 +553,11 @@ function jcp_theme_docs_render_page(): void {
 
 /**
  * Full industry trade page writer skeleton.
+ *
+ * @deprecated Use jcp_writer_get_document_template( 'industry' ).
  */
 function jcp_theme_docs_get_industry_writer_template(): string {
-	return <<<'TEMPLATE'
-Word count:
-
-Primary Keyword: trade keyword one, keyword two, keyword three
-
-SEO Title (website/blogs only):
-
-Meta Description (website/blogs only):
-
-↓ Write Content Here ↓
-
-
-HERO
-H1
-[Main headline]
-Subheadline
-[Supporting paragraph]
-CTA
-Start free trial
-See how it works
-Trust Line
-No credit card · Free trial · Setup in under 10 minutes
-
-WHAT IT IS
-Headline
-[Section headline]
-Subheadline
-[Section subheadline]
-
-Most [trade] companies are already:
-[bullet one]
-[bullet two]
-[bullet three]
-But very little of that work actually shows up online consistently.
-JobCapturePro fixes that.
-It turns real job activity into:
-[output one]
-[output two]
-[output three]
-[output four]
-automatically.
-
-Closing Line
-[Closing sentence for this section]
-
-CTA
-[Optional — leave blank to hide section button]
-
-CORE MECHANIC
-1 photo
- Proof created instantly
-4 channels
- Google, website, social, directory
-0 busywork
- Nothing new for your crew
-
-MEDIA CORE
-Headline
-[Optional — auto-filled from What It Is if omitted]
-Subheadline
-[Optional subheadline]
-Body
-[Optional body copy]
-CTA
-See how it works
-Badge
-[Optional badge label, e.g. Live Demo]
-
-HOW IT WORKS
-Headline
-How it works for your [trade] business
-Subheadline
-Four steps. One app. Zero busywork for your crew
-
-01 Capture
-[Step one line one]
- [Step one line two — indent with leading space]
- [Step one line three]
-
-02 Check-In
-[Step two content lines…]
-
-03 Publish
-That job becomes live proof across:
-Google Business Profile
- Your website
- Social channels
- Contractor directory
-[Additional publish lines…]
-
-04 Review
-[Step four content lines…]
-
-CTA
-See it in action
-
-CHECK-INS
-Headline
-[Headline]
-Subheadline
-[Subheadline]
-
-[Feature title one]
- [Feature body — indent with leading space]
-[Feature title two]
- [Feature body]
-
-CTA
-[Optional — leave blank to hide]
-
-MEDIA CHECK-INS
-Headline
-[Optional — auto-filled from Check-Ins if omitted]
-Body
-[Optional supporting copy]
-
-PROBLEM
-Headline
-[Headline]
-Subheadline
-[Subheadline]
-
-[Pain point title]
- [Pain point body]
-[Pain point title]
- [Pain point body]
-
-[Closing sentence one]
-[Closing sentence two]
-
-CTA
-[Optional — leave blank to hide]
-
-MEDIA PROBLEM
-Headline
-[Optional — auto-filled from Problem if omitted]
-Subheadline
-[Optional]
-Body
-[Optional closing / supporting copy]
-
-BENEFITS
-Headline
-[Headline]
-
-[Benefit title]
- [Benefit body]
-
-[Closing paragraph title]
- [Closing paragraph body]
-
-CTA
-[Optional primary button]
-[Optional secondary link]
-
-DIFFERENTIATION
-Headline
-[Headline]
-
-[Body paragraph line one]
-[Body paragraph line two]
-[Body paragraph line three]
-
-No new process
- No extra admin
- No marketing workload
-
-CTA
-[Optional — leave blank to hide]
-
-WHO IT'S FOR
-Headline
-[Headline]
-
-Owners
- [Owner audience body]
-Technicians
- [Technician audience body]
-Growing teams
- [Growing teams body]
-
-CTA
-[Optional — leave blank to hide]
-
-FAQ
-Headline
-Common questions from [trade] companies
-
-[Question ending with ?]
-[Answer paragraph]
-
-CTA
-[Optional — leave blank to hide]
-
-CONVERSION
-Headline
-[Headline — e.g. This works when the work is real]
-Subheadline
-[Supporting paragraph]
-[Checklist bullet one]
-[Checklist bullet two]
-[Checklist bullet three]
-CTA
-See how this works for your business
-
-FINAL CTA
-Headline
-[Final headline]
-Subheadline
-[Final subheadline — optional; hide in Page Structure if unused]
-CTA Note
-[Text under the button — optional]
-
-CTA
-Start free trial
-See how it works
-TEMPLATE;
+	return jcp_writer_get_document_template( 'industry' );
 }
 
 /**

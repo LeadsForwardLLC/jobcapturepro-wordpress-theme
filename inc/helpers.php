@@ -321,10 +321,13 @@ function jcp_core_enqueue_page_block_editor( int $post_id ): void {
 			'adminUrl'  => get_edit_post_link( $post_id, 'raw' ),
 			'url'       => get_permalink( $post_id ),
 			'bootstrap' => [
-				'blocks'   => $page_doc,
-				'content'  => jcp_page_get_content_flat( $post_id ),
-				'registry' => jcp_block_registry_public( $page_kind ),
-				'pageKind' => $page_kind,
+				'blocks'       => $page_doc,
+				'content'      => jcp_page_get_content_flat( $post_id ),
+				'registry'     => jcp_block_registry_public( $page_kind ),
+				'pageKind'     => $page_kind,
+				'linkIndex'    => function_exists( 'jcp_internal_link_editor_payload' )
+					? jcp_internal_link_editor_payload( $post_id )
+					: [ 'pages' => [], 'current_path' => '' ],
 			],
 			'strings'   => [
 				'mediaTitle'  => __( 'Choose or upload media', 'jcp-core' ),

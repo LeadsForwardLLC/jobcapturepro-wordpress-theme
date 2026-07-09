@@ -404,8 +404,12 @@ function jcp_niche_render_what_it_is( array $c ): void {
 		return;
 	}
 	$lead = ! empty( $w['lead'] ) ? (string) $w['lead'] : __( 'But once the work is done, most of it disappears. JobCapturePro changes that.', 'jcp-core' );
+	$show_icons = jcp_niche_show_field( $w, 'show_icons', true );
+	$icon_class = $show_icons ? '' : ' jcp-section--no-icons';
+	$team_icon  = ! empty( $w['team_already_icon'] ) ? (string) $w['team_already_icon'] : 'wrench';
+	$turns_icon = ! empty( $w['turns_into_icon'] ) ? (string) $w['turns_into_icon'] : 'sparkles';
 	?>
-	<section class="jcp-section rankings-section jcp-niche-what">
+	<section class="jcp-section rankings-section jcp-niche-what<?php echo esc_attr( $icon_class ); ?>">
 		<div class="jcp-container">
 			<div class="rankings-header">
 				<h2<?php jcp_niche_editable_attr( 'what_it_is.headline' ); ?>><?php jcp_niche_e( (string) $w['headline'] ); ?></h2>
@@ -419,7 +423,7 @@ function jcp_niche_render_what_it_is( array $c ): void {
 				$turns_title  = ! empty( $w['turns_into_title'] ) ? (string) $w['turns_into_title'] : __( 'Turns real jobs into', 'jcp-core' );
 				jcp_niche_factor_card(
 					$team_title,
-					'wrench',
+					$team_icon,
 					'',
 					'',
 					function () use ( $w ) {
@@ -438,11 +442,16 @@ function jcp_niche_render_what_it_is( array $c ): void {
 						jcp_niche_collection_add_btn( __( '+ Add item', 'jcp-core' ) );
 						echo '</ul>';
 					},
-					'what_it_is.team_already_title'
+					'what_it_is.team_already_title',
+					'',
+					'',
+					-1,
+					'what_it_is.team_already_icon',
+					$show_icons
 				);
 				jcp_niche_factor_card(
 					$turns_title,
-					'sparkles',
+					$turns_icon,
 					'',
 					'',
 					function () use ( $w, $lead ) {
@@ -464,7 +473,12 @@ function jcp_niche_render_what_it_is( array $c ): void {
 						jcp_niche_collection_add_btn( __( '+ Add item', 'jcp-core' ) );
 						echo '</ul>';
 					},
-					'what_it_is.turns_into_title'
+					'what_it_is.turns_into_title',
+					'',
+					'',
+					-1,
+					'what_it_is.turns_into_icon',
+					$show_icons
 				);
 				?>
 			</div>
@@ -567,8 +581,10 @@ function jcp_niche_render_check_ins( array $c ): void {
 	if ( empty( $ch['headline'] ) ) {
 		return;
 	}
+	$show_icons = jcp_niche_show_field( $ch, 'show_icons', true );
+	$icon_class = $show_icons ? '' : ' jcp-section--no-icons';
 	?>
-	<section class="jcp-section rankings-section jcp-niche-checkins">
+	<section class="jcp-section rankings-section jcp-niche-checkins<?php echo esc_attr( $icon_class ); ?>">
 		<div class="jcp-container">
 			<div class="rankings-header">
 				<h2<?php jcp_niche_editable_attr( 'check_ins.headline' ); ?>><?php jcp_niche_e( (string) $ch['headline'] ); ?></h2>
@@ -590,9 +606,10 @@ function jcp_niche_render_check_ins( array $c ): void {
 					if ( ! is_array( $feat ) ) {
 						continue;
 					}
+					$icon = ! empty( $feat['icon'] ) ? (string) $feat['icon'] : ( $feat_icons[ $fi ] ?? 'badge-check' );
 					jcp_niche_factor_card(
 						(string) ( $feat['title'] ?? '' ),
-						$feat_icons[ $fi ] ?? 'badge-check',
+						$icon,
 						'',
 						'',
 						function () use ( $feat, $fi ) {
@@ -603,7 +620,9 @@ function jcp_niche_render_check_ins( array $c ): void {
 						'check_ins.features.' . $fi . '.title',
 						'',
 						'',
-						(int) $fi
+						(int) $fi,
+						'check_ins.features.' . $fi . '.icon',
+						$show_icons
 					);
 				endforeach;
 				?>
@@ -627,8 +646,10 @@ function jcp_niche_render_problem( array $c ): void {
 	if ( empty( $p['headline'] ) ) {
 		return;
 	}
+	$show_icons = jcp_niche_show_field( $p, 'show_icons', true );
+	$icon_class = $show_icons ? '' : ' jcp-section--no-icons';
 	?>
-	<section class="jcp-section rankings-section jcp-niche-problem">
+	<section class="jcp-section rankings-section jcp-niche-problem<?php echo esc_attr( $icon_class ); ?>">
 		<div class="jcp-container">
 			<div class="rankings-header">
 				<h2<?php jcp_niche_editable_attr( 'problem.headline' ); ?>><?php jcp_niche_e( (string) $p['headline'] ); ?></h2>
@@ -643,9 +664,10 @@ function jcp_niche_render_problem( array $c ): void {
 					if ( ! is_array( $pain ) ) {
 						continue;
 					}
+					$icon = ! empty( $pain['icon'] ) ? (string) $pain['icon'] : ( $pain_icons[ $pi ] ?? 'circle-alert' );
 					jcp_niche_factor_card(
 						(string) ( $pain['title'] ?? '' ),
-						$pain_icons[ $pi ] ?? 'circle-alert',
+						$icon,
 						'',
 						'',
 						function () use ( $pain, $pi ) {
@@ -656,7 +678,9 @@ function jcp_niche_render_problem( array $c ): void {
 						'problem.pain_points.' . $pi . '.title',
 						'',
 						'',
-						(int) $pi
+						(int) $pi,
+						'problem.pain_points.' . $pi . '.icon',
+						$show_icons
 					);
 				endforeach;
 				?>
@@ -872,8 +896,10 @@ function jcp_niche_render_differentiation( array $c ): void {
 	if ( empty( $d['headline'] ) ) {
 		return;
 	}
+	$show_icons = jcp_niche_show_field( $d, 'show_icons', true );
+	$icon_class = $show_icons ? '' : ' jcp-section--no-icons';
 	?>
-	<section class="jcp-section rankings-section jcp-niche-diff">
+	<section class="jcp-section rankings-section jcp-niche-diff<?php echo esc_attr( $icon_class ); ?>">
 		<div class="jcp-container">
 			<div class="rankings-header jcp-niche-diff-header">
 				<h2<?php jcp_niche_editable_attr( 'differentiation.headline' ); ?>><?php jcp_niche_e( (string) $d['headline'] ); ?></h2>

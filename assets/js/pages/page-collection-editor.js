@@ -27,8 +27,8 @@
       stat_value: 'Stat',
       stat_label: 'label',
     }),
-    'check_ins.features': () => ({ title: 'Feature', body: 'Description' }),
-    'problem.pain_points': () => ({ title: 'Pain point', body: 'Description' }),
+    'check_ins.features': () => ({ title: 'Feature', body: 'Description', icon: 'badge-check' }),
+    'problem.pain_points': () => ({ title: 'Pain point', body: 'Description', icon: 'circle-alert' }),
     'who_its_for.audiences': () => ({
       title: 'Audience',
       body: 'Description',

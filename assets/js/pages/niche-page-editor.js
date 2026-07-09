@@ -40,21 +40,33 @@
   ];
 
   const SECTION_SURFACE_PRESETS = [
-    { value: 'default', label: 'Default' },
-    { value: 'white', label: 'White' },
-    { value: 'off_white', label: 'Off-white' },
-    { value: 'dark', label: 'Dark' },
-    { value: 'image', label: 'Image' },
-    { value: 'custom', label: 'Custom' },
+    { value: 'default', label: 'Default', hint: 'Keep the site gradient' },
+    { value: 'white', label: 'White', swatch: '#ffffff' },
+    { value: 'off_white', label: 'Cream', swatch: '#f6f5f2' },
+    { value: 'dark', label: 'Brand', swatch: 'brand' },
+    { value: 'image', label: 'Photo', swatch: 'image' },
+    { value: 'custom', label: 'Custom', swatch: 'custom' },
+  ];
+
+  const SECTION_SURFACE_CLASS_NAMES = [
+    'jcp-has-section-surface',
+    'jcp-section-surface--white',
+    'jcp-section-surface--off_white',
+    'jcp-section-surface--dark',
+    'jcp-section-surface--image',
+    'jcp-section-surface--custom',
   ];
 
   const BLOCK_VISIBILITY_TOGGLES = {
     hero: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-hero-subtitle', defaultOn: true },
+      { key: 'show_trust_line', label: 'Trust line', selector: '.jcp-niche-trust-line', defaultOn: true, heroOnly: true },
     ],
     what_it_is: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     how_it_works: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
@@ -62,10 +74,12 @@
     ],
     check_ins: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     problem: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     benefits: [
@@ -75,6 +89,7 @@
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     differentiation: [
+      { key: 'show_icons', label: 'Checkmarks', selector: '.conversion-point-icon', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     who_its_for: [
@@ -88,11 +103,13 @@
     ],
     final_cta: [
       { key: 'show_subheadline', label: 'Supporting text', selector: '.cta-paragraph', defaultOn: true },
+      { key: 'show_cta', label: 'Button', selector: '.rankings-cta-btn, .cta-button-wrapper .jcp-optional-restore', defaultOn: true },
       { key: 'show_cta_note', label: 'Text under button', selector: '.cta-note', defaultOn: true },
     ],
     conversion: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.conversion-point-icon', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.conversion-cta', defaultOn: true },
     ],
     proof_flow: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
@@ -107,6 +124,9 @@
     ? bootstrap.blocks
     : { version: 1, blocks: [] };
   let registry = Array.isArray(bootstrap.registry) ? bootstrap.registry : [];
+  const linkIndex = bootstrap.linkIndex && typeof bootstrap.linkIndex === 'object'
+    ? bootstrap.linkIndex
+    : { pages: [], current_path: '' };
   let editing = false;
   let dirty = false;
   let structureOpen = false;
@@ -220,7 +240,7 @@
       <h2>Page structure</h2>
       <button type="button" class="jcp-block-structure__close" id="jcpStructureClose" aria-label="Close">×</button>
     </div>
-    <p class="jcp-block-structure__hint">Drag to reorder. Click a section to jump to it. Use the controls below each section for layout, background, and visibility.</p>
+    <p class="jcp-block-structure__hint">Drag sections to reorder. Click ⚙ to adjust layout, background, and visibility.</p>
     <div class="jcp-block-structure__page-options">
       <span class="jcp-layout-group__label">Page</span>
       <button type="button" class="jcp-layout-chip" id="jcpToggleBreadcrumb" title="Show breadcrumb trail in the hero">Breadcrumb</button>
@@ -241,50 +261,60 @@
   `;
 
   const popover = document.createElement('div');
-  popover.className = 'jcp-niche-link-popover';
+  popover.className = 'jcp-editor-modal jcp-cta-link-modal';
   popover.hidden = true;
   popover.innerHTML = `
-    <label>Button link URL</label>
-    <input type="text" id="jcpNicheLinkUrl" placeholder="/demo or https://..." />
-    <div class="jcp-niche-link-popover-actions">
-      <button type="button" class="btn btn-primary" id="jcpNicheLinkApply">Apply</button>
-      <button type="button" class="btn btn-secondary" id="jcpNicheLinkCancel">Cancel</button>
+    <button type="button" class="jcp-editor-modal__backdrop" aria-label="Close"></button>
+    <div class="jcp-editor-modal__panel jcp-niche-link-popover" role="dialog" aria-labelledby="jcpCtaLinkModalTitle">
+      <strong id="jcpCtaLinkModalTitle">Button link</strong>
+      <label>URL</label>
+      <input type="text" id="jcpNicheLinkUrl" placeholder="/demo or https://..." />
+      <div class="jcp-niche-link-popover-actions">
+        <button type="button" class="btn btn-primary" id="jcpNicheLinkApply">Apply</button>
+        <button type="button" class="btn btn-secondary" id="jcpNicheLinkCancel">Cancel</button>
+      </div>
     </div>
   `;
 
   const textLinkPopover = document.createElement('div');
-  textLinkPopover.className = 'jcp-niche-link-popover jcp-niche-text-link-popover';
+  textLinkPopover.className = 'jcp-editor-modal jcp-text-link-modal';
   textLinkPopover.hidden = true;
   textLinkPopover.innerHTML = `
-    <div class="jcp-niche-link-popover__header">
-      <strong>Internal link</strong>
-      <div class="jcp-niche-link-popover__hint" id="jcpNicheTextLinkHint"></div>
-    </div>
+    <button type="button" class="jcp-editor-modal__backdrop" aria-label="Close"></button>
+    <div class="jcp-editor-modal__panel jcp-niche-link-popover jcp-niche-text-link-popover" role="dialog" aria-labelledby="jcpTextLinkModalTitle">
+      <div class="jcp-niche-link-popover__header">
+        <strong id="jcpTextLinkModalTitle">Internal link</strong>
+        <div class="jcp-niche-link-popover__hint" id="jcpNicheTextLinkHint"></div>
+      </div>
 
-    <div class="jcp-niche-link-popover__seo" id="jcpNicheLinkSeo"></div>
+      <div class="jcp-niche-link-popover__seo" id="jcpNicheLinkSeo"></div>
 
-    <div class="jcp-niche-link-popover__suggestions">
-      <div class="jcp-niche-link-popover__suggestions-title">Suggested pages</div>
-      <div class="jcp-niche-link-popover__suggestions-list" id="jcpNicheLinkSuggestions"></div>
-    </div>
+      <div class="jcp-niche-link-popover__suggestions">
+        <div class="jcp-niche-link-popover__suggestions-title">Suggested pages</div>
+        <div class="jcp-niche-link-popover__suggestions-list" id="jcpNicheLinkSuggestions"></div>
+      </div>
 
-    <label>Link URL</label>
-    <input type="text" id="jcpNicheTextLinkUrl" placeholder="/industries/plumbing/" />
+      <label>Link URL</label>
+      <input type="text" id="jcpNicheTextLinkUrl" placeholder="/industries/plumbing/" />
 
-    <div class="jcp-niche-link-popover-actions">
-      <button type="button" class="btn btn-primary" id="jcpNicheTextLinkApply">Insert link</button>
-      <button type="button" class="btn btn-secondary" id="jcpNicheTextLinkCancel">Close</button>
+      <div class="jcp-niche-link-popover-actions">
+        <button type="button" class="btn btn-primary" id="jcpNicheTextLinkApply">Insert link</button>
+        <button type="button" class="btn btn-secondary" id="jcpNicheTextLinkCancel">Close</button>
+      </div>
     </div>
   `;
 
   const iconPopover = document.createElement('div');
-  iconPopover.className = 'jcp-niche-icon-popover';
+  iconPopover.className = 'jcp-editor-modal jcp-icon-picker-modal';
   iconPopover.hidden = true;
   iconPopover.innerHTML = `
-    <strong>Choose icon</strong>
-    <p class="jcp-niche-icon-popover__hint">Click an icon below. Icons apply to this card only.</p>
-    <div class="jcp-niche-icon-popover__grid" id="jcpNicheIconGrid"></div>
-    <button type="button" class="btn btn-secondary" id="jcpNicheIconCancel">Close</button>
+    <button type="button" class="jcp-editor-modal__backdrop" aria-label="Close"></button>
+    <div class="jcp-editor-modal__panel jcp-niche-icon-popover" role="dialog" aria-labelledby="jcpIconPickerTitle">
+      <strong id="jcpIconPickerTitle">Choose icon</strong>
+      <p class="jcp-niche-icon-popover__hint">Applies to the card you clicked. Use “Icons” in Show on page to hide all icons in this section.</p>
+      <div class="jcp-niche-icon-popover__grid" id="jcpNicheIconGrid"></div>
+      <button type="button" class="btn btn-secondary" id="jcpNicheIconCancel">Close</button>
+    </div>
   `;
 
   document.body.appendChild(bar);
@@ -310,10 +340,48 @@
   let activeRichField = null;
   let activeBlockId = null;
 
+  const openEditorModal = (modalEl, { focusSelector } = {}) => {
+    if (!modalEl) return;
+    document.body.appendChild(modalEl);
+    modalEl.hidden = false;
+    modalEl.removeAttribute('hidden');
+    document.body.classList.add('jcp-editor-modal-open');
+    document.querySelectorAll('.jcp-editor-modal').forEach((el) => {
+      if (el !== modalEl) {
+        el.hidden = true;
+        el.setAttribute('hidden', '');
+      }
+    });
+    const focusEl = focusSelector ? modalEl.querySelector(focusSelector) : null;
+    if (focusEl) {
+      requestAnimationFrame(() => focusEl.focus());
+    }
+  };
+
+  const closeEditorModal = (modalEl) => {
+    if (!modalEl) return;
+    modalEl.hidden = true;
+    modalEl.setAttribute('hidden', '');
+    if (!document.querySelector('.jcp-editor-modal:not([hidden])')) {
+      document.body.classList.remove('jcp-editor-modal-open');
+    }
+  };
+
+  const closeCtaLinkModal = () => {
+    closeEditorModal(popover);
+    activeLink = null;
+  };
+
+  const closeTextLinkModal = () => {
+    closeEditorModal(textLinkPopover);
+    activeRichField = null;
+  };
+
   const ICON_CHOICES = [
     'badge-check', 'map-pin', 'star', 'phone', 'building-2', 'message-square',
     'camera', 'clock', 'earth', 'share-2', 'users', 'briefcase', 'hard-hat',
     'trending-up', 'shield-check', 'wrench', 'zap', 'target', 'heart',
+    'sparkles', 'image-off', 'circle-alert', 'circle-check',
   ];
 
   const iconGridEl = iconPopover.querySelector('#jcpNicheIconGrid');
@@ -335,37 +403,33 @@
       setPath(flatContent, path, name);
       const img = activeIconTarget.querySelector('.factor-icon, .meta-icon');
       if (img) img.src = `${iconAssetBase()}/shared/assets/icons/lucide/${name}.svg`;
-      iconPopover.hidden = true;
-      iconPopover.setAttribute('hidden', '');
-      activeIconTarget = null;
+      closeIconPicker();
       recordChange();
     });
     iconGridEl.appendChild(btn);
   });
 
-  const openIconPicker = (wrapper) => {
-    activeIconTarget = wrapper;
-    iconPopover.hidden = false;
-    iconPopover.removeAttribute('hidden');
-    const rect = wrapper.getBoundingClientRect();
-    iconPopover.style.top = `${Math.min(window.innerHeight - 280, rect.bottom + 8)}px`;
-    iconPopover.style.left = `${Math.max(8, Math.min(window.innerWidth - 280, rect.left))}px`;
+  const closeIconPicker = () => {
+    closeEditorModal(iconPopover);
+    activeIconTarget = null;
   };
 
-  document.addEventListener('click', (e) => {
+  const openIconPicker = (wrapper) => {
+    activeIconTarget = wrapper;
+    openEditorModal(iconPopover);
+  };
+
+  document.addEventListener('mousedown', (e) => {
     if (!editing) return;
     const wrapper = e.target.closest('[data-jcp-icon-path]');
-    if (!wrapper || !e.target.closest('.factor-icon-wrapper, .factor-icon, .meta-icon')) return;
+    if (!wrapper) return;
     e.preventDefault();
     e.stopPropagation();
     openIconPicker(wrapper);
-  });
+  }, true);
 
-  iconPopover.querySelector('#jcpNicheIconCancel').addEventListener('click', () => {
-    iconPopover.hidden = true;
-    iconPopover.setAttribute('hidden', '');
-    activeIconTarget = null;
-  });
+  iconPopover.querySelector('.jcp-editor-modal__backdrop').addEventListener('click', closeIconPicker);
+  iconPopover.querySelector('#jcpNicheIconCancel').addEventListener('click', closeIconPicker);
 
   const isRichField = (el) => el && el.getAttribute('data-jcp-rich') === 'true';
 
@@ -481,10 +545,14 @@
     blockListEl.querySelectorAll('.jcp-block-structure__item').forEach((el) => {
       const isTarget = el.dataset.blockId === block.id;
       el.classList.toggle('is-active', isTarget);
+      const layout = el.querySelector('.jcp-block-structure__layout');
+      if (!layout) return;
+      if (isTarget && expand) {
+        layout.classList.remove('is-collapsed');
+      } else if (!isTarget) {
+        layout.classList.add('is-collapsed');
+      }
       if (isTarget) {
-        if (expand) {
-          el.querySelector('.jcp-block-structure__layout')?.classList.remove('is-collapsed');
-        }
         el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
       }
     });
@@ -642,6 +710,13 @@
     return defaultOn;
   };
 
+  const applyIconVisibilityToRoot = (root, enabled) => {
+    if (!root) return;
+    root.querySelectorAll('section').forEach((section) => {
+      section.classList.toggle('jcp-section--no-icons', !enabled);
+    });
+  };
+
   const setBlockFieldVisible = (block, key, enabled, selector) => {
     block.props = block.props || {};
     block.props[key] = enabled;
@@ -653,29 +728,31 @@
         el.style.display = enabled ? '' : 'none';
       });
     }
+    if (key === 'show_icons') {
+      applyIconVisibilityToRoot(root, enabled);
+    }
     recordChange();
+  };
+
+  const clearSectionSurfaceEl = (el) => {
+    if (!el) return;
+    el.classList.remove(...SECTION_SURFACE_CLASS_NAMES);
+    el.removeAttribute('data-jcp-surface');
+    el.removeAttribute('data-jcp-surface-color');
+    el.removeAttribute('data-jcp-surface-opacity');
+    el.removeAttribute('data-jcp-surface-image');
+    el.style.removeProperty('--jcp-section-bg-color');
+    el.style.removeProperty('--jcp-section-bg-opacity');
+    el.style.removeProperty('--jcp-section-bg-image');
   };
 
   const applySectionSurfaceToDom = (block, root) => {
     if (!root || block.type === 'breadcrumb') return;
     const surface = resolveSectionSurface(block);
     const preset = surface.preset || 'default';
-    root.classList.remove(
-      'jcp-has-section-surface',
-      'jcp-section-surface--white',
-      'jcp-section-surface--off_white',
-      'jcp-section-surface--dark',
-      'jcp-section-surface--image',
-      'jcp-section-surface--custom'
-    );
-    root.removeAttribute('data-jcp-surface');
-    root.removeAttribute('data-jcp-surface-color');
-    root.removeAttribute('data-jcp-surface-opacity');
-    root.removeAttribute('data-jcp-surface-image');
-    root.style.removeProperty('--jcp-section-bg-color');
-    root.style.removeProperty('--jcp-section-bg-opacity');
-    root.style.removeProperty('--jcp-section-bg-image');
+    clearSectionSurfaceEl(root);
     if (preset === 'default') return;
+
     root.classList.add('jcp-has-section-surface', `jcp-section-surface--${preset}`);
     root.dataset.jcpSurface = preset;
     root.dataset.jcpSurfaceOpacity = String(surface.opacity ?? 100);
@@ -686,9 +763,11 @@
       root.dataset.jcpSurfaceColor = color;
       root.style.setProperty('--jcp-section-bg-color', color);
     }
-    if (preset === 'image' && surface.image_url) {
-      root.dataset.jcpSurfaceImage = surface.image_url;
-      root.style.setProperty('--jcp-section-bg-image', `url(${surface.image_url})`);
+    if (preset === 'image') {
+      if (surface.image_url) {
+        root.dataset.jcpSurfaceImage = surface.image_url;
+        root.style.setProperty('--jcp-section-bg-image', `url(${surface.image_url})`);
+      }
     }
   };
 
@@ -722,41 +801,60 @@
     recordChange();
   };
 
+  const buildStructureSection = (title, body, { extraClass = '' } = {}) => {
+    if (!body || !String(body).trim()) return '';
+    return `<div class="jcp-structure-section${extraClass ? ` ${extraClass}` : ''}">
+      <div class="jcp-structure-section__title">${title}</div>
+      <div class="jcp-structure-section__body">${body}</div>
+    </div>`;
+  };
+
   const buildSectionSurfaceHtml = (block) => {
     if (block.type === 'breadcrumb') return '';
     const surface = resolveSectionSurface(block);
     const preset = surface.preset || 'default';
-    let html = '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Background</span><div class="jcp-layout-btns jcp-layout-btns--wrap" data-setting="section_surface_preset">';
+
+    let html = '<div class="jcp-surface-swatches" data-setting="section_surface_preset">';
     SECTION_SURFACE_PRESETS.forEach((item) => {
       const active = preset === item.value ? ' is-active' : '';
-      html += `<button type="button" class="jcp-layout-btn${active}" data-section-surface-preset="${item.value}">${item.label}</button>`;
+      const swatchClass = item.swatch ? ` jcp-surface-swatch--${item.swatch === 'brand' ? 'brand' : item.swatch === 'image' ? 'image' : item.swatch === 'custom' ? 'custom' : 'solid'}` : ' jcp-surface-swatch--default';
+      const swatchStyle = item.swatch && !['brand', 'image', 'custom'].includes(item.swatch) ? ` style="--jcp-swatch-color:${item.swatch}"` : '';
+      html += `<button type="button" class="jcp-surface-swatch${swatchClass}${active}" data-section-surface-preset="${item.value}" title="${item.hint || item.label}" aria-label="${item.label}">
+        <span class="jcp-surface-swatch__chip"${swatchStyle}></span>
+        <span class="jcp-surface-swatch__label">${item.label}</span>
+      </button>`;
     });
-    html += '</div></div>';
+    html += '</div>';
 
-    const colorPresets = ['white', 'off_white', 'dark', 'custom'];
-    if (colorPresets.includes(preset)) {
-      if (preset === 'custom') {
-        html += `<div class="jcp-layout-group jcp-layout-group--surface-custom">
-          <label class="jcp-surface-color"><span>Color</span>
-            <input type="color" class="jcp-surface-color__picker" data-section-surface-color value="${surface.color || '#ffffff'}" />
-            <input type="text" class="jcp-surface-color__hex" data-section-surface-color-hex value="${surface.color || '#ffffff'}" maxlength="7" />
-          </label>
-        </div>`;
-      }
-      html += `<div class="jcp-layout-group jcp-layout-group--surface-opacity">
-        <label class="jcp-surface-opacity"><span>Opacity</span>
+    if (['white', 'off_white', 'dark', 'custom'].includes(preset)) {
+      html += `<div class="jcp-surface-advanced">
+        <label class="jcp-surface-opacity">
+          <span>Opacity</span>
           <input type="range" min="0" max="100" step="5" value="${Number(surface.opacity ?? 100)}" data-section-surface-opacity />
-          <span class="jcp-surface-opacity__val">${Number(surface.opacity ?? 100)}%</span>
-        </label>
-      </div>`;
+          <strong class="jcp-surface-opacity__val">${Number(surface.opacity ?? 100)}%</strong>
+        </label>`;
+      if (preset === 'custom') {
+        html += `<label class="jcp-surface-color">
+          <span>Color</span>
+          <input type="color" class="jcp-surface-color__picker" data-section-surface-color value="${surface.color || '#ffffff'}" />
+          <input type="text" class="jcp-surface-color__hex" data-section-surface-color-hex value="${surface.color || '#ffffff'}" maxlength="7" />
+        </label>`;
+      }
+      html += '</div>';
     }
 
     if (preset === 'image') {
-      html += `<div class="jcp-layout-group jcp-layout-group--surface-image">
-        <label><span>Background image URL</span>
-          <input type="url" class="jcp-surface-image__url" data-section-surface-image value="${surface.image_url || ''}" placeholder="https://..." />
-        </label>
-        <button type="button" class="button jcp-surface-image__pick" data-section-surface-pick>Choose image</button>
+      const imageUrl = surface.image_url || '';
+      const previewStyle = imageUrl ? ` style="background-image:url('${imageUrl.replace(/'/g, '%27')}')"` : '';
+      html += `<div class="jcp-surface-image-card">
+        <div class="jcp-surface-image-card__preview"${previewStyle}>
+          <span class="jcp-surface-image-card__placeholder">${imageUrl ? '' : 'No image selected'}</span>
+        </div>
+        <div class="jcp-surface-image-card__actions">
+          <button type="button" class="jcp-surface-image-card__btn" data-section-surface-pick>${imageUrl ? 'Change photo' : 'Choose photo'}</button>
+          ${imageUrl ? '<button type="button" class="jcp-surface-image-card__btn jcp-surface-image-card__btn--ghost" data-section-surface-clear>Remove</button>' : ''}
+        </div>
+        <input type="hidden" data-section-surface-image value="${imageUrl}" />
       </div>`;
     }
 
@@ -764,14 +862,31 @@
   };
 
   const buildBlockVisibilityHtml = (block) => {
-    const toggles = BLOCK_VISIBILITY_TOGGLES[block.type];
-    if (!toggles || !toggles.length) return '';
-    let html = '<div class="jcp-layout-group jcp-layout-group--toggles"><span class="jcp-layout-group__label">Show</span><div class="jcp-layout-chips">';
+    const toggles = [...(BLOCK_VISIBILITY_TOGGLES[block.type] || [])];
+    if (block.type === 'media_text' || block.type === 'demo_preview') {
+      toggles.push(
+        { key: 'show_badge', label: 'Badge' },
+        { key: 'show_subheadline', label: 'Subheadline' },
+        { key: 'show_cue', label: 'Lead' },
+        { key: 'show_body', label: 'Body' },
+        { key: 'show_cta', label: 'Button' },
+        { key: 'show_cta_note', label: 'Note' }
+      );
+    }
+    if (!toggles.length) return '';
+    let html = '<div class="jcp-layout-chips">';
     toggles.forEach(({ key, label, defaultOn }) => {
-      const on = isBlockFieldVisible(block, key, defaultOn !== false) ? ' is-on' : '';
-      html += `<button type="button" class="jcp-layout-chip${on}" data-block-field-toggle="${key}">${label}</button>`;
+      let on = false;
+      if (block.type === 'media_text' || block.type === 'demo_preview') {
+        on = isSplitToggleOn(block, key);
+      } else if (block.type === 'hero' && key === 'show_trust_line') {
+        on = block.props?.show_trust_line !== false;
+      } else {
+        on = isBlockFieldVisible(block, key, defaultOn !== false);
+      }
+      html += `<button type="button" class="jcp-layout-chip${on ? ' is-on' : ''}" data-block-field-toggle="${key}"${(block.type === 'media_text' || block.type === 'demo_preview') ? ' data-split-toggle="1"' : ''}>${label}</button>`;
     });
-    html += '</div></div>';
+    html += '</div>';
     return html;
   };
 
@@ -782,10 +897,16 @@
     if (!root) return;
     toggles.forEach(({ key, selector, defaultOn }) => {
       if (!selector) return;
-      const enabled = isBlockFieldVisible(block, key, defaultOn !== false);
+      let enabled = isBlockFieldVisible(block, key, defaultOn !== false);
+      if (block.type === 'hero' && key === 'show_trust_line') {
+        enabled = block.props?.show_trust_line !== false;
+      }
       root.querySelectorAll(selector).forEach((el) => {
         el.style.display = enabled ? '' : 'none';
       });
+      if (key === 'show_icons') {
+        applyIconVisibilityToRoot(root, enabled);
+      }
     });
   };
 
@@ -1035,119 +1156,108 @@
   const buildLayoutControlsHtml = (block) => {
     const layout = resolveLayout(block);
     const options = layoutOptionsFor(block.type);
-    let html = '';
+    let layoutBody = '';
 
     if (options.hero_variant && block.type === 'hero' && PAGE_KIND === 'home') {
       const variant = resolveHeroVariant(block);
       const variants = HERO_VARIANTS.filter((v) => v.value === 'home');
-      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Hero style</span><div class="jcp-layout-btns jcp-layout-btns--stacked" data-setting="hero_variant">';
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Hero style</span><div class="jcp-layout-btns jcp-layout-btns--stacked" data-setting="hero_variant">';
       variants.forEach((item) => {
         const active = variant === item.value ? ' is-active' : '';
-        html += `<button type="button" class="jcp-layout-btn jcp-layout-btn--variant${active}" data-value="${item.value}" title="${item.hint}">${item.label}</button>`;
+        layoutBody += `<button type="button" class="jcp-layout-btn jcp-layout-btn--variant${active}" data-value="${item.value}" title="${item.hint}">${item.label}</button>`;
       });
-      html += '</div></div>';
-    }
-
-    if (options.media_position && block.type !== 'hero') {
-      const pos = block.props?.media_position === 'left' ? 'left' : 'right';
-      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Media</span><div class="jcp-layout-btns" data-setting="media_position">';
-      html += `<button type="button" class="jcp-layout-btn${pos === 'left' ? ' is-active' : ''}" data-value="left">Left</button>`;
-      html += `<button type="button" class="jcp-layout-btn${pos === 'right' ? ' is-active' : ''}" data-value="right">Right</button>`;
-      html += '</div></div>';
-    }
-
-    if (options.align) {
-      html += `<div class="jcp-layout-group"><span class="jcp-layout-group__label">Align</span><div class="jcp-layout-btns" data-setting="align">`;
-      html += ['left', 'center', 'right'].map((value) => {
-        const label = value === 'left' ? 'Left' : value === 'center' ? 'Center' : 'Right';
-        const active = layout.align === value ? ' is-active' : '';
-        return `<button type="button" class="jcp-layout-btn${active}" data-value="${value}">${label}</button>`;
-      }).join('');
-      html += '</div></div>';
-    }
-
-    if (options.width) {
-      html += `<div class="jcp-layout-group"><span class="jcp-layout-group__label">Width</span><div class="jcp-layout-btns" data-setting="width">`;
-      html += ['contained', 'wide', 'full'].map((value) => {
-        const label = value === 'contained' ? 'Box' : value === 'wide' ? 'Wide' : 'Full';
-        const active = layout.width === value ? ' is-active' : '';
-        return `<button type="button" class="jcp-layout-btn${active}" data-value="${value}">${label}</button>`;
-      }).join('');
-      html += '</div></div>';
-    }
-
-    if (options.columns) {
-      const cols = Number(layout.columns || 0);
-      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Columns</span><div class="jcp-layout-btns" data-setting="columns">';
-      html += ['0', '1', '2', '3', '4'].map((value) => {
-        const label = value === '0' ? 'Auto' : value;
-        const active = String(cols) === value ? ' is-active' : '';
-        return `<button type="button" class="jcp-layout-btn${active}" data-value="${value}">${label}</button>`;
-      }).join('');
-      html += '</div></div>';
+      layoutBody += '</div></div>';
     }
 
     if (block.type === 'hero' && PAGE_KIND !== 'home') {
       block.props = block.props || {};
       const heroLayout = resolveLayout(block);
       const align = heroLayout.align || 'center';
-      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Layout</span><div class="jcp-layout-btns" data-setting="align">';
-      html += ['left', 'center', 'right'].map((value) => {
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Layout</span><div class="jcp-layout-btns" data-setting="align">';
+      layoutBody += ['left', 'center', 'right'].map((value) => {
         const label = value === 'left' ? 'Left' : value === 'center' ? 'Centered' : 'Right';
         const active = align === value ? ' is-active' : '';
         return `<button type="button" class="jcp-layout-btn${active}" data-value="${value}">${label}</button>`;
       }).join('');
-      html += '</div></div>';
+      layoutBody += '</div></div>';
 
       const mediaMode = heroMediaMode(block);
-      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Media</span><div class="jcp-layout-btns" data-setting="hero_media_mode">';
-      html += ['hide', 'left', 'right'].map((value) => {
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Media</span><div class="jcp-layout-btns" data-setting="hero_media_mode">';
+      layoutBody += ['hide', 'left', 'right'].map((value) => {
         const label = value === 'hide' ? 'Hide' : value === 'left' ? 'Left' : 'Right';
         const active = mediaMode === value ? ' is-active' : '';
         return `<button type="button" class="jcp-layout-btn${active}" data-hero-media-mode="${value}">${label}</button>`;
       }).join('');
-      html += '</div></div>';
+      layoutBody += '</div></div>';
 
       const ctaMode = resolveHeroCtaMode(block);
-      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Buttons</span><div class="jcp-layout-btns" data-setting="hero_cta_mode">';
-      html += ['none', 'primary', 'secondary', 'both'].map((value) => {
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Buttons</span><div class="jcp-layout-btns" data-setting="hero_cta_mode">';
+      layoutBody += ['none', 'primary', 'secondary', 'both'].map((value) => {
         const label = value === 'none' ? 'None' : value.charAt(0).toUpperCase() + value.slice(1);
         const active = ctaMode === value ? ' is-active' : '';
         return `<button type="button" class="jcp-layout-btn${active}" data-hero-cta-mode="${value}">${label}</button>`;
       }).join('');
-      html += '</div></div>';
-
-      const trustOn = block.props.show_trust_line !== false ? ' is-on' : '';
-      html += '<div class="jcp-layout-group jcp-layout-group--toggles"><span class="jcp-layout-group__label">Show</span><div class="jcp-layout-chips">';
-      html += `<button type="button" class="jcp-layout-chip${trustOn}" data-hero-toggle="show_trust_line">Trust line</button>`;
-      html += '</div></div>';
+      layoutBody += '</div></div>';
     }
 
-    if (block.type === 'media_text' || block.type === 'demo_preview') {
-      block.props = block.props || {};
-      const toggles = [
-        { key: 'show_badge', label: 'Badge' },
-        { key: 'show_subheadline', label: 'Subheadline' },
-        { key: 'show_cue', label: 'Lead' },
-        { key: 'show_body', label: 'Body' },
-        { key: 'show_cta', label: 'Button' },
-        { key: 'show_cta_note', label: 'Note' },
-      ];
-      html += '<div class="jcp-layout-group jcp-layout-group--toggles"><span class="jcp-layout-group__label">Show</span><div class="jcp-layout-chips">';
-      toggles.forEach(({ key, label }) => {
-        const on = isSplitToggleOn(block, key) ? ' is-on' : '';
-        html += `<button type="button" class="jcp-layout-chip${on}" data-split-toggle="${key}">${label}</button>`;
-      });
-      html += '</div></div>';
+    if (options.media_position && block.type !== 'hero') {
+      const pos = block.props?.media_position === 'left' ? 'left' : 'right';
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Media</span><div class="jcp-layout-btns" data-setting="media_position">';
+      layoutBody += `<button type="button" class="jcp-layout-btn${pos === 'left' ? ' is-active' : ''}" data-value="left">Left</button>`;
+      layoutBody += `<button type="button" class="jcp-layout-btn${pos === 'right' ? ' is-active' : ''}" data-value="right">Right</button>`;
+      layoutBody += '</div></div>';
     }
 
-    if (block.type !== 'breadcrumb') {
-      html += buildSectionSurfaceHtml(block);
+    if (options.align && block.type !== 'hero') {
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Align</span><div class="jcp-layout-btns" data-setting="align">';
+      layoutBody += ['left', 'center', 'right'].map((value) => {
+        const label = value === 'left' ? 'Left' : value === 'center' ? 'Center' : 'Right';
+        const active = layout.align === value ? ' is-active' : '';
+        return `<button type="button" class="jcp-layout-btn${active}" data-value="${value}">${label}</button>`;
+      }).join('');
+      layoutBody += '</div></div>';
     }
-    html += buildBlockVisibilityHtml(block);
 
-    if (!html) return '';
-    return `<div class="jcp-block-structure__layout">${html}</div>`;
+    if (options.width) {
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Width</span><div class="jcp-layout-btns" data-setting="width">';
+      layoutBody += ['contained', 'wide', 'full'].map((value) => {
+        const label = value === 'contained' ? 'Box' : value === 'wide' ? 'Wide' : 'Full';
+        const active = layout.width === value ? ' is-active' : '';
+        return `<button type="button" class="jcp-layout-btn${active}" data-value="${value}">${label}</button>`;
+      }).join('');
+      layoutBody += '</div></div>';
+    }
+
+    if (options.columns) {
+      const cols = Number(layout.columns || 0);
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Columns</span><div class="jcp-layout-btns" data-setting="columns">';
+      layoutBody += ['0', '1', '2', '3', '4'].map((value) => {
+        const label = value === '0' ? 'Auto' : value;
+        const active = String(cols) === value ? ' is-active' : '';
+        return `<button type="button" class="jcp-layout-btn${active}" data-value="${value}">${label}</button>`;
+      }).join('');
+      layoutBody += '</div></div>';
+    }
+
+    const backgroundBody = block.type !== 'breadcrumb' ? buildSectionSurfaceHtml(block) : '';
+    const visibilityBody = buildBlockVisibilityHtml(block);
+    const tabButtons = [];
+    const tabPanels = [];
+    const addTab = (id, label, body) => {
+      if (!body || !String(body).trim()) return;
+      const isFirst = !tabButtons.length;
+      tabButtons.push(`<button type="button" class="jcp-structure-tab${isFirst ? ' is-active' : ''}" data-structure-tab="${id}" role="tab">${label}</button>`);
+      tabPanels.push(`<div class="jcp-structure-panel${isFirst ? ' is-active' : ''}" data-structure-panel="${id}" role="tabpanel">${body}</div>`);
+    };
+    addTab('layout', 'Layout', layoutBody);
+    addTab('background', 'Background', backgroundBody);
+    addTab('visibility', 'Show', visibilityBody);
+
+    if (!tabButtons.length) return '';
+    return `<div class="jcp-block-structure__layout is-collapsed">
+      <div class="jcp-structure-tabs" role="tablist">${tabButtons.join('')}</div>
+      <div class="jcp-structure-panels">${tabPanels.join('')}</div>
+    </div>`;
   };
 
   const SPLIT_TOGGLE_DEFAULTS = {
@@ -1609,6 +1719,22 @@
         li.querySelector('.jcp-block-structure__layout')?.classList.remove('is-collapsed');
       }
 
+      li.querySelectorAll('.jcp-structure-tab').forEach((tabBtn) => {
+        tabBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const tab = tabBtn.dataset.structureTab;
+          const layoutRoot = li.querySelector('.jcp-block-structure__layout');
+          if (!layoutRoot || !tab) return;
+          layoutRoot.querySelectorAll('.jcp-structure-tab').forEach((btn) => {
+            btn.classList.toggle('is-active', btn.dataset.structureTab === tab);
+          });
+          layoutRoot.querySelectorAll('.jcp-structure-panel').forEach((panel) => {
+            panel.classList.toggle('is-active', panel.dataset.structurePanel === tab);
+          });
+        });
+      });
+
+      const settingsBtn = li.querySelector('.jcp-block-structure__settings');
       handle.draggable = true;
       handle.addEventListener('dragstart', (e) => {
         dragIndex = index;
@@ -1625,12 +1751,13 @@
         scrollToBlock(block);
       });
 
-      const settingsBtn = li.querySelector('.jcp-block-structure__settings');
       if (settingsBtn) {
         settingsBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          li.querySelector('.jcp-block-structure__layout')?.classList.toggle('is-collapsed');
-          focusStructureBlock(block, { scrollPage: false, expand: false });
+          const layout = li.querySelector('.jcp-block-structure__layout');
+          const willExpand = layout?.classList.contains('is-collapsed');
+          focusStructureBlock(block, { scrollPage: false, expand: willExpand });
+          layout?.classList.toggle('is-collapsed', !willExpand);
         });
       }
 
@@ -1730,10 +1857,28 @@
         e.stopPropagation();
         openSurfaceImagePicker(block);
       });
+      li.querySelectorAll('[data-section-surface-clear]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setSectionSurface(block, { image_url: '' });
+        });
+      });
       li.querySelectorAll('[data-block-field-toggle]').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           const key = btn.dataset.blockFieldToggle;
+          if (btn.dataset.splitToggle) {
+            const enabled = !isSplitToggleOn(block, key);
+            setBlockSplitToggle(block, key, enabled);
+            btn.classList.toggle('is-on', enabled);
+            return;
+          }
+          if (block.type === 'hero' && key === 'show_trust_line') {
+            const enabled = block.props?.show_trust_line === false;
+            setBlockHeroToggle(block, key, enabled);
+            btn.classList.toggle('is-on', enabled);
+            return;
+          }
           const config = (BLOCK_VISIBILITY_TOGGLES[block.type] || []).find((entry) => entry.key === key);
           const enabled = !isBlockFieldVisible(block, key, config?.defaultOn !== false);
           setBlockFieldVisible(block, key, enabled, config?.selector || '');
@@ -1759,15 +1904,6 @@
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           setHeroCtaMode(block, btn.dataset.heroCtaMode);
-        });
-      });
-      li.querySelectorAll('[data-split-toggle]').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const key = btn.dataset.splitToggle;
-          const enabled = !isSplitToggleOn(block, key);
-          setBlockSplitToggle(block, key, enabled);
-          btn.classList.toggle('is-on', enabled);
         });
       });
       blockListEl.appendChild(li);
@@ -2059,8 +2195,9 @@
     toggleBtn.textContent = 'Edit page';
     toggleBtn.classList.remove('is-active');
     if (textLinkBtn) textLinkBtn.hidden = true;
-    popover.hidden = true;
-    textLinkPopover.hidden = true;
+    closeCtaLinkModal();
+    closeTextLinkModal();
+    closeIconPicker();
     if (typeof window.JCP_TEARDOWN_COLLECTIONS === 'function') {
       window.JCP_TEARDOWN_COLLECTIONS();
     }
@@ -2106,7 +2243,7 @@
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a');
     if (!dirty || !link || link === adminLink) return;
-    if (link.closest('.jcp-niche-edit-bar, .jcp-block-structure, .jcp-block-add-modal, .jcp-niche-link-popover')) return;
+    if (link.closest('.jcp-niche-edit-bar, .jcp-block-structure, .jcp-block-add-modal, .jcp-editor-modal')) return;
     if (editing && link.hasAttribute('data-jcp-href-path')) return;
     if (link.target === '_blank' || link.hasAttribute('download')) return;
     const href = link.getAttribute('href');
@@ -2129,26 +2266,18 @@
     e.stopPropagation();
     activeLink = link;
     popover.querySelector('#jcpNicheLinkUrl').value = link.getAttribute('href') || '';
-    popover.hidden = false;
-    popover.removeAttribute('hidden');
-    const rect = link.getBoundingClientRect();
-    popover.style.top = `${Math.min(window.innerHeight - 120, rect.bottom + 8)}px`;
-    popover.style.left = `${Math.max(8, Math.min(window.innerWidth - 320, rect.left))}px`;
+    openEditorModal(popover, { focusSelector: '#jcpNicheLinkUrl' });
   });
 
+  popover.querySelector('.jcp-editor-modal__backdrop').addEventListener('click', closeCtaLinkModal);
   popover.querySelector('#jcpNicheLinkApply').addEventListener('click', () => {
     if (!activeLink) return;
     activeLink.setAttribute('href', popover.querySelector('#jcpNicheLinkUrl').value.trim());
-    popover.hidden = true;
-    popover.setAttribute('hidden', '');
+    closeCtaLinkModal();
     recordChange();
   });
 
-  popover.querySelector('#jcpNicheLinkCancel').addEventListener('click', () => {
-    popover.hidden = true;
-    popover.setAttribute('hidden', '');
-    activeLink = null;
-  });
+  popover.querySelector('#jcpNicheLinkCancel').addEventListener('click', closeCtaLinkModal);
 
   const normalizeInternalHref = (href) => {
     if (!href) return '';
@@ -2177,29 +2306,170 @@
     return counts;
   };
 
-  const getSuggestedInternalPages = (counts) => {
-    const anchors = [...document.querySelectorAll('header a[href], nav a[href], footer a[href], main a[href]')];
-    const targets = new Map();
+  const LINK_STOP_WORDS = new Set([
+    'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'have', 'in', 'is', 'it',
+    'of', 'on', 'or', 'that', 'the', 'their', 'this', 'to', 'was', 'were', 'will', 'with', 'your',
+    'our', 'we', 'you', 'more', 'every', 'into', 'how', 'what', 'when', 'who', 'why',
+  ]);
 
-    anchors.forEach((a) => {
-      const href = normalizeInternalHref(a.getAttribute('href'));
-      if (!href || href === window.location.pathname) return;
-      const label = (a.textContent || '').trim();
-      if (!targets.has(href) && label) targets.set(href, label);
-      else if (!targets.has(href)) targets.set(href, href);
+  const tokenizeLinkText = (text) => {
+    const raw = String(text || '').toLowerCase().replace(/<[^>]+>/g, ' ').replace(/[^a-z0-9\s-]/g, ' ');
+    return [...new Set(raw.split(/\s+/).map((part) => part.trim()).filter((part) => part.length >= 3 && !LINK_STOP_WORDS.has(part)))];
+  };
+
+  const isValidInternalTarget = (href) => {
+    const path = normalizeInternalHref(href);
+    if (!path || path === '/' || path === linkIndex.current_path) return false;
+    const lower = path.toLowerCase();
+    if (lower.startsWith('/@') || lower.startsWith('/channel/') || lower.includes('/wp-admin')) return false;
+    const segments = path.split('/').filter(Boolean);
+    if (segments.length === 1 && /^@?[a-z0-9_-]{3,}$/i.test(segments[0])) {
+      const allowed = new Set(['demo', 'pricing', 'blog', 'contact', 'features', 'industries', 'resources']);
+      if (!allowed.has(segments[0].replace(/^@/, ''))) return false;
+    }
+    return true;
+  };
+
+  const scoreLinkTarget = (page, anchorTokens, anchorPhrase, pageCounts) => {
+    const keywords = new Set([
+      ...(Array.isArray(page.keywords) ? page.keywords : []),
+      ...tokenizeLinkText(page.label),
+      ...tokenizeLinkText(page.focus_keyword),
+      ...tokenizeLinkText(page.href.replace(/\//g, ' ')),
+    ]);
+    const focus = String(page.focus_keyword || '').toLowerCase();
+    const label = String(page.label || '').toLowerCase();
+    const phrase = String(anchorPhrase || '').toLowerCase().trim();
+
+    let relevance = 0;
+    anchorTokens.forEach((token) => {
+      if (keywords.has(token)) relevance += 12;
+      if (focus.includes(token)) relevance += 8;
+      if (label.includes(token)) relevance += 6;
+    });
+    if (phrase.length >= 4) {
+      if (focus.includes(phrase)) relevance += 28;
+      if (label.includes(phrase)) relevance += 22;
+      if (String(page.href).toLowerCase().includes(phrase.replace(/\s+/g, '-'))) relevance += 16;
+    }
+
+    const siteInlinks = Number(page.site_inlinks) || 0;
+    const onPageCount = pageCounts.get(page.href) || 0;
+    const gapScore = Math.max(0, 3 - siteInlinks) * 14 + (onPageCount === 0 ? 10 : 0);
+    const hubBoost = page.hub === 'feature' || page.hub === 'trade' ? 6 : 0;
+
+    return {
+      href: page.href,
+      label: page.label || page.href,
+      hub: page.hub || 'page',
+      count: onPageCount,
+      siteInlinks,
+      focus_keyword: page.focus_keyword || '',
+      score: relevance + gapScore + hubBoost,
+      relevance,
+      gapScore,
+      reason: '',
+    };
+  };
+
+  const buildLinkSuggestionReason = (item, anchorPhrase) => {
+    const bits = [];
+    if (item.relevance >= 18 && anchorPhrase) {
+      bits.push('Matches your selected text');
+    } else if (item.focus_keyword && anchorPhrase && item.focus_keyword.toLowerCase().includes(anchorPhrase.toLowerCase())) {
+      bits.push(`Aligns with focus keyword “${item.focus_keyword}”`);
+    }
+    if (item.siteInlinks === 0) {
+      bits.push('No inbound internal links site-wide yet');
+    } else if (item.siteInlinks <= 1) {
+      bits.push('Underlinked across the site');
+    }
+    if (item.count > 0) {
+      bits.push(`Already linked ${item.count}× on this page`);
+    }
+    if (!bits.length) {
+      bits.push(item.hub === 'trade' ? 'Trade landing page' : item.hub === 'feature' ? 'Feature page' : 'Related site page');
+    }
+    return bits.slice(0, 2).join(' · ');
+  };
+
+  const getSuggestedInternalPages = (counts, anchorText = '') => {
+    const anchorPhrase = String(anchorText || '').trim();
+    const anchorTokens = tokenizeLinkText(anchorPhrase);
+    const catalog = Array.isArray(linkIndex.pages) ? linkIndex.pages : [];
+    const scored = catalog
+      .filter((page) => page && isValidInternalTarget(page.href))
+      .map((page) => scoreLinkTarget(page, anchorTokens, anchorPhrase, counts))
+      .map((item) => ({ ...item, reason: buildLinkSuggestionReason(item, anchorPhrase) }))
+      .sort((a, b) => (b.score - a.score) || (a.siteInlinks - b.siteInlinks) || a.label.localeCompare(b.label));
+
+    const groups = [
+      { key: 'match', title: 'Best match for your selection', items: [] },
+      { key: 'gap', title: 'Pages that need more internal links', items: [] },
+      { key: 'related', title: 'Other relevant pages', items: [] },
+    ];
+
+    scored.forEach((item) => {
+      if (item.relevance >= 12 && groups[0].items.length < 6) {
+        groups[0].items.push(item);
+      } else if (item.gapScore >= 20 && groups[1].items.length < 6) {
+        groups[1].items.push(item);
+      } else if (groups[2].items.length < 8) {
+        groups[2].items.push(item);
+      }
     });
 
-    counts.forEach((_, href) => {
-      if (!targets.has(href)) targets.set(href, href);
-    });
+    if (!groups[0].items.length && scored.length) {
+      groups[0].items = scored.slice(0, 5);
+    }
 
-    const out = [...targets.entries()].map(([href, label]) => ({
-      href,
-      label,
-      count: counts.get(href) || 0,
-    }));
-    out.sort((a, b) => (b.count - a.count) || a.label.localeCompare(b.label));
-    return out.slice(0, 30);
+    return { groups, flat: scored.slice(0, 20), anchorTokens };
+  };
+
+  const renderLinkSuggestionButton = (s) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'jcp-niche-link-popover__suggestion-btn';
+    btn.dataset.href = s.href;
+
+    const copy = document.createElement('span');
+    copy.className = 'jcp-niche-link-popover__suggestion-copy';
+
+    const label = document.createElement('span');
+    label.className = 'jcp-niche-link-popover__suggestion-label';
+    label.textContent = s.label;
+    copy.appendChild(label);
+
+    if (s.reason) {
+      const reason = document.createElement('span');
+      reason.className = 'jcp-niche-link-popover__suggestion-reason';
+      reason.textContent = s.reason;
+      copy.appendChild(reason);
+    }
+
+    btn.appendChild(copy);
+
+    const meta = document.createElement('span');
+    meta.className = 'jcp-niche-link-popover__suggestion-meta';
+    if (s.siteInlinks === 0) {
+      const badge = document.createElement('span');
+      badge.className = 'jcp-niche-link-popover__suggestion-badge';
+      badge.textContent = 'Needs links';
+      meta.appendChild(badge);
+    }
+    if (s.count) {
+      const c = document.createElement('span');
+      c.className = 'jcp-niche-link-popover__suggestion-count';
+      c.textContent = String(s.count);
+      meta.appendChild(c);
+    }
+    if (meta.childNodes.length) btn.appendChild(meta);
+
+    btn.addEventListener('click', () => {
+      const urlInput = textLinkPopover.querySelector('#jcpNicheTextLinkUrl');
+      if (urlInput) urlInput.value = s.href;
+    });
+    return btn;
   };
 
   const expandCollapsedRangeToWord = (range) => {
@@ -2234,7 +2504,8 @@
     statusEl.textContent = '';
 
     const counts = getCurrentInternalLinkCounts();
-    const suggestions = getSuggestedInternalPages(counts);
+    const anchorText = range && !range.collapsed ? range.toString() : '';
+    const { groups, flat, anchorTokens } = getSuggestedInternalPages(counts, anchorText);
 
     const hintEl = textLinkPopover.querySelector('#jcpNicheTextLinkHint');
     const seoEl = textLinkPopover.querySelector('#jcpNicheLinkSeo');
@@ -2242,77 +2513,65 @@
 
     const totalLinks = [...counts.values()].reduce((a, b) => a + b, 0);
     const uniqueLinks = counts.size;
+    const underlinked = flat.filter((item) => item.siteInlinks <= 1).length;
 
     if (!field) {
       hintEl.textContent = 'Click inside a text paragraph first.';
-    } else if (range && !range.collapsed) {
-      hintEl.textContent = `Link “${range.toString().slice(0, 48)}${range.toString().length > 48 ? '…' : ''}” — pick a page or paste a URL.`;
+    } else if (anchorText) {
+      hintEl.textContent = `Link “${anchorText.slice(0, 48)}${anchorText.length > 48 ? '…' : ''}” — pick a page or paste a URL.`;
     } else {
       hintEl.textContent = 'Select the words you want to link, then choose a URL.';
     }
 
-    // SEO guidance (local to this page edit).
     seoEl.innerHTML = '';
     const seoTop = document.createElement('div');
-    seoTop.innerHTML = `<strong>Current internal links:</strong> ${totalLinks} (unique ${uniqueLinks})`;
+    seoTop.innerHTML = `<strong>On this page:</strong> ${totalLinks} internal link${totalLinks === 1 ? '' : 's'} · ${uniqueLinks} unique destination${uniqueLinks === 1 ? '' : 's'}`;
     seoEl.appendChild(seoTop);
 
-    const topTargets = suggestions
+    const seoGap = document.createElement('div');
+    seoGap.className = 'jcp-niche-link-popover__seo-top';
+    if (underlinked > 0) {
+      seoGap.textContent = `${underlinked} high-value page${underlinked === 1 ? '' : 's'} still underlinked site-wide — prioritize those below.`;
+    } else if (anchorTokens.length) {
+      seoGap.textContent = `Scored ${flat.length} pages against “${anchorTokens.slice(0, 4).join(', ')}”.`;
+    } else {
+      seoGap.textContent = 'Select anchor text to rank suggestions by topical relevance.';
+    }
+    seoEl.appendChild(seoGap);
+
+    const topTargets = flat
       .filter((s) => s.count > 0)
       .slice(0, 3)
       .map((s) => `${s.label} (${s.count})`)
       .join(', ');
     if (topTargets) {
       const t = document.createElement('div');
-      t.textContent = `Top targets: ${topTargets}`;
-      t.className = 'jcp-niche-link-popover__seo-top';
+      t.textContent = `Already linked here: ${topTargets}`;
+      t.className = 'jcp-niche-link-popover__seo-note';
       seoEl.appendChild(t);
     }
 
-    // Suggested pages.
     listEl.innerHTML = '';
-    if (!suggestions.length) {
+    const rendered = groups.filter((group) => group.items.length);
+    if (!rendered.length) {
       const empty = document.createElement('div');
       empty.className = 'jcp-niche-link-popover__empty';
-      empty.textContent = 'No suggested pages found.';
+      empty.textContent = 'No linkable pages found. Publish more JCP pages or paste a URL manually.';
       listEl.appendChild(empty);
     } else {
-      suggestions.forEach((s) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'jcp-niche-link-popover__suggestion-btn';
-        btn.dataset.href = s.href;
-
-        const label = document.createElement('span');
-        label.className = 'jcp-niche-link-popover__suggestion-label';
-        label.textContent = s.label;
-
-        btn.appendChild(label);
-        if (s.count) {
-          const c = document.createElement('span');
-          c.className = 'jcp-niche-link-popover__suggestion-count';
-          c.textContent = String(s.count);
-          btn.appendChild(c);
-        }
-
-        btn.addEventListener('click', () => {
-          const urlInput = textLinkPopover.querySelector('#jcpNicheTextLinkUrl');
-          if (urlInput) urlInput.value = s.href;
-        });
-
-        listEl.appendChild(btn);
+      rendered.forEach((group) => {
+        const title = document.createElement('div');
+        title.className = 'jcp-niche-link-popover__suggestions-title';
+        title.textContent = group.title;
+        listEl.appendChild(title);
+        group.items.forEach((s) => listEl.appendChild(renderLinkSuggestionButton(s)));
       });
     }
-
-    textLinkPopover.hidden = false;
-    textLinkPopover.removeAttribute('hidden');
 
     const urlInput = textLinkPopover.querySelector('#jcpNicheTextLinkUrl');
     if (urlInput) urlInput.value = '';
 
-    const rect = field ? field.getBoundingClientRect() : bar.getBoundingClientRect();
-    textLinkPopover.style.top = `${Math.min(window.innerHeight - 140, rect.bottom + 8)}px`;
-    textLinkPopover.style.left = `${Math.max(8, Math.min(window.innerWidth - 320, rect.left))}px`;
+    openEditorModal(textLinkPopover, { focusSelector: '#jcpNicheTextLinkUrl' });
   };
 
   if (textLinkBtn) {
@@ -2365,18 +2624,13 @@
 
     pendingLinkRange = null;
     pendingLinkField = null;
-    textLinkPopover.hidden = true;
-    textLinkPopover.setAttribute('hidden', '');
-    activeRichField = null;
+    closeTextLinkModal();
     statusEl.textContent = '';
     recordChange();
   });
 
-  textLinkPopover.querySelector('#jcpNicheTextLinkCancel').addEventListener('click', () => {
-    textLinkPopover.hidden = true;
-    textLinkPopover.setAttribute('hidden', '');
-    activeRichField = null;
-  });
+  textLinkPopover.querySelector('.jcp-editor-modal__backdrop').addEventListener('click', closeTextLinkModal);
+  textLinkPopover.querySelector('#jcpNicheTextLinkCancel').addEventListener('click', closeTextLinkModal);
 
   document.addEventListener('selectionchange', () => {
     rememberLinkSelection();
@@ -2429,6 +2683,18 @@
       return;
     }
     if (e.key === 'Escape') {
+      if (!iconPopover.hidden) {
+        closeIconPicker();
+        return;
+      }
+      if (!textLinkPopover.hidden) {
+        closeTextLinkModal();
+        return;
+      }
+      if (!popover.hidden) {
+        closeCtaLinkModal();
+        return;
+      }
       if (!addModal.hidden) {
         closeAddModal();
         return;
@@ -2452,7 +2718,7 @@
       if (!editing) return;
       if (e.target.closest(
         '[data-jcp-path], [data-jcp-href-path], .jcp-collection-add, .jcp-collection-remove, '
-        + '.jcp-optional-restore, .jcp-media-picker, .jcp-split-col-handle, .jcp-niche-link-popover, '
+        + '.jcp-optional-restore, .jcp-media-picker, .jcp-split-col-handle, .jcp-editor-modal, '
         + 'button:not([data-jcp-block-id]), input, textarea, select, summary, details'
       )) return;
       const root = e.target.closest('[data-jcp-block-id]');

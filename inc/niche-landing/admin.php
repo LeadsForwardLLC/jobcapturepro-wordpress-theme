@@ -365,20 +365,42 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 	$kind_label  = jcp_writer_preset_label( $preset );
 	$sections    = jcp_page_doc_sections_for_preset( $preset );
 	$template    = function_exists( 'jcp_writer_get_document_template' ) ? jcp_writer_get_document_template( $preset ) : '';
+	$ai_prompt   = function_exists( 'jcp_writer_get_ai_prompt' ) ? jcp_writer_get_ai_prompt( $preset, $post ) : '';
 	$sop_url     = admin_url( 'admin.php?page=jcp-theme-settings#document-import' );
+	$ai_sop_url  = admin_url( 'admin.php?page=jcp-theme-settings#ai-writing' );
 	?>
 	<div class="jcp-doc-import">
 		<h3 class="jcp-admin-page-editor__heading"><?php esc_html_e( 'Import from writer document', 'jcp-core' ); ?></h3>
 		<p class="description">
 			<?php
 			printf(
-				/* translators: 1: page type label, 2: SOP link */
-				esc_html__( 'Paste or upload a writer document for this %1$s. Section headers must be ALL CAPS (HERO, WHAT IT IS, …). Use CORE MECHANIC or STAT ROW for the stat row section. %2$s', 'jcp-core' ),
+				/* translators: 1: page type label, 2: SOP link, 3: AI SOP link */
+				esc_html__( 'Paste or upload a writer document for this %1$s. Section headers must be ALL CAPS (HERO, WHAT IT IS, …). %2$s · %3$s', 'jcp-core' ),
 				'<strong>' . esc_html( $kind_label ) . '</strong>',
-				'<a href="' . esc_url( $sop_url ) . '" target="_blank" rel="noopener">' . esc_html__( 'Full writer guide →', 'jcp-core' ) . '</a>'
+				'<a href="' . esc_url( $sop_url ) . '" target="_blank" rel="noopener">' . esc_html__( 'Writer guide →', 'jcp-core' ) . '</a>',
+				'<a href="' . esc_url( $ai_sop_url ) . '" target="_blank" rel="noopener">' . esc_html__( 'AI prompt guide →', 'jcp-core' ) . '</a>'
 			);
 			?>
 		</p>
+
+		<?php if ( $ai_prompt !== '' ) : ?>
+		<div class="jcp-writer-ai-workflow">
+			<p class="jcp-writer-ai-workflow__title"><strong><?php esc_html_e( 'Drafting with ChatGPT or Claude?', 'jcp-core' ); ?></strong></p>
+			<ol class="jcp-writer-ai-workflow__steps">
+				<li><?php esc_html_e( 'Copy the AI prompt (includes editorial rules + this page’s template).', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Fill in trade, state, and keyword placeholders, then paste into your AI tool.', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Edit the draft for natural flow — AI is a starting point, not the final copy.', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Paste the finished document below and click Build page from document.', 'jcp-core' ); ?></li>
+			</ol>
+			<p class="jcp-writer-ai-workflow__actions">
+				<button type="button" class="button button-primary" id="jcp-copy-ai-prompt-inline"><?php esc_html_e( 'Copy AI prompt', 'jcp-core' ); ?></button>
+				<?php if ( $template !== '' ) : ?>
+					<button type="button" class="button" id="jcp-copy-writer-template-inline"><?php esc_html_e( 'Copy template only', 'jcp-core' ); ?></button>
+				<?php endif; ?>
+				<span class="description" id="jcp-copy-ai-prompt-inline-status" style="margin-left:8px;"></span>
+			</p>
+		</div>
+		<?php endif; ?>
 
 		<details class="jcp-doc-import__guide" open>
 			<summary><?php esc_html_e( 'Section headers for this page type', 'jcp-core' ); ?></summary>
@@ -395,10 +417,7 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 				<?php endforeach; ?>
 			</ul>
 			<?php if ( $template !== '' ) : ?>
-				<p>
-					<button type="button" class="button" id="jcp-copy-writer-template-inline"><?php esc_html_e( 'Copy writer template', 'jcp-core' ); ?></button>
-					<span class="description" id="jcp-copy-template-inline-status" style="margin-left:8px;"></span>
-				</p>
+				<p class="description jcp-doc-import__template-note"><?php esc_html_e( 'Template includes length targets, list counts, and formatting rules at the top for AI tools.', 'jcp-core' ); ?></p>
 			<?php endif; ?>
 		</details>
 
@@ -418,6 +437,9 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 	<?php if ( $template !== '' ) : ?>
 	<script type="application/json" id="jcp-writer-template-json"><?php echo wp_json_encode( $template ); ?></script>
 	<?php endif; ?>
+	<?php if ( $ai_prompt !== '' ) : ?>
+	<script type="application/json" id="jcp-writer-ai-prompt-json"><?php echo wp_json_encode( $ai_prompt ); ?></script>
+	<?php endif; ?>
 	<script>
 	(function () {
 		var btn = document.getElementById('jcp-niche-build-from-doc');
@@ -427,24 +449,38 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 		var copyBtn = document.getElementById('jcp-copy-writer-template-inline');
 		var copyStatus = document.getElementById('jcp-copy-template-inline-status');
 		var templateEl = document.getElementById('jcp-writer-template-json');
+		var aiPromptBtn = document.getElementById('jcp-copy-ai-prompt-inline');
+		var aiPromptStatus = document.getElementById('jcp-copy-ai-prompt-inline-status');
+		var aiPromptEl = document.getElementById('jcp-writer-ai-prompt-json');
+
+		function copyJsonText(el, statusEl, okMsg) {
+			if (!el) return;
+			var text = '';
+			try { text = JSON.parse(el.textContent || '""'); } catch (e) { return; }
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				navigator.clipboard.writeText(text).then(function () {
+					if (statusEl) statusEl.textContent = okMsg;
+				});
+				return;
+			}
+			var scratch = document.createElement('textarea');
+			scratch.value = text;
+			document.body.appendChild(scratch);
+			scratch.select();
+			document.execCommand('copy');
+			document.body.removeChild(scratch);
+			if (statusEl) statusEl.textContent = okMsg;
+		}
 
 		if (copyBtn && templateEl) {
 			copyBtn.addEventListener('click', function () {
-				var text = '';
-				try { text = JSON.parse(templateEl.textContent || '""'); } catch (e) { return; }
-				if (navigator.clipboard && navigator.clipboard.writeText) {
-					navigator.clipboard.writeText(text).then(function () {
-						if (copyStatus) copyStatus.textContent = '<?php echo esc_js( __( 'Copied!', 'jcp-core' ) ); ?>';
-					});
-					return;
-				}
-				var scratch = document.createElement('textarea');
-				scratch.value = text;
-				document.body.appendChild(scratch);
-				scratch.select();
-				document.execCommand('copy');
-				document.body.removeChild(scratch);
-				if (copyStatus) copyStatus.textContent = '<?php echo esc_js( __( 'Copied!', 'jcp-core' ) ); ?>';
+				copyJsonText(templateEl, copyStatus, '<?php echo esc_js( __( 'Template copied!', 'jcp-core' ) ); ?>');
+			});
+		}
+
+		if (aiPromptBtn && aiPromptEl) {
+			aiPromptBtn.addEventListener('click', function () {
+				copyJsonText(aiPromptEl, aiPromptStatus, '<?php echo esc_js( __( 'AI prompt copied!', 'jcp-core' ) ); ?>');
 			});
 		}
 
