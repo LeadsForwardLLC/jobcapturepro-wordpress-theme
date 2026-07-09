@@ -171,6 +171,10 @@ function jcp_theme_docs_render_page(): void {
 					?>
 				</li>
 				<li>
+					<strong><?php esc_html_e( 'Set Featured Image', 'jcp-core' ); ?></strong><br />
+					<?php esc_html_e( 'In the editor sidebar, set Featured Image. On industry pages this photo fills the live demo phone in the hero (and the Industries hub / By Trade mega menu cards).', 'jcp-core' ); ?>
+				</li>
+				<li>
 					<strong><?php esc_html_e( 'Import your document', 'jcp-core' ); ?></strong><br />
 					<?php esc_html_e( 'In the JCP Page Editor box, expand “Import from writer document”. Paste your Google Doc / Word export (or upload .docx / .txt). Click “Build page from document”. Read the import summary — green “Imported” lines succeeded; “Not on this page type” means that section was skipped for this kind of page.', 'jcp-core' ); ?>
 				</li>
@@ -238,11 +242,59 @@ function jcp_theme_docs_render_page(): void {
 			</table>
 
 			<h3><?php esc_html_e( 'Field labels inside sections', 'jcp-core' ); ?></h3>
-			<p><?php esc_html_e( 'Put each label on its own line, then the content on the next line(s):', 'jcp-core' ); ?></p>
-			<p><code>H1</code> · <code>Subheadline</code> · <code>Headline</code> · <code>CTA</code> · <code>Trust Line</code> · <code>Closing Line</code></p>
+			<p><?php esc_html_e( 'Put each label on its own line, then the content on the next line(s). This list is generated from the live parser — it updates when developers add labels.', 'jcp-core' ); ?></p>
+			<p>
+				<?php
+				$field_labels = array_map(
+					static function ( string $label ): string {
+						return '<code>' . esc_html( ucwords( $label ) ) . '</code>';
+					},
+					function_exists( 'jcp_niche_doc_known_field_labels' ) ? jcp_niche_doc_known_field_labels() : []
+				);
+				// Audience-card labels (parsed per-segment, not in global labeled-fields list).
+				$field_labels[] = '<code>Badge</code>';
+				$field_labels[] = '<code>Stat Number</code>';
+				$field_labels[] = '<code>Stat Label</code>';
+				$field_labels[] = '<code>FAQ Target</code>';
+				echo implode( ' · ', $field_labels ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- each part escaped above.
+				?>
+			</p>
 			<p><?php esc_html_e( 'For title + body pairs (benefits, problem, check-ins, who it’s for): put the title on one line and the body on the next line with a leading space (indent).', 'jcp-core' ); ?></p>
+			<p><?php esc_html_e( 'Benefit cards also need an orange keyword line + ALL CAPS tagline after the body. Who-it’s-for guarantee cards use Badge / Stat Number / Stat Label.', 'jcp-core' ); ?></p>
 			<p><?php esc_html_e( 'Primary Keyword in the doc header is saved for hub search filtering only — not for meta tags. Set SEO title and meta description in Rank Math after import.', 'jcp-core' ); ?></p>
 			<p><?php esc_html_e( 'Templates include AI formatting rules, length targets, and list counts at the top — see AI-assisted writing below.', 'jcp-core' ); ?></p>
+
+			<h3><?php esc_html_e( 'Layout presets (live from code)', 'jcp-core' ); ?></h3>
+			<p class="description"><?php esc_html_e( 'Apply a layout in the page editor to reset the block stack and refresh the writer template / AI prompt for that preset.', 'jcp-core' ); ?></p>
+			<table class="widefat striped jcp-theme-docs__table">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Preset', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'Page kind', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'Default blocks', 'jcp-core' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php
+					$presets = function_exists( 'jcp_page_presets' ) ? jcp_page_presets() : [];
+					foreach ( $presets as $slug => $preset ) :
+						$types = [];
+						foreach ( (array) ( $preset['block_types'] ?? [] ) as $entry ) {
+							if ( is_string( $entry ) ) {
+								$types[] = $entry;
+							} elseif ( is_array( $entry ) && ! empty( $entry['type'] ) ) {
+								$types[] = (string) $entry['type'];
+							}
+						}
+						?>
+						<tr>
+							<td><strong><?php echo esc_html( (string) ( $preset['label'] ?? $slug ) ); ?></strong><br /><code><?php echo esc_html( (string) $slug ); ?></code></td>
+							<td><code><?php echo esc_html( (string) ( $preset['page_kind'] ?? '' ) ); ?></code></td>
+							<td><code><?php echo esc_html( implode( ' → ', $types ) ); ?></code></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
 		</section>
 
 		<section id="ai-writing" class="jcp-theme-docs__section">
@@ -403,12 +455,22 @@ function jcp_theme_docs_render_page(): void {
 				<?php
 				printf(
 					/* translators: %s: admin link */
-					esc_html__( 'All registered page blocks (Hero, FAQ, Final CTA, etc.) are listed in %s with descriptions, page types, and doc-import section names.', 'jcp-core' ),
+					esc_html__( 'All registered page blocks (Hero, FAQ, Final CTA, etc.) are listed in %s — that page is generated live from the block registry, so it always matches the editor.', 'jcp-core' ),
 					'<a href="' . esc_url( $block_lib_url ) . '">' . esc_html__( 'JCP → Block Library', 'jcp-core' ) . '</a>'
 				);
 				?>
 			</p>
 			<p><?php esc_html_e( 'Blocks are shared across industry pages, block-built pages, home, and referral. Each page type only shows blocks allowed for that kind in the “Add block” modal.', 'jcp-core' ); ?></p>
+			<p>
+				<?php
+				$global_url = admin_url( 'admin.php?page=jcp-global-settings' );
+				printf(
+					/* translators: %s: global settings link */
+					esc_html__( 'Header navigation (How it works, Pricing, Resources, etc.) is edited in %s — not Appearance → Menus. Desktop and mobile share the same config so they cannot drift.', 'jcp-core' ),
+					'<a href="' . esc_url( $global_url ) . '">' . esc_html__( 'JCP → Global Settings', 'jcp-core' ) . '</a>'
+				);
+				?>
+			</p>
 		</section>
 
 		<section id="seo" class="jcp-theme-docs__section">
@@ -485,6 +547,18 @@ function jcp_theme_docs_render_page(): void {
 					<tr>
 						<td><?php esc_html_e( 'JCP Page Editor panel is missing', 'jcp-core' ); ?></td>
 						<td><?php esc_html_e( 'Assign the JCP Block Page template (Settings → Template), click Update, then reload the edit screen.', 'jcp-core' ); ?></td>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Live demo phone shows the wrong photo on an industry page', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Set the WordPress Featured Image on that industry post. Industry pages use Featured Image for the phone screen (not the Edit media URL field).', 'jcp-core' ); ?></td>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Need to change header links (Pricing, Resources, etc.)', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Go to JCP → Global Settings → Header navigation. There is no Appearance → Menus for the main header.', 'jcp-core' ); ?></td>
+					</tr>
+					<tr>
+						<td><?php esc_html_e( 'Writer template / AI prompt looks outdated after changing layout', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Use Apply layout template (or change the layout dropdown) so the writer template and prompt refresh for that preset.', 'jcp-core' ); ?></td>
 					</tr>
 					<tr>
 						<td><?php esc_html_e( '404 on /industries/new-slug/', 'jcp-core' ); ?></td>

@@ -313,8 +313,13 @@ function jcp_nav_render_feature_mega_card( array $item, string $variant = 'deskt
 
 /**
  * Desktop mega menu trigger: By Trade.
+ *
+ * @param string $label Optional custom label.
  */
-function jcp_nav_render_desktop_trade_mega_trigger(): void {
+function jcp_nav_render_desktop_trade_mega_trigger( string $label = '' ): void {
+	if ( $label === '' ) {
+		$label = __( 'By Trade', 'jcp-core' );
+	}
 	?>
 	<div class="nav-mega nav-dropdown" id="navByTradeMega" data-nav-mega="trade">
 		<button
@@ -326,7 +331,7 @@ function jcp_nav_render_desktop_trade_mega_trigger(): void {
 			aria-controls="navByTradePanel"
 			data-page="industries"
 		>
-			<?php esc_html_e( 'By Trade', 'jcp-core' ); ?>
+			<?php echo esc_html( $label ); ?>
 			<svg class="nav-dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
 		</button>
 	</div>
@@ -376,8 +381,13 @@ function jcp_nav_render_desktop_trade_mega( string $industries_url ): void {
 
 /**
  * Desktop mega menu trigger: Features.
+ *
+ * @param string $label Optional custom label.
  */
-function jcp_nav_render_desktop_features_mega_trigger(): void {
+function jcp_nav_render_desktop_features_mega_trigger( string $label = '' ): void {
+	if ( $label === '' ) {
+		$label = __( 'Features', 'jcp-core' );
+	}
 	?>
 	<div class="nav-mega nav-dropdown" id="navFeaturesMega" data-nav-mega="features">
 		<button
@@ -389,7 +399,7 @@ function jcp_nav_render_desktop_features_mega_trigger(): void {
 			aria-controls="navFeaturesPanel"
 			data-home-anchor="#features"
 		>
-			<?php esc_html_e( 'Features', 'jcp-core' ); ?>
+			<?php echo esc_html( $label ); ?>
 			<svg class="nav-dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
 		</button>
 	</div>
@@ -441,9 +451,13 @@ function jcp_nav_render_desktop_features_mega( string $features_url ): void {
  * Mobile expanding panel: By Trade.
  *
  * @param string $industries_url Hub URL.
+ * @param string $label          Optional custom label.
  */
-function jcp_nav_render_mobile_trade_panel( string $industries_url ): void {
+function jcp_nav_render_mobile_trade_panel( string $industries_url, string $label = '' ): void {
 	$items = jcp_nav_get_trade_items();
+	if ( $label === '' ) {
+		$label = __( 'By Trade', 'jcp-core' );
+	}
 	?>
 	<details class="mobile-nav-panel mobile-nav-panel--trades" id="mobileNavTrades">
 		<summary class="mobile-nav-panel-summary" aria-controls="mobileNavTradesBody">
@@ -452,7 +466,7 @@ function jcp_nav_render_mobile_trade_panel( string $industries_url ): void {
 				<path d="M5 20V10l7-6 7 6v10"></path>
 				<path d="M9 20v-6h6v6"></path>
 			</svg>
-			<span><?php esc_html_e( 'By Trade', 'jcp-core' ); ?></span>
+			<span><?php echo esc_html( $label ); ?></span>
 		</summary>
 		<div class="mobile-nav-panel-body" id="mobileNavTradesBody">
 			<p class="mobile-nav-panel-lead"><?php esc_html_e( 'Pick your trade to see how JobCapturePro fits your business.', 'jcp-core' ); ?></p>
@@ -471,9 +485,13 @@ function jcp_nav_render_mobile_trade_panel( string $industries_url ): void {
  * Mobile expanding panel: Features.
  *
  * @param string $features_url Default features anchor URL.
+ * @param string $label        Optional custom label.
  */
-function jcp_nav_render_mobile_features_panel( string $features_url ): void {
+function jcp_nav_render_mobile_features_panel( string $features_url, string $label = '' ): void {
 	$items = jcp_nav_get_feature_items();
+	if ( $label === '' ) {
+		$label = __( 'Features', 'jcp-core' );
+	}
 	?>
 	<details class="mobile-nav-panel mobile-nav-panel--features" id="mobileNavFeatures">
 		<summary class="mobile-nav-panel-summary" aria-controls="mobileNavFeaturesBody">
@@ -483,7 +501,7 @@ function jcp_nav_render_mobile_features_panel( string $features_url ): void {
 				<rect x="14" y="14" width="7" height="7"></rect>
 				<rect x="3" y="14" width="7" height="7"></rect>
 			</svg>
-			<span><?php esc_html_e( 'Features', 'jcp-core' ); ?></span>
+			<span><?php echo esc_html( $label ); ?></span>
 		</summary>
 		<div class="mobile-nav-panel-body" id="mobileNavFeaturesBody">
 			<p class="mobile-nav-panel-lead"><?php esc_html_e( 'Explore what JobCapturePro publishes from every completed job.', 'jcp-core' ); ?></p>
@@ -496,4 +514,191 @@ function jcp_nav_render_mobile_features_panel( string $features_url ): void {
 		</div>
 	</details>
 	<?php
+}
+
+/**
+ * Render desktop main-header items from the shared header_nav config.
+ *
+ * @param array<string, mixed> $ctx Context: home_how, home_features, industries_url, etc.
+ */
+function jcp_nav_render_desktop_main_items( array $ctx = [] ): void {
+	$items = function_exists( 'jcp_global_resolve_header_nav' ) ? jcp_global_resolve_header_nav() : [];
+	$home_features   = (string) ( $ctx['home_features'] ?? home_url( '/#features' ) );
+	$industries_url  = (string) ( $ctx['industries_url'] ?? home_url( '/industries/' ) );
+
+	foreach ( $items as $item ) {
+		if ( empty( $item['enabled'] ) ) {
+			continue;
+		}
+		$type  = (string) ( $item['type'] ?? 'link' );
+		$label = (string) ( $item['label'] ?? '' );
+		$url   = (string) ( $item['resolved_url'] ?? '' );
+
+		if ( $type === 'features_mega' ) {
+			if ( function_exists( 'jcp_nav_render_desktop_features_mega_trigger' ) ) {
+				jcp_nav_render_desktop_features_mega_trigger( $label );
+			} else {
+				printf(
+					'<a href="%s" class="nav-link" data-home-anchor="#features">%s</a>',
+					esc_url( $url !== '' ? $url : $home_features ),
+					esc_html( $label )
+				);
+			}
+			continue;
+		}
+		if ( $type === 'trade_mega' ) {
+			if ( function_exists( 'jcp_nav_render_desktop_trade_mega_trigger' ) ) {
+				jcp_nav_render_desktop_trade_mega_trigger( $label );
+			} else {
+				printf(
+					'<a href="%s" class="nav-link" data-page="industries">%s</a>',
+					esc_url( $url !== '' ? $url : $industries_url ),
+					esc_html( $label )
+				);
+			}
+			continue;
+		}
+		if ( $type === 'dropdown' ) {
+			$children = array_values(
+				array_filter(
+					(array) ( $item['children'] ?? [] ),
+					static fn( $c ): bool => is_array( $c ) && ! empty( $c['enabled'] )
+				)
+			);
+			if ( $children === [] ) {
+				continue;
+			}
+			?>
+			<div class="nav-dropdown" id="navResourcesDropdown">
+				<button type="button" class="nav-dropdown-trigger nav-link" id="navResourcesTrigger" aria-haspopup="true" aria-expanded="false" aria-controls="navResourcesMenu"><?php echo esc_html( $label ); ?> <svg class="nav-dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+				<div class="nav-dropdown-menu" id="navResourcesMenu" role="menu" aria-labelledby="navResourcesTrigger" hidden>
+					<?php foreach ( $children as $child ) : ?>
+						<a
+							href="<?php echo esc_url( (string) ( $child['resolved_url'] ?? '' ) ); ?>"
+							class="nav-dropdown-item nav-link"
+							role="menuitem"
+							<?php if ( ! empty( $child['data_page'] ) ) : ?>
+								data-page="<?php echo esc_attr( (string) $child['data_page'] ); ?>"
+							<?php endif; ?>
+						><?php echo esc_html( (string) ( $child['label'] ?? '' ) ); ?></a>
+					<?php endforeach; ?>
+				</div>
+			</div>
+			<?php
+			continue;
+		}
+
+		$attrs = '';
+		if ( ! empty( $item['home_anchor'] ) ) {
+			$attrs .= ' data-home-anchor="' . esc_attr( (string) $item['home_anchor'] ) . '"';
+		}
+		if ( ! empty( $item['data_page'] ) ) {
+			$attrs .= ' data-page="' . esc_attr( (string) $item['data_page'] ) . '"';
+		}
+		printf(
+			'<a href="%s" class="nav-link"%s>%s</a>',
+			esc_url( $url ),
+			$attrs, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_attr above.
+			esc_html( $label )
+		);
+	}
+}
+
+/**
+ * Render mobile main-header items from the shared header_nav config.
+ *
+ * @param array<string, mixed> $ctx Context URLs.
+ */
+function jcp_nav_render_mobile_main_items( array $ctx = [] ): void {
+	$items = function_exists( 'jcp_global_resolve_header_nav' ) ? jcp_global_resolve_header_nav() : [];
+	$home_features  = (string) ( $ctx['home_features'] ?? home_url( '/#features' ) );
+	$industries_url = (string) ( $ctx['industries_url'] ?? home_url( '/industries/' ) );
+
+	$icons = [
+		'how_it_works' => '<circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon>',
+		'features'     => '<rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect>',
+		'by_trade'     => '<path d="M2 20h20"></path><path d="M5 20V10l7-6 7 6v10"></path><path d="M9 20v-6h6v6"></path>',
+		'pricing'      => '<line x1="12" y1="2" x2="12" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>',
+		'blog'         => '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path><line x1="8" y1="6" x2="16" y2="6"></line><line x1="8" y1="10" x2="16" y2="10"></line>',
+		'help'         => '<circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line>',
+		'contact'      => '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline>',
+		'referral'     => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>',
+	];
+
+	foreach ( $items as $item ) {
+		if ( empty( $item['enabled'] ) ) {
+			continue;
+		}
+		$type  = (string) ( $item['type'] ?? 'link' );
+		$label = (string) ( $item['label'] ?? '' );
+		$url   = (string) ( $item['resolved_url'] ?? '' );
+		$id    = (string) ( $item['id'] ?? '' );
+
+		if ( $type === 'features_mega' ) {
+			if ( function_exists( 'jcp_nav_render_mobile_features_panel' ) ) {
+				jcp_nav_render_mobile_features_panel( $url !== '' ? $url : $home_features, $label );
+			}
+			continue;
+		}
+		if ( $type === 'trade_mega' ) {
+			if ( function_exists( 'jcp_nav_render_mobile_trade_panel' ) ) {
+				jcp_nav_render_mobile_trade_panel( $url !== '' ? $url : $industries_url, $label );
+			}
+			continue;
+		}
+		if ( $type === 'dropdown' ) {
+			$children = array_values(
+				array_filter(
+					(array) ( $item['children'] ?? [] ),
+					static fn( $c ): bool => is_array( $c ) && ! empty( $c['enabled'] )
+				)
+			);
+			if ( $children === [] ) {
+				continue;
+			}
+			?>
+			<details class="mobile-nav-resources" id="mobileNavResources">
+				<summary class="mobile-nav-resources-summary" aria-expanded="false" aria-controls="mobileNavResourcesList"><?php echo esc_html( $label ); ?></summary>
+				<div class="mobile-nav-resources-list" id="mobileNavResourcesList">
+					<?php foreach ( $children as $child ) : ?>
+						<?php
+						$cid  = (string) ( $child['id'] ?? '' );
+						$icon = $icons[ $cid ] ?? $icons['blog'];
+						?>
+						<a
+							href="<?php echo esc_url( (string) ( $child['resolved_url'] ?? '' ) ); ?>"
+							class="mobile-nav-link"
+							<?php if ( ! empty( $child['data_page'] ) ) : ?>
+								data-page="<?php echo esc_attr( (string) $child['data_page'] ); ?>"
+							<?php endif; ?>
+						>
+							<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
+								<?php echo $icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG. ?>
+							</svg>
+							<span><?php echo esc_html( (string) ( $child['label'] ?? '' ) ); ?></span>
+						</a>
+					<?php endforeach; ?>
+				</div>
+			</details>
+			<?php
+			continue;
+		}
+
+		$icon  = $icons[ $id ] ?? $icons['how_it_works'];
+		$attrs = '';
+		if ( ! empty( $item['home_anchor'] ) ) {
+			$attrs .= ' data-home-anchor="' . esc_attr( (string) $item['home_anchor'] ) . '"';
+		}
+		if ( ! empty( $item['data_page'] ) ) {
+			$attrs .= ' data-page="' . esc_attr( (string) $item['data_page'] ) . '"';
+		}
+		?>
+		<a href="<?php echo esc_url( $url ); ?>" class="mobile-nav-link"<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
+				<?php echo $icon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG. ?>
+			</svg>
+			<span><?php echo esc_html( $label ); ?></span>
+		</a>
+		<?php
+	}
 }

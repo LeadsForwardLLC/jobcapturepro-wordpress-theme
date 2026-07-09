@@ -71,6 +71,7 @@ function jcp_global_settings_handle_save(): void {
 			'secondary_label' => sanitize_text_field( (string) ( $input['nav_cta']['secondary_label'] ?? '' ) ),
 			'secondary_url'   => jcp_global_sanitize_url_field( (string) ( $input['nav_cta']['secondary_url'] ?? '' ) ),
 		],
+		'header_nav' => jcp_global_sanitize_header_nav( $input['header_nav'] ?? [] ),
 		'contact' => [
 			'support_email' => sanitize_email( (string) ( $input['contact']['support_email'] ?? '' ) ),
 		],
@@ -96,6 +97,7 @@ function jcp_global_settings_render_page(): void {
 	$signup = $s['signup'] ?? [];
 	$nav = $s['nav_cta'] ?? [];
 	$contact = $s['contact'] ?? [];
+	$header_items = jcp_global_resolve_header_nav();
 
 	if ( isset( $_GET['updated'] ) ) {
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Global settings saved.', 'jcp-core' ) . '</p></div>';
@@ -104,11 +106,85 @@ function jcp_global_settings_render_page(): void {
 	<div class="wrap">
 		<h1><?php esc_html_e( 'JCP Global Settings', 'jcp-core' ); ?></h1>
 		<p class="description">
-			<?php esc_html_e( 'Sitewide banner, signup URLs, and default navigation CTAs. Per-page nav overrides live in each page’s Quick Edit fields.', 'jcp-core' ); ?>
+			<?php esc_html_e( 'Sitewide banner, signup URLs, header navigation, and default CTA buttons. Per-page CTA overrides live in each page’s Quick Edit fields.', 'jcp-core' ); ?>
 		</p>
 
 		<form method="post" action="">
 			<?php wp_nonce_field( 'jcp_global_settings_save', 'jcp_global_settings_nonce' ); ?>
+
+			<h2><?php esc_html_e( 'Header navigation', 'jcp-core' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'Labels and URLs for the main header (desktop + mobile). Features and By Trade keep their mega menus; you can rename them or hide items. New theme defaults appear here automatically — nothing drifts.', 'jcp-core' ); ?>
+			</p>
+			<table class="widefat striped" style="max-width: 960px; margin-bottom: 1.5em;">
+				<thead>
+					<tr>
+						<th style="width: 3rem;"><?php esc_html_e( 'On', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'Label', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'URL', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'Type', 'jcp-core' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $header_items as $item ) : ?>
+						<?php
+						$id   = (string) ( $item['id'] ?? '' );
+						$type = (string) ( $item['type'] ?? 'link' );
+						$base = 'jcp_global[header_nav][items][' . $id . ']';
+						$url_field = in_array( $type, [ 'link', 'trade_mega' ], true ) || ( $type === 'features_mega' );
+						$type_label = match ( $type ) {
+							'features_mega' => __( 'Features mega menu', 'jcp-core' ),
+							'trade_mega'    => __( 'By Trade mega menu', 'jcp-core' ),
+							'dropdown'      => __( 'Dropdown', 'jcp-core' ),
+							default         => __( 'Link', 'jcp-core' ),
+						};
+						?>
+						<tr>
+							<td>
+								<input type="hidden" name="<?php echo esc_attr( $base ); ?>[id]" value="<?php echo esc_attr( $id ); ?>" />
+								<input type="hidden" name="<?php echo esc_attr( $base ); ?>[enabled]" value="0" />
+								<input type="checkbox" name="<?php echo esc_attr( $base ); ?>[enabled]" value="1" <?php checked( ! empty( $item['enabled'] ) ); ?> />
+							</td>
+							<td>
+								<input type="text" class="regular-text" name="<?php echo esc_attr( $base ); ?>[label]" value="<?php echo esc_attr( (string) ( $item['label'] ?? '' ) ); ?>" />
+							</td>
+							<td>
+								<?php if ( $type === 'dropdown' ) : ?>
+									<em class="description"><?php esc_html_e( 'See child links below', 'jcp-core' ); ?></em>
+									<input type="hidden" name="<?php echo esc_attr( $base ); ?>[url]" value="" />
+								<?php elseif ( ! empty( $item['home_anchor'] ) && $type === 'link' ) : ?>
+									<input type="text" class="large-text" name="<?php echo esc_attr( $base ); ?>[url]" value="<?php echo esc_attr( (string) ( $item['url'] ?? '' ) ); ?>" placeholder="<?php echo esc_attr( (string) $item['home_anchor'] ); ?>" />
+									<p class="description"><?php esc_html_e( 'Leave empty to use the homepage section anchor.', 'jcp-core' ); ?></p>
+								<?php else : ?>
+									<input type="text" class="large-text" name="<?php echo esc_attr( $base ); ?>[url]" value="<?php echo esc_attr( (string) ( $item['url'] ?? '' ) ); ?>" placeholder="/path or https://" />
+								<?php endif; ?>
+							</td>
+							<td><code><?php echo esc_html( $type_label ); ?></code></td>
+						</tr>
+						<?php if ( $type === 'dropdown' && ! empty( $item['children'] ) ) : ?>
+							<?php foreach ( (array) $item['children'] as $child ) : ?>
+								<?php
+								$cid  = (string) ( $child['id'] ?? '' );
+								$cbase = $base . '[children][' . $cid . ']';
+								?>
+								<tr style="background: #f6f7f7;">
+									<td style="padding-left: 1.5rem;">
+										<input type="hidden" name="<?php echo esc_attr( $cbase ); ?>[enabled]" value="0" />
+										<input type="checkbox" name="<?php echo esc_attr( $cbase ); ?>[enabled]" value="1" <?php checked( ! empty( $child['enabled'] ) ); ?> />
+									</td>
+									<td>
+										<input type="text" class="regular-text" name="<?php echo esc_attr( $cbase ); ?>[label]" value="<?php echo esc_attr( (string) ( $child['label'] ?? '' ) ); ?>" />
+									</td>
+									<td>
+										<input type="text" class="large-text" name="<?php echo esc_attr( $cbase ); ?>[url]" value="<?php echo esc_attr( (string) ( $child['url'] ?? '' ) ); ?>" placeholder="/path" />
+									</td>
+									<td><span class="description"><?php esc_html_e( 'Resources child', 'jcp-core' ); ?></span></td>
+								</tr>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
 
 			<h2><?php esc_html_e( 'Sitewide banner', 'jcp-core' ); ?></h2>
 			<table class="form-table" role="presentation">
