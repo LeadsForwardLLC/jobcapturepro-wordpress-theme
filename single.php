@@ -49,7 +49,32 @@ get_header();
                   </span>
                 <?php endif; ?>
               </div>
-              <span class="jcp-post-reading-time"><?php echo esc_html( sprintf( __( '%1$s min read', 'jcp-core' ), (int) $read_mins ) ); ?></span>
+              <div class="jcp-single-hero-meta-row">
+                <span class="jcp-post-reading-time"><?php echo esc_html( sprintf( __( '%1$s min read', 'jcp-core' ), (int) $read_mins ) ); ?></span>
+                <?php
+                $post_url   = get_permalink();
+                $share_url  = rawurlencode( $post_url );
+                $share_text = rawurlencode( $post_title );
+                $icon_base  = get_stylesheet_directory_uri() . '/assets/shared/assets/icons/lucide';
+                ?>
+                <div class="jcp-post-share-section jcp-post-share-section--meta" aria-label="<?php esc_attr_e( 'Share this post', 'jcp-core' ); ?>">
+                  <span class="jcp-post-share-label"><?php esc_html_e( 'Share', 'jcp-core' ); ?></span>
+                  <div class="jcp-post-share-buttons">
+                    <a href="https://twitter.com/intent/tweet?url=<?php echo $share_url; ?>&amp;text=<?php echo $share_text; ?>" class="jcp-post-share-btn jcp-post-share-twitter" target="_blank" rel="noopener noreferrer" aria-label="<?php esc_attr_e( 'Share on X', 'jcp-core' ); ?>">
+                      <img src="<?php echo esc_url( $icon_base . '/twitter.svg' ); ?>" width="18" height="18" alt="" aria-hidden="true">
+                    </a>
+                    <a href="https://www.linkedin.com/sharing/share-offsite/?url=<?php echo $share_url; ?>" class="jcp-post-share-btn jcp-post-share-linkedin" target="_blank" rel="noopener noreferrer" aria-label="<?php esc_attr_e( 'Share on LinkedIn', 'jcp-core' ); ?>">
+                      <img src="<?php echo esc_url( $icon_base . '/linkedin.svg' ); ?>" width="18" height="18" alt="" aria-hidden="true">
+                    </a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo $share_url; ?>" class="jcp-post-share-btn jcp-post-share-facebook" target="_blank" rel="noopener noreferrer" aria-label="<?php esc_attr_e( 'Share on Facebook', 'jcp-core' ); ?>">
+                      <img src="<?php echo esc_url( $icon_base . '/facebook.svg' ); ?>" width="18" height="18" alt="" aria-hidden="true">
+                    </a>
+                    <button type="button" class="jcp-post-share-btn jcp-post-share-copy" data-url="<?php echo esc_attr( $post_url ); ?>" aria-label="<?php esc_attr_e( 'Copy link', 'jcp-core' ); ?>">
+                      <img src="<?php echo esc_url( $icon_base . '/link.svg' ); ?>" width="18" height="18" alt="" aria-hidden="true">
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </header>
 
@@ -102,6 +127,36 @@ get_header();
   <?php endwhile; ?>
 </main>
 
+<script>
+(function() {
+  var btn = document.querySelector('.jcp-post-share-copy');
+  if (btn) {
+    btn.addEventListener('click', function() {
+      var url = btn.getAttribute('data-url');
+      if (!url) return;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function() {
+          btn.classList.add('jcp-share-copied');
+          btn.setAttribute('aria-label', '<?php echo esc_js( __( 'Copied!', 'jcp-core' ) ); ?>');
+          setTimeout(function() {
+            btn.classList.remove('jcp-share-copied');
+            btn.setAttribute('aria-label', '<?php echo esc_js( __( 'Copy link', 'jcp-core' ) ); ?>');
+          }, 2000);
+        });
+      } else {
+        var input = document.createElement('input');
+        input.value = url;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        btn.classList.add('jcp-share-copied');
+        setTimeout(function() { btn.classList.remove('jcp-share-copied'); }, 2000);
+      }
+    });
+  }
+})();
+</script>
 <script>
 (function() {
   var bar = document.getElementById('jcp-read-progress-bar');

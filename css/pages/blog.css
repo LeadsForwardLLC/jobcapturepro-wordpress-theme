@@ -658,6 +658,18 @@
   letter-spacing: 0.01em;
 }
 
+.jcp-single-hero-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--jcp-space-sm) var(--jcp-space-lg);
+}
+
+.jcp-single-hero-meta-row .jcp-post-reading-time {
+  display: inline;
+}
+
 .jcp-post-reading-time {
   color: var(--jcp-color-text-secondary);
 }
@@ -695,67 +707,82 @@
   margin-top: 0;
 }
 
-/* Share section at bottom of post */
+/* Share — quiet row under post meta */
 .jcp-post-share-section {
-  margin-top: var(--jcp-space-3xl);
-  padding-top: var(--jcp-space-2xl);
-  border-top: 1px solid var(--jcp-color-border);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--jcp-space-md);
+  gap: var(--jcp-space-sm);
+}
+
+.jcp-post-share-section--meta {
+  margin: 0;
+  padding: 0;
+  border: 0;
 }
 
 .jcp-post-share-section .jcp-post-share-label {
-  font-size: var(--jcp-font-size-sm);
+  font-size: var(--jcp-font-size-xs);
   font-weight: var(--jcp-font-weight-semibold);
-  color: var(--jcp-color-text-secondary);
-  text-transform: none;
-  letter-spacing: 0;
+  color: var(--jcp-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .jcp-post-share-section .jcp-post-share-buttons {
   display: flex;
   align-items: center;
-  gap: var(--jcp-space-xs);
+  gap: 4px;
 }
 
 .jcp-post-share-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
   padding: 0;
-  border: none;
+  border: 1px solid var(--jcp-color-border);
   border-radius: var(--jcp-radius-md);
-  background: var(--jcp-color-bg-secondary);
+  background: var(--jcp-color-surface, #fff);
   color: var(--jcp-color-text-secondary);
   cursor: pointer;
-  transition: background var(--jcp-transition-base), color var(--jcp-transition-base), transform 0.15s ease;
+  transition: background var(--jcp-transition-base), color var(--jcp-transition-base), border-color var(--jcp-transition-base);
   text-decoration: none;
 }
 
 .jcp-post-share-btn:hover {
-  background: var(--jcp-color-bg-tertiary);
+  background: var(--jcp-color-bg-secondary);
   color: var(--jcp-color-text-primary);
+  border-color: color-mix(in srgb, var(--jcp-color-text-primary) 18%, var(--jcp-color-border));
 }
 
 .jcp-post-share-btn:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--jcp-color-primary);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--jcp-color-primary) 35%, transparent);
 }
 
 .jcp-post-share-btn img {
   display: block;
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
   pointer-events: none;
+  opacity: 0.75;
+}
+
+.jcp-post-share-btn:hover img {
+  opacity: 1;
 }
 
 .jcp-post-share-btn.jcp-share-copied {
   background: var(--jcp-color-success);
+  border-color: var(--jcp-color-success);
   color: #fff;
+}
+
+.jcp-post-share-btn.jcp-share-copied img {
+  opacity: 1;
+  filter: brightness(0) invert(1);
 }
 
 /* Featured image (fallback when not in hero, e.g. legacy) */
@@ -895,6 +922,90 @@
   margin: var(--jcp-space-xl) 0;
   font-style: italic;
   color: var(--jcp-color-text-secondary);
+}
+
+/* Comparison / content tables */
+.jcp-post-content .jcp-post-table-wrap,
+.jcp-post-content .wp-block-table {
+  width: 100%;
+  max-width: 100%;
+  margin: var(--jcp-space-2xl) 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--jcp-color-border);
+  border-radius: var(--jcp-radius-lg, 12px);
+  background: var(--jcp-color-surface, #fff);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--jcp-color-text-primary) 4%, transparent);
+}
+
+.jcp-post-content .wp-block-table table,
+.jcp-post-content table.jcp-post-table,
+.jcp-post-content table {
+  width: 100%;
+  min-width: 32rem;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: var(--jcp-font-size-sm, 0.9375rem);
+  line-height: 1.5;
+  color: var(--jcp-color-text-primary);
+}
+
+.jcp-post-content .jcp-post-table-wrap table,
+.jcp-post-content .wp-block-table table {
+  margin: 0;
+  border: 0;
+  min-width: 32rem;
+}
+
+.jcp-post-content table th,
+.jcp-post-content table td {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--jcp-color-border);
+  border-right: 1px solid var(--jcp-color-border);
+}
+
+.jcp-post-content table th:last-child,
+.jcp-post-content table td:last-child {
+  border-right: 0;
+}
+
+.jcp-post-content table tr:last-child th,
+.jcp-post-content table tr:last-child td {
+  border-bottom: 0;
+}
+
+.jcp-post-content table thead th,
+.jcp-post-content table tr:first-child td,
+.jcp-post-content table tr:first-child th {
+  background: var(--jcp-color-bg-secondary, #f8fafc);
+  font-weight: var(--jcp-font-weight-bold, 700);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+  color: var(--jcp-color-text-primary);
+}
+
+.jcp-post-content table tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--jcp-color-bg-secondary, #f8fafc) 55%, transparent);
+}
+
+.jcp-post-content table tbody tr:hover td {
+  background: color-mix(in srgb, var(--jcp-color-primary, #ff503e) 6%, transparent);
+}
+
+.jcp-post-content table td:first-child,
+.jcp-post-content table th:first-child {
+  font-weight: var(--jcp-font-weight-semibold, 600);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .jcp-post-content table th,
+  .jcp-post-content table td {
+    padding: 0.7rem 0.85rem;
+    font-size: 0.8125rem;
+  }
 }
 
 .jcp-post-footer {

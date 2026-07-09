@@ -411,6 +411,48 @@ function jcp_blog_conversion_inject_mid_content( string $content ): string {
 add_filter( 'the_content', 'jcp_blog_conversion_inject_mid_content', 12 );
 
 /**
+ * Wrap bare tables in a scroll container for responsive blog content.
+ *
+ * @param string $content Post content.
+ */
+function jcp_blog_wrap_content_tables( string $content ): string {
+	if ( ! is_singular( 'post' ) || ! in_the_loop() || ! is_main_query() ) {
+		return $content;
+	}
+	if ( is_admin() || wp_is_json_request() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return $content;
+	}
+	if ( ! str_contains( $content, '<table' ) ) {
+		return $content;
+	}
+
+	return (string) preg_replace_callback(
+		'/<table\b[^>]*>.*?<\/table>/is',
+		static function ( array $m ): string {
+			$html = $m[0];
+			if ( str_contains( $html, 'jcp-post-table' ) ) {
+				return $html;
+			}
+
+			if ( preg_match( '/\bclass\s*=\s*(["\'])(.*?)\1/i', $html, $cm ) ) {
+				$html = preg_replace(
+					'/\bclass\s*=\s*(["\'])(.*?)\1/i',
+					'class=$1$2 jcp-post-table$1',
+					$html,
+					1
+				);
+			} else {
+				$html = preg_replace( '/<table\b/i', '<table class="jcp-post-table"', $html, 1 );
+			}
+
+			return '<div class="jcp-post-table-wrap">' . $html . '</div>';
+		},
+		$content
+	);
+}
+add_filter( 'the_content', 'jcp_blog_wrap_content_tables', 13 );
+
+/**
  * Render end-of-post conversion band + related blog posts.
  *
  * @param int $post_id Post ID.
