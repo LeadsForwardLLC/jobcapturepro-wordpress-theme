@@ -1,7 +1,7 @@
 <?php
 /**
  * Single Post Template
- * 
+ *
  * Displays individual blog posts.
  *
  * @package JCP_Core
@@ -18,11 +18,7 @@ get_header();
   <?php
   while ( have_posts() ) :
     the_post();
-    $post_url   = get_permalink();
     $post_title = get_the_title();
-    $share_url  = rawurlencode( $post_url );
-    $share_text = rawurlencode( $post_title );
-    $icon_base  = get_stylesheet_directory_uri() . '/assets/shared/assets/icons/lucide';
     $content    = get_the_content();
     $content    = wp_strip_all_tags( $content );
     $word_count = str_word_count( $content );
@@ -84,24 +80,6 @@ get_header();
             </footer>
           <?php endif; ?>
         </article>
-
-        <div class="jcp-post-share-section">
-          <span class="jcp-post-share-label"><?php esc_html_e( 'Share this post', 'jcp-core' ); ?></span>
-          <div class="jcp-post-share-buttons">
-            <a href="https://twitter.com/intent/tweet?url=<?php echo $share_url; ?>&amp;text=<?php echo $share_text; ?>" class="jcp-post-share-btn jcp-post-share-twitter" target="_blank" rel="noopener noreferrer" aria-label="<?php esc_attr_e( 'Share on X', 'jcp-core' ); ?>">
-              <img src="<?php echo esc_url( $icon_base . '/twitter.svg' ); ?>" width="20" height="20" alt="" aria-hidden="true">
-            </a>
-            <a href="https://www.linkedin.com/sharing/share-offsite/?url=<?php echo $share_url; ?>" class="jcp-post-share-btn jcp-post-share-linkedin" target="_blank" rel="noopener noreferrer" aria-label="<?php esc_attr_e( 'Share on LinkedIn', 'jcp-core' ); ?>">
-              <img src="<?php echo esc_url( $icon_base . '/linkedin.svg' ); ?>" width="20" height="20" alt="" aria-hidden="true">
-            </a>
-            <a href="https://www.facebook.com/sharer/sharer.php?u=<?php echo $share_url; ?>" class="jcp-post-share-btn jcp-post-share-facebook" target="_blank" rel="noopener noreferrer" aria-label="<?php esc_attr_e( 'Share on Facebook', 'jcp-core' ); ?>">
-              <img src="<?php echo esc_url( $icon_base . '/facebook.svg' ); ?>" width="20" height="20" alt="" aria-hidden="true">
-            </a>
-            <button type="button" class="jcp-post-share-btn jcp-post-share-copy" data-url="<?php echo esc_attr( $post_url ); ?>" aria-label="<?php esc_attr_e( 'Copy link', 'jcp-core' ); ?>">
-              <img src="<?php echo esc_url( $icon_base . '/link.svg' ); ?>" width="20" height="20" alt="" aria-hidden="true">
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   </section>
@@ -112,70 +90,18 @@ get_header();
   }
   ?>
 
-  <section class="jcp-section jcp-single-post-section jcp-single-post-footer-section">
+  <?php if ( comments_open() || get_comments_number() ) : ?>
+  <section class="jcp-section jcp-single-post-footer-section">
     <div class="jcp-container jcp-single-post-container">
       <div class="jcp-single-post-wrapper">
-        <nav class="jcp-post-navigation" aria-label="<?php esc_attr_e( 'Post navigation', 'jcp-core' ); ?>">
-          <?php
-          $prev_post = get_previous_post();
-          $next_post = get_next_post();
-          ?>
-          <?php if ( $prev_post ) : ?>
-            <a class="jcp-post-nav-link jcp-post-nav-prev" href="<?php echo esc_url( get_permalink( $prev_post->ID ) ); ?>">
-              <span class="jcp-post-nav-dir"><?php esc_html_e( 'Previous', 'jcp-core' ); ?></span>
-              <span class="jcp-post-nav-title"><?php echo esc_html( get_the_title( $prev_post->ID ) ); ?></span>
-            </a>
-          <?php else : ?>
-            <span class="jcp-post-nav-spacer" aria-hidden="true"></span>
-          <?php endif; ?>
-          <?php if ( $next_post ) : ?>
-            <a class="jcp-post-nav-link jcp-post-nav-next" href="<?php echo esc_url( get_permalink( $next_post->ID ) ); ?>">
-              <span class="jcp-post-nav-dir"><?php esc_html_e( 'Next', 'jcp-core' ); ?></span>
-              <span class="jcp-post-nav-title"><?php echo esc_html( get_the_title( $next_post->ID ) ); ?></span>
-            </a>
-          <?php endif; ?>
-        </nav>
-
-        <?php
-        if ( comments_open() || get_comments_number() ) {
-          comments_template();
-        }
-        ?>
+        <?php comments_template(); ?>
       </div>
     </div>
   </section>
+  <?php endif; ?>
   <?php endwhile; ?>
 </main>
 
-<script>
-(function() {
-  var btn = document.querySelector('.jcp-post-share-copy');
-  if (!btn) return;
-  btn.addEventListener('click', function() {
-    var url = btn.getAttribute('data-url');
-    if (!url) return;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(function() {
-        btn.classList.add('jcp-share-copied');
-        btn.setAttribute('aria-label', '<?php echo esc_js( __( 'Copied!', 'jcp-core' ) ); ?>');
-        setTimeout(function() {
-          btn.classList.remove('jcp-share-copied');
-          btn.setAttribute('aria-label', '<?php echo esc_js( __( 'Copy link', 'jcp-core' ) ); ?>');
-        }, 2000);
-      });
-    } else {
-      var input = document.createElement('input');
-      input.value = url;
-      document.body.appendChild(input);
-      input.select();
-      document.execCommand('copy');
-      document.body.removeChild(input);
-      btn.classList.add('jcp-share-copied');
-      setTimeout(function() { btn.classList.remove('jcp-share-copied'); }, 2000);
-    }
-  });
-})();
-</script>
 <script>
 (function() {
   var bar = document.getElementById('jcp-read-progress-bar');

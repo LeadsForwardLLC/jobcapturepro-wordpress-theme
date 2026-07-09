@@ -518,7 +518,7 @@ function jcp_theme_docs_render_page(): void {
 				<tbody>
 					<tr>
 						<td><?php esc_html_e( 'Blog post missing demo CTA / related hubs', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Automatic mid-content + end CTAs load on published posts (no per-post setup). Trade-aware copy needs industry keywords in the title, tags, categories, or Rank Math focus keyword. Mid CTA needs at least 3 paragraphs. The sticky demo bar appears on the blog archive only (not single posts).', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Automatic mid-content + end demo CTA on published posts. Related reading uses other blog posts (tags/categories). Comments form stays collapsed until opened. Mid CTA needs at least 3 paragraphs.', 'jcp-core' ); ?></td>
 					</tr>
 					<tr>
 						<td><?php esc_html_e( 'Import says “Paste document text or upload…”', 'jcp-core' ); ?></td>

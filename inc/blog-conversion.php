@@ -213,56 +213,74 @@ function jcp_blog_conversion_ctas( string $utm_suffix = 'blog' ): array {
 }
 
 /**
- * Related hub cards for a post (trade/industries + features — demo lives in the CTA band).
+ * Related blog posts (same tags/categories, then recent fallback).
  *
  * @param int $post_id Post ID.
- * @return array<int, array{label:string,url:string,excerpt:string,type:string}>
+ * @param int $limit   Max posts.
+ * @return array<int, WP_Post>
  */
-function jcp_blog_conversion_related_hubs( int $post_id ): array {
-	$trade = jcp_blog_conversion_detect_trade( $post_id );
-	$cards = [];
+function jcp_blog_conversion_related_posts( int $post_id, int $limit = 3 ): array {
+	$limit   = max( 1, min( 4, $limit ) );
+	$exclude = [ $post_id ];
+	$found   = [];
 
-	if ( $trade ) {
-		$cards[] = [
-			'label'   => sprintf(
-				/* translators: %s: trade name */
-				__( '%s marketing software', 'jcp-core' ),
-				$trade['label']
-			),
-			'url'     => $trade['url'],
-			'excerpt' => sprintf(
-				/* translators: %s: trade name */
-				__( 'See how JobCapturePro turns completed %s jobs into Google visibility, reviews, and website proof.', 'jcp-core' ),
-				strtolower( $trade['label'] )
-			),
-			'type'    => 'trade',
-		];
-	} else {
-		$industries = get_post_type_archive_link( 'jcp_niche_landing' );
-		if ( ! is_string( $industries ) || $industries === '' ) {
-			$industries = home_url( '/industries/' );
+	$tag_ids = wp_get_post_tags( $post_id, [ 'fields' => 'ids' ] );
+	if ( is_array( $tag_ids ) && $tag_ids !== [] ) {
+		$by_tag = get_posts(
+			[
+				'post_type'           => 'post',
+				'post_status'         => 'publish',
+				'posts_per_page'      => $limit,
+				'post__not_in'        => $exclude,
+				'tag__in'             => $tag_ids,
+				'ignore_sticky_posts' => true,
+				'no_found_rows'       => true,
+			]
+		);
+		foreach ( $by_tag as $p ) {
+			$found[ (int) $p->ID ] = $p;
+			$exclude[]             = (int) $p->ID;
 		}
-		$cards[] = [
-			'label'   => __( 'Solutions by trade', 'jcp-core' ),
-			'url'     => $industries,
-			'excerpt' => __( 'Browse industry pages for plumbers, HVAC, roofers, and more home-service trades.', 'jcp-core' ),
-			'type'    => 'trade',
-		];
 	}
 
-	$features_url  = home_url( '/features/' );
-	$features_page = get_page_by_path( 'features' );
-	if ( $features_page instanceof WP_Post && $features_page->post_status === 'publish' ) {
-		$features_url = get_permalink( $features_page );
+	if ( count( $found ) < $limit ) {
+		$cat_ids = wp_get_post_categories( $post_id );
+		if ( is_array( $cat_ids ) && $cat_ids !== [] ) {
+			$by_cat = get_posts(
+				[
+					'post_type'           => 'post',
+					'post_status'         => 'publish',
+					'posts_per_page'      => $limit - count( $found ),
+					'post__not_in'        => $exclude,
+					'category__in'        => $cat_ids,
+					'ignore_sticky_posts' => true,
+					'no_found_rows'       => true,
+				]
+			);
+			foreach ( $by_cat as $p ) {
+				$found[ (int) $p->ID ] = $p;
+				$exclude[]             = (int) $p->ID;
+			}
+		}
 	}
-	$cards[] = [
-		'label'   => __( 'Product features', 'jcp-core' ),
-		'url'     => $features_url,
-		'excerpt' => __( 'Proof that compounds across Google, your website, social, and reviews — from jobs you already complete.', 'jcp-core' ),
-		'type'    => 'feature',
-	];
 
-	return array_slice( $cards, 0, 2 );
+	if ( count( $found ) < $limit ) {
+		$recent = get_posts(
+			[
+				'post_type'           => 'post',
+				'post_status'         => 'publish',
+				'posts_per_page'      => $limit - count( $found ),
+				'post__not_in'        => $exclude,
+				'ignore_sticky_posts' => true,
+				'no_found_rows'       => true,
+			]
+		);
+		foreach ( $recent as $p ) {
+			$found[ (int) $p->ID ] = $p;
+		}
+	}
+
+	return array_values( array_slice( $found, 0, $limit ) );
 }
 
 /**
@@ -393,7 +411,7 @@ function jcp_blog_conversion_inject_mid_content( string $content ): string {
 add_filter( 'the_content', 'jcp_blog_conversion_inject_mid_content', 12 );
 
 /**
- * Render end-of-post conversion band + related hubs.
+ * Render end-of-post conversion band + related blog posts.
  *
  * @param int $post_id Post ID.
  */
@@ -401,21 +419,22 @@ function jcp_blog_conversion_render_end( int $post_id ): void {
 	if ( ! jcp_blog_conversion_enabled() ) {
 		return;
 	}
-	$copy  = jcp_blog_conversion_end_copy( $post_id );
-	$ctas  = jcp_blog_conversion_ctas( 'end' );
-	$hubs  = jcp_blog_conversion_related_hubs( $post_id );
-	$trade = jcp_blog_conversion_detect_trade( $post_id );
+	$copy    = jcp_blog_conversion_end_copy( $post_id );
+	$ctas    = jcp_blog_conversion_ctas( 'end' );
+	$related = jcp_blog_conversion_related_posts( $post_id, 3 );
+	$trade   = jcp_blog_conversion_detect_trade( $post_id );
 	?>
-	<section class="jcp-section rankings-section jcp-blog-end-conversion" data-jcp-blog-cta="end"<?php echo $trade ? ' data-jcp-trade="' . esc_attr( $trade['slug'] ) . '"' : ''; ?>>
-		<div class="jcp-container">
-			<div class="rankings-cta jcp-blog-end-cta">
-				<div class="cta-content">
-					<h3><?php echo esc_html( $copy['headline'] ); ?></h3>
-					<p class="cta-paragraph"><?php echo esc_html( $copy['subheadline'] ); ?></p>
+	<section class="jcp-section jcp-blog-end-conversion" data-jcp-blog-cta="end"<?php echo $trade ? ' data-jcp-trade="' . esc_attr( $trade['slug'] ) . '"' : ''; ?>>
+		<div class="jcp-container jcp-single-post-container">
+			<div class="jcp-blog-end-cta">
+				<div class="jcp-blog-end-cta__copy">
+					<p class="jcp-blog-end-cta__eyebrow"><?php esc_html_e( 'See it live', 'jcp-core' ); ?></p>
+					<h2 class="jcp-blog-end-cta__title"><?php echo esc_html( $copy['headline'] ); ?></h2>
+					<p class="jcp-blog-end-cta__body"><?php echo esc_html( $copy['subheadline'] ); ?></p>
 				</div>
-				<div class="cta-button-wrapper jcp-blog-end-cta__actions">
+				<div class="jcp-blog-end-cta__actions">
 					<a
-						class="btn btn-primary rankings-cta-btn"
+						class="btn btn-primary jcp-blog-end-cta__btn"
 						href="<?php echo esc_url( $ctas['demo']['url'] ); ?>"
 						<?php
 						if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
@@ -423,20 +442,35 @@ function jcp_blog_conversion_render_end( int $post_id ): void {
 						}
 						?>
 					><?php echo esc_html( $ctas['demo']['label'] ); ?></a>
-					<p class="cta-note"><?php echo esc_html( $copy['note'] ); ?></p>
+					<p class="jcp-blog-end-cta__note"><?php echo esc_html( $copy['note'] ); ?></p>
 				</div>
 			</div>
 
-			<?php if ( $hubs ) : ?>
+			<?php if ( $related ) : ?>
 				<div class="jcp-blog-related">
-					<h3 class="jcp-blog-related__title"><?php esc_html_e( 'Keep exploring', 'jcp-core' ); ?></h3>
+					<h2 class="jcp-blog-related__title"><?php esc_html_e( 'Related reading', 'jcp-core' ); ?></h2>
 					<div class="jcp-blog-related__grid">
-						<?php foreach ( $hubs as $card ) : ?>
-							<a class="jcp-blog-related__card" href="<?php echo esc_url( $card['url'] ); ?>" data-jcp-related="<?php echo esc_attr( $card['type'] ); ?>">
-								<span class="jcp-blog-related__card-type"><?php echo esc_html( ucfirst( $card['type'] ) ); ?></span>
-								<strong class="jcp-blog-related__card-title"><?php echo esc_html( $card['label'] ); ?></strong>
-								<span class="jcp-blog-related__card-excerpt"><?php echo esc_html( $card['excerpt'] ); ?></span>
-								<span class="jcp-blog-related__card-link"><?php esc_html_e( 'Learn more', 'jcp-core' ); ?> →</span>
+						<?php foreach ( $related as $post ) : ?>
+							<?php
+							$cats     = get_the_category( (int) $post->ID );
+							$cat_name = ( is_array( $cats ) && isset( $cats[0] ) ) ? $cats[0]->name : '';
+							$thumb    = get_the_post_thumbnail_url( (int) $post->ID, 'medium_large' );
+							?>
+							<a class="jcp-blog-related__card" href="<?php echo esc_url( get_permalink( $post ) ); ?>">
+								<?php if ( is_string( $thumb ) && $thumb !== '' ) : ?>
+									<span class="jcp-blog-related__media" style="background-image: url(<?php echo esc_url( $thumb ); ?>);"></span>
+								<?php else : ?>
+									<span class="jcp-blog-related__media jcp-blog-related__media--empty" aria-hidden="true"></span>
+								<?php endif; ?>
+								<span class="jcp-blog-related__body">
+									<?php if ( $cat_name !== '' ) : ?>
+										<span class="jcp-blog-related__cat"><?php echo esc_html( $cat_name ); ?></span>
+									<?php endif; ?>
+									<strong class="jcp-blog-related__card-title"><?php echo esc_html( get_the_title( $post ) ); ?></strong>
+									<span class="jcp-blog-related__meta">
+										<time datetime="<?php echo esc_attr( get_the_date( 'c', $post ) ); ?>"><?php echo esc_html( get_the_date( '', $post ) ); ?></time>
+									</span>
+								</span>
 							</a>
 						<?php endforeach; ?>
 					</div>
