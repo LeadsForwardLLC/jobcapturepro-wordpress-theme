@@ -562,23 +562,20 @@ function jcp_niche_render_how_it_works( array $c, string $niche_key ): void {
 			<?php endif; ?>
 			<?php
 			jcp_niche_render_section_optional_ctas(
-				[
-					'cta_primary'   => [ 'label' => $primary['label'], 'url' => $primary['url'] ],
-					'cta_secondary' => $secondary,
-				],
+				array_merge(
+					[
+						'cta_primary'   => [ 'label' => $primary['label'], 'url' => $primary['url'] ],
+						'cta_secondary' => $secondary,
+					],
+					array_intersect_key(
+						$h,
+						array_flip( [ 'show_cta', 'show_cta_secondary' ] )
+					)
+				),
 				'how_it_works',
 				$niche_key,
 				[ 'secondary' => true ]
 			);
-			?>
-			<?php
-			if (
-				jcp_niche_show_field( $h, 'show_demo_preview', true )
-				&& ! empty( $h['demo_preview'] )
-				&& is_array( $h['demo_preview'] )
-			) {
-				jcp_niche_render_demo_preview( $h['demo_preview'], $niche_key, 'how_it_works.demo_preview' );
-			}
 			?>
 		</div>
 	</section>

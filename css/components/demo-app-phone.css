@@ -1,8 +1,61 @@
 /**
- * Static app prototype phone mockup (Check-ins screen from /prototype).
+ * Demo preview phone mockup — iPhone-sized check-ins animation.
  *
  * @package JCP_Core
  */
+
+/* ---- Layout: match hero phone footprint ---- */
+
+.demo-preview-phone-stack {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.demo-preview-phone-mockup.hero-phone-mockup {
+  display: block;
+  width: min(100%, 300px);
+  max-width: 300px;
+  margin-inline: auto;
+  flex-shrink: 0;
+}
+
+.jcp-block-demo-preview .demo-preview-visual,
+.demo-preview-section .demo-preview-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.jcp-block-demo-preview .jcp-media-slot,
+.jcp-block-demo-preview .jcp-media-variant--phone_mockup,
+.demo-preview-section .jcp-media-slot,
+.demo-preview-section .jcp-media-variant--phone_mockup {
+  width: auto;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
+.demo-preview-phone-mockup .phone-screen {
+  aspect-ratio: 9 / 19.5;
+  width: 100%;
+  height: auto;
+  min-height: 0;
+}
+
+.demo-preview-phone-mockup .demo-app-screen {
+  min-height: 0;
+}
+
+.demo-preview-phone-mockup .demo-content-area {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---- App shell (static structure) ---- */
 
 .demo-phone-screen .phone-content {
   display: flex;
@@ -162,4 +215,167 @@
   width: 20px;
   height: 20px;
   filter: brightness(0) invert(1);
+}
+
+/* ---- Animated check-in card ---- */
+
+.demo-preview-checkin-card {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 0;
+  opacity: 0;
+  transform: translateY(12px);
+  pointer-events: none;
+}
+
+.demo-preview-checkin-card .demo-preview-item {
+  background: #fff;
+  border: 2px solid #e5e7eb;
+  border-radius: var(--jcp-radius-lg);
+  padding: var(--jcp-space-md);
+  display: flex;
+  gap: var(--jcp-space-md);
+  align-items: flex-start;
+  margin: 0;
+}
+
+.demo-preview-checkin-card .demo-item-icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: var(--jcp-color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.demo-preview-checkin-card .demo-item-icon .lucide-icon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
+.demo-preview-checkin-card .demo-item-title {
+  font-size: var(--jcp-font-size-sm);
+  font-weight: var(--jcp-font-weight-semibold);
+  color: var(--jcp-color-text-primary);
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+
+.demo-preview-checkin-card .demo-item-subtitle {
+  font-size: var(--jcp-font-size-xs);
+  color: var(--jcp-color-text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.demo-preview-published-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(16, 185, 129, 0.12);
+  color: var(--jcp-color-success, #10b981);
+  font-size: 10px;
+  font-weight: var(--jcp-font-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translateY(4px);
+}
+
+/* ---- 10s loop: empty → tap + → check-in → published ---- */
+
+.demo-preview-phone-anim .demo-preview-anim-empty {
+  animation: demoPreviewEmptyFade 10s ease-in-out infinite;
+}
+
+.demo-preview-phone-anim .demo-preview-anim-hint {
+  animation: demoPreviewHintPulse 10s ease-in-out infinite;
+}
+
+.demo-preview-phone-anim .demo-preview-anim-fab {
+  animation: demoPreviewFabPulse 10s ease-in-out infinite;
+}
+
+.demo-preview-phone-anim .demo-preview-anim-card {
+  animation: demoPreviewCardIn 10s ease-in-out infinite;
+}
+
+.demo-preview-phone-anim .demo-preview-published-badge {
+  animation: demoPreviewPublishedIn 10s ease-in-out infinite;
+}
+
+@keyframes demoPreviewEmptyFade {
+  0%, 32% { opacity: 1; transform: translateY(0); }
+  38%, 88% { opacity: 0; transform: translateY(-6px); }
+  94%, 100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes demoPreviewHintPulse {
+  0%, 18% { opacity: 1; transform: scale(1); }
+  22%, 28% { opacity: 1; transform: scale(1.04); box-shadow: 0 0 0 4px rgba(255, 80, 62, 0.12); }
+  32%, 100% { opacity: 0.6; transform: scale(1); }
+}
+
+@keyframes demoPreviewFabPulse {
+  0%, 20% { transform: scale(1); box-shadow: 0 4px 12px rgba(255, 80, 62, 0.3); }
+  24%, 30% { transform: scale(1.08); box-shadow: 0 6px 20px rgba(255, 80, 62, 0.45); }
+  34%, 100% { transform: scale(1); box-shadow: 0 4px 12px rgba(255, 80, 62, 0.3); }
+}
+
+@keyframes demoPreviewCardIn {
+  0%, 36% { opacity: 0; transform: translateY(12px); }
+  42%, 82% { opacity: 1; transform: translateY(0); }
+  88%, 100% { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes demoPreviewPublishedIn {
+  0%, 54% { opacity: 0; transform: translateY(4px); }
+  60%, 78% { opacity: 1; transform: translateY(0); }
+  84%, 100% { opacity: 0; transform: translateY(4px); }
+}
+
+@media (max-width: 900px) {
+  .demo-preview-phone-mockup.hero-phone-mockup {
+    max-width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .demo-preview-phone-mockup.hero-phone-mockup {
+    max-width: 260px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-preview-phone-anim .demo-preview-anim-empty,
+  .demo-preview-phone-anim .demo-preview-anim-hint,
+  .demo-preview-phone-anim .demo-preview-anim-fab,
+  .demo-preview-phone-anim .demo-preview-anim-card,
+  .demo-preview-phone-anim .demo-preview-published-badge {
+    animation: none;
+  }
+
+  .demo-preview-phone-anim .demo-preview-anim-empty {
+    opacity: 1;
+    transform: none;
+  }
+
+  .demo-preview-phone-anim .demo-preview-anim-card {
+    opacity: 1;
+    transform: none;
+    position: relative;
+    left: auto;
+    right: auto;
+    margin-top: 12px;
+  }
+
+  .demo-preview-phone-anim .demo-preview-published-badge {
+    opacity: 1;
+    transform: none;
+  }
 }

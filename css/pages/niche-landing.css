@@ -871,6 +871,22 @@ body.jcp-inline-editing .jcp-core-mechanic-meta > .meta-item.jcp-collection-item
   box-sizing: border-box;
 }
 
+body.jcp-inline-editing .directory-meta[data-jcp-array="hero.meta_stats"] {
+  flex-wrap: wrap;
+  align-items: stretch;
+  justify-content: center;
+  gap: var(--jcp-space-xl);
+}
+
+body.jcp-inline-editing .directory-meta[data-jcp-array="hero.meta_stats"] > .meta-item.jcp-collection-item {
+  flex: 1 1 10rem;
+  min-width: 9rem;
+  max-width: 16rem;
+  padding-top: 2rem;
+  padding-right: 2rem;
+  box-sizing: border-box;
+}
+
 body.jcp-inline-editing .jcp-core-mechanic-meta > .jcp-collection-add {
   flex: 0 1 10rem;
   width: auto;
@@ -999,6 +1015,17 @@ body.jcp-inline-editing [data-jcp-href-path]::after {
   box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
   width: min(320px, 100%);
   box-sizing: border-box;
+  font-family: var(--jcp-font-family-base, "Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--jcp-color-text-primary, #111827);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.jcp-text-link-modal .jcp-niche-link-popover {
+  width: 100%;
+  max-width: none;
 }
 
 body.jcp-editor-modal-open,
@@ -1078,6 +1105,28 @@ body.jcp-editor-modal-open .jcp-editor-modal * {
   max-height: min(72vh, 640px);
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+  font-family: var(--jcp-font-family-base, "Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--jcp-color-text-primary, #111827);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.jcp-text-link-modal .jcp-editor-modal__panel strong,
+.jcp-text-link-modal .jcp-niche-link-popover strong {
+  display: block;
+  font-family: inherit;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--jcp-color-text-primary, #111827);
+}
+
+.jcp-text-link-modal .jcp-niche-link-popover button,
+.jcp-text-link-modal .jcp-niche-link-popover input {
+  font-family: inherit;
 }
 
 .jcp-cta-link-modal .jcp-editor-modal__panel strong {
@@ -1180,6 +1229,9 @@ body.jcp-editor-modal-open .jcp-editor-modal * {
   justify-content: space-between;
   gap: 10px;
   text-align: left;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
 }
 
 .jcp-niche-link-popover__suggestion-copy {
@@ -1214,6 +1266,11 @@ body.jcp-editor-modal-open .jcp-editor-modal * {
   background: rgba(239, 68, 68, 0.12);
   color: #b91c1c;
   white-space: nowrap;
+}
+
+.jcp-niche-link-popover__suggestion-badge--match {
+  background: rgba(34, 197, 94, 0.14);
+  color: #15803d;
 }
 
 .jcp-niche-link-popover__suggestion-btn:hover {
@@ -1736,6 +1793,20 @@ body.jcp-structure-open {
   justify-content: center;
 }
 
+.jcp-block-root.jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .jcp-hero-grid,
+.jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .jcp-hero-grid {
+  grid-template-columns: 1fr;
+  max-width: min(52rem, 100%);
+  margin-inline: auto;
+  width: 100%;
+}
+
+.jcp-block-root.jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .jcp-hero-subtitle,
+.jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .jcp-hero-subtitle {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
 /* Hero layout variants */
 .jcp-block-root.jcp-hero-variant-condensed .jcp-hero-grid,
 .jcp-hero-variant-condensed .jcp-hero-grid {
@@ -1901,6 +1972,14 @@ body.jcp-structure-open {
 .jcp-media-variant,
 .jcp-media-variant--video {
   width: 100%;
+  max-width: 100%;
+}
+
+.jcp-block-demo-preview .jcp-media-slot,
+.jcp-block-demo-preview .jcp-media-variant--phone_mockup,
+.demo-preview-section .jcp-media-slot,
+.demo-preview-section .jcp-media-variant--phone_mockup {
+  width: auto;
   max-width: 100%;
 }
 
@@ -2531,6 +2610,10 @@ body.jcp-inline-editing .jcp-split-col .jcp-col-drag-handle {
 .jcp-block-root.jcp-section-surface--dark .cta-content h3,
 .jcp-block-root.jcp-section-surface--dark .cta-paragraph,
 .jcp-block-root.jcp-section-surface--dark .cta-note,
+.jcp-block-root.jcp-section-surface--dark .demo-preview-title,
+.jcp-block-root.jcp-section-surface--dark .demo-preview-description,
+.jcp-block-root.jcp-section-surface--dark .demo-preview-cue,
+.jcp-block-root.jcp-section-surface--dark .demo-cta-note,
 .jcp-block-root.jcp-section-surface--image .rankings-header h2,
 .jcp-block-root.jcp-section-surface--image .rankings-header h3,
 .jcp-block-root.jcp-section-surface--image .rankings-subtitle,
@@ -2540,7 +2623,37 @@ body.jcp-inline-editing .jcp-split-col .jcp-col-drag-handle {
 .jcp-block-root.jcp-section-surface--image .rankings-supporting,
 .jcp-block-root.jcp-section-surface--image .cta-content h3,
 .jcp-block-root.jcp-section-surface--image .cta-paragraph,
-.jcp-block-root.jcp-section-surface--image .cta-note {
+.jcp-block-root.jcp-section-surface--image .cta-note,
+.jcp-block-root.jcp-section-surface--image .demo-preview-title,
+.jcp-block-root.jcp-section-surface--image .demo-preview-description,
+.jcp-block-root.jcp-section-surface--image .demo-preview-cue,
+.jcp-block-root.jcp-section-surface--image .demo-cta-note {
+  color: #ffffff;
+}
+
+/* Brand / photo surfaces — white primary buttons for contrast */
+.jcp-block-root.jcp-section-surface--dark .btn-primary,
+.jcp-block-root.jcp-section-surface--dark .demo-cta-primary,
+.jcp-block-root.jcp-section-surface--image .btn-primary,
+.jcp-block-root.jcp-section-surface--image .demo-cta-primary {
+  background: #ffffff;
+  color: var(--jcp-color-text-primary, #1a2233);
+  border-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.jcp-block-root.jcp-section-surface--dark .btn-primary:hover:not(:disabled),
+.jcp-block-root.jcp-section-surface--dark .demo-cta-primary:hover:not(:disabled),
+.jcp-block-root.jcp-section-surface--image .btn-primary:hover:not(:disabled),
+.jcp-block-root.jcp-section-surface--image .demo-cta-primary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(255, 255, 255, 0.94);
+  color: var(--jcp-color-text-primary, #1a2233);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.16);
+}
+
+.jcp-block-root.jcp-section-surface--dark .benefits-cta-link,
+.jcp-block-root.jcp-section-surface--image .benefits-cta-link {
   color: #ffffff;
 }
 

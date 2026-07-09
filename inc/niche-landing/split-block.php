@@ -55,6 +55,7 @@ function jcp_niche_normalize_split_block_props( array $props ): array {
 
 	foreach (
 		[
+			'show_headline'    => $headline !== '',
 			'show_badge'       => $badge !== '',
 			'show_subheadline' => $subheadline !== '',
 			'show_cue'         => $cue !== '',
@@ -155,8 +156,8 @@ function jcp_niche_render_split_media_block( array $props, string $path, string 
 				</svg>
 				<span<?php jcp_niche_editable_attr( $path . '.badge' ); ?>><?php echo esc_html( jcp_niche_split_field_display( $props, 'badge' ) ); ?></span>
 			</div>
-			<?php if ( trim( (string) ( $props['headline'] ?? '' ) ) !== '' ) : ?>
-				<h3 class="demo-preview-title"<?php jcp_niche_editable_attr( $path . '.headline' ); ?>><?php echo esc_html( (string) $props['headline'] ); ?></h3>
+			<?php if ( trim( (string) ( $props['headline'] ?? '' ) ) !== '' || jcp_niche_user_can_inline_edit() ) : ?>
+				<h3 class="demo-preview-title"<?php echo empty( $props['show_headline'] ) ? ' style="display:none"' : ''; ?><?php jcp_niche_editable_attr( $path . '.headline' ); ?>><?php echo esc_html( (string) ( $props['headline'] ?? '' ) ); ?></h3>
 			<?php endif; ?>
 			<p class="rankings-subtitle jcp-split-subheadline"<?php echo empty( $props['show_subheadline'] ) ? ' style="display:none"' : ''; ?><?php jcp_niche_editable_attr( $path . '.subheadline' ); ?>><?php
 			$subheadline = trim( (string) ( $props['subheadline'] ?? '' ) );

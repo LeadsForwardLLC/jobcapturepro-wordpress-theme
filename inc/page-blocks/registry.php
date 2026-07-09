@@ -63,7 +63,7 @@ function jcp_block_registry(): array {
 			'description'  => __( 'Live demo CTA with interactive phone mockup', 'jcp-core' ),
 			'category'     => 'content',
 			'legacy_key'   => 'demo_preview',
-			'doc_sections' => [],
+			'doc_sections' => [ 'DEMO PREVIEW' ],
 			'page_kinds'   => [ 'home', 'marketing' ],
 		],
 		'how_it_works' => [
@@ -90,7 +90,7 @@ function jcp_block_registry(): array {
 			'description'  => __( 'Channel flow — one job to Google, web, social, reviews', 'jcp-core' ),
 			'category'     => 'content',
 			'legacy_key'   => 'proof_flow',
-			'doc_sections' => [],
+			'doc_sections' => [ 'PROOF FLOW' ],
 			'page_kinds'   => [ 'home', 'marketing' ],
 		],
 		'problem' => [
@@ -135,7 +135,7 @@ function jcp_block_registry(): array {
 			'description'  => __( 'Sample directory listing cards', 'jcp-core' ),
 			'category'     => 'content',
 			'legacy_key'   => 'directory_preview',
-			'doc_sections' => [],
+			'doc_sections' => [ 'DIRECTORY PREVIEW' ],
 			'page_kinds'   => [ 'home', 'marketing' ],
 		],
 		'faq' => [
@@ -171,7 +171,7 @@ function jcp_block_registry(): array {
 			'description'  => __( 'Mid-page CTA strip', 'jcp-core' ),
 			'category'     => 'cta',
 			'legacy_key'   => 'cta_band_1',
-			'doc_sections' => [],
+			'doc_sections' => [ 'CTA BAND' ],
 			'page_kinds'   => [ 'referral', 'marketing' ],
 		],
 		'commission' => [
@@ -180,7 +180,7 @@ function jcp_block_registry(): array {
 			'description'  => __( 'Referral commission tiers', 'jcp-core' ),
 			'category'     => 'content',
 			'legacy_key'   => 'commission',
-			'doc_sections' => [],
+			'doc_sections' => [ 'COMMISSION' ],
 			'page_kinds'   => [ 'referral' ],
 		],
 		'partners' => [
@@ -189,7 +189,7 @@ function jcp_block_registry(): array {
 			'description'  => __( 'Partner types grid', 'jcp-core' ),
 			'category'     => 'content',
 			'legacy_key'   => 'partners',
-			'doc_sections' => [],
+			'doc_sections' => [ 'PARTNERS' ],
 			'page_kinds'   => [ 'referral' ],
 		],
 		'share' => [
@@ -198,7 +198,7 @@ function jcp_block_registry(): array {
 			'description'  => __( 'Share / link copy section', 'jcp-core' ),
 			'category'     => 'content',
 			'legacy_key'   => 'share',
-			'doc_sections' => [],
+			'doc_sections' => [ 'SHARE' ],
 			'page_kinds'   => [ 'referral' ],
 		],
 	];
@@ -389,8 +389,13 @@ function jcp_page_default_block_props( string $type ): array {
 			'headline'        => __( 'See it in action', 'jcp-core' ),
 			'body'            => '',
 			'cta_primary'     => [ 'label' => __( 'Launch Interactive Demo', 'jcp-core' ), 'url' => '/demo' ],
+			'cta_note'        => __( 'No signup required • Takes 2 minutes', 'jcp-core' ),
 			'media_type'      => 'phone_mockup',
 			'media_position'  => 'right',
+			'show_headline'   => true,
+			'show_body'       => true,
+			'show_cta'        => true,
+			'show_cta_note'   => true,
 		],
 		'directory_preview' => [
 			'headline' => __( 'Section headline', 'jcp-core' ),

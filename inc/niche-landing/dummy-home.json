@@ -21,8 +21,9 @@
     "headline": "How JobCapturePro works",
     "subheadline": "Every completed job becomes verified proof across every channel that matters. Here's the simple flow your crew already knows.",
     "numeric_steps": true,
-    "cta_label": "See the demo version of this flow",
-    "cta_url": "#demo-preview",
+    "cta_primary": { "label": "See the demo version of this flow", "url": "#demo-preview" },
+    "cta_secondary": { "label": "View pricing", "url": "/pricing" },
+    "show_cta_secondary": false,
     "steps": [
       { "title": "Capture", "lines": ["Crew snaps a photo or the job completes in your CRM."] },
       { "title": "AI Check-In", "lines": ["JobCapturePro generates the full check-in automatically."] },
@@ -36,7 +37,11 @@
     "body": "Watch how JobCapturePro turns a single job photo into verified proof across Google Maps, your website, directory listings, and review requests — all automatically.",
     "cue": "You will see how one job becomes Google updates, website proof, directory presence, and review requests.",
     "cta_primary": { "label": "Launch Interactive Demo", "url": "/demo" },
-    "cta_note": "No signup required • Takes 2 minutes"
+    "cta_note": "No signup required • Takes 2 minutes",
+    "show_cta": true,
+    "show_cta_note": true,
+    "show_headline": true,
+    "show_body": true
   },
   "proof_flow": {
     "headline": "Real job proof, not marketing claims",

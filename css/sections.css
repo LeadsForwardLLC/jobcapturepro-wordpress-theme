@@ -94,7 +94,7 @@
 }
 
 .jcp-home .jcp-hero-title {
-  font-size: clamp(44px, 5.5vw, 72px);
+  font-size: clamp(38px, 4.6vw, 58px);
   font-weight: var(--jcp-font-weight-extrabold);
   line-height: var(--jcp-line-height-tight);
   color: var(--jcp-color-text-primary);
@@ -401,7 +401,7 @@
   }
 
   .jcp-home .jcp-hero-title {
-    font-size: clamp(36px, 6vw, 52px);
+    font-size: clamp(32px, 5.2vw, 46px);
   }
 
   .hero-media-card {
@@ -510,7 +510,7 @@
 
 @media (max-width: 640px) {
   .jcp-home .jcp-hero-title {
-    font-size: 36px;
+    font-size: clamp(28px, 7vw, 34px);
   }
 
   .jcp-home .jcp-hero-subtitle {
@@ -1199,13 +1199,13 @@
 /* Phone Mockup Preview */
 .demo-preview-visual {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
 }
 
 .demo-phone-mockup {
-  width: 100%;
-  max-width: 320px;
+  width: min(100%, 300px);
+  max-width: 300px;
   text-decoration: none;
   color: inherit;
   cursor: pointer;

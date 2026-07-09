@@ -140,7 +140,7 @@ function jcp_niche_render_layout_template_picker( WP_Post $post, string $preset 
 	?>
 	<div class="jcp-layout-picker">
 		<h3 class="jcp-admin-page-editor__heading"><?php esc_html_e( 'Page layout template', 'jcp-core' ); ?></h3>
-		<p class="description"><?php esc_html_e( 'Choose the section stack for this page. Apply after switching templates — then re-import or edit sections.', 'jcp-core' ); ?></p>
+		<p class="description"><?php esc_html_e( 'Choose the section stack for this page. Changing layout updates the writer template and AI prompt. Click Apply layout template to reset sections, or add/reorder sections freely in the live editor.', 'jcp-core' ); ?></p>
 		<p>
 			<label for="jcp_page_layout_preset"><strong><?php esc_html_e( 'Layout', 'jcp-core' ); ?></strong></label>
 			<select name="jcp_page_layout_preset" id="jcp_page_layout_preset">
@@ -396,6 +396,7 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 				<button type="button" class="button button-primary" id="jcp-copy-ai-prompt-inline"><?php esc_html_e( 'Copy AI prompt', 'jcp-core' ); ?></button>
 				<?php if ( $template !== '' ) : ?>
 					<button type="button" class="button" id="jcp-copy-writer-template-inline"><?php esc_html_e( 'Copy template only', 'jcp-core' ); ?></button>
+					<span class="description" id="jcp-copy-template-inline-status" style="margin-left:8px;"></span>
 				<?php endif; ?>
 				<span class="description" id="jcp-copy-ai-prompt-inline-status" style="margin-left:8px;"></span>
 			</p>
@@ -404,7 +405,7 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 
 		<details class="jcp-doc-import__guide" open>
 			<summary><?php esc_html_e( 'Section headers for this page type', 'jcp-core' ); ?></summary>
-			<p class="description"><?php esc_html_e( 'Use these ALL CAPS lines in your doc. Sections marked “optional on this page” are parsed but only appear on industry/trade pages.', 'jcp-core' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Use these ALL CAPS lines in your doc. Sections marked “optional on this page” are not in this layout’s default stack — you can still add them; they import and appear in the page editor.', 'jcp-core' ); ?></p>
 			<ul class="jcp-doc-import__sections">
 				<?php foreach ( $sections as $row ) : ?>
 					<li class="<?php echo ! empty( $row['on_page'] ) ? 'is-on-page' : 'is-extra'; ?>">
@@ -909,6 +910,12 @@ function jcp_niche_save_meta_box( int $post_id ): void {
 		}
 		if ( empty( $decoded['page_kind'] ) && (int) get_option( 'page_on_front' ) === $post_id ) {
 			$decoded['page_kind'] = 'home';
+		}
+		if ( isset( $_POST['jcp_page_layout_preset'] ) && get_page_template_slug( $post_id ) === 'page-jcp-blocks.php' ) {
+			$layout_preset = sanitize_key( (string) wp_unslash( $_POST['jcp_page_layout_preset'] ) );
+			if ( jcp_page_get_preset( $layout_preset ) ) {
+				$decoded['preset'] = $layout_preset;
+			}
 		}
 	}
 	jcp_page_save_content( $post_id, $decoded );

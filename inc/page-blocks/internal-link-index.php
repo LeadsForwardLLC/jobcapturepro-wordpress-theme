@@ -79,7 +79,7 @@ function jcp_internal_link_is_valid_target( string $path ): bool {
 
 	// Social-style single-segment paths (e.g. /jobcapturepro, /@handle).
 	$segments = array_values( array_filter( explode( '/', trim( $path, '/' ) ) ) );
-	if ( count( $segments ) === 1 && preg_match( '/^@?[a-z0-9_-]{3,}$/i', $segments[0] ) && ! in_array( $segments[0], [ 'demo', 'pricing', 'blog', 'contact', 'features', 'industries', 'resources' ], true ) ) {
+	if ( count( $segments ) === 1 && preg_match( '/^@?[a-z0-9_-]{3,}$/i', $segments[0] ) && ! in_array( $segments[0], [ 'demo', 'pricing', 'blog', 'contact', 'features', 'industries', 'resources', 'directory' ], true ) ) {
 		return false;
 	}
 
@@ -237,6 +237,121 @@ function jcp_internal_link_page_keywords( int $post_id, array $flat ): array {
 }
 
 /**
+ * Marketing routes that may not use JCP block content but are valid link targets.
+ *
+ * @return array<int, array<string, mixed>>
+ */
+function jcp_internal_link_static_pages(): array {
+	$routes = [
+		[
+			'path'     => '/directory',
+			'label'    => __( 'Directory', 'jcp-core' ),
+			'hub'      => 'resource',
+			'keywords' => [ 'directory', 'contractors', 'listings', 'find', 'contractor' ],
+		],
+		[
+			'path'     => '/features',
+			'label'    => __( 'Features', 'jcp-core' ),
+			'hub'      => 'feature',
+			'keywords' => [ 'features', 'feature' ],
+		],
+		[
+			'path'     => '/pricing',
+			'label'    => __( 'Pricing', 'jcp-core' ),
+			'hub'      => 'conversion',
+			'keywords' => [ 'pricing', 'price', 'plans' ],
+		],
+		[
+			'path'     => '/demo',
+			'label'    => __( 'Live demo', 'jcp-core' ),
+			'hub'      => 'conversion',
+			'keywords' => [ 'demo', 'interactive', 'trial' ],
+		],
+		[
+			'path'     => '/contact',
+			'label'    => __( 'Contact', 'jcp-core' ),
+			'hub'      => 'conversion',
+			'keywords' => [ 'contact', 'sales' ],
+		],
+		[
+			'path'     => '/blog',
+			'label'    => __( 'Blog', 'jcp-core' ),
+			'hub'      => 'resource',
+			'keywords' => [ 'blog', 'resources', 'articles' ],
+		],
+		[
+			'path'     => '/industries',
+			'label'    => __( 'Industries', 'jcp-core' ),
+			'hub'      => 'trade',
+			'keywords' => [ 'industries', 'trades', 'trade' ],
+		],
+	];
+
+	$out = [];
+	foreach ( $routes as $route ) {
+		$path = jcp_internal_link_normalize_href( home_url( (string) $route['path'] ) );
+		if ( $path === '' || ! jcp_internal_link_is_valid_target( $path ) ) {
+			continue;
+		}
+
+		$slug  = basename( $path );
+		$page  = get_page_by_path( $slug );
+		$label = ( $page instanceof WP_Post && get_the_title( $page ) !== '' )
+			? get_the_title( $page )
+			: (string) $route['label'];
+
+		$keywords = array_values(
+			array_unique(
+				array_merge(
+					(array) $route['keywords'],
+					jcp_internal_link_tokenize( $label ),
+					jcp_internal_link_tokenize( $slug )
+				)
+			)
+		);
+
+		$out[] = [
+			'id'            => $page instanceof WP_Post ? (int) $page->ID : 0,
+			'href'          => $path,
+			'label'         => $label,
+			'hub'           => (string) $route['hub'],
+			'focus_keyword' => '',
+			'keywords'      => $keywords,
+		];
+	}
+
+	return $out;
+}
+
+/**
+ * Merge link index pages without duplicate hrefs.
+ *
+ * @param array<int, array<string, mixed>> $pages Existing pages.
+ * @param array<int, array<string, mixed>> $extra Pages to add.
+ * @return array<int, array<string, mixed>>
+ */
+function jcp_internal_link_merge_pages( array $pages, array $extra ): array {
+	$seen = [];
+	foreach ( $pages as $page ) {
+		if ( is_array( $page ) && ! empty( $page['href'] ) ) {
+			$seen[ (string) $page['href'] ] = true;
+		}
+	}
+	foreach ( $extra as $page ) {
+		if ( ! is_array( $page ) ) {
+			continue;
+		}
+		$href = (string) ( $page['href'] ?? '' );
+		if ( $href === '' || isset( $seen[ $href ] ) ) {
+			continue;
+		}
+		$pages[]       = $page;
+		$seen[ $href ] = true;
+	}
+	return $pages;
+}
+
+/**
  * Collect linkable published pages.
  *
  * @return array<int, WP_Post>
@@ -272,7 +387,7 @@ function jcp_internal_link_collect_posts(): array {
  * @return array{pages: array<int, array<string, mixed>>, inbound: array<string, int>}
  */
 function jcp_internal_link_build_index(): array {
-	$cached = get_transient( 'jcp_internal_link_index_v2' );
+	$cached = get_transient( 'jcp_internal_link_index_v3' );
 	if ( is_array( $cached ) && isset( $cached['pages'], $cached['inbound'] ) ) {
 		return $cached;
 	}
@@ -342,11 +457,13 @@ function jcp_internal_link_build_index(): array {
 		];
 	}
 
+	$pages = jcp_internal_link_merge_pages( $pages, jcp_internal_link_static_pages() );
+
 	$data = [
 		'pages'   => $pages,
 		'inbound' => $inbound,
 	];
-	set_transient( 'jcp_internal_link_index_v2', $data, HOUR_IN_SECONDS );
+	set_transient( 'jcp_internal_link_index_v3', $data, HOUR_IN_SECONDS );
 
 	return $data;
 }
@@ -398,6 +515,7 @@ function jcp_internal_link_clear_cache( int $post_id ): void {
 	}
 	delete_transient( 'jcp_internal_link_index_v1' );
 	delete_transient( 'jcp_internal_link_index_v2' );
+	delete_transient( 'jcp_internal_link_index_v3' );
 }
 add_action( 'save_post_jcp_niche_landing', 'jcp_internal_link_clear_cache' );
 add_action( 'save_post_page', 'jcp_internal_link_clear_cache' );

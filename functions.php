@@ -59,7 +59,6 @@ require_once get_template_directory() . '/inc/niche-landing/components.php';
 require_once get_template_directory() . '/inc/niche-landing/media.php';
 require_once get_template_directory() . '/inc/niche-landing/editable.php';
 require_once get_template_directory() . '/inc/niche-landing/split-block.php';
-require_once get_template_directory() . '/inc/niche-landing/split-block.php';
 require_once get_template_directory() . '/inc/niche-landing/render.php';
 require_once get_template_directory() . '/inc/page-blocks/render.php';
 require_once get_template_directory() . '/inc/page-blocks/rest-content.php';

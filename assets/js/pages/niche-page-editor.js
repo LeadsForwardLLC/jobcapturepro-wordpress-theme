@@ -57,6 +57,9 @@
     'jcp-section-surface--custom',
   ];
 
+  const SECTION_CTA_PRIMARY_SELECTOR = '.jcp-section-cta-row [data-jcp-optional$=".cta_primary"]';
+  const SECTION_CTA_SECONDARY_SELECTOR = '.jcp-section-cta-row [data-jcp-optional$=".cta_secondary"]';
+
   const BLOCK_VISIBILITY_TOGGLES = {
     hero: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-hero-subtitle', defaultOn: true },
@@ -70,16 +73,15 @@
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
-      { key: 'show_cta', label: 'Primary button', selector: '.jcp-section-cta-row .benefits-cta-slot:first-child', defaultOn: false },
-      { key: 'show_cta_secondary', label: 'Secondary link', selector: '.jcp-section-cta-row .benefits-cta-slot:last-child', defaultOn: false },
+      { key: 'show_cta', label: 'Primary button', selector: SECTION_CTA_PRIMARY_SELECTOR, defaultOn: false },
+      { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
     ],
     how_it_works: [
       { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_steps', label: 'Step cards', selector: '.timeline-steps', defaultOn: true },
-      { key: 'show_demo_preview', label: 'Live demo strip', selector: '.demo-preview-section, .jcp-block-demo-preview', defaultOn: true },
-      { key: 'show_cta', label: 'Primary button', selector: '.jcp-section-cta-row .benefits-cta-slot:first-child', defaultOn: true },
-      { key: 'show_cta_secondary', label: 'Secondary link', selector: '.jcp-section-cta-row .benefits-cta-slot:last-child', defaultOn: false },
+      { key: 'show_cta', label: 'Primary button', selector: SECTION_CTA_PRIMARY_SELECTOR, defaultOn: true },
+      { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
     ],
     check_ins: [
       { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
@@ -99,8 +101,8 @@
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
-      { key: 'show_cta', label: 'Primary button', selector: '.jcp-section-cta-row .benefits-cta-slot:first-child', defaultOn: false },
-      { key: 'show_cta_secondary', label: 'Secondary link', selector: '.jcp-section-cta-row .benefits-cta-slot:last-child', defaultOn: false },
+      { key: 'show_cta', label: 'Primary button', selector: SECTION_CTA_PRIMARY_SELECTOR, defaultOn: false },
+      { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
     ],
     differentiation: [
       { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
@@ -152,8 +154,7 @@
       { key: 'show_stats', label: 'Stat row', selector: '.jcp-core-mechanic-meta, .directory-meta', defaultOn: true },
     ],
     cta_band: [
-      { key: 'show_cta_primary', label: 'Primary button', selector: '.jcp-niche-cta-band .btn-primary', defaultOn: true },
-      { key: 'show_cta_secondary', label: 'Secondary button', selector: '.jcp-niche-cta-band .btn-secondary', defaultOn: true },
+      { key: 'show_cta_primary', label: 'Button', selector: '.jcp-niche-cta-band .btn-primary', defaultOn: true },
     ],
   };
 
@@ -205,6 +206,11 @@
       headline: 'See it in action',
       body: '',
       cta_primary: { label: 'Launch Interactive Demo', url: '/demo' },
+      cta_note: 'No signup required • Takes 2 minutes',
+      show_headline: true,
+      show_body: true,
+      show_cta: true,
+      show_cta_note: true,
     },
     directory_preview: { headline: 'Section headline', cards: [] },
     media_text: {
@@ -742,13 +748,21 @@
     return block.props?.media_position === 'left' ? 'left' : 'right';
   };
 
-  const resolveHeroCtaMode = (block) => {
-    const primary = block.props?.show_cta_primary !== false;
-    const secondary = block.props?.show_cta_secondary !== false;
-    if (!primary && !secondary) return 'none';
-    if (primary && secondary) return 'both';
-    if (primary) return 'primary';
-    return 'secondary';
+  const getLiveBlock = (block) => (pageDocument.blocks || []).find((entry) => entry.id === block.id) || block;
+
+  const isHeroFieldOn = (block, key, defaultOn = true) => {
+    const liveBlock = getLiveBlock(block);
+    if (liveBlock.props && Object.prototype.hasOwnProperty.call(liveBlock.props, key)) {
+      if (liveBlock.props[key] === true || liveBlock.props[key] === false) {
+        return liveBlock.props[key] !== false;
+      }
+    }
+    const lk = blockLegacyKey(liveBlock);
+    if (lk) {
+      const val = getPath(flatContent, `${lk}.${key}`);
+      if (val === true || val === false) return val !== false;
+    }
+    return defaultOn;
   };
 
   const resolveSectionSurface = (block) => {
@@ -776,19 +790,24 @@
   };
 
   const setBlockFieldVisible = (block, key, enabled, selector) => {
-    block.props = block.props || {};
-    block.props[key] = enabled;
-    const lk = blockLegacyKey(block);
+    const liveBlock = getLiveBlock(block);
+    liveBlock.props = liveBlock.props || {};
+    liveBlock.props[key] = enabled;
+    const lk = blockLegacyKey(liveBlock);
     if (lk) setPath(flatContent, `${lk}.${key}`, enabled);
-    const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
-    if (root && selector) {
-      root.querySelectorAll(selector).forEach((el) => {
-        el.style.display = enabled ? '' : 'none';
-      });
+
+    if (key === 'show_cta_secondary' && enabled && lk) {
+      const secPath = `${lk}.cta_secondary`;
+      const sec = getPath(flatContent, secPath);
+      if (!sec || !String(sec.label || '').trim()) {
+        setPath(flatContent, secPath, { label: 'Learn more', url: '/pricing' });
+      }
+      if (typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
+        window.JCP_REFRESH_COLLECTIONS();
+      }
     }
-    if (key === 'show_icons') {
-      applyIconVisibilityToRoot(root, enabled);
-    }
+
+    syncBlockVisibilityToDom(liveBlock);
     recordChange();
   };
 
@@ -1007,8 +1026,8 @@
       let on = false;
       if (block.type === 'media_text' || block.type === 'demo_preview') {
         on = isSplitToggleOn(block, key);
-      } else if (block.type === 'hero' && ['show_trust_line', 'show_cta_primary', 'show_cta_secondary', 'show_meta_stats'].includes(key)) {
-        on = block.props?.[key] !== false;
+      } else if (block.type === 'hero') {
+        on = isHeroFieldOn(block, key, defaultOn !== false);
       } else {
         on = isBlockFieldVisible(block, key, defaultOn !== false);
       }
@@ -1030,7 +1049,7 @@
       );
     }
     if (!toggles.length) return;
-    const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
+    const root = ensureBlockRoot(findBlockRootEl(block));
     if (!root) return;
     toggles.forEach(({ key, selector, defaultOn }) => {
       if (!selector) return;
@@ -1040,20 +1059,30 @@
           enabled = isSplitToggleOn(block, key);
         }
       }
-      if (block.type === 'hero' && ['show_trust_line', 'show_cta_primary', 'show_cta_secondary', 'show_meta_stats'].includes(key)) {
-        enabled = block.props?.[key] !== false;
+      if (block.type === 'hero') {
+        enabled = isHeroFieldOn(block, key, defaultOn !== false);
       }
       root.querySelectorAll(selector).forEach((el) => {
         el.style.display = enabled ? '' : 'none';
       });
       if (block.type === 'hero' && (key === 'show_cta_primary' || key === 'show_cta_secondary')) {
-        const showPrimary = block.props?.show_cta_primary !== false;
-        const showSecondary = block.props?.show_cta_secondary !== false;
+        const showPrimary = isHeroFieldOn(block, 'show_cta_primary', true);
+        const showSecondary = isHeroFieldOn(block, 'show_cta_secondary', true);
         const actions = root.querySelector('.jcp-actions');
         if (actions) actions.style.display = (showPrimary || showSecondary) ? '' : 'none';
       }
       if (key === 'show_icons') {
         applyIconVisibilityToRoot(root, enabled);
+      }
+      if (key === 'show_cta' || key === 'show_cta_secondary') {
+        const showPrimary = key === 'show_cta'
+          ? enabled
+          : isBlockFieldVisible(block, 'show_cta', (BLOCK_VISIBILITY_TOGGLES[block.type] || []).find((e) => e.key === 'show_cta')?.defaultOn !== false);
+        const showSecondary = key === 'show_cta_secondary'
+          ? enabled
+          : isBlockFieldVisible(block, 'show_cta_secondary', (BLOCK_VISIBILITY_TOGGLES[block.type] || []).find((e) => e.key === 'show_cta_secondary')?.defaultOn !== false);
+        const row = root.querySelector('.jcp-section-cta-row');
+        if (row) row.style.display = (showPrimary || showSecondary) ? '' : 'none';
       }
     });
   };
@@ -1249,8 +1278,8 @@
           grid.classList.remove('jcp-split-layout--media-left', 'jcp-split-layout--media-right');
           grid.classList.add(`jcp-split-layout--media-${pos}`);
         }
-        const showPrimary = block.props?.show_cta_primary !== false;
-        const showSecondary = block.props?.show_cta_secondary !== false;
+        const showPrimary = isHeroFieldOn(block, 'show_cta_primary', true);
+        const showSecondary = isHeroFieldOn(block, 'show_cta_secondary', true);
         const actions = root.querySelector('.jcp-actions');
         if (actions) actions.style.display = (showPrimary || showSecondary) ? '' : 'none';
         root.querySelector('.jcp-hero-primary-cta')?.style.setProperty('display', showPrimary ? '' : 'none');
@@ -1370,20 +1399,12 @@
         return `<button type="button" class="jcp-layout-btn${active}" data-hero-media-mode="${value}">${label}</button>`;
       }).join('');
       layoutBody += '</div></div>';
-
-      const ctaMode = resolveHeroCtaMode(block);
-      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Buttons</span><div class="jcp-layout-btns" data-setting="hero_cta_mode">';
-      layoutBody += ['none', 'primary', 'secondary', 'both'].map((value) => {
-        const label = value === 'none' ? 'None' : value.charAt(0).toUpperCase() + value.slice(1);
-        const active = ctaMode === value ? ' is-active' : '';
-        return `<button type="button" class="jcp-layout-btn${active}" data-hero-cta-mode="${value}">${label}</button>`;
-      }).join('');
-      layoutBody += '</div></div>';
     }
 
     if (options.media_position && block.type !== 'hero') {
       const pos = block.props?.media_position === 'left' ? 'left' : 'right';
-      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Media</span><div class="jcp-layout-btns" data-setting="media_position">';
+      const mediaLabel = block.type === 'conversion' ? 'Image side' : 'Media side';
+      layoutBody += `<div class="jcp-layout-row"><span class="jcp-layout-row__label">${mediaLabel}</span><div class="jcp-layout-btns" data-setting="media_position">`;
       layoutBody += `<button type="button" class="jcp-layout-btn${pos === 'left' ? ' is-active' : ''}" data-value="left">Left</button>`;
       layoutBody += `<button type="button" class="jcp-layout-btn${pos === 'right' ? ' is-active' : ''}" data-value="right">Right</button>`;
       layoutBody += '</div></div>';
@@ -1443,15 +1464,17 @@
   };
 
   const SPLIT_TOGGLE_DEFAULTS = {
+    show_headline: true,
     show_badge: false,
     show_subheadline: true,
     show_cue: false,
     show_body: true,
     show_cta: false,
-    show_cta_note: false,
+    show_cta_note: true,
   };
 
   const SPLIT_TOGGLE_KEYS = [
+    'show_headline',
     'show_badge',
     'show_subheadline',
     'show_cue',
@@ -1482,11 +1505,12 @@
     });
   };
 
-  const syncSplitTogglesToDom = () => {
-    (pageDocument.blocks || []).forEach((block) => {
+  const syncSplitTogglesToDom = (onlyBlock = null) => {
+    const blocks = onlyBlock ? [onlyBlock] : (pageDocument.blocks || []);
+    blocks.forEach((block) => {
       if (!block || (block.type !== 'media_text' && block.type !== 'demo_preview')) return;
       syncSplitBlockPropsFromFlat(block);
-      const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
+      const root = ensureBlockRoot(findBlockRootEl(block));
       if (!root) return;
 
       SPLIT_TOGGLE_KEYS.forEach((key) => {
@@ -1505,19 +1529,14 @@
       if (wrapper) wrapper.style.display = (showCta || showNote) ? '' : 'none';
       const slot = root.querySelector('.demo-cta-slot');
       if (slot) slot.style.display = showCta ? '' : 'none';
-      if (showNote) {
-        root.querySelectorAll('.demo-cta-note').forEach((el) => {
-          el.style.display = '';
-        });
-      } else {
-        root.querySelectorAll('.demo-cta-note').forEach((el) => {
-          el.style.display = 'none';
-        });
-      }
+      root.querySelectorAll('.demo-cta-note').forEach((el) => {
+        el.style.display = showNote ? '' : 'none';
+      });
     });
   };
 
   const SPLIT_TOGGLE_SELECTORS = {
+    show_headline: '.demo-preview-title',
     show_badge: '.demo-badge',
     show_subheadline: '.jcp-split-subheadline',
     show_cue: '.demo-preview-cue',
@@ -1549,54 +1568,34 @@
   };
 
   const setBlockSplitToggle = (block, key, enabled) => {
-    block.props = block.props || {};
-    block.props[key] = enabled;
-    const lk = blockLegacyKey(block);
+    const liveBlock = getLiveBlock(block);
+    liveBlock.props = liveBlock.props || {};
+    liveBlock.props[key] = enabled;
+    const lk = blockLegacyKey(liveBlock);
     if (lk) setPath(flatContent, `${lk}.${key}`, enabled);
 
-    const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
-    if (!root) {
-      recordChange();
-      return;
+    const root = ensureBlockRoot(findBlockRootEl(liveBlock));
+    if (key === 'show_cta' && enabled && lk) {
+      const ctaPath = `${lk}.cta_primary`;
+      const cta = getPath(flatContent, ctaPath);
+      if (!cta || !String(cta.label || '').trim()) {
+        setPath(flatContent, ctaPath, {
+          label: liveBlock.type === 'demo_preview' ? 'Launch Interactive Demo' : 'See it in action',
+          url: '/demo',
+        });
+      }
+      if (root) ensureSplitCtaSlot(root, liveBlock);
     }
 
-    if (key === 'show_cta' || key === 'show_cta_note') {
-      const wrapper = root.querySelector('.demo-cta-wrapper');
-      const showCta = key === 'show_cta' ? enabled : isSplitToggleOn(block, 'show_cta');
-      const showNote = key === 'show_cta_note' ? enabled : isSplitToggleOn(block, 'show_cta_note');
-      if (wrapper) wrapper.style.display = (showCta || showNote) ? '' : 'none';
-      const slot = root.querySelector('.demo-cta-slot');
-      if (slot) slot.style.display = showCta ? '' : 'none';
-      if (showCta) ensureSplitCtaSlot(root, block);
-      if (showCta && lk) {
-        const ctaPath = `${lk}.cta_primary`;
-        const cta = getPath(flatContent, ctaPath);
-        if (!cta || !String(cta.label || '').trim()) {
-          const defaults = {
-            label: block.type === 'demo_preview' ? 'View the live demo' : 'See it in action',
-            url: '/demo',
-          };
-          setPath(flatContent, ctaPath, defaults);
-          if (typeof window.JCP_SYNC_COLLECTIONS_FROM_CONTENT === 'function') {
-            window.JCP_SYNC_COLLECTIONS_FROM_CONTENT();
-          }
-        }
+    syncSplitTogglesToDom(liveBlock);
+
+    if (enabled && (key === 'show_cta' || key === 'show_cta_note')) {
+      if (typeof window.JCP_SYNC_COLLECTIONS_FROM_CONTENT === 'function') {
+        window.JCP_SYNC_COLLECTIONS_FROM_CONTENT();
       }
-      if (showCta && typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
+      if (typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
         window.JCP_REFRESH_COLLECTIONS();
       }
-      if (enabled && typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
-        window.JCP_REFRESH_INLINE_EDITABLE();
-      }
-      recordChange();
-      return;
-    }
-
-    const selector = SPLIT_TOGGLE_SELECTORS[key];
-    if (selector) {
-      root.querySelectorAll(selector).forEach((el) => {
-        el.style.display = enabled ? '' : 'none';
-      });
     }
     if (enabled && typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
       window.JCP_REFRESH_INLINE_EDITABLE();
@@ -1605,32 +1604,12 @@
   };
 
   const setBlockHeroToggle = (block, key, enabled) => {
-    block.props = block.props || {};
-    block.props[key] = enabled;
-    const lk = blockLegacyKey(block);
+    const liveBlock = getLiveBlock(block);
+    liveBlock.props = liveBlock.props || {};
+    liveBlock.props[key] = enabled;
+    const lk = blockLegacyKey(liveBlock);
     if (lk) setPath(flatContent, `${lk}.${key}`, enabled);
-
-    const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
-    if (root) {
-      if (key === 'show_cta_primary') {
-        root.querySelector('.jcp-hero-primary-cta')?.style.setProperty('display', enabled ? '' : 'none');
-      }
-      if (key === 'show_cta_secondary') {
-        root.querySelector('.jcp-actions .btn-secondary')?.style.setProperty('display', enabled ? '' : 'none');
-      }
-      if (key === 'show_trust_line') {
-        root.querySelector('.jcp-niche-trust-line')?.style.setProperty('display', enabled ? '' : 'none');
-      }
-      if (key === 'show_meta_stats') {
-        root.querySelectorAll('.directory-meta').forEach((el) => {
-          el.style.setProperty('display', enabled ? '' : 'none');
-        });
-      }
-      const showPrimary = block.props.show_cta_primary !== false;
-      const showSecondary = block.props.show_cta_secondary !== false;
-      const actions = root.querySelector('.jcp-actions');
-      if (actions) actions.style.display = (showPrimary || showSecondary) ? '' : 'none';
-    }
+    applyLayoutToDom();
     recordChange();
   };
 
@@ -1653,17 +1632,24 @@
     recordChange();
   };
 
-  const setHeroCtaMode = (block, mode) => {
-    const flags = {
-      none: [false, false],
-      primary: [true, false],
-      secondary: [false, true],
-      both: [true, true],
-    };
-    const pair = flags[mode] || flags.both;
-    setBlockHeroToggle(block, 'show_cta_primary', pair[0]);
-    setBlockHeroToggle(block, 'show_cta_secondary', pair[1]);
-    renderBlockList();
+  const refreshVisibilityChips = (structureItem, block) => {
+    const liveBlock = getLiveBlock(block);
+    if (!structureItem) return;
+    structureItem.querySelectorAll('[data-block-field-toggle]').forEach((btn) => {
+      const key = btn.dataset.blockFieldToggle;
+      if (!key) return;
+      let on = false;
+      if (btn.dataset.splitToggle) {
+        on = isSplitToggleOn(liveBlock, key);
+      } else if (liveBlock.type === 'hero') {
+        const config = (BLOCK_VISIBILITY_TOGGLES.hero || []).find((entry) => entry.key === key);
+        on = isHeroFieldOn(liveBlock, key, config?.defaultOn !== false);
+      } else {
+        const config = (BLOCK_VISIBILITY_TOGGLES[liveBlock.type] || []).find((entry) => entry.key === key);
+        on = isBlockFieldVisible(liveBlock, key, config?.defaultOn !== false);
+      }
+      btn.classList.toggle('is-on', on);
+    });
   };
 
   const updateDirtyState = () => {
@@ -2006,44 +1992,31 @@
       li.querySelectorAll('[data-block-field-toggle]').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
+          const liveBlock = getLiveBlock(block);
           const key = btn.dataset.blockFieldToggle;
           if (btn.dataset.splitToggle) {
-            const enabled = !isSplitToggleOn(block, key);
-            setBlockSplitToggle(block, key, enabled);
-            btn.classList.toggle('is-on', enabled);
+            const enabled = !isSplitToggleOn(liveBlock, key);
+            setBlockSplitToggle(liveBlock, key, enabled);
+            refreshVisibilityChips(li, liveBlock);
             return;
           }
-          if (block.type === 'hero' && ['show_trust_line', 'show_cta_primary', 'show_cta_secondary', 'show_meta_stats'].includes(key)) {
-            const enabled = block.props?.[key] === false;
-            setBlockHeroToggle(block, key, enabled);
-            btn.classList.toggle('is-on', enabled);
+          const config = (BLOCK_VISIBILITY_TOGGLES[liveBlock.type] || []).find((entry) => entry.key === key);
+          const defaultOn = config?.defaultOn !== false;
+          if (liveBlock.type === 'hero') {
+            const enabled = !isHeroFieldOn(liveBlock, key, defaultOn);
+            setBlockHeroToggle(liveBlock, key, enabled);
+            refreshVisibilityChips(li, liveBlock);
             return;
           }
-          const config = (BLOCK_VISIBILITY_TOGGLES[block.type] || []).find((entry) => entry.key === key);
-          const enabled = !isBlockFieldVisible(block, key, config?.defaultOn !== false);
-          setBlockFieldVisible(block, key, enabled, config?.selector || '');
-          btn.classList.toggle('is-on', enabled);
-        });
-      });
-      li.querySelectorAll('[data-hero-toggle]').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const key = btn.dataset.heroToggle;
-          const enabled = block.props[key] === false;
-          setBlockHeroToggle(block, key, enabled);
-          btn.classList.toggle('is-on', enabled);
+          const enabled = !isBlockFieldVisible(liveBlock, key, defaultOn);
+          setBlockFieldVisible(liveBlock, key, enabled, config?.selector || '');
+          refreshVisibilityChips(li, liveBlock);
         });
       });
       li.querySelectorAll('[data-hero-media-mode]').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           setHeroMediaMode(block, btn.dataset.heroMediaMode);
-        });
-      });
-      li.querySelectorAll('[data-hero-cta-mode]').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          setHeroCtaMode(block, btn.dataset.heroCtaMode);
         });
       });
       blockListEl.appendChild(li);
@@ -2212,40 +2185,54 @@
   const isObjectArrayItemPath = (el) => {
     const path = el.getAttribute('data-jcp-path');
     if (!path) return false;
-    return /^core_mechanic\.\d+\.(?:value|label|detail)$/.test(path);
+    return /^(?:core_mechanic\.\d+\.(?:value|label|detail)|hero\.meta_stats\.\d+\.(?:label|detail))$/.test(path);
+  };
+
+  const META_STAT_CSS_CLASSES = ['meta-stat-photo', 'meta-stat-channels', 'meta-stat-busywork'];
+
+  const collectObjectArrayFromDom = (container, basePath, fields) => {
+    const items = [...container.querySelectorAll(':scope > [data-jcp-array-item]')];
+    const arr = items.map((item) => {
+      const index = item.getAttribute('data-jcp-array-item');
+      const prev = getPath(flatContent, `${basePath}.${index}`) || {};
+      const readField = (field) => {
+        const el = item.querySelector(`[data-jcp-path="${basePath}.${index}.${field}"]`);
+        return (el?.textContent || '').trim();
+      };
+      const entry = { ...(typeof prev === 'object' && prev ? prev : {}) };
+      fields.forEach((field) => {
+        entry[field] = readField(field);
+      });
+      if (basePath === 'hero.meta_stats') {
+        const cssClass = META_STAT_CSS_CLASSES.find((cls) => item.classList.contains(cls));
+        if (cssClass) entry.css_class = cssClass;
+      }
+      return entry;
+    });
+    setPath(flatContent, basePath, arr);
   };
 
   const collectObjectArraysFromDom = () => {
     document.querySelectorAll('[data-jcp-array="core_mechanic"]').forEach((container) => {
-      const basePath = 'core_mechanic';
-      const items = [...container.querySelectorAll(':scope > [data-jcp-array-item]')];
-      const arr = items.map((item) => {
-        const index = item.getAttribute('data-jcp-array-item');
-        const readField = (field) => {
-          const el = item.querySelector(`[data-jcp-path="${basePath}.${index}.${field}"]`);
-          return (el?.textContent || '').trim();
-        };
-        const prev = getPath(flatContent, `${basePath}.${index}`) || {};
-        const value = readField('value');
-        const label = readField('label');
-        const detail = readField('detail');
-        return {
-          ...(typeof prev === 'object' && prev ? prev : {}),
-          value,
-          label,
-          detail,
-        };
-      });
-      setPath(flatContent, basePath, arr);
+      collectObjectArrayFromDom(container, 'core_mechanic', ['value', 'label', 'detail']);
+    });
+    document.querySelectorAll('[data-jcp-array="hero.meta_stats"]').forEach((container) => {
+      collectObjectArrayFromDom(container, 'hero.meta_stats', ['label', 'detail']);
     });
   };
 
   const syncListBlockPropsFromFlat = () => {
     (pageDocument.blocks || []).forEach((block) => {
-      if (!block || block.type !== 'core_mechanic') return;
+      if (!block) return;
       const key = blockLegacyKey(block);
-      if (!key || !Array.isArray(flatContent[key])) return;
-      block.props = JSON.parse(JSON.stringify(flatContent[key]));
+      if (!key) return;
+      if (block.type === 'core_mechanic' && Array.isArray(flatContent[key])) {
+        block.props = JSON.parse(JSON.stringify(flatContent[key]));
+      }
+      if (block.type === 'hero' && Array.isArray(flatContent[key]?.meta_stats)) {
+        block.props = block.props || {};
+        block.props.meta_stats = JSON.parse(JSON.stringify(flatContent[key].meta_stats));
+      }
     });
   };
 
@@ -2464,7 +2451,7 @@
     if (lower.startsWith('/@') || lower.startsWith('/channel/') || lower.includes('/wp-admin')) return false;
     const segments = path.split('/').filter(Boolean);
     if (segments.length === 1 && /^@?[a-z0-9_-]{3,}$/i.test(segments[0])) {
-      const allowed = new Set(['demo', 'pricing', 'blog', 'contact', 'features', 'industries', 'resources']);
+      const allowed = new Set(['demo', 'pricing', 'blog', 'contact', 'features', 'industries', 'resources', 'directory']);
       if (!allowed.has(segments[0].replace(/^@/, ''))) return false;
     }
     return true;
@@ -2480,23 +2467,48 @@
     const focus = String(page.focus_keyword || '').toLowerCase();
     const label = String(page.label || '').toLowerCase();
     const phrase = String(anchorPhrase || '').toLowerCase().trim();
+    const hrefLower = String(page.href || '').toLowerCase();
+    const slug = hrefLower.split('/').filter(Boolean).pop() || '';
+    const phraseSlug = phrase.replace(/\s+/g, '-');
+    const phraseCompact = phrase.replace(/\s+/g, '');
 
     let relevance = 0;
-    anchorTokens.forEach((token) => {
-      if (keywords.has(token)) relevance += 12;
-      if (focus.includes(token)) relevance += 8;
-      if (label.includes(token)) relevance += 6;
-    });
-    if (phrase.length >= 4) {
+    let exactMatch = false;
+
+    if (phrase.length >= 3) {
+      if (slug === phraseSlug || slug === phraseCompact || slug === phrase) {
+        relevance += 120;
+        exactMatch = true;
+      }
+      if (label === phrase) {
+        relevance += 100;
+        exactMatch = true;
+      }
+      if (hrefLower === `/${phraseSlug}` || hrefLower.endsWith(`/${phraseSlug}`)) {
+        relevance += 90;
+        exactMatch = true;
+      }
+      if (focus === phrase) relevance += 70;
       if (focus.includes(phrase)) relevance += 28;
-      if (label.includes(phrase)) relevance += 22;
-      if (String(page.href).toLowerCase().includes(phrase.replace(/\s+/g, '-'))) relevance += 16;
+      if (label.includes(phrase)) relevance += 32;
+      if (hrefLower.includes(phraseSlug)) relevance += 24;
     }
+
+    anchorTokens.forEach((token) => {
+      if (slug === token) {
+        relevance += 80;
+        exactMatch = true;
+      }
+      if (keywords.has(token)) relevance += 14;
+      if (focus.includes(token)) relevance += 10;
+      if (label.includes(token)) relevance += 8;
+      if (slug.includes(token)) relevance += 12;
+    });
 
     const siteInlinks = Number(page.site_inlinks) || 0;
     const onPageCount = pageCounts.get(page.href) || 0;
-    const gapScore = Math.max(0, 3 - siteInlinks) * 14 + (onPageCount === 0 ? 10 : 0);
-    const hubBoost = page.hub === 'feature' || page.hub === 'trade' ? 6 : 0;
+    const gapScore = Math.max(0, 3 - siteInlinks) * 10 + (onPageCount === 0 ? 6 : 0);
+    const hubBoost = !exactMatch && (page.hub === 'feature' || page.hub === 'trade') ? 4 : 0;
 
     return {
       href: page.href,
@@ -2508,13 +2520,16 @@
       score: relevance + gapScore + hubBoost,
       relevance,
       gapScore,
+      exactMatch,
       reason: '',
     };
   };
 
   const buildLinkSuggestionReason = (item, anchorPhrase) => {
     const bits = [];
-    if (item.relevance >= 18 && anchorPhrase) {
+    if (item.exactMatch && anchorPhrase) {
+      bits.push('Best match for your selection');
+    } else if (item.relevance >= 18 && anchorPhrase) {
       bits.push('Matches your selected text');
     } else if (item.focus_keyword && anchorPhrase && item.focus_keyword.toLowerCase().includes(anchorPhrase.toLowerCase())) {
       bits.push(`Aligns with focus keyword “${item.focus_keyword}”`);
@@ -2541,7 +2556,13 @@
       .filter((page) => page && isValidInternalTarget(page.href))
       .map((page) => scoreLinkTarget(page, anchorTokens, anchorPhrase, counts))
       .map((item) => ({ ...item, reason: buildLinkSuggestionReason(item, anchorPhrase) }))
-      .sort((a, b) => (b.score - a.score) || (a.siteInlinks - b.siteInlinks) || a.label.localeCompare(b.label));
+      .sort((a, b) => {
+        if (anchorPhrase) {
+          if (Number(b.exactMatch) !== Number(a.exactMatch)) return Number(b.exactMatch) - Number(a.exactMatch);
+          if (b.relevance !== a.relevance) return b.relevance - a.relevance;
+        }
+        return (b.score - a.score) || (a.siteInlinks - b.siteInlinks) || a.label.localeCompare(b.label);
+      });
 
     const groups = [
       { key: 'match', title: 'Best match for your selection', items: [] },
@@ -2550,7 +2571,11 @@
     ];
 
     scored.forEach((item) => {
-      if (anchorTokens.length && item.relevance < 6 && item.gapScore < 14) {
+      if (anchorPhrase && item.exactMatch && groups[0].items.length < 6) {
+        groups[0].items.push(item);
+        return;
+      }
+      if (anchorTokens.length && item.relevance < 8 && item.gapScore < 10) {
         return;
       }
       if (item.relevance >= 12 && groups[0].items.length < 6) {
@@ -2564,8 +2589,8 @@
       }
     });
 
-    if (!groups[0].items.length && anchorTokens.length && scored.length) {
-      const fallback = scored.filter((item) => item.relevance >= 6 || item.gapScore >= 14);
+    if (!groups[0].items.length && anchorPhrase && scored.length) {
+      const fallback = scored.filter((item) => item.relevance >= 8 || item.exactMatch);
       groups[0].items = (fallback.length ? fallback : scored).slice(0, 5);
     } else if (!groups[0].items.length && scored.length) {
       groups[0].items = scored.slice(0, 5);
@@ -2599,7 +2624,12 @@
 
     const meta = document.createElement('span');
     meta.className = 'jcp-niche-link-popover__suggestion-meta';
-    if (s.siteInlinks === 0) {
+    if (s.exactMatch) {
+      const badge = document.createElement('span');
+      badge.className = 'jcp-niche-link-popover__suggestion-badge jcp-niche-link-popover__suggestion-badge--match';
+      badge.textContent = 'Best match';
+      meta.appendChild(badge);
+    } else if (s.siteInlinks === 0) {
       const badge = document.createElement('span');
       badge.className = 'jcp-niche-link-popover__suggestion-badge';
       badge.textContent = 'Needs links';
@@ -2717,7 +2747,10 @@
     }
 
     const urlInput = textLinkPopover.querySelector('#jcpNicheTextLinkUrl');
-    if (urlInput) urlInput.value = '';
+    if (urlInput) {
+      const topMatch = groups[0]?.items?.[0] || flat[0];
+      urlInput.value = topMatch?.href || '';
+    }
 
     openEditorModal(textLinkPopover, { focusSelector: '#jcpNicheTextLinkUrl' });
   };

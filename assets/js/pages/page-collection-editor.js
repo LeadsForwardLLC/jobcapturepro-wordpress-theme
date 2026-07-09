@@ -43,9 +43,15 @@
       icon: STAT_BADGE_ICONS[index % STAT_BADGE_ICONS.length],
       css_class: STAT_BADGE_CLASSES[index % STAT_BADGE_CLASSES.length],
     }),
+    'hero.meta_stats': (index = 0) => ({
+      icon: STAT_BADGE_ICONS[index % STAT_BADGE_ICONS.length],
+      label: '1 stat',
+      detail: 'Description',
+      css_class: STAT_BADGE_CLASSES[index % STAT_BADGE_CLASSES.length],
+    }),
   };
 
-  const OBJECT_ARRAY_PATHS = new Set(['core_mechanic']);
+  const OBJECT_ARRAY_PATHS = new Set(['core_mechanic', 'hero.meta_stats']);
 
   const isStringArrayPath = (basePath) => {
     if (OBJECT_ARRAY_PATHS.has(basePath)) return false;
@@ -71,6 +77,7 @@
     if (container.classList.contains('jcp-niche-tags')) return '+ Add tag';
     if (container.classList.contains('conversion-points')) return '+ Add point';
     if (container.classList.contains('jcp-core-mechanic-meta')) return '+ Add stat';
+    if (container.classList.contains('directory-meta') && container.dataset.jcpArray === 'hero.meta_stats') return '+ Add stat';
     if (container.classList.contains('ranking-factors-grid') || container.classList.contains('guarantees-grid')) return '+ Add card';
     return '+ Add item';
   };
@@ -200,6 +207,27 @@
       </div>`;
   };
 
+  const buildHomeMetaStat = (basePath, index, data) => {
+    const path = `${basePath}.${index}`;
+    const label = String(data?.label ?? '');
+    const detail = String(data?.detail ?? '');
+    const cssClass = data?.css_class || STAT_BADGE_CLASSES[index % STAT_BADGE_CLASSES.length];
+    const icon = data?.icon || STAT_BADGE_ICONS[index % STAT_BADGE_ICONS.length];
+    const detailHtml = detail
+      ? `<span data-jcp-path="${path}.detail">${esc(detail)}</span>`
+      : '';
+    return `
+      <div class="meta-item jcp-collection-item ${cssClass}" data-jcp-array-item="${index}">
+        <div class="meta-label">
+          <span class="factor-icon-wrapper jcp-hero-meta-icon" data-jcp-icon-path="${path}.icon" title="Click to change icon" role="button" tabindex="0">
+            <img src="${iconUrl(icon)}" class="meta-icon" alt="" width="20" height="20" />
+          </span>
+          <strong data-jcp-path="${path}.label">${esc(label)}</strong>
+        </div>
+        ${detailHtml}
+      </div>`;
+  };
+
   const buildConversionPoint = (basePath, index, text) => `
     <div class="conversion-point" data-jcp-array-item="${index}">
       <div class="conversion-point-icon">${CHECK_SVG}</div>
@@ -257,6 +285,7 @@
     }
     if (basePath === 'faq.items') return buildFaqItem(index, data);
     if (basePath === 'core_mechanic') return buildStatBadge(basePath, index, data);
+    if (basePath === 'hero.meta_stats') return buildHomeMetaStat(basePath, index, data);
     if (basePath === 'how_it_works.steps') return buildTimelineStep(basePath, index, data);
     if (basePath === 'who_its_for.audiences' && container.classList.contains('guarantees-grid')) {
       return buildGuaranteeCard(basePath, index, data);

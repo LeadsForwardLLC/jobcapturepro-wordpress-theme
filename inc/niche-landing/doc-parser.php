@@ -141,6 +141,27 @@ function jcp_niche_parse_document( string $text, string $niche_key = '', string 
 	if ( ! empty( $sections['MEDIA PROBLEM'] ) ) {
 		$content['media_text_problem'] = jcp_niche_doc_parse_media_text( $sections['MEDIA PROBLEM'] );
 	}
+	if ( ! empty( $sections['DEMO PREVIEW'] ) ) {
+		$content['demo_preview'] = jcp_niche_doc_parse_demo_preview( $sections['DEMO PREVIEW'] );
+	}
+	if ( ! empty( $sections['PROOF FLOW'] ) ) {
+		$content['proof_flow'] = jcp_niche_doc_parse_proof_flow( $sections['PROOF FLOW'] );
+	}
+	if ( ! empty( $sections['DIRECTORY PREVIEW'] ) ) {
+		$content['directory_preview'] = jcp_niche_doc_parse_directory_preview( $sections['DIRECTORY PREVIEW'] );
+	}
+	if ( ! empty( $sections['CTA BAND'] ) ) {
+		$content['cta_band_1'] = jcp_niche_doc_parse_cta_band( $sections['CTA BAND'] );
+	}
+	if ( ! empty( $sections['COMMISSION'] ) ) {
+		$content['commission'] = jcp_niche_doc_parse_commission( $sections['COMMISSION'] );
+	}
+	if ( ! empty( $sections['PARTNERS'] ) ) {
+		$content['partners'] = jcp_niche_doc_parse_partners( $sections['PARTNERS'] );
+	}
+	if ( ! empty( $sections['SHARE'] ) ) {
+		$content['share'] = jcp_niche_doc_parse_share( $sections['SHARE'] );
+	}
 
 	return jcp_niche_doc_derive_media_text_blocks( $content );
 }
@@ -1038,6 +1059,217 @@ function jcp_niche_doc_parse_media_text( array $lines ): array {
 		'show_cta_note'      => trim( (string) ( $out['cta note'] ?? '' ) ) !== '',
 		'show_divider'       => false,
 	];
+}
+
+/**
+ * Parse DEMO PREVIEW section (interactive phone mockup block).
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_demo_preview( array $lines ): array {
+	$parsed                   = jcp_niche_doc_parse_media_text( $lines );
+	$parsed['media_type']     = 'phone';
+	$parsed['phone_mockup_style'] = 'app_shell';
+	$parsed['show_headline']  = trim( (string) ( $parsed['headline'] ?? '' ) ) !== '';
+	return $parsed;
+}
+
+/**
+ * Parse PROOF FLOW section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_proof_flow( array $lines ): array {
+	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
+	$out    = [
+		'headline'       => $fields['headline'] ?? '',
+		'subheadline'    => $fields['subheadline'] ?? '',
+		'items'          => [],
+		'callout_badge'  => $fields['callout badge'] ?? '',
+		'callout_title'  => $fields['callout title'] ?? '',
+		'callout_text'   => $fields['callout text'] ?? '',
+		'link_label'     => $fields['link label'] ?? '',
+		'link_url'       => $fields['link url'] ?? '#directory-preview',
+	];
+
+	$skip = array_flip( [ 'headline', 'subheadline', 'callout badge', 'callout title', 'callout text', 'link label', 'link url', 'cta' ] );
+	$mode = 'scan';
+	foreach ( $lines as $line ) {
+		$trim = trim( $line );
+		$low  = strtolower( $trim );
+		if ( isset( $skip[ $low ] ) || $low === 'cta' ) {
+			$mode = 'skip_label';
+			continue;
+		}
+		if ( $mode === 'skip_label' ) {
+			$mode = 'scan';
+			continue;
+		}
+		if ( $trim === '' || preg_match( '/^(callout|link)\s/i', $trim ) ) {
+			continue;
+		}
+		if ( ! str_starts_with( $line, ' ' ) && ! str_starts_with( $line, "\t" ) ) {
+			$out['items'][] = [
+				'label' => $trim,
+				'copy'  => '',
+			];
+			$mode = 'item_body';
+			continue;
+		}
+		if ( $mode === 'item_body' && $out['items'] !== [] ) {
+			$idx = count( $out['items'] ) - 1;
+			$out['items'][ $idx ]['copy'] = trim( $trim );
+			$mode                         = 'scan';
+		}
+	}
+
+	return $out;
+}
+
+/**
+ * Parse DIRECTORY PREVIEW section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_directory_preview( array $lines ): array {
+	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
+	$out    = [
+		'headline'    => $fields['headline'] ?? '',
+		'subheadline' => $fields['subheadline'] ?? '',
+		'cards'       => [],
+		'outro'       => $fields['outro'] ?? '',
+	];
+
+	$skip = array_flip( [ 'headline', 'subheadline', 'outro', 'cta' ] );
+	$mode = 'scan';
+	foreach ( $lines as $line ) {
+		$trim = trim( $line );
+		$low  = strtolower( $trim );
+		if ( isset( $skip[ $low ] ) ) {
+			$mode = 'skip_label';
+			continue;
+		}
+		if ( $mode === 'skip_label' ) {
+			$mode = 'scan';
+			continue;
+		}
+		if ( $trim === '' ) {
+			continue;
+		}
+		if ( ! str_starts_with( $line, ' ' ) && ! str_starts_with( $line, "\t" ) ) {
+			$out['cards'][] = [
+				'name'     => $trim,
+				'location' => '',
+				'jobs'     => '',
+				'rating'   => '',
+			];
+			$mode = 'card_detail';
+			continue;
+		}
+		if ( $mode === 'card_detail' && $out['cards'] !== [] ) {
+			$idx   = count( $out['cards'] ) - 1;
+			$parts = array_map( 'trim', explode( '|', $trim ) );
+			$out['cards'][ $idx ]['location'] = $parts[0] ?? '';
+			$out['cards'][ $idx ]['jobs']     = $parts[1] ?? '';
+			$out['cards'][ $idx ]['rating']   = $parts[2] ?? '';
+			$mode                             = 'scan';
+		}
+	}
+
+	$cta = jcp_niche_doc_parse_trailing_cta( $lines );
+	if ( ! empty( $cta['cta_primary']['label'] ) ) {
+		$out['cta_primary'] = $cta['cta_primary'];
+	}
+
+	return $out;
+}
+
+/**
+ * Parse CTA BAND section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_cta_band( array $lines ): array {
+	$cta = jcp_niche_doc_parse_trailing_cta( $lines, 'https://jobcapturepro.firstpromoter.com', '' );
+	return [
+		'cta_primary' => $cta['cta_primary'],
+	];
+}
+
+/**
+ * Parse COMMISSION section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_commission( array $lines ): array {
+	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
+	$out    = [
+		'headline'    => $fields['headline'] ?? '',
+		'subheadline' => $fields['subheadline'] ?? '',
+		'body'        => $fields['body'] ?? '',
+		'footnote'    => $fields['footnote'] ?? '',
+		'rows'        => [],
+	];
+
+	foreach ( $lines as $line ) {
+		$trim = trim( $line );
+		if ( $trim === '' || ! str_contains( $trim, '|' ) ) {
+			continue;
+		}
+		$parts = array_map( 'trim', explode( '|', $trim ) );
+		if ( count( $parts ) < 4 ) {
+			continue;
+		}
+		$out['rows'][] = [
+			'plan'         => $parts[0],
+			'price'        => $parts[1],
+			'monthly'      => $parts[2],
+			'twelve_month' => $parts[3],
+		];
+	}
+
+	return array_merge( $out, jcp_niche_doc_parse_trailing_cta( $lines, 'https://jobcapturepro.firstpromoter.com', '' ) );
+}
+
+/**
+ * Parse PARTNERS section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_partners( array $lines ): array {
+	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
+	return array_merge(
+		[
+			'headline' => $fields['headline'] ?? '',
+			'body'     => $fields['body'] ?? '',
+		],
+		jcp_niche_doc_parse_trailing_cta( $lines, 'https://jobcapturepro.firstpromoter.com', '' )
+	);
+}
+
+/**
+ * Parse SHARE section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_share( array $lines ): array {
+	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
+	return array_merge(
+		[
+			'headline' => $fields['headline'] ?? '',
+			'body'     => $fields['body'] ?? '',
+			'quote'    => $fields['quote'] ?? '',
+			'note'     => $fields['note'] ?? '',
+		],
+		jcp_niche_doc_parse_trailing_cta( $lines, 'https://jobcapturepro.firstpromoter.com', '/demo' )
+	);
 }
 
 /**

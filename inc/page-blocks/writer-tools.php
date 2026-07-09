@@ -19,6 +19,13 @@ function jcp_writer_layout_preset_meta_key(): string {
  * @param array<string, mixed> $content Stored content (optional).
  */
 function jcp_writer_resolve_preset( ?WP_Post $post, array $content = [] ): string {
+	if ( $post instanceof WP_Post && $post->post_type === 'page' && get_page_template_slug( $post->ID ) === 'page-jcp-blocks.php' ) {
+		$stored = get_post_meta( $post->ID, jcp_writer_layout_preset_meta_key(), true );
+		if ( is_string( $stored ) && $stored !== '' && jcp_page_get_preset( $stored ) ) {
+			return sanitize_key( $stored );
+		}
+	}
+
 	if ( ! empty( $content['preset'] ) ) {
 		$preset = sanitize_key( (string) $content['preset'] );
 		if ( jcp_page_get_preset( $preset ) ) {
@@ -85,14 +92,24 @@ function jcp_writer_preset_label( string $preset ): string {
  * Shared document header: AI instructions, SEO fields, formatting rules.
  *
  * Shown at the top of every writer template. Parser stops at “write content here” or the first section.
+ *
+ * @param string $preset Optional layout preset slug (industry, home, referral, marketing, …).
  */
-function jcp_writer_document_meta_block(): string {
-	return <<<'META'
+function jcp_writer_document_meta_block( string $preset = 'industry' ): string {
+	$preset       = sanitize_key( $preset );
+	$preset_label = jcp_writer_preset_label( $preset );
+	$is_industry  = $preset === 'industry';
+	$list_rule    = $is_industry
+		? '- Use these exact list counts: 3 team-already bullets + 4 turns-into outputs; 4 how-it-works steps; 4 check-in features; 4 pain points; 4 benefits + closing paragraph; 4 FAQ questions; 4 conversion bullets; 4 who-it\'s-for segments'
+		: '- Match the list counts shown in each section of this template (steps, bullets, cards, FAQ items, etc.)';
+	$extra_rule   = '- Sections marked “optional on this page” in the admin guide can be omitted; extra ALL CAPS sections you add will import and append in the page editor';
+
+	return <<<META
 === JCP WRITER DOCUMENT — DO NOT REMOVE LABELS ===
 
 PAGE CONTEXT (fill before writing or pasting into ChatGPT / Claude):
-- Page type: [industry trade / feature / marketing / comparison / minimal]
-- Trade or service: [e.g. Plumbing]
+- Page type: {$preset_label}
+- Trade or service: [e.g. Plumbing — industry pages only]
 - State/region (if applicable): [e.g. Indiana / IN]
 - Primary focus keyword: [main keyword phrase]
 - Secondary keywords: [2–4 related phrases, comma-separated]
@@ -109,11 +126,12 @@ FORMATTING RULES FOR IMPORT (required for auto-import):
 - Keep every ALL CAPS section header exactly as written (WHAT IT IS, HOW IT WORKS, etc.)
 - Keep field labels exactly: H1, Headline, Subheadline, CTA, Trust Line, Closing Line, Body, Badge
 - Title + body pairs: title on one line, body on the next line with ONE leading space (indent)
-- Use these exact list counts: 3 team-already bullets + 4 turns-into outputs; 4 how-it-works steps; 4 check-in features; 4 pain points; 4 benefits + closing paragraph; 4 FAQ questions; 4 conversion bullets; 4 who-it’s-for segments
-- Do not add extra sections, rename headers, or remove placeholder structure lines
+{$list_rule}
+{$extra_rule}
+- Do not rename headers or remove placeholder structure lines
 
 LENGTH GUIDELINES:
-- H1 (hero): 8–14 words — specific to this trade/location, not generic
+- H1 (hero): 8–14 words — specific to this page, not generic
 - Section Headlines (H2): 6–12 words each — unique across the page; never repeat the same pattern
 - Subheadlines: 1–2 sentences, max ~35 words
 - Card/bullet bodies: 2–4 sentences each
@@ -122,7 +140,7 @@ LENGTH GUIDELINES:
 
 VOICE, SEO & CONVERSION:
 - Write like a knowledgeable contractor talking to a homeowner — not a marketer or AI
-- Focus keyword must appear in: the first or second sentence of the page, the first H2, and one additional H2 — spread naturally; never use the same placement pattern on every page
+- Focus keyword must appear in: the first or second sentence of the page, the first H2, and one additional H2 — spread naturally
 - Include state name and abbreviation where appropriate (e.g. Indiana / IN)
 - Each section must answer a DIFFERENT reader question — no repeating the same idea in new words
 - Avoid AI/templated phrasing: “In today’s digital landscape”, “seamless”, “robust”, “leverage”, “comprehensive solution”, starting every H2 with the keyword
@@ -131,7 +149,7 @@ VOICE, SEO & CONVERSION:
 - Strengthen CTAs — avoid repeating the same button label throughout the page
 
 SELF-CHECK BEFORE SUBMIT:
-[ ] Read only H1, all H2s, and CTAs — each feels specific to THIS trade/location
+[ ] Read only H1, all H2s, and CTAs — each feels specific to THIS page
 [ ] No two sections explain the same thing
 [ ] Keyword placement feels natural when read aloud
 [ ] CTAs are varied and action-oriented
@@ -143,6 +161,7 @@ Page options (set in Page Structure after import — not written in this doc):
 - Breadcrumb show/hide
 - Per-section background (white, cream, brand, photo, custom)
 - Show/hide subheadlines, section buttons, supporting text, icons, and CTA notes
+- Add or reorder sections in the live page editor after import
 
 ↓ Write Content Below — keep headers and labels intact ↓
 
@@ -581,7 +600,7 @@ function jcp_page_get_admin_editor_json( WP_Post $post ): string {
  */
 function jcp_writer_get_document_template( string $preset = 'industry' ): string {
 	$preset = sanitize_key( $preset );
-	$meta   = jcp_writer_document_meta_block();
+	$meta   = jcp_writer_document_meta_block( $preset );
 
 	if ( $preset === 'industry' ) {
 		return $meta . jcp_writer_get_industry_template_body();
@@ -651,15 +670,25 @@ WHAT IT IS
 Headline
 [H2 — 6–12 words; first H2 includes focus keyword naturally]
 Subheadline
-[1–2 sentences]
-[Key point one]
-[Key point two]
-[Key point three]
-[Key point four]
+[1–2 sentences — new angle, not a repeat of the hero]
+
+Most [audience] are already:
+[team-already bullet 1]
+[team-already bullet 2]
+[team-already bullet 3]
+But very little of that work actually shows up online consistently.
+JobCapturePro fixes that.
+It turns real job activity into:
+[turns-into output 1]
+[turns-into output 2]
+[turns-into output 3]
+[turns-into output 4]
+automatically.
+
 Closing Line
-[Closing sentence]
+[Closing sentence — ties section together]
 CTA
-[Optional — 2–5 words; leave blank to hide]
+[Optional — 2–5 words; leave blank to hide section button]
 SNIP,
 		'CORE MECHANIC' => <<<'SNIP'
 CORE MECHANIC
@@ -847,6 +876,111 @@ Body
 [Optional body]
 CTA
 [Optional]
+SNIP,
+		'DEMO PREVIEW' => <<<'SNIP'
+DEMO PREVIEW
+Badge
+Live Demo
+Headline
+[H2 — demo angle, 6–12 words]
+Body
+[2–3 sentences — what the interactive demo shows]
+Cue
+[One-line lead before the demo button]
+CTA Note
+No signup required • Takes 2 minutes
+CTA
+Launch Interactive Demo
+SNIP,
+		'PROOF FLOW' => <<<'SNIP'
+PROOF FLOW
+Headline
+[H2 — proof / channel flow angle]
+Subheadline
+[1–2 sentences]
+
+Google Business Profile
+ Published as a real job update on Google
+Website
+ Automatically added as live job content
+Social Media
+ Shared as job proof on social channels
+Reviews
+ Auto review collection
+
+Callout Badge
+Verified Job Proof
+Callout Title
+[Callout headline — directory / proof angle]
+Callout Text
+[2–3 sentences supporting the callout]
+Link Label
+Learn more about the directory
+Link URL
+#directory-preview
+SNIP,
+		'DIRECTORY PREVIEW' => <<<'SNIP'
+DIRECTORY PREVIEW
+Headline
+[H2 — directory value proposition]
+Subheadline
+[1–2 sentences]
+
+Summit Roofing
+ Austin, TX | 82 jobs | 4.9 (120)
+Your Business
+ Your City, ST | 64 jobs | 4.8 (98)
+Heritage Fence Co.
+ Houston, TX | 41 jobs | 4.7 (64)
+
+Outro
+[Closing line under the cards]
+CTA
+See how your listing looks in the demo
+SNIP,
+		'CTA BAND' => <<<'SNIP'
+CTA BAND
+CTA
+[Primary mid-page button — 2–5 words]
+SNIP,
+		'COMMISSION' => <<<'SNIP'
+COMMISSION
+Headline
+Commission Details
+Subheadline
+[Program tier label]
+Body
+[Commission terms — 1–2 sentences]
+Starter | $99/mo | $19.80/mo | $237.60
+Scale | $249/mo | $49.80/mo | $597.60
+Enterprise | $399/mo | $79.80/mo | $957.60
+Footnote
+[Legal / payout disclaimer]
+CTA
+Join the Referral Program
+SNIP,
+		'PARTNERS' => <<<'SNIP'
+PARTNERS
+Headline
+[H2 — agency / partner angle]
+Body
+[2–4 sentences — who qualifies and what deeper partnership means]
+CTA
+Apply as a Partner
+SNIP,
+		'SHARE' => <<<'SNIP'
+SHARE
+Headline
+[H2 — easy ways to share]
+Body
+[Intro sentence before the sample message]
+Quote
+[Sample message writers can copy/paste to refer someone]
+Note
+[Optional tip — e.g. link to demo first]
+CTA
+Join the Referral Program
+View the live demo
 SNIP,
 	];
 }

@@ -67,7 +67,7 @@
 }
 
 .jcp-home .directory-hero h1 {
-  font-size: clamp(40px, 5vw, 60px) !important;
+  font-size: clamp(38px, 4.6vw, 58px) !important;
   font-weight: var(--jcp-font-weight-extrabold) !important;
   line-height: var(--jcp-line-height-tight) !important;
   color: var(--jcp-color-text-primary) !important;
@@ -209,6 +209,33 @@
   grid-template-columns: 1.08fr 0.92fr;
 }
 
+/* Centered + no media: full-width single column, centered on screen */
+.jcp-home .jcp-hero-variant-home.jcp-hero--no-visual .jcp-hero-grid,
+.jcp-block-root.jcp-hero-variant-home.jcp-hero--no-visual .jcp-hero-grid {
+  grid-template-columns: 1fr;
+}
+
+.jcp-home .jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .jcp-hero-grid,
+.jcp-block-root.jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .jcp-hero-grid {
+  max-width: min(52rem, calc(100% - 2 * var(--jcp-space-xl)));
+  margin-inline: auto;
+  width: 100%;
+}
+
+.jcp-home .jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .jcp-hero-subtitle {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
+.jcp-home .jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .meta-item {
+  align-items: center;
+  text-align: center;
+}
+
+.jcp-home .jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .meta-label {
+  justify-content: center;
+}
+
 /* ---------- Home hero: responsive ---------- */
 @media (max-width: 900px) {
   .jcp-home .jcp-hero-grid {
@@ -225,7 +252,7 @@
   .jcp-home .jcp-hero h1,
   .jcp-home .directory-hero h1,
   .jcp-home .jcp-hero-title {
-    font-size: clamp(30px, 8vw, 42px) !important;
+    font-size: clamp(28px, 7vw, 38px) !important;
     line-height: 1.08 !important;
   }
 

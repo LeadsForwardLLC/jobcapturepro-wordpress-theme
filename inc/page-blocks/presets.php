@@ -92,7 +92,10 @@ function jcp_page_presets(): array {
 			'block_types' => [
 				'hero',
 				'what_it_is',
+				'core_mechanic',
 				'how_it_works',
+				'check_ins',
+				'demo_preview',
 				'benefits',
 				'faq',
 				'final_cta',

@@ -32,6 +32,8 @@ function jcp_page_doc_section_synonyms(): array {
 		'CHECK INS'   => 'CHECK-INS',
 		'CHECKINS'    => 'CHECK-INS',
 		'WHO ITS FOR' => "WHO IT'S FOR",
+		'DEMO'        => 'DEMO PREVIEW',
+		'DIRECTORY'   => 'DIRECTORY PREVIEW',
 	];
 }
 
@@ -139,6 +141,13 @@ function jcp_page_doc_legacy_key_map(): array {
 		'faq'                   => 'FAQ',
 		'conversion'            => 'CONVERSION',
 		'final_cta'             => 'FINAL CTA',
+		'demo_preview'          => 'DEMO PREVIEW',
+		'proof_flow'            => 'PROOF FLOW',
+		'directory_preview'     => 'DIRECTORY PREVIEW',
+		'cta_band_1'            => 'CTA BAND',
+		'commission'            => 'COMMISSION',
+		'partners'              => 'PARTNERS',
+		'share'                 => 'SHARE',
 	];
 }
 
@@ -260,13 +269,20 @@ function jcp_page_doc_sections_for_kind( string $page_kind, string $preset = '' 
 		'CORE MECHANIC',
 		'MEDIA CORE',
 		'HOW IT WORKS',
+		'DEMO PREVIEW',
+		'PROOF FLOW',
 		'CHECK-INS',
 		'MEDIA CHECK-INS',
+		'CTA BAND',
 		'PROBLEM',
 		'MEDIA PROBLEM',
 		'BENEFITS',
 		'DIFFERENTIATION',
 		"WHO IT'S FOR",
+		'DIRECTORY PREVIEW',
+		'COMMISSION',
+		'PARTNERS',
+		'SHARE',
 		'FAQ',
 		'CONVERSION',
 		'FINAL CTA',
@@ -433,7 +449,7 @@ function jcp_page_doc_build_import_report( array $legacy, array $blocks_doc, str
 	if ( $skipped ) {
 		$message_parts[] = sprintf(
 			/* translators: %d: number of sections */
-			_n( '%d section parsed but not used on this page type (see list below).', '%d sections parsed but not used on this page type (see list below).', count( $skipped ), 'jcp-core' ),
+			_n( '%d section parsed but not in this layout’s default stack (add the block in Page Structure to use it).', '%d sections parsed but not in this layout’s default stack (add the block in Page Structure to use them).', count( $skipped ), 'jcp-core' ),
 			count( $skipped )
 		);
 	}
