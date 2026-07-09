@@ -510,6 +510,134 @@ function jcp_niche_doc_parse_how_it_works( array $lines ): array {
 }
 
 /**
+ * Whether a writer doc line is indented body copy.
+ *
+ * @param string $line Raw line.
+ */
+function jcp_niche_doc_is_indented_line( string $line ): bool {
+	return $line !== '' && ( $line[0] === ' ' || $line[0] === "\t" );
+}
+
+/**
+ * Whether a line is a template placeholder, not real copy.
+ *
+ * @param string $trim Trimmed line.
+ */
+function jcp_niche_doc_is_placeholder_line( string $trim ): bool {
+	return $trim !== '' && preg_match( '/^\[[^\]]+\]$/', $trim ) === 1;
+}
+
+/**
+ * Whether a line starts a section closing paragraph.
+ *
+ * @param string $trim Trimmed line.
+ */
+function jcp_niche_doc_is_closing_paragraph_start( string $trim ): bool {
+	return (bool) preg_match(
+		'/^(each check-in|this is where|homeowners trust|customers are making|jobcapturepro creates)/i',
+		$trim
+	);
+}
+
+/**
+ * Parse factor cards used by Benefits (with stat footer), Problem, and Check-Ins.
+ *
+ * Each card: short title, indented body, optional orange keyword + ALL CAPS tagline.
+ *
+ * @param string[] $lines      Content lines after labeled fields.
+ * @param bool     $with_stats Include stat_value / stat_label footer lines.
+ * @return array{items: array<int, array<string, string>>, closing: string}
+ */
+function jcp_niche_doc_parse_factor_card_items( array $lines, bool $with_stats = false ): array {
+	$items    = [];
+	$closing  = '';
+	$title    = '';
+	$body     = '';
+	$stat_val = '';
+	$stat_lbl = '';
+
+	$flush = static function () use ( &$items, &$title, &$body, &$stat_val, &$stat_lbl, $with_stats ): void {
+		if ( $title === '' ) {
+			return;
+		}
+		$item = [
+			'title' => $title,
+			'body'  => trim( $body ),
+		];
+		if ( $with_stats ) {
+			if ( $stat_val !== '' ) {
+				$item['stat_value'] = $stat_val;
+			}
+			if ( $stat_lbl !== '' ) {
+				$item['stat_label'] = $stat_lbl;
+			}
+		}
+		$items[]  = $item;
+		$title    = '';
+		$body     = '';
+		$stat_val = '';
+		$stat_lbl = '';
+	};
+
+	foreach ( $lines as $line ) {
+		$trim = trim( $line );
+		if ( $trim === '' || jcp_niche_doc_is_placeholder_line( $trim ) ) {
+			continue;
+		}
+		$low = strtolower( $trim );
+		if ( in_array( $low, [ 'headline', 'subheadline', 'closing line', 'cta' ], true ) ) {
+			if ( $low === 'cta' ) {
+				break;
+			}
+			continue;
+		}
+		if ( jcp_niche_doc_is_closing_paragraph_start( $trim ) && $items !== [] ) {
+			$flush();
+			$closing = $trim;
+			break;
+		}
+
+		if ( jcp_niche_doc_is_indented_line( $line ) ) {
+			if ( $with_stats && $title !== '' && trim( $body ) !== '' && $stat_val !== '' && $stat_lbl === '' ) {
+				$stat_lbl = $trim;
+				$flush();
+				continue;
+			}
+			if ( $title !== '' ) {
+				$body .= ( $body !== '' ? ' ' : '' ) . $trim;
+			}
+			continue;
+		}
+
+		if ( $with_stats && $title !== '' && trim( $body ) !== '' ) {
+			if ( $stat_val === '' && strlen( $trim ) <= 32 ) {
+				$stat_val = $trim;
+				continue;
+			}
+			if ( $stat_val !== '' && $stat_lbl === '' ) {
+				$stat_lbl = $trim;
+				$flush();
+				continue;
+			}
+		}
+
+		if ( $title !== '' && $body === '' && strlen( $trim ) > 60 ) {
+			$body = $trim;
+			continue;
+		}
+
+		$flush();
+		$title = $trim;
+	}
+	$flush();
+
+	return [
+		'items'   => $items,
+		'closing' => $closing,
+	];
+}
+
+/**
  * Parse paired title/body blocks.
  *
  * @param string[] $lines   Content lines after labeled fields.
@@ -551,6 +679,10 @@ function jcp_niche_doc_parse_title_body_pairs( array $lines, string $closing = '
 		}
 		if ( $is_body_line( $line ) && $title !== '' ) {
 			$body .= ( $body !== '' ? ' ' : '' ) . $trim;
+			continue;
+		}
+		if ( $title !== '' && $body === '' && strlen( $trim ) > 60 ) {
+			$body = $trim;
 			continue;
 		}
 		$flush();
@@ -618,13 +750,8 @@ function jcp_niche_doc_parse_check_ins( array $lines ): array {
 		$filtered[] = $line;
 	}
 
-	$parsed = jcp_niche_doc_parse_title_body_pairs( $filtered );
-	$features = array_map(
-		static function ( $item ) {
-			return [ 'title' => $item['title'], 'body' => $item['body'] ];
-		},
-		$parsed['items']
-	);
+	$parsed   = jcp_niche_doc_parse_factor_card_items( $filtered, false );
+	$features = $parsed['items'];
 
 	return jcp_niche_doc_merge_section_cta(
 		[
@@ -657,13 +784,8 @@ function jcp_niche_doc_parse_problem( array $lines ): array {
 		}
 		$filtered[] = $line;
 	}
-	$parsed = jcp_niche_doc_parse_title_body_pairs( $filtered, $fields['closing line'] ?? '' );
-	$pain_points = array_map(
-		static function ( $item ) {
-			return [ 'title' => $item['title'], 'body' => $item['body'] ];
-		},
-		$parsed['items']
-	);
+	$parsed      = jcp_niche_doc_parse_factor_card_items( $filtered, false );
+	$pain_points = $parsed['items'];
 	$closing = $parsed['closing'];
 	if ( $closing !== '' && stripos( $closing, 'customers are making' ) === 0 ) {
 		foreach ( $filtered as $line ) {
@@ -697,12 +819,12 @@ function jcp_niche_doc_parse_problem( array $lines ): array {
  * @return array<string, mixed>
  */
 function jcp_niche_doc_parse_benefits( array $lines ): array {
-	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
-	$filtered = [];
+	$fields    = jcp_niche_doc_parse_labeled_fields( $lines );
+	$filtered  = [];
 	$skip_next = false;
 	foreach ( $lines as $line ) {
 		$low = strtolower( trim( $line ) );
-		if ( $low === 'headline' ) {
+		if ( in_array( $low, [ 'headline', 'subheadline', 'closing line' ], true ) ) {
 			$skip_next = true;
 			continue;
 		}
@@ -712,50 +834,28 @@ function jcp_niche_doc_parse_benefits( array $lines ): array {
 		}
 		$filtered[] = $line;
 	}
-	$parsed = jcp_niche_doc_parse_title_body_pairs( $filtered );
-	$items = array_map(
-		static function ( $item ) {
-			return [ 'title' => $item['title'], 'body' => $item['body'] ];
-		},
-		$parsed['items']
-	);
-	$closing = $parsed['closing'];
-	if ( stripos( $closing, 'homeowners trust' ) === 0 ) {
-		foreach ( $filtered as $idx => $line ) {
-			if ( trim( $line ) !== $closing ) {
-				continue;
-			}
-			$next = $filtered[ $idx + 1 ] ?? '';
-			if ( $next !== '' && ( $next[0] === ' ' || $next[0] === "\t" ) ) {
-				$closing = jcp_niche_doc_join_sentences( [ $closing, trim( $next ) ] );
-			}
-			break;
-		}
+	$parsed  = jcp_niche_doc_parse_factor_card_items( $filtered, true );
+	$items   = $parsed['items'];
+	$closing = trim( (string) ( $fields['closing line'] ?? '' ) );
+	if ( $closing === '' ) {
+		$closing = $parsed['closing'];
 	}
 	if ( $closing === '' && ! empty( $items ) ) {
 		$last = end( $items );
-		if ( $last['body'] === '' && strlen( $last['title'] ) > 80 ) {
-			$closing = array_pop( $items )['title'];
-		} elseif ( $last['body'] !== '' && strlen( $last['title'] ) > 40 && stripos( $last['title'], 'homeowners' ) !== false ) {
-			$closing = $last['title'] . ( $last['body'] !== '' ? ' ' . $last['body'] : '' );
-			array_pop( $items );
-		}
-	}
-	// Merge last item if it's clearly a closing paragraph (title + body both present on two lines in one item)
-	if ( $closing === '' && ! empty( $items ) ) {
-		$last_idx = count( $items ) - 1;
-		$last     = $items[ $last_idx ];
-		if ( stripos( $last['title'], 'homeowners trust' ) === 0 ) {
-			$closing = trim( $last['title'] . ' ' . $last['body'] );
+		if ( is_array( $last ) && $last['body'] === '' && strlen( (string) $last['title'] ) > 80 ) {
+			$closing = (string) array_pop( $items )['title'];
+		} elseif ( is_array( $last ) && stripos( (string) $last['title'], 'homeowners trust' ) === 0 ) {
+			$closing = trim( (string) $last['title'] . ' ' . (string) ( $last['body'] ?? '' ) );
 			array_pop( $items );
 		}
 	}
 
 	return jcp_niche_doc_merge_section_cta(
 		[
-			'headline' => $fields['headline'] ?? '',
-			'items'    => $items,
-			'closing'  => $closing,
+			'headline'    => $fields['headline'] ?? '',
+			'subheadline' => $fields['subheadline'] ?? '',
+			'items'       => $items,
+			'closing'     => $closing,
 		],
 		$lines
 	);

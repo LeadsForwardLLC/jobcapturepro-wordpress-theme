@@ -126,6 +126,7 @@ FORMATTING RULES FOR IMPORT (required for auto-import):
 - Keep every ALL CAPS section header exactly as written (WHAT IT IS, HOW IT WORKS, etc.)
 - Keep field labels exactly: H1, Headline, Subheadline, CTA, Trust Line, Closing Line, Body, Badge
 - Title + body pairs: title on one line, body on the next line with ONE leading space (indent)
+- Benefit cards: short title (2–4 words), indented body, then orange keyword (1 word), then ALL CAPS tagline on the next line
 {$list_rule}
 {$extra_rule}
 - Do not rename headers or remove placeholder structure lines
@@ -375,18 +376,31 @@ Body
 BENEFITS
 Headline
 [H2 — outcome-focused, not generic]
+Subheadline
+[Optional 1–2 sentence subheadline]
 
-[Benefit title one]
- [Benefit body — 2–4 sentences]
+[Benefit title — 2–4 words]
+ [Benefit body — 1–2 sentences; indent with leading space]
+[Orange keyword — 1 word]
+[ALL CAPS tagline — e.g. FROM REAL JOBS]
+
 [Benefit title two]
  [Benefit body]
+[Orange keyword]
+[ALL CAPS tagline]
+
 [Benefit title three]
  [Benefit body]
+[Orange keyword]
+[ALL CAPS tagline]
+
 [Benefit title four]
  [Benefit body]
+[Orange keyword]
+[ALL CAPS tagline]
 
-[Closing paragraph title]
- [Closing paragraph body — 2–3 sentences]
+Closing Line
+[Closing paragraph — 2–3 sentences tying benefits together]
 
 CTA
 [Optional primary button — 2–5 words]
@@ -480,7 +494,7 @@ function jcp_writer_get_ai_prompt( string $preset = 'industry', ?WP_Post $post =
 	$counts       = jcp_writer_document_list_counts();
 	$template     = jcp_writer_get_document_template( $preset );
 	$count_lines  = sprintf(
-		"- What It Is: %d team-already bullets + %d turns-into outputs\n- How It Works: %d steps\n- Check-Ins: %d features\n- Problem: %d pain points\n- Benefits: %d items + closing paragraph\n- Who It's For: %d segments\n- FAQ: %d Q&As\n- Conversion: %d bullets",
+		"- What It Is: %d team-already bullets + %d turns-into outputs\n- How It Works: %d steps\n- Check-Ins: %d features\n- Problem: %d pain points\n- Benefits: %d cards (each with orange keyword + ALL CAPS tagline) + closing paragraph\n- Who It's For: %d segments\n- FAQ: %d Q&As\n- Conversion: %d bullets",
 		$counts['what_it_is_team_already'],
 		$counts['what_it_is_turns_into'],
 		$counts['how_it_works_steps'],
@@ -722,18 +736,34 @@ BENEFITS
 Headline
 [H2 — 6–12 words]
 Subheadline
-[Benefits subheadline — optional on some layouts]
+[Optional subheadline — 1–2 sentences]
 
-[Benefit title one]
- [Benefit body — 2–4 sentences; indent with leading space]
+[Benefit title — 2–4 words]
+ [Benefit body — 1–2 sentences; indent with leading space]
+[Orange keyword — 1 word]
+[ALL CAPS tagline — e.g. FROM REAL JOBS]
+
 [Benefit title two]
  [Benefit body]
+[Orange keyword]
+[ALL CAPS tagline]
+
 [Benefit title three]
  [Benefit body]
+[Orange keyword]
+[ALL CAPS tagline]
+
 [Benefit title four]
  [Benefit body]
+[Orange keyword]
+[ALL CAPS tagline]
+
+Closing Line
+[Closing paragraph — 2–3 sentences]
+
 CTA
-[Optional — varied wording]
+[Optional primary — 2–5 words]
+[Optional secondary link]
 SNIP,
 		'PROBLEM' => <<<'SNIP'
 PROBLEM
