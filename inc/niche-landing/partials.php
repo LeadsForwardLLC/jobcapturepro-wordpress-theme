@@ -20,13 +20,17 @@
  * @param string               $stat_value_path  JSON path for stat value.
  * @param string               $stat_label_path  JSON path for stat label.
  * @param int                  $array_index      Optional list index for add/remove UI (-1 = none).
+ * @param string               $icon_path        JSON path for icon slug (e.g. benefits.items.0.icon).
+ * @param bool                 $show_icon        Whether to render the icon wrapper.
  */
-function jcp_niche_factor_card( string $title, string $icon, string $stat_value = '', string $stat_label = '', ?callable $body_cb = null, string $title_path = '', string $stat_value_path = '', string $stat_label_path = '', int $array_index = -1 ): void {
+function jcp_niche_factor_card( string $title, string $icon, string $stat_value = '', string $stat_label = '', ?callable $body_cb = null, string $title_path = '', string $stat_value_path = '', string $stat_label_path = '', int $array_index = -1, string $icon_path = '', bool $show_icon = true ): void {
 	?>
 	<div class="ranking-factor-card"<?php if ( $array_index >= 0 ) { jcp_niche_array_item_attr( $array_index ); } ?>>
-		<div class="factor-icon-wrapper">
+		<?php if ( $show_icon ) : ?>
+		<div class="factor-icon-wrapper"<?php if ( $icon_path !== '' ) { echo ' data-jcp-icon-path="' . esc_attr( $icon_path ) . '"'; } ?>>
 			<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="factor-icon" alt="" width="32" height="32" />
 		</div>
+		<?php endif; ?>
 		<h3 class="factor-title"<?php if ( $title_path !== '' ) { jcp_niche_editable_attr( $title_path ); } ?>><?php echo esc_html( $title ); ?></h3>
 		<?php if ( $body_cb ) : ?>
 			<div class="factor-description"><?php $body_cb(); ?></div>
@@ -328,14 +332,19 @@ function jcp_niche_render_section_optional_ctas( array $props, string $base_path
 	$secondary        = jcp_niche_resolve_cta( $props['cta_secondary'] ?? [], $niche_key );
 	$primary_label    = __( 'Section button', 'jcp-core' );
 	$secondary_label  = __( 'Secondary link', 'jcp-core' );
+	$has_secondary    = $allow_secondary && $secondary['label'] !== '';
+	$row_classes      = 'jcp-section-cta-row benefits-cta-row';
+	if ( $primary['label'] !== '' && ! $has_secondary ) {
+		$row_classes .= ' jcp-section-cta-row--solo';
+	}
 	?>
-	<div class="jcp-section-cta-row benefits-cta-row">
+	<div class="<?php echo esc_attr( $row_classes ); ?>">
 		<div class="benefits-cta-slot jcp-section-cta-slot"<?php jcp_niche_optional_slot_attr( $base_path . '.cta_primary', 'cta', $primary_label ); ?>>
 			<?php if ( $primary['label'] !== '' ) : ?>
 				<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary"<?php jcp_niche_editable_link_attr( $base_path . '.cta_primary' ); ?>><?php echo esc_html( $primary['label'] ); ?></a>
 			<?php endif; ?>
 		</div>
-		<?php if ( $allow_secondary ) : ?>
+		<?php if ( $allow_secondary && ( $has_secondary || jcp_niche_user_can_inline_edit() ) ) : ?>
 			<div class="benefits-cta-slot jcp-section-cta-slot"<?php jcp_niche_optional_slot_attr( $base_path . '.cta_secondary', $secondary_kind, $secondary_label ); ?>>
 				<?php if ( $secondary['label'] !== '' ) : ?>
 					<a href="<?php echo esc_url( $secondary['url'] ); ?>" class="benefits-cta-link"<?php jcp_niche_editable_link_attr( $base_path . '.cta_secondary' ); ?>>

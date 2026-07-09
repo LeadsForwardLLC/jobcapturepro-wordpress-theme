@@ -2346,3 +2346,73 @@ body.jcp-inline-editing .jcp-split-col .jcp-col-drag-handle {
   padding: 0.25rem 0.6rem !important;
   min-height: 0 !important;
 }
+
+/* Solo section CTA — center when no secondary link */
+.jcp-section-cta-row--solo,
+.benefits-cta-row:not(:has(.benefits-cta-link)) {
+  justify-content: center;
+}
+
+body.jcp-inline-editing .benefits-cta-row:not(:has(.benefits-cta-link)) .benefits-cta-slot.is-empty {
+  display: none;
+}
+
+/* Timeline add button sits below the step grid */
+body.jcp-inline-editing .jcp-collection-add--timeline {
+  max-width: 14rem;
+  margin: var(--jcp-space-2xl, 2rem) auto 0;
+}
+
+.jcp-section--no-icons .factor-icon-wrapper,
+.jcp-section--no-icons .conversion-point-icon {
+  display: none !important;
+}
+
+body.jcp-inline-editing [data-jcp-icon-path] {
+  cursor: pointer;
+  outline: 1px dashed rgba(59, 130, 246, 0.45);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.jcp-niche-icon-popover {
+  position: fixed;
+  z-index: 100002;
+  background: #fff;
+  border: 1px solid var(--jcp-color-border);
+  border-radius: var(--jcp-radius-lg);
+  padding: var(--jcp-space-md);
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.18);
+  width: min(260px, calc(100vw - 16px));
+}
+
+.jcp-niche-icon-popover__hint {
+  font-size: 0.75rem;
+  color: var(--jcp-color-text-secondary);
+  margin: 0.35rem 0 0.75rem;
+}
+
+.jcp-niche-icon-popover__grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.jcp-niche-icon-popover__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid var(--jcp-color-border);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  padding: 0.35rem;
+}
+
+.jcp-niche-icon-popover__btn:hover {
+  border-color: var(--jcp-color-primary);
+  background: rgba(255, 80, 62, 0.06);
+}

@@ -104,27 +104,92 @@ function jcp_niche_breadcrumb_current_label( array $c ): string {
 }
 
 /**
- * Parent crumb (Home vs Industries hub) for the current page kind.
+ * Intermediate hub crumb (e.g. Features) when the page lives under a hub path.
  *
  * @param array<string, mixed> $c Content.
- * @return array{label: string, url: string}
+ * @return array{label: string, url: string}|null
  */
-function jcp_niche_breadcrumb_parent( array $c ): array {
-	if ( jcp_niche_breadcrumb_page_kind( $c ) === 'industry' ) {
+function jcp_niche_breadcrumb_hub_segment( array $c ): ?array {
+	$post_id = get_queried_object_id();
+	$path    = '';
+	if ( $post_id > 0 ) {
+		$post = get_post( $post_id );
+		if ( $post instanceof WP_Post ) {
+			$path = trim( (string) get_page_uri( $post ), '/' );
+		}
+	}
+
+	$preset = sanitize_key( (string) ( $c['preset'] ?? '' ) );
+	if ( $path !== '' && str_starts_with( $path, 'features/' ) ) {
+		$preset = 'features';
+	}
+
+	if ( $preset === 'features' ) {
+		$features_page = get_page_by_path( 'features' );
+		$url           = $features_page ? get_permalink( $features_page ) : home_url( '/features/' );
+		return [
+			'label' => __( 'Features', 'jcp-core' ),
+			'url'   => (string) $url,
+		];
+	}
+
+	if ( $path !== '' && str_starts_with( $path, 'industries/' ) ) {
 		$hub = get_post_type_archive_link( 'jcp_niche_landing' );
 		if ( ! $hub ) {
 			$hub = home_url( '/industries/' );
 		}
 		return [
 			'label' => __( 'Industries', 'jcp-core' ),
-			'url'   => $hub,
+			'url'   => (string) $hub,
 		];
 	}
 
-	return [
-		'label' => __( 'Home', 'jcp-core' ),
-		'url'   => home_url( '/' ),
-	];
+	return null;
+}
+
+/**
+ * Full breadcrumb trail for the current page.
+ *
+ * @param array<string, mixed> $c Content.
+ * @return array<int, array{label: string, url: string}>
+ */
+function jcp_niche_breadcrumb_trail( array $c ): array {
+	$kind    = jcp_niche_breadcrumb_page_kind( $c );
+	$current = jcp_niche_breadcrumb_current_label( $c );
+	$trail   = [];
+
+	if ( $kind === 'industry' ) {
+		$hub = get_post_type_archive_link( 'jcp_niche_landing' );
+		if ( ! $hub ) {
+			$hub = home_url( '/industries/' );
+		}
+		$trail[] = [
+			'label' => __( 'Home', 'jcp-core' ),
+			'url'   => home_url( '/' ),
+		];
+		$trail[] = [
+			'label' => __( 'Industries', 'jcp-core' ),
+			'url'   => (string) $hub,
+		];
+	} else {
+		$trail[] = [
+			'label' => __( 'Home', 'jcp-core' ),
+			'url'   => home_url( '/' ),
+		];
+		$hub = jcp_niche_breadcrumb_hub_segment( $c );
+		if ( $hub ) {
+			$trail[] = $hub;
+		}
+	}
+
+	if ( $current !== '' ) {
+		$trail[] = [
+			'label' => $current,
+			'url'   => '',
+		];
+	}
+
+	return $trail;
 }
 
 /**
@@ -150,17 +215,23 @@ function jcp_niche_render_breadcrumb( array $c, bool $inside_hero = false ): voi
 	if ( ! jcp_niche_should_show_breadcrumb( $c ) ) {
 		return;
 	}
-	$label  = jcp_niche_breadcrumb_current_label( $c );
-	$parent = jcp_niche_breadcrumb_parent( $c );
+	$trail   = jcp_niche_breadcrumb_trail( $c );
 	$classes = 'jcp-niche-breadcrumb jcp-container';
 	if ( $inside_hero ) {
 		$classes .= ' jcp-niche-breadcrumb--in-hero';
 	}
 	?>
 	<nav class="<?php echo esc_attr( $classes ); ?>" aria-label="<?php esc_attr_e( 'Breadcrumb', 'jcp-core' ); ?>">
-		<a href="<?php echo esc_url( $parent['url'] ); ?>"><?php echo esc_html( $parent['label'] ); ?></a>
-		<span aria-hidden="true">/</span>
-		<span><?php echo esc_html( $label ); ?></span>
+		<?php foreach ( $trail as $i => $crumb ) : ?>
+			<?php if ( $i > 0 ) : ?>
+				<span aria-hidden="true">/</span>
+			<?php endif; ?>
+			<?php if ( ! empty( $crumb['url'] ) ) : ?>
+				<a href="<?php echo esc_url( (string) $crumb['url'] ); ?>"><?php echo esc_html( (string) $crumb['label'] ); ?></a>
+			<?php else : ?>
+				<span><?php echo esc_html( (string) $crumb['label'] ); ?></span>
+			<?php endif; ?>
+		<?php endforeach; ?>
 	</nav>
 	<?php
 }
@@ -610,8 +681,10 @@ function jcp_niche_render_benefits( array $c ): void {
 		return;
 	}
 	$section_id = ! empty( $b['section_id'] ) ? (string) $b['section_id'] : '';
+	$show_icons = jcp_niche_show_field( $b, 'show_icons', true );
+	$icon_class = $show_icons ? '' : ' jcp-section--no-icons';
 	?>
-	<section class="jcp-section rankings-section jcp-niche-benefits<?php echo $section_id !== '' ? '' : ''; ?>"<?php echo $section_id !== '' ? ' id="' . esc_attr( $section_id ) . '"' : ''; ?>>
+	<section class="jcp-section rankings-section jcp-niche-benefits<?php echo esc_attr( $icon_class ); ?><?php echo $section_id !== '' ? '' : ''; ?>"<?php echo $section_id !== '' ? ' id="' . esc_attr( $section_id ) . '"' : ''; ?>>
 		<div class="jcp-container">
 			<div class="rankings-header">
 				<h2<?php jcp_niche_editable_attr( 'benefits.headline' ); ?>><?php jcp_niche_e( (string) $b['headline'] ); ?></h2>
@@ -640,7 +713,9 @@ function jcp_niche_render_benefits( array $c ): void {
 						'benefits.items.' . $bi . '.title',
 						'benefits.items.' . $bi . '.stat_value',
 						'benefits.items.' . $bi . '.stat_label',
-						(int) $bi
+						(int) $bi,
+						'benefits.items.' . $bi . '.icon',
+						$show_icons
 					);
 				endforeach;
 				?>
@@ -833,8 +908,10 @@ function jcp_niche_render_who_its_for( array $c ): void {
 		return;
 	}
 	$variant = (string) ( $w['variant'] ?? '' );
+	$show_icons = jcp_niche_show_field( $w, 'show_icons', true );
+	$icon_class = $show_icons ? '' : ' jcp-section--no-icons';
 	?>
-	<section class="jcp-section rankings-section jcp-niche-audiences" id="who-its-for">
+	<section class="jcp-section rankings-section jcp-niche-audiences<?php echo esc_attr( $icon_class ); ?>" id="who-its-for">
 		<div class="jcp-container">
 			<div class="rankings-header">
 				<h2<?php jcp_niche_editable_attr( 'who_its_for.headline' ); ?>><?php jcp_niche_e( (string) $w['headline'] ); ?></h2>
@@ -861,9 +938,10 @@ function jcp_niche_render_who_its_for( array $c ): void {
 					if ( ! is_array( $aud ) ) {
 						continue;
 					}
+					$icon_slug = ! empty( $aud['icon'] ) ? (string) $aud['icon'] : ( $aud_icons[ $ai ] ?? 'users' );
 					jcp_niche_factor_card(
 						(string) ( $aud['title'] ?? '' ),
-						$aud_icons[ $ai ] ?? 'users',
+						$icon_slug,
 						'',
 						'',
 						function () use ( $aud, $ai ) {
@@ -874,7 +952,9 @@ function jcp_niche_render_who_its_for( array $c ): void {
 						'who_its_for.audiences.' . $ai . '.title',
 						'',
 						'',
-						(int) $ai
+						(int) $ai,
+						'who_its_for.audiences.' . $ai . '.icon',
+						$show_icons
 					);
 				endforeach;
 				?>
@@ -1142,8 +1222,9 @@ function jcp_niche_render_conversion( array $props, string $niche_key = '' ): vo
 	$image_url  = $media['image_url'];
 	$video_url  = $media['video_url'];
 	$image_alt  = $media['media_alt'];
+	$icon_class = jcp_niche_show_field( $props, 'show_icons', true ) ? '' : ' jcp-section--no-icons';
 	?>
-	<section class="jcp-section rankings-section conversion-section jcp-block-conversion" id="<?php echo esc_attr( $section_id ); ?>">
+	<section class="jcp-section rankings-section conversion-section jcp-block-conversion<?php echo esc_attr( $icon_class ); ?>" id="<?php echo esc_attr( $section_id ); ?>">
 		<div class="jcp-container">
 			<div class="conversion-wrapper jcp-split-layout <?php echo esc_attr( jcp_media_position_class( $media['media_position'] ) ); ?>" data-jcp-split-path="conversion" data-jcp-media-position-path="conversion.media_position">
 				<div class="conversion-content jcp-split-col jcp-split-col--copy" data-jcp-split-col="copy">

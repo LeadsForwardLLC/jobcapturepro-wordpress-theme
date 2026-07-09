@@ -70,6 +70,8 @@
     ],
     benefits: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
+      { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     differentiation: [
@@ -77,6 +79,7 @@
     ],
     who_its_for: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     faq: [
@@ -89,6 +92,7 @@
     ],
     conversion: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.conversion-point-icon', defaultOn: true },
     ],
     proof_flow: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
@@ -216,7 +220,7 @@
       <h2>Page structure</h2>
       <button type="button" class="jcp-block-structure__close" id="jcpStructureClose" aria-label="Close">×</button>
     </div>
-    <p class="jcp-block-structure__hint">Drag to reorder. Click a section to jump to it on the page — or click a section on the page to select it here.</p>
+    <p class="jcp-block-structure__hint">Drag to reorder. Click a section to jump to it. Use the controls below each section for layout, background, and visibility.</p>
     <div class="jcp-block-structure__page-options">
       <span class="jcp-layout-group__label">Page</span>
       <button type="button" class="jcp-layout-chip" id="jcpToggleBreadcrumb" title="Show breadcrumb trail in the hero">Breadcrumb</button>
@@ -273,11 +277,22 @@
     </div>
   `;
 
+  const iconPopover = document.createElement('div');
+  iconPopover.className = 'jcp-niche-icon-popover';
+  iconPopover.hidden = true;
+  iconPopover.innerHTML = `
+    <strong>Choose icon</strong>
+    <p class="jcp-niche-icon-popover__hint">Click an icon below. Icons apply to this card only.</p>
+    <div class="jcp-niche-icon-popover__grid" id="jcpNicheIconGrid"></div>
+    <button type="button" class="btn btn-secondary" id="jcpNicheIconCancel">Close</button>
+  `;
+
   document.body.appendChild(bar);
   document.body.appendChild(structurePanel);
   document.body.appendChild(addModal);
   document.body.appendChild(popover);
   document.body.appendChild(textLinkPopover);
+  document.body.appendChild(iconPopover);
   document.body.classList.add('jcp-niche-editing');
 
   const statusEl = bar.querySelector('#jcpNicheStatus');
@@ -294,6 +309,63 @@
   let activeLink = null;
   let activeRichField = null;
   let activeBlockId = null;
+
+  const ICON_CHOICES = [
+    'badge-check', 'map-pin', 'star', 'phone', 'building-2', 'message-square',
+    'camera', 'clock', 'earth', 'share-2', 'users', 'briefcase', 'hard-hat',
+    'trending-up', 'shield-check', 'wrench', 'zap', 'target', 'heart',
+  ];
+
+  const iconGridEl = iconPopover.querySelector('#jcpNicheIconGrid');
+  const iconAssetBase = () => window.JCP_ASSET_BASE || '';
+  let activeIconTarget = null;
+
+  ICON_CHOICES.forEach((name) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'jcp-niche-icon-popover__btn';
+    btn.dataset.iconName = name;
+    btn.title = name;
+    btn.innerHTML = `<img src="${iconAssetBase()}/shared/assets/icons/lucide/${name}.svg" alt="" width="20" height="20" />`;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!activeIconTarget) return;
+      const path = activeIconTarget.dataset.jcpIconPath;
+      if (!path) return;
+      setPath(flatContent, path, name);
+      const img = activeIconTarget.querySelector('.factor-icon, .meta-icon');
+      if (img) img.src = `${iconAssetBase()}/shared/assets/icons/lucide/${name}.svg`;
+      iconPopover.hidden = true;
+      iconPopover.setAttribute('hidden', '');
+      activeIconTarget = null;
+      recordChange();
+    });
+    iconGridEl.appendChild(btn);
+  });
+
+  const openIconPicker = (wrapper) => {
+    activeIconTarget = wrapper;
+    iconPopover.hidden = false;
+    iconPopover.removeAttribute('hidden');
+    const rect = wrapper.getBoundingClientRect();
+    iconPopover.style.top = `${Math.min(window.innerHeight - 280, rect.bottom + 8)}px`;
+    iconPopover.style.left = `${Math.max(8, Math.min(window.innerWidth - 280, rect.left))}px`;
+  };
+
+  document.addEventListener('click', (e) => {
+    if (!editing) return;
+    const wrapper = e.target.closest('[data-jcp-icon-path]');
+    if (!wrapper || !e.target.closest('.factor-icon-wrapper, .factor-icon, .meta-icon')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openIconPicker(wrapper);
+  });
+
+  iconPopover.querySelector('#jcpNicheIconCancel').addEventListener('click', () => {
+    iconPopover.hidden = true;
+    iconPopover.setAttribute('hidden', '');
+    activeIconTarget = null;
+  });
 
   const isRichField = (el) => el && el.getAttribute('data-jcp-rich') === 'true';
 
@@ -1075,7 +1147,7 @@
     html += buildBlockVisibilityHtml(block);
 
     if (!html) return '';
-    return `<div class="jcp-block-structure__layout is-collapsed">${html}</div>`;
+    return `<div class="jcp-block-structure__layout">${html}</div>`;
   };
 
   const SPLIT_TOGGLE_DEFAULTS = {

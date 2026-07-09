@@ -140,6 +140,7 @@
   };
 
   const buildFactorCard = (basePath, index, data) => {
+    const iconPath = `${basePath}.${index}.icon`;
     const stat = data.stat_value
       ? `<div class="factor-stat">
           <span class="stat-value" data-jcp-path="${basePath}.${index}.stat_value">${esc(data.stat_value)}</span>
@@ -148,7 +149,7 @@
       : '';
     return `
       <div class="ranking-factor-card" data-jcp-array-item="${index}">
-        <div class="factor-icon-wrapper">
+        <div class="factor-icon-wrapper" data-jcp-icon-path="${iconPath}">
           <img src="${iconUrl(data.icon || 'badge-check')}" class="factor-icon" alt="" width="32" height="32" />
         </div>
         <h3 class="factor-title" data-jcp-path="${basePath}.${index}.title">${esc(data.title || '')}</h3>
@@ -547,12 +548,19 @@
   };
 
   const injectAddButton = (container) => {
-    let btn = container.querySelector(':scope > .jcp-collection-add');
+    const isTimeline = container.classList.contains('timeline-steps');
+    let btn = isTimeline
+      ? container.parentElement?.querySelector(':scope > .jcp-collection-add--timeline')
+      : container.querySelector(':scope > .jcp-collection-add');
     if (!btn) {
       btn = document.createElement('button');
-      btn.className = 'jcp-collection-add';
+      btn.className = `jcp-collection-add${isTimeline ? ' jcp-collection-add--timeline' : ''}`;
       btn.textContent = addButtonLabel(container);
-      container.appendChild(btn);
+      if (isTimeline && container.parentElement) {
+        container.parentElement.appendChild(btn);
+      } else {
+        container.appendChild(btn);
+      }
     }
     bindAddButton(btn, container);
   };

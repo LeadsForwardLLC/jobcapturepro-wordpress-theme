@@ -333,10 +333,13 @@ function jcp_page_default_block_props( string $type ): array {
 			'pain_points' => [],
 		],
 		'benefits' => [
-			'headline' => __( 'Section headline', 'jcp-core' ),
-			'cta_primary' => [ 'label' => '', 'url' => '' ],
+			'headline'      => __( 'Section headline', 'jcp-core' ),
+			'show_icons'    => true,
+			'show_subheadline' => true,
+			'show_closing'  => true,
+			'cta_primary'   => [ 'label' => '', 'url' => '' ],
 			'cta_secondary' => [ 'label' => '', 'url' => '' ],
-			'items'    => [],
+			'items'         => [],
 		],
 		'differentiation' => [
 			'headline' => __( 'Section headline', 'jcp-core' ),
@@ -345,8 +348,9 @@ function jcp_page_default_block_props( string $type ): array {
 			'cta_primary' => [ 'label' => '', 'url' => '' ],
 		],
 		'who_its_for' => [
-			'headline'  => __( 'Who it\'s for', 'jcp-core' ),
-			'audiences' => [],
+			'headline'    => __( 'Who it\'s for', 'jcp-core' ),
+			'show_icons'  => true,
+			'audiences'   => [],
 			'cta_primary' => [ 'label' => '', 'url' => '' ],
 		],
 		'faq' => [
@@ -386,6 +390,7 @@ function jcp_page_default_block_props( string $type ): array {
 		],
 		'conversion' => [
 			'headline'            => __( 'Section headline', 'jcp-core' ),
+			'show_icons'          => true,
 			'points'              => [],
 			'media_type'          => 'image',
 			'media_position'      => 'right',
