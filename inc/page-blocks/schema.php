@@ -264,6 +264,7 @@ function jcp_page_get_content( int $post_id ): array {
 	$content = jcp_page_normalize_content( $raw, $post_id );
 	$cleaned = jcp_page_sanitize_content_document( $content );
 	$upgraded = jcp_page_upgrade_industry_media_blocks( $cleaned, $post_id );
+	$upgraded = jcp_page_upgrade_embedded_demo_blocks( $upgraded, $post_id );
 	if ( wp_json_encode( $upgraded ) !== wp_json_encode( $cleaned ) ) {
 		jcp_page_save_content( $post_id, $upgraded );
 		$cleaned = $upgraded;

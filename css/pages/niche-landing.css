@@ -1681,6 +1681,61 @@ body.jcp-structure-open {
   width: 100%;
 }
 
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-left .jcp-hero-copy,
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-left .hero-copy,
+.jcp-hero-variant-home.jcp-layout-align-left .jcp-hero-copy,
+.jcp-hero-variant-home.jcp-layout-align-left .hero-copy {
+  text-align: left;
+  align-items: flex-start;
+}
+
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-left .jcp-actions,
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-left .directory-cta-row,
+.jcp-hero-variant-home.jcp-layout-align-left .jcp-actions,
+.jcp-hero-variant-home.jcp-layout-align-left .directory-cta-row {
+  justify-content: flex-start;
+}
+
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-center .jcp-hero-copy,
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-center .hero-copy,
+.jcp-hero-variant-home.jcp-layout-align-center .jcp-hero-copy,
+.jcp-hero-variant-home.jcp-layout-align-center .hero-copy {
+  text-align: center;
+  align-items: center;
+}
+
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-center .jcp-actions,
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-center .directory-cta-row,
+.jcp-hero-variant-home.jcp-layout-align-center .jcp-actions,
+.jcp-hero-variant-home.jcp-layout-align-center .directory-cta-row {
+  justify-content: center;
+}
+
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-right .jcp-hero-copy,
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-right .hero-copy,
+.jcp-hero-variant-home.jcp-layout-align-right .jcp-hero-copy,
+.jcp-hero-variant-home.jcp-layout-align-right .hero-copy {
+  text-align: right;
+  align-items: flex-end;
+}
+
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-right .jcp-actions,
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-right .directory-cta-row,
+.jcp-hero-variant-home.jcp-layout-align-right .jcp-actions,
+.jcp-hero-variant-home.jcp-layout-align-right .directory-cta-row {
+  justify-content: flex-end;
+}
+
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-left .directory-meta,
+.jcp-hero-variant-home.jcp-layout-align-left .directory-meta {
+  justify-content: flex-start;
+}
+
+.jcp-block-root.jcp-hero-variant-home.jcp-layout-align-center .directory-meta,
+.jcp-hero-variant-home.jcp-layout-align-center .directory-meta {
+  justify-content: center;
+}
+
 /* Hero layout variants */
 .jcp-block-root.jcp-hero-variant-condensed .jcp-hero-grid,
 .jcp-hero-variant-condensed .jcp-hero-grid {

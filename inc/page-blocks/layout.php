@@ -27,6 +27,10 @@ function jcp_block_column_types(): array {
 		'benefits',
 		'who_its_for',
 		'proof_flow',
+		'what_it_is',
+		'differentiation',
+		'faq',
+		'directory_preview',
 	];
 }
 
@@ -150,20 +154,27 @@ function jcp_block_layout_classes( array $layout, string $type ): string {
  * @return array<string, bool>
  */
 function jcp_block_layout_options( string $type ): array {
-	if ( in_array( $type, [ 'core_mechanic', 'breadcrumb' ], true ) ) {
+	if ( $type === 'breadcrumb' ) {
 		return [];
+	}
+	if ( $type === 'core_mechanic' ) {
+		return [
+			'align' => true,
+			'width' => true,
+		];
 	}
 	if ( $type === 'hero' ) {
 		return [
 			'hero_variant'   => true,
 			'media_position' => true,
+			'align'          => true,
 		];
 	}
 	if ( in_array( $type, [ 'media_text', 'demo_preview', 'conversion' ], true ) ) {
 		return [
 			'media_position' => true,
-			'align'          => $type === 'media_text',
-			'width'          => $type === 'media_text',
+			'align'          => true,
+			'width'          => true,
 		];
 	}
 	$options = [

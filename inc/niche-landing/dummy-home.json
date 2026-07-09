@@ -28,15 +28,15 @@
       { "title": "AI Check-In", "lines": ["JobCapturePro generates the full check-in automatically."] },
       { "title": "Publish", "lines": ["Website, directory, GBP, and social update instantly."] },
       { "title": "Review", "lines": ["Smart review requests go out at the right moment."] }
-    ],
-    "demo_preview": {
-      "badge": "Live Demo",
-      "headline": "See it in action",
-      "body": "Watch how JobCapturePro turns a single job photo into verified proof across Google Maps, your website, directory listings, and review requests — all automatically.",
-      "cue": "You will see how one job becomes Google updates, website proof, directory presence, and review requests.",
-      "cta_primary": { "label": "Launch Interactive Demo", "url": "/demo" },
-      "cta_note": "No signup required • Takes 2 minutes"
-    }
+    ]
+  },
+  "demo_preview": {
+    "badge": "Live Demo",
+    "headline": "See it in action",
+    "body": "Watch how JobCapturePro turns a single job photo into verified proof across Google Maps, your website, directory listings, and review requests — all automatically.",
+    "cue": "You will see how one job becomes Google updates, website proof, directory presence, and review requests.",
+    "cta_primary": { "label": "Launch Interactive Demo", "url": "/demo" },
+    "cta_note": "No signup required • Takes 2 minutes"
   },
   "proof_flow": {
     "headline": "Real job proof, not marketing claims",

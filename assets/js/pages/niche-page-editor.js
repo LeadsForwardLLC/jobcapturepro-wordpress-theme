@@ -60,67 +60,101 @@
   const BLOCK_VISIBILITY_TOGGLES = {
     hero: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-hero-subtitle', defaultOn: true },
-      { key: 'show_trust_line', label: 'Trust line', selector: '.jcp-niche-trust-line', defaultOn: true, heroOnly: true },
+      { key: 'show_trust_line', label: 'Trust line', selector: '.jcp-niche-trust-line', defaultOn: true },
+      { key: 'show_cta_primary', label: 'Primary button', selector: '.jcp-hero-primary-cta', defaultOn: true },
+      { key: 'show_cta_secondary', label: 'Secondary button', selector: '.jcp-actions .btn-secondary', defaultOn: true },
+      { key: 'show_meta_stats', label: 'Proof stats', selector: '.directory-meta', defaultOn: true },
     ],
     what_it_is: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
-      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+      { key: 'show_cta', label: 'Primary button', selector: '.jcp-section-cta-row .benefits-cta-slot:first-child', defaultOn: false },
+      { key: 'show_cta_secondary', label: 'Secondary link', selector: '.jcp-section-cta-row .benefits-cta-slot:last-child', defaultOn: false },
     ],
     how_it_works: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
-      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: true },
+      { key: 'show_steps', label: 'Step cards', selector: '.timeline-steps', defaultOn: true },
+      { key: 'show_demo_preview', label: 'Live demo strip', selector: '.demo-preview-section, .jcp-block-demo-preview', defaultOn: true },
+      { key: 'show_cta', label: 'Primary button', selector: '.jcp-section-cta-row .benefits-cta-slot:first-child', defaultOn: true },
+      { key: 'show_cta_secondary', label: 'Secondary link', selector: '.jcp-section-cta-row .benefits-cta-slot:last-child', defaultOn: false },
     ],
     check_ins: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_tags', label: 'Job tags', selector: '.jcp-niche-tags-wrap', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     problem: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     benefits: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
-      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+      { key: 'show_cta', label: 'Primary button', selector: '.jcp-section-cta-row .benefits-cta-slot:first-child', defaultOn: false },
+      { key: 'show_cta_secondary', label: 'Secondary link', selector: '.jcp-section-cta-row .benefits-cta-slot:last-child', defaultOn: false },
     ],
     differentiation: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-niche-diff-lead', defaultOn: true },
       { key: 'show_icons', label: 'Checkmarks', selector: '.conversion-point-icon', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     who_its_for: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     faq: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_items', label: 'FAQ items', selector: '.faq-grid', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     final_cta: [
+      { key: 'show_headline', label: 'Headline', selector: '.cta-content h3', defaultOn: true },
       { key: 'show_subheadline', label: 'Supporting text', selector: '.cta-paragraph', defaultOn: true },
       { key: 'show_cta', label: 'Button', selector: '.rankings-cta-btn, .cta-button-wrapper .jcp-optional-restore', defaultOn: true },
       { key: 'show_cta_note', label: 'Text under button', selector: '.cta-note', defaultOn: true },
     ],
     conversion: [
-      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
-      { key: 'show_icons', label: 'Icons', selector: '.conversion-point-icon', defaultOn: true },
-      { key: 'show_cta', label: 'Section button', selector: '.conversion-cta', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: '.conversion-content .rankings-header h2', defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.conversion-content .rankings-subtitle', defaultOn: true },
+      { key: 'show_points', label: 'Checklist', selector: '.conversion-points', defaultOn: true },
+      { key: 'show_media', label: 'Side image', selector: '.conversion-visual', defaultOn: true },
+      { key: 'show_stats', label: 'Stat badges', selector: '.conversion-stats', defaultOn: true },
+      { key: 'show_cta', label: 'Button', selector: '.conversion-cta', defaultOn: true },
     ],
     proof_flow: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
-      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+      { key: 'show_items', label: 'Channel items', selector: '.proof-flow', defaultOn: true },
+      { key: 'show_callout', label: 'Callout box', selector: '.real-job-proof-callout', defaultOn: true },
+      { key: 'show_link', label: 'Bottom link', selector: '.timeline-cta', defaultOn: true },
     ],
     directory_preview: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
-      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+      { key: 'show_cards', label: 'Directory cards', selector: '.directory-grid', defaultOn: true },
+      { key: 'show_outro', label: 'Outro line', selector: '.directory-preview-outro', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.directory-preview-cta', defaultOn: false },
     ],
-    core_mechanic: [],
+    core_mechanic: [
+      { key: 'show_stats', label: 'Stat row', selector: '.jcp-core-mechanic-meta, .directory-meta', defaultOn: true },
+    ],
+    cta_band: [
+      { key: 'show_cta_primary', label: 'Primary button', selector: '.jcp-niche-cta-band .btn-primary', defaultOn: true },
+      { key: 'show_cta_secondary', label: 'Secondary button', selector: '.jcp-niche-cta-band .btn-secondary', defaultOn: true },
+    ],
   };
 
   let flatContent = bootstrap.content && typeof bootstrap.content === 'object' ? bootstrap.content : {};
@@ -141,6 +175,7 @@
   let historyIndex = -1;
   let savedSnapshot = null;
   const detachedPool = new Map();
+  const structureTabByBlockId = new Map();
   let recordTimer = null;
 
   const defaultProps = {
@@ -794,7 +829,7 @@
     }
   };
 
-  const setSectionSurface = (block, patch, { refreshList = true } = {}) => {
+  const setSectionSurface = (block, patch, { refreshList = false } = {}) => {
     const liveBlock = (pageDocument.blocks || []).find((entry) => entry.id === block.id) || block;
     liveBlock.layout = liveBlock.layout || defaultLayout(liveBlock.type);
     liveBlock.layout.section_surface = {
@@ -803,8 +838,75 @@
     };
     const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
     applySectionSurfaceToDom(liveBlock, root);
-    if (refreshList) renderBlockList();
+    if (refreshList) {
+      renderBlockList();
+    } else {
+      refreshSectionSurfaceControls(liveBlock);
+    }
     recordChange();
+  };
+
+  const refreshSectionSurfaceControls = (block) => {
+    const li = blockListEl.querySelector(`[data-block-id="${block.id}"]`);
+    if (!li) return;
+    const backgroundPanel = li.querySelector('[data-structure-panel="background"]');
+    if (!backgroundPanel) return;
+    backgroundPanel.innerHTML = buildSectionSurfaceHtml(block);
+    bindSectionSurfaceControls(li, block);
+  };
+
+  const bindSectionSurfaceControls = (li, block) => {
+    li.querySelectorAll('[data-section-surface-preset]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setSectionSurface(block, { preset: btn.dataset.sectionSurfacePreset });
+      });
+    });
+    li.querySelectorAll('[data-section-surface-color]').forEach((input) => {
+      input.addEventListener('input', (e) => {
+        e.stopPropagation();
+        setSectionSurface(block, { color: input.value }, { refreshList: false });
+        const hex = li.querySelector('[data-section-surface-color-hex]');
+        if (hex) hex.value = input.value;
+      });
+    });
+    li.querySelectorAll('[data-section-surface-color-hex]').forEach((input) => {
+      input.addEventListener('change', (e) => {
+        e.stopPropagation();
+        const val = input.value.trim();
+        if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(val)) return;
+        setSectionSurface(block, { color: val }, { refreshList: false });
+        const picker = li.querySelector('[data-section-surface-color]');
+        if (picker) picker.value = val;
+      });
+    });
+    li.querySelectorAll('[data-section-surface-opacity]').forEach((input) => {
+      input.addEventListener('input', (e) => {
+        e.stopPropagation();
+        const opacity = parseInt(input.value, 10) || 0;
+        const valEl = input.closest('.jcp-surface-opacity')?.querySelector('.jcp-surface-opacity__val');
+        if (valEl) valEl.textContent = `${opacity}%`;
+        setSectionSurface(block, { opacity }, { refreshList: false });
+      });
+    });
+    li.querySelectorAll('[data-section-surface-image]').forEach((input) => {
+      input.addEventListener('change', (e) => {
+        e.stopPropagation();
+        setSectionSurface(block, { image_url: input.value.trim() }, { refreshList: false });
+        refreshSectionSurfaceControls(block);
+      });
+    });
+    li.querySelector('[data-section-surface-pick]')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openSurfaceImagePicker(block);
+    });
+    li.querySelectorAll('[data-section-surface-clear]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setSectionSurface(block, { image_url: '' }, { refreshList: false });
+        refreshSectionSurfaceControls(block);
+      });
+    });
   };
 
   const isBreadcrumbVisible = () => {
@@ -887,13 +989,16 @@
   const buildBlockVisibilityHtml = (block) => {
     const toggles = [...(BLOCK_VISIBILITY_TOGGLES[block.type] || [])];
     if (block.type === 'media_text' || block.type === 'demo_preview') {
+      toggles.unshift(
+        { key: 'show_headline', label: 'Headline', selector: '.jcp-split-headline, .demo-preview-headline, h2' },
+      );
       toggles.push(
         { key: 'show_badge', label: 'Badge' },
         { key: 'show_subheadline', label: 'Subheadline' },
         { key: 'show_cue', label: 'Lead' },
         { key: 'show_body', label: 'Body' },
         { key: 'show_cta', label: 'Button' },
-        { key: 'show_cta_note', label: 'Note' }
+        { key: 'show_cta_note', label: 'Note' },
       );
     }
     if (!toggles.length) return '';
@@ -902,8 +1007,8 @@
       let on = false;
       if (block.type === 'media_text' || block.type === 'demo_preview') {
         on = isSplitToggleOn(block, key);
-      } else if (block.type === 'hero' && key === 'show_trust_line') {
-        on = block.props?.show_trust_line !== false;
+      } else if (block.type === 'hero' && ['show_trust_line', 'show_cta_primary', 'show_cta_secondary', 'show_meta_stats'].includes(key)) {
+        on = block.props?.[key] !== false;
       } else {
         on = isBlockFieldVisible(block, key, defaultOn !== false);
       }
@@ -914,19 +1019,39 @@
   };
 
   const syncBlockVisibilityToDom = (block) => {
-    const toggles = BLOCK_VISIBILITY_TOGGLES[block.type];
-    if (!toggles) return;
+    const toggles = [...(BLOCK_VISIBILITY_TOGGLES[block.type] || [])];
+    if (block.type === 'media_text' || block.type === 'demo_preview') {
+      toggles.unshift({ key: 'show_headline', label: 'Headline', selector: '.jcp-split-headline, .demo-preview-headline, h2' });
+      toggles.push(
+        { key: 'show_badge', selector: '.demo-badge' },
+        { key: 'show_subheadline', selector: '.jcp-split-subheadline' },
+        { key: 'show_cue', selector: '.demo-preview-cue' },
+        { key: 'show_body', selector: '.demo-preview-description, .jcp-media-text-body' },
+      );
+    }
+    if (!toggles.length) return;
     const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
     if (!root) return;
     toggles.forEach(({ key, selector, defaultOn }) => {
       if (!selector) return;
       let enabled = isBlockFieldVisible(block, key, defaultOn !== false);
-      if (block.type === 'hero' && key === 'show_trust_line') {
-        enabled = block.props?.show_trust_line !== false;
+      if (block.type === 'media_text' || block.type === 'demo_preview') {
+        if (['show_badge', 'show_subheadline', 'show_cue', 'show_body'].includes(key)) {
+          enabled = isSplitToggleOn(block, key);
+        }
+      }
+      if (block.type === 'hero' && ['show_trust_line', 'show_cta_primary', 'show_cta_secondary', 'show_meta_stats'].includes(key)) {
+        enabled = block.props?.[key] !== false;
       }
       root.querySelectorAll(selector).forEach((el) => {
         el.style.display = enabled ? '' : 'none';
       });
+      if (block.type === 'hero' && (key === 'show_cta_primary' || key === 'show_cta_secondary')) {
+        const showPrimary = block.props?.show_cta_primary !== false;
+        const showSecondary = block.props?.show_cta_secondary !== false;
+        const actions = root.querySelector('.jcp-actions');
+        if (actions) actions.style.display = (showPrimary || showSecondary) ? '' : 'none';
+      }
       if (key === 'show_icons') {
         applyIconVisibilityToRoot(root, enabled);
       }
@@ -1042,18 +1167,21 @@
     const found = registry.find((b) => b.type === type);
     if (found?.layout_options) return found.layout_options;
     if (type === 'hero') {
-      return { hero_variant: true, media_position: true };
+      return { hero_variant: true, media_position: true, align: true };
     }
-    if (type === 'media_text') {
+    if (type === 'media_text' || type === 'demo_preview' || type === 'conversion') {
       return { media_position: true, align: true, width: true };
     }
-    if (type === 'demo_preview' || type === 'conversion') {
-      return { media_position: true };
+    if (type === 'core_mechanic' || type === 'breadcrumb') {
+      return type === 'core_mechanic' ? { align: true, width: true } : {};
     }
-    if (type === 'core_mechanic') {
-      return {};
-    }
-    return { align: true, width: true };
+    const columnTypes = [
+      'how_it_works', 'check_ins', 'problem', 'benefits', 'who_its_for', 'proof_flow',
+      'what_it_is', 'differentiation', 'faq', 'directory_preview',
+    ];
+    const options = { align: true, width: true };
+    if (columnTypes.includes(type)) options.columns = true;
+    return options;
   };
 
   const legacyKeyFor = (type) => {
@@ -1208,29 +1336,23 @@
     const options = layoutOptionsFor(block.type);
     let layoutBody = '';
 
-    if (options.hero_variant && block.type === 'hero' && PAGE_KIND === 'home') {
-      const variant = resolveHeroVariant(block);
-      const variants = HERO_VARIANTS.filter((v) => v.value === 'home');
-      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Hero style</span><div class="jcp-layout-btns jcp-layout-btns--stacked" data-setting="hero_variant">';
-      variants.forEach((item) => {
-        const active = variant === item.value ? ' is-active' : '';
-        layoutBody += `<button type="button" class="jcp-layout-btn jcp-layout-btn--variant${active}" data-value="${item.value}" title="${item.hint}">${item.label}</button>`;
-      });
-      layoutBody += '</div></div>';
-    }
-
-    if (block.type === 'hero' && PAGE_KIND !== 'home') {
+    if (block.type === 'hero') {
       block.props = block.props || {};
       const variant = resolveHeroVariant(block);
       const heroLayout = resolveLayout(block);
-      const align = heroLayout.align || 'center';
-      const heroStyles = HERO_VARIANTS.filter((v) => v.value !== 'home');
-      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Hero style</span><div class="jcp-layout-btns jcp-layout-btns--stacked" data-setting="hero_variant">';
-      heroStyles.forEach((item) => {
-        const active = variant === item.value ? ' is-active' : '';
-        layoutBody += `<button type="button" class="jcp-layout-btn jcp-layout-btn--variant${active}" data-value="${item.value}" title="${item.hint}">${item.label}</button>`;
-      });
-      layoutBody += '</div></div>';
+      const align = heroLayout.align || (PAGE_KIND === 'home' ? 'left' : 'center');
+      const variants = PAGE_KIND === 'home'
+        ? HERO_VARIANTS.filter((v) => v.value === 'home')
+        : HERO_VARIANTS.filter((v) => v.value !== 'home');
+
+      if (options.hero_variant && variants.length) {
+        layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Hero style</span><div class="jcp-layout-btns jcp-layout-btns--stacked" data-setting="hero_variant">';
+        variants.forEach((item) => {
+          const active = variant === item.value ? ' is-active' : '';
+          layoutBody += `<button type="button" class="jcp-layout-btn jcp-layout-btn--variant${active}" data-value="${item.value}" title="${item.hint}">${item.label}</button>`;
+        });
+        layoutBody += '</div></div>';
+      }
 
       layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Text align</span><div class="jcp-layout-btns" data-setting="align">';
       layoutBody += ['left', 'center', 'right'].map((value) => {
@@ -1300,13 +1422,14 @@
 
     const backgroundBody = block.type !== 'breadcrumb' ? buildSectionSurfaceHtml(block) : '';
     const visibilityBody = buildBlockVisibilityHtml(block);
+    const activeTab = structureTabByBlockId.get(block.id) || 'layout';
     const tabButtons = [];
     const tabPanels = [];
     const addTab = (id, label, body) => {
       if (!body || !String(body).trim()) return;
-      const isFirst = !tabButtons.length;
-      tabButtons.push(`<button type="button" class="jcp-structure-tab${isFirst ? ' is-active' : ''}" data-structure-tab="${id}" role="tab">${label}</button>`);
-      tabPanels.push(`<div class="jcp-structure-panel${isFirst ? ' is-active' : ''}" data-structure-panel="${id}" role="tabpanel">${body}</div>`);
+      const isActive = id === activeTab;
+      tabButtons.push(`<button type="button" class="jcp-structure-tab${isActive ? ' is-active' : ''}" data-structure-tab="${id}" role="tab">${label}</button>`);
+      tabPanels.push(`<div class="jcp-structure-panel${isActive ? ' is-active' : ''}" data-structure-panel="${id}" role="tabpanel">${body}</div>`);
     };
     addTab('layout', 'Layout', layoutBody);
     addTab('background', 'Background', backgroundBody);
@@ -1497,6 +1620,11 @@
       }
       if (key === 'show_trust_line') {
         root.querySelector('.jcp-niche-trust-line')?.style.setProperty('display', enabled ? '' : 'none');
+      }
+      if (key === 'show_meta_stats') {
+        root.querySelectorAll('.directory-meta').forEach((el) => {
+          el.style.setProperty('display', enabled ? '' : 'none');
+        });
       }
       const showPrimary = block.props.show_cta_primary !== false;
       const showSecondary = block.props.show_cta_secondary !== false;
@@ -1784,6 +1912,7 @@
           const tab = tabBtn.dataset.structureTab;
           const layoutRoot = li.querySelector('.jcp-block-structure__layout');
           if (!layoutRoot || !tab) return;
+          structureTabByBlockId.set(block.id, tab);
           layoutRoot.querySelectorAll('.jcp-structure-tab').forEach((btn) => {
             btn.classList.toggle('is-active', btn.dataset.structureTab === tab);
           });
@@ -1873,55 +2002,7 @@
           setBlockLayout(block, setting, value);
         });
       });
-      li.querySelectorAll('[data-section-surface-preset]').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          setSectionSurface(block, { preset: btn.dataset.sectionSurfacePreset });
-        });
-      });
-      li.querySelectorAll('[data-section-surface-color]').forEach((input) => {
-        input.addEventListener('input', (e) => {
-          e.stopPropagation();
-          setSectionSurface(block, { color: input.value }, { refreshList: false });
-          const hex = li.querySelector('[data-section-surface-color-hex]');
-          if (hex) hex.value = input.value;
-        });
-      });
-      li.querySelectorAll('[data-section-surface-color-hex]').forEach((input) => {
-        input.addEventListener('change', (e) => {
-          e.stopPropagation();
-          const val = input.value.trim();
-          if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(val)) return;
-          setSectionSurface(block, { color: val });
-          const picker = li.querySelector('[data-section-surface-color]');
-          if (picker) picker.value = val;
-        });
-      });
-      li.querySelectorAll('[data-section-surface-opacity]').forEach((input) => {
-        input.addEventListener('input', (e) => {
-          e.stopPropagation();
-          const opacity = parseInt(input.value, 10) || 0;
-          const valEl = input.closest('.jcp-surface-opacity')?.querySelector('.jcp-surface-opacity__val');
-          if (valEl) valEl.textContent = `${opacity}%`;
-          setSectionSurface(block, { opacity }, { refreshList: false });
-        });
-      });
-      li.querySelectorAll('[data-section-surface-image]').forEach((input) => {
-        input.addEventListener('change', (e) => {
-          e.stopPropagation();
-          setSectionSurface(block, { image_url: input.value.trim() });
-        });
-      });
-      li.querySelector('[data-section-surface-pick]')?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openSurfaceImagePicker(block);
-      });
-      li.querySelectorAll('[data-section-surface-clear]').forEach((btn) => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          setSectionSurface(block, { image_url: '' });
-        });
-      });
+      bindSectionSurfaceControls(li, block);
       li.querySelectorAll('[data-block-field-toggle]').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -1932,8 +2013,8 @@
             btn.classList.toggle('is-on', enabled);
             return;
           }
-          if (block.type === 'hero' && key === 'show_trust_line') {
-            const enabled = block.props?.show_trust_line === false;
+          if (block.type === 'hero' && ['show_trust_line', 'show_cta_primary', 'show_cta_secondary', 'show_meta_stats'].includes(key)) {
+            const enabled = block.props?.[key] === false;
             setBlockHeroToggle(block, key, enabled);
             btn.classList.toggle('is-on', enabled);
             return;

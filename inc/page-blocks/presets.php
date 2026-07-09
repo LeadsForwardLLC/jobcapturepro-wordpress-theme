@@ -118,6 +118,7 @@ function jcp_page_presets(): array {
 			'block_types' => [
 				'hero',
 				'how_it_works',
+				'demo_preview',
 				'proof_flow',
 				'benefits',
 				'who_its_for',
