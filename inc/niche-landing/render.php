@@ -261,8 +261,21 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 	if ( empty( $h['media_type'] ) ) {
 		$media['media_type'] = 'phone_mockup';
 	}
-	$phone_image = jcp_media_resolve_phone_image( $h );
+	$post_id     = (int) get_queried_object_id();
+	$phone_image = jcp_media_resolve_phone_image( $h, $post_id );
 	$phone_alt   = trim( (string) ( $h['phone_image_alt'] ?? $h['media_alt'] ?? '' ) );
+	if ( $phone_alt === '' && $post_id > 0 ) {
+		$attachment_id = (int) get_post_thumbnail_id( $post_id );
+		if ( $attachment_id > 0 ) {
+			$featured_alt = get_post_meta( $attachment_id, '_wp_attachment_image_alt', true );
+			if ( is_string( $featured_alt ) && $featured_alt !== '' ) {
+				$phone_alt = $featured_alt;
+			}
+		}
+		if ( $phone_alt === '' ) {
+			$phone_alt = (string) ( $h['h1'] ?? get_the_title( $post_id ) );
+		}
+	}
 	$show_visual = array_key_exists( 'show_visual', $h )
 		? ! empty( $h['show_visual'] )
 		: ( $variant !== 'centered' );
@@ -1406,6 +1419,13 @@ function jcp_niche_render_archive(): void {
 							if ( ! empty( $content['seo']['keywords'] ) && is_array( $content['seo']['keywords'] ) ) {
 								$keywords = implode( ' ', array_map( 'strval', $content['seo']['keywords'] ) );
 							}
+							$thumb_url = function_exists( 'jcp_nav_resolve_thumbnail_url' )
+								? jcp_nav_resolve_thumbnail_url( (int) $post->ID, is_array( $content ) ? $content : [] )
+								: (string) get_the_post_thumbnail_url( $post, 'medium_large' );
+							$thumb_alt = $label;
+							if ( ! empty( $content['hero']['media_alt'] ) ) {
+								$thumb_alt = (string) $content['hero']['media_alt'];
+							}
 							?>
 							<a
 								class="jcp-niche-archive-card"
@@ -1416,7 +1436,14 @@ function jcp_niche_render_archive(): void {
 								data-sort="<?php echo esc_attr( $label ); ?>"
 							>
 								<h2 class="jcp-niche-archive-card-title"><?php echo esc_html( $label ); ?></h2>
-								<p><?php echo esc_html( $excerpt ); ?></p>
+								<?php if ( $thumb_url !== '' ) : ?>
+									<span class="jcp-niche-archive-card-thumb" aria-hidden="true">
+										<img src="<?php echo esc_url( $thumb_url ); ?>" alt="" loading="lazy" decoding="async" width="640" height="400" />
+									</span>
+								<?php endif; ?>
+								<?php if ( $excerpt !== '' ) : ?>
+									<p class="jcp-niche-archive-card-excerpt"><?php echo esc_html( wp_trim_words( $excerpt, 28, '…' ) ); ?></p>
+								<?php endif; ?>
 								<span class="jcp-niche-archive-link"><?php esc_html_e( 'See how it works', 'jcp-core' ); ?> →</span>
 							</a>
 						<?php endforeach; ?>

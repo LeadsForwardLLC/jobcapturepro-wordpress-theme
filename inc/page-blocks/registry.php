@@ -269,7 +269,7 @@ function jcp_page_default_block_props( string $type ): array {
 			'h1'                  => __( 'Page headline', 'jcp-core' ),
 			'subheadline'         => '',
 			'show_subheadline'    => true,
-			'cta_primary'         => [ 'label' => __( 'Start free trial', 'jcp-core' ), 'url' => '' ],
+			'cta_primary'         => [ 'label' => __( 'View the live demo', 'jcp-core' ), 'url' => '/demo' ],
 			'cta_secondary'       => [ 'label' => __( 'See how it works', 'jcp-core' ), 'url' => '#how-it-works' ],
 			'trust_line'          => __( 'No credit card · Free trial · Setup in under 10 minutes', 'jcp-core' ),
 			'show_cta_primary'    => true,

@@ -326,7 +326,7 @@ function jcp_media_default_phone_image(): string {
  *
  * @param array<string, mixed> $props Block / hero props.
  */
-function jcp_media_resolve_phone_image( array $props ): string {
+function jcp_media_resolve_phone_image( array $props, int $post_id = 0 ): string {
 	$id = (int) ( $props['phone_image_attachment_id'] ?? 0 );
 	if ( $id > 0 ) {
 		$attached = wp_get_attachment_url( $id );
@@ -337,6 +337,18 @@ function jcp_media_resolve_phone_image( array $props ): string {
 	$url = trim( (string) ( $props['phone_image_url'] ?? '' ) );
 	if ( $url !== '' ) {
 		return jcp_media_resolve_url( $url );
+	}
+	if ( $post_id <= 0 ) {
+		$post_id = (int) get_queried_object_id();
+	}
+	if ( $post_id > 0 ) {
+		$post = get_post( $post_id );
+		if ( $post instanceof WP_Post && $post->post_type === 'jcp_niche_landing' ) {
+			$featured = get_the_post_thumbnail_url( $post_id, 'large' );
+			if ( is_string( $featured ) && $featured !== '' ) {
+				return $featured;
+			}
+		}
 	}
 	return jcp_media_default_phone_image();
 }

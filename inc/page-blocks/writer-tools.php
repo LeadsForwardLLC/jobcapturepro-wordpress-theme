@@ -100,7 +100,7 @@ function jcp_writer_document_meta_block( string $preset = 'industry' ): string {
 	$preset_label = jcp_writer_preset_label( $preset );
 	$is_industry  = $preset === 'industry';
 	$list_rule    = $is_industry
-		? '- Use these exact list counts: 3 team-already bullets + 4 turns-into outputs; 4 how-it-works steps; 4 check-in features; 4 pain points; 4 benefits + closing paragraph; 4 FAQ questions; 4 conversion bullets; 4 who-it\'s-for segments'
+		? '- Use these exact list counts: 3 team-already bullets + 4 turns-into outputs; 4 how-it-works steps; 4–5 check-in job types + 4 check-in features; 4 pain points; 4 benefits + closing paragraph; 3–4 who-it\'s-for audience cards (with Badge); 4 FAQ questions; 4 conversion bullets'
 		: '- Match the list counts shown in each section of this template (steps, bullets, cards, FAQ items, etc.)';
 	$extra_rule   = '- Sections marked “optional on this page” in the admin guide can be omitted; extra ALL CAPS sections you add will import and append in the page editor';
 
@@ -124,7 +124,7 @@ Meta Description: 140–160 characters — clear benefit + keyword + soft CTA
 
 FORMATTING RULES FOR IMPORT (required for auto-import):
 - Keep every ALL CAPS section header exactly as written (WHAT IT IS, HOW IT WORKS, etc.)
-- Keep field labels exactly: H1, Headline, Subheadline, CTA, Trust Line, Closing Line, Body, Badge
+- Keep field labels exactly: H1, Headline, Subheadline, CTA, Trust Line, Closing Line, Body, Badge, Job Types, Stat Number, Stat Label, FAQ Target, Callout Badge, Callout Title, Callout Text, Link Label, Link URL
 - Title + body pairs: title on one line, body on the next line with ONE leading space (indent)
 - Benefit cards: short title (2–4 words), indented body, then orange keyword (1 word), then ALL CAPS tagline on the next line
 {$list_rule}
@@ -326,6 +326,13 @@ Headline
 Subheadline
 [1–2 sentences]
 
+Job Types
+[Job type tag one]
+[Job type tag two]
+[Job type tag three]
+[Job type tag four]
+[Job type tag five]
+
 [Feature title one]
  [Feature body — 2–4 sentences; indent with leading space]
 [Feature title two]
@@ -334,6 +341,9 @@ Subheadline
  [Feature body]
 [Feature title four]
  [Feature body]
+
+Closing Line
+[Closing paragraph — 1–2 sentences]
 
 CTA
 [Optional — 2–5 words; leave blank to hide]
@@ -359,8 +369,8 @@ Subheadline
 [Pain point title four]
  [Pain point body]
 
-[Closing sentence one]
-[Closing sentence two]
+Closing Line
+[Closing sentence one. Closing sentence two.]
 
 CTA
 [Optional — varied CTA text]
@@ -424,15 +434,40 @@ CTA
 WHO IT'S FOR
 Headline
 [H2 — audience-specific]
+Subheadline
+[Optional supporting line — 1–2 sentences]
 
-Owners
- [Owner audience body — 2–4 sentences]
-Technicians
- [Technician audience body]
-Office managers
- [Office manager audience body]
-Growing teams
- [Growing teams body]
+[Audience segment one]
+ [Audience body — 2–4 sentences; indent with leading space]
+Badge
+[For Owners / For Technicians / etc.]
+Stat Number
+[Optional — e.g. 100%]
+Stat Label
+[Optional — ALL CAPS tagline, e.g. AUTOMATED]
+FAQ Target
+[Optional anchor id — e.g. faq-visibility-proof]
+
+[Audience segment two]
+ [Audience body]
+Badge
+[For …]
+Stat Number
+[Optional]
+Stat Label
+[Optional]
+FAQ Target
+[Optional]
+
+[Audience segment three]
+ [Audience body]
+Badge
+[For …]
+
+[Audience segment four]
+ [Audience body]
+Badge
+[For …]
 
 CTA
 [Optional — leave blank to hide]
@@ -720,14 +755,26 @@ Headline
 Subheadline
 [Short subheadline — 1–2 sentences]
 
-01 Step one
- [Detail line — indent with leading space]
-02 Step two
- [Detail line]
-03 Step three
- [Detail line]
-04 Step four
- [Detail line]
+01 Capture
+ [Step one line one]
+ [Step one line two — indent with leading space]
+
+02 Check-In
+ [Step two title line]
+ [Step two body — indent with leading space]
+
+03 Publish
+That job becomes live proof across:
+Google Business Profile
+ Your website
+ Social channels
+ Contractor directory
+[Additional publish line if needed]
+
+04 Review
+ [Step four title line]
+ [Step four body — indent with leading space]
+
 CTA
 See it in action
 SNIP,
@@ -779,6 +826,10 @@ Subheadline
  [Problem body]
 [Problem point four]
  [Problem body]
+
+Closing Line
+[Closing sentence one. Closing sentence two.]
+
 CTA
 [Optional]
 SNIP,
@@ -786,17 +837,15 @@ SNIP,
 DIFFERENTIATION
 Headline
 [H2 — 6–12 words]
-Subheadline
-[Supporting line — 1–2 sentences]
 
-[Differentiator one]
- [Detail — indent with leading space]
-[Differentiator two]
- [Detail]
-[Differentiator three]
- [Detail]
-[Differentiator four]
- [Detail]
+[Body paragraph line one]
+[Body paragraph line two]
+[Body paragraph line three]
+
+No new process
+ No extra admin
+ No marketing workload
+
 CTA
 [Optional]
 SNIP,
@@ -808,13 +857,31 @@ Subheadline
 [Audience subheadline — optional]
 
 [Audience segment one]
- [Detail — 2–4 sentences]
+ [Detail — 2–4 sentences; indent with leading space]
+Badge
+[For Owners / For Technicians / etc.]
+Stat Number
+[Optional — e.g. 100%]
+Stat Label
+[Optional — ALL CAPS tagline]
+FAQ Target
+[Optional anchor id]
+
 [Audience segment two]
  [Detail]
+Badge
+[For …]
+
 [Audience segment three]
  [Detail]
+Badge
+[For …]
+
 [Audience segment four]
  [Detail]
+Badge
+[For …]
+
 CTA
 [Optional]
 SNIP,
@@ -831,6 +898,9 @@ Frequently asked questions
  [Answer]
 [Question four?]
  [Answer]
+
+CTA
+[Optional — leave blank to hide]
 SNIP,
 		'CONVERSION' => <<<'SNIP'
 CONVERSION
@@ -874,6 +944,13 @@ Headline
 [H2 — 6–12 words]
 Subheadline
 [Subheadline — 1–2 sentences]
+
+Job Types
+[Job type tag one]
+[Job type tag two]
+[Job type tag three]
+[Job type tag four]
+
 [Feature title one]
  [Feature body — indent with leading space]
 [Feature title two]
@@ -882,6 +959,10 @@ Subheadline
  [Feature body]
 [Feature title four]
  [Feature body]
+
+Closing Line
+[Closing paragraph — 1–2 sentences]
+
 CTA
 [Optional]
 SNIP,

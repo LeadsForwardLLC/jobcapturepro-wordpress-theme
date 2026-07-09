@@ -209,7 +209,7 @@
   let recordTimer = null;
 
   const defaultProps = {
-    hero: { h1: 'Page headline', subheadline: '', cta_primary: { label: 'Start free trial', url: '' }, cta_secondary: { label: 'See how it works', url: '#how-it-works' }, trust_line: '' },
+    hero: { h1: 'Page headline', subheadline: '', cta_primary: { label: 'View the live demo', url: '/demo' }, cta_secondary: { label: 'See how it works', url: '#how-it-works' }, trust_line: '' },
     what_it_is: { headline: 'Section headline', subheadline: '' },
     how_it_works: { headline: 'How it works', subheadline: '', cta_label: 'See it in action', cta_url: '/demo', steps: [] },
     check_ins: { headline: 'Section headline', subheadline: '', features: [] },
