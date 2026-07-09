@@ -261,9 +261,26 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 	if ( empty( $h['media_type'] ) ) {
 		$media['media_type'] = 'phone_mockup';
 	}
-	$post_id     = (int) get_queried_object_id();
-	$phone_image = jcp_media_resolve_phone_image( $h, $post_id );
-	$phone_alt   = trim( (string) ( $h['phone_image_alt'] ?? $h['media_alt'] ?? '' ) );
+	$post_id       = (int) get_queried_object_id();
+	$is_industry   = function_exists( 'jcp_media_is_industry_post' ) && jcp_media_is_industry_post( $post_id );
+	$phone_image   = jcp_media_resolve_phone_image( $h, $post_id );
+	$phone_alt     = trim( (string) ( $h['phone_image_alt'] ?? $h['media_alt'] ?? '' ) );
+	$phone_locked  = false;
+	$phone_cards   = null;
+	if ( $is_industry ) {
+		$featured = jcp_media_industry_featured_image_url( $post_id );
+		if ( $featured !== '' ) {
+			$phone_image  = $featured;
+			$phone_locked = true;
+		}
+		$trade_label = ! empty( $c['niche_label'] )
+			? (string) $c['niche_label']
+			: ( ! empty( $c['page_label'] ) ? (string) $c['page_label'] : '' );
+		if ( $trade_label === '' && $post_id > 0 ) {
+			$trade_label = get_the_title( $post_id );
+		}
+		$phone_cards = jcp_media_industry_phone_cards( $trade_label );
+	}
 	if ( $phone_alt === '' && $post_id > 0 ) {
 		$attachment_id = (int) get_post_thumbnail_id( $post_id );
 		if ( $attachment_id > 0 ) {
@@ -355,8 +372,8 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 								'height'  => '480',
 								'loading' => 'eager',
 							],
-							'phone_render'  => function () use ( $hero_demo, $phone_image, $phone_alt ) {
-								jcp_component_hero_home_visual( $hero_demo, $phone_image, $phone_alt, true );
+							'phone_render'  => function () use ( $hero_demo, $phone_image, $phone_alt, $phone_cards, $phone_locked ) {
+								jcp_component_hero_home_visual( $hero_demo, $phone_image, $phone_alt, true, $phone_cards, $phone_locked );
 							},
 						]
 					);

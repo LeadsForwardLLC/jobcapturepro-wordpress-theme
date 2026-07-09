@@ -322,11 +322,59 @@ function jcp_media_default_phone_image(): string {
 }
 
 /**
+ * Whether a post is an industry (trade) landing page.
+ *
+ * @param int $post_id Post ID.
+ */
+function jcp_media_is_industry_post( int $post_id = 0 ): bool {
+	if ( $post_id <= 0 ) {
+		$post_id = (int) get_queried_object_id();
+	}
+	if ( $post_id <= 0 ) {
+		return false;
+	}
+	$post = get_post( $post_id );
+	return $post instanceof WP_Post && $post->post_type === 'jcp_niche_landing';
+}
+
+/**
+ * Featured image URL for industry phone screens (large size).
+ *
+ * @param int $post_id Post ID.
+ */
+function jcp_media_industry_featured_image_url( int $post_id = 0 ): string {
+	if ( $post_id <= 0 ) {
+		$post_id = (int) get_queried_object_id();
+	}
+	if ( $post_id <= 0 || ! jcp_media_is_industry_post( $post_id ) ) {
+		return '';
+	}
+	$featured = get_the_post_thumbnail_url( $post_id, 'large' );
+	return is_string( $featured ) ? $featured : '';
+}
+
+/**
  * Resolve the image URL for a phone mockup screen photo.
  *
- * @param array<string, mixed> $props Block / hero props.
+ * Industry (trade) pages: WordPress featured image wins so each trade looks unique.
+ * Explicit phone photo overrides only when no featured image is set.
+ *
+ * @param array<string, mixed> $props   Block / hero props.
+ * @param int                  $post_id Post ID.
  */
 function jcp_media_resolve_phone_image( array $props, int $post_id = 0 ): string {
+	if ( $post_id <= 0 ) {
+		$post_id = (int) get_queried_object_id();
+	}
+
+	// Industry pages: featured image is the source of truth for the live demo phone.
+	if ( jcp_media_is_industry_post( $post_id ) ) {
+		$featured = jcp_media_industry_featured_image_url( $post_id );
+		if ( $featured !== '' ) {
+			return $featured;
+		}
+	}
+
 	$id = (int) ( $props['phone_image_attachment_id'] ?? 0 );
 	if ( $id > 0 ) {
 		$attached = wp_get_attachment_url( $id );
@@ -338,19 +386,59 @@ function jcp_media_resolve_phone_image( array $props, int $post_id = 0 ): string
 	if ( $url !== '' ) {
 		return jcp_media_resolve_url( $url );
 	}
-	if ( $post_id <= 0 ) {
-		$post_id = (int) get_queried_object_id();
-	}
-	if ( $post_id > 0 ) {
-		$post = get_post( $post_id );
-		if ( $post instanceof WP_Post && $post->post_type === 'jcp_niche_landing' ) {
-			$featured = get_the_post_thumbnail_url( $post_id, 'large' );
-			if ( is_string( $featured ) && $featured !== '' ) {
-				return $featured;
-			}
-		}
-	}
+
 	return jcp_media_default_phone_image();
+}
+
+/**
+ * Live-demo phone status cards, optionally tailored to a trade label.
+ *
+ * @param string $trade_label Industry label (e.g. HVAC, Plumbing). Empty = generic.
+ * @return array<int, array{title:string,subtitle:string,icon:string}>
+ */
+function jcp_media_industry_phone_cards( string $trade_label = '' ): array {
+	$trade = trim( $trade_label );
+	$job   = $trade !== ''
+		? sprintf(
+			/* translators: %s: trade name, e.g. HVAC */
+			__( 'New %s job captured', 'jcp-core' ),
+			$trade
+		)
+		: __( 'New job captured', 'jcp-core' );
+
+	$check_in = $trade !== ''
+		? sprintf(
+			/* translators: %s: trade name */
+			__( '%s check-in complete', 'jcp-core' ),
+			$trade
+		)
+		: __( 'AI check-in complete', 'jcp-core' );
+
+	$published = $trade !== ''
+		? sprintf(
+			/* translators: %s: trade name */
+			__( '%s proof published', 'jcp-core' ),
+			$trade
+		)
+		: __( 'Published everywhere', 'jcp-core' );
+
+	return [
+		[
+			'title'    => $job,
+			'subtitle' => __( 'Photo uploaded', 'jcp-core' ),
+			'icon'     => 'camera',
+		],
+		[
+			'title'    => $check_in,
+			'subtitle' => __( 'Verified proof ready', 'jcp-core' ),
+			'icon'     => 'image',
+		],
+		[
+			'title'    => $published,
+			'subtitle' => __( 'Google Maps • Website • Social', 'jcp-core' ),
+			'icon'     => 'globe',
+		],
+	];
 }
 
 /**

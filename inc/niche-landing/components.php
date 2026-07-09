@@ -60,13 +60,32 @@ function jcp_component_home_meta_stats( array $items, string $path = 'hero.meta_
 }
 
 /**
- * Homepage hero phone mockup with animated cards.
+ * Homepage / industry hero phone mockup with animated cards.
  *
- * @param string $demo_url Demo link.
+ * @param string                                                    $demo_url    Demo link.
+ * @param string                                                    $photo_url   Phone screen photo.
+ * @param string                                                    $photo_alt   Photo alt text.
+ * @param bool                                                      $wrap_visual Wrap in hero-visual shell.
+ * @param array<int, array{title?:string,subtitle?:string}>|null    $cards       Optional status cards (industry-specific).
+ * @param bool                                                      $lock_photo  When true, photo is driven by featured image (industry).
  */
-function jcp_component_hero_home_visual( string $demo_url = '', string $photo_url = '', string $photo_alt = '', bool $wrap_visual = true ): void {
+function jcp_component_hero_home_visual( string $demo_url = '', string $photo_url = '', string $photo_alt = '', bool $wrap_visual = true, ?array $cards = null, bool $lock_photo = false ): void {
 	$demo_url = $demo_url !== '' ? $demo_url : home_url( '/demo/' );
 	$photo    = $photo_url !== '' ? $photo_url : jcp_media_default_phone_image();
+	if ( ! is_array( $cards ) || $cards === [] ) {
+		$cards = function_exists( 'jcp_media_industry_phone_cards' )
+			? jcp_media_industry_phone_cards( '' )
+			: [
+				[ 'title' => __( 'New job captured', 'jcp-core' ), 'subtitle' => __( 'Photo uploaded', 'jcp-core' ) ],
+				[ 'title' => __( 'AI check-in complete', 'jcp-core' ), 'subtitle' => __( 'Verified proof ready', 'jcp-core' ) ],
+				[ 'title' => __( 'Published everywhere', 'jcp-core' ), 'subtitle' => __( 'Google Maps • Website • Social', 'jcp-core' ) ],
+			];
+	}
+	$card_icons = [
+		'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+		'<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+		'<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+	];
 	if ( $wrap_visual ) {
 		?>
 	<div class="jcp-hero-visual hero-visual">
@@ -103,52 +122,40 @@ function jcp_component_hero_home_visual( string $demo_url = '', string $photo_ur
 									<img
 										src="<?php echo esc_url( $photo ); ?>"
 										alt="<?php echo esc_attr( $photo_alt ); ?>"
-										class="hero-phone-image jcp-editable-media-image"
+										class="hero-phone-image jcp-editable-media-image<?php echo $lock_photo ? ' jcp-hero-phone-image--featured' : ''; ?>"
 										loading="eager"
 										decoding="async"
+										<?php if ( ! $lock_photo ) : ?>
 										data-jcp-media-url-path="hero.phone_image_url"
 										data-jcp-media-alt-path="hero.phone_image_alt"
 										data-jcp-media-role="phone_screen"
+										<?php else : ?>
+										data-jcp-media-role="phone_screen_featured"
+										data-jcp-media-locked="featured"
+										<?php endif; ?>
 									/>
 								</div>
-								<div class="demo-preview-item hero-phone-card hero-phone-card-1">
+								<?php foreach ( array_values( $cards ) as $ci => $card ) : ?>
+									<?php
+									if ( ! is_array( $card ) ) {
+										continue;
+									}
+									$title    = (string) ( $card['title'] ?? '' );
+									$subtitle = (string) ( $card['subtitle'] ?? '' );
+									$icon_svg = $card_icons[ $ci ] ?? $card_icons[0];
+									?>
+								<div class="demo-preview-item hero-phone-card hero-phone-card-<?php echo (int) ( $ci + 1 ); ?>">
 									<div class="demo-item-icon">
 										<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-											<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-											<circle cx="12" cy="13" r="4"/>
+											<?php echo $icon_svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG paths. ?>
 										</svg>
 									</div>
 									<div class="demo-item-content">
-										<div class="demo-item-title"><?php esc_html_e( 'New job captured', 'jcp-core' ); ?></div>
-										<div class="demo-item-subtitle"><?php esc_html_e( 'Photo uploaded', 'jcp-core' ); ?></div>
+										<div class="demo-item-title"><?php echo esc_html( $title ); ?></div>
+										<div class="demo-item-subtitle"><?php echo esc_html( $subtitle ); ?></div>
 									</div>
 								</div>
-								<div class="demo-preview-item hero-phone-card hero-phone-card-2">
-									<div class="demo-item-icon">
-										<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-											<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-											<circle cx="8.5" cy="8.5" r="1.5"/>
-											<polyline points="21 15 16 10 5 21"/>
-										</svg>
-									</div>
-									<div class="demo-item-content">
-										<div class="demo-item-title"><?php esc_html_e( 'AI check-in complete', 'jcp-core' ); ?></div>
-										<div class="demo-item-subtitle"><?php esc_html_e( 'Verified proof ready', 'jcp-core' ); ?></div>
-									</div>
-								</div>
-								<div class="demo-preview-item hero-phone-card hero-phone-card-3">
-									<div class="demo-item-icon">
-										<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-											<circle cx="12" cy="12" r="10"/>
-											<line x1="2" y1="12" x2="22" y2="12"/>
-											<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-										</svg>
-									</div>
-									<div class="demo-item-content">
-										<div class="demo-item-title"><?php esc_html_e( 'Published everywhere', 'jcp-core' ); ?></div>
-										<div class="demo-item-subtitle"><?php esc_html_e( 'Google Maps • Website • Social', 'jcp-core' ); ?></div>
-									</div>
-								</div>
+								<?php endforeach; ?>
 							</div>
 							<div class="phone-click-hint hero-phone-cta">
 								<span><?php esc_html_e( 'Try the demo', 'jcp-core' ); ?></span>

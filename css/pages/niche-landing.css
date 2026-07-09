@@ -2550,8 +2550,20 @@ body.jcp-inline-editing .jcp-split-col .jcp-col-drag-handle {
 .jcp-media-popover__field--image[hidden],
 .jcp-media-popover__field--video[hidden],
 .jcp-media-popover__field--alt[hidden],
-.jcp-media-popover__field--link[hidden] {
+.jcp-media-popover__field--link[hidden],
+.jcp-media-popover__notice[hidden] {
   display: none !important;
+}
+
+.jcp-media-popover__notice {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--jcp-radius-md, 8px);
+  background: #fff7ed;
+  border: 1px solid rgba(229, 80, 57, 0.2);
+  color: var(--jcp-color-text-primary, #0f172a);
+  font-size: 0.875rem;
+  line-height: 1.45;
 }
 
 /* Per-section background surfaces (Page Structure panel) */

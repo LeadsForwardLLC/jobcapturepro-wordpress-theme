@@ -73,8 +73,11 @@
       : (el.dataset.jcpMediaUrlPath ? el.dataset.jcpMediaUrlPath.replace(/\.(media_url|image_url|phone_image_url)$/, '.media_type') : null);
     const linkPath = basePath ? `${basePath}.media_link_url` : null;
     const isPhoneScreen = el.dataset.jcpMediaRole === 'phone_screen'
-      || el.classList?.contains('hero-phone-image');
-    return { slot, urlPath, altPath, typePath, linkPath, basePath, isPhoneScreen, el };
+      || (el.classList?.contains('hero-phone-image') && el.dataset.jcpMediaLocked !== 'featured');
+    const isFeaturedLocked = el.dataset.jcpMediaLocked === 'featured'
+      || el.dataset.jcpMediaRole === 'phone_screen_featured'
+      || !!el.closest?.('[data-jcp-media-locked="featured"]');
+    return { slot, urlPath, altPath, typePath, linkPath, basePath, isPhoneScreen, isFeaturedLocked, el };
   };
 
   const resolveWritePaths = (paths, mediaType) => {
@@ -490,6 +493,9 @@
         <button type="button" class="jcp-media-popover__close" aria-label="Close">×</button>
       </div>
       <div class="jcp-media-popover__body">
+        <p class="jcp-media-popover__notice" id="jcpMediaFeaturedNotice" hidden>
+          On industry pages, this photo comes from the WordPress <strong>Featured Image</strong>. Set or change it in the editor sidebar (Featured image).
+        </p>
         <label class="jcp-media-popover__field">
           <span>Media type</span>
           <select id="jcpMediaTypeSelect"></select>
@@ -557,13 +563,16 @@
     const linkField = popover.querySelector('.jcp-media-popover__field--link');
     const replaceBtn = popover.querySelector('#jcpMediaReplaceBtn');
     const imageLabel = popover.querySelector('#jcpMediaImageUrlLabel');
+    const featuredNotice = popover.querySelector('#jcpMediaFeaturedNotice');
+    const featuredLocked = !!activeMediaContext?.isFeaturedLocked;
 
     const showVideo = type === 'video';
-    const showImage = type === 'image' || (type === 'phone_mockup' && activeMediaContext?.isPhoneScreen);
-    const showAlt = type !== 'video';
-    const showLink = type !== 'video' && !!activeMediaContext?.linkPath;
+    const showImage = !featuredLocked && (type === 'image' || (type === 'phone_mockup' && activeMediaContext?.isPhoneScreen));
+    const showAlt = !featuredLocked && type !== 'video';
+    const showLink = !featuredLocked && type !== 'video' && !!activeMediaContext?.linkPath;
     const showLibrary = showImage && type !== 'video';
 
+    togglePopoverField(featuredNotice, featuredLocked);
     togglePopoverField(videoField, showVideo);
     togglePopoverField(imageField, showImage);
     togglePopoverField(altField, showAlt);
@@ -596,7 +605,7 @@
     const target = resolveMediaClickTarget(el);
     if (!target) return;
     const paths = getMediaPaths(target);
-    if (!paths.urlPath && !paths.altPath && !paths.isPhoneScreen && !paths.basePath) return;
+    if (!paths.urlPath && !paths.altPath && !paths.isPhoneScreen && !paths.isFeaturedLocked && !paths.basePath) return;
 
     activeMediaContext = { ...paths, el: target };
 
@@ -611,7 +620,7 @@
     const writePaths = resolveWritePaths(activeMediaContext, select.value);
     const urlPaths = resolveMediaUrlPaths(activeMediaContext);
 
-    if (urlPaths.imageUrlPath) {
+    if (urlPaths.imageUrlPath && !paths.isFeaturedLocked) {
       const polluted = api.getPath(api.flatContent, urlPaths.imageUrlPath);
       if (isEmbedVideoUrl(polluted)) {
         syncFlatProp(urlPaths.imageUrlPath, '');
@@ -624,6 +633,16 @@
     popover.querySelector('#jcpMediaLinkInput').value = paths.linkPath ? (api.getPath(api.flatContent, paths.linkPath) || '') : '';
 
     onTypeSelectChange();
+
+    const applyBtn = popover.querySelector('#jcpMediaApplyBtn');
+    if (applyBtn) {
+      applyBtn.hidden = !!paths.isFeaturedLocked;
+      if (paths.isFeaturedLocked) applyBtn.setAttribute('hidden', '');
+      else applyBtn.removeAttribute('hidden');
+    }
+    if (select) {
+      select.disabled = !!paths.isFeaturedLocked;
+    }
 
     const rect = (target.getBoundingClientRect ? target : el).getBoundingClientRect();
     positionPopover(rect);
