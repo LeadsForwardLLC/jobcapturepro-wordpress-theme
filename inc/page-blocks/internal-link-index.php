@@ -133,6 +133,62 @@ function jcp_internal_link_hrefs_from_post( int $post_id ): array {
 }
 
 /**
+ * Link audit for a block/industry page (inbound, outbound internal, outbound external).
+ *
+ * @param int $post_id Post ID.
+ * @return array{inbound: int, outbound_internal: int, outbound_external: int, external_hosts: array<int, string>}
+ */
+function jcp_internal_link_post_audit( int $post_id ): array {
+	$flat = jcp_page_get_content_flat( $post_id );
+	$raw  = [];
+	jcp_internal_link_extract_hrefs_from_value( $flat, $raw );
+
+	$site_host = wp_parse_url( home_url(), PHP_URL_HOST );
+	$site_host = is_string( $site_host ) ? strtolower( $site_host ) : '';
+
+	$internal = [];
+	$external = [];
+	foreach ( $raw as $href ) {
+		$href = trim( (string) $href );
+		if ( $href === '' || str_starts_with( $href, '#' ) || str_starts_with( $href, 'mailto:' ) || str_starts_with( $href, 'tel:' ) ) {
+			continue;
+		}
+		$host = wp_parse_url( $href, PHP_URL_HOST );
+		$host = is_string( $host ) ? strtolower( $host ) : '';
+		if ( $host !== '' && $site_host !== '' && $host !== $site_host ) {
+			$external[] = $href;
+			continue;
+		}
+		$path = jcp_internal_link_normalize_href( $href );
+		if ( $path !== '' && jcp_internal_link_is_valid_target( $path ) ) {
+			$internal[] = $path;
+		}
+	}
+
+	$internal = array_values( array_unique( $internal ) );
+	$external = array_values( array_unique( $external ) );
+
+	$external_hosts = [];
+	foreach ( $external as $url ) {
+		$h = wp_parse_url( $url, PHP_URL_HOST );
+		if ( is_string( $h ) && $h !== '' ) {
+			$external_hosts[ strtolower( $h ) ] = $h;
+		}
+	}
+
+	$current_path = jcp_internal_link_normalize_href( (string) get_permalink( $post_id ) );
+	$index        = jcp_internal_link_build_index();
+	$inbound      = $current_path !== '' ? (int) ( $index['inbound'][ $current_path ] ?? 0 ) : 0;
+
+	return [
+		'inbound'             => $inbound,
+		'outbound_internal'   => count( $internal ),
+		'outbound_external'   => count( $external ),
+		'external_hosts'      => array_values( $external_hosts ),
+	];
+}
+
+/**
  * Hub label for a page path.
  *
  * @param string $path   Normalized path.

@@ -99,17 +99,11 @@ get_header();
   </section>
 
   <?php
-  if ( ! empty( $blog_has_posts ) && function_exists( 'jcp_blog_conversion_render_archive_strip' ) ) {
-    jcp_blog_conversion_render_archive_strip();
+  if ( function_exists( 'jcp_blog_conversion_render_archive_footer' ) ) {
+    jcp_blog_conversion_render_archive_footer( ! empty( $blog_has_posts ) );
   }
   ?>
 </main>
-
-<?php
-if ( ! empty( $blog_has_posts ) && function_exists( 'jcp_blog_conversion_render_sticky' ) ) {
-  jcp_blog_conversion_render_sticky();
-}
-?>
 
 <?php if ( ! empty( $blog_has_posts ) ) : ?>
 <script>

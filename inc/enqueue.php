@@ -140,9 +140,14 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-blog', 'css/pages/blog.css', [ 'jcp-core-sections' ] );
     }
 
-    // Blog archive sticky CTA (posts index only — markup gated in PHP).
-    if ( is_home() && ! is_singular() && ! $pages['is_prototype'] ) {
+    // Blog archive sticky CTA (post archives — markup gated in PHP).
+    if ( function_exists( 'jcp_blog_is_post_archive' ) && jcp_blog_is_post_archive() && ! $pages['is_prototype'] ) {
         jcp_core_enqueue_script( 'jcp-core-blog-sticky-cta', 'js/core/jcp-blog-sticky-cta.js', [ 'jcp-core-nav' ] );
+    }
+
+    // Shared prose styles (lists, tables) for blog + block rich text.
+    if ( $is_marketing || $pages['is_blog'] || $pages['is_single'] ) {
+        jcp_core_enqueue_style( 'jcp-core-content-prose', 'css/content-prose.css', [ 'jcp-core-sections' ] );
     }
 
     // Load render dispatcher only on JS app-shell pages (not block-rendered homepage).

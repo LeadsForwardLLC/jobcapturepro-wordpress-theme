@@ -558,14 +558,33 @@ function jcp_blog_conversion_render_archive_strip(): void {
 }
 
 /**
- * Whether the blog-archive sticky bar should render (posts index only, not singles).
+ * Whether this request is a blog post archive (index, category, tag, author).
+ */
+function jcp_blog_is_post_archive(): bool {
+	return ! is_singular() && ( is_home() || is_category() || is_tag() || is_author() );
+}
+
+/**
+ * Whether the blog-archive sticky bar should render (post archives only, not singles).
  */
 function jcp_blog_conversion_should_show_sticky(): bool {
 	if ( ! jcp_blog_conversion_enabled() ) {
 		return false;
 	}
-	// Posts page / blog home only — not single posts (mid + end CTAs already cover those).
-	return is_home() && ! is_singular();
+	return jcp_blog_is_post_archive();
+}
+
+/**
+ * Archive demo strip + sticky bar (category, tag, author, blog home).
+ *
+ * @param bool $has_posts Whether the archive query returned posts.
+ */
+function jcp_blog_conversion_render_archive_footer( bool $has_posts ): void {
+	if ( ! $has_posts || ! jcp_blog_conversion_enabled() ) {
+		return;
+	}
+	jcp_blog_conversion_render_archive_strip();
+	jcp_blog_conversion_render_sticky();
 }
 
 /**

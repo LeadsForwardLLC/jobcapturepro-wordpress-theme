@@ -78,7 +78,7 @@ get_header();
             </div>
           </header>
 
-          <div class="jcp-post-content">
+          <div class="jcp-post-content jcp-prose">
             <?php
             the_content();
 

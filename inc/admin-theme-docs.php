@@ -353,7 +353,7 @@ function jcp_theme_docs_render_page(): void {
 			</ul>
 
 			<h3><?php esc_html_e( 'SEO Health (block pages only)', 'jcp-core' ); ?></h3>
-			<p><?php esc_html_e( 'The “SEO Health (JCP + Rank Math)” box checks focus keyword, title, meta description, and hero copy. It appears on Industries posts and Pages using JCP Block Page, Home, or Referral Program templates.', 'jcp-core' ); ?></p>
+			<p><?php esc_html_e( 'The “SEO Health (JCP + Rank Math)” box checks focus keyword, title, meta description, hero copy, and internal link balance (too few/many inbound or outbound links, plus outbound external destinations). It appears on Industries posts and Pages using JCP Block Page, Home, or Referral Program templates.', 'jcp-core' ); ?></p>
 
 			<h3><?php esc_html_e( 'Developer: page JSON', 'jcp-core' ); ?></h3>
 			<p><?php esc_html_e( 'Raw data at the bottom of the screen, including optional starter presets. Ignore unless you are a developer — use JCP Page Editor or the live page editor instead.', 'jcp-core' ); ?></p>
@@ -486,7 +486,7 @@ function jcp_theme_docs_render_page(): void {
 			</ol>
 
 			<h3><?php esc_html_e( 'JCP SEO Health box', 'jcp-core' ); ?></h3>
-			<p><?php esc_html_e( 'On each block page edit screen, the “SEO Health” meta box cross-checks Rank Math settings against your hero H1 and subheadline. The Industries / Pages list table also shows an SEO column (OK / Needs work / Incomplete).', 'jcp-core' ); ?></p>
+			<p><?php esc_html_e( 'On each block page edit screen, the “SEO Health” meta box cross-checks Rank Math settings against your hero H1 and subheadline, and warns when internal link counts look off or external links are present. The Industries / Pages list table also shows an SEO column (OK / Needs work / Incomplete).', 'jcp-core' ); ?></p>
 
 			<h3><?php esc_html_e( 'On-page copy', 'jcp-core' ); ?></h3>
 			<p><?php esc_html_e( 'Use the focus keyword naturally in the hero H1, subheadline, and at least one section headline. Document import fills body copy; you still set Rank Math meta separately.', 'jcp-core' ); ?></p>
@@ -518,7 +518,7 @@ function jcp_theme_docs_render_page(): void {
 				<tbody>
 					<tr>
 						<td><?php esc_html_e( 'Blog post missing demo CTA / related hubs', 'jcp-core' ); ?></td>
-						<td><?php esc_html_e( 'Automatic mid-content + end demo CTA on published posts. Related reading uses other blog posts (tags/categories). Comments form stays collapsed until opened. Mid CTA needs at least 3 paragraphs.', 'jcp-core' ); ?></td>
+						<td><?php esc_html_e( 'Automatic mid-content + end demo CTA on published posts. Related reading uses other blog posts (tags/categories). Category/tag/author archives include the same demo strip + sticky bar as the blog home. Comments form stays collapsed until opened.', 'jcp-core' ); ?></td>
 					</tr>
 					<tr>
 						<td><?php esc_html_e( 'Import says “Paste document text or upload…”', 'jcp-core' ); ?></td>

@@ -30,6 +30,7 @@ get_header();
   <section class="jcp-section rankings-section">
     <div class="jcp-container">
       <?php if ( have_posts() ) : ?>
+        <?php $blog_has_posts = true; ?>
         <div class="jcp-blog-grid">
           <?php
           while ( have_posts() ) :
@@ -47,6 +48,12 @@ get_header();
       ?>
     </div>
   </section>
+
+  <?php
+  if ( function_exists( 'jcp_blog_conversion_render_archive_footer' ) ) {
+    jcp_blog_conversion_render_archive_footer( ! empty( $blog_has_posts ) );
+  }
+  ?>
 </main>
 
 <?php

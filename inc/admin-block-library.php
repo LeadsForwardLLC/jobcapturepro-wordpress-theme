@@ -91,6 +91,9 @@ function jcp_block_library_render_page(): void {
 			<?php esc_html_e( 'Blocks are full page sections (Hero, Proof flow, FAQ, etc.) you add, reorder, and edit on a page. Components are smaller building blocks inside them (demo phone mockup, directory card, factor card) — shared PHP partials, not separate blocks.', 'jcp-core' ); ?>
 		</p>
 		<p class="description">
+			<?php esc_html_e( 'SEO Health on each block/industry page flags Rank Math gaps plus internal link balance (inbound/outbound counts and outbound external destinations). Rich text fields inherit shared list and table styling sitewide.', 'jcp-core' ); ?>
+		</p>
+		<p class="description">
 			<?php
 			printf(
 				/* translators: %d: number of registered blocks */
