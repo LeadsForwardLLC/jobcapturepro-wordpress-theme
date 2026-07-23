@@ -438,18 +438,34 @@ function jcp_niche_render_what_it_is( array $c ): void {
 	}
 	$lead = ! empty( $w['lead'] ) ? (string) $w['lead'] : __( 'But once the work is done, most of it disappears. JobCapturePro changes that.', 'jcp-core' );
 	$show_icons = jcp_niche_show_field( $w, 'show_icons', true );
-	$icon_class = $show_icons ? '' : ' jcp-section--no-icons';
+	$vis_class  = jcp_niche_section_visibility_classes(
+		$w,
+		[
+			'show_icons'       => true,
+			'show_card_titles' => true,
+			'show_card_body'   => true,
+		]
+	);
 	$team_icon  = ! empty( $w['team_already_icon'] ) ? (string) $w['team_already_icon'] : 'wrench';
 	$turns_icon = ! empty( $w['turns_into_icon'] ) ? (string) $w['turns_into_icon'] : 'sparkles';
+	$hl         = jcp_niche_field_visibility( $w, 'show_headline', true );
+	$sub        = jcp_niche_field_visibility( $w, 'show_subheadline', true );
+	$closing    = jcp_niche_field_visibility( $w, 'show_closing', true );
+	$sub_text   = trim( (string) ( $w['subheadline'] ?? '' ) );
+	$close_text = trim( (string) ( $w['closing'] ?? '' ) );
 	?>
-	<section class="jcp-section rankings-section jcp-niche-what<?php echo esc_attr( $icon_class ); ?>">
+	<section class="jcp-section rankings-section jcp-niche-what<?php echo esc_attr( $vis_class ); ?>">
 		<div class="jcp-container">
+			<?php if ( $hl['render'] || ( $sub['render'] && $sub_text !== '' ) ) : ?>
 			<div class="rankings-header">
-				<h2<?php jcp_niche_editable_attr( 'what_it_is.headline' ); ?>><?php jcp_niche_e( (string) $w['headline'] ); ?></h2>
-				<?php if ( ! empty( $w['subheadline'] ) && jcp_niche_show_field( $w, 'show_subheadline', true ) ) : ?>
-					<p class="rankings-subtitle"<?php jcp_niche_editable_rich_attr( 'what_it_is.subheadline' ); ?>><?php jcp_niche_rich_e( (string) $w['subheadline'] ); ?></p>
+				<?php if ( $hl['render'] ) : ?>
+				<h2<?php echo $hl['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_editable_attr( 'what_it_is.headline' ); ?>><?php jcp_niche_e( (string) $w['headline'] ); ?></h2>
+				<?php endif; ?>
+				<?php if ( $sub['render'] && $sub_text !== '' ) : ?>
+					<p class="rankings-subtitle"<?php echo $sub['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_editable_rich_attr( 'what_it_is.subheadline' ); ?>><?php jcp_niche_rich_e( $sub_text ); ?></p>
 				<?php endif; ?>
 			</div>
+			<?php endif; ?>
 			<div class="ranking-factors-grid jcp-niche-split-grid">
 				<?php
 				$team_title   = ! empty( $w['team_already_title'] ) ? (string) $w['team_already_title'] : __( 'Your team is already', 'jcp-core' );
@@ -516,8 +532,10 @@ function jcp_niche_render_what_it_is( array $c ): void {
 				?>
 			</div>
 			<?php
-			if ( ! empty( $w['closing'] ) && jcp_niche_show_field( $w, 'show_closing', true ) ) {
-				jcp_niche_render_section_closing( (string) $w['closing'], 'what_it_is.closing' );
+			if ( $closing['render'] && $close_text !== '' ) {
+				echo '<p class="rankings-supporting jcp-niche-section-closing"' . $closing['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				jcp_niche_editable_attr( 'what_it_is.closing' );
+				echo '>' . esc_html( $close_text ) . '</p>';
 			}
 			$mechanic = $c['core_mechanic'] ?? [];
 			if ( ! empty( $mechanic ) && is_array( $mechanic ) ) {
@@ -551,23 +569,13 @@ function jcp_niche_render_how_it_works( array $c, string $niche_key ): void {
 	$secondary = jcp_niche_resolve_cta( $h['cta_secondary'] ?? [], $niche_key );
 	$numeric_steps = ! empty( $h['numeric_steps'] );
 	$section_id    = ! empty( $h['section_id'] ) ? (string) $h['section_id'] : 'how-it-works';
-	$show_headline = jcp_niche_show_field( $h, 'show_headline', true );
-	$show_steps    = jcp_niche_show_field( $h, 'show_steps', true );
+	$steps_vis     = jcp_niche_field_visibility( $h, 'show_steps', true );
 	?>
 	<section class="jcp-section rankings-section" id="<?php echo esc_attr( $section_id ); ?>">
 		<div class="jcp-container">
-			<?php if ( $show_headline || ( ! empty( $h['subheadline'] ) && jcp_niche_show_field( $h, 'show_subheadline', true ) ) ) : ?>
-			<div class="rankings-header">
-				<?php if ( $show_headline ) : ?>
-				<h2<?php jcp_niche_editable_attr( 'how_it_works.headline' ); ?>><?php jcp_niche_e( (string) $h['headline'] ); ?></h2>
-				<?php endif; ?>
-				<?php if ( ! empty( $h['subheadline'] ) && jcp_niche_show_field( $h, 'show_subheadline', true ) ) : ?>
-					<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'how_it_works.subheadline' ); ?>><?php jcp_niche_e( (string) $h['subheadline'] ); ?></p>
-				<?php endif; ?>
-			</div>
-			<?php endif; ?>
-			<?php if ( $show_steps ) : ?>
-			<div class="timeline-steps"<?php jcp_niche_array_attr( 'how_it_works.steps' ); ?>>
+			<?php jcp_niche_render_section_header( $h, 'how_it_works' ); ?>
+			<?php if ( $steps_vis['render'] ) : ?>
+			<div class="timeline-steps"<?php echo $steps_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_array_attr( 'how_it_works.steps' ); ?>>
 				<?php
 				$steps = (array) ( $h['steps'] ?? [] );
 				foreach ( $steps as $i => $step ) :
@@ -624,23 +632,30 @@ function jcp_niche_render_check_ins( array $c ): void {
 		return;
 	}
 	$show_icons = jcp_niche_show_field( $ch, 'show_icons', true );
-	$icon_class = $show_icons ? '' : ' jcp-section--no-icons';
+	$vis_class  = jcp_niche_section_visibility_classes(
+		$ch,
+		[
+			'show_icons'       => true,
+			'show_card_titles' => true,
+			'show_card_body'   => true,
+		]
+	);
+	$tags       = jcp_niche_field_visibility( $ch, 'show_tags', true );
+	$closing    = jcp_niche_field_visibility( $ch, 'show_closing', true );
+	$close_text = trim( (string) ( $ch['closing'] ?? '' ) );
 	?>
-	<section class="jcp-section rankings-section jcp-niche-checkins<?php echo esc_attr( $icon_class ); ?>">
+	<section class="jcp-section rankings-section jcp-niche-checkins<?php echo esc_attr( $vis_class ); ?>">
 		<div class="jcp-container">
-			<div class="rankings-header">
-				<h2<?php jcp_niche_editable_attr( 'check_ins.headline' ); ?>><?php jcp_niche_e( (string) $ch['headline'] ); ?></h2>
-				<?php if ( ! empty( $ch['subheadline'] ) && jcp_niche_show_field( $ch, 'show_subheadline', true ) ) : ?>
-					<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'check_ins.subheadline' ); ?>><?php jcp_niche_e( (string) $ch['subheadline'] ); ?></p>
-				<?php endif; ?>
-			</div>
-			<div class="jcp-niche-tags-wrap">
+			<?php jcp_niche_render_section_header( $ch, 'check_ins' ); ?>
+			<?php if ( $tags['render'] ) : ?>
+			<div class="jcp-niche-tags-wrap"<?php echo $tags['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 				<ul class="jcp-niche-tags"<?php jcp_niche_array_attr( 'check_ins.job_types' ); ?>>
 					<?php foreach ( (array) ( $ch['job_types'] ?? [] ) as $ti => $tag ) : ?>
 						<li<?php jcp_niche_array_item_attr( (int) $ti ); ?>><span class="jcp-checklist-item__text"<?php jcp_niche_editable_attr( 'check_ins.job_types.' . $ti ); ?>><?php echo esc_html( jcp_niche_clean_step_line( (string) $tag ) ); ?></span></li>
 					<?php endforeach; ?>
 				</ul>
 			</div>
+			<?php endif; ?>
 			<div class="ranking-factors-grid"<?php jcp_niche_array_attr( 'check_ins.features' ); ?>>
 				<?php
 				$feat_icons = [ 'map-pin', 'camera', 'sparkles', 'star' ];
@@ -670,8 +685,8 @@ function jcp_niche_render_check_ins( array $c ): void {
 				?>
 			</div>
 			<?php
-			if ( ! empty( $ch['closing'] ) && jcp_niche_show_field( $ch, 'show_closing', true ) ) {
-				jcp_niche_render_section_closing( (string) $ch['closing'], 'check_ins.closing' );
+			if ( $closing['render'] && $close_text !== '' ) {
+				jcp_niche_render_section_closing( $close_text, 'check_ins.closing', $closing['attr'] );
 			}
 			jcp_niche_render_section_optional_ctas( $ch, 'check_ins', (string) ( $c['niche_key'] ?? $c['page_key'] ?? '' ) );
 			?>
@@ -689,16 +704,20 @@ function jcp_niche_render_problem( array $c ): void {
 		return;
 	}
 	$show_icons = jcp_niche_show_field( $p, 'show_icons', true );
-	$icon_class = $show_icons ? '' : ' jcp-section--no-icons';
+	$vis_class  = jcp_niche_section_visibility_classes(
+		$p,
+		[
+			'show_icons'       => true,
+			'show_card_titles' => true,
+			'show_card_body'   => true,
+		]
+	);
+	$closing    = jcp_niche_field_visibility( $p, 'show_closing', true );
+	$close_text = trim( (string) ( $p['closing'] ?? '' ) );
 	?>
-	<section class="jcp-section rankings-section jcp-niche-problem<?php echo esc_attr( $icon_class ); ?>">
+	<section class="jcp-section rankings-section jcp-niche-problem<?php echo esc_attr( $vis_class ); ?>">
 		<div class="jcp-container">
-			<div class="rankings-header">
-				<h2<?php jcp_niche_editable_attr( 'problem.headline' ); ?>><?php jcp_niche_e( (string) $p['headline'] ); ?></h2>
-				<?php if ( ! empty( $p['subheadline'] ) && jcp_niche_show_field( $p, 'show_subheadline', true ) ) : ?>
-					<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'problem.subheadline' ); ?>><?php jcp_niche_e( (string) $p['subheadline'] ); ?></p>
-				<?php endif; ?>
-			</div>
+			<?php jcp_niche_render_section_header( $p, 'problem' ); ?>
 			<div class="ranking-factors-grid"<?php jcp_niche_array_attr( 'problem.pain_points' ); ?>>
 				<?php
 				$pain_icons = [ 'image-off', 'clock', 'map-pin', 'users' ];
@@ -728,8 +747,8 @@ function jcp_niche_render_problem( array $c ): void {
 				?>
 			</div>
 			<?php
-			if ( ! empty( $p['closing'] ) && jcp_niche_show_field( $p, 'show_closing', true ) ) {
-				jcp_niche_render_section_closing( (string) $p['closing'], 'problem.closing' );
+			if ( $closing['render'] && $close_text !== '' ) {
+				jcp_niche_render_section_closing( $close_text, 'problem.closing', $closing['attr'] );
 			}
 			jcp_niche_render_section_optional_ctas( $p, 'problem', (string) ( $c['niche_key'] ?? $c['page_key'] ?? '' ) );
 			?>
@@ -743,25 +762,44 @@ function jcp_niche_render_problem( array $c ): void {
  */
 function jcp_niche_render_benefits( array $c ): void {
 	$b = $c['benefits'] ?? [];
-	if ( empty( $b['headline'] ) ) {
+	$items = (array) ( $b['items'] ?? [] );
+	$headline = trim( (string) ( $b['headline'] ?? '' ) );
+	if ( $headline === '' && empty( $items ) ) {
 		return;
 	}
 	$section_id = ! empty( $b['section_id'] ) ? (string) $b['section_id'] : '';
+	$vis_class  = jcp_niche_section_visibility_classes(
+		$b,
+		[
+			'show_icons'       => true,
+			'show_card_titles' => true,
+			'show_card_body'   => true,
+			'show_card_stats'  => true,
+		]
+	);
 	$show_icons = jcp_niche_show_field( $b, 'show_icons', true );
-	$icon_class = $show_icons ? '' : ' jcp-section--no-icons';
+	$hl         = jcp_niche_field_visibility( $b, 'show_headline', true );
+	$sub        = jcp_niche_field_visibility( $b, 'show_subheadline', true );
+	$closing    = jcp_niche_field_visibility( $b, 'show_closing', true );
+	$sub_text   = trim( (string) ( $b['subheadline'] ?? '' ) );
+	$close_text = trim( (string) ( $b['closing'] ?? '' ) );
 	?>
-	<section class="jcp-section rankings-section jcp-niche-benefits<?php echo esc_attr( $icon_class ); ?><?php echo $section_id !== '' ? '' : ''; ?>"<?php echo $section_id !== '' ? ' id="' . esc_attr( $section_id ) . '"' : ''; ?>>
+	<section class="jcp-section rankings-section jcp-niche-benefits<?php echo esc_attr( $vis_class ); ?>"<?php echo $section_id !== '' ? ' id="' . esc_attr( $section_id ) . '"' : ''; ?>>
 		<div class="jcp-container">
+			<?php if ( $hl['render'] || ( $sub['render'] && $sub_text !== '' ) ) : ?>
 			<div class="rankings-header">
-				<h2<?php jcp_niche_editable_attr( 'benefits.headline' ); ?>><?php jcp_niche_e( (string) $b['headline'] ); ?></h2>
-				<?php if ( ! empty( $b['subheadline'] ) && jcp_niche_show_field( $b, 'show_subheadline', true ) ) : ?>
-					<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'benefits.subheadline' ); ?>><?php jcp_niche_e( (string) $b['subheadline'] ); ?></p>
+				<?php if ( $hl['render'] && $headline !== '' ) : ?>
+				<h2<?php echo $hl['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_editable_attr( 'benefits.headline' ); ?>><?php jcp_niche_e( $headline ); ?></h2>
+				<?php endif; ?>
+				<?php if ( $sub['render'] && $sub_text !== '' ) : ?>
+					<p class="rankings-subtitle"<?php echo $sub['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_editable_attr( 'benefits.subheadline' ); ?>><?php jcp_niche_e( $sub_text ); ?></p>
 				<?php endif; ?>
 			</div>
+			<?php endif; ?>
 			<div class="ranking-factors-grid"<?php jcp_niche_array_attr( 'benefits.items' ); ?>>
 				<?php
 				$benefit_icons = [ 'badge-check', 'map-pin', 'message-square', 'star', 'building-2', 'phone' ];
-				foreach ( (array) ( $b['items'] ?? [] ) as $bi => $item ) :
+				foreach ( $items as $bi => $item ) :
 					if ( ! is_array( $item ) ) {
 						continue;
 					}
@@ -787,8 +825,10 @@ function jcp_niche_render_benefits( array $c ): void {
 				?>
 			</div>
 			<?php
-			if ( ! empty( $b['closing'] ) && jcp_niche_show_field( $b, 'show_closing', true ) ) {
-				jcp_niche_render_section_closing( (string) $b['closing'], 'benefits.closing' );
+			if ( $closing['render'] && $close_text !== '' ) {
+				echo '<p class="rankings-supporting jcp-niche-section-closing"' . $closing['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+				jcp_niche_editable_attr( 'benefits.closing' );
+				echo '>' . esc_html( $close_text ) . '</p>';
 			}
 			jcp_niche_render_section_optional_ctas( $b, 'benefits', '', [ 'secondary' => true ] );
 			?>
@@ -938,17 +978,16 @@ function jcp_niche_render_differentiation( array $c ): void {
 	if ( empty( $d['headline'] ) ) {
 		return;
 	}
-	$show_icons = jcp_niche_show_field( $d, 'show_icons', true );
-	$icon_class = $show_icons ? '' : ' jcp-section--no-icons';
+	$vis_class = jcp_niche_section_visibility_classes( $d, [ 'show_icons' => true ] );
+	$sub       = jcp_niche_field_visibility( $d, 'show_subheadline', true );
+	$body_text = trim( (string) ( $d['body'] ?? '' ) );
 	?>
-	<section class="jcp-section rankings-section jcp-niche-diff<?php echo esc_attr( $icon_class ); ?>">
+	<section class="jcp-section rankings-section jcp-niche-diff<?php echo esc_attr( $vis_class ); ?>">
 		<div class="jcp-container">
-			<div class="rankings-header jcp-niche-diff-header">
-				<h2<?php jcp_niche_editable_attr( 'differentiation.headline' ); ?>><?php jcp_niche_e( (string) $d['headline'] ); ?></h2>
-			</div>
+			<?php jcp_niche_render_section_header( $d, 'differentiation', [ 'header_class' => 'rankings-header jcp-niche-diff-header' ] ); ?>
 			<div class="jcp-niche-diff-panel">
-				<?php if ( ! empty( $d['body'] ) ) : ?>
-					<p class="jcp-niche-diff-lead"<?php jcp_niche_editable_rich_attr( 'differentiation.body' ); ?>><?php jcp_niche_rich_e( (string) $d['body'] ); ?></p>
+				<?php if ( $sub['render'] && $body_text !== '' ) : ?>
+					<p class="jcp-niche-diff-lead"<?php echo $sub['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_editable_rich_attr( 'differentiation.body' ); ?>><?php jcp_niche_rich_e( $body_text ); ?></p>
 				<?php endif; ?>
 				<?php
 				jcp_niche_render_conversion_points(
@@ -977,16 +1016,18 @@ function jcp_niche_render_who_its_for( array $c ): void {
 	}
 	$variant = (string) ( $w['variant'] ?? '' );
 	$show_icons = jcp_niche_show_field( $w, 'show_icons', true );
-	$icon_class = $show_icons ? '' : ' jcp-section--no-icons';
+	$vis_class  = jcp_niche_section_visibility_classes(
+		$w,
+		[
+			'show_icons'       => true,
+			'show_card_titles' => true,
+			'show_card_body'   => true,
+		]
+	);
 	?>
-	<section class="jcp-section rankings-section jcp-niche-audiences<?php echo esc_attr( $icon_class ); ?>" id="who-its-for">
+	<section class="jcp-section rankings-section jcp-niche-audiences<?php echo esc_attr( $vis_class ); ?>" id="who-its-for">
 		<div class="jcp-container">
-			<div class="rankings-header">
-				<h2<?php jcp_niche_editable_attr( 'who_its_for.headline' ); ?>><?php jcp_niche_e( (string) $w['headline'] ); ?></h2>
-				<?php if ( ! empty( $w['subheadline'] ) && jcp_niche_show_field( $w, 'show_subheadline', true ) ) : ?>
-					<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'who_its_for.subheadline' ); ?>><?php jcp_niche_e( (string) $w['subheadline'] ); ?></p>
-				<?php endif; ?>
-			</div>
+			<?php jcp_niche_render_section_header( $w, 'who_its_for' ); ?>
 			<?php if ( $variant === 'guarantees' ) : ?>
 				<div class="guarantees-grid"<?php jcp_niche_array_attr( 'who_its_for.audiences' ); ?>>
 					<?php foreach ( (array) ( $w['audiences'] ?? [] ) as $ai => $aud ) : ?>
@@ -1043,16 +1084,13 @@ function jcp_niche_render_faq( array $c ): void {
 	if ( empty( $f['headline'] ) ) {
 		return;
 	}
+	$items_vis = jcp_niche_field_visibility( $f, 'show_items', true );
 	?>
 	<section class="jcp-section rankings-section faq-section" id="faq">
 		<div class="jcp-container">
-			<div class="rankings-header">
-				<h2<?php jcp_niche_editable_attr( 'faq.headline' ); ?>><?php jcp_niche_e( (string) $f['headline'] ); ?></h2>
-				<?php if ( ! empty( $f['subheadline'] ) && jcp_niche_show_field( $f, 'show_subheadline', true ) ) : ?>
-					<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'faq.subheadline' ); ?>><?php jcp_niche_e( (string) $f['subheadline'] ); ?></p>
-				<?php endif; ?>
-			</div>
-			<div class="faq-grid"<?php jcp_niche_array_attr( 'faq.items' ); ?>>
+			<?php jcp_niche_render_section_header( $f, 'faq' ); ?>
+			<?php if ( $items_vis['render'] ) : ?>
+			<div class="faq-grid"<?php echo $items_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_array_attr( 'faq.items' ); ?>>
 				<?php foreach ( $items as $i => $item ) : ?>
 					<?php
 					if ( ! is_array( $item ) ) {
@@ -1090,6 +1128,7 @@ function jcp_niche_render_faq( array $c ): void {
 					</details>
 				<?php endforeach; ?>
 			</div>
+			<?php endif; ?>
 			<?php jcp_niche_render_section_optional_ctas( $f, 'faq', (string) ( $c['niche_key'] ?? $c['page_key'] ?? '' ) ); ?>
 		</div>
 	</section>
@@ -1174,16 +1213,15 @@ function jcp_niche_render_proof_flow( array $props ): void {
 	}
 	$section_id = ! empty( $props['section_id'] ) ? (string) $props['section_id'] : 'real-job-proof';
 	$items      = (array) ( $props['items'] ?? [] );
+	$items_vis  = jcp_niche_field_visibility( $props, 'show_items', true );
+	$callout    = jcp_niche_field_visibility( $props, 'show_callout', true );
+	$link       = jcp_niche_field_visibility( $props, 'show_link', true );
 	?>
 	<section class="jcp-section rankings-section jcp-block-proof-flow" id="<?php echo esc_attr( $section_id ); ?>">
 		<div class="jcp-container">
-			<div class="rankings-header">
-				<h2<?php jcp_niche_editable_attr( 'proof_flow.headline' ); ?>><?php echo esc_html( (string) $props['headline'] ); ?></h2>
-				<?php if ( ! empty( $props['subheadline'] ) && jcp_niche_show_field( $props, 'show_subheadline', true ) ) : ?>
-					<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'proof_flow.subheadline' ); ?>><?php echo esc_html( (string) $props['subheadline'] ); ?></p>
-				<?php endif; ?>
-			</div>
-			<div class="proof-flow">
+			<?php jcp_niche_render_section_header( $props, 'proof_flow' ); ?>
+			<?php if ( $items_vis['render'] ) : ?>
+			<div class="proof-flow"<?php echo $items_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 				<div class="proof-flow-lines" aria-hidden="true"></div>
 				<?php foreach ( $items as $i => $item ) : ?>
 					<?php
@@ -1203,8 +1241,9 @@ function jcp_niche_render_proof_flow( array $props ): void {
 					</div>
 				<?php endforeach; ?>
 			</div>
-			<?php if ( ! empty( $props['callout_title'] ) ) : ?>
-				<div class="real-job-proof-callout">
+			<?php endif; ?>
+			<?php if ( $callout['render'] && ! empty( $props['callout_title'] ) ) : ?>
+				<div class="real-job-proof-callout"<?php echo $callout['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 					<?php if ( ! empty( $props['callout_badge'] ) ) : ?>
 						<div class="real-job-proof-callout-badge demo-badge">
 							<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -1219,8 +1258,8 @@ function jcp_niche_render_proof_flow( array $props ): void {
 					<?php endif; ?>
 				</div>
 			<?php endif; ?>
-			<?php if ( ! empty( $props['link_label'] ) && ! empty( $props['link_url'] ) ) : ?>
-				<div class="timeline-cta" style="margin-top: var(--jcp-space-3xl);">
+			<?php if ( $link['render'] && ! empty( $props['link_label'] ) && ! empty( $props['link_url'] ) ) : ?>
+				<div class="timeline-cta" style="margin-top: var(--jcp-space-3xl);<?php echo $link['show'] ? '' : 'display:none;'; ?>">
 					<a href="<?php echo esc_url( (string) $props['link_url'] ); ?>" class="timeline-cta-link"<?php jcp_niche_editable_link_paths( 'proof_flow.link_label', 'proof_flow.link_url' ); ?>>
 						<?php echo esc_html( (string) $props['link_label'] ); ?>
 						<?php jcp_component_chevron_svg(); ?>
@@ -1244,16 +1283,16 @@ function jcp_niche_render_directory_preview( array $props, string $niche_key = '
 	}
 	$section_id = ! empty( $props['section_id'] ) ? (string) $props['section_id'] : 'directory-preview';
 	$primary    = jcp_niche_resolve_cta( $props['cta_primary'] ?? [], $niche_key );
+	$cards_vis  = jcp_niche_field_visibility( $props, 'show_cards', true );
+	$outro_vis  = jcp_niche_field_visibility( $props, 'show_outro', true );
+	$cta_vis    = jcp_niche_field_visibility( $props, 'show_cta', true );
+	$outro_text = trim( (string) ( $props['outro'] ?? '' ) );
 	?>
 	<section class="jcp-section rankings-section directory-preview jcp-block-directory-preview" id="<?php echo esc_attr( $section_id ); ?>">
 		<div class="jcp-container">
-			<div class="rankings-header">
-				<h2<?php jcp_niche_editable_attr( 'directory_preview.headline' ); ?>><?php echo esc_html( (string) $props['headline'] ); ?></h2>
-				<?php if ( ! empty( $props['subheadline'] ) && jcp_niche_show_field( $props, 'show_subheadline', true ) ) : ?>
-					<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'directory_preview.subheadline' ); ?>><?php echo esc_html( (string) $props['subheadline'] ); ?></p>
-				<?php endif; ?>
-			</div>
-			<div class="directory-grid preview-grid">
+			<?php jcp_niche_render_section_header( $props, 'directory_preview' ); ?>
+			<?php if ( $cards_vis['render'] ) : ?>
+			<div class="directory-grid preview-grid"<?php echo $cards_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 				<?php foreach ( (array) ( $props['cards'] ?? [] ) as $ci => $card ) : ?>
 					<?php
 					if ( ! is_array( $card ) ) {
@@ -1263,15 +1302,18 @@ function jcp_niche_render_directory_preview( array $props, string $niche_key = '
 					?>
 				<?php endforeach; ?>
 			</div>
-			<?php if ( ! empty( $props['outro'] ) ) : ?>
-				<p class="directory-preview-outro"<?php jcp_niche_editable_attr( 'directory_preview.outro' ); ?>><?php echo esc_html( (string) $props['outro'] ); ?></p>
 			<?php endif; ?>
-			<?php if ( $primary['label'] !== '' && jcp_niche_show_field( $props, 'show_cta', true ) ) : ?>
-				<div class="directory-preview-cta">
+			<?php if ( $outro_vis['render'] && $outro_text !== '' ) : ?>
+				<p class="directory-preview-outro"<?php echo $outro_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_editable_attr( 'directory_preview.outro' ); ?>><?php echo esc_html( $outro_text ); ?></p>
+			<?php endif; ?>
+			<?php if ( $cta_vis['render'] && ( $primary['label'] !== '' || jcp_niche_user_can_inline_edit() ) ) : ?>
+				<div class="directory-preview-cta"<?php echo $cta_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+					<?php if ( $primary['label'] !== '' ) : ?>
 					<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary directory-demo-cta"<?php jcp_niche_editable_link_attr( 'directory_preview.cta_primary' ); ?>>
 						<span><?php echo esc_html( $primary['label'] ); ?></span>
 						<?php jcp_component_chevron_svg( 20 ); ?>
 					</a>
+					<?php endif; ?>
 				</div>
 			<?php endif; ?>
 		</div>
@@ -1296,26 +1338,32 @@ function jcp_niche_render_conversion( array $props, string $niche_key = '' ): vo
 	$image_url  = $media['image_url'];
 	$video_url  = $media['video_url'];
 	$image_alt  = $media['media_alt'];
-	$icon_class = jcp_niche_show_field( $props, 'show_icons', true ) ? '' : ' jcp-section--no-icons';
+	$vis_class  = jcp_niche_section_visibility_classes( $props, [ 'show_icons' => true ] );
+	$points_vis = jcp_niche_field_visibility( $props, 'show_points', true );
+	$media_vis  = jcp_niche_field_visibility( $props, 'show_media', true );
+	$stats_vis  = jcp_niche_field_visibility( $props, 'show_stats', true );
+	$cta_vis    = jcp_niche_field_visibility( $props, 'show_cta', true );
 	?>
-	<section class="jcp-section rankings-section conversion-section jcp-block-conversion<?php echo esc_attr( $icon_class ); ?>" id="<?php echo esc_attr( $section_id ); ?>">
+	<section class="jcp-section rankings-section conversion-section jcp-block-conversion<?php echo esc_attr( $vis_class ); ?>" id="<?php echo esc_attr( $section_id ); ?>">
 		<div class="jcp-container">
 			<div class="conversion-wrapper jcp-split-layout <?php echo esc_attr( jcp_media_position_class( $media['media_position'] ) ); ?>" data-jcp-split-path="conversion" data-jcp-media-position-path="conversion.media_position">
 				<div class="conversion-content jcp-split-col jcp-split-col--copy" data-jcp-split-col="copy">
-					<div class="rankings-header">
-						<h2<?php jcp_niche_editable_attr( 'conversion.headline' ); ?>><?php echo esc_html( (string) $props['headline'] ); ?></h2>
-						<?php if ( ! empty( $props['subheadline'] ) && jcp_niche_show_field( $props, 'show_subheadline', true ) ) : ?>
-							<p class="rankings-subtitle"<?php jcp_niche_editable_attr( 'conversion.subheadline' ); ?>><?php echo esc_html( (string) $props['subheadline'] ); ?></p>
-						<?php endif; ?>
-					</div>
-					<?php jcp_niche_render_conversion_points( $points, 'conversion.points' ); ?>
-					<div class="conversion-cta"<?php jcp_niche_optional_slot_attr( 'conversion.cta_primary', 'cta', 'Call-to-action button' ); ?>>
+					<?php jcp_niche_render_section_header( $props, 'conversion' ); ?>
+					<?php if ( $points_vis['render'] ) : ?>
+						<div<?php echo $points_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+							<?php jcp_niche_render_conversion_points( $points, 'conversion.points' ); ?>
+						</div>
+					<?php endif; ?>
+					<?php if ( $cta_vis['render'] ) : ?>
+					<div class="conversion-cta"<?php echo $cta_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_optional_slot_attr( 'conversion.cta_primary', 'cta', 'Call-to-action button' ); ?>>
 						<?php if ( $primary['label'] !== '' ) : ?>
 							<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary conversion-cta-btn"<?php jcp_niche_editable_link_attr( 'conversion.cta_primary' ); ?>><?php echo esc_html( $primary['label'] ); ?></a>
 						<?php endif; ?>
 					</div>
+					<?php endif; ?>
 				</div>
-				<div class="conversion-visual jcp-split-col jcp-split-col--media" data-jcp-split-col="media">
+				<?php if ( $media_vis['render'] ) : ?>
+				<div class="conversion-visual jcp-split-col jcp-split-col--media" data-jcp-split-col="media"<?php echo $media_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 						<div class="conversion-image-wrapper">
 							<?php
 							jcp_media_render_slot(
@@ -1347,8 +1395,8 @@ function jcp_niche_render_conversion( array $props, string $niche_key = '' ): vo
 											<span<?php jcp_niche_editable_attr( 'conversion.image_badge' ); ?>><?php echo esc_html( (string) $props['image_badge'] ); ?></span>
 										</div>
 									<?php endif; ?>
-									<?php if ( ! empty( $props['stats'] ) && is_array( $props['stats'] ) ) : ?>
-										<div class="conversion-stats">
+									<?php if ( $stats_vis['render'] && ! empty( $props['stats'] ) && is_array( $props['stats'] ) ) : ?>
+										<div class="conversion-stats"<?php echo $stats_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 											<?php foreach ( $props['stats'] as $si => $stat ) : ?>
 												<?php if ( ! is_array( $stat ) ) { continue; } ?>
 												<div class="conversion-stat-item">
@@ -1362,6 +1410,7 @@ function jcp_niche_render_conversion( array $props, string $niche_key = '' ): vo
 							<?php endif; ?>
 						</div>
 					</div>
+				<?php endif; ?>
 			</div>
 		</div>
 	</section>

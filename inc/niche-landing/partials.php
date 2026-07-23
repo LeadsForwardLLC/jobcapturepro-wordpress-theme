@@ -302,17 +302,58 @@ function jcp_niche_render_conversion_points( array $lines, string $path_prefix =
  *
  * @param string $text Text.
  * @param string $path Optional JSON path for inline editor.
+ * @param string $hidden_attr Optional style attr when hidden in editor.
  */
-function jcp_niche_render_section_closing( string $text, string $path = '' ): void {
+function jcp_niche_render_section_closing( string $text, string $path = '', string $hidden_attr = '' ): void {
 	if ( $text === '' ) {
 		return;
 	}
 	?>
 	<p class="rankings-supporting jcp-niche-section-closing"<?php
+	echo $hidden_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	if ( $path !== '' ) {
 		jcp_niche_editable_attr( $path );
 	}
 	?>><?php echo esc_html( $text ); ?></p>
+	<?php
+}
+
+/**
+ * Standard section rankings header with SHOW toggles for headline/subheadline.
+ *
+ * @param array<string, mixed> $props       Section props.
+ * @param string               $path_prefix JSON path prefix (e.g. benefits).
+ * @param array<string, mixed> $options     sub_rich (bool).
+ */
+function jcp_niche_render_section_header( array $props, string $path_prefix, array $options = [] ): void {
+	$hl       = jcp_niche_field_visibility( $props, 'show_headline', true );
+	$sub      = jcp_niche_field_visibility( $props, 'show_subheadline', true );
+	$headline = trim( (string) ( $props['headline'] ?? '' ) );
+	$sub_text = trim( (string) ( $props['subheadline'] ?? '' ) );
+	$sub_rich = ! empty( $options['sub_rich'] );
+	$header_class = (string) ( $options['header_class'] ?? 'rankings-header' );
+	if ( ! $hl['render'] && ! ( $sub['render'] && $sub_text !== '' ) ) {
+		return;
+	}
+	?>
+	<div class="<?php echo esc_attr( $header_class ); ?>">
+		<?php if ( $hl['render'] && $headline !== '' ) : ?>
+			<h2<?php echo $hl['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_editable_attr( $path_prefix . '.headline' ); ?>><?php jcp_niche_e( $headline ); ?></h2>
+		<?php endif; ?>
+		<?php if ( $sub['render'] && $sub_text !== '' ) : ?>
+			<p class="rankings-subtitle"<?php echo $sub['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php
+			if ( $sub_rich ) {
+				jcp_niche_editable_rich_attr( $path_prefix . '.subheadline' );
+				echo '>';
+				jcp_niche_rich_e( $sub_text );
+			} else {
+				jcp_niche_editable_attr( $path_prefix . '.subheadline' );
+				echo '>';
+				jcp_niche_e( $sub_text );
+			}
+			?></p>
+		<?php endif; ?>
+	</div>
 	<?php
 }
 

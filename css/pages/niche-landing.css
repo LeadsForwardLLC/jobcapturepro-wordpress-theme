@@ -2941,6 +2941,19 @@ body.jcp-inline-editing .jcp-collection-add--timeline {
   display: none !important;
 }
 
+.jcp-section--no-card-titles .factor-title {
+  display: none !important;
+}
+
+.jcp-section--no-card-body .factor-description,
+.jcp-section--no-card-body .jcp-niche-card-lead {
+  display: none !important;
+}
+
+.jcp-section--no-card-stats .factor-stat {
+  display: none !important;
+}
+
 body.jcp-inline-editing [data-jcp-icon-path] {
   position: relative;
   cursor: pointer;

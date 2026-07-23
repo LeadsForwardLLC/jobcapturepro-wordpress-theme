@@ -97,13 +97,52 @@
       { key: 'show_cta_secondary', label: 'Secondary button', selector: '.jcp-actions .btn-secondary', defaultOn: true },
       { key: 'show_meta_stats', label: 'Proof stats', selector: '.directory-meta', defaultOn: true },
     ],
+    benefits: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
+      { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
+      { key: 'show_card_body', label: 'Card body', selector: '.factor-description', defaultOn: true },
+      { key: 'show_card_stats', label: 'Card stats', selector: '.factor-stat', defaultOn: true },
+      { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
+      { key: 'show_cta', label: 'Primary button', selector: SECTION_CTA_PRIMARY_SELECTOR, defaultOn: false },
+      { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
+    ],
     what_it_is: [
       { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
+      { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
+      { key: 'show_card_body', label: 'Card body', selector: '.factor-description', defaultOn: true },
       { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
       { key: 'show_cta', label: 'Primary button', selector: SECTION_CTA_PRIMARY_SELECTOR, defaultOn: false },
       { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
+    ],
+    problem: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
+      { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
+      { key: 'show_card_body', label: 'Card body', selector: '.factor-description', defaultOn: true },
+      { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+    ],
+    check_ins: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_tags', label: 'Job tags', selector: '.jcp-niche-tags-wrap', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
+      { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
+      { key: 'show_card_body', label: 'Card body', selector: '.factor-description', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+    ],
+    who_its_for: [
+      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
+      { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
+      { key: 'show_card_body', label: 'Card body', selector: '.factor-description', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     how_it_works: [
       { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
@@ -112,37 +151,10 @@
       { key: 'show_cta', label: 'Primary button', selector: SECTION_CTA_PRIMARY_SELECTOR, defaultOn: true },
       { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
     ],
-    check_ins: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
-      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
-      { key: 'show_tags', label: 'Job tags', selector: '.jcp-niche-tags-wrap', defaultOn: true },
-      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
-      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
-    ],
-    problem: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
-      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
-      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
-      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
-    ],
-    benefits: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
-      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
-      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
-      { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
-      { key: 'show_cta', label: 'Primary button', selector: SECTION_CTA_PRIMARY_SELECTOR, defaultOn: false },
-      { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
-    ],
     differentiation: [
       { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-niche-diff-lead', defaultOn: true },
       { key: 'show_icons', label: 'Checkmarks', selector: '.conversion-point-icon', defaultOn: true },
-      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
-    ],
-    who_its_for: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
-      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
-      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     faq: [
@@ -792,17 +804,41 @@
 
   const getLiveBlock = (block) => (pageDocument.blocks || []).find((entry) => entry.id === block.id) || block;
 
+  const coerceVisibilityBool = (val, fallback) => {
+    if (val === true || val === 1 || val === '1' || val === 'true') return true;
+    if (val === false || val === 0 || val === '0' || val === 'false') return false;
+    return fallback;
+  };
+
+  const SECTION_VISIBILITY_CLASS_MAP = {
+    show_icons: 'jcp-section--no-icons',
+    show_card_titles: 'jcp-section--no-card-titles',
+    show_card_body: 'jcp-section--no-card-body',
+    show_card_stats: 'jcp-section--no-card-stats',
+  };
+
+  const applySectionVisibilityClass = (root, key, enabled) => {
+    if (!root || !SECTION_VISIBILITY_CLASS_MAP[key]) return;
+    const cls = SECTION_VISIBILITY_CLASS_MAP[key];
+    const targets = new Set([root]);
+    if (root.matches?.('section') || root.classList.contains('jcp-section')) {
+      targets.add(root);
+    }
+    root.querySelectorAll('section, .jcp-section').forEach((el) => targets.add(el));
+    targets.forEach((el) => {
+      el.classList.toggle(cls, !enabled);
+    });
+  };
+
   const isHeroFieldOn = (block, key, defaultOn = true) => {
     const liveBlock = getLiveBlock(block);
     if (liveBlock.props && Object.prototype.hasOwnProperty.call(liveBlock.props, key)) {
-      if (liveBlock.props[key] === true || liveBlock.props[key] === false) {
-        return liveBlock.props[key] !== false;
-      }
+      return coerceVisibilityBool(liveBlock.props[key], defaultOn);
     }
     const lk = blockLegacyKey(liveBlock);
     if (lk) {
       const val = getPath(flatContent, `${lk}.${key}`);
-      if (val === true || val === false) return val !== false;
+      if (val !== undefined) return coerceVisibilityBool(val, defaultOn);
     }
     return defaultOn;
   };
@@ -813,22 +849,19 @@
   };
 
   const isBlockFieldVisible = (block, key, defaultOn = true) => {
-    if (block.props && (block.props[key] === true || block.props[key] === false)) {
-      return block.props[key] === true;
+    if (block.props && Object.prototype.hasOwnProperty.call(block.props, key)) {
+      return coerceVisibilityBool(block.props[key], defaultOn);
     }
     const lk = blockLegacyKey(block);
     if (lk) {
       const val = getPath(flatContent, `${lk}.${key}`);
-      if (val === true || val === false) return val === true;
+      if (val !== undefined) return coerceVisibilityBool(val, defaultOn);
     }
     return defaultOn;
   };
 
   const applyIconVisibilityToRoot = (root, enabled) => {
-    if (!root) return;
-    root.querySelectorAll('section').forEach((section) => {
-      section.classList.toggle('jcp-section--no-icons', !enabled);
-    });
+    applySectionVisibilityClass(root, 'show_icons', enabled);
   };
 
   const ensureSectionCtaRow = (root, block) => {
@@ -886,6 +919,15 @@
     }
 
     syncBlockVisibilityToDom(liveBlock);
+    if (selector && root) {
+      const first = root.querySelector(selector);
+      if (first && typeof first.scrollIntoView === 'function') {
+        first.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      } else if (enabled === false) {
+        // Headline/subheadline live above the cards — scroll section into view so the change is obvious.
+        root.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
     recordChange();
   };
 
@@ -1149,8 +1191,8 @@
         const actions = root.querySelector('.jcp-actions');
         if (actions) actions.style.display = (showPrimary || showSecondary) ? '' : 'none';
       }
-      if (key === 'show_icons') {
-        applyIconVisibilityToRoot(root, enabled);
+      if (key === 'show_icons' || key === 'show_card_titles' || key === 'show_card_body' || key === 'show_card_stats') {
+        applySectionVisibilityClass(root, key, enabled);
       }
       if (key === 'show_cta' || key === 'show_cta_secondary') {
         const showPrimary = key === 'show_cta'
@@ -1567,13 +1609,13 @@
   ];
 
   const isSplitToggleOn = (block, key) => {
-    if (block.props && (block.props[key] === true || block.props[key] === false)) {
-      return block.props[key] === true;
+    if (block.props && Object.prototype.hasOwnProperty.call(block.props, key)) {
+      return coerceVisibilityBool(block.props[key], SPLIT_TOGGLE_DEFAULTS[key] ?? false);
     }
     const lk = blockLegacyKey(block);
     if (lk) {
       const val = getPath(flatContent, `${lk}.${key}`);
-      if (val === true || val === false) return val === true;
+      if (val !== undefined) return coerceVisibilityBool(val, SPLIT_TOGGLE_DEFAULTS[key] ?? false);
     }
     return SPLIT_TOGGLE_DEFAULTS[key] ?? false;
   };

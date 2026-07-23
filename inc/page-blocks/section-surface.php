@@ -118,5 +118,60 @@ function jcp_niche_show_field( array $props, string $key, bool $default = true )
 	if ( ! array_key_exists( $key, $props ) ) {
 		return $default;
 	}
-	return ! empty( $props[ $key ] );
+	$val = $props[ $key ];
+	if ( is_bool( $val ) ) {
+		return $val;
+	}
+	if ( $val === 0 || $val === '0' || $val === 'false' || $val === '' || $val === null ) {
+		return false;
+	}
+	if ( $val === 1 || $val === '1' || $val === 'true' ) {
+		return true;
+	}
+	return ! empty( $val );
+}
+
+/**
+ * Visibility for a field: whether to render (always in editor) and optional hidden attr.
+ *
+ * Keeps markup in the DOM while inline-editing so SHOW toggles can turn fields back on.
+ *
+ * @param array<string, mixed> $props   Section props.
+ * @param string               $key     Flag key.
+ * @param bool                 $default Default when unset.
+ * @return array{show: bool, render: bool, attr: string}
+ */
+function jcp_niche_field_visibility( array $props, string $key, bool $default = true ): array {
+	$show = jcp_niche_show_field( $props, $key, $default );
+	$edit = function_exists( 'jcp_niche_user_can_inline_edit' ) && jcp_niche_user_can_inline_edit();
+	return [
+		'show'   => $show,
+		'render' => $show || $edit,
+		'attr'   => ( ! $show && $edit ) ? ' style="display:none"' : '',
+	];
+}
+
+/**
+ * Section CSS modifiers for icon/card-piece visibility flags.
+ *
+ * @param array<string, mixed> $props Section props.
+ * @param array<string, bool>  $flags Flag key => default (only include keys this section supports).
+ */
+function jcp_niche_section_visibility_classes( array $props, array $flags ): string {
+	$map = [
+		'show_icons'       => 'jcp-section--no-icons',
+		'show_card_titles' => 'jcp-section--no-card-titles',
+		'show_card_body'   => 'jcp-section--no-card-body',
+		'show_card_stats'  => 'jcp-section--no-card-stats',
+	];
+	$classes = [];
+	foreach ( $flags as $key => $default ) {
+		if ( ! isset( $map[ $key ] ) ) {
+			continue;
+		}
+		if ( ! jcp_niche_show_field( $props, $key, (bool) $default ) ) {
+			$classes[] = $map[ $key ];
+		}
+	}
+	return $classes ? ' ' . implode( ' ', $classes ) : '';
 }
