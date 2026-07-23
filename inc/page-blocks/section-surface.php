@@ -159,10 +159,12 @@ function jcp_niche_field_visibility( array $props, string $key, bool $default = 
  */
 function jcp_niche_section_visibility_classes( array $props, array $flags ): string {
 	$map = [
-		'show_icons'       => 'jcp-section--no-icons',
-		'show_card_titles' => 'jcp-section--no-card-titles',
-		'show_card_body'   => 'jcp-section--no-card-body',
-		'show_card_stats'  => 'jcp-section--no-card-stats',
+		'show_icons'        => 'jcp-section--no-icons',
+		'show_card_titles'  => 'jcp-section--no-card-titles',
+		'show_card_body'    => 'jcp-section--no-card-body',
+		'show_card_stats'   => 'jcp-section--no-card-stats',
+		'show_card_images'  => 'jcp-section--no-card-images',
+		'show_card_badges'  => 'jcp-section--no-card-badges',
 	];
 	$classes = [];
 	foreach ( $flags as $key => $default ) {

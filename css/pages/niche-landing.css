@@ -2954,6 +2954,26 @@ body.jcp-inline-editing .jcp-collection-add--timeline {
   display: none !important;
 }
 
+.jcp-section--no-card-images .guarantee-image-wrapper {
+  display: none !important;
+}
+
+.jcp-section--no-card-badges .guarantee-badge {
+  display: none !important;
+}
+
+.jcp-section--no-card-titles .guarantee-content > strong {
+  display: none !important;
+}
+
+.jcp-section--no-card-body .guarantee-content > p {
+  display: none !important;
+}
+
+.jcp-section--no-card-stats .guarantee-stat {
+  display: none !important;
+}
+
 body.jcp-inline-editing [data-jcp-icon-path] {
   position: relative;
   cursor: pointer;

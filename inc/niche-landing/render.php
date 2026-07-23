@@ -1022,14 +1022,19 @@ function jcp_niche_render_who_its_for( array $c ): void {
 			'show_icons'       => true,
 			'show_card_titles' => true,
 			'show_card_body'   => true,
+			'show_card_stats'  => true,
+			'show_card_images' => true,
+			'show_card_badges' => true,
 		]
 	);
+	$cards_vis = jcp_niche_field_visibility( $w, 'show_cards', true );
 	?>
 	<section class="jcp-section rankings-section jcp-niche-audiences<?php echo esc_attr( $vis_class ); ?>" id="who-its-for">
 		<div class="jcp-container">
 			<?php jcp_niche_render_section_header( $w, 'who_its_for' ); ?>
+			<?php if ( $cards_vis['render'] ) : ?>
 			<?php if ( $variant === 'guarantees' ) : ?>
-				<div class="guarantees-grid"<?php jcp_niche_array_attr( 'who_its_for.audiences' ); ?>>
+				<div class="guarantees-grid"<?php echo $cards_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_array_attr( 'who_its_for.audiences' ); ?>>
 					<?php foreach ( (array) ( $w['audiences'] ?? [] ) as $ai => $aud ) : ?>
 						<?php
 						if ( ! is_array( $aud ) ) {
@@ -1040,7 +1045,7 @@ function jcp_niche_render_who_its_for( array $c ): void {
 					<?php endforeach; ?>
 				</div>
 			<?php else : ?>
-			<div class="ranking-factors-grid jcp-niche-split-grid"<?php jcp_niche_array_attr( 'who_its_for.audiences' ); ?>>
+			<div class="ranking-factors-grid jcp-niche-split-grid"<?php echo $cards_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_array_attr( 'who_its_for.audiences' ); ?>>
 				<?php
 				$aud_icons = [ 'briefcase', 'hard-hat', 'trending-up' ];
 				foreach ( (array) ( $w['audiences'] ?? [] ) as $ai => $aud ) :
@@ -1068,6 +1073,7 @@ function jcp_niche_render_who_its_for( array $c ): void {
 				endforeach;
 				?>
 			</div>
+			<?php endif; ?>
 			<?php endif; ?>
 			<?php jcp_niche_render_section_optional_ctas( $w, 'who_its_for', (string) ( $c['niche_key'] ?? $c['page_key'] ?? '' ) ); ?>
 		</div>

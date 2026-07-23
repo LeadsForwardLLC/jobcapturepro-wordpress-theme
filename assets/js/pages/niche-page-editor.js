@@ -139,9 +139,13 @@
     who_its_for: [
       { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_cards', label: 'Cards', selector: '.guarantees-grid, .ranking-factors-grid', defaultOn: true },
+      { key: 'show_card_images', label: 'Card images', selector: '.guarantee-image-wrapper', defaultOn: true },
+      { key: 'show_card_badges', label: 'Card badges', selector: '.guarantee-badge', defaultOn: true },
+      { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title, .guarantee-content > strong', defaultOn: true },
+      { key: 'show_card_body', label: 'Card body', selector: '.factor-description, .guarantee-content > p', defaultOn: true },
+      { key: 'show_card_stats', label: 'Card stats', selector: '.guarantee-stat, .factor-stat', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
-      { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
-      { key: 'show_card_body', label: 'Card body', selector: '.factor-description', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     how_it_works: [
@@ -815,6 +819,8 @@
     show_card_titles: 'jcp-section--no-card-titles',
     show_card_body: 'jcp-section--no-card-body',
     show_card_stats: 'jcp-section--no-card-stats',
+    show_card_images: 'jcp-section--no-card-images',
+    show_card_badges: 'jcp-section--no-card-badges',
   };
 
   const applySectionVisibilityClass = (root, key, enabled) => {
@@ -1191,7 +1197,7 @@
         const actions = root.querySelector('.jcp-actions');
         if (actions) actions.style.display = (showPrimary || showSecondary) ? '' : 'none';
       }
-      if (key === 'show_icons' || key === 'show_card_titles' || key === 'show_card_body' || key === 'show_card_stats') {
+      if (key === 'show_icons' || key === 'show_card_titles' || key === 'show_card_body' || key === 'show_card_stats' || key === 'show_card_images' || key === 'show_card_badges') {
         applySectionVisibilityClass(root, key, enabled);
       }
       if (key === 'show_cta' || key === 'show_cta_secondary') {
