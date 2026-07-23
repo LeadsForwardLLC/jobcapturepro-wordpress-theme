@@ -1019,15 +1019,18 @@ body.jcp-inline-editing [data-jcp-rich="true"] {
 body.jcp-inline-editing [data-jcp-href-path] {
   outline: 2px dashed rgba(59, 130, 246, 0.55);
   outline-offset: 3px;
-  cursor: pointer;
+  cursor: text;
   position: relative;
 }
 
-body.jcp-inline-editing [data-jcp-href-path]::after {
-  content: 'Edit link';
+body.jcp-inline-editing .jcp-edit-href-btn {
   position: absolute;
   top: -1.4rem;
   left: 0;
+  z-index: 5;
+  margin: 0;
+  border: 0;
+  font: inherit;
   font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
@@ -1036,7 +1039,22 @@ body.jcp-inline-editing [data-jcp-href-path]::after {
   background: #eff6ff;
   padding: 2px 6px;
   border-radius: 4px;
-  pointer-events: none;
+  cursor: pointer;
+  line-height: 1.2;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+body.jcp-inline-editing .jcp-edit-href-btn:hover,
+body.jcp-inline-editing .jcp-edit-href-btn:focus-visible {
+  background: #dbeafe;
+  outline: 2px solid #3b82f6;
+  outline-offset: 1px;
+}
+
+.jcp-cta-link-modal .jcp-niche-link-popover label + input + label {
+  margin-top: var(--jcp-space-sm);
 }
 
 .jcp-niche-link-popover {

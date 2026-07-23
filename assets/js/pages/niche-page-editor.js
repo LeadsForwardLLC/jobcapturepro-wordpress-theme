@@ -392,8 +392,10 @@
   popover.innerHTML = `
     <button type="button" class="jcp-editor-modal__backdrop" aria-label="Close"></button>
     <div class="jcp-editor-modal__panel jcp-niche-link-popover" role="dialog" aria-labelledby="jcpCtaLinkModalTitle">
-      <strong id="jcpCtaLinkModalTitle">Button link</strong>
-      <label>URL</label>
+      <strong id="jcpCtaLinkModalTitle">Edit button</strong>
+      <label for="jcpNicheLinkLabel">Button text</label>
+      <input type="text" id="jcpNicheLinkLabel" placeholder="Start free trial" />
+      <label for="jcpNicheLinkUrl">URL</label>
       <input type="text" id="jcpNicheLinkUrl" placeholder="/demo or https://..." />
       <div class="jcp-niche-link-popover-actions">
         <button type="button" class="btn btn-primary" id="jcpNicheLinkApply">Apply</button>
@@ -2257,6 +2259,76 @@
     applyLayoutToDom();
   };
 
+  const isHrefEditControl = (node) => (
+    !!node?.classList?.contains?.('jcp-edit-href-btn')
+    || node?.tagName === 'SVG'
+    || !!node?.closest?.('.jcp-edit-href-btn')
+  );
+
+  const getLinkLabelText = (el) => {
+    if (!el) return '';
+    let text = '';
+    el.childNodes.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        text += node.textContent || '';
+        return;
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+      if (isHrefEditControl(node) || node.tagName === 'SVG') return;
+      text += node.textContent || '';
+    });
+    return text.replace(/\s+/g, ' ').trim();
+  };
+
+  const setLinkLabelText = (el, label) => {
+    if (!el) return;
+    const keep = [...el.querySelectorAll(':scope > .jcp-edit-href-btn, :scope > svg')];
+    const labelSpan = el.querySelector(':scope > span:not(.jcp-edit-href-btn)');
+    if (labelSpan) {
+      labelSpan.textContent = label;
+      keep.forEach((node) => {
+        if (!el.contains(node)) el.appendChild(node);
+      });
+      return;
+    }
+    [...el.childNodes].forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        node.remove();
+        return;
+      }
+      if (node.nodeType === Node.ELEMENT_NODE && !isHrefEditControl(node) && node.tagName !== 'SVG') {
+        node.remove();
+      }
+    });
+    const textNode = document.createTextNode(label);
+    const firstKeep = el.querySelector(':scope > .jcp-edit-href-btn, :scope > svg');
+    if (firstKeep) el.insertBefore(textNode, firstKeep);
+    else el.appendChild(textNode);
+    keep.forEach((node) => {
+      if (!el.contains(node)) el.appendChild(node);
+    });
+  };
+
+  const ensureHrefEditControls = () => {
+    document.querySelectorAll('[data-jcp-href-path]').forEach((el) => {
+      let btn = el.querySelector(':scope > .jcp-edit-href-btn');
+      if (!editing) {
+        if (btn) btn.remove();
+        return;
+      }
+      if (!btn) {
+        btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'jcp-edit-href-btn';
+        btn.textContent = 'Edit link';
+        btn.setAttribute('contenteditable', 'false');
+        btn.setAttribute('tabindex', '-1');
+        btn.setAttribute('aria-label', 'Edit button link');
+        el.insertBefore(btn, el.firstChild);
+      }
+    });
+  };
+
   const applyFlatContentToDom = () => {
     document.querySelectorAll('[data-jcp-path]').forEach((el) => {
       const path = el.getAttribute('data-jcp-path');
@@ -2265,6 +2337,8 @@
       if (val === undefined || val === null) return;
       if (isRichField(el)) {
         el.innerHTML = sanitizeRichHtml(String(val));
+      } else if (el.hasAttribute('data-jcp-href-path')) {
+        setLinkLabelText(el, isListLinePath(path) ? cleanStepLineText(String(val)) : String(val));
       } else {
         el.textContent = isListLinePath(path) ? cleanStepLineText(String(val)) : String(val);
       }
@@ -2275,6 +2349,7 @@
       const val = getPath(flatContent, path);
       if (val !== undefined && val !== null) el.setAttribute('href', String(val));
     });
+    ensureHrefEditControls();
   };
 
   const applyStructureChange = () => {
@@ -2710,6 +2785,11 @@
       if (isStringArrayItemPath(el) || isObjectArrayItemPath(el)) return;
       const path = el.getAttribute('data-jcp-path');
       if (!path) return;
+      if (el.hasAttribute('data-jcp-href-path')) {
+        const raw = getLinkLabelText(el);
+        setPath(flatContent, path, isListLinePath(path) ? cleanStepLineText(raw) : raw);
+        return;
+      }
       if (isRichField(el) || /<a[\s>]/i.test(el.innerHTML || '')) {
         if (!isRichField(el)) el.setAttribute('data-jcp-rich', 'true');
         setPath(flatContent, path, sanitizeRichHtml(el.innerHTML));
@@ -2739,6 +2819,7 @@
         el.removeAttribute('spellcheck');
       }
     });
+    ensureHrefEditControls();
   };
 
   let headingFloatEl = null;
@@ -2904,25 +2985,59 @@
   document.addEventListener('input', (e) => {
     if (!editing || suppressRecord) return;
     if (!e.target.matches('[data-jcp-path]')) return;
+    if (e.target.hasAttribute('data-jcp-href-path')) ensureHrefEditControls();
     updateDirtyState();
     scheduleRecordChange();
   });
+
+  document.addEventListener('mousedown', (e) => {
+    if (!editing) return;
+    if (e.target.closest('.jcp-edit-href-btn')) {
+      // Keep the button from stealing text-selection focus awkwardly before click opens the modal.
+      e.preventDefault();
+    }
+  }, true);
+
+  const openCtaLinkModal = (link, { focusLabel = false } = {}) => {
+    if (!link) return;
+    activeLink = link;
+    popover.querySelector('#jcpNicheLinkLabel').value = getLinkLabelText(link);
+    popover.querySelector('#jcpNicheLinkUrl').value = link.getAttribute('href') || '';
+    openEditorModal(popover, {
+      focusSelector: focusLabel ? '#jcpNicheLinkLabel' : '#jcpNicheLinkUrl',
+    });
+  };
 
   document.addEventListener('click', (e) => {
     if (!editing) return;
     const link = e.target.closest('[data-jcp-href-path]');
     if (!link) return;
+    // Never follow CTA hrefs while editing.
+    e.preventDefault();
+    const editBtn = e.target.closest('.jcp-edit-href-btn');
+    // Normal click edits button text inline; only the Edit link control opens the URL modal.
+    if (!editBtn) return;
+    e.stopPropagation();
+    openCtaLinkModal(link, { focusLabel: false });
+  });
+
+  document.addEventListener('dblclick', (e) => {
+    if (!editing) return;
+    const link = e.target.closest('[data-jcp-href-path]');
+    if (!link || e.target.closest('.jcp-edit-href-btn')) return;
     e.preventDefault();
     e.stopPropagation();
-    activeLink = link;
-    popover.querySelector('#jcpNicheLinkUrl').value = link.getAttribute('href') || '';
-    openEditorModal(popover, { focusSelector: '#jcpNicheLinkUrl' });
+    openCtaLinkModal(link, { focusLabel: true });
   });
 
   popover.querySelector('.jcp-editor-modal__backdrop').addEventListener('click', closeCtaLinkModal);
   popover.querySelector('#jcpNicheLinkApply').addEventListener('click', () => {
     if (!activeLink) return;
-    activeLink.setAttribute('href', popover.querySelector('#jcpNicheLinkUrl').value.trim());
+    const label = popover.querySelector('#jcpNicheLinkLabel').value.trim();
+    const url = popover.querySelector('#jcpNicheLinkUrl').value.trim();
+    setLinkLabelText(activeLink, label);
+    activeLink.setAttribute('href', url);
+    ensureHrefEditControls();
     closeCtaLinkModal();
     recordChange();
   });
