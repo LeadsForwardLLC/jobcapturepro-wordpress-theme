@@ -117,11 +117,14 @@
   const isEditableMediaNavigationLink = (anchor) => {
     if (!anchor || anchor.tagName !== 'A') return false;
     if (anchor.hasAttribute('data-jcp-href-path')) return false;
+    // Audience/guarantee cards wrap image + editable text; only the image area is media.
+    if (anchor.classList.contains('guarantee-item')) return false;
     if (anchor.matches(PHONE_MOCKUP_LINK_SELECTOR)) return true;
-    if (anchor.closest('.jcp-media-slot, .jcp-hero-visual-column, .jcp-media-text-media, .demo-preview-visual, .jcp-editable-media-wrap')) {
+    // Linked media chrome (hero/split phone mockups), not content cards that merely include an image.
+    if (anchor.closest('.jcp-media-slot, .jcp-hero-visual-column, .jcp-media-text-media, .demo-preview-visual')) {
       return true;
     }
-    return !!anchor.querySelector('.jcp-editable-media-image, .jcp-hero-slot-image, .hero-phone-image, .jcp-media-text-image');
+    return false;
   };
 
   const resolveMediaClickTarget = (el) => {
@@ -941,7 +944,14 @@
       slot.addEventListener('click', (e) => {
         if (!isEditingActive()) return;
         if (e.target.closest(EDITOR_CHROME_SELECTOR)) return;
-        if (e.target.closest('.jcp-col-drag-handle')) return;
+        if (e.target.closest('.jcp-col-drag-handle, .jcp-card-piece-toggle, .jcp-collection-remove')) return;
+        // Badge / other editable text on top of media should edit text, not open media.
+        if (
+          e.target.closest('[data-jcp-path]')
+          && !e.target.closest('img, .guarantee-image--empty, .jcp-editable-media-image, .jcp-hero-slot-image, .jcp-media-text-image, .demo-preview-slot-image, .hero-phone-image, .conversion-image')
+        ) {
+          return;
+        }
         if (isWpMediaClick(e.target)) return;
         e.preventDefault();
         e.stopPropagation();
@@ -988,6 +998,18 @@
     if (!target) return;
     if (target.closest(EDITOR_CHROME_SELECTOR)) return;
     if (isWpMediaClick(target)) return;
+    if (target.closest('.jcp-card-piece-toggle, .jcp-collection-remove, .jcp-collection-add')) return;
+
+    const clickedImage = target.closest(
+      'img, .guarantee-image--empty, .jcp-editable-media-image, .jcp-hero-slot-image, .jcp-media-text-image, .demo-preview-slot-image, .hero-phone-image, .conversion-image'
+    );
+    // Title, body, and badge text win over media/link wrappers.
+    const editableField = target.closest('[data-jcp-path]');
+    if (editableField && !clickedImage) {
+      const cardLink = target.closest('a.guarantee-item');
+      if (cardLink) e.preventDefault();
+      return;
+    }
 
     const mockupLink = target.closest(PHONE_MOCKUP_LINK_SELECTOR);
     if (mockupLink && isEditableMediaNavigationLink(mockupLink)) {
@@ -1003,11 +1025,17 @@
       return;
     }
 
-    const mediaHit = target.closest(MEDIA_HIT_SELECTOR);
+    const mediaHit = target.closest(`${MEDIA_HIT_SELECTOR}, .jcp-editable-media-wrap`);
     if (mediaHit) {
       e.preventDefault();
       e.stopPropagation();
       openPopover(mediaHit);
+      return;
+    }
+
+    // Keep FAQ card navigation from firing while editing (clicks outside text/media).
+    if (target.closest('a.guarantee-item')) {
+      e.preventDefault();
     }
   };
 
