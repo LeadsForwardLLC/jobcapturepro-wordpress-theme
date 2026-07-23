@@ -328,7 +328,8 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 					<?php if ( ! empty( $h['subheadline'] ) && jcp_niche_show_field( $h, 'show_subheadline', true ) ) : ?>
 						<p class="jcp-hero-subtitle"<?php jcp_niche_editable_attr( 'hero.subheadline' ); ?>><?php jcp_niche_e( (string) $h['subheadline'] ); ?></p>
 					<?php endif; ?>
-					<div class="jcp-actions directory-cta-row"<?php echo ( ! $show_primary && ! $show_secondary ) ? ' style="display:none"' : ''; ?>>
+					<?php if ( $show_primary || $show_secondary ) : ?>
+					<div class="jcp-actions directory-cta-row">
 						<?php if ( $show_primary && $primary['label'] !== '' ) : ?>
 							<div class="jcp-hero-primary-cta">
 								<a class="btn btn-primary" href="<?php echo esc_url( $primary['url'] ); ?>"<?php jcp_niche_editable_link_attr( 'hero.cta_primary' ); jcp_niche_cta_tracking_attr( $primary['url'], str_contains( $primary['url'], 'firstpromoter.com' ) ? 'referral_hero' : 'niche_hero', $primary['label'] ); ?>><?php jcp_niche_e( $primary['label'] ); ?></a>
@@ -344,6 +345,7 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 							<a class="btn btn-secondary" href="<?php echo esc_url( $secondary['url'] ); ?>"<?php jcp_niche_editable_link_attr( 'hero.cta_secondary' ); ?>><?php jcp_niche_e( $secondary['label'] ); ?></a>
 						<?php endif; ?>
 					</div>
+					<?php endif; ?>
 					<?php if ( ! $is_home && $show_trust && ! empty( $h['trust_line'] ) ) : ?>
 						<p class="jcp-niche-trust-line"<?php jcp_niche_editable_attr( 'hero.trust_line' ); ?>><?php jcp_niche_e( (string) $h['trust_line'] ); ?></p>
 					<?php endif; ?>
@@ -475,6 +477,10 @@ function jcp_niche_render_what_it_is( array $c ): void {
 				<?php
 				$team_title   = ! empty( $w['team_already_title'] ) ? (string) $w['team_already_title'] : __( 'Your team is already', 'jcp-core' );
 				$turns_title  = ! empty( $w['turns_into_title'] ) ? (string) $w['turns_into_title'] : __( 'Turns real jobs into', 'jcp-core' );
+				$what_pieces = [
+					'show_title' => jcp_niche_show_field( $w, 'show_card_titles', true ),
+					'show_body'  => jcp_niche_show_field( $w, 'show_card_body', true ),
+				];
 				jcp_niche_factor_card(
 					$team_title,
 					$team_icon,
@@ -501,7 +507,8 @@ function jcp_niche_render_what_it_is( array $c ): void {
 					'',
 					-1,
 					'what_it_is.team_already_icon',
-					$show_icons
+					$show_icons,
+					$what_pieces
 				);
 				jcp_niche_factor_card(
 					$turns_title,
@@ -532,7 +539,8 @@ function jcp_niche_render_what_it_is( array $c ): void {
 					'',
 					-1,
 					'what_it_is.turns_into_icon',
-					$show_icons
+					$show_icons,
+					$what_pieces
 				);
 				?>
 			</div>
@@ -684,7 +692,11 @@ function jcp_niche_render_check_ins( array $c ): void {
 						'',
 						(int) $fi,
 						'check_ins.features.' . $fi . '.icon',
-						$show_icons
+						$show_icons,
+						[
+							'show_title' => jcp_niche_show_field( $ch, 'show_card_titles', true ),
+							'show_body'  => jcp_niche_show_field( $ch, 'show_card_body', true ),
+						]
 					);
 				endforeach;
 				?>
@@ -746,7 +758,11 @@ function jcp_niche_render_problem( array $c ): void {
 						'',
 						(int) $pi,
 						'problem.pain_points.' . $pi . '.icon',
-						$show_icons
+						$show_icons,
+						[
+							'show_title' => jcp_niche_show_field( $p, 'show_card_titles', true ),
+							'show_body'  => jcp_niche_show_field( $p, 'show_card_body', true ),
+						]
 					);
 				endforeach;
 				?>
@@ -829,7 +845,12 @@ function jcp_niche_render_benefits( array $c ): void {
 						'benefits.items.' . $bi . '.stat_label',
 						(int) $bi,
 						'benefits.items.' . $bi . '.icon',
-						$show_icons
+						$show_icons,
+						[
+							'show_title' => jcp_niche_show_field( $b, 'show_card_titles', true ),
+							'show_body'  => jcp_niche_show_field( $b, 'show_card_body', true ),
+							'show_stats' => jcp_niche_show_field( $b, 'show_card_stats', true ),
+						]
 					);
 				endforeach;
 				?>
@@ -1041,6 +1062,13 @@ function jcp_niche_render_who_its_for( array $c ): void {
 	}
 	$variant = (string) ( $w['variant'] ?? '' );
 	$show_icons = jcp_niche_show_field( $w, 'show_icons', true );
+	$card_vis   = [
+		'show_images' => jcp_niche_show_field( $w, 'show_card_images', true ),
+		'show_badges' => jcp_niche_show_field( $w, 'show_card_badges', true ),
+		'show_titles' => jcp_niche_show_field( $w, 'show_card_titles', true ),
+		'show_body'   => jcp_niche_show_field( $w, 'show_card_body', true ),
+		'show_stats'  => jcp_niche_show_field( $w, 'show_card_stats', true ),
+	];
 	$vis_class  = jcp_niche_section_visibility_classes(
 		$w,
 		[
@@ -1059,20 +1087,25 @@ function jcp_niche_render_who_its_for( array $c ): void {
 			<?php jcp_niche_render_section_header( $w, 'who_its_for' ); ?>
 			<?php if ( $cards_vis['render'] ) : ?>
 			<?php if ( $variant === 'guarantees' ) : ?>
-				<div class="guarantees-grid"<?php echo $cards_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_array_attr( 'who_its_for.audiences' ); ?>>
+				<div class="guarantees-grid"<?php jcp_niche_array_attr( 'who_its_for.audiences' ); ?>>
 					<?php foreach ( (array) ( $w['audiences'] ?? [] ) as $ai => $aud ) : ?>
 						<?php
 						if ( ! is_array( $aud ) ) {
 							continue;
 						}
-						jcp_component_audience_guarantee_card( $aud, (int) $ai );
+						jcp_component_audience_guarantee_card( $aud, (int) $ai, $card_vis );
 						?>
 					<?php endforeach; ?>
 				</div>
 			<?php else : ?>
-			<div class="ranking-factors-grid jcp-niche-split-grid"<?php echo $cards_vis['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_array_attr( 'who_its_for.audiences' ); ?>>
+			<div class="ranking-factors-grid jcp-niche-split-grid"<?php jcp_niche_array_attr( 'who_its_for.audiences' ); ?>>
 				<?php
 				$aud_icons = [ 'briefcase', 'hard-hat', 'trending-up' ];
+				$pieces    = [
+					'show_title' => $card_vis['show_titles'],
+					'show_body'  => $card_vis['show_body'],
+					'show_stats' => $card_vis['show_stats'],
+				];
 				foreach ( (array) ( $w['audiences'] ?? [] ) as $ai => $aud ) :
 					if ( ! is_array( $aud ) ) {
 						continue;
@@ -1093,7 +1126,8 @@ function jcp_niche_render_who_its_for( array $c ): void {
 						'',
 						(int) $ai,
 						'who_its_for.audiences.' . $ai . '.icon',
-						$show_icons
+						$show_icons,
+						$pieces
 					);
 				endforeach;
 				?>
@@ -1295,7 +1329,7 @@ function jcp_niche_render_proof_flow( array $props ): void {
 				</div>
 			<?php endif; ?>
 			<?php if ( $link['render'] && ! empty( $props['link_label'] ) && ! empty( $props['link_url'] ) ) : ?>
-				<div class="timeline-cta" style="margin-top: var(--jcp-space-3xl);<?php echo $link['show'] ? '' : 'display:none;'; ?>">
+				<div class="timeline-cta" style="margin-top: var(--jcp-space-3xl);">
 					<a href="<?php echo esc_url( (string) $props['link_url'] ); ?>" class="timeline-cta-link"<?php jcp_niche_editable_link_paths( 'proof_flow.link_label', 'proof_flow.link_url' ); ?>>
 						<?php echo esc_html( (string) $props['link_label'] ); ?>
 						<?php jcp_component_chevron_svg(); ?>

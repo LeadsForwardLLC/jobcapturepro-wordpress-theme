@@ -1273,10 +1273,119 @@
     renderBlockList();
   };
 
+  const CARD_PIECE_KEYS = new Set([
+    'show_icons',
+    'show_card_titles',
+    'show_card_body',
+    'show_card_stats',
+    'show_card_images',
+    'show_card_badges',
+  ]);
+
+  const omitHiddenNodes = (root, selector) => {
+    if (!root || !selector) return;
+    root.querySelectorAll(selector).forEach((el) => el.remove());
+  };
+
+  const ensureRankingsHeader = (root, block) => {
+    if (block.type === 'final_cta') {
+      let content = root.querySelector('.cta-content');
+      if (content) return content;
+      const wrap = root.querySelector('.rankings-cta');
+      if (!wrap) return null;
+      content = document.createElement('div');
+      content.className = 'cta-content';
+      wrap.insertBefore(content, wrap.firstChild);
+      return content;
+    }
+    if (block.type === 'conversion') {
+      let header = root.querySelector('.conversion-content .rankings-header');
+      if (header) return header;
+      const copy = root.querySelector('.conversion-content');
+      if (!copy) return null;
+      header = document.createElement('div');
+      header.className = 'rankings-header';
+      copy.insertBefore(header, copy.firstChild);
+      return header;
+    }
+    let header = root.querySelector('.rankings-header');
+    if (header) return header;
+    const container = root.querySelector('.jcp-container') || root;
+    header = document.createElement('div');
+    header.className = 'rankings-header';
+    container.insertBefore(header, container.firstChild);
+    return header;
+  };
+
+  const restoreVisibilityField = (root, block, key, selector) => {
+    if (!root || !selector) return;
+    if (root.querySelector(selector)) {
+      root.querySelectorAll(selector).forEach((el) => {
+        el.style.display = '';
+      });
+      return;
+    }
+    const lk = blockLegacyKey(block);
+    if (!lk) return;
+
+    if (key === 'show_headline') {
+      const header = ensureRankingsHeader(root, block);
+      if (!header) return;
+      const tag = sanitizeHeadingTag(getPath(flatContent, `${lk}.headline_tag`) || (block.type === 'final_cta' ? 'h3' : 'h2'), false);
+      const el = document.createElement(tag);
+      el.className = 'jcp-section-headline';
+      el.setAttribute('data-jcp-path', `${lk}.headline`);
+      el.setAttribute('data-jcp-heading-tag-path', `${lk}.headline_tag`);
+      el.textContent = String(getPath(flatContent, `${lk}.headline`) || '');
+      header.insertBefore(el, header.firstChild);
+      return;
+    }
+
+    if (key === 'show_subheadline') {
+      const header = ensureRankingsHeader(root, block);
+      if (!header) return;
+      const el = document.createElement('p');
+      el.className = block.type === 'final_cta'
+        ? 'cta-paragraph'
+        : (block.type === 'differentiation' ? 'jcp-niche-diff-lead' : 'rankings-subtitle');
+      el.setAttribute('data-jcp-path', `${lk}.${block.type === 'differentiation' ? 'body' : 'subheadline'}`);
+      const textPath = block.type === 'differentiation' ? `${lk}.body` : `${lk}.subheadline`;
+      el.textContent = String(getPath(flatContent, textPath) || '');
+      header.appendChild(el);
+      return;
+    }
+
+    if (key === 'show_closing') {
+      const container = root.querySelector('.jcp-container') || root;
+      const el = document.createElement('p');
+      el.className = 'rankings-supporting jcp-niche-section-closing';
+      el.setAttribute('data-jcp-path', `${lk}.closing`);
+      el.textContent = String(getPath(flatContent, `${lk}.closing`) || '');
+      container.appendChild(el);
+      return;
+    }
+
+    if (key === 'show_cta_note' && block.type === 'final_cta') {
+      let wrap = root.querySelector('.cta-button-wrapper');
+      if (!wrap) {
+        const rankings = root.querySelector('.rankings-cta');
+        if (!rankings) return;
+        wrap = document.createElement('div');
+        wrap.className = 'cta-button-wrapper';
+        rankings.appendChild(wrap);
+      }
+      const note = document.createElement('p');
+      note.className = 'cta-note';
+      note.setAttribute('data-jcp-path', `${lk}.cta_note`);
+      note.textContent = String(getPath(flatContent, `${lk}.cta_note`) || '');
+      wrap.appendChild(note);
+    }
+  };
+
   const syncBlockVisibilityToDom = (block) => {
     const toggles = [...(BLOCK_VISIBILITY_TOGGLES[block.type] || [])];
     if (block.type === 'media_text' || block.type === 'demo_preview') {
-      toggles.unshift({ key: 'show_headline', label: 'Headline', selector: '.jcp-split-headline, .demo-preview-headline, h2' });
+      toggles.unshift({ key: 'show_headline', label: 'Headline', selector: '.demo-preview-title, .jcp-section-headline' });
       toggles.push(
         { key: 'show_badge', selector: '.demo-badge' },
         { key: 'show_subheadline', selector: '.jcp-split-subheadline' },
@@ -1287,28 +1396,35 @@
     if (!toggles.length) return;
     const root = ensureBlockRoot(findBlockRootEl(block));
     if (!root) return;
+    let needsCollectionRebuild = false;
     toggles.forEach(({ key, selector, defaultOn }) => {
-      if (!selector) return;
+      if (!selector && !CARD_PIECE_KEYS.has(key)) return;
       let enabled = isBlockFieldVisible(block, key, defaultOn !== false);
       if (block.type === 'media_text' || block.type === 'demo_preview') {
-        if (['show_badge', 'show_subheadline', 'show_cue', 'show_body'].includes(key)) {
+        if (['show_badge', 'show_subheadline', 'show_cue', 'show_body', 'show_headline'].includes(key)) {
           enabled = isSplitToggleOn(block, key);
         }
       }
       if (block.type === 'hero') {
         enabled = isHeroFieldOn(block, key, defaultOn !== false);
       }
-      root.querySelectorAll(selector).forEach((el) => {
-        el.style.display = enabled ? '' : 'none';
-      });
+      if (CARD_PIECE_KEYS.has(key)) {
+        applySectionVisibilityClass(root, key, enabled);
+        needsCollectionRebuild = true;
+        if (!enabled && selector) omitHiddenNodes(root, selector);
+        return;
+      }
+      if (!selector) return;
+      if (enabled) {
+        restoreVisibilityField(root, block, key, selector);
+      } else {
+        omitHiddenNodes(root, selector);
+      }
       if (block.type === 'hero' && (key === 'show_cta_primary' || key === 'show_cta_secondary')) {
         const showPrimary = isHeroFieldOn(block, 'show_cta_primary', true);
         const showSecondary = isHeroFieldOn(block, 'show_cta_secondary', true);
         const actions = root.querySelector('.jcp-actions');
-        if (actions) actions.style.display = (showPrimary || showSecondary) ? '' : 'none';
-      }
-      if (key === 'show_icons' || key === 'show_card_titles' || key === 'show_card_body' || key === 'show_card_stats' || key === 'show_card_images' || key === 'show_card_badges') {
-        applySectionVisibilityClass(root, key, enabled);
+        if (actions && !showPrimary && !showSecondary) actions.remove();
       }
       if (key === 'show_cta' || key === 'show_cta_secondary') {
         const showPrimary = key === 'show_cta'
@@ -1318,7 +1434,7 @@
           ? enabled
           : isBlockFieldVisible(block, 'show_cta_secondary', (BLOCK_VISIBILITY_TOGGLES[block.type] || []).find((e) => e.key === 'show_cta_secondary')?.defaultOn !== false);
         const row = root.querySelector('.jcp-section-cta-row');
-        if (row) row.style.display = (showPrimary || showSecondary) ? '' : 'none';
+        if (row && !showPrimary && !showSecondary) row.remove();
         if (showPrimary) {
           root.querySelectorAll(SECTION_CTA_PRIMARY_SELECTOR).forEach((el) => {
             el.style.display = '';
@@ -1326,6 +1442,15 @@
         }
       }
     });
+    if (needsCollectionRebuild && typeof window.JCP_SYNC_COLLECTIONS_FROM_CONTENT === 'function') {
+      window.JCP_SYNC_COLLECTIONS_FROM_CONTENT();
+      if (typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
+        window.JCP_REFRESH_COLLECTIONS();
+      }
+      if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+        window.JCP_REFRESH_INLINE_EDITABLE();
+      }
+    }
   };
 
   let surfaceImageFrame = null;
@@ -1753,26 +1878,92 @@
       syncSplitBlockPropsFromFlat(block);
       const root = ensureBlockRoot(findBlockRootEl(block));
       if (!root) return;
+      const copy = root.querySelector('.demo-preview-text, .jcp-split-col--copy') || root;
 
       SPLIT_TOGGLE_KEYS.forEach((key) => {
         if (key === 'show_cta' || key === 'show_cta_note') return;
         const selector = SPLIT_TOGGLE_SELECTORS[key];
         if (!selector) return;
         const enabled = isSplitToggleOn(block, key);
-        root.querySelectorAll(selector).forEach((el) => {
-          el.style.display = enabled ? '' : 'none';
-        });
+        const existing = root.querySelector(selector);
+        if (!enabled) {
+          if (existing) existing.remove();
+          return;
+        }
+        if (existing) {
+          existing.style.display = '';
+          return;
+        }
+        // Restore omitted piece from props so editors can turn SHOW back on without reload.
+        const lk = blockLegacyKey(block);
+        if (!lk || !copy) return;
+        if (key === 'show_badge') {
+          const badge = document.createElement('div');
+          badge.className = 'demo-badge';
+          badge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg><span data-jcp-path="${lk}.badge"></span>`;
+          const span = badge.querySelector('[data-jcp-path]');
+          if (span) span.textContent = String(getPath(flatContent, `${lk}.badge`) || 'See it in action');
+          copy.insertBefore(badge, copy.firstChild);
+        } else if (key === 'show_headline') {
+          const tag = sanitizeHeadingTag(getPath(flatContent, `${lk}.headline_tag`) || 'h3', false);
+          const el = document.createElement(tag);
+          el.className = 'demo-preview-title jcp-section-headline';
+          el.setAttribute('data-jcp-path', `${lk}.headline`);
+          el.setAttribute('data-jcp-heading-tag-path', `${lk}.headline_tag`);
+          el.textContent = String(getPath(flatContent, `${lk}.headline`) || '');
+          copy.insertBefore(el, copy.querySelector('.jcp-split-subheadline, .demo-preview-cue, .demo-preview-description, .demo-cta-wrapper'));
+        } else if (key === 'show_subheadline') {
+          const el = document.createElement('p');
+          el.className = 'rankings-subtitle jcp-split-subheadline';
+          el.setAttribute('data-jcp-path', `${lk}.subheadline`);
+          el.textContent = String(getPath(flatContent, `${lk}.subheadline`) || '');
+          copy.insertBefore(el, copy.querySelector('.demo-preview-cue, .demo-preview-description, .demo-cta-wrapper'));
+        } else if (key === 'show_cue') {
+          const el = document.createElement('p');
+          el.className = 'demo-preview-cue';
+          el.setAttribute('data-jcp-path', `${lk}.cue`);
+          el.textContent = String(getPath(flatContent, `${lk}.cue`) || '');
+          copy.insertBefore(el, copy.querySelector('.demo-preview-description, .demo-cta-wrapper'));
+        } else if (key === 'show_body') {
+          const el = document.createElement('p');
+          el.className = 'demo-preview-description';
+          el.setAttribute('data-jcp-path', `${lk}.body`);
+          el.textContent = String(getPath(flatContent, `${lk}.body`) || '');
+          copy.insertBefore(el, copy.querySelector('.demo-cta-wrapper'));
+        }
       });
 
       const showCta = isSplitToggleOn(block, 'show_cta');
       const showNote = isSplitToggleOn(block, 'show_cta_note');
-      const wrapper = root.querySelector('.demo-cta-wrapper');
-      if (wrapper) wrapper.style.display = (showCta || showNote) ? '' : 'none';
+      let wrapper = root.querySelector('.demo-cta-wrapper');
+      if (!showCta && !showNote) {
+        if (wrapper) wrapper.remove();
+        return;
+      }
+      if (!wrapper && copy) {
+        wrapper = document.createElement('div');
+        wrapper.className = 'demo-cta-wrapper';
+        copy.appendChild(wrapper);
+      }
+      if (!wrapper) return;
+      wrapper.style.display = '';
       const slot = root.querySelector('.demo-cta-slot');
-      if (slot) slot.style.display = showCta ? '' : 'none';
+      if (!showCta && slot) slot.remove();
+      if (showCta && !slot) ensureSplitCtaSlot(root, block);
       root.querySelectorAll('.demo-cta-note').forEach((el) => {
-        el.style.display = showNote ? '' : 'none';
+        if (!showNote) el.remove();
+        else el.style.display = '';
       });
+      if (showNote && !root.querySelector('.demo-cta-note')) {
+        const note = document.createElement('p');
+        note.className = 'demo-cta-note';
+        const lk = blockLegacyKey(block);
+        if (lk) {
+          note.setAttribute('data-jcp-path', `${lk}.cta_note`);
+          note.textContent = String(getPath(flatContent, `${lk}.cta_note`) || '');
+        }
+        wrapper.appendChild(note);
+      }
     });
   };
 

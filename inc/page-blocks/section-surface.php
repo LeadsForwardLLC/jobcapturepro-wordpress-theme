@@ -132,9 +132,11 @@ function jcp_niche_show_field( array $props, string $key, bool $default = true )
 }
 
 /**
- * Visibility for a field: whether to render (always in editor) and optional hidden attr.
+ * Visibility for a field: whether to render markup at all.
  *
- * Keeps markup in the DOM while inline-editing so SHOW toggles can turn fields back on.
+ * Hidden fields are omitted from the HTML (no display:none stubs) so they
+ * cannot affect SEO, bandwidth, or accessibility. The live editor restores
+ * pieces by rebuilding from saved props when a SHOW toggle is turned back on.
  *
  * @param array<string, mixed> $props   Section props.
  * @param string               $key     Flag key.
@@ -143,16 +145,18 @@ function jcp_niche_show_field( array $props, string $key, bool $default = true )
  */
 function jcp_niche_field_visibility( array $props, string $key, bool $default = true ): array {
 	$show = jcp_niche_show_field( $props, $key, $default );
-	$edit = function_exists( 'jcp_niche_user_can_inline_edit' ) && jcp_niche_user_can_inline_edit();
 	return [
 		'show'   => $show,
-		'render' => $show || $edit,
-		'attr'   => ( ! $show && $edit ) ? ' style="display:none"' : '',
+		'render' => $show,
+		'attr'   => '',
 	];
 }
 
 /**
  * Section CSS modifiers for icon/card-piece visibility flags.
+ *
+ * Kept for editor live-preview class hooks; public markup should omit pieces
+ * via jcp_niche_show_field checks instead of relying on these alone.
  *
  * @param array<string, mixed> $props Section props.
  * @param array<string, bool>  $flags Flag key => default (only include keys this section supports).

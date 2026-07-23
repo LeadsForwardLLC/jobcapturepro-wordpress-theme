@@ -315,10 +315,11 @@ function jcp_component_directory_preview_card( array $card, int $i = 0 ): void {
 /**
  * Audience guarantee card (who it's for — image grid variant).
  *
- * @param array<string, string> $aud   Audience item.
- * @param int                   $index Index for editor paths.
+ * @param array<string, mixed> $aud   Audience item.
+ * @param int                  $index Index for editor paths.
+ * @param array<string, bool>  $vis   Section visibility: show_images, show_badges, show_titles, show_body, show_stats.
  */
-function jcp_component_audience_guarantee_card( array $aud, int $index = 0 ): void {
+function jcp_component_audience_guarantee_card( array $aud, int $index = 0, array $vis = [] ): void {
 	$title      = (string) ( $aud['title'] ?? '' );
 	$body       = (string) ( $aud['body'] ?? '' );
 	$badge      = (string) ( $aud['badge'] ?? '' );
@@ -329,8 +330,24 @@ function jcp_component_audience_guarantee_card( array $aud, int $index = 0 ): vo
 	$faq_target = (string) ( $aud['faq_target'] ?? '' );
 	$path       = 'who_its_for.audiences.' . $index;
 	$href       = $faq_target !== '' ? '#' . ltrim( $faq_target, '#' ) : '#faq';
+
+	$show_images = ! array_key_exists( 'show_images', $vis ) || ! empty( $vis['show_images'] );
+	$show_badges = ! array_key_exists( 'show_badges', $vis ) || ! empty( $vis['show_badges'] );
+	$show_titles = ! array_key_exists( 'show_titles', $vis ) || ! empty( $vis['show_titles'] );
+	$show_body   = ! array_key_exists( 'show_body', $vis ) || ! empty( $vis['show_body'] );
+	$show_stats  = ! array_key_exists( 'show_stats', $vis ) || ! empty( $vis['show_stats'] );
+	$item_image  = ! array_key_exists( 'show_image', $aud ) || ! empty( $aud['show_image'] );
+	$render_image = $show_images && $item_image;
+	$render_badge = $show_badges && $badge !== '';
+	$can_edit     = jcp_niche_user_can_inline_edit();
 	?>
-	<a href="<?php echo esc_url( $href ); ?>" class="guarantee-item"<?php echo $faq_target !== '' ? ' data-faq-target="' . esc_attr( $faq_target ) . '"' : ''; jcp_niche_array_item_attr( $index ); ?>>
+	<a href="<?php echo esc_url( $href ); ?>" class="guarantee-item<?php echo $render_image ? '' : ' guarantee-item--no-image'; ?>"<?php echo $faq_target !== '' ? ' data-faq-target="' . esc_attr( $faq_target ) . '"' : ''; jcp_niche_array_item_attr( $index ); ?><?php echo $item_image ? '' : ' data-jcp-show-image="0"'; ?>>
+		<?php if ( $can_edit ) : ?>
+			<button type="button" class="jcp-card-piece-toggle<?php echo $item_image ? ' is-on' : ''; ?>" data-jcp-audience-toggle="show_image" data-jcp-audience-index="<?php echo esc_attr( (string) $index ); ?>" title="<?php echo $item_image ? esc_attr__( 'Hide this card image', 'jcp-core' ) : esc_attr__( 'Show this card image', 'jcp-core' ); ?>" aria-pressed="<?php echo $item_image ? 'true' : 'false'; ?>" tabindex="-1">
+				<span class="jcp-card-piece-toggle__label"><?php esc_html_e( 'Image', 'jcp-core' ); ?></span>
+			</button>
+		<?php endif; ?>
+		<?php if ( $render_image ) : ?>
 		<div class="guarantee-image-wrapper jcp-editable-media-wrap">
 			<?php if ( $image_url !== '' ) : ?>
 				<img
@@ -342,17 +359,24 @@ function jcp_component_audience_guarantee_card( array $aud, int $index = 0 ): vo
 					data-jcp-media-alt-path="<?php echo esc_attr( $path . '.image_alt' ); ?>"
 					data-jcp-media-types="image"
 				/>
-			<?php else : ?>
+			<?php elseif ( $can_edit ) : ?>
 				<div class="guarantee-image guarantee-image--empty" data-jcp-media-url-path="<?php echo esc_attr( $path . '.image_url' ); ?>" data-jcp-media-alt-path="<?php echo esc_attr( $path . '.image_alt' ); ?>" data-jcp-media-types="image"></div>
 			<?php endif; ?>
-			<?php if ( $badge !== '' ) : ?>
+			<?php if ( $render_badge ) : ?>
 				<div class="guarantee-badge"<?php jcp_niche_editable_attr( $path . '.badge' ); ?>><?php echo esc_html( $badge ); ?></div>
 			<?php endif; ?>
 		</div>
+		<?php elseif ( $render_badge ) : ?>
+			<div class="guarantee-badge guarantee-badge--solo"<?php jcp_niche_editable_attr( $path . '.badge' ); ?>><?php echo esc_html( $badge ); ?></div>
+		<?php endif; ?>
 		<div class="guarantee-content">
+			<?php if ( $show_titles ) : ?>
 			<strong<?php jcp_niche_editable_attr( $path . '.title' ); ?>><?php echo esc_html( $title ); ?></strong>
+			<?php endif; ?>
+			<?php if ( $show_body ) : ?>
 			<p<?php jcp_niche_editable_attr( $path . '.body' ); ?>><?php echo esc_html( $body ); ?></p>
-			<?php if ( $stat_num !== '' ) : ?>
+			<?php endif; ?>
+			<?php if ( $show_stats && $stat_num !== '' ) : ?>
 				<div class="guarantee-stat">
 					<span class="stat-number"<?php jcp_niche_editable_attr( $path . '.stat_number' ); ?>><?php echo esc_html( $stat_num ); ?></span>
 					<span class="stat-label"<?php jcp_niche_editable_attr( $path . '.stat_label' ); ?>><?php echo esc_html( $stat_label ); ?></span>

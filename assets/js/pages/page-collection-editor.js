@@ -33,6 +33,7 @@
       title: 'Audience',
       body: 'Description',
       badge: 'Badge',
+      show_image: true,
       stat_number: '100%',
       stat_label: 'Label',
     }),
@@ -146,9 +147,36 @@
     return `${base}/shared/assets/icons/lucide/${name}.svg`;
   };
 
+  const sectionFlagsForPath = (basePath) => {
+    const sectionKey = String(basePath || '').split('.')[0];
+    const section = (api?.getPath?.(api.flatContent, sectionKey) || {});
+    const on = (key, fallback = true) => {
+      if (!Object.prototype.hasOwnProperty.call(section, key)) return fallback;
+      return !(section[key] === false || section[key] === 0 || section[key] === '0');
+    };
+    return {
+      showIcons: on('show_icons', true),
+      showTitles: on('show_card_titles', true),
+      showBody: on('show_card_body', true),
+      showStats: on('show_card_stats', true),
+    };
+  };
+
   const buildFactorCard = (basePath, index, data) => {
+    const flags = sectionFlagsForPath(basePath);
     const iconPath = `${basePath}.${index}.icon`;
-    const stat = data.stat_value
+    const icon = flags.showIcons
+      ? `<div class="factor-icon-wrapper" data-jcp-icon-path="${iconPath}">
+          <img src="${iconUrl(data.icon || 'badge-check')}" class="factor-icon" alt="" width="32" height="32" />
+        </div>`
+      : '';
+    const title = flags.showTitles
+      ? `<h3 class="factor-title" data-jcp-path="${basePath}.${index}.title">${esc(data.title || '')}</h3>`
+      : '';
+    const body = flags.showBody
+      ? `<div class="factor-description"><p data-jcp-path="${basePath}.${index}.body">${esc(data.body || '')}</p></div>`
+      : '';
+    const stat = (flags.showStats && data.stat_value)
       ? `<div class="factor-stat">
           <span class="stat-value" data-jcp-path="${basePath}.${index}.stat_value">${esc(data.stat_value)}</span>
           <span class="stat-label" data-jcp-path="${basePath}.${index}.stat_label">${esc(data.stat_label || '')}</span>
@@ -156,11 +184,9 @@
       : '';
     return `
       <div class="ranking-factor-card" data-jcp-array-item="${index}">
-        <div class="factor-icon-wrapper" data-jcp-icon-path="${iconPath}">
-          <img src="${iconUrl(data.icon || 'badge-check')}" class="factor-icon" alt="" width="32" height="32" />
-        </div>
-        <h3 class="factor-title" data-jcp-path="${basePath}.${index}.title">${esc(data.title || '')}</h3>
-        <div class="factor-description"><p data-jcp-path="${basePath}.${index}.body">${esc(data.body || '')}</p></div>
+        ${icon}
+        ${title}
+        ${body}
         ${stat}
       </div>`;
   };
@@ -256,22 +282,42 @@
 
   const buildGuaranteeCard = (basePath, index, data) => {
     const path = `${basePath}.${index}`;
+    const section = (api?.getPath?.(api.flatContent, 'who_its_for') || {});
+    const showImages = section.show_card_images !== false && section.show_card_images !== 0 && section.show_card_images !== '0';
+    const showBadges = section.show_card_badges !== false && section.show_card_badges !== 0 && section.show_card_badges !== '0';
+    const showTitles = section.show_card_titles !== false && section.show_card_titles !== 0 && section.show_card_titles !== '0';
+    const showBody = section.show_card_body !== false && section.show_card_body !== 0 && section.show_card_body !== '0';
+    const showStats = section.show_card_stats !== false && section.show_card_stats !== 0 && section.show_card_stats !== '0';
+    const itemShowImage = data.show_image !== false && data.show_image !== 0 && data.show_image !== '0';
+    const renderImage = showImages && itemShowImage;
     const imageBlock = data.image_url
       ? `<img src="${esc(data.image_url)}" alt="${esc(data.image_alt || '')}" class="guarantee-image jcp-editable-media-image" loading="lazy" data-jcp-media-url-path="${path}.image_url" data-jcp-media-alt-path="${path}.image_alt" data-jcp-media-types="image" />`
       : `<div class="guarantee-image guarantee-image--empty" data-jcp-media-url-path="${path}.image_url" data-jcp-media-alt-path="${path}.image_alt" data-jcp-media-types="image"></div>`;
-    const badge = data.badge
+    const badge = (showBadges && data.badge)
       ? `<div class="guarantee-badge" data-jcp-path="${path}.badge">${esc(data.badge)}</div>`
       : '';
-    const stat = data.stat_number
+    const imageWrap = renderImage
+      ? `<div class="guarantee-image-wrapper jcp-editable-media-wrap">${imageBlock}${badge}</div>`
+      : (badge ? `<div class="guarantee-badge guarantee-badge--solo" data-jcp-path="${path}.badge">${esc(data.badge || '')}</div>` : '');
+    const title = showTitles ? `<strong data-jcp-path="${path}.title">${esc(data.title || '')}</strong>` : '';
+    const body = showBody ? `<p data-jcp-path="${path}.body">${esc(data.body || '')}</p>` : '';
+    const stat = (showStats && data.stat_number)
       ? `<div class="guarantee-stat"><span class="stat-number" data-jcp-path="${path}.stat_number">${esc(data.stat_number)}</span><span class="stat-label" data-jcp-path="${path}.stat_label">${esc(data.stat_label || '')}</span></div>`
       : '';
     const faqTarget = data.faq_target ? ` data-faq-target="${esc(data.faq_target)}"` : '';
+    const showImageAttr = itemShowImage ? '' : ' data-jcp-show-image="0"';
+    const noImageClass = renderImage ? '' : ' guarantee-item--no-image';
+    const toggleOn = itemShowImage ? ' is-on' : '';
+    const toggleTitle = itemShowImage ? 'Hide this card image' : 'Show this card image';
     return `
-      <a href="#faq" class="guarantee-item" data-jcp-array-item="${index}"${faqTarget}>
-        <div class="guarantee-image-wrapper jcp-editable-media-wrap">${imageBlock}${badge}</div>
+      <a href="#faq" class="guarantee-item${noImageClass}" data-jcp-array-item="${index}"${faqTarget}${showImageAttr}>
+        <button type="button" class="jcp-card-piece-toggle${toggleOn}" data-jcp-audience-toggle="show_image" data-jcp-audience-index="${index}" title="${toggleTitle}" aria-pressed="${itemShowImage ? 'true' : 'false'}" tabindex="-1">
+          <span class="jcp-card-piece-toggle__label">Image</span>
+        </button>
+        ${imageWrap}
         <div class="guarantee-content">
-          <strong data-jcp-path="${path}.title">${esc(data.title || '')}</strong>
-          <p data-jcp-path="${path}.body">${esc(data.body || '')}</p>
+          ${title}
+          ${body}
           ${stat}
         </div>
       </a>`;
@@ -632,6 +678,37 @@
     window.JCP_REFRESH_COLLECTIONS = refreshCollections;
     window.JCP_TEARDOWN_COLLECTIONS = teardownCollections;
     window.JCP_SYNC_COLLECTIONS_FROM_CONTENT = syncCollectionsFromContent;
+
+    if (!window.__JCP_AUDIENCE_TOGGLE_BOUND__) {
+      window.__JCP_AUDIENCE_TOGGLE_BOUND__ = true;
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest?.('[data-jcp-audience-toggle="show_image"]');
+        if (!btn || !api || !isEditingActive()) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const index = parseInt(btn.getAttribute('data-jcp-audience-index') || '-1', 10);
+        if (Number.isNaN(index) || index < 0) return;
+        const path = `who_its_for.audiences.${index}.show_image`;
+        const current = api.getPath(api.flatContent, path);
+        // New value: flip. Undefined/true means currently shown → hide.
+        const enabled = current === false || current === 0 || current === '0';
+        api.setPath(api.flatContent, path, enabled);
+        const audiences = api.getPath(api.flatContent, 'who_its_for.audiences');
+        if (Array.isArray(audiences) && audiences[index] && typeof audiences[index] === 'object') {
+          audiences[index].show_image = enabled;
+        }
+        const block = (api.pageDocument?.blocks || []).find((entry) => entry.type === 'who_its_for');
+        if (block?.props?.audiences?.[index] && typeof block.props.audiences[index] === 'object') {
+          block.props.audiences[index].show_image = enabled;
+        }
+        syncCollectionsFromContent();
+        refreshCollections();
+        if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+          window.JCP_REFRESH_INLINE_EDITABLE();
+        }
+        api.recordChange();
+      }, true);
+    }
 
     if (isEditingActive()) refreshCollections();
   };

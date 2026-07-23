@@ -149,48 +149,60 @@ function jcp_niche_render_split_media_block( array $props, string $path, string 
 	?>
 	<div class="demo-preview-content jcp-split-layout jcp-media-text-grid <?php echo esc_attr( jcp_media_position_class( $position ) ); ?>" data-jcp-split-path="<?php echo esc_attr( $path ); ?>" data-jcp-media-position-path="<?php echo esc_attr( $path . '.media_position' ); ?>">
 		<div class="demo-preview-text jcp-split-col jcp-split-col--copy" data-jcp-split-col="copy">
-			<div class="demo-badge"<?php echo empty( $props['show_badge'] ) ? ' style="display:none"' : ''; ?>>
+			<?php if ( ! empty( $props['show_badge'] ) ) : ?>
+			<div class="demo-badge">
 				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
 					<circle cx="12" cy="12" r="10"/>
 					<polygon points="10 8 16 12 10 16 10 8"/>
 				</svg>
 				<span<?php jcp_niche_editable_attr( $path . '.badge' ); ?>><?php echo esc_html( jcp_niche_split_field_display( $props, 'badge' ) ); ?></span>
 			</div>
-			<?php if ( trim( (string) ( $props['headline'] ?? '' ) ) !== '' || jcp_niche_user_can_inline_edit() ) : ?>
+			<?php endif; ?>
+			<?php if ( ! empty( $props['show_headline'] ) && ( trim( (string) ( $props['headline'] ?? '' ) ) !== '' || jcp_niche_user_can_inline_edit() ) ) : ?>
 				<?php
 				$heading_tag = jcp_niche_heading_tag_from_props( $props, 'h3', false );
-				$hl_hidden   = empty( $props['show_headline'] ) ? ' style="display:none"' : '';
 				jcp_niche_open_heading(
 					$heading_tag,
 					'demo-preview-title jcp-section-headline',
 					$path . '.headline',
-					$path . '.headline_tag',
-					$hl_hidden
+					$path . '.headline_tag'
 				);
 				echo esc_html( (string) ( $props['headline'] ?? '' ) );
 				jcp_niche_close_heading( $heading_tag );
 				?>
 			<?php endif; ?>
-			<p class="rankings-subtitle jcp-split-subheadline"<?php echo empty( $props['show_subheadline'] ) ? ' style="display:none"' : ''; ?><?php jcp_niche_editable_attr( $path . '.subheadline' ); ?>><?php
+			<?php if ( ! empty( $props['show_subheadline'] ) ) : ?>
+			<p class="rankings-subtitle jcp-split-subheadline"<?php jcp_niche_editable_attr( $path . '.subheadline' ); ?>><?php
 			$subheadline = trim( (string) ( $props['subheadline'] ?? '' ) );
-			echo esc_html( $subheadline !== '' ? $subheadline : __( 'Add a subheadline for this section.', 'jcp-core' ) );
+			echo esc_html( $subheadline !== '' ? $subheadline : ( jcp_niche_user_can_inline_edit() ? __( 'Add a subheadline for this section.', 'jcp-core' ) : '' ) );
 			?></p>
-			<p class="demo-preview-cue"<?php echo empty( $props['show_cue'] ) ? ' style="display:none"' : ''; ?><?php jcp_niche_editable_attr( $path . '.cue' ); ?>><?php echo esc_html( jcp_niche_split_field_display( $props, 'cue' ) ); ?></p>
-			<p class="demo-preview-description"<?php echo empty( $props['show_body'] ) ? ' style="display:none"' : ''; ?><?php jcp_niche_editable_attr( $path . '.body' ); ?>><?php
+			<?php endif; ?>
+			<?php if ( ! empty( $props['show_cue'] ) ) : ?>
+			<p class="demo-preview-cue"<?php jcp_niche_editable_attr( $path . '.cue' ); ?>><?php echo esc_html( jcp_niche_split_field_display( $props, 'cue' ) ); ?></p>
+			<?php endif; ?>
+			<?php if ( ! empty( $props['show_body'] ) ) : ?>
+			<p class="demo-preview-description"<?php jcp_niche_editable_attr( $path . '.body' ); ?>><?php
 			$body = trim( (string) ( $props['body'] ?? '' ) );
-			echo esc_html( $body !== '' ? $body : __( 'Add body copy for this section.', 'jcp-core' ) );
+			echo esc_html( $body !== '' ? $body : ( jcp_niche_user_can_inline_edit() ? __( 'Add body copy for this section.', 'jcp-core' ) : '' ) );
 			?></p>
-			<div class="demo-cta-wrapper"<?php echo ( empty( $props['show_cta'] ) && empty( $props['show_cta_note'] ) ) ? ' style="display:none"' : ''; ?>>
-				<div class="demo-cta-slot benefits-cta-slot"<?php echo empty( $props['show_cta'] ) ? ' style="display:none"' : ''; ?><?php jcp_niche_optional_slot_attr( $path . '.cta_primary', 'cta', __( 'Button', 'jcp-core' ) ); ?>>
-					<?php if ( ! empty( $props['show_cta'] ) && $primary['label'] !== '' ) : ?>
+			<?php endif; ?>
+			<?php if ( ! empty( $props['show_cta'] ) || ! empty( $props['show_cta_note'] ) ) : ?>
+			<div class="demo-cta-wrapper">
+				<?php if ( ! empty( $props['show_cta'] ) ) : ?>
+				<div class="demo-cta-slot benefits-cta-slot"<?php jcp_niche_optional_slot_attr( $path . '.cta_primary', 'cta', __( 'Button', 'jcp-core' ) ); ?>>
+					<?php if ( $primary['label'] !== '' ) : ?>
 						<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary demo-cta-primary"<?php jcp_niche_editable_link_attr( $path . '.cta_primary' ); ?>>
 							<span><?php echo esc_html( $primary['label'] ); ?></span>
 							<?php jcp_component_chevron_svg( 20 ); ?>
 						</a>
 					<?php endif; ?>
 				</div>
-				<p class="demo-cta-note"<?php echo empty( $props['show_cta_note'] ) ? ' style="display:none"' : ''; ?><?php jcp_niche_editable_attr( $path . '.cta_note' ); ?>><?php echo esc_html( jcp_niche_split_field_display( $props, 'cta_note' ) ); ?></p>
+				<?php endif; ?>
+				<?php if ( ! empty( $props['show_cta_note'] ) ) : ?>
+				<p class="demo-cta-note"<?php jcp_niche_editable_attr( $path . '.cta_note' ); ?>><?php echo esc_html( jcp_niche_split_field_display( $props, 'cta_note' ) ); ?></p>
+				<?php endif; ?>
 			</div>
+			<?php endif; ?>
 		</div>
 		<div class="demo-preview-visual jcp-media-text-media jcp-split-col jcp-split-col--media" data-jcp-split-col="media">
 			<?php
