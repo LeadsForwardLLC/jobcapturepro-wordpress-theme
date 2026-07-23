@@ -202,7 +202,7 @@ function jcp_component_demo_app_phone( string $demo_url = '' ): void {
 						</div>
 						<div class="demo-app-screen demo-preview-phone-anim" aria-hidden="true">
 							<div class="demo-app-header">
-								<h1><?php esc_html_e( 'Check-ins', 'jcp-core' ); ?></h1>
+								<p class="demo-app-header__title"><?php esc_html_e( 'Check-ins', 'jcp-core' ); ?></p>
 							</div>
 							<div class="demo-content-area">
 								<div class="demo-action-tiles">
@@ -220,7 +220,7 @@ function jcp_component_demo_app_phone( string $demo_url = '' ): void {
 									</div>
 								</div>
 								<div class="demo-empty-state demo-preview-anim-empty">
-									<h3><?php esc_html_e( 'Start capturing proof', 'jcp-core' ); ?></h3>
+									<p class="demo-empty-title"><?php esc_html_e( 'Start capturing proof', 'jcp-core' ); ?></p>
 									<p><?php esc_html_e( 'Take a few photos → submit → automatically published everywhere.', 'jcp-core' ); ?></p>
 									<div class="demo-empty-hint demo-preview-anim-hint"><span><?php esc_html_e( 'Tap', 'jcp-core' ); ?> <strong>+</strong> <?php esc_html_e( 'to create a check-in', 'jcp-core' ); ?></span></div>
 								</div>

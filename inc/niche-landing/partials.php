@@ -332,13 +332,24 @@ function jcp_niche_render_section_header( array $props, string $path_prefix, arr
 	$sub_text = trim( (string) ( $props['subheadline'] ?? '' ) );
 	$sub_rich = ! empty( $options['sub_rich'] );
 	$header_class = (string) ( $options['header_class'] ?? 'rankings-header' );
+	$heading_tag  = jcp_niche_heading_tag_from_props( $props, 'h2', false );
 	if ( ! $hl['render'] && ! ( $sub['render'] && $sub_text !== '' ) ) {
 		return;
 	}
 	?>
 	<div class="<?php echo esc_attr( $header_class ); ?>">
 		<?php if ( $hl['render'] && $headline !== '' ) : ?>
-			<h2<?php echo $hl['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php jcp_niche_editable_attr( $path_prefix . '.headline' ); ?>><?php jcp_niche_e( $headline ); ?></h2>
+			<?php
+			jcp_niche_open_heading(
+				$heading_tag,
+				'jcp-section-headline',
+				$path_prefix . '.headline',
+				$path_prefix . '.headline_tag',
+				$hl['attr']
+			);
+			jcp_niche_e( $headline );
+			jcp_niche_close_heading( $heading_tag );
+			?>
 		<?php endif; ?>
 		<?php if ( $sub['render'] && $sub_text !== '' ) : ?>
 			<p class="rankings-subtitle"<?php echo $sub['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php

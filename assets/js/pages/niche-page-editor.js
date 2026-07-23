@@ -89,6 +89,42 @@
     }
   };
 
+  const SECTION_HEADLINE_SELECTOR = '.rankings-header .jcp-section-headline, .rankings-header h2, .rankings-header h3, .rankings-header h4, .rankings-header h5, .rankings-header h6';
+  const HEADING_LEVELS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+  const HEADING_TAG_BLOCKS = new Set([
+    'hero', 'benefits', 'what_it_is', 'problem', 'check_ins', 'who_its_for',
+    'how_it_works', 'differentiation', 'faq', 'final_cta', 'conversion',
+    'proof_flow', 'directory_preview', 'media_text', 'demo_preview',
+    'commission', 'partners', 'share',
+  ]);
+
+  const defaultHeadlineTagForType = (type) => {
+    if (type === 'hero') return 'h1';
+    if (type === 'final_cta' || type === 'media_text' || type === 'demo_preview') return 'h3';
+    return 'h2';
+  };
+
+  const sanitizeHeadingTag = (tag, allowH1) => {
+    const value = String(tag || '').toLowerCase();
+    const allowed = allowH1 ? HEADING_LEVELS : HEADING_LEVELS.filter((level) => level !== 'h1');
+    const fallback = allowH1 ? 'h1' : 'h2';
+    return allowed.includes(value) ? value : fallback;
+  };
+
+  const resolveHeadlineTag = (block) => {
+    const allowH1 = block.type === 'hero';
+    const raw = block.props?.headline_tag || defaultHeadlineTagForType(block.type);
+    return sanitizeHeadingTag(raw, allowH1);
+  };
+
+  const headlineDomSelectorFor = (type) => {
+    if (type === 'hero') return '.jcp-hero-title';
+    if (type === 'final_cta') return '.cta-content .jcp-section-headline, .cta-content h3, .cta-content h2, .cta-content h4, .cta-content h5, .cta-content h6';
+    if (type === 'media_text' || type === 'demo_preview') return '.demo-preview-title, .jcp-section-headline';
+    if (type === 'conversion') return '.conversion-content .jcp-section-headline, .conversion-content .rankings-header :is(h1,h2,h3,h4,h5,h6)';
+    return SECTION_HEADLINE_SELECTOR;
+  };
+
   const BLOCK_VISIBILITY_TOGGLES = {
     hero: [
       { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-hero-subtitle', defaultOn: true },
@@ -98,7 +134,7 @@
       { key: 'show_meta_stats', label: 'Proof stats', selector: '.directory-meta', defaultOn: true },
     ],
     benefits: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
@@ -109,7 +145,7 @@
       { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
     ],
     what_it_is: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
@@ -119,7 +155,7 @@
       { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
     ],
     problem: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
@@ -128,7 +164,7 @@
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     check_ins: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_tags', label: 'Job tags', selector: '.jcp-niche-tags-wrap', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
@@ -137,7 +173,7 @@
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     who_its_for: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_cards', label: 'Cards', selector: '.guarantees-grid, .ranking-factors-grid', defaultOn: true },
       { key: 'show_card_images', label: 'Card images', selector: '.guarantee-image-wrapper', defaultOn: true },
@@ -149,32 +185,32 @@
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     how_it_works: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_steps', label: 'Step cards', selector: '.timeline-steps', defaultOn: true },
       { key: 'show_cta', label: 'Primary button', selector: SECTION_CTA_PRIMARY_SELECTOR, defaultOn: true },
       { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
     ],
     differentiation: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-niche-diff-lead', defaultOn: true },
       { key: 'show_icons', label: 'Checkmarks', selector: '.conversion-point-icon', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     faq: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_items', label: 'FAQ items', selector: '.faq-grid', defaultOn: true },
       { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
     ],
     final_cta: [
-      { key: 'show_headline', label: 'Headline', selector: '.cta-content h3', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: '.cta-content .jcp-section-headline, .cta-content h3, .cta-content h2, .cta-content h4, .cta-content h5, .cta-content h6', defaultOn: true },
       { key: 'show_subheadline', label: 'Supporting text', selector: '.cta-paragraph', defaultOn: true },
       { key: 'show_cta', label: 'Button', selector: '.rankings-cta-btn, .cta-button-wrapper .jcp-optional-restore', defaultOn: true },
       { key: 'show_cta_note', label: 'Text under button', selector: '.cta-note', defaultOn: true },
     ],
     conversion: [
-      { key: 'show_headline', label: 'Headline', selector: '.conversion-content .rankings-header h2', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: '.conversion-content .jcp-section-headline, .conversion-content .rankings-header :is(h1,h2,h3,h4,h5,h6)', defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.conversion-content .rankings-subtitle', defaultOn: true },
       { key: 'show_points', label: 'Checklist', selector: '.conversion-points', defaultOn: true },
       { key: 'show_media', label: 'Side image', selector: '.conversion-visual', defaultOn: true },
@@ -182,14 +218,14 @@
       { key: 'show_cta', label: 'Button', selector: '.conversion-cta', defaultOn: true },
     ],
     proof_flow: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_items', label: 'Channel items', selector: '.proof-flow', defaultOn: true },
       { key: 'show_callout', label: 'Callout box', selector: '.real-job-proof-callout', defaultOn: true },
       { key: 'show_link', label: 'Bottom link', selector: '.timeline-cta', defaultOn: true },
     ],
     directory_preview: [
-      { key: 'show_headline', label: 'Headline', selector: '.rankings-header h2', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_cards', label: 'Directory cards', selector: '.directory-grid', defaultOn: true },
       { key: 'show_outro', label: 'Outro line', selector: '.directory-preview-outro', defaultOn: true },
@@ -1135,7 +1171,7 @@
     const toggles = [...(BLOCK_VISIBILITY_TOGGLES[block.type] || [])];
     if (block.type === 'media_text' || block.type === 'demo_preview') {
       toggles.unshift(
-        { key: 'show_headline', label: 'Headline', selector: '.jcp-split-headline, .demo-preview-headline, h2' },
+        { key: 'show_headline', label: 'Headline', selector: '.demo-preview-title, .jcp-section-headline' },
       );
       toggles.push(
         { key: 'show_badge', label: 'Badge' },
@@ -1146,21 +1182,95 @@
         { key: 'show_cta_note', label: 'Note' },
       );
     }
-    if (!toggles.length) return '';
-    let html = '<div class="jcp-layout-chips">';
-    toggles.forEach(({ key, label, defaultOn }) => {
-      let on = false;
-      if (block.type === 'media_text' || block.type === 'demo_preview') {
-        on = isSplitToggleOn(block, key);
-      } else if (block.type === 'hero') {
-        on = isHeroFieldOn(block, key, defaultOn !== false);
-      } else {
-        on = isBlockFieldVisible(block, key, defaultOn !== false);
-      }
-      html += `<button type="button" class="jcp-layout-chip${on ? ' is-on' : ''}" data-block-field-toggle="${key}"${(block.type === 'media_text' || block.type === 'demo_preview') ? ' data-split-toggle="1"' : ''}>${label}</button>`;
-    });
-    html += '</div>';
+    if (!toggles.length && !HEADING_TAG_BLOCKS.has(block.type)) return '';
+    let html = '';
+    if (HEADING_TAG_BLOCKS.has(block.type)) {
+      html += buildHeadingLevelHtml(block);
+    }
+    if (toggles.length) {
+      html += '<div class="jcp-layout-chips">';
+      toggles.forEach(({ key, label, defaultOn }) => {
+        let on = false;
+        if (block.type === 'media_text' || block.type === 'demo_preview') {
+          on = isSplitToggleOn(block, key);
+        } else if (block.type === 'hero') {
+          on = isHeroFieldOn(block, key, defaultOn !== false);
+        } else {
+          on = isBlockFieldVisible(block, key, defaultOn !== false);
+        }
+        html += `<button type="button" class="jcp-layout-chip${on ? ' is-on' : ''}" data-block-field-toggle="${key}"${(block.type === 'media_text' || block.type === 'demo_preview') ? ' data-split-toggle="1"' : ''}>${label}</button>`;
+      });
+      html += '</div>';
+    }
     return html;
+  };
+
+  const buildHeadingLevelHtml = (block) => {
+    const current = resolveHeadlineTag(block);
+    const allowH1 = block.type === 'hero';
+    const hint = allowH1
+      ? 'Page title — always H1'
+      : 'H1 is reserved for the hero';
+    let html = `<div class="jcp-heading-level" data-heading-level-block="${block.id || ''}">`;
+    html += `<div class="jcp-heading-level__header"><span class="jcp-layout-row__label">Headline level</span><span class="jcp-heading-level__hint">${hint}</span></div>`;
+    html += '<div class="jcp-heading-level__btns" role="group" aria-label="Headline level">';
+    HEADING_LEVELS.forEach((level) => {
+      const locked = level === 'h1' ? !allowH1 : allowH1 && level !== 'h1';
+      const active = current === level ? ' is-active' : '';
+      const disabled = locked ? ' disabled' : '';
+      const title = locked
+        ? (level === 'h1' ? 'Only the hero can use H1' : 'Hero stays H1 for SEO')
+        : `Use ${level.toUpperCase()}`;
+      html += `<button type="button" class="jcp-heading-level__btn${active}" data-heading-tag="${level}" title="${title}"${disabled}><span class="jcp-heading-level__tag">${level.toUpperCase()}</span></button>`;
+    });
+    html += '</div></div>';
+    return html;
+  };
+
+  const replaceHeadingElementTag = (el, newTag) => {
+    if (!el || el.tagName.toLowerCase() === newTag) return el;
+    const next = document.createElement(newTag);
+    Array.from(el.attributes).forEach((attr) => {
+      next.setAttribute(attr.name, attr.value);
+    });
+    while (el.firstChild) {
+      next.appendChild(el.firstChild);
+    }
+    el.replaceWith(next);
+    return next;
+  };
+
+  const setBlockHeadlineTag = (block, tag) => {
+    const liveBlock = getLiveBlock(block);
+    const allowH1 = liveBlock.type === 'hero';
+    const nextTag = sanitizeHeadingTag(tag, allowH1);
+    // Hero is always the page H1 — never demote it.
+    const applied = allowH1 ? 'h1' : nextTag;
+    liveBlock.props = liveBlock.props || {};
+    liveBlock.props.headline_tag = applied;
+    const lk = blockLegacyKey(liveBlock);
+    if (lk) setPath(flatContent, `${lk}.headline_tag`, applied);
+
+    const root = ensureBlockRoot(findBlockRootEl(liveBlock));
+    if (root && !allowH1) {
+      const selector = headlineDomSelectorFor(liveBlock.type);
+      const el = root.querySelector('[data-jcp-heading-tag-path]') || root.querySelector(selector);
+      if (el) {
+        const updated = replaceHeadingElementTag(el, applied);
+        if (updated && !updated.classList.contains('jcp-section-headline') && liveBlock.type !== 'media_text' && liveBlock.type !== 'demo_preview') {
+          updated.classList.add('jcp-section-headline');
+        }
+        if (updated && !updated.getAttribute('data-jcp-heading-tag-path') && lk) {
+          updated.setAttribute('data-jcp-heading-tag-path', `${lk}.headline_tag`);
+        }
+      }
+    }
+
+    if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+      window.JCP_REFRESH_INLINE_EDITABLE();
+    }
+    recordChange();
+    renderBlockList();
   };
 
   const syncBlockVisibilityToDom = (block) => {
@@ -2144,6 +2254,13 @@
           refreshVisibilityChips(li, liveBlock);
         });
       });
+      li.querySelectorAll('[data-heading-tag]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (btn.disabled) return;
+          setBlockHeadlineTag(block, btn.dataset.headingTag);
+        });
+      });
       li.querySelectorAll('[data-hero-media-mode]').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
@@ -2433,6 +2550,89 @@
     });
   };
 
+  let headingFloatEl = null;
+  let headingFloatTarget = null;
+
+  const findBlockForHeadingEl = (el) => {
+    const root = el.closest('[data-jcp-block-id]');
+    if (!root) return null;
+    const id = root.getAttribute('data-jcp-block-id');
+    return (pageDocument.blocks || []).find((block) => block.id === id) || null;
+  };
+
+  const hideHeadingFloat = () => {
+    if (headingFloatEl) headingFloatEl.classList.remove('is-visible');
+    headingFloatTarget = null;
+  };
+
+  const ensureHeadingFloat = () => {
+    if (headingFloatEl) return headingFloatEl;
+    headingFloatEl = document.createElement('div');
+    headingFloatEl.className = 'jcp-heading-float';
+    headingFloatEl.setAttribute('contenteditable', 'false');
+    headingFloatEl.innerHTML = HEADING_LEVELS.map((level) => (
+      `<button type="button" class="jcp-heading-float__btn" data-heading-tag="${level}">${level.toUpperCase()}</button>`
+    )).join('');
+    document.body.appendChild(headingFloatEl);
+    headingFloatEl.addEventListener('mousedown', (e) => e.preventDefault());
+    headingFloatEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-heading-tag]');
+      if (!btn || btn.disabled || !headingFloatTarget) return;
+      const block = findBlockForHeadingEl(headingFloatTarget);
+      if (!block) return;
+      setBlockHeadlineTag(block, btn.dataset.headingTag);
+      const root = ensureBlockRoot(findBlockRootEl(block));
+      const next = root?.querySelector('[data-jcp-heading-tag-path]') || root?.querySelector(headlineDomSelectorFor(block.type));
+      if (next) {
+        headingFloatTarget = next;
+        showHeadingFloat(next);
+        next.focus();
+      }
+    });
+    return headingFloatEl;
+  };
+
+  const showHeadingFloat = (el) => {
+    if (!editing || !el) {
+      hideHeadingFloat();
+      return;
+    }
+    const block = findBlockForHeadingEl(el);
+    if (!block || !HEADING_TAG_BLOCKS.has(block.type)) {
+      hideHeadingFloat();
+      return;
+    }
+    const float = ensureHeadingFloat();
+    const current = resolveHeadlineTag(block);
+    const allowH1 = block.type === 'hero';
+    float.querySelectorAll('[data-heading-tag]').forEach((btn) => {
+      const level = btn.dataset.headingTag;
+      const locked = level === 'h1' ? !allowH1 : allowH1 && level !== 'h1';
+      btn.disabled = locked;
+      btn.classList.toggle('is-active', current === level);
+    });
+    headingFloatTarget = el;
+    const rect = el.getBoundingClientRect();
+    float.style.left = `${Math.max(12, rect.left + window.scrollX)}px`;
+    float.style.top = `${Math.max(12, rect.top + window.scrollY)}px`;
+    float.classList.add('is-visible');
+  };
+
+  const bindHeadingFloatEvents = () => {
+    document.addEventListener('focusin', (e) => {
+      if (!editing) return;
+      const heading = e.target.closest('[data-jcp-heading-tag-path], .jcp-hero-title, .jcp-section-headline, .demo-preview-title');
+      if (!heading || !heading.isContentEditable) {
+        if (!e.target.closest('.jcp-heading-float')) hideHeadingFloat();
+        return;
+      }
+      showHeadingFloat(heading);
+    });
+    document.addEventListener('scroll', () => {
+      if (headingFloatTarget) showHeadingFloat(headingFloatTarget);
+    }, true);
+  };
+
   const enableEditing = () => {
     editing = true;
     document.body.classList.add('jcp-inline-editing');
@@ -2453,6 +2653,7 @@
     toggleBtn.textContent = 'Edit page';
     toggleBtn.classList.remove('is-active');
     if (textLinkBtn) textLinkBtn.hidden = true;
+    hideHeadingFloat();
     closeCtaLinkModal();
     closeTextLinkModal();
     closeIconPicker();
@@ -3048,6 +3249,7 @@
   applyLayoutToDom();
   applyMediaPositionToDom();
   markExistingInlineLinks();
+  bindHeadingFloatEvents();
 
   const editorApi = {
     getPath,

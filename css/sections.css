@@ -653,7 +653,8 @@
   letter-spacing: -0.03em;
 }
 
-.rankings-header h2 {
+.rankings-header h2,
+.rankings-header .jcp-section-headline {
   font-size: clamp(34px, 4.2vw, 52px);
   font-weight: var(--jcp-font-weight-extrabold);
   color: var(--jcp-color-text-primary);
@@ -1453,7 +1454,7 @@
     margin-bottom: var(--jcp-space-4xl);
   }
 
-  .rankings-header h2 {
+  .rankings-header h2, .rankings-header .jcp-section-headline {
     font-size: clamp(30px, 6vw, 40px);
   }
 
@@ -1542,7 +1543,7 @@
     margin-bottom: var(--jcp-space-3xl);
   }
 
-  .rankings-header h2 {
+  .rankings-header h2, .rankings-header .jcp-section-headline {
     font-size: 32px;
   }
 
@@ -2566,7 +2567,8 @@
   text-align: left;
 }
 
-.conversion-section .rankings-header h2 {
+.conversion-section .rankings-header h2,
+.conversion-section .rankings-header .jcp-section-headline {
   font-size: clamp(34px, 4.2vw, 52px);
   font-weight: var(--jcp-font-weight-extrabold);
   color: var(--jcp-color-text-primary);
@@ -2826,6 +2828,7 @@
   }
 
   .conversion-section .rankings-header h2,
+  .conversion-section .rankings-header .jcp-section-headline,
   .conversion-section .rankings-subtitle,
   .conversion-point-text {
     word-wrap: break-word;
@@ -2919,7 +2922,8 @@
   z-index: 1;
 }
 
-.cta-content h3 {
+.cta-content h3,
+.cta-content .jcp-section-headline {
   font-size: clamp(24px, 3vw, 32px);
   font-weight: var(--jcp-font-weight-extrabold);
   color: var(--jcp-color-text-light);
@@ -3021,7 +3025,7 @@
     padding: var(--jcp-space-2xl) var(--jcp-space-lg);
   }
 
-  .cta-content h3 {
+  .cta-content h3, .cta-content .jcp-section-headline {
     font-size: var(--jcp-font-size-2xl);
   }
 

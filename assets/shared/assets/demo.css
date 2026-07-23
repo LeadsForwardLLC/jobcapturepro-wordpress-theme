@@ -1769,7 +1769,8 @@
             margin-bottom: 16px;
         }
 
-        .website-header h1 {
+        .website-header h1,
+        .website-header .website-header__title {
             font-size: 22px;
             font-weight: 800;
             margin-bottom: 4px;

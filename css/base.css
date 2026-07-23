@@ -287,7 +287,7 @@ img {
     hyphens: auto;
   }
 
-  h1, h2, h3, h4, .rankings-header h2, .demo-preview-title {
+  h1, h2, h3, h4, .rankings-header h2, .rankings-header .jcp-section-headline, .demo-preview-title {
     word-wrap: break-word;
     overflow-wrap: break-word;
   }

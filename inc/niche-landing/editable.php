@@ -23,6 +23,80 @@ function jcp_niche_editable_attr( string $path ): void {
 }
 
 /**
+ * Allowed HTML heading tags for editable section headlines.
+ *
+ * @param bool $allow_h1 Whether H1 is permitted (hero only).
+ * @return array<int, string>
+ */
+function jcp_niche_allowed_heading_tags( bool $allow_h1 = false ): array {
+	$tags = [ 'h2', 'h3', 'h4', 'h5', 'h6' ];
+	if ( $allow_h1 ) {
+		array_unshift( $tags, 'h1' );
+	}
+	return $tags;
+}
+
+/**
+ * Sanitize a heading tag string.
+ *
+ * @param mixed  $tag      Raw tag.
+ * @param string $default  Fallback when invalid.
+ * @param bool   $allow_h1 Whether H1 is allowed.
+ */
+function jcp_niche_sanitize_heading_tag( $tag, string $default = 'h2', bool $allow_h1 = false ): string {
+	$tag     = strtolower( trim( (string) $tag ) );
+	$allowed = jcp_niche_allowed_heading_tags( $allow_h1 );
+	$default = in_array( $default, $allowed, true ) ? $default : ( $allow_h1 ? 'h1' : 'h2' );
+	return in_array( $tag, $allowed, true ) ? $tag : $default;
+}
+
+/**
+ * Resolve headline tag from block/section props.
+ *
+ * @param array<string, mixed> $props    Props.
+ * @param string               $default  Default tag.
+ * @param bool                 $allow_h1 Whether H1 is allowed.
+ */
+function jcp_niche_heading_tag_from_props( array $props, string $default = 'h2', bool $allow_h1 = false ): string {
+	return jcp_niche_sanitize_heading_tag( $props['headline_tag'] ?? $default, $default, $allow_h1 );
+}
+
+/**
+ * Open an editable heading element (H1–H6).
+ *
+ * @param string $tag        Heading tag (already sanitized).
+ * @param string $class      CSS class list.
+ * @param string $text_path  data-jcp-path for the text.
+ * @param string $tag_path   data-jcp-heading-tag-path for the tag prop.
+ * @param string $extra_attr Raw extra attributes (already escaped).
+ */
+function jcp_niche_open_heading( string $tag, string $class, string $text_path, string $tag_path = '', string $extra_attr = '' ): void {
+	$tag = jcp_niche_sanitize_heading_tag( $tag, 'h2', true );
+	echo '<' . tag_escape( $tag );
+	if ( $class !== '' ) {
+		echo ' class="' . esc_attr( $class ) . '"';
+	}
+	if ( $tag_path !== '' ) {
+		echo ' data-jcp-heading-tag-path="' . esc_attr( $tag_path ) . '"';
+	}
+	echo $extra_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	if ( $text_path !== '' ) {
+		jcp_niche_editable_attr( $text_path );
+	}
+	echo '>';
+}
+
+/**
+ * Close a heading element opened with jcp_niche_open_heading().
+ *
+ * @param string $tag Heading tag.
+ */
+function jcp_niche_close_heading( string $tag ): void {
+	$tag = jcp_niche_sanitize_heading_tag( $tag, 'h2', true );
+	echo '</' . tag_escape( $tag ) . '>';
+}
+
+/**
  * Editable rich text (allows inline links in the live editor).
  *
  * @param string $path e.g. what_it_is.subheadline.
@@ -181,6 +255,12 @@ function jcp_page_sanitize_block_props( array $block ): array {
 				$props['points'] = jcp_niche_clean_string_list( $props['points'] );
 			}
 			break;
+	}
+
+	if ( array_key_exists( 'headline_tag', $props ) ) {
+		$allow_h1              = $type === 'hero';
+		$default_tag           = $allow_h1 ? 'h1' : ( in_array( $type, [ 'final_cta', 'media_text', 'demo_preview' ], true ) ? 'h3' : 'h2' );
+		$props['headline_tag'] = jcp_niche_sanitize_heading_tag( $props['headline_tag'], $default_tag, $allow_h1 );
 	}
 
 	$block['props'] = $props;

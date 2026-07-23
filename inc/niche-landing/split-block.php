@@ -157,7 +157,19 @@ function jcp_niche_render_split_media_block( array $props, string $path, string 
 				<span<?php jcp_niche_editable_attr( $path . '.badge' ); ?>><?php echo esc_html( jcp_niche_split_field_display( $props, 'badge' ) ); ?></span>
 			</div>
 			<?php if ( trim( (string) ( $props['headline'] ?? '' ) ) !== '' || jcp_niche_user_can_inline_edit() ) : ?>
-				<h3 class="demo-preview-title"<?php echo empty( $props['show_headline'] ) ? ' style="display:none"' : ''; ?><?php jcp_niche_editable_attr( $path . '.headline' ); ?>><?php echo esc_html( (string) ( $props['headline'] ?? '' ) ); ?></h3>
+				<?php
+				$heading_tag = jcp_niche_heading_tag_from_props( $props, 'h3', false );
+				$hl_hidden   = empty( $props['show_headline'] ) ? ' style="display:none"' : '';
+				jcp_niche_open_heading(
+					$heading_tag,
+					'demo-preview-title jcp-section-headline',
+					$path . '.headline',
+					$path . '.headline_tag',
+					$hl_hidden
+				);
+				echo esc_html( (string) ( $props['headline'] ?? '' ) );
+				jcp_niche_close_heading( $heading_tag );
+				?>
 			<?php endif; ?>
 			<p class="rankings-subtitle jcp-split-subheadline"<?php echo empty( $props['show_subheadline'] ) ? ' style="display:none"' : ''; ?><?php jcp_niche_editable_attr( $path . '.subheadline' ); ?>><?php
 			$subheadline = trim( (string) ( $props['subheadline'] ?? '' ) );

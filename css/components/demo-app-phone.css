@@ -83,7 +83,8 @@
   flex-shrink: 0;
 }
 
-.demo-phone-screen .demo-app-header h1 {
+.demo-phone-screen .demo-app-header h1,
+.demo-phone-screen .demo-app-header__title {
   font-size: 17px;
   font-weight: 700;
   color: #1f2937;
@@ -137,7 +138,8 @@
   text-align: center;
 }
 
-.demo-phone-screen .demo-empty-state h3 {
+.demo-phone-screen .demo-empty-state h3,
+.demo-phone-screen .demo-empty-state .demo-empty-title {
   font-size: 14px;
   font-weight: 700;
   color: #111827;
