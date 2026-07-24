@@ -1761,13 +1761,70 @@ body.jcp-structure-open {
   display: inline-flex;
 }
 
+body.jcp-inline-editing .jcp-inline-show-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px dashed rgba(15, 23, 42, 0.16);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  position: relative;
+  z-index: 6;
+}
+
+.jcp-inline-show-bar {
+  display: none;
+}
+
+.jcp-inline-show-bar__label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(15, 23, 42, 0.45);
+}
+
+.jcp-inline-show-bar__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.jcp-inline-show-chip {
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #fff;
+  color: rgba(15, 23, 42, 0.72);
+  border-radius: 999px;
+  min-height: 26px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.jcp-inline-show-chip:hover {
+  border-color: var(--jcp-color-primary);
+  color: var(--jcp-color-primary);
+}
+
+.jcp-inline-show-chip.is-on {
+  background: var(--jcp-color-primary);
+  border-color: var(--jcp-color-primary);
+  color: #fff;
+}
+
 .jcp-heading-float__btn {
   appearance: none;
   border: 0;
   background: transparent;
   color: rgba(255, 255, 255, 0.78);
   border-radius: 7px;
-  min-width: 30px;
+  min-width: 34px;
   height: 28px;
   font-size: 11px;
   font-weight: 700;

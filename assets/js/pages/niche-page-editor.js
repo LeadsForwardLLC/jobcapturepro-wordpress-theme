@@ -113,6 +113,17 @@
 
   const resolveHeadlineTag = (block) => {
     const allowH1 = block.type === 'hero';
+    const root = findBlockRootEl(block);
+    if (root) {
+      const el = root.querySelector('[data-jcp-heading-tag-path]')
+        || root.querySelector(headlineDomSelectorFor(block.type));
+      if (el) {
+        const domTag = String(el.tagName || '').toLowerCase();
+        if (HEADING_LEVELS.includes(domTag)) {
+          return sanitizeHeadingTag(domTag, allowH1);
+        }
+      }
+    }
     const raw = block.props?.headline_tag || defaultHeadlineTagForType(block.type);
     return sanitizeHeadingTag(raw, allowH1);
   };
@@ -783,11 +794,21 @@
     const sel = BLOCK_SELECTORS[block.type];
     if (!sel) return null;
 
-    const match = [...main.querySelectorAll(sel)].find((node) => {
+    const stamped = [...main.querySelectorAll(sel)].find((node) => {
       const root = getBlockRoot(node);
       return root && root.dataset.jcpBlockId === block.id;
     });
-    return match ? getBlockRoot(match) : null;
+    if (stamped) {
+      const root = getBlockRoot(stamped);
+      if (root) root.dataset.jcpBlockId = block.id;
+      return root;
+    }
+
+    // Niche pages typically have one section per type — use it when ids aren't stamped yet.
+    const fallback = main.querySelector(sel);
+    const root = fallback ? getBlockRoot(fallback) : null;
+    if (root) root.dataset.jcpBlockId = block.id;
+    return root;
   };
 
   const applyColumnGrids = (root, cols) => {
@@ -1256,14 +1277,23 @@
     const root = ensureBlockRoot(findBlockRootEl(liveBlock));
     if (root && !allowH1) {
       const selector = headlineDomSelectorFor(liveBlock.type);
-      const el = root.querySelector('[data-jcp-heading-tag-path]') || root.querySelector(selector);
+      const el = root.querySelector(`[data-jcp-heading-tag-path="${lk}.headline_tag"]`)
+        || root.querySelector('[data-jcp-heading-tag-path]')
+        || root.querySelector(selector);
       if (el) {
         const updated = replaceHeadingElementTag(el, applied);
-        if (updated && !updated.classList.contains('jcp-section-headline') && liveBlock.type !== 'media_text' && liveBlock.type !== 'demo_preview') {
+        if (updated && !updated.classList.contains('jcp-section-headline') && liveBlock.type !== 'media_text' && liveBlock.type !== 'demo_preview' && liveBlock.type !== 'hero') {
           updated.classList.add('jcp-section-headline');
         }
-        if (updated && !updated.getAttribute('data-jcp-heading-tag-path') && lk) {
+        if (updated && lk) {
           updated.setAttribute('data-jcp-heading-tag-path', `${lk}.headline_tag`);
+        }
+        if (updated && typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+          window.JCP_REFRESH_INLINE_EDITABLE();
+        }
+        if (updated && updated.isContentEditable) {
+          showHeadingFloat(updated);
+          updated.focus();
         }
       }
     }
@@ -1273,6 +1303,86 @@
     }
     recordChange();
     renderBlockList();
+  };
+
+  const INLINE_SHOW_PRIORITY = [
+    'show_cards',
+    'show_card_images',
+    'show_card_badges',
+    'show_card_titles',
+    'show_card_body',
+    'show_card_stats',
+    'show_icons',
+    'show_headline',
+    'show_subheadline',
+    'show_items',
+    'show_steps',
+    'show_cta',
+    'show_cta_secondary',
+    'show_cta_primary',
+    'show_media',
+  ];
+
+  const syncInlineSectionChrome = (root, block) => {
+    if (!editing) {
+      document.querySelectorAll('.jcp-inline-show-bar').forEach((el) => el.remove());
+      return;
+    }
+    if (!root || !block) return;
+    const liveBlock = getLiveBlock(block);
+    let bar = root.querySelector(':scope > .jcp-inline-show-bar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.className = 'jcp-inline-show-bar';
+      bar.setAttribute('contenteditable', 'false');
+      root.insertBefore(bar, root.firstChild);
+    }
+    const toggles = (BLOCK_VISIBILITY_TOGGLES[liveBlock.type] || [])
+      .slice()
+      .sort((a, b) => {
+        const rank = (key) => {
+          const i = INLINE_SHOW_PRIORITY.indexOf(key);
+          return i < 0 ? 999 : i;
+        };
+        return rank(a.key) - rank(b.key) || String(a.label).localeCompare(String(b.label));
+      });
+    if (!toggles.length && !HEADING_TAG_BLOCKS.has(liveBlock.type)) {
+      bar.remove();
+      return;
+    }
+    let html = '<span class="jcp-inline-show-bar__label">Show</span><div class="jcp-inline-show-bar__chips">';
+    toggles.forEach(({ key, label, defaultOn }) => {
+      let on = false;
+      if (liveBlock.type === 'media_text' || liveBlock.type === 'demo_preview') {
+        on = isSplitToggleOn(liveBlock, key);
+      } else if (liveBlock.type === 'hero') {
+        on = isHeroFieldOn(liveBlock, key, defaultOn !== false);
+      } else {
+        on = isBlockFieldVisible(liveBlock, key, defaultOn !== false);
+      }
+      html += `<button type="button" class="jcp-inline-show-chip${on ? ' is-on' : ''}" data-inline-field-toggle="${key}" title="${on ? 'Hide' : 'Show'} ${label}">${label}</button>`;
+    });
+    html += '</div>';
+    if (HEADING_TAG_BLOCKS.has(liveBlock.type) && liveBlock.type !== 'hero') {
+      const current = resolveHeadlineTag(liveBlock);
+      html += '<span class="jcp-inline-show-bar__label">Headline</span><div class="jcp-inline-show-bar__chips jcp-inline-show-bar__chips--heading">';
+      HEADING_LEVELS.filter((level) => level !== 'h1').forEach((level) => {
+        html += `<button type="button" class="jcp-inline-show-chip${current === level ? ' is-on' : ''}" data-inline-heading-tag="${level}">${level.toUpperCase()}</button>`;
+      });
+      html += '</div>';
+    }
+    bar.innerHTML = html;
+  };
+
+  const refreshAllInlineSectionChrome = () => {
+    if (!editing) {
+      document.querySelectorAll('.jcp-inline-show-bar').forEach((el) => el.remove());
+      return;
+    }
+    (pageDocument.blocks || []).forEach((block) => {
+      const root = ensureBlockRoot(findBlockRootEl(block));
+      if (root) syncInlineSectionChrome(root, block);
+    });
   };
 
   const CARD_PIECE_KEYS = new Set([
@@ -1319,6 +1429,104 @@
     return header;
   };
 
+  const insertBeforeCtaOrEnd = (host, node) => {
+    if (!host || !node) return;
+    const cta = host.querySelector('.jcp-section-cta-row, .demo-cta-wrapper, .directory-preview-cta, .conversion-cta');
+    if (cta) host.insertBefore(node, cta);
+    else host.appendChild(node);
+  };
+
+  const recreateArrayContainer = (root, block, key) => {
+    const lk = blockLegacyKey(block);
+    const host = root.querySelector('.jcp-container') || root;
+    if (!host) return null;
+
+    if (key === 'show_cards' && block.type === 'who_its_for') {
+      const variant = String(getPath(flatContent, 'who_its_for.variant') || block.props?.variant || 'guarantees');
+      const grid = document.createElement('div');
+      if (variant === 'guarantees') {
+        grid.className = 'guarantees-grid';
+      } else {
+        grid.className = 'ranking-factors-grid jcp-niche-split-grid';
+      }
+      grid.setAttribute('data-jcp-array', 'who_its_for.audiences');
+      insertBeforeCtaOrEnd(host, grid);
+      return grid;
+    }
+
+    if (key === 'show_cards' && block.type === 'directory_preview') {
+      const grid = document.createElement('div');
+      grid.className = 'directory-grid preview-grid';
+      insertBeforeCtaOrEnd(host, grid);
+      return grid;
+    }
+
+    if (key === 'show_items' && block.type === 'faq') {
+      const grid = document.createElement('div');
+      grid.className = 'faq-grid';
+      grid.setAttribute('data-jcp-array', 'faq.items');
+      insertBeforeCtaOrEnd(host, grid);
+      return grid;
+    }
+
+    if (key === 'show_items' && block.type === 'proof_flow') {
+      const flow = document.createElement('div');
+      flow.className = 'proof-flow';
+      insertBeforeCtaOrEnd(host, flow);
+      return flow;
+    }
+
+    if (key === 'show_steps' && block.type === 'how_it_works') {
+      const steps = document.createElement('div');
+      steps.className = 'timeline-steps';
+      steps.setAttribute('data-jcp-array', 'how_it_works.steps');
+      insertBeforeCtaOrEnd(host, steps);
+      return steps;
+    }
+
+    if (key === 'show_tags' && block.type === 'check_ins') {
+      const wrap = document.createElement('div');
+      wrap.className = 'jcp-niche-tags-wrap';
+      const list = document.createElement('ul');
+      list.className = 'jcp-niche-tags';
+      list.setAttribute('data-jcp-array', 'check_ins.job_types');
+      wrap.appendChild(list);
+      insertBeforeCtaOrEnd(host, wrap);
+      return wrap;
+    }
+
+    if (key === 'show_points' && block.type === 'conversion') {
+      const points = document.createElement('div');
+      points.className = 'conversion-points';
+      points.setAttribute('data-jcp-array', 'conversion.points');
+      const copy = root.querySelector('.conversion-content') || host;
+      insertBeforeCtaOrEnd(copy, points);
+      return points;
+    }
+
+    if (key === 'show_meta_stats' && block.type === 'hero') {
+      const meta = document.createElement('div');
+      meta.className = 'directory-meta';
+      meta.setAttribute('data-jcp-array', 'hero.meta_stats');
+      const copy = root.querySelector('.jcp-hero-copy, .hero-copy') || host;
+      copy.appendChild(meta);
+      return meta;
+    }
+
+    // Generic fallback: recreate an empty node matching the first selector class.
+    const config = (BLOCK_VISIBILITY_TOGGLES[block.type] || []).find((entry) => entry.key === key);
+    const selector = config?.selector || '';
+    const className = String(selector).split(',')[0].trim().replace(/^\./, '').split(' ')[0];
+    if (!className || className.includes('[') || className.includes(':')) return null;
+    const el = document.createElement('div');
+    el.className = className;
+    if (lk && key === 'show_callout') {
+      el.className = 'real-job-proof-callout';
+    }
+    insertBeforeCtaOrEnd(host, el);
+    return el;
+  };
+
   const restoreVisibilityField = (root, block, key, selector) => {
     if (!root || !selector) return;
     if (root.querySelector(selector)) {
@@ -1350,8 +1558,8 @@
       el.className = block.type === 'final_cta'
         ? 'cta-paragraph'
         : (block.type === 'differentiation' ? 'jcp-niche-diff-lead' : 'rankings-subtitle');
-      el.setAttribute('data-jcp-path', `${lk}.${block.type === 'differentiation' ? 'body' : 'subheadline'}`);
       const textPath = block.type === 'differentiation' ? `${lk}.body` : `${lk}.subheadline`;
+      el.setAttribute('data-jcp-path', textPath);
       el.textContent = String(getPath(flatContent, textPath) || '');
       header.appendChild(el);
       return;
@@ -1381,8 +1589,35 @@
       note.setAttribute('data-jcp-path', `${lk}.cta_note`);
       note.textContent = String(getPath(flatContent, `${lk}.cta_note`) || '');
       wrap.appendChild(note);
+      return;
+    }
+
+    // Card grids / lists / media shells: recreate then refill from content.
+    if ([
+      'show_cards',
+      'show_items',
+      'show_steps',
+      'show_tags',
+      'show_points',
+      'show_meta_stats',
+      'show_callout',
+      'show_media',
+      'show_link',
+      'show_outro',
+      'show_stats',
+    ].includes(key)) {
+      recreateArrayContainer(root, block, key);
     }
   };
+
+  const ARRAY_VISIBILITY_KEYS = new Set([
+    'show_cards',
+    'show_items',
+    'show_steps',
+    'show_tags',
+    'show_points',
+    'show_meta_stats',
+  ]);
 
   const syncBlockVisibilityToDom = (block) => {
     const toggles = [...(BLOCK_VISIBILITY_TOGGLES[block.type] || [])];
@@ -1419,6 +1654,7 @@
       if (!selector) return;
       if (enabled) {
         restoreVisibilityField(root, block, key, selector);
+        if (ARRAY_VISIBILITY_KEYS.has(key)) needsCollectionRebuild = true;
       } else {
         omitHiddenNodes(root, selector);
       }
@@ -1452,7 +1688,11 @@
       if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
         window.JCP_REFRESH_INLINE_EDITABLE();
       }
+      if (typeof window.JCP_REFRESH_PAGE_MEDIA_UI === 'function') {
+        window.JCP_REFRESH_PAGE_MEDIA_UI();
+      }
     }
+    syncInlineSectionChrome(root, block);
   };
 
   let surfaceImageFrame = null;
@@ -2582,6 +2822,7 @@
   const refreshEditorChrome = () => {
     syncSplitTogglesToDom();
     syncBreadcrumbToggleUi();
+    refreshAllInlineSectionChrome();
     if (typeof window.JCP_REFRESH_PAGE_MEDIA_UI === 'function') {
       window.JCP_REFRESH_PAGE_MEDIA_UI();
     }
@@ -2929,6 +3170,7 @@
     closeCtaLinkModal();
     closeTextLinkModal();
     closeIconPicker();
+    document.querySelectorAll('.jcp-inline-show-bar').forEach((el) => el.remove());
     if (typeof window.JCP_TEARDOWN_COLLECTIONS === 'function') {
       window.JCP_TEARDOWN_COLLECTIONS();
     }
@@ -2961,6 +3203,44 @@
   addModal.addEventListener('click', (e) => {
     if (e.target === addModal) closeAddModal();
   });
+
+  document.addEventListener('click', (e) => {
+    if (!editing) return;
+    const chip = e.target.closest('[data-inline-field-toggle], [data-inline-heading-tag]');
+    if (!chip) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const root = chip.closest('[data-jcp-block-id], .jcp-block-root');
+    if (!root) return;
+    const blockId = root.getAttribute('data-jcp-block-id') || root.dataset.jcpBlockId;
+    const block = (pageDocument.blocks || []).find((entry) => entry.id === blockId)
+      || (pageDocument.blocks || []).find((entry) => {
+        const el = findBlockRootEl(entry);
+        return el === root || el?.contains(chip);
+      });
+    if (!block) return;
+    const liveBlock = getLiveBlock(block);
+
+    if (chip.dataset.inlineHeadingTag) {
+      setBlockHeadlineTag(liveBlock, chip.dataset.inlineHeadingTag);
+      syncInlineSectionChrome(ensureBlockRoot(findBlockRootEl(liveBlock)), liveBlock);
+      return;
+    }
+
+    const key = chip.dataset.inlineFieldToggle;
+    if (!key) return;
+    if (liveBlock.type === 'media_text' || liveBlock.type === 'demo_preview') {
+      setBlockSplitToggle(liveBlock, key, !isSplitToggleOn(liveBlock, key));
+    } else if (liveBlock.type === 'hero') {
+      const config = (BLOCK_VISIBILITY_TOGGLES.hero || []).find((entry) => entry.key === key);
+      setBlockHeroToggle(liveBlock, key, !isHeroFieldOn(liveBlock, key, config?.defaultOn !== false));
+    } else {
+      const config = (BLOCK_VISIBILITY_TOGGLES[liveBlock.type] || []).find((entry) => entry.key === key);
+      setBlockFieldVisible(liveBlock, key, !isBlockFieldVisible(liveBlock, key, config?.defaultOn !== false), config?.selector || '');
+    }
+    syncInlineSectionChrome(ensureBlockRoot(findBlockRootEl(liveBlock)), liveBlock);
+    if (structureOpen) renderBlockList();
+  }, true);
 
   toggleBtn.addEventListener('click', () => {
     if (editing) disableEditing();

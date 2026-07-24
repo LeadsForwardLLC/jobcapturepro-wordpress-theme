@@ -70,8 +70,8 @@ function jcp_niche_heading_tag_from_props( array $props, string $default = 'h2',
  * @param string $tag_path   data-jcp-heading-tag-path for the tag prop.
  * @param string $extra_attr Raw extra attributes (already escaped).
  */
-function jcp_niche_open_heading( string $tag, string $class, string $text_path, string $tag_path = '', string $extra_attr = '' ): void {
-	$tag = jcp_niche_sanitize_heading_tag( $tag, 'h2', true );
+function jcp_niche_open_heading( string $tag, string $class, string $text_path, string $tag_path = '', string $extra_attr = '', bool $allow_h1 = false ): void {
+	$tag = jcp_niche_sanitize_heading_tag( $tag, $allow_h1 ? 'h1' : 'h2', $allow_h1 );
 	echo '<' . tag_escape( $tag );
 	if ( $class !== '' ) {
 		echo ' class="' . esc_attr( $class ) . '"';
