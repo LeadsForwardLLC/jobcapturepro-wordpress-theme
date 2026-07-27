@@ -310,6 +310,9 @@ function jcp_global_settings_merge( array $defaults, array $custom ): array {
  * @param array<string, bool> $pages Page detection from jcp_core_get_page_detection().
  */
 function jcp_global_should_show_banner( array $pages ): bool {
+	if ( function_exists( 'jcp_page_current_hides_site_chrome' ) && jcp_page_current_hides_site_chrome() ) {
+		return false;
+	}
 	$banner = jcp_global_settings()['banner'] ?? [];
 	if ( empty( $banner['enabled'] ) ) {
 		return false;

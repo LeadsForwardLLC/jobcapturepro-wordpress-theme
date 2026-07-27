@@ -20,6 +20,7 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 	$doc['settings'] = is_array( $doc['settings'] ?? null ) ? $doc['settings'] : [];
 	$doc['settings']['hide_breadcrumb']  = true;
 	$doc['settings']['campaign_landing'] = true;
+	$doc['settings']['hide_site_chrome'] = true;
 
 	if ( empty( $doc['blocks'] ) || ! is_array( $doc['blocks'] ) ) {
 		return $doc;
@@ -104,4 +105,31 @@ function jcp_page_is_campaign_landing( array $content ): bool {
 		return true;
 	}
 	return sanitize_key( (string) ( $content['preset'] ?? '' ) ) === 'campaign';
+}
+
+/**
+ * Whether the current front-end request should hide site chrome
+ * (announcement banner, primary nav, full footer).
+ */
+function jcp_page_current_hides_site_chrome(): bool {
+	if ( is_admin() || ! is_singular() ) {
+		return (bool) apply_filters( 'jcp_page_hide_site_chrome', false );
+	}
+
+	$post_id = (int) get_queried_object_id();
+	if ( $post_id <= 0 || ! function_exists( 'jcp_page_get_content' ) ) {
+		return (bool) apply_filters( 'jcp_page_hide_site_chrome', false );
+	}
+
+	$content  = jcp_page_get_content( $post_id );
+	$settings = is_array( $content['settings'] ?? null ) ? $content['settings'] : [];
+
+	if ( array_key_exists( 'hide_site_chrome', $settings ) ) {
+		$hide = ! empty( $settings['hide_site_chrome'] );
+	} else {
+		// Campaign pages default to stripped chrome until explicitly opted out.
+		$hide = jcp_page_is_campaign_landing( $content );
+	}
+
+	return (bool) apply_filters( 'jcp_page_hide_site_chrome', $hide, $post_id, $content );
 }

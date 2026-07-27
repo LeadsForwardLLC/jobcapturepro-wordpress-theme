@@ -4,6 +4,8 @@
   "niche_key": "campaign-landing",
   "niche_label": "Campaign Landing",
   "hide_breadcrumb": true,
+  "hide_site_chrome": true,
+  "campaign_landing": true,
   "seo": {
     "title": "Limited Offer — Turn Completed Jobs Into Leads | JobCapturePro",
     "meta_description": "Home service contractors: turn job photos into Google proof, website content, and reviews automatically. Claim your spot — limited availability for this campaign.",

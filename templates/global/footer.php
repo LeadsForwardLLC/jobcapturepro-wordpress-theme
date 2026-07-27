@@ -42,7 +42,20 @@ $dir_url = home_url( '/directory' );
 $dir_search = $dir_url . '/#search';
 $dir_how = $dir_url . '/#how-it-works';
 $dir_trust = $dir_url . '/#trust';
+$hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && jcp_page_current_hides_site_chrome();
 ?>
+  <?php if ( $hide_site_chrome ) : ?>
+  <footer class="jcp-footer jcp-footer--landing-minimal">
+    <div class="jcp-container jcp-footer-bottom-inner">
+      <nav class="jcp-footer-legal" aria-label="<?php esc_attr_e( 'Legal', 'jcp-core' ); ?>">
+        <a href="<?php echo esc_url( $privacy_url ); ?>"><?php esc_html_e( 'Privacy', 'jcp-core' ); ?></a>
+        <span class="jcp-footer-sep" aria-hidden="true">·</span>
+        <a href="<?php echo esc_url( $terms_url ); ?>"><?php esc_html_e( 'Terms', 'jcp-core' ); ?></a>
+      </nav>
+      <p class="jcp-footer-landing-copy">&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> JobCapturePro</p>
+    </div>
+  </footer>
+  <?php else : ?>
   <footer class="jcp-footer">
     <div class="jcp-container jcp-footer-grid">
       <?php if ( $directory_mode ) : ?>
@@ -143,6 +156,7 @@ $dir_trust = $dir_url . '/#trust';
       </div>
     </div>
   </footer>
+  <?php endif; ?>
   </div><!-- .jcp-shell -->
   <?php wp_footer(); ?>
 </body>

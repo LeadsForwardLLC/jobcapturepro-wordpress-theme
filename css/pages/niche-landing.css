@@ -3349,3 +3349,48 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   max-width: 720px;
   margin-inline: auto;
 }
+
+/* Campaign / landing chrome — logo only + minimal legal footer */
+.jcp-landing-brandbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 0.65rem 1rem;
+  background: var(--jcp-color-bg-primary, #fff);
+  border-bottom: 1px solid var(--jcp-color-border, #e5e7eb);
+}
+
+.jcp-landing-brandbar__link {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.jcp-landing-brandbar__logo {
+  display: block;
+  height: 36px;
+  width: auto;
+}
+
+body.jcp-landing-chrome-hidden .jcp-footer--landing-minimal {
+  margin-top: 2rem;
+  padding: 1.25rem 0 calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--jcp-color-border, #e5e7eb);
+  background: var(--jcp-color-bg-secondary, #f9fafb);
+}
+
+body.jcp-landing-chrome-hidden .jcp-footer--landing-minimal .jcp-footer-bottom-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  text-align: center;
+}
+
+body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
+  margin: 0;
+  font-size: var(--jcp-font-size-sm, 14px);
+  color: var(--jcp-color-text-secondary, #6b7280);
+}

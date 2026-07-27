@@ -433,7 +433,9 @@ function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 		'preset'          => $legacy['preset'] ?? $preset,
 		'seo'             => $legacy['seo'] ?? [ 'keywords' => [] ],
 		'settings'        => [
-			'hide_breadcrumb' => ! empty( $legacy['hide_breadcrumb'] ),
+			'hide_breadcrumb'  => ! empty( $legacy['hide_breadcrumb'] ),
+			'hide_site_chrome' => ! empty( $legacy['hide_site_chrome'] ) || ( sanitize_key( (string) ( $legacy['preset'] ?? $preset ) ) === 'campaign' ),
+			'campaign_landing' => ! empty( $legacy['campaign_landing'] ) || ( sanitize_key( (string) ( $legacy['preset'] ?? $preset ) ) === 'campaign' ),
 		],
 		'blocks'          => $blocks,
 		'page_type'       => $legacy['page_type'] ?? ( $page_kind === 'referral' ? 'referral' : '' ),
@@ -462,6 +464,8 @@ function jcp_page_blocks_to_legacy( array $content ): array {
 		'preset'           => $content['preset'] ?? '',
 		'seo'              => $content['seo'] ?? [ 'keywords' => [] ],
 		'hide_breadcrumb'  => ! empty( $content['settings']['hide_breadcrumb'] ),
+		'hide_site_chrome' => ! empty( $content['settings']['hide_site_chrome'] ),
+		'campaign_landing' => ! empty( $content['settings']['campaign_landing'] ),
 	];
 	if ( ! empty( $content['nav_cta'] ) && is_array( $content['nav_cta'] ) ) {
 		$legacy['nav_cta'] = $content['nav_cta'];
@@ -686,6 +690,14 @@ function jcp_page_merge_flat_into_blocks( array $doc, array $flat ): array {
 	if ( isset( $flat['hide_breadcrumb'] ) ) {
 		$doc['settings'] = $doc['settings'] ?? [];
 		$doc['settings']['hide_breadcrumb'] = (bool) $flat['hide_breadcrumb'];
+	}
+	if ( isset( $flat['hide_site_chrome'] ) ) {
+		$doc['settings'] = $doc['settings'] ?? [];
+		$doc['settings']['hide_site_chrome'] = (bool) $flat['hide_site_chrome'];
+	}
+	if ( isset( $flat['campaign_landing'] ) ) {
+		$doc['settings'] = $doc['settings'] ?? [];
+		$doc['settings']['campaign_landing'] = (bool) $flat['campaign_landing'];
 	}
 	if ( ! empty( $flat['seo'] ) && is_array( $flat['seo'] ) ) {
 		$doc['seo'] = array_replace_recursive( $doc['seo'] ?? [], $flat['seo'] );
