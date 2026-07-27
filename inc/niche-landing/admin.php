@@ -544,19 +544,51 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 
 		<p>
 			<label for="jcp_niche_import_doc"><strong><?php esc_html_e( 'Paste document text', 'jcp-core' ); ?></strong></label>
-			<textarea name="jcp_niche_import_doc" id="jcp_niche_import_doc" rows="14" class="large-text code" style="width:100%;font-family:monospace;" placeholder="<?php esc_attr_e( 'Paste content starting at HERO…', 'jcp-core' ); ?>"></textarea>
+			<textarea
+				name="doc_text"
+				id="jcp_niche_import_doc"
+				form="jcp-standalone-import-form"
+				rows="14"
+				class="large-text code"
+				style="width:100%;font-family:monospace;"
+				placeholder="<?php esc_attr_e( 'Paste content starting at HERO…', 'jcp-core' ); ?>"
+			></textarea>
 		</p>
 		<p>
 			<label for="jcp_niche_import_file"><strong><?php esc_html_e( 'Or upload .docx / .txt', 'jcp-core' ); ?></strong></label><br />
-			<input type="file" name="jcp_niche_import_file" id="jcp_niche_import_file" accept=".docx,.txt,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+			<input type="file" name="doc_file" id="jcp_niche_import_file" form="jcp-standalone-import-form" accept=".docx,.txt,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
 		</p>
 		<p>
-			<button type="button" class="button button-primary" id="jcp-niche-build-from-doc"><?php esc_html_e( 'Build page from document', 'jcp-core' ); ?></button>
-			<span class="description" style="margin-left:8px;"><?php esc_html_e( 'Or paste below and click Update — import also runs on save.', 'jcp-core' ); ?></span>
+			<button type="submit" class="button button-primary button-hero" form="jcp-standalone-import-form" style="font-size:14px;padding:8px 16px;height:auto;">
+				<?php esc_html_e( 'Import document & save page', 'jcp-core' ); ?>
+			</button>
+			<button type="button" class="button" id="jcp-niche-build-from-doc"><?php esc_html_e( 'Build via AJAX (backup)', 'jcp-core' ); ?></button>
+		</p>
+		<p class="description">
+			<?php esc_html_e( 'Use the green Import button — it saves immediately and does not rely on Update. The big WordPress editor above stays blank on purpose.', 'jcp-core' ); ?>
 		</p>
 		<div id="jcp-niche-import-status" class="jcp-doc-import__status" aria-live="polite"></div>
 	</div>
 	<?php
+	// Standalone form outside #post (associated via HTML form="" attributes above).
+	add_action(
+		'admin_footer',
+		static function () use ( $post ): void {
+			static $printed = false;
+			if ( $printed ) {
+				return;
+			}
+			$printed = true;
+			?>
+			<form id="jcp-standalone-import-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" enctype="multipart/form-data" style="display:none;" aria-hidden="true">
+				<input type="hidden" name="action" value="jcp_import_writer_doc" />
+				<input type="hidden" name="post_id" value="<?php echo (int) $post->ID; ?>" />
+				<?php wp_nonce_field( 'jcp_import_writer_doc', 'jcp_import_writer_nonce' ); ?>
+			</form>
+			<?php
+		},
+		5
+	);
 	jcp_page_print_json_script_payload( 'jcp-writer-template-json', $template );
 	jcp_page_print_json_script_payload( 'jcp-writer-ai-prompt-json', $ai_prompt );
 	?>
@@ -614,18 +646,11 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 					html += '<a href="' + extra.viewUrl + '" target="_blank" rel="noopener noreferrer"><?php echo esc_js( __( 'View page', 'jcp-core' ) ); ?></a>';
 				}
 				html += '</p>';
-			} else {
-				html += '<p class="description"><strong><?php echo esc_js( __( 'Next step:', 'jcp-core' ) ); ?></strong> <?php echo esc_js( __( 'Click Update or Publish at the top of this screen to save.', 'jcp-core' ) ); ?></p>';
 			}
 			html += '<p class="description"><?php echo esc_js( __( 'Note: the big WordPress editor above stays blank on purpose — this page uses the JCP block system, not that box.', 'jcp-core' ) ); ?></p>';
 			if (report.imported && report.imported.length) {
 				html += '<p><strong><?php echo esc_js( __( 'Imported:', 'jcp-core' ) ); ?></strong> ';
 				html += report.imported.map(function (row) { return row.label; }).join(', ');
-				html += '</p>';
-			}
-			if (report.skipped && report.skipped.length) {
-				html += '<p class="jcp-doc-import__skipped"><strong><?php echo esc_js( __( 'Not on this page type:', 'jcp-core' ) ); ?></strong> ';
-				html += report.skipped.map(function (row) { return row.header + ' (' + row.label + ')'; }).join(', ');
 				html += '</p>';
 			}
 			status.innerHTML = html;
@@ -685,35 +710,22 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 					}
 					jsonTa.value = data.data.content;
 					jsonTa.dispatchEvent(new Event('input', { bubbles: true }));
-					var devTa = document.getElementById('jcp_niche_content_json_dev');
-					if (devTa) devTa.value = data.data.content;
-					try {
-						var parsedDoc = JSON.parse(data.data.content || '{}');
-						var hero = (parsedDoc.blocks || []).find(function (b) { return b && b.type === 'hero'; });
-						var finalCta = (parsedDoc.blocks || []).find(function (b) { return b && b.type === 'final_cta'; });
-						var h1 = document.querySelector('[name="jcp_niche_quick[hero_h1]"]');
-						var sub = document.querySelector('[name="jcp_niche_quick[hero_sub]"]');
-						var fh = document.querySelector('[name="jcp_niche_quick[final_h]"]');
-						var fb = document.querySelector('[name="jcp_niche_quick[final_btn]"]');
-						if (h1 && hero && hero.props && hero.props.h1) h1.value = hero.props.h1;
-						if (sub && hero && hero.props && hero.props.subheadline) sub.value = hero.props.subheadline;
-						if (fh && finalCta && finalCta.props && finalCta.props.headline) fh.value = finalCta.props.headline;
-						if (fb && finalCta && finalCta.props && finalCta.props.cta_primary && finalCta.props.cta_primary.label) {
-							fb.value = finalCta.props.cta_primary.label;
-						}
-					} catch (e2) {}
-					renderReport(data.data.report, {
+					var msg = (data.data.message || '<?php echo esc_js( __( 'Saved.', 'jcp-core' ) ); ?>');
+					renderReport(data.data.report || { message: msg, imported: [] }, {
 						saved: !!data.data.saved,
 						viewUrl: data.data.view_url || ''
 					});
-					if (status) {
-						status.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+					if (data.data.view_url) {
+						window.alert(msg + '\n\n<?php echo esc_js( __( 'Open View page to confirm.', 'jcp-core' ) ); ?>');
+					} else {
+						window.alert(msg);
 					}
+					if (status) status.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 				})
 				.catch(function (err) {
 					btn.disabled = false;
 					var msg = (err && err.message) ? err.message : '<?php echo esc_js( __( 'Import failed.', 'jcp-core' ) ); ?>';
-					status.innerHTML = '<p class="jcp-doc-import__error">' + msg + '</p><p class="description"><?php echo esc_js( __( 'Fallback: leave the document pasted above and click Update — the page will import on save.', 'jcp-core' ) ); ?></p>';
+					status.innerHTML = '<p class="jcp-doc-import__error">' + msg + '</p><p class="description"><?php echo esc_js( __( 'Use “Import document & save page” instead.', 'jcp-core' ) ); ?></p>';
 					window.alert(msg);
 				});
 		});
@@ -732,8 +744,7 @@ function jcp_niche_ajax_parse_document(): void {
 	}
 
 	$post_id = isset( $_POST['post_id'] ) ? (int) $_POST['post_id'] : 0;
-	$post    = $post_id > 0 ? get_post( $post_id ) : null;
-	$text    = isset( $_POST['doc_text'] ) ? jcp_niche_normalize_document_text( wp_unslash( (string) $_POST['doc_text'] ) ) : '';
+	$text    = isset( $_POST['doc_text'] ) ? wp_unslash( (string) $_POST['doc_text'] ) : '';
 
 	if ( $text === '' && ! empty( $_FILES['doc_file']['tmp_name'] ) ) {
 		$file = $_FILES['doc_file'];
@@ -748,63 +759,25 @@ function jcp_niche_ajax_parse_document(): void {
 				wp_send_json_error( [ 'message' => __( 'Could not read that .docx file. Try File → Download → Plain text (.txt), or paste the document below.', 'jcp-core' ) ] );
 			}
 		} elseif ( $ext === 'txt' ) {
-			$raw = file_get_contents( $file['tmp_name'] );
-			$text = is_string( $raw ) ? jcp_niche_normalize_document_text( $raw ) : '';
+			$raw  = file_get_contents( $file['tmp_name'] );
+			$text = is_string( $raw ) ? $raw : '';
 		} else {
 			wp_send_json_error( [ 'message' => __( 'Upload a .docx or .txt file, or paste document text.', 'jcp-core' ) ] );
 		}
 	}
 
-	if ( $text === '' ) {
-		wp_send_json_error( [ 'message' => __( 'Paste document text or upload a .docx / .txt file.', 'jcp-core' ) ] );
-	}
-
-	$niche_key   = $post instanceof WP_Post ? $post->post_name : '';
-	$niche_label = $post instanceof WP_Post ? get_the_title( $post ) : '';
-	$existing    = $post_id > 0 ? jcp_page_get_content( $post_id ) : [];
-	if ( empty( $existing['blocks'] ) && $post instanceof WP_Post ) {
-		$skeleton_json = jcp_page_get_admin_editor_json( $post );
-		$skeleton      = json_decode( $skeleton_json, true );
-		if ( is_array( $skeleton ) && ! empty( $skeleton['blocks'] ) ) {
-			$existing = $skeleton;
-		}
-	}
-	$preset      = jcp_writer_resolve_preset( $post, $existing );
-	$page_kind   = jcp_page_resolve_admin_page_kind( $post, $existing );
-	$parsed      = jcp_page_parse_document_with_report( $text, $niche_key, $niche_label, $page_kind, $preset );
-	$content     = jcp_page_merge_import_content( $parsed['content'], $existing );
-	$report      = jcp_page_doc_build_import_report(
-		jcp_page_blocks_to_legacy( $parsed['content'] ),
-		$content,
-		$page_kind,
-		$preset
-	);
-
-	if ( empty( $report['imported'] ) ) {
-		wp_send_json_error(
-			[
-				'message' => __( 'No sections were detected. Paste from the HERO line downward (keep ALL CAPS headers like HERO, PROBLEM, BENEFITS). Then try Build again.', 'jcp-core' ),
-			]
-		);
-	}
-
-	if ( $post instanceof WP_Post && $post_id > 0 ) {
-		if ( empty( $content['preset'] ) ) {
-			$content['preset'] = $preset;
-		}
-		if ( empty( $content['page_kind'] ) ) {
-			$content['page_kind'] = $page_kind;
-		}
-		jcp_page_save_content( $post_id, $content );
-		update_post_meta( $post_id, jcp_writer_layout_preset_meta_key(), $preset );
+	$result = jcp_page_import_writer_document_to_post( $post_id, $text );
+	if ( empty( $result['ok'] ) ) {
+		wp_send_json_error( [ 'message' => (string) ( $result['message'] ?? __( 'Import failed.', 'jcp-core' ) ) ] );
 	}
 
 	wp_send_json_success(
 		[
-			'content' => wp_json_encode( $content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ),
-			'report'  => $report,
-			'saved'   => $post_id > 0,
-			'view_url'=> $post_id > 0 ? get_permalink( $post_id ) : '',
+			'content'  => wp_json_encode( $result['content'], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ),
+			'report'   => $result['report'] ?? [ 'message' => $result['message'], 'imported' => [] ],
+			'message'  => (string) $result['message'],
+			'saved'    => true,
+			'view_url' => (string) ( $result['view_url'] ?? '' ),
 		]
 	);
 }
@@ -1021,7 +994,8 @@ function jcp_niche_save_meta_box( int $post_id ): void {
 		return;
 	}
 	$is_structured = $post->post_type === 'jcp_niche_landing'
-		|| jcp_page_uses_block_template( $post_id );
+		|| jcp_page_uses_block_template( $post_id )
+		|| ( isset( $_POST['page_template'] ) && in_array( sanitize_text_field( wp_unslash( (string) $_POST['page_template'] ) ), jcp_page_block_page_templates(), true ) );
 	if ( ! $is_structured ) {
 		return;
 	}
@@ -1035,37 +1009,24 @@ function jcp_niche_save_meta_box( int $post_id ): void {
 		return;
 	}
 
-	if ( isset( $_POST['jcp_page_layout_preset'] ) && $post->post_type === 'page' && get_page_template_slug( $post_id ) === 'page-jcp-blocks.php' ) {
+	if ( isset( $_POST['jcp_page_layout_preset'] ) && $post->post_type === 'page' ) {
 		$layout_preset = sanitize_key( (string) wp_unslash( $_POST['jcp_page_layout_preset'] ) );
 		if ( jcp_page_get_preset( $layout_preset ) ) {
 			update_post_meta( $post_id, jcp_writer_layout_preset_meta_key(), $layout_preset );
 		}
 	}
 
-	// Fallback: if the writer doc was pasted but Build AJAX never ran, parse on Update.
-	$import_doc = isset( $_POST['jcp_niche_import_doc'] ) ? jcp_niche_normalize_document_text( wp_unslash( (string) $_POST['jcp_niche_import_doc'] ) ) : '';
-	if ( $import_doc !== '' && function_exists( 'jcp_page_parse_document_with_report' ) ) {
-		$existing  = jcp_page_get_content( $post_id );
-		$preset    = jcp_writer_resolve_preset( $post, $existing );
-		$page_kind = jcp_page_resolve_admin_page_kind( $post, $existing );
-		$parsed    = jcp_page_parse_document_with_report( $import_doc, $post->post_name, get_the_title( $post ), $page_kind, $preset );
-		$merged    = jcp_page_merge_import_content( $parsed['content'], $existing );
-		$report    = jcp_page_doc_build_import_report(
-			jcp_page_blocks_to_legacy( $parsed['content'] ),
-			$merged,
-			$page_kind,
-			$preset
-		);
-		if ( ! empty( $report['imported'] ) ) {
-			if ( empty( $merged['preset'] ) ) {
-				$merged['preset'] = $preset;
-			}
-			if ( empty( $merged['page_kind'] ) ) {
-				$merged['page_kind'] = $page_kind;
-			}
-			jcp_page_save_content( $post_id, $merged );
-			update_post_meta( $post_id, jcp_writer_layout_preset_meta_key(), $preset );
-			// Prefer imported content over a stale hidden JSON field on this same save.
+	// Prefer paste field on Update (also submitted as jcp_niche_import_doc historically).
+	$import_doc = '';
+	if ( isset( $_POST['doc_text'] ) ) {
+		$import_doc = (string) wp_unslash( $_POST['doc_text'] );
+	} elseif ( isset( $_POST['jcp_niche_import_doc'] ) ) {
+		$import_doc = (string) wp_unslash( $_POST['jcp_niche_import_doc'] );
+	}
+	if ( $import_doc !== '' && function_exists( 'jcp_page_import_writer_document_to_post' ) ) {
+		$result = jcp_page_import_writer_document_to_post( $post_id, $import_doc );
+		jcp_page_set_import_notice( get_current_user_id(), $result );
+		if ( ! empty( $result['ok'] ) ) {
 			return;
 		}
 	}
@@ -1124,6 +1085,11 @@ function jcp_niche_save_meta_box( int $post_id ): void {
 	}
 	$decoded = json_decode( $json, true );
 	if ( ! is_array( $decoded ) ) {
+		return;
+	}
+	// Never let an empty skeleton wipe a page that already has hero copy.
+	$existing_doc = jcp_page_get_content( $post_id );
+	if ( jcp_page_content_has_hero_copy( $existing_doc ) && ! jcp_page_content_has_hero_copy( $decoded ) ) {
 		return;
 	}
 	$post = get_post( $post_id );
