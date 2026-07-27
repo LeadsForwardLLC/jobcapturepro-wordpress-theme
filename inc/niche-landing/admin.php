@@ -437,6 +437,24 @@ function jcp_niche_render_quick_meta_box_content( WP_Post $post ): void {
 			<td><input type="text" class="regular-text" id="jcp_niche_final_btn" name="jcp_niche_quick[final_btn]" value="<?php echo esc_attr( $final['cta_primary']['label'] ?? '' ); ?>" /></td>
 		</tr>
 		<?php
+		$form_embed = is_array( $c['form_embed'] ?? null ) ? $c['form_embed'] : [];
+		$form_shortcode = (string) ( $form_embed['shortcode'] ?? '' );
+		?>
+		<tr>
+			<th><label for="jcp_niche_form_shortcode"><?php esc_html_e( 'Form shortcode', 'jcp-core' ); ?></label></th>
+			<td>
+				<input
+					type="text"
+					class="large-text code"
+					id="jcp_niche_form_shortcode"
+					name="jcp_niche_quick[form_shortcode]"
+					value="<?php echo esc_attr( $form_shortcode ); ?>"
+					placeholder='[fluentform id="12"]'
+				/>
+				<p class="description"><?php esc_html_e( 'Fluent Forms shortcode for the Form embed section (e.g. [fluentform id="12"]).', 'jcp-core' ); ?></p>
+			</td>
+		</tr>
+		<?php
 		$nav_cta = $c['nav_cta'] ?? [];
 		?>
 		<tr>
@@ -1059,6 +1077,13 @@ function jcp_niche_save_meta_box( int $post_id ): void {
 		}
 		if ( ! empty( $q['final_btn'] ) ) {
 			$content['final_cta']['cta_primary']['label'] = sanitize_text_field( $q['final_btn'] );
+		}
+		if ( array_key_exists( 'form_shortcode', $q ) ) {
+			$raw_sc = trim( (string) $q['form_shortcode'] );
+			$content['form_embed'] = is_array( $content['form_embed'] ?? null ) ? $content['form_embed'] : [];
+			$content['form_embed']['shortcode'] = function_exists( 'jcp_fluent_sanitize_shortcode' )
+				? jcp_fluent_sanitize_shortcode( $raw_sc )
+				: sanitize_text_field( $raw_sc );
 		}
 		$content['nav_cta'] = $content['nav_cta'] ?? [];
 		foreach (

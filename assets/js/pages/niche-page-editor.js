@@ -1968,6 +1968,20 @@
     recordChange();
   };
 
+  const buildBlockContentFieldsHtml = (block) => {
+    if (block.type !== 'form_embed') return '';
+    const shortcode = block.props?.shortcode || flatContent?.form_embed?.shortcode || '';
+    const display = (block.props?.display || flatContent?.form_embed?.display || 'inline') === 'modal' ? 'modal' : 'inline';
+    let html = '<div class="jcp-layout-row jcp-layout-row--stack"><span class="jcp-layout-row__label">Fluent Forms shortcode</span>';
+    html += `<input type="text" class="jcp-structure-text-input" data-block-content-field="shortcode" value="${String(shortcode).replace(/"/g, '&quot;')}" placeholder='[fluentform id="12"]' autocomplete="off" spellcheck="false" />`;
+    html += '<p class="jcp-structure-field-hint">Paste the shortcode, then click Save.</p></div>';
+    html += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Display</span><div class="jcp-layout-btns" data-block-content-setting="display">';
+    html += `<button type="button" class="jcp-layout-btn${display === 'inline' ? ' is-active' : ''}" data-value="inline">Inline</button>`;
+    html += `<button type="button" class="jcp-layout-btn${display === 'modal' ? ' is-active' : ''}" data-value="modal">Modal</button>`;
+    html += '</div></div>';
+    return html;
+  };
+
   const buildLayoutControlsHtml = (block) => {
     const layout = resolveLayout(block);
     const options = layoutOptionsFor(block.type);
@@ -2051,7 +2065,8 @@
 
     const backgroundBody = block.type !== 'breadcrumb' ? buildSectionSurfaceHtml(block) : '';
     const visibilityBody = buildBlockVisibilityHtml(block);
-    const activeTab = structureTabByBlockId.get(block.id) || 'layout';
+    const contentBody = buildBlockContentFieldsHtml(block);
+    const activeTab = structureTabByBlockId.get(block.id) || (contentBody ? 'content' : 'layout');
     const tabButtons = [];
     const tabPanels = [];
     const addTab = (id, label, body) => {
@@ -2060,6 +2075,7 @@
       tabButtons.push(`<button type="button" class="jcp-structure-tab${isActive ? ' is-active' : ''}" data-structure-tab="${id}" role="tab">${label}</button>`);
       tabPanels.push(`<div class="jcp-structure-panel${isActive ? ' is-active' : ''}" data-structure-panel="${id}" role="tabpanel">${body}</div>`);
     };
+    addTab('content', 'Content', contentBody);
     addTab('layout', 'Layout', layoutBody);
     addTab('background', 'Background', backgroundBody);
     addTab('visibility', 'Show', visibilityBody);
@@ -2573,6 +2589,7 @@
     document.querySelectorAll('[data-jcp-path]').forEach((el) => {
       const path = el.getAttribute('data-jcp-path');
       if (!path) return;
+      if (el.matches('input, textarea, select')) return;
       const val = getPath(flatContent, path);
       if (val === undefined || val === null) return;
       if (isRichField(el)) {
@@ -2582,6 +2599,13 @@
       } else {
         el.textContent = isListLinePath(path) ? cleanStepLineText(String(val)) : String(val);
       }
+    });
+    document.querySelectorAll('[data-jcp-input-path]').forEach((el) => {
+      const path = el.getAttribute('data-jcp-input-path');
+      if (!path) return;
+      const val = getPath(flatContent, path);
+      if (val === undefined || val === null) return;
+      el.value = String(val);
     });
     document.querySelectorAll('[data-jcp-href-path]').forEach((el) => {
       const path = el.getAttribute('data-jcp-href-path');
@@ -2722,7 +2746,24 @@
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
           if (btn.dataset.sectionSurfacePreset) return;
-          const setting = btn.closest('[data-setting]').dataset.setting;
+          const contentSetting = btn.closest('[data-block-content-setting]');
+          if (contentSetting) {
+            const liveBlock = (pageDocument.blocks || []).find((entry) => entry.id === block.id) || block;
+            liveBlock.props = liveBlock.props || {};
+            const key = contentSetting.dataset.blockContentSetting;
+            const value = btn.dataset.value;
+            liveBlock.props[key] = value;
+            flatContent.form_embed = flatContent.form_embed || {};
+            flatContent.form_embed[key] = value;
+            contentSetting.querySelectorAll('.jcp-layout-btn').forEach((b) => {
+              b.classList.toggle('is-active', b.dataset.value === value);
+            });
+            recordChange();
+            return;
+          }
+          const settingHost = btn.closest('[data-setting]');
+          if (!settingHost) return;
+          const setting = settingHost.dataset.setting;
           let value = btn.dataset.value;
           if (setting === 'hero_variant') {
             setBlockLayout(block, setting, value);
@@ -2734,6 +2775,26 @@
           }
           setBlockLayout(block, setting, value);
         });
+      });
+      li.querySelectorAll('[data-block-content-field]').forEach((input) => {
+        const syncField = () => {
+          const liveBlock = (pageDocument.blocks || []).find((entry) => entry.id === block.id) || block;
+          liveBlock.props = liveBlock.props || {};
+          const key = input.dataset.blockContentField;
+          const value = input.value.trim();
+          liveBlock.props[key] = value;
+          flatContent.form_embed = flatContent.form_embed || {};
+          flatContent.form_embed[key] = value;
+          const pageInput = document.querySelector(`[data-jcp-input-path="form_embed.${key}"]`);
+          if (pageInput && pageInput !== input) pageInput.value = value;
+          recordChange();
+        };
+        input.addEventListener('click', (e) => e.stopPropagation());
+        input.addEventListener('input', () => {
+          scheduleRecordChange();
+        });
+        input.addEventListener('change', syncField);
+        input.addEventListener('blur', syncField);
       });
       bindSectionSurfaceControls(li, block);
       li.querySelectorAll('[data-block-field-toggle]').forEach((btn) => {
@@ -2988,6 +3049,15 @@
         block.props = block.props || {};
         block.props.meta_stats = JSON.parse(JSON.stringify(flatContent[key].meta_stats));
       }
+      if (block.type === 'form_embed' && flatContent.form_embed && typeof flatContent.form_embed === 'object') {
+        block.props = block.props || {};
+        if (typeof flatContent.form_embed.shortcode === 'string') {
+          block.props.shortcode = flatContent.form_embed.shortcode;
+        }
+        if (typeof flatContent.form_embed.display === 'string') {
+          block.props.display = flatContent.form_embed.display;
+        }
+      }
     });
   };
 
@@ -3024,6 +3094,7 @@
   const collectFromDom = () => {
     document.querySelectorAll('[data-jcp-path]').forEach((el) => {
       if (isStringArrayItemPath(el) || isObjectArrayItemPath(el)) return;
+      if (el.matches('input, textarea, select')) return;
       const path = el.getAttribute('data-jcp-path');
       if (!path) return;
       if (el.hasAttribute('data-jcp-href-path')) {
@@ -3039,6 +3110,11 @@
       const raw = (el.textContent || '').trim();
       const value = isListLinePath(path) ? cleanStepLineText(raw) : raw;
       setPath(flatContent, path, value);
+    });
+    document.querySelectorAll('[data-jcp-input-path]').forEach((el) => {
+      const path = el.getAttribute('data-jcp-input-path');
+      if (!path) return;
+      setPath(flatContent, path, (el.value || '').trim());
     });
     document.querySelectorAll('[data-jcp-href-path]').forEach((el) => {
       const path = el.getAttribute('data-jcp-href-path');
@@ -3264,6 +3340,11 @@
 
   document.addEventListener('input', (e) => {
     if (!editing || suppressRecord) return;
+    if (e.target.matches('[data-jcp-input-path]')) {
+      updateDirtyState();
+      scheduleRecordChange();
+      return;
+    }
     if (!e.target.matches('[data-jcp-path]')) return;
     if (e.target.hasAttribute('data-jcp-href-path')) ensureHrefEditControls();
     updateDirtyState();

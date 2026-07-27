@@ -177,6 +177,49 @@ body.jcp-fluent-modal-open {
   border-radius: var(--jcp-radius-lg, 16px);
   padding: clamp(1rem, 3vw, 1.75rem);
   box-shadow: var(--jcp-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
+  min-height: 8rem;
+}
+
+.jcp-form-embed__shortcode-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 80, 62, 0.45);
+  background: rgba(255, 80, 62, 0.05);
+}
+
+.jcp-form-embed__shortcode-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--jcp-color-text-primary, #111827);
+}
+
+.jcp-form-embed__shortcode-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--jcp-color-border, #e5e7eb);
+  border-radius: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9375rem;
+  color: var(--jcp-color-text-primary, #111827);
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.jcp-form-embed__shortcode-input:focus {
+  outline: none;
+  border-color: var(--jcp-color-primary, #ff5036);
+  box-shadow: 0 0 0 3px rgba(255, 80, 62, 0.18);
+}
+
+.jcp-form-embed__shortcode-hint {
+  font-size: 0.75rem;
+  color: var(--jcp-color-text-secondary, #6b7280);
+  line-height: 1.4;
 }
 
 .jcp-form-embed__empty {

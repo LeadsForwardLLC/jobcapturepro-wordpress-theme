@@ -242,11 +242,26 @@ function jcp_niche_render_form_embed( array $props ): void {
 					<?php endif; ?>
 				</div>
 			<?php endif; ?>
-			<div class="jcp-form-embed__panel jcp-fluent-bridge jcp-fluent-bridge--inline">
+			<div class="jcp-form-embed__panel jcp-fluent-bridge jcp-fluent-bridge--inline" data-jcp-form-panel>
+				<?php if ( current_user_can( 'edit_posts' ) ) : ?>
+					<label class="jcp-form-embed__shortcode-field">
+						<span class="jcp-form-embed__shortcode-label"><?php esc_html_e( 'Fluent Forms shortcode', 'jcp-core' ); ?></span>
+						<input
+							type="text"
+							class="jcp-form-embed__shortcode-input"
+							data-jcp-input-path="form_embed.shortcode"
+							value="<?php echo esc_attr( $shortcode ); ?>"
+							placeholder='[fluentform id="12"]'
+							autocomplete="off"
+							spellcheck="false"
+						/>
+						<span class="jcp-form-embed__shortcode-hint"><?php esc_html_e( 'Paste your shortcode, then Save on the live editor (or Update in WP admin).', 'jcp-core' ); ?></span>
+					</label>
+				<?php endif; ?>
 				<?php if ( $shortcode !== '' ) : ?>
 					<?php echo do_shortcode( $shortcode ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				<?php elseif ( current_user_can( 'edit_posts' ) ) : ?>
-					<p class="jcp-form-embed__empty"><?php esc_html_e( 'Add a Fluent Forms shortcode in this section (e.g. [fluentform id="12"]).', 'jcp-core' ); ?></p>
+					<p class="jcp-form-embed__empty" role="status"><?php esc_html_e( 'Form will appear here after you save a shortcode.', 'jcp-core' ); ?></p>
 				<?php endif; ?>
 			</div>
 		</div>
