@@ -285,6 +285,7 @@ function jcp_page_doc_sections_for_kind( string $page_kind, string $preset = '' 
 		'PARTNERS',
 		'SHARE',
 		'FAQ',
+		'FORM EMBED',
 		'CONVERSION',
 		'FINAL CTA',
 	];

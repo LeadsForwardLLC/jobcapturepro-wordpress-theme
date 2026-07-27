@@ -56,7 +56,12 @@ function jcp_niche_parse_document( string $text, string $niche_key = '', string 
 
 	$start = 0;
 	foreach ( $lines as $i => $line ) {
-		if ( stripos( $line, 'write content here' ) !== false || strtoupper( trim( $line ) ) === 'HERO' ) {
+		$trim_upper = strtoupper( trim( $line ) );
+		if (
+			stripos( $line, 'write content here' ) !== false
+			|| $trim_upper === 'HERO'
+			|| preg_match( '/^HERO\b/', $trim_upper )
+		) {
 			$start = stripos( $line, 'write content here' ) !== false ? $i + 1 : $i;
 			break;
 		}

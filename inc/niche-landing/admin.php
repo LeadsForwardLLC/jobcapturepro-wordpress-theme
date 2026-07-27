@@ -74,7 +74,7 @@ function jcp_niche_render_unified_editor_meta_box( WP_Post $post ): void {
 			<ol class="jcp-writer-workflow__steps">
 				<li><?php esc_html_e( 'Copy the writer template (below) into Google Docs and fill in your content.', 'jcp-core' ); ?></li>
 				<li><?php esc_html_e( 'Set the page title and URL slug, then paste or upload your doc and click Build page.', 'jcp-core' ); ?></li>
-				<li><?php esc_html_e( 'Click Update / Publish, then polish photos and text on the live page editor.', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Build saves the page automatically. The big editor above stays blank on purpose — open View page or Edit on live page to see content.', 'jcp-core' ); ?></li>
 			</ol>
 			<p class="description">
 				<?php
@@ -598,10 +598,20 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 			});
 		}
 
-		function renderReport(report) {
+		function renderReport(report, extra) {
 			if (!status || !report) return;
+			extra = extra || {};
 			var html = '<p class="jcp-doc-import__summary"><strong>' + (report.message || '') + '</strong></p>';
-			html += '<p class="description"><strong><?php echo esc_js( __( 'Next step:', 'jcp-core' ) ); ?></strong> <?php echo esc_js( __( 'Click Update or Publish at the top of this screen to save.', 'jcp-core' ) ); ?></p>';
+			if (extra.saved) {
+				html += '<p class="jcp-doc-import__saved"><strong><?php echo esc_js( __( 'Saved to this page.', 'jcp-core' ) ); ?></strong> ';
+				if (extra.viewUrl) {
+					html += '<a href="' + extra.viewUrl + '" target="_blank" rel="noopener noreferrer"><?php echo esc_js( __( 'View page', 'jcp-core' ) ); ?></a>';
+				}
+				html += '</p>';
+			} else {
+				html += '<p class="description"><strong><?php echo esc_js( __( 'Next step:', 'jcp-core' ) ); ?></strong> <?php echo esc_js( __( 'Click Update or Publish at the top of this screen to save.', 'jcp-core' ) ); ?></p>';
+			}
+			html += '<p class="description"><?php echo esc_js( __( 'Note: the big WordPress editor above stays blank on purpose — this page uses the JCP block system, not that box.', 'jcp-core' ) ); ?></p>';
 			if (report.imported && report.imported.length) {
 				html += '<p><strong><?php echo esc_js( __( 'Imported:', 'jcp-core' ) ); ?></strong> ';
 				html += report.imported.map(function (row) { return row.label; }).join(', ');
@@ -658,7 +668,10 @@ function jcp_niche_render_import_meta_box_content( WP_Post $post ): void {
 					jsonTa.dispatchEvent(new Event('input', { bubbles: true }));
 					var devTa = document.getElementById('jcp_niche_content_json_dev');
 					if (devTa) devTa.value = data.data.content;
-					renderReport(data.data.report);
+					renderReport(data.data.report, {
+						saved: !!data.data.saved,
+						viewUrl: data.data.view_url || ''
+					});
 					if (status) {
 						status.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 					}
@@ -731,10 +744,31 @@ function jcp_niche_ajax_parse_document(): void {
 		$preset
 	);
 
+	if ( empty( $report['imported'] ) ) {
+		wp_send_json_error(
+			[
+				'message' => __( 'No sections were detected. Paste from the HERO line downward (keep ALL CAPS headers like HERO, PROBLEM, BENEFITS). Then try Build again.', 'jcp-core' ),
+			]
+		);
+	}
+
+	if ( $post instanceof WP_Post && $post_id > 0 ) {
+		if ( empty( $content['preset'] ) ) {
+			$content['preset'] = $preset;
+		}
+		if ( empty( $content['page_kind'] ) ) {
+			$content['page_kind'] = $page_kind;
+		}
+		jcp_page_save_content( $post_id, $content );
+		update_post_meta( $post_id, jcp_writer_layout_preset_meta_key(), $preset );
+	}
+
 	wp_send_json_success(
 		[
 			'content' => wp_json_encode( $content, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ),
 			'report'  => $report,
+			'saved'   => $post_id > 0,
+			'view_url'=> $post_id > 0 ? get_permalink( $post_id ) : '',
 		]
 	);
 }
@@ -1021,8 +1055,7 @@ function jcp_niche_save_meta_box( int $post_id ): void {
 	$json = wp_unslash( $_POST['jcp_niche_content_json'] );
 	$json = is_string( $json ) ? trim( $json ) : '';
 	if ( $json === '' ) {
-		delete_post_meta( $post_id, jcp_page_content_meta_key() );
-		delete_post_meta( $post_id, jcp_page_legacy_meta_key() );
+		// Never wipe page content on an empty POST field (common if Update runs without a successful Build).
 		return;
 	}
 	$decoded = json_decode( $json, true );
