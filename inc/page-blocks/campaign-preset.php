@@ -38,10 +38,13 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 			$doc['blocks'][ $i ]['layout'] = array_merge(
 				$base,
 				[
-					'hero_variant' => 'centered',
-					'align'        => 'center',
+					'hero_variant' => 'split',
+					'align'        => 'left',
 				]
 			);
+			$props = is_array( $block['props'] ?? null ) ? $block['props'] : [];
+			$props['show_visual'] = true;
+			$doc['blocks'][ $i ]['props'] = $props;
 		}
 		if ( $type === 'how_it_works' ) {
 			$base = is_array( $block['layout'] ?? null )
