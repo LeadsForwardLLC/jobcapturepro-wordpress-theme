@@ -148,6 +148,9 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 		case 'final_cta':
 			jcp_niche_render_final_cta( $c, $page_key );
 			break;
+		case 'form_embed':
+			jcp_niche_render_form_embed( $props );
+			break;
 		case 'cta_band':
 			$band_key = ! empty( $props['band_key'] ) ? (string) $props['band_key'] : 'cta_band_1';
 			jcp_niche_render_cta_band( $props, $page_key, $band_key );

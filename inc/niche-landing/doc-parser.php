@@ -126,6 +126,11 @@ function jcp_niche_parse_document( string $text, string $niche_key = '', string 
 	if ( ! empty( $sections['FAQ'] ) ) {
 		$content['faq'] = jcp_niche_doc_parse_faq( $sections['FAQ'] );
 	}
+	if ( ! empty( $sections['FORM EMBED'] ) ) {
+		$content['form_embed'] = jcp_niche_doc_parse_form_embed( $sections['FORM EMBED'] );
+	} elseif ( ! empty( $sections['FORM'] ) ) {
+		$content['form_embed'] = jcp_niche_doc_parse_form_embed( $sections['FORM'] );
+	}
 	if ( ! empty( $sections['CONVERSION'] ) ) {
 		$content['conversion'] = jcp_niche_doc_parse_conversion( $sections['CONVERSION'] );
 	}
@@ -1204,6 +1209,47 @@ function jcp_niche_doc_parse_faq( array $lines ): array {
 		],
 		$lines
 	);
+}
+
+/**
+ * Parse FORM EMBED / FORM section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_form_embed( array $lines ): array {
+	$fields  = jcp_niche_doc_parse_labeled_fields( $lines );
+	$display = strtolower( trim( (string) ( $fields['display'] ?? 'inline' ) ) );
+	if ( ! in_array( $display, [ 'inline', 'modal' ], true ) ) {
+		$display = 'inline';
+	}
+
+	$shortcode = trim( (string) ( $fields['shortcode'] ?? '' ) );
+	if ( $shortcode === '' ) {
+		// Allow a bare [fluentform ...] line without a Shortcode label.
+		foreach ( $lines as $line ) {
+			$trim = trim( $line );
+			if ( preg_match( '/^\[[a-zA-Z][a-zA-Z0-9_-]*/', $trim ) ) {
+				$shortcode = $trim;
+				break;
+			}
+		}
+	}
+	if ( function_exists( 'jcp_fluent_sanitize_shortcode' ) ) {
+		$shortcode = jcp_fluent_sanitize_shortcode( $shortcode );
+	}
+
+	$headline    = trim( (string) ( $fields['headline'] ?? '' ) );
+	$subheadline = trim( (string) ( $fields['subheadline'] ?? '' ) );
+
+	return [
+		'headline'         => $headline,
+		'subheadline'      => $subheadline,
+		'shortcode'        => $shortcode,
+		'display'          => $display,
+		'show_headline'    => $headline !== '',
+		'show_subheadline' => $subheadline !== '',
+	];
 }
 
 /**

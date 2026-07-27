@@ -3344,3 +3344,8 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   border: 1px solid var(--jcp-color-border);
   border-radius: 1rem;
 }
+
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="form_embed"] .jcp-form-embed__panel {
+  max-width: 720px;
+  margin-inline: auto;
+}

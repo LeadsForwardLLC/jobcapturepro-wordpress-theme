@@ -48,6 +48,11 @@ function jcp_global_settings_defaults(): array {
 		'contact' => [
 			'support_email' => 'hello@jobcapturepro.com',
 		],
+		'fluent_forms' => [
+			'enabled'            => true,
+			'default_shortcode'  => '',
+			'mount_global_modal' => false,
+		],
 	];
 }
 

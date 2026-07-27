@@ -139,6 +139,7 @@ function jcp_page_doc_legacy_key_map(): array {
 		'differentiation'       => 'DIFFERENTIATION',
 		'who_its_for'           => "WHO IT'S FOR",
 		'faq'                   => 'FAQ',
+		'form_embed'            => 'FORM EMBED',
 		'conversion'            => 'CONVERSION',
 		'final_cta'             => 'FINAL CTA',
 		'demo_preview'          => 'DEMO PREVIEW',

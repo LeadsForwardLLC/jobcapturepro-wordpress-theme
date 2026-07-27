@@ -127,6 +127,7 @@ function jcp_page_presets(): array {
 				'how_it_works',
 				'demo_preview',
 				'faq',
+				'form_embed',
 				'final_cta',
 			],
 		],

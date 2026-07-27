@@ -165,6 +165,15 @@ function jcp_block_registry(): array {
 			'doc_sections' => [ 'FINAL CTA' ],
 			'page_kinds'   => [ 'industry', 'marketing', 'referral', 'home' ],
 		],
+		'form_embed' => [
+			'type'         => 'form_embed',
+			'label'        => __( 'Form embed', 'jcp-core' ),
+			'description'  => __( 'Fluent Forms shortcode — inline or takeover modal', 'jcp-core' ),
+			'category'     => 'cta',
+			'legacy_key'   => 'form_embed',
+			'doc_sections' => [ 'FORM EMBED', 'FORM' ],
+			'page_kinds'   => [ 'marketing', 'industry', 'referral', 'home' ],
+		],
 		'cta_band' => [
 			'type'         => 'cta_band',
 			'label'        => __( 'CTA band', 'jcp-core' ),
@@ -410,6 +419,14 @@ function jcp_page_default_block_props( string $type ): array {
 			'cta_note'         => __( 'No signup required. Setup in minutes.', 'jcp-core' ),
 			'show_subheadline' => true,
 			'show_cta_note'    => true,
+		],
+		'form_embed' => [
+			'headline'         => __( 'Apply for a spot', 'jcp-core' ),
+			'subheadline'      => __( 'Tell us about your company. We’ll confirm fit and get you set up.', 'jcp-core' ),
+			'shortcode'        => '',
+			'display'          => 'inline',
+			'show_headline'    => true,
+			'show_subheadline' => true,
 		],
 		'cta_band' => [
 			'cta_primary' => [ 'label' => __( 'Get started', 'jcp-core' ), 'url' => '' ],

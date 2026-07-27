@@ -1046,7 +1046,7 @@ SNIP,
 		'DEMO PREVIEW' => <<<'SNIP'
 DEMO PREVIEW
 Badge
-Live Demo
+See it first
 Headline
 [H2 — demo angle, 6–12 words]
 Body
@@ -1057,6 +1057,17 @@ CTA Note
 No signup required • Takes 2 minutes
 CTA
 Launch Interactive Demo
+SNIP,
+		'FORM EMBED' => <<<'SNIP'
+FORM EMBED
+Headline
+[H2 — application / form section, 6–12 words]
+Subheadline
+[1–2 sentences — what to expect after submitting]
+Display
+inline
+Shortcode
+[fluentform id="12"]
 SNIP,
 		'PROOF FLOW' => <<<'SNIP'
 PROOF FLOW

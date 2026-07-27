@@ -17,7 +17,7 @@
   "hero": {
     "h1": "Turn every completed job into proof that books the next one",
     "subheadline": "Your crews already finish real work and take photos. JobCapturePro publishes that proof to Google, your website, social, and review requests — without adding admin. Limited spots available for this campaign.",
-    "cta_primary": { "label": "Claim your spot", "url": "" },
+    "cta_primary": { "label": "Claim your spot", "url": "#apply" },
     "cta_secondary": { "label": "Watch 2-min demo", "url": "/demo" },
     "trust_line": "No credit card · Fast setup · Built for field crews",
     "show_visual": false
@@ -53,7 +53,7 @@
     "subheadline": "Three steps from signup to published proof",
     "numeric_steps": true,
     "show_cta_secondary": false,
-    "cta_primary": { "label": "Claim your spot", "url": "" },
+    "cta_primary": { "label": "Claim your spot", "url": "#apply" },
     "steps": [
       {
         "title": "Claim your spot",
@@ -100,10 +100,18 @@
       { "q": "What happens after I apply?", "a": "We'll confirm details, get you live quickly, and you'll start publishing proof from real jobs within days — not months." }
     ]
   },
+  "form_embed": {
+    "headline": "Claim your spot",
+    "subheadline": "Takes about two minutes. We’ll follow up to confirm fit and get you onboarded.",
+    "shortcode": "",
+    "display": "inline",
+    "show_headline": true,
+    "show_subheadline": true
+  },
   "final_cta": {
     "headline": "Ready to turn completed jobs into your best salesperson?",
     "subheadline": "Claim your spot while this cohort is open.",
-    "cta_primary": { "label": "Claim your spot", "url": "" },
+    "cta_primary": { "label": "Claim your spot", "url": "#apply" },
     "cta_note": "Limited availability · No credit card to start",
     "cta_secondary": { "label": "", "url": "" }
   }

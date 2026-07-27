@@ -75,6 +75,13 @@ function jcp_global_settings_handle_save(): void {
 		'contact' => [
 			'support_email' => sanitize_email( (string) ( $input['contact']['support_email'] ?? '' ) ),
 		],
+		'fluent_forms' => [
+			'enabled'            => ! empty( $input['fluent_forms']['enabled'] ),
+			'default_shortcode'  => function_exists( 'jcp_fluent_sanitize_shortcode' )
+				? jcp_fluent_sanitize_shortcode( (string) ( $input['fluent_forms']['default_shortcode'] ?? '' ) )
+				: sanitize_text_field( (string) ( $input['fluent_forms']['default_shortcode'] ?? '' ) ),
+			'mount_global_modal' => ! empty( $input['fluent_forms']['mount_global_modal'] ),
+		],
 	];
 
 	update_option( jcp_global_settings_option_key(), jcp_global_settings_merge( jcp_global_settings_defaults(), $settings ) );
@@ -288,6 +295,43 @@ function jcp_global_settings_render_page(): void {
 				<tr>
 					<th scope="row"><label for="jcp_support_email"><?php esc_html_e( 'Support email', 'jcp-core' ); ?></label></th>
 					<td><input type="email" class="regular-text" id="jcp_support_email" name="jcp_global[contact][support_email]" value="<?php echo esc_attr( (string) ( $contact['support_email'] ?? '' ) ); ?>" /></td>
+				</tr>
+			</table>
+
+			<?php
+			$ff = $s['fluent_forms'] ?? [];
+			?>
+			<h2><?php esc_html_e( 'Fluent Forms bridge', 'jcp-core' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'Theme-owned styling for multi-step Fluent Forms. Leave Fluent Form → Custom CSS blank. Per-page shortcodes live in the Form embed block.', 'jcp-core' ); ?>
+			</p>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Enable theme CSS/JS bridge', 'jcp-core' ); ?></th>
+					<td>
+						<label>
+							<input type="hidden" name="jcp_global[fluent_forms][enabled]" value="0" />
+							<input type="checkbox" name="jcp_global[fluent_forms][enabled]" value="1" <?php checked( ! isset( $ff['enabled'] ) || ! empty( $ff['enabled'] ) ); ?> />
+							<?php esc_html_e( 'On (default)', 'jcp-core' ); ?>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="jcp_ff_shortcode"><?php esc_html_e( 'Default shortcode', 'jcp-core' ); ?></label></th>
+					<td>
+						<input type="text" class="large-text code" id="jcp_ff_shortcode" name="jcp_global[fluent_forms][default_shortcode]" value="<?php echo esc_attr( (string) ( $ff['default_shortcode'] ?? '' ) ); ?>" placeholder='[fluentform id="12"]' />
+						<p class="description"><?php esc_html_e( 'Used when a Form embed block has no shortcode, and for the optional global modal.', 'jcp-core' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Mount global quote modal', 'jcp-core' ); ?></th>
+					<td>
+						<label>
+							<input type="hidden" name="jcp_global[fluent_forms][mount_global_modal]" value="0" />
+							<input type="checkbox" name="jcp_global[fluent_forms][mount_global_modal]" value="1" <?php checked( ! empty( $ff['mount_global_modal'] ) ); ?> />
+							<?php esc_html_e( 'Footer modal opened by links to #apply / #jcp-form-modal or [data-jcp-form-trigger]', 'jcp-core' ); ?>
+						</label>
+					</td>
 				</tr>
 			</table>
 
