@@ -326,11 +326,12 @@ function jcp_page_save_content( int $post_id, array $content ): void {
 		$content = jcp_page_normalize_content( $content, $post_id );
 	}
 	$content = jcp_page_sanitize_content_document( $content );
-	update_post_meta(
-		$post_id,
-		jcp_page_content_meta_key(),
-		wp_json_encode( $content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES )
-	);
+	$json    = wp_json_encode( $content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+	if ( ! is_string( $json ) || $json === '' ) {
+		return;
+	}
+	// wp_slash required: update_post_meta() unslashes once and would corrupt JSON backslashes.
+	update_post_meta( $post_id, jcp_page_content_meta_key(), wp_slash( $json ) );
 	// Remove legacy key once upgraded.
 	delete_post_meta( $post_id, jcp_page_legacy_meta_key() );
 }
