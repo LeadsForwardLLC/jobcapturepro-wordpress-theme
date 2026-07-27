@@ -762,6 +762,7 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 		<button type="button" class="button" id="jcp-niche-load-features-demo"><?php esc_html_e( 'Use features preset', 'jcp-core' ); ?></button>
 		<button type="button" class="button" id="jcp-niche-load-comparison-demo"><?php esc_html_e( 'Use comparison preset', 'jcp-core' ); ?></button>
 		<button type="button" class="button" id="jcp-niche-load-minimal-demo"><?php esc_html_e( 'Use minimal preset', 'jcp-core' ); ?></button>
+		<button type="button" class="button button-primary" id="jcp-niche-load-campaign-demo"><?php esc_html_e( 'Use campaign landing (CRO) preset', 'jcp-core' ); ?></button>
 	</p>
 	<?php else : ?>
 	<p>
@@ -810,6 +811,7 @@ function jcp_niche_render_meta_box( WP_Post $post ): void {
 		bindPreset('jcp-niche-load-features-demo', 'jcp_page_features_json');
 		bindPreset('jcp-niche-load-comparison-demo', 'jcp_page_comparison_json');
 		bindPreset('jcp-niche-load-minimal-demo', 'jcp_page_minimal_json');
+		bindPreset('jcp-niche-load-campaign-demo', 'jcp_page_campaign_json');
 	})();
 	</script>
 	<?php
@@ -892,6 +894,11 @@ function jcp_page_ajax_comparison_json(): void {
 	jcp_niche_ajax_preset_json( 'comparison' );
 }
 add_action( 'wp_ajax_jcp_page_comparison_json', 'jcp_page_ajax_comparison_json' );
+
+function jcp_page_ajax_campaign_json(): void {
+	jcp_niche_ajax_preset_json( 'campaign' );
+}
+add_action( 'wp_ajax_jcp_page_campaign_json', 'jcp_page_ajax_campaign_json' );
 
 /**
  * AJAX: apply a layout preset skeleton to the current block page.

@@ -115,6 +115,21 @@ function jcp_page_presets(): array {
 				'final_cta',
 			],
 		],
+		'campaign' => [
+			'label'       => __( 'Campaign landing (CRO)', 'jcp-core' ),
+			'page_kind'   => 'marketing',
+			'description' => __( 'Paid / cold traffic — single offer, proof, objections, strong CTA', 'jcp-core' ),
+			'block_types' => [
+				'hero',
+				'core_mechanic',
+				'problem',
+				'benefits',
+				'how_it_works',
+				'demo_preview',
+				'faq',
+				'final_cta',
+			],
+		],
 		'home' => [
 			'label'       => __( 'Homepage', 'jcp-core' ),
 			'page_kind'   => 'home',

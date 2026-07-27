@@ -3300,3 +3300,47 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   border-color: var(--jcp-color-primary);
   background: rgba(255, 80, 62, 0.06);
 }
+
+/* Campaign landing (cold traffic / paid) — centered hero, tighter funnel */
+.jcp-page-campaign.jcp-marketing {
+  --jcp-campaign-section-gap: clamp(2.5rem, 5vw, 4rem);
+}
+
+.jcp-page-campaign .jcp-niche-hero--copy-only .jcp-hero-grid {
+  justify-items: center;
+  text-align: center;
+  max-width: 44rem;
+  margin-inline: auto;
+}
+
+.jcp-page-campaign .jcp-niche-hero--copy-only .jcp-actions {
+  justify-content: center;
+}
+
+.jcp-page-campaign .jcp-niche-trust-line {
+  justify-content: center;
+}
+
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="core_mechanic"] {
+  margin-block: calc(var(--jcp-campaign-section-gap) * 0.5);
+}
+
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="final_cta"] .jcp-section {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 80, 62, 0.06) 0%,
+    rgba(255, 80, 62, 0.02) 100%
+  );
+  border-radius: 1rem;
+  padding-block: clamp(2rem, 4vw, 3rem);
+}
+
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="final_cta"] .jcp-actions .jcp-btn-primary {
+  font-size: 1.0625rem;
+  padding: 0.85rem 1.75rem;
+}
+
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .jcp-section {
+  border: 1px solid var(--jcp-color-border);
+  border-radius: 1rem;
+}

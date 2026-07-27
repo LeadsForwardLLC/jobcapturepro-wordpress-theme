@@ -257,6 +257,9 @@ function jcp_page_normalize_content( array $content, int $post_id ): array {
 		if ( empty( $content['page_label'] ) && empty( $content['niche_label'] ) ) {
 			$content['page_label'] = get_the_title( $post_id );
 		}
+		if ( function_exists( 'jcp_page_finalize_campaign_document' ) ) {
+			$content = jcp_page_finalize_campaign_document( $content );
+		}
 		return $content;
 	}
 	return jcp_page_legacy_to_blocks( $content, $post_id );
@@ -422,7 +425,7 @@ function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 		$blocks[] = $block;
 	}
 
-	return [
+	$doc = [
 		'version'         => 1,
 		'page_kind'       => $page_kind,
 		'page_key'        => ! empty( $legacy['niche_key'] ) ? (string) $legacy['niche_key'] : ( ! empty( $legacy['page_key'] ) ? (string) $legacy['page_key'] : ( $post_id > 0 ? (string) get_post_field( 'post_name', $post_id ) : '' ) ),
@@ -436,6 +439,10 @@ function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 		'page_type'       => $legacy['page_type'] ?? ( $page_kind === 'referral' ? 'referral' : '' ),
 		'nav_cta'         => is_array( $legacy['nav_cta'] ?? null ) ? $legacy['nav_cta'] : [],
 	];
+
+	return function_exists( 'jcp_page_finalize_campaign_document' )
+		? jcp_page_finalize_campaign_document( $doc )
+		: $doc;
 }
 
 /**

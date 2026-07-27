@@ -27,6 +27,9 @@ function jcp_page_render( int $post_id ): void {
 	if ( $page_kind === 'marketing' ) {
 		$main_class .= ' jcp-page-marketing';
 	}
+	if ( function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ) ) {
+		$main_class .= ' jcp-page-campaign';
+	}
 
 	echo '<main class="' . esc_attr( $main_class ) . '" data-niche="' . esc_attr( $page_key ) . '" data-page-kind="' . esc_attr( $page_kind ) . '">';
 

@@ -67,7 +67,7 @@ function jcp_writer_resolve_preset( ?WP_Post $post, array $content = [] ): strin
  * @return array<string, string> slug => label
  */
 function jcp_writer_selectable_layout_presets(): array {
-	$choices = [ 'industry', 'marketing', 'features', 'comparison', 'minimal' ];
+	$choices = [ 'industry', 'marketing', 'campaign', 'features', 'comparison', 'minimal' ];
 	$out     = [];
 	foreach ( $choices as $slug ) {
 		$def = jcp_page_get_preset( $slug );
@@ -99,9 +99,13 @@ function jcp_writer_document_meta_block( string $preset = 'industry' ): string {
 	$preset       = sanitize_key( $preset );
 	$preset_label = jcp_writer_preset_label( $preset );
 	$is_industry  = $preset === 'industry';
+	$is_campaign  = $preset === 'campaign';
 	$list_rule    = $is_industry
 		? '- Use these exact list counts: 3 team-already bullets + 4 turns-into outputs; 4 how-it-works steps; 4–5 check-in job types + 4 check-in features; 4 pain points; 4 benefits + closing paragraph; 3–4 who-it\'s-for audience cards (with Badge); 4 FAQ questions; 4 conversion bullets'
-		: '- Match the list counts shown in each section of this template (steps, bullets, cards, FAQ items, etc.)';
+		: ( $is_campaign
+			? '- Campaign landing counts: 3 core-mechanic stats; 3 problem pain points; 4 benefit cards + closing paragraph; 3 how-it-works steps; 5 FAQ objections; ONE primary CTA label repeated in hero, how-it-works, and final CTA (secondary CTA optional — demo only)'
+			: '- Match the list counts shown in each section of this template (steps, bullets, cards, FAQ items, etc.)' );
+	$word_target  = $is_campaign ? '600–900 words (body only, excluding this header)' : '1,200–1,800 words (body only, excluding this header)';
 	$extra_rule   = '- Sections marked “optional on this page” in the admin guide can be omitted; extra ALL CAPS sections you add will import and append in the page editor';
 
 	return <<<META
@@ -113,7 +117,7 @@ PAGE CONTEXT (fill before writing or pasting into ChatGPT / Claude):
 - State/region (if applicable): [e.g. Indiana / IN]
 - Primary focus keyword: [main keyword phrase]
 - Secondary keywords: [2–4 related phrases, comma-separated]
-- Target word count: 1,200–1,800 words (body only, excluding this header)
+- Target word count: {$word_target}
 
 Word count:
 
@@ -526,20 +530,33 @@ function jcp_writer_get_ai_prompt( string $preset = 'industry', ?WP_Post $post =
 	$page_title   = $post instanceof WP_Post ? get_the_title( $post ) : '[Page title]';
 	$page_slug    = $post instanceof WP_Post && $post->post_name !== '' ? $post->post_name : '[url-slug]';
 	$guidelines   = jcp_writer_editorial_guidelines_text();
-	$counts       = jcp_writer_document_list_counts();
+	$counts       = jcp_writer_document_list_counts_for_preset( $preset );
 	$template     = jcp_writer_get_document_template( $preset );
-	$count_lines  = sprintf(
-		"- What It Is: %d team-already bullets + %d turns-into outputs\n- How It Works: %d steps\n- Check-Ins: %d features\n- Problem: %d pain points\n- Benefits: %d cards (each with orange keyword + ALL CAPS tagline) + closing paragraph\n- Who It's For: %d segments\n- FAQ: %d Q&As\n- Conversion: %d bullets",
-		$counts['what_it_is_team_already'],
-		$counts['what_it_is_turns_into'],
-		$counts['how_it_works_steps'],
-		$counts['check_in_features'],
-		$counts['problem_pain_points'],
-		$counts['benefits_items'],
-		$counts['who_its_for_segments'],
-		$counts['faq_questions'],
-		$counts['conversion_bullets']
-	);
+	if ( $preset === 'campaign' ) {
+		$count_lines = sprintf(
+			"- Core Mechanic: %d stats\n- Problem: %d pain points\n- Benefits: %d cards + closing paragraph\n- How It Works: %d steps\n- FAQ: %d objection-handling Q&As",
+			$counts['core_mechanic_stats'],
+			$counts['problem_pain_points'],
+			$counts['benefits_items'],
+			$counts['how_it_works_steps'],
+			$counts['faq_questions']
+		);
+		$word_target = '600–900 words (body only)';
+	} else {
+		$count_lines = sprintf(
+			"- What It Is: %d team-already bullets + %d turns-into outputs\n- How It Works: %d steps\n- Check-Ins: %d features\n- Problem: %d pain points\n- Benefits: %d cards (each with orange keyword + ALL CAPS tagline) + closing paragraph\n- Who It's For: %d segments\n- FAQ: %d Q&As\n- Conversion: %d bullets",
+			$counts['what_it_is_team_already'],
+			$counts['what_it_is_turns_into'],
+			$counts['how_it_works_steps'],
+			$counts['check_in_features'],
+			$counts['problem_pain_points'],
+			$counts['benefits_items'],
+			$counts['who_its_for_segments'],
+			$counts['faq_questions'],
+			$counts['conversion_bullets']
+		);
+		$word_target = '1,200–1,800 words (body only)';
+	}
 
 	$intro = <<<PROMPT
 You are an expert copywriter for JobCapturePro, a SaaS product for home service contractors (plumbing, HVAC, roofing, electrical, etc.). Fill in the writer document template below for ONE page.
@@ -552,25 +569,48 @@ BEFORE YOU START — replace every bracket placeholder and confirm these details
 - State/region (if applicable): [FILL IN — e.g. Indiana / IN]
 - Primary focus keyword: [FILL IN]
 - Secondary keywords: [FILL IN — comma-separated]
-- Target word count: 1,200–1,800 words (body only)
+- Target word count: {$word_target}
 
 EDITORIAL STANDARDS (non-negotiable):
 {$guidelines}
+PROMPT;
+
+	if ( $preset === 'campaign' ) {
+		$intro .= <<<'CRO'
+
+CAMPAIGN / CRO RULES (this page is for cold traffic):
+- Lead with ONE clear offer (free trial, limited cohort, case study, etc.) — state scarcity or deadline honestly if you use it
+- Hero: outcome-focused H1, subheadline = who it's for + what they get + why act now
+- Repeat the SAME primary CTA button label in hero, how-it-works, and final CTA
+- Secondary CTA only for low-commitment proof (demo video) — never compete with the primary action
+- Problem section: agitate pains they already feel; benefits = outcomes not features
+- FAQ must handle real objections: time, crew burden, tools they already use, offer terms, what happens next
+- Shorter sentences; no long SEO essays — every line should move someone toward the form or signup
+CRO;
+	}
+
+	$intro .= <<<'PROMPT'
 
 OUTPUT REQUIREMENTS:
 1. Return ONLY the filled writer document — no commentary, preamble, or markdown fences before or after
 2. Keep every ALL CAPS section header and field label EXACTLY as in the template
 3. Use these exact list counts:
-{$count_lines}
-4. H1: 8–14 words; each H2: 6–12 words — every H2 must be unique and specific to this trade/location
-5. Keyword placement: first or second sentence of page, first H2, and one additional H2 — natural, not forced
-6. Vary CTAs (2–5 words each) — do not repeat the same button label in every section
+PROMPT;
+	$intro .= $count_lines;
+	$campaign_cta_rule = $preset === 'campaign'
+		? '6. Use the SAME primary CTA label in hero, how-it-works, and final CTA (secondary CTA may differ — demo only)'
+		: '6. Vary CTAs (2–5 words each) — do not repeat the same button label in every section';
+	$intro .= <<<PROMPT
+
+4. H1: 8–14 words; each H2: 6–12 words — every H2 must be unique and specific to this page
+5. Keyword placement: first or second sentence of page and one H2 — natural, not forced
+{$campaign_cta_rule}
 7. JobCapturePro: max 2–3 mentions in body copy
 8. SEO Title: 50–60 characters; Meta Description: 140–160 characters (fill header fields)
 9. Write so a real contractor would say it to a customer — not like a blog post or term paper
 10. Each section answers a different reader question; cut or rewrite overlap
 
-AFTER GENERATING — the human writer must read aloud, edit for flow, and customize so the page could NOT be reused on another trade with find-and-replace.
+AFTER GENERATING — the human writer must read aloud, edit for flow, and customize so the page could NOT be reused on another campaign with find-and-replace.
 
 TEMPLATE TO FILL:
 PROMPT;
@@ -595,18 +635,33 @@ function jcp_page_create_skeleton_document( WP_Post $post, string $preset ): arr
 	$label     = get_the_title( $post );
 	$key       = $post->post_name !== '' ? $post->post_name : sanitize_title( $label );
 
-	return [
-		'version'      => 1,
-		'page_kind'    => $page_kind,
-		'page_key'     => $key,
-		'page_label'   => $label,
-		'niche_key'    => $key,
-		'niche_label'  => $label,
-		'preset'       => $preset,
-		'blocks'       => jcp_page_blocks_from_preset( $preset ),
-		'seo'          => [ 'keywords' => [] ],
-		'settings'     => [ 'hide_breadcrumb' => false ],
-	];
+	return function_exists( 'jcp_page_finalize_campaign_document' )
+		? jcp_page_finalize_campaign_document(
+			[
+				'version'      => 1,
+				'page_kind'    => $page_kind,
+				'page_key'     => $key,
+				'page_label'   => $label,
+				'niche_key'    => $key,
+				'niche_label'  => $label,
+				'preset'       => $preset,
+				'blocks'       => jcp_page_blocks_from_preset( $preset ),
+				'seo'          => [ 'keywords' => [] ],
+				'settings'     => [ 'hide_breadcrumb' => false ],
+			]
+		)
+		: [
+			'version'      => 1,
+			'page_kind'    => $page_kind,
+			'page_key'     => $key,
+			'page_label'   => $label,
+			'niche_key'    => $key,
+			'niche_label'  => $label,
+			'preset'       => $preset,
+			'blocks'       => jcp_page_blocks_from_preset( $preset ),
+			'seo'          => [ 'keywords' => [] ],
+			'settings'     => [ 'hide_breadcrumb' => false ],
+		];
 }
 
 /**
