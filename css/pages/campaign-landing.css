@@ -68,6 +68,10 @@
   color: var(--jcp-color-text-secondary, #6b7280);
 }
 
+.jcp-page-campaign .jcp-block-root:nth-child(even of [data-jcp-block-type]) > .jcp-section {
+  background: var(--jcp-campaign-cool);
+}
+
 .jcp-page-campaign .jcp-block-root[data-jcp-block-type="hero"] > .jcp-section,
 .jcp-page-campaign .jcp-block-root[data-jcp-block-type="core_mechanic"] > .jcp-section,
 .jcp-page-campaign .jcp-block-root[data-jcp-block-type="problem"] > .jcp-section,
