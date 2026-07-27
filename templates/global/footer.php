@@ -43,17 +43,8 @@ $dir_search = $dir_url . '/#search';
 $dir_how = $dir_url . '/#how-it-works';
 $dir_trust = $dir_url . '/#trust';
 $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && jcp_page_current_hides_site_chrome();
-$campaign_landing = function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing();
-$campaign_cta     = ( $hide_site_chrome && $campaign_landing && function_exists( 'jcp_page_campaign_primary_cta' ) )
-	? jcp_page_campaign_primary_cta()
-	: [ 'label' => '', 'url' => '#apply' ];
 ?>
   <?php if ( $hide_site_chrome ) : ?>
-  <?php if ( $campaign_landing && $campaign_cta['label'] !== '' ) : ?>
-  <div class="jcp-campaign-sticky-cta" data-jcp-campaign-sticky>
-    <a class="jcp-campaign-sticky-cta__btn" href="<?php echo esc_url( $campaign_cta['url'] ); ?>"><?php echo esc_html( $campaign_cta['label'] ); ?></a>
-  </div>
-  <?php endif; ?>
   <footer class="jcp-footer jcp-footer--landing-minimal">
     <div class="jcp-container jcp-footer-bottom-inner">
       <nav class="jcp-footer-legal" aria-label="<?php esc_attr_e( 'Legal', 'jcp-core' ); ?>">

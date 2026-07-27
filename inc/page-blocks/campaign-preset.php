@@ -38,14 +38,10 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 			$doc['blocks'][ $i ]['layout'] = array_merge(
 				$base,
 				[
-					'hero_variant' => 'split',
-					'align'        => 'left',
+					'hero_variant' => 'centered',
+					'align'        => 'center',
 				]
 			);
-			$props = is_array( $block['props'] ?? null ) ? $block['props'] : [];
-			// Layout flag only — enables product-proof column without changing copy.
-			$props['show_visual'] = true;
-			$doc['blocks'][ $i ]['props'] = $props;
 		}
 		if ( $type === 'how_it_works' ) {
 			$base = is_array( $block['layout'] ?? null )
@@ -136,50 +132,4 @@ function jcp_page_current_hides_site_chrome(): bool {
 	}
 
 	return (bool) apply_filters( 'jcp_page_hide_site_chrome', $hide, $post_id, $content );
-}
-
-/**
- * Primary campaign CTA (label + URL) from the current page document.
- *
- * @return array{label:string,url:string}
- */
-function jcp_page_campaign_primary_cta(): array {
-	$empty = [ 'label' => '', 'url' => '#apply' ];
-	if ( ! is_singular() || ! function_exists( 'jcp_page_get_content_flat' ) ) {
-		return $empty;
-	}
-	$post_id = (int) get_queried_object_id();
-	if ( $post_id <= 0 ) {
-		return $empty;
-	}
-	$flat   = jcp_page_get_content_flat( $post_id );
-	$hero   = is_array( $flat['hero'] ?? null ) ? $flat['hero'] : [];
-	$cta    = is_array( $hero['cta_primary'] ?? null ) ? $hero['cta_primary'] : [];
-	$label  = trim( (string) ( $cta['label'] ?? '' ) );
-	$url    = trim( (string) ( $cta['url'] ?? '' ) );
-	if ( $url === '' ) {
-		$url = '#apply';
-	}
-	if ( $label === '' ) {
-		$final = is_array( $flat['final_cta']['cta_primary'] ?? null ) ? $flat['final_cta']['cta_primary'] : [];
-		$label = trim( (string) ( $final['label'] ?? '' ) );
-	}
-	return [
-		'label' => $label,
-		'url'   => $url,
-	];
-}
-
-/**
- * Whether the current request is a campaign landing front-end page.
- */
-function jcp_page_current_is_campaign_landing(): bool {
-	if ( is_admin() || ! is_singular() || ! function_exists( 'jcp_page_get_content' ) ) {
-		return false;
-	}
-	$post_id = (int) get_queried_object_id();
-	if ( $post_id <= 0 ) {
-		return false;
-	}
-	return jcp_page_is_campaign_landing( jcp_page_get_content( $post_id ) );
 }
