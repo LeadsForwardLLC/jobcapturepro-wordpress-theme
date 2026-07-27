@@ -242,11 +242,19 @@ function jcp_niche_render_form_embed( array $props ): void {
 					<?php endif; ?>
 				</div>
 			<?php endif; ?>
-			<div class="jcp-form-embed__panel jcp-fluent-bridge jcp-fluent-bridge--inline">
+			<div class="jcp-form-embed__panel jcp-fluent-bridge jcp-fluent-bridge--inline" data-jcp-form-panel>
 				<?php if ( $shortcode !== '' ) : ?>
 					<?php echo do_shortcode( $shortcode ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-				<?php elseif ( current_user_can( 'edit_posts' ) ) : ?>
-					<p class="jcp-form-embed__empty"><?php esc_html_e( 'Add a Fluent Forms shortcode in this section (e.g. [fluentform id="12"]).', 'jcp-core' ); ?></p>
+				<?php else : ?>
+					<p class="jcp-form-embed__empty" role="status">
+						<?php
+						if ( current_user_can( 'edit_posts' ) ) {
+							esc_html_e( 'Add a Fluent Forms shortcode in this section (e.g. [fluentform id="12"]).', 'jcp-core' );
+						} else {
+							echo '&nbsp;';
+						}
+						?>
+					</p>
 				<?php endif; ?>
 			</div>
 		</div>

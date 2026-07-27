@@ -22,7 +22,7 @@
     "cta_primary": { "label": "Claim your spot", "url": "#apply" },
     "cta_secondary": { "label": "Watch 2-min demo", "url": "/demo" },
     "trust_line": "No credit card · Fast setup · Built for field crews",
-    "show_visual": false
+    "show_visual": true
   },
   "core_mechanic": [
     { "value": "1", "label": "job photo", "detail": "Becomes multi-channel proof" },

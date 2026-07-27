@@ -354,7 +354,28 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 					<?php endif; ?>
 				</div>
 				<?php if ( $show_visual ) : ?>
-				<div class="jcp-split-col jcp-split-col--media jcp-hero-visual-column" data-jcp-split-col="media" aria-hidden="false">
+				<?php
+				$is_campaign_hero = function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing();
+				$proof_chips      = [];
+				if ( $is_campaign_hero ) {
+					foreach ( array_slice( (array) ( $c['core_mechanic'] ?? [] ), 0, 3 ) as $stat ) {
+						if ( ! is_array( $stat ) ) {
+							continue;
+						}
+						$chip = trim( (string) ( $stat['value'] ?? '' ) . ' ' . (string) ( $stat['label'] ?? '' ) );
+						if ( $chip !== '' ) {
+							$proof_chips[] = $chip;
+						}
+					}
+				}
+				?>
+				<div class="jcp-split-col jcp-split-col--media jcp-hero-visual-column<?php echo $is_campaign_hero ? ' jcp-campaign-proof' : ''; ?>" data-jcp-split-col="media" aria-hidden="false">
+					<?php if ( $is_campaign_hero ) : ?>
+						<?php foreach ( $proof_chips as $ci => $chip_label ) : ?>
+							<span class="jcp-campaign-proof__chip jcp-campaign-proof__chip--<?php echo esc_attr( [ 'a', 'b', 'c' ][ $ci ] ?? 'a' ); ?>" aria-hidden="true"><?php echo esc_html( $chip_label ); ?></span>
+						<?php endforeach; ?>
+						<div class="jcp-campaign-proof__media">
+					<?php endif; ?>
 					<?php
 					$hero_demo = $primary['url'] !== '' ? $primary['url'] : $demo_url;
 					jcp_media_render_slot(
@@ -380,6 +401,9 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 						]
 					);
 					?>
+					<?php if ( $is_campaign_hero ) : ?>
+						</div>
+					<?php endif; ?>
 				</div>
 				<?php endif; ?>
 			</div>

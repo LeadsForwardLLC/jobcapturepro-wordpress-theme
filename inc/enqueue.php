@@ -110,6 +110,10 @@ function jcp_core_enqueue_assets(): void {
             jcp_core_enqueue_style( 'jcp-core-blog', 'css/pages/blog.css', [ 'jcp-core-sections' ] );
             jcp_core_enqueue_script( 'jcp-industries-archive', 'js/pages/industries-archive.js' );
         }
+        if ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() ) {
+            jcp_core_enqueue_style( 'jcp-core-campaign-landing', 'css/pages/campaign-landing.css', [ 'jcp-core-niche-landing' ] );
+            jcp_core_enqueue_script( 'jcp-core-campaign-landing', 'js/pages/campaign-landing.js', [] );
+        }
     }
 
     $editor_post_id = jcp_core_get_page_editor_post_id();

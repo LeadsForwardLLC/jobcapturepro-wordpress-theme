@@ -22,6 +22,9 @@ $show_top_banner  = ! $hide_site_chrome && (
 );
 
 $body_classes = ( $hide_site_chrome ? 'jcp-landing-chrome-hidden' : 'jcp-global-nav-active' ) . ( $show_top_banner ? ' has-top-banner' : '' );
+if ( $hide_site_chrome && function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() ) {
+	$body_classes .= ' has-campaign-sticky-cta';
+}
 ?><!doctype html>
 <html <?php language_attributes(); ?>>
 <head>
@@ -31,16 +34,24 @@ $body_classes = ( $hide_site_chrome ? 'jcp-landing-chrome-hidden' : 'jcp-global-
 <body <?php body_class( $body_classes ); ?>>
   <div class="jcp-header-stack" id="jcpHeaderStack">
   <?php if ( $hide_site_chrome ) : ?>
+    <?php
+    $landing_cta = function_exists( 'jcp_page_campaign_primary_cta' ) ? jcp_page_campaign_primary_cta() : [ 'label' => '', 'url' => '#apply' ];
+    ?>
     <header class="jcp-landing-brandbar" role="banner">
-      <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="jcp-landing-brandbar__link" aria-label="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>">
-        <img
-          src="https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png"
-          alt="JobCapturePro"
-          class="jcp-landing-brandbar__logo"
-          width="160"
-          height="36"
-        />
-      </a>
+      <div class="jcp-landing-brandbar__inner">
+        <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="jcp-landing-brandbar__link" aria-label="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>">
+          <img
+            src="https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png"
+            alt="JobCapturePro"
+            class="jcp-landing-brandbar__logo"
+            width="160"
+            height="36"
+          />
+        </a>
+        <?php if ( $landing_cta['label'] !== '' ) : ?>
+          <a class="jcp-landing-brandbar__cta" href="<?php echo esc_url( $landing_cta['url'] ); ?>"><?php echo esc_html( $landing_cta['label'] ); ?></a>
+        <?php endif; ?>
+      </div>
     </header>
   <?php else : ?>
   <?php if ( $show_top_banner ) : ?>
