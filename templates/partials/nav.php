@@ -114,12 +114,7 @@ $dir_trust = $dir_url . '/#trust';
         if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
           jcp_niche_cta_tracking_attr( $secondary_url, 'header', $secondary_label );
         }
-      ?>>
-        <span><?php echo esc_html( $secondary_label ); ?></span>
-        <svg id="dynamicBackIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M5 12h14M13 5l7 7-7 7"/>
-        </svg>
-      </a>
+      ?>><?php echo esc_html( $secondary_label ); ?></a>
       <a href="<?php echo esc_url( $primary_url ); ?>" class="btn btn-primary"<?php
         if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
           jcp_niche_cta_tracking_attr( $primary_url, 'header', $primary_label );
