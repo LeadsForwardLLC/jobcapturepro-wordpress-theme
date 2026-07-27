@@ -286,7 +286,10 @@ function jcp_global_settings_render_page(): void {
 				</tr>
 				<tr>
 					<th scope="row"><label for="jcp_nav_secondary_url"><?php esc_html_e( 'Secondary URL', 'jcp-core' ); ?></label></th>
-					<td><input type="url" class="large-text" id="jcp_nav_secondary_url" name="jcp_global[nav_cta][secondary_url]" value="<?php echo esc_attr( (string) ( $nav['secondary_url'] ?? '' ) ); ?>" /></td>
+					<td>
+						<input type="url" class="large-text" id="jcp_nav_secondary_url" name="jcp_global[nav_cta][secondary_url]" value="<?php echo esc_attr( (string) ( $nav['secondary_url'] ?? '' ) ); ?>" />
+						<p class="description"><?php esc_html_e( 'Empty + “Login” label = app login URL with nav_login UTM.', 'jcp-core' ); ?></p>
+					</td>
 				</tr>
 			</table>
 

@@ -92,8 +92,18 @@ $dir_trust = $dir_url . '/#trust';
       $nav_ctas    = function_exists( 'jcp_global_resolve_nav_ctas' )
         ? jcp_global_resolve_nav_ctas( $nav_post_id > 0 ? $nav_post_id : null )
         : [
-          'primary'   => [ 'label' => 'Get Started', 'url' => home_url( '/demo' ) ],
-          'secondary' => [ 'label' => 'Online Demo', 'url' => home_url( '/demo' ) ],
+          'primary'   => [
+            'label' => 'Get Started',
+            'url'   => function_exists( 'jcp_core_onboarding_app_url_raw' )
+              ? jcp_core_onboarding_app_url_raw( function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults( 'nav_get_started' ) : [] )
+              : home_url( '/demo' ),
+          ],
+          'secondary' => [
+            'label' => 'Login',
+            'url'   => function_exists( 'jcp_core_app_login_url_raw' )
+              ? jcp_core_app_login_url_raw( function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults( 'nav_login' ) : [] )
+              : 'https://app.jobcapturepro.com/login',
+          ],
         ];
       $secondary_label = $nav_ctas['secondary']['label'];
       $secondary_url   = $nav_ctas['secondary']['url'];

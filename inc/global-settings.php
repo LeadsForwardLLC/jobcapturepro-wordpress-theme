@@ -38,8 +38,8 @@ function jcp_global_settings_defaults(): array {
 		'nav_cta' => [
 			'primary_label'   => 'Get Started',
 			'primary_url'     => '',
-			'secondary_label' => 'Online Demo',
-			'secondary_url'   => '/demo',
+			'secondary_label' => 'Login',
+			'secondary_url'   => '',
 		],
 		'header_nav' => [
 			// Overrides keyed by item id — merged onto jcp_global_header_nav_defaults() at resolve time.
@@ -373,15 +373,24 @@ function jcp_global_resolve_cta( string $label, string $url, string $utm_content
 	$label = trim( $label );
 	$url   = trim( $url );
 
-	if ( $url === '' && $label !== '' && preg_match( '/trial|sign\s*up|get\s*started|claim/i', $label ) ) {
-		$utm = $utm_content !== '' && function_exists( 'jcp_core_onboarding_utm_defaults' )
-			? jcp_core_onboarding_utm_defaults( $utm_content )
-			: ( $utm_content !== '' ? [ 'utm_content' => $utm_content ] : [] );
+	$utm = $utm_content !== '' && function_exists( 'jcp_core_onboarding_utm_defaults' )
+		? jcp_core_onboarding_utm_defaults( $utm_content )
+		: ( $utm_content !== '' ? [ 'utm_content' => $utm_content ] : [] );
+
+	if ( $url === '' && $label !== '' && preg_match( '/\blog\s*in\b/i', $label ) ) {
+		$url = function_exists( 'jcp_core_app_login_url_raw' )
+			? jcp_core_app_login_url_raw( array_merge( $utm, $query_extra ) )
+			: 'https://app.jobcapturepro.com/login';
+	} elseif ( $url === '' && $label !== '' && preg_match( '/trial|sign\s*up|get\s*started|claim/i', $label ) ) {
 		$url = function_exists( 'jcp_core_onboarding_app_url_raw' )
 			? jcp_core_onboarding_app_url_raw( array_merge( $utm, $query_extra ) )
 			: home_url( '/demo' );
 	} elseif ( $url === '' ) {
 		$url = home_url( '/demo' );
+	} elseif ( preg_match( '#^https?://app\.jobcapturepro\.com/login/?$#i', $url ) ) {
+		$url = function_exists( 'jcp_core_app_login_url_raw' )
+			? jcp_core_app_login_url_raw( array_merge( $utm, $query_extra ) )
+			: $url;
 	} elseif ( ! preg_match( '#^https?://#i', $url ) ) {
 		$url = home_url( $url );
 	}
@@ -402,8 +411,8 @@ function jcp_global_resolve_nav_ctas( ?int $post_id = null ): array {
 	$global = jcp_global_settings()['nav_cta'] ?? [];
 	$primary_label   = (string) ( $global['primary_label'] ?? 'Get Started' );
 	$primary_url     = (string) ( $global['primary_url'] ?? '' );
-	$secondary_label = (string) ( $global['secondary_label'] ?? 'Online Demo' );
-	$secondary_url   = (string) ( $global['secondary_url'] ?? '/demo' );
+	$secondary_label = (string) ( $global['secondary_label'] ?? 'Login' );
+	$secondary_url   = (string) ( $global['secondary_url'] ?? '' );
 
 	if ( $post_id && $post_id > 0 && function_exists( 'jcp_page_get_content_flat' ) ) {
 		$content = jcp_page_get_content_flat( $post_id );
@@ -424,9 +433,19 @@ function jcp_global_resolve_nav_ctas( ?int $post_id = null ): array {
 		}
 	}
 
+	// Migrate legacy Online Demo secondary CTA → Login (app login + UTMs).
+	$secondary_path = (string) ( wp_parse_url( $secondary_url, PHP_URL_PATH ) ?? '' );
+	$is_legacy_demo = (bool) preg_match( '/online\s*demo/i', $secondary_label )
+		|| $secondary_url === '/demo'
+		|| rtrim( $secondary_path, '/' ) === '/demo';
+	if ( $is_legacy_demo ) {
+		$secondary_label = 'Login';
+		$secondary_url   = '';
+	}
+
 	return [
 		'primary'   => jcp_global_resolve_cta( $primary_label, $primary_url, 'nav_get_started' ),
-		'secondary' => jcp_global_resolve_cta( $secondary_label, $secondary_url, 'nav_online_demo' ),
+		'secondary' => jcp_global_resolve_cta( $secondary_label, $secondary_url, 'nav_login' ),
 	];
 }
 
