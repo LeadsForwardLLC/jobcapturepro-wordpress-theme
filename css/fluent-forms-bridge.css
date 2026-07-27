@@ -172,12 +172,13 @@ body.jcp-fluent-modal-open {
 }
 
 .jcp-form-embed__panel {
-  background: var(--jcp-color-bg-primary, #fff);
-  border: 1px solid var(--jcp-color-border, #e5e7eb);
-  border-radius: var(--jcp-radius-lg, 16px);
-  padding: clamp(1rem, 3vw, 1.75rem);
-  box-shadow: var(--jcp-shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.1));
-  min-height: 8rem;
+  /* No outer chrome — Fluent form card already has its own border/shadow. */
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  min-height: 0;
 }
 
 .jcp-form-embed__shortcode-field {
@@ -298,35 +299,14 @@ body.jcp-fluent-modal-open {
   box-shadow: 0 0 0 3px rgba(255, 80, 62, 0.22) !important;
 }
 
-/* Progress — thick track */
-.jcp-fluent-bridge .ff-el-progress,
+/* Progress — track + orange fill with white % label */
 .jcp-fluent-bridge .ff-el-progress-status,
-.jcp-fluent-bridge .ff_progressbar {
+.jcp-fluent-bridge .ff_progressbar,
+.jcp-fluent-bridge .ff-el-progress {
   margin-bottom: 1.25rem;
 }
 
-.jcp-fluent-bridge .ff-el-progress,
-.jcp-fluent-bridge .ff-el-progress-bar,
-.jcp-fluent-bridge .ff_progressbar,
-.jcp-fluent-bridge .ff-progress-bar {
-  height: 12px !important;
-  border-radius: var(--jcp-radius-full, 9999px) !important;
-  background: var(--jcp-ff-soft, #f3f4f6) !important;
-  overflow: hidden;
-}
-
-.jcp-fluent-bridge .ff-el-progress-bar > span,
-.jcp-fluent-bridge .ff-el-progress .ff-el-progress-bar,
-.jcp-fluent-bridge .ff_progressbar .progress-bar,
-.jcp-fluent-bridge .ff-progress-bar > div,
-.jcp-fluent-bridge .ff-el-progress-bar {
-  background: var(--jcp-ff-primary, #ff5036) !important;
-  height: 12px !important;
-  border-radius: var(--jcp-radius-full, 9999px) !important;
-}
-
 .jcp-fluent-bridge .ff-el-progress-status,
-.jcp-fluent-bridge .ff-el-progress span,
 .jcp-fluent-bridge .ff_step_titles,
 .jcp-fluent-bridge .ff-step-header {
   font-size: var(--jcp-font-size-xs, 12px) !important;
@@ -335,6 +315,57 @@ body.jcp-fluent-modal-open {
   text-transform: uppercase;
   color: var(--jcp-ff-muted, #6b7280) !important;
   margin-bottom: 0.5rem;
+}
+
+.jcp-fluent-bridge .ff-el-progress,
+.jcp-fluent-bridge .ff_progressbar,
+.jcp-fluent-bridge .ff-progress-bar {
+  display: block !important;
+  width: 100% !important;
+  height: 1.5rem !important;
+  min-height: 1.5rem !important;
+  border-radius: var(--jcp-radius-full, 9999px) !important;
+  background: var(--jcp-ff-soft, #f3f4f6) !important;
+  overflow: hidden;
+  box-shadow: none !important;
+}
+
+.jcp-fluent-bridge .ff-el-progress .ff-el-progress-bar,
+.jcp-fluent-bridge .ff-el-progress-bar,
+.jcp-fluent-bridge .ff_progressbar .progress-bar,
+.jcp-fluent-bridge .ff-progress-bar > div {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  min-width: 2.75rem !important;
+  height: 100% !important;
+  min-height: 1.5rem !important;
+  padding: 0 0.55rem !important;
+  border-radius: var(--jcp-radius-full, 9999px) !important;
+  background: var(--jcp-ff-primary, #ff5036) !important;
+  color: #fff !important;
+  font-size: 0.75rem !important;
+  font-weight: var(--jcp-font-weight-bold, 700) !important;
+  letter-spacing: 0.02em;
+  line-height: 1 !important;
+  text-transform: none !important;
+  text-align: right !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  transition: width 0.25s ease;
+}
+
+.jcp-fluent-bridge .ff-el-progress-bar > span,
+.jcp-fluent-bridge .ff-el-progress-bar span {
+  display: inline-block !important;
+  color: #fff !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  letter-spacing: inherit;
+  text-transform: none !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .jcp-fluent-bridge .ff-el-form-check + .ff-el-form-check,
