@@ -28,7 +28,7 @@ function jcp_page_render( int $post_id ): void {
 		$main_class .= ' jcp-page-marketing';
 	}
 	if ( function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ) ) {
-		$main_class .= ' jcp-page-campaign';
+		$main_class .= ' jcp-page-campaign jcp-home';
 	}
 
 	echo '<main class="' . esc_attr( $main_class ) . '" data-niche="' . esc_attr( $page_key ) . '" data-page-kind="' . esc_attr( $page_kind ) . '">';
@@ -45,6 +45,7 @@ function jcp_page_render( int $post_id ): void {
 		'page_key'    => $page_key,
 		'page_kind'   => $page_kind,
 		'is_referral' => $is_ref,
+		'is_campaign' => function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ),
 	];
 
 	foreach ( $blocks as $block ) {
@@ -122,6 +123,10 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 			jcp_niche_render_what_it_is( $c_what );
 			break;
 		case 'core_mechanic':
+			// Campaign pages mirror these stats into the hero (homepage pattern) — skip the duplicate strip.
+			if ( ! empty( $ctx['is_campaign'] ) && ! empty( $legacy['hero']['meta_stats'] ) ) {
+				break;
+			}
 			jcp_page_render_core_mechanic_block( $props );
 			break;
 		case 'how_it_works':

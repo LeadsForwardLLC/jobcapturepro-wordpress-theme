@@ -44,6 +44,20 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 			);
 			$props = is_array( $block['props'] ?? null ) ? $block['props'] : [];
 			$props['show_visual'] = true;
+			if ( empty( $props['media_type'] ) ) {
+				$props['media_type'] = 'phone_mockup';
+			}
+			// Mirror core_mechanic into hero meta_stats (homepage pattern) using existing labels only.
+			if ( empty( $props['meta_stats'] ) || ! is_array( $props['meta_stats'] ) ) {
+				$props['meta_stats'] = jcp_page_campaign_meta_stats_from_doc( $doc );
+			}
+			$doc['blocks'][ $i ]['props'] = $props;
+		}
+		if ( $type === 'demo_preview' ) {
+			$props = is_array( $block['props'] ?? null ) ? $block['props'] : [];
+			if ( empty( $props['media_type'] ) ) {
+				$props['media_type'] = 'phone_mockup';
+			}
 			$doc['blocks'][ $i ]['props'] = $props;
 		}
 		if ( $type === 'how_it_works' ) {
@@ -70,6 +84,53 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 	}
 
 	return $doc;
+}
+
+/**
+ * Build homepage-style hero meta_stats from campaign core_mechanic copy.
+ *
+ * @param array<string, mixed> $doc Block document.
+ * @return array<int, array<string, string>>
+ */
+function jcp_page_campaign_meta_stats_from_doc( array $doc ): array {
+	$icons  = [ 'camera', 'map', 'clock' ];
+	$classes = [ 'meta-stat-photo', 'meta-stat-channels', 'meta-stat-busywork' ];
+	$items  = [];
+
+	foreach ( (array) ( $doc['blocks'] ?? [] ) as $block ) {
+		if ( ! is_array( $block ) || ( $block['type'] ?? '' ) !== 'core_mechanic' ) {
+			continue;
+		}
+		$props = $block['props'] ?? null;
+		$rows  = is_array( $props ) ? $props : [];
+		// core_mechanic props may be a list of stats.
+		if ( isset( $rows['items'] ) && is_array( $rows['items'] ) ) {
+			$rows = $rows['items'];
+		}
+		foreach ( array_values( $rows ) as $i => $row ) {
+			if ( ! is_array( $row ) ) {
+				continue;
+			}
+			$value = trim( (string) ( $row['value'] ?? '' ) );
+			$word  = trim( (string) ( $row['label'] ?? '' ) );
+			$label = trim( $value . ( $value !== '' && $word !== '' ? ' ' : '' ) . $word );
+			if ( $label === '' ) {
+				continue;
+			}
+			$items[] = [
+				'icon'      => (string) ( $row['icon'] ?? ( $icons[ $i ] ?? 'check' ) ),
+				'label'     => $label,
+				'detail'    => (string) ( $row['detail'] ?? '' ),
+				'css_class' => (string) ( $row['css_class'] ?? ( $classes[ $i ] ?? '' ) ),
+			];
+			if ( count( $items ) >= 3 ) {
+				break;
+			}
+		}
+		break;
+	}
+
+	return $items;
 }
 
 /**
@@ -135,4 +196,18 @@ function jcp_page_current_hides_site_chrome(): bool {
 	}
 
 	return (bool) apply_filters( 'jcp_page_hide_site_chrome', $hide, $post_id, $content );
+}
+
+/**
+ * Whether the current front-end request is a campaign landing page.
+ */
+function jcp_page_current_is_campaign_landing(): bool {
+	if ( is_admin() || ! is_singular() || ! function_exists( 'jcp_page_get_content' ) ) {
+		return false;
+	}
+	$post_id = (int) get_queried_object_id();
+	if ( $post_id <= 0 ) {
+		return false;
+	}
+	return jcp_page_is_campaign_landing( jcp_page_get_content( $post_id ) );
 }

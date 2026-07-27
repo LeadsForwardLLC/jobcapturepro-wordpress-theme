@@ -3301,52 +3301,27 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   background: rgba(255, 80, 62, 0.06);
 }
 
-/* Campaign landing (cold traffic / paid) — split hero + light funnel tweaks */
+/* Campaign landing — homepage-like hero (phone visual + meta row), light funnel tweaks */
 .jcp-page-campaign.jcp-marketing {
   --jcp-campaign-section-gap: clamp(2.5rem, 5vw, 4rem);
 }
 
-.jcp-page-campaign .jcp-block-root[data-jcp-block-type="hero"] > .jcp-section {
-  padding-block: clamp(2rem, 4vw, 3rem);
-}
-
-.jcp-page-campaign .jcp-niche-hero .jcp-hero-grid {
+.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-grid {
+  grid-template-columns: var(--jcp-hero-grid-columns);
   align-items: center;
-  gap: clamp(1.5rem, 3vw, 2.5rem);
-  max-width: none;
-  margin: 0;
   text-align: left;
-  justify-items: stretch;
 }
 
-.jcp-page-campaign .jcp-niche-hero .jcp-hero-title {
-  font-size: clamp(2rem, 3.8vw, 3.25rem);
+.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-title {
+  max-width: 18ch;
   line-height: 1.08;
   letter-spacing: -0.02em;
-  max-width: 18ch;
 }
 
-.jcp-page-campaign .jcp-niche-hero .jcp-hero-subtitle {
-  max-width: 36rem;
-}
-
-.jcp-page-campaign .jcp-niche-hero .jcp-actions {
+.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-actions,
+.jcp-page-campaign.jcp-home .jcp-niche-trust-line,
+.jcp-page-campaign.jcp-home .directory-meta {
   justify-content: flex-start;
-}
-
-.jcp-page-campaign .jcp-niche-trust-line {
-  justify-content: flex-start;
-}
-
-.jcp-page-campaign .jcp-niche-hero--copy-only .jcp-hero-grid {
-  justify-items: start;
-  text-align: left;
-  max-width: 42rem;
-  margin-inline: 0;
-}
-
-.jcp-page-campaign .jcp-block-root[data-jcp-block-type="core_mechanic"] {
-  margin-block: calc(var(--jcp-campaign-section-gap) * 0.5);
 }
 
 .jcp-page-campaign .jcp-block-root[data-jcp-block-type="final_cta"] .jcp-section {
