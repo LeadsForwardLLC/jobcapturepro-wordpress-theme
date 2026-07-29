@@ -3596,6 +3596,17 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
     max-width: min(280px, 100%);
     margin-inline: auto;
   }
+
+  /* Hide live-demo phone for visitors on mobile; editor override lives in hero-live-demo.css */
+  .jcp-niche .jcp-hero-visual-column:has(.hero-phone-mockup),
+  .jcp-page-campaign .jcp-hero-visual-column:has(.hero-phone-mockup) {
+    display: none !important;
+  }
+
+  body.jcp-inline-editing.jcp-niche .jcp-hero-visual-column:has(.hero-phone-mockup),
+  body.jcp-inline-editing.jcp-page-campaign .jcp-hero-visual-column:has(.hero-phone-mockup) {
+    display: block !important;
+  }
 }
 
 @media (max-width: 540px) {

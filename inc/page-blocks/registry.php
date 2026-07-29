@@ -294,6 +294,8 @@ function jcp_page_default_block_props( string $type ): array {
 			'media_attachment_id' => 0,
 			'phone_image_url'     => '',
 			'phone_image_alt'     => '',
+			'phone_cta_label'     => __( 'Try the demo', 'jcp-core' ),
+			'media_link_url'      => '',
 		],
 		'media_text' => [
 			'badge'              => '',

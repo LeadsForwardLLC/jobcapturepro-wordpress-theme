@@ -68,10 +68,12 @@ function jcp_component_home_meta_stats( array $items, string $path = 'hero.meta_
  * @param bool                                                      $wrap_visual Wrap in hero-visual shell.
  * @param array<int, array{title?:string,subtitle?:string}>|null    $cards       Optional status cards (industry-specific).
  * @param bool                                                      $lock_photo  When true, photo is driven by featured image (industry).
+ * @param string                                                    $cta_label   Floating CTA label on the phone.
  */
-function jcp_component_hero_home_visual( string $demo_url = '', string $photo_url = '', string $photo_alt = '', bool $wrap_visual = true, ?array $cards = null, bool $lock_photo = false ): void {
-	$demo_url = $demo_url !== '' ? $demo_url : home_url( '/demo/' );
-	$photo    = $photo_url !== '' ? $photo_url : jcp_media_default_phone_image();
+function jcp_component_hero_home_visual( string $demo_url = '', string $photo_url = '', string $photo_alt = '', bool $wrap_visual = true, ?array $cards = null, bool $lock_photo = false, string $cta_label = '' ): void {
+	$demo_url  = $demo_url !== '' ? $demo_url : home_url( '/demo/' );
+	$photo     = $photo_url !== '' ? $photo_url : jcp_media_default_phone_image();
+	$cta_label = trim( $cta_label ) !== '' ? trim( $cta_label ) : __( 'Try the demo', 'jcp-core' );
 	if ( ! is_array( $cards ) || $cards === [] ) {
 		$cards = function_exists( 'jcp_media_industry_phone_cards' )
 			? jcp_media_industry_phone_cards( '' )
@@ -100,7 +102,7 @@ function jcp_component_hero_home_visual( string $demo_url = '', string $photo_ur
 				<span class="hero-line hero-line-4"></span>
 				<span class="hero-line hero-line-5"></span>
 			</div>
-			<a href="<?php echo esc_url( $demo_url ); ?>" class="demo-phone-mockup hero-phone-mockup" aria-label="<?php esc_attr_e( 'Try the live demo', 'jcp-core' ); ?>">
+			<a href="<?php echo esc_url( $demo_url ); ?>" class="demo-phone-mockup hero-phone-mockup" aria-label="<?php echo esc_attr( $cta_label ); ?>" data-jcp-phone-cta-path="hero.phone_cta_label">
 				<div class="phone-frame hero-phone-frame">
 					<div class="phone-screen">
 						<div class="phone-content">
@@ -158,7 +160,7 @@ function jcp_component_hero_home_visual( string $demo_url = '', string $photo_ur
 								<?php endforeach; ?>
 							</div>
 							<div class="phone-click-hint hero-phone-cta">
-								<span><?php esc_html_e( 'Try the demo', 'jcp-core' ); ?></span>
+								<span><?php echo esc_html( $cta_label ); ?></span>
 								<?php jcp_component_chevron_svg( 20 ); ?>
 							</div>
 						</div>

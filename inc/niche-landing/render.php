@@ -356,7 +356,11 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 				<?php if ( $show_visual ) : ?>
 				<div class="jcp-split-col jcp-split-col--media jcp-hero-visual-column" data-jcp-split-col="media" aria-hidden="false">
 					<?php
-					$hero_demo = $primary['url'] !== '' ? $primary['url'] : $demo_url;
+					$phone_link = trim( (string) ( $h['media_link_url'] ?? '' ) );
+					$hero_demo  = $phone_link !== ''
+						? $phone_link
+						: ( $primary['url'] !== '' ? $primary['url'] : $demo_url );
+					$phone_cta  = trim( (string) ( $h['phone_cta_label'] ?? '' ) );
 					jcp_media_render_slot(
 						[
 							'path'               => 'hero',
@@ -374,8 +378,8 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 								'height'  => '480',
 								'loading' => 'eager',
 							],
-							'phone_render'  => function () use ( $hero_demo, $phone_image, $phone_alt, $phone_cards, $phone_locked ) {
-								jcp_component_hero_home_visual( $hero_demo, $phone_image, $phone_alt, true, $phone_cards, $phone_locked );
+							'phone_render'  => function () use ( $hero_demo, $phone_image, $phone_alt, $phone_cards, $phone_locked, $phone_cta ) {
+								jcp_component_hero_home_visual( $hero_demo, $phone_image, $phone_alt, true, $phone_cards, $phone_locked, $phone_cta );
 							},
 						]
 					);

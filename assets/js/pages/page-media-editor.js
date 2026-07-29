@@ -77,7 +77,25 @@
     const isFeaturedLocked = el.dataset.jcpMediaLocked === 'featured'
       || el.dataset.jcpMediaRole === 'phone_screen_featured'
       || !!el.closest?.('[data-jcp-media-locked="featured"]');
-    return { slot, urlPath, altPath, typePath, linkPath, basePath, isPhoneScreen, isFeaturedLocked, el };
+    const phoneStyle = slot?.dataset.jcpPhoneMockupStyle || '';
+    const isLiveDemoPhone = isPhoneScreen || phoneStyle === 'live_demo'
+      || !!el.closest?.('.hero-phone-mockup');
+    const ctaLabelPath = isLiveDemoPhone
+      ? `${basePath || 'hero'}.phone_cta_label`
+      : null;
+    return {
+      slot,
+      urlPath,
+      altPath,
+      typePath,
+      linkPath,
+      ctaLabelPath,
+      basePath,
+      isPhoneScreen,
+      isFeaturedLocked,
+      isLiveDemoPhone,
+      el,
+    };
   };
 
   const resolveWritePaths = (paths, mediaType) => {
@@ -519,6 +537,10 @@
           <span>Link URL <small>(optional)</small></span>
           <input type="url" id="jcpMediaLinkInput" placeholder="Leave empty for no link">
         </label>
+        <label class="jcp-media-popover__field jcp-media-popover__field--cta-label">
+          <span>Button text</span>
+          <input type="text" id="jcpMediaCtaLabelInput" placeholder="Try the demo" maxlength="48" autocomplete="off">
+        </label>
       </div>
       <div class="jcp-media-popover__actions">
         <button type="button" class="btn btn-secondary" id="jcpMediaReplaceBtn">Choose from library</button>
@@ -558,12 +580,20 @@
     else el.setAttribute('hidden', '');
   };
 
+  const findPhoneMockup = (ctx) => {
+    if (!ctx) return null;
+    return ctx.el?.closest?.(PHONE_MOCKUP_LINK_SELECTOR)
+      || ctx.slot?.querySelector?.(PHONE_MOCKUP_LINK_SELECTOR)
+      || null;
+  };
+
   const onTypeSelectChange = () => {
     const type = popover.querySelector('#jcpMediaTypeSelect').value;
     const videoField = popover.querySelector('.jcp-media-popover__field--video');
     const imageField = popover.querySelector('.jcp-media-popover__field--image');
     const altField = popover.querySelector('.jcp-media-popover__field--alt');
     const linkField = popover.querySelector('.jcp-media-popover__field--link');
+    const ctaField = popover.querySelector('.jcp-media-popover__field--cta-label');
     const replaceBtn = popover.querySelector('#jcpMediaReplaceBtn');
     const imageLabel = popover.querySelector('#jcpMediaImageUrlLabel');
     const featuredNotice = popover.querySelector('#jcpMediaFeaturedNotice');
@@ -572,7 +602,8 @@
     const showVideo = type === 'video';
     const showImage = !featuredLocked && (type === 'image' || (type === 'phone_mockup' && activeMediaContext?.isPhoneScreen));
     const showAlt = !featuredLocked && type !== 'video';
-    const showLink = !featuredLocked && type !== 'video' && !!activeMediaContext?.linkPath;
+    const showLink = type !== 'video' && !!activeMediaContext?.linkPath;
+    const showCtaLabel = type === 'phone_mockup' && !!activeMediaContext?.ctaLabelPath;
     const showLibrary = showImage && type !== 'video';
 
     togglePopoverField(featuredNotice, featuredLocked);
@@ -580,6 +611,7 @@
     togglePopoverField(imageField, showImage);
     togglePopoverField(altField, showAlt);
     togglePopoverField(linkField, showLink);
+    togglePopoverField(ctaField, showCtaLabel);
     replaceBtn.hidden = !showLibrary;
     if (replaceBtn.hidden) replaceBtn.setAttribute('hidden', '');
     else replaceBtn.removeAttribute('hidden');
@@ -633,14 +665,21 @@
     popover.querySelector('#jcpMediaAltInput').value = writePaths.altPath ? (api.getPath(api.flatContent, writePaths.altPath) || '') : '';
     popover.querySelector('#jcpMediaImageUrlInput').value = readImageUrl(urlPaths);
     popover.querySelector('#jcpMediaVideoUrlInput').value = readVideoUrl(urlPaths);
-    popover.querySelector('#jcpMediaLinkInput').value = paths.linkPath ? (api.getPath(api.flatContent, paths.linkPath) || '') : '';
+    const mockup = findPhoneMockup(activeMediaContext);
+    const storedLink = paths.linkPath ? (api.getPath(api.flatContent, paths.linkPath) || '') : '';
+    popover.querySelector('#jcpMediaLinkInput').value = storedLink || mockup?.getAttribute('href') || '';
+    const storedCta = paths.ctaLabelPath ? (api.getPath(api.flatContent, paths.ctaLabelPath) || '') : '';
+    const liveCta = mockup?.querySelector('.phone-click-hint span, .hero-phone-cta span')?.textContent?.trim() || '';
+    popover.querySelector('#jcpMediaCtaLabelInput').value = storedCta || liveCta || 'Try the demo';
 
     onTypeSelectChange();
 
     const applyBtn = popover.querySelector('#jcpMediaApplyBtn');
     if (applyBtn) {
-      applyBtn.hidden = !!paths.isFeaturedLocked;
-      if (paths.isFeaturedLocked) applyBtn.setAttribute('hidden', '');
+      // Featured-image lock blocks photo edits, but link/CTA can still be saved.
+      const canApplyWithoutPhoto = !!(paths.ctaLabelPath || paths.linkPath);
+      applyBtn.hidden = !!paths.isFeaturedLocked && !canApplyWithoutPhoto;
+      if (applyBtn.hidden) applyBtn.setAttribute('hidden', '');
       else applyBtn.removeAttribute('hidden');
     }
     if (select) {
@@ -727,8 +766,20 @@
 
     if (writePaths.altPath && mediaType !== 'video') syncMediaAlt(writePaths.altPath, alt);
     if (ctx.typePath) syncFlatProp(ctx.typePath, mediaType);
+    const mockup = findPhoneMockup(ctx);
     if (ctx.linkPath && popover && mediaType !== 'video') {
-      syncFlatProp(ctx.linkPath, popover.querySelector('#jcpMediaLinkInput').value.trim());
+      const link = popover.querySelector('#jcpMediaLinkInput').value.trim();
+      syncFlatProp(ctx.linkPath, link);
+      if (mockup && link) {
+        mockup.setAttribute('href', link);
+      }
+    }
+    if (ctx.ctaLabelPath && popover && mediaType === 'phone_mockup') {
+      const label = popover.querySelector('#jcpMediaCtaLabelInput').value.trim() || 'Try the demo';
+      syncFlatProp(ctx.ctaLabelPath, label);
+      const labelEl = mockup?.querySelector('.phone-click-hint span, .hero-phone-cta span');
+      if (labelEl) labelEl.textContent = label;
+      if (mockup) mockup.setAttribute('aria-label', label);
     }
 
     updateVariantVisibility(ctx.slot, mediaType);
