@@ -2033,7 +2033,7 @@
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
       let html = '<div class="jcp-layout-row jcp-layout-row--stack"><span class="jcp-layout-row__label">Embed code</span>';
-      html += `<textarea class="jcp-structure-text-input jcp-structure-textarea" data-block-content-field="embed_code" rows="5" placeholder="[shortcode] or calendar iframe HTML" autocomplete="off" spellcheck="false">${escaped}</textarea>`;
+      html += `<textarea class="jcp-structure-text-input jcp-structure-textarea" data-block-content-field="embed_code" rows="5" placeholder="[shortcode], iframe, or booking widget HTML" autocomplete="off" spellcheck="false">${escaped}</textarea>`;
       html += '<p class="jcp-structure-field-hint">Shortcode or allowlisted iframe (Calendly, Cal.com, HubSpot, Google Calendar…). Save to apply.</p></div>';
       return html;
     }

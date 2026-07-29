@@ -1,12 +1,12 @@
 <?php
 /**
- * Code / Embed block — safer shortcode + allowlisted iframe rendering.
+ * Code / Embed block — shortcodes, iframes, scripts, and embed HTML.
  *
  * @package JCP_Core
  */
 
 /**
- * Allowlisted iframe host suffixes (filterable).
+ * Allowlisted host suffixes for iframe/script embeds (filterable).
  *
  * @return array<int, string>
  */
@@ -25,9 +25,29 @@ function jcp_code_embed_iframe_hosts(): array {
 		'chilipiper.com',
 		'savvycal.com',
 		'youcanbook.me',
+		'leadconnectorhq.com',
+		'msgsndr.com',
+		'leadconnector.com',
+		'gohighlevel.com',
+		'oncehub.com',
+		'tidycal.com',
+		'appointlet.com',
+		'setmore.com',
+		'square.site',
+		'squareupsandbox.com',
+		'acuityscheduling.com',
+		'squareup.com',
+		'typeform.com',
+		'forms.gle',
+		'youtube.com',
+		'youtu.be',
+		'vimeo.com',
+		'loom.com',
+		'wistia.com',
+		'player.vimeo.com',
 	];
 	/**
-	 * Filter allowlisted iframe host suffixes for the Code/Embed block.
+	 * Filter allowlisted embed host suffixes for the Code/Embed block.
 	 *
 	 * @param array<int, string> $hosts Host suffixes.
 	 */
@@ -35,7 +55,7 @@ function jcp_code_embed_iframe_hosts(): array {
 }
 
 /**
- * Whether a URL host is on the iframe allowlist.
+ * Whether a URL host is on the embed allowlist.
  *
  * @param string $url Absolute URL.
  */
@@ -58,6 +78,52 @@ function jcp_code_embed_host_allowed( string $url ): bool {
 }
 
 /**
+ * Whether current user may paste unfiltered embed HTML (any https iframe/script).
+ */
+function jcp_code_embed_user_can_unfiltered(): bool {
+	return is_user_logged_in() && (
+		current_user_can( 'unfiltered_html' )
+		|| current_user_can( 'manage_options' )
+		|| current_user_can( 'edit_theme_options' )
+	);
+}
+
+/**
+ * Normalize a URL for embed src checks (force https).
+ *
+ * @param string $src Raw src.
+ */
+function jcp_code_embed_normalize_src( string $src ): string {
+	$src = trim( html_entity_decode( $src, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+	if ( $src === '' || stripos( $src, 'javascript:' ) === 0 || stripos( $src, 'data:' ) === 0 ) {
+		return '';
+	}
+	if ( str_starts_with( $src, '//' ) ) {
+		$src = 'https:' . $src;
+	}
+	if ( ! preg_match( '#^https://#i', $src ) ) {
+		return '';
+	}
+	return $src;
+}
+
+/**
+ * Whether an embed src URL is allowed.
+ *
+ * @param string $src Absolute https URL.
+ */
+function jcp_code_embed_src_allowed( string $src ): bool {
+	$src = jcp_code_embed_normalize_src( $src );
+	if ( $src === '' ) {
+		return false;
+	}
+	if ( jcp_code_embed_user_can_unfiltered() ) {
+		return true;
+	}
+	return jcp_code_embed_host_allowed( $src );
+}
+
+/**
  * Whether raw input is a single shortcode tag.
  *
  * @param string $raw Raw embed string.
@@ -68,14 +134,127 @@ function jcp_code_embed_is_shortcode( string $raw ): bool {
 }
 
 /**
- * Sanitize embed input to a shortcode string or safe iframe HTML.
+ * Allowed HTML tags/attrs for Code/Embed markup.
+ *
+ * @return array<string, array<string, bool>>
+ */
+function jcp_code_embed_allowed_html(): array {
+	$allowed = wp_kses_allowed_html( 'post' );
+
+	$allowed['iframe'] = [
+		'src'             => true,
+		'width'           => true,
+		'height'          => true,
+		'style'           => true,
+		'class'           => true,
+		'id'              => true,
+		'title'           => true,
+		'name'            => true,
+		'loading'         => true,
+		'allow'           => true,
+		'allowfullscreen' => true,
+		'frameborder'     => true,
+		'referrerpolicy'  => true,
+		'sandbox'         => true,
+		'scrolling'       => true,
+	];
+
+	$allowed['script'] = [
+		'src'         => true,
+		'type'        => true,
+		'async'       => true,
+		'defer'       => true,
+		'id'          => true,
+		'crossorigin' => true,
+		'charset'     => true,
+	];
+
+	$allowed['div']['style']  = true;
+	$allowed['div']['id']     = true;
+	$allowed['div']['class']  = true;
+	$allowed['span']['style'] = true;
+	$allowed['span']['id']    = true;
+	$allowed['span']['class'] = true;
+
+	/**
+	 * Filter allowed HTML for Code/Embed block output.
+	 *
+	 * @param array<string, array<string, bool>> $allowed Allowed tags.
+	 */
+	return (array) apply_filters( 'jcp_code_embed_allowed_html', $allowed );
+}
+
+/**
+ * Strip disallowed iframe/script tags after kses (host checks).
+ *
+ * @param string $html KSES'd HTML.
+ */
+function jcp_code_embed_filter_embed_sources( string $html ): string {
+	if ( $html === '' ) {
+		return '';
+	}
+
+	$html = (string) preg_replace_callback(
+		'/<iframe\b[^>]*>.*?<\/iframe>|<iframe\b[^>]*\/?>/is',
+		static function ( array $m ): string {
+			$tag = $m[0];
+			if ( ! preg_match( '/\bsrc\s*=\s*(["\'])(.*?)\1/i', $tag, $sm ) ) {
+				return '';
+			}
+			$src = jcp_code_embed_normalize_src( $sm[2] );
+			if ( $src === '' || ! jcp_code_embed_src_allowed( $src ) ) {
+				return '';
+			}
+			// Re-write src to normalized https URL.
+			return (string) preg_replace(
+				'/\bsrc\s*=\s*(["\']).*?\1/i',
+				'src="' . esc_attr( $src ) . '"',
+				$tag,
+				1
+			);
+		},
+		$html
+	);
+
+	$html = (string) preg_replace_callback(
+		'/<script\b[^>]*>\s*<\/script>|<script\b[^>]*\/?>/is',
+		static function ( array $m ): string {
+			$tag = $m[0];
+			if ( ! preg_match( '/\bsrc\s*=\s*(["\'])(.*?)\1/i', $tag, $sm ) ) {
+				// Inline scripts are never kept.
+				return '';
+			}
+			$src = jcp_code_embed_normalize_src( $sm[2] );
+			if ( $src === '' || ! jcp_code_embed_src_allowed( $src ) ) {
+				return '';
+			}
+			$type = 'text/javascript';
+			if ( preg_match( '/\btype\s*=\s*(["\'])(.*?)\1/i', $tag, $tm ) ) {
+				$type = sanitize_text_field( $tm[2] );
+			}
+			$id_attr = '';
+			if ( preg_match( '/\bid\s*=\s*(["\'])(.*?)\1/i', $tag, $im ) ) {
+				$id_attr = ' id="' . esc_attr( sanitize_html_class( $im[2] ) ) . '"';
+			}
+			$async = preg_match( '/\basync\b/i', $tag ) ? ' async' : '';
+			$defer = preg_match( '/\bdefer\b/i', $tag ) ? ' defer' : '';
+			return '<script src="' . esc_url( $src ) . '" type="' . esc_attr( $type ) . '"' . $id_attr . $async . $defer . '></script>';
+		},
+		$html
+	);
+
+	return trim( $html );
+}
+
+/**
+ * Sanitize embed input to shortcode or embed HTML.
  *
  * @param string $raw Raw paste (shortcode or HTML).
  * @return array{ok:bool,kind:string,value:string,message:string}
  */
 function jcp_code_embed_sanitize( string $raw ): array {
 	$raw = trim( wp_unslash( $raw ) );
-	$raw = trim( $raw, " \t\n\r\0\x0B`\"'" );
+	$raw = trim( $raw, " \t\n\r\0\x0B`" );
 
 	if ( $raw === '' ) {
 		return [
@@ -95,132 +274,36 @@ function jcp_code_embed_sanitize( string $raw ): array {
 		];
 	}
 
-	if ( ! preg_match_all( '/<iframe\b[^>]*>.*?<\/iframe>|<iframe\b[^>]*\/?>/is', $raw, $matches ) ) {
+	// Strip on* handlers before kses.
+	$clean = (string) preg_replace( '/\son[a-z]+\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $raw );
+	$html  = wp_kses( $clean, jcp_code_embed_allowed_html() );
+	$html  = jcp_code_embed_filter_embed_sources( $html );
+
+	// Preserve shortcodes mixed into HTML (do_shortcode on render).
+	if ( $html === '' && preg_match( '/\[[a-zA-Z][a-zA-Z0-9_-]/', $raw ) ) {
 		return [
-			'ok'      => false,
-			'kind'    => 'invalid',
-			'value'   => '',
-			'message' => __( 'Embed not allowed — use a shortcode or an iframe from an approved calendar host.', 'jcp-core' ),
+			'ok'      => true,
+			'kind'    => 'shortcode',
+			'value'   => $raw,
+			'message' => '',
 		];
 	}
 
-	$iframes = [];
-	foreach ( $matches[0] as $iframe_html ) {
-		$built = jcp_code_embed_sanitize_iframe_tag( $iframe_html );
-		if ( $built !== '' ) {
-			$iframes[] = $built;
-		}
-	}
-
-	if ( $iframes === [] ) {
+	if ( $html === '' ) {
 		return [
 			'ok'      => false,
 			'kind'    => 'invalid',
 			'value'   => '',
-			'message' => __( 'Embed not allowed — use a shortcode or an iframe from an approved calendar host.', 'jcp-core' ),
+			'message' => __( 'Embed not allowed — paste a shortcode, iframe, or embed HTML (https scripts/iframes only).', 'jcp-core' ),
 		];
 	}
 
 	return [
 		'ok'      => true,
-		'kind'    => 'iframe',
-		'value'   => implode( "\n", $iframes ),
+		'kind'    => 'html',
+		'value'   => $html,
 		'message' => '',
 	];
-}
-
-/**
- * Rebuild a single iframe tag with allowlisted src + safe attributes.
- *
- * @param string $html Raw iframe markup.
- */
-function jcp_code_embed_sanitize_iframe_tag( string $html ): string {
-	if ( ! preg_match( '/<iframe\b([^>]*)>/i', $html, $m ) ) {
-		return '';
-	}
-	$attr_blob = $m[1];
-	$attrs     = [];
-	if ( preg_match_all( '/([a-zA-Z_:][-a-zA-Z0-9_:.]*)\s*=\s*(["\'])(.*?)\2/s', $attr_blob, $am, PREG_SET_ORDER ) ) {
-		foreach ( $am as $row ) {
-			$name           = strtolower( $row[1] );
-			$val            = html_entity_decode( $row[3], ENT_QUOTES | ENT_HTML5, 'UTF-8' );
-			$attrs[ $name ] = $val;
-		}
-	}
-
-	$src = trim( (string) ( $attrs['src'] ?? '' ) );
-	if ( $src === '' || stripos( $src, 'javascript:' ) === 0 ) {
-		return '';
-	}
-	if ( str_starts_with( $src, '//' ) ) {
-		$src = 'https:' . $src;
-	}
-	if ( ! preg_match( '#^https://#i', $src ) ) {
-		return '';
-	}
-	if ( ! jcp_code_embed_host_allowed( $src ) ) {
-		return '';
-	}
-
-	$out = [
-		'src'             => esc_url( $src ),
-		'loading'         => 'lazy',
-		'referrerpolicy'  => 'no-referrer-when-downgrade',
-		'title'           => '',
-		'width'           => '100%',
-		'height'          => '700',
-		'frameborder'     => '0',
-		'allowfullscreen' => 'true',
-	];
-
-	if ( ! empty( $attrs['title'] ) ) {
-		$out['title'] = sanitize_text_field( $attrs['title'] );
-	}
-	if ( ! empty( $attrs['width'] ) && preg_match( '/^[\d.%]+$/', (string) $attrs['width'] ) ) {
-		$out['width'] = (string) $attrs['width'];
-	}
-	if ( ! empty( $attrs['height'] ) && preg_match( '/^[\d.%]+$/', (string) $attrs['height'] ) ) {
-		$out['height'] = (string) $attrs['height'];
-	}
-	if ( ! empty( $attrs['allow'] ) ) {
-		$out['allow'] = preg_replace( '/[^a-z0-9\-\s;]/i', '', (string) $attrs['allow'] ) ?? '';
-	}
-	if ( isset( $attrs['allowfullscreen'] ) ) {
-		$out['allowfullscreen'] = 'true';
-	}
-	if ( ! empty( $attrs['style'] ) ) {
-		$style      = (string) $attrs['style'];
-		$safe_parts = [];
-		foreach ( explode( ';', $style ) as $decl ) {
-			$decl = trim( $decl );
-			if ( $decl === '' ) {
-				continue;
-			}
-			if ( preg_match( '/^(min-)?(width|height)\s*:\s*[\d.%]+(px|%|rem|vh|vw)?$/i', $decl ) ) {
-				$safe_parts[] = $decl;
-			}
-			if ( preg_match( '/^border\s*:\s*0(px)?$/i', $decl ) ) {
-				$safe_parts[] = 'border:0';
-			}
-		}
-		if ( $safe_parts ) {
-			$out['style'] = implode( '; ', $safe_parts );
-		}
-	}
-
-	$html_out = '<iframe';
-	foreach ( $out as $name => $value ) {
-		if ( $value === '' && $name !== 'title' ) {
-			continue;
-		}
-		if ( $name === 'allowfullscreen' ) {
-			$html_out .= ' allowfullscreen';
-			continue;
-		}
-		$html_out .= sprintf( ' %s="%s"', esc_attr( $name ), esc_attr( (string) $value ) );
-	}
-	$html_out .= '></iframe>';
-	return $html_out;
 }
 
 /**
@@ -271,11 +354,11 @@ function jcp_niche_render_code_embed( array $props, string $path = 'code_embed' 
 							class="jcp-code-embed__textarea"
 							data-jcp-input-path="<?php echo esc_attr( $path . '.embed_code' ); ?>"
 							rows="5"
-							placeholder="<?php esc_attr_e( '[shortcode] or calendar iframe HTML', 'jcp-core' ); ?>"
+							placeholder="<?php esc_attr_e( '[shortcode], iframe, or booking widget HTML', 'jcp-core' ); ?>"
 							autocomplete="off"
 							spellcheck="false"
 						><?php echo esc_textarea( $raw_embed ); ?></textarea>
-						<span class="jcp-code-embed__hint"><?php esc_html_e( 'Paste a shortcode or an iframe from an approved calendar host, then Save.', 'jcp-core' ); ?></span>
+						<span class="jcp-code-embed__hint"><?php esc_html_e( 'Paste a shortcode, iframe, or embed HTML (including booking widget scripts), then Save.', 'jcp-core' ); ?></span>
 					</label>
 					<?php if ( ! $parsed['ok'] && $raw_embed !== '' ) : ?>
 						<p class="jcp-code-embed__error" role="alert"><?php echo esc_html( $parsed['message'] ); ?></p>
@@ -285,15 +368,12 @@ function jcp_niche_render_code_embed( array $props, string $path = 'code_embed' 
 				<?php if ( $has_embed ) : ?>
 					<div class="jcp-code-embed__output">
 						<?php
-						if ( $parsed['kind'] === 'shortcode' ) {
-							echo do_shortcode( $parsed['value'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-						} else {
-							echo $parsed['value']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- sanitized iframe HTML.
-						}
+						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- shortcodes / sanitized embed HTML.
+						echo do_shortcode( $parsed['value'] );
 						?>
 					</div>
 				<?php elseif ( $can_edit && ( $parsed['ok'] || $raw_embed === '' ) ) : ?>
-					<p class="jcp-code-embed__empty" role="status"><?php esc_html_e( 'Calendar / embed will appear here after you save allowed embed code.', 'jcp-core' ); ?></p>
+					<p class="jcp-code-embed__empty" role="status"><?php esc_html_e( 'Calendar / embed will appear here after you save embed code.', 'jcp-core' ); ?></p>
 				<?php endif; ?>
 			</div>
 		</div>
