@@ -170,6 +170,15 @@
   margin: 0 0 var(--jcp-space-md);
   color: var(--jcp-color-text-secondary);
   line-height: 1.6;
+  min-height: 1.5em;
+}
+
+body.jcp-inline-editing .jcp-niche-card-lead:empty::before,
+body.jcp-inline-editing .jcp-niche-card-lead[data-placeholder]:empty::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  font-style: italic;
+  pointer-events: none;
 }
 
 .jcp-niche-section-closing {

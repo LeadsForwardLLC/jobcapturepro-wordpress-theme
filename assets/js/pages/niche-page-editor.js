@@ -160,7 +160,7 @@
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
       { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
       { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
-      { key: 'show_card_body', label: 'Card body', selector: '.factor-description', defaultOn: true },
+      { key: 'show_card_body', label: 'Card body', selector: '.factor-description, .jcp-niche-card-lead', defaultOn: true },
       { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
       { key: 'show_cta', label: 'Primary button', selector: SECTION_CTA_PRIMARY_SELECTOR, defaultOn: false },
       { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
@@ -1394,14 +1394,8 @@
     'show_card_badges',
   ]);
 
-  const omitHiddenNodes = (root, selector) => {
-    if (!root || !selector) return;
-    root.querySelectorAll(selector).forEach((el) => el.remove());
-  };
-
   /**
    * Toggle visibility without destroying DOM (or content via collectFromDom).
-   * Prefer this over omitHiddenNodes for SHOW toggles.
    */
   const setNodesVisuallyHidden = (root, selector, hidden) => {
     if (!root || !selector) return 0;

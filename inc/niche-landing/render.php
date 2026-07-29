@@ -438,7 +438,12 @@ function jcp_niche_render_what_it_is( array $c ): void {
 	if ( empty( $w['headline'] ) ) {
 		return;
 	}
-	$lead = ! empty( $w['lead'] ) ? (string) $w['lead'] : __( 'But once the work is done, most of it disappears. JobCapturePro changes that.', 'jcp-core' );
+	$can_edit   = jcp_niche_user_can_inline_edit();
+	$team_lead  = trim( (string) ( $w['team_already_lead'] ?? '' ) );
+	$turns_lead = trim( (string) ( $w['lead'] ?? '' ) );
+	if ( $turns_lead === '' && ! $can_edit ) {
+		$turns_lead = __( 'But once the work is done, most of it disappears. JobCapturePro changes that.', 'jcp-core' );
+	}
 	$show_icons = jcp_niche_show_field( $w, 'show_icons', true );
 	$vis_class  = jcp_niche_section_visibility_classes(
 		$w,
@@ -486,7 +491,15 @@ function jcp_niche_render_what_it_is( array $c ): void {
 					$team_icon,
 					'',
 					'',
-					function () use ( $w ) {
+					function () use ( $w, $team_lead, $can_edit ) {
+						if ( $team_lead !== '' || $can_edit ) {
+							echo '<p class="jcp-niche-card-lead"';
+							jcp_niche_editable_attr( 'what_it_is.team_already_lead' );
+							if ( $can_edit ) {
+								echo ' data-placeholder="' . esc_attr__( 'Add intro text…', 'jcp-core' ) . '"';
+							}
+							echo '>' . esc_html( $team_lead ) . '</p>';
+						}
 						echo '<ul class="jcp-niche-checklist"';
 						jcp_niche_array_attr( 'what_it_is.team_already' );
 						echo '>';
@@ -515,10 +528,15 @@ function jcp_niche_render_what_it_is( array $c ): void {
 					$turns_icon,
 					'',
 					'',
-					function () use ( $w, $lead ) {
-						echo '<p class="jcp-niche-card-lead"';
-						jcp_niche_editable_attr( 'what_it_is.lead' );
-						echo '>' . esc_html( $lead ) . '</p>';
+					function () use ( $w, $turns_lead, $can_edit ) {
+						if ( $turns_lead !== '' || $can_edit ) {
+							echo '<p class="jcp-niche-card-lead"';
+							jcp_niche_editable_attr( 'what_it_is.lead' );
+							if ( $can_edit ) {
+								echo ' data-placeholder="' . esc_attr__( 'Add intro text…', 'jcp-core' ) . '"';
+							}
+							echo '>' . esc_html( $turns_lead ) . '</p>';
+						}
 						echo '<ul class="jcp-niche-checklist"';
 						jcp_niche_array_attr( 'what_it_is.turns_into' );
 						echo '>';
