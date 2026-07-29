@@ -17,14 +17,7 @@ $settings = function_exists( 'jcp_form_landing_get_settings' )
 	? jcp_form_landing_get_settings( (int) $post_id )
 	: [];
 
-$title = trim( (string) ( $settings['title'] ?? '' ) );
-if ( $title === '' ) {
-	$title = get_the_title( $post_id );
-}
-if ( $title === '' ) {
-	$title = __( 'Get started', 'jcp-core' );
-}
-
+$title       = trim( (string) ( $settings['title'] ?? '' ) );
 $supporting  = trim( (string) ( $settings['supporting'] ?? '' ) );
 $reassurance = trim( (string) ( $settings['reassurance'] ?? '' ) );
 $embed       = (string) ( $settings['embed'] ?? '' );
@@ -70,7 +63,9 @@ $close_url   = function_exists( 'jcp_form_landing_close_url' )
 
 <main id="jcp-form-landing-main" class="jcp-form-landing__main">
 	<div class="jcp-form-landing__shell jcp-form-landing__inner">
-		<h1 class="jcp-form-landing__title"><?php echo esc_html( $title ); ?></h1>
+		<?php if ( $title !== '' ) : ?>
+			<h1 class="jcp-form-landing__title"><?php echo esc_html( $title ); ?></h1>
+		<?php endif; ?>
 		<?php if ( $supporting !== '' ) : ?>
 			<p class="jcp-form-landing__supporting"><?php echo esc_html( $supporting ); ?></p>
 		<?php endif; ?>

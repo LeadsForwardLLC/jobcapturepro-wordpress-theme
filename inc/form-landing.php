@@ -27,7 +27,7 @@ function jcp_form_landing_defaults(): array {
 		'logo_url'        => 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png',
 		'title'           => '',
 		'supporting'      => '',
-		'reassurance'     => __( 'Takes 3–5 minutes · Estimates are fine', 'jcp-core' ),
+		'reassurance'     => '',
 		'embed'           => '',
 		'close_fallback'  => '/personalized-demo/',
 	];
@@ -229,7 +229,7 @@ function jcp_form_landing_render_meta_box( WP_Post $post ): void {
 				<th scope="row"><label for="jcp_form_landing_title"><?php esc_html_e( 'Page title', 'jcp-core' ); ?></label></th>
 				<td>
 					<input type="text" class="large-text" id="jcp_form_landing_title" name="jcp_form_landing[title]" value="<?php echo esc_attr( (string) $settings['title'] ); ?>" />
-					<p class="description"><?php esc_html_e( 'Leave empty to use the WordPress page title.', 'jcp-core' ); ?></p>
+					<p class="description"><?php esc_html_e( 'Optional. Leave empty to hide the title on the page.', 'jcp-core' ); ?></p>
 				</td>
 			</tr>
 			<tr>
