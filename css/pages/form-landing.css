@@ -1,0 +1,195 @@
+/**
+ * Form Landing — full-screen distraction-free template.
+ *
+ * @package JCP_Core
+ */
+
+body.jcp-form-landing {
+  margin: 0;
+  min-height: 100dvh;
+  background: #ffffff;
+  color: var(--jcp-color-text-primary, #111827);
+  font-family: var(--jcp-font-family-base, system-ui, -apple-system, Segoe UI, Roboto, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Hide site chrome / floating widgets if anything still injects them */
+body.jcp-form-landing .directory-header,
+body.jcp-form-landing .mobile-menu-overlay,
+body.jcp-form-landing .jcp-header-stack,
+body.jcp-form-landing .jcp-footer,
+body.jcp-form-landing .jcp-top-banner,
+body.jcp-form-landing #cruise-float,
+body.jcp-form-landing #cruise-bubble,
+body.jcp-form-landing .cruise-dock {
+  display: none !important;
+}
+
+.jcp-form-landing__skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: #111827;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 0 0 8px 0;
+}
+
+.jcp-form-landing__skip:focus {
+  left: 0;
+}
+
+.jcp-form-landing__top {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.5rem;
+  padding: 0.75rem 1.25rem;
+  padding-left: max(1.25rem, env(safe-area-inset-left));
+  padding-right: max(1.25rem, env(safe-area-inset-right));
+  background: #ffffff;
+}
+
+.jcp-form-landing__logo-link {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+}
+
+.jcp-form-landing__logo-link:focus-visible {
+  outline: 2px solid var(--jcp-color-primary, #ff5036);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.jcp-form-landing__logo {
+  display: block;
+  height: 32px;
+  width: auto;
+  max-width: 160px;
+  object-fit: contain;
+}
+
+.jcp-form-landing__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  background: transparent;
+  color: #374151;
+  font-size: 1.75rem;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.jcp-form-landing__close:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.jcp-form-landing__close:focus-visible {
+  outline: 2px solid var(--jcp-color-primary, #ff5036);
+  outline-offset: 2px;
+  border-color: transparent;
+}
+
+.jcp-form-landing__main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-height: calc(100dvh - 3.5rem);
+  padding: 1.5rem 1.25rem 3rem;
+  padding-left: max(1.25rem, env(safe-area-inset-left));
+  padding-right: max(1.25rem, env(safe-area-inset-right));
+  padding-bottom: max(3rem, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.jcp-form-landing__inner {
+  width: 100%;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+.jcp-form-landing__title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: var(--jcp-font-weight-bold, 700);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #111827;
+  text-wrap: balance;
+}
+
+.jcp-form-landing__supporting {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.0625rem, 2.2vw, 1.1875rem);
+  line-height: 1.55;
+  color: #374151;
+}
+
+.jcp-form-landing__reassurance {
+  margin: 0 0 1.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  color: #6b7280;
+}
+
+.jcp-form-landing__embed {
+  width: 100%;
+}
+
+.jcp-form-landing__embed .fluentform,
+.jcp-form-landing__embed .ff-el-group,
+.jcp-form-landing__embed .ff-el-form-control,
+.jcp-form-landing__embed input[type="text"],
+.jcp-form-landing__embed input[type="email"],
+.jcp-form-landing__embed input[type="tel"],
+.jcp-form-landing__embed input[type="url"],
+.jcp-form-landing__embed input[type="number"],
+.jcp-form-landing__embed select,
+.jcp-form-landing__embed textarea,
+.jcp-form-landing__embed iframe {
+  width: 100% !important;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.jcp-form-landing__empty {
+  margin: 0;
+  padding: 1.5rem;
+  text-align: center;
+  color: #6b7280;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 1px dashed #d1d5db;
+}
+
+@media (min-width: 768px) {
+  .jcp-form-landing__top {
+    padding-inline: 2rem;
+  }
+
+  .jcp-form-landing__main {
+    padding-inline: 2rem;
+    padding-top: 2rem;
+  }
+
+  .jcp-form-landing__logo {
+    height: 36px;
+  }
+}

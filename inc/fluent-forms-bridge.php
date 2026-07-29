@@ -90,6 +90,13 @@ function jcp_fluent_bridge_should_enqueue(): bool {
 		return true;
 	}
 
+	if ( function_exists( 'jcp_is_form_landing_template' ) && jcp_is_form_landing_template( $post ) && function_exists( 'jcp_form_landing_get_settings' ) ) {
+		$fl = jcp_form_landing_get_settings( (int) $post->ID );
+		if ( ! empty( $fl['embed'] ) && function_exists( 'jcp_form_landing_embed_needs_fluent' ) && jcp_form_landing_embed_needs_fluent( (string) $fl['embed'] ) ) {
+			return true;
+		}
+	}
+
 	return (bool) apply_filters( 'jcp_fluent_bridge_force_enqueue', false );
 }
 

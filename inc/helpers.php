@@ -184,6 +184,7 @@ function jcp_core_get_page_detection(): array {
         'is_company'      => is_singular( 'jcp_company' ) || is_page( 'company' ) || $path === 'company' || ( preg_match( '#^directory/[^/]+$#', $path ) === 1 ),
         'is_ui_library'   => is_page_template( 'page-ui-library.php' ) || is_page( 'ui-library' ) || $path === 'ui-library',
         'is_wp_plugin_prototype' => is_page_template( 'page-wp-plugin-prototype.php' ) || is_page( 'wp-plugin-prototype' ) || $path === 'wp-plugin-prototype',
+        'is_form_landing' => is_page_template( 'page-form-landing.php' ),
         'is_blog'         => is_home() || is_archive() || is_single() || is_search(),
         'is_single'       => is_single() && ! is_singular( 'jcp_company' ),
         'is_page'         => is_page() && ! is_page_template(),

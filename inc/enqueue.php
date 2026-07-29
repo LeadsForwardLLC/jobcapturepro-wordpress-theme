@@ -32,6 +32,14 @@ function jcp_core_enqueue_assets(): void {
 
     $is_marketing = $pages['is_home'] || $pages['is_pricing'] || $pages['is_contact'] || ! empty( $pages['is_niche_landing'] );
 
+    // Form Landing: minimal shell only (no nav / marketing stack).
+    if ( ! empty( $pages['is_form_landing'] ) ) {
+        jcp_core_enqueue_style( 'jcp-core-base', 'css/base.css' );
+        jcp_core_enqueue_style( 'jcp-core-form-landing', 'css/pages/form-landing.css', [ 'jcp-core-base' ] );
+        jcp_core_enqueue_script( 'jcp-core-form-landing', 'js/pages/form-landing.js', [] );
+        return;
+    }
+
     // Always load navigation JS (skip on prototype - no header/footer)
     if ( ! $pages['is_prototype'] ) {
         jcp_core_enqueue_script( 'jcp-core-nav', 'js/core/jcp-nav.js' );

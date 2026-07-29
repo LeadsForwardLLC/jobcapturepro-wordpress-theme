@@ -57,6 +57,10 @@ function jcp_admin_minimal_page_templates( array $templates ): array {
 		$out['page-jcp-blocks.php'] = $templates['page-jcp-blocks.php'];
 	}
 
+	if ( isset( $templates['page-form-landing.php'] ) ) {
+		$out['page-form-landing.php'] = $templates['page-form-landing.php'];
+	}
+
 	return $out !== [] ? $out : $templates;
 }
 
@@ -132,7 +136,7 @@ function jcp_admin_page_template_help(): void {
 		p.textContent = <?php echo wp_json_encode( __( 'This page uses the JCP block editor. For new marketing landers, choose JCP Block Page. Other templates here are tied to fixed URLs (Home, Pricing, Demo, etc.) — only use them if this page’s slug matches that route.', 'jcp-core' ) ); ?>;
 		<?php else : ?>
 		p.innerHTML = <?php echo wp_json_encode(
-			__( '<strong>Almost always:</strong> choose <em>JCP Block Page</em> for new landers. Block editor: Settings (gear) → Template. Classic editor: Page Attributes → Template. <em>Default template</em> is for plain text pages only. Fixed routes (Pricing, Demo, etc.) appear only when the page slug matches.', 'jcp-core' )
+			__( '<strong>Almost always:</strong> choose <em>JCP Block Page</em> for new landers. Use <em>Form Landing</em> for a full-screen form/embed page with no site chrome. Block editor: Settings (gear) → Template. Classic editor: Page Attributes → Template. Fixed routes (Pricing, Demo, etc.) appear only when the page slug matches.', 'jcp-core' )
 		); ?>;
 		<?php endif; ?>
 		select.parentNode && select.parentNode.appendChild(p);
