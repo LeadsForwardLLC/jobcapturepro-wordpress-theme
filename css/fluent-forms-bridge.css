@@ -654,13 +654,22 @@ body.jcp-fluent-modal-open {
     padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
   }
 
+  /*
+   * Dock the active step’s action row.
+   * Do NOT target bare .ff_step_nav_last — on Fluent’s final step that class wraps
+   * only Previous, while Submit lives in a sibling .ff_submit_btn_wrapper. Docking
+   * the nav alone left Submit off-screen / covered by the fixed bar.
+   */
   .jcp-fluent-bridge .fluentform-step.active .step-nav,
   .jcp-fluent-bridge .ff-step.active .step-nav,
   .jcp-fluent-bridge .ff-step.ff-active .step-nav,
   .jcp-fluent-bridge .ff-step.ff_active .step-nav,
   .jcp-fluent-bridge .ff-el-form-step.active .step-nav,
   .jcp-fluent-bridge .ff-el-form-step.ff_active .step-nav,
-  .jcp-fluent-bridge .ff_step_nav_last {
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container,
+  .jcp-fluent-bridge .ff-step.ff_active .ff-inner_submit_container {
     position: fixed;
     left: 0;
     right: 0;
@@ -669,12 +678,53 @@ body.jcp-fluent-modal-open {
     display: flex !important;
     flex-direction: row;
     flex-wrap: nowrap;
+    align-items: stretch;
     gap: 0.65rem;
     margin: 0;
     padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
     background: var(--jcp-ff-surface, #fff);
     border-top: 1px solid var(--jcp-ff-border, #e5e7eb);
     box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+  }
+
+  /* Final step: flatten Fluent’s 2-column prev/submit row into one dock */
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .ff-t-cell,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container .ff-t-cell,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container .ff-t-cell,
+  .jcp-fluent-bridge .ff-step.ff_active .ff-inner_submit_container .ff-t-cell {
+    float: none !important;
+    width: auto !important;
+    max-width: none !important;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .step-nav,
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .ff_step_nav_last,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container .step-nav,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container .step-nav,
+  .jcp-fluent-bridge .ff-step.ff_active .ff-inner_submit_container .step-nav {
+    position: static !important;
+    inset: auto !important;
+    display: flex !important;
+    flex: 1 1 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .ff_submit_btn_wrapper,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container .ff_submit_btn_wrapper,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container .ff_submit_btn_wrapper,
+  .jcp-fluent-bridge .ff-step.ff_active .ff-inner_submit_container .ff_submit_btn_wrapper {
+    margin: 0 !important;
+    width: 100%;
   }
 
   .jcp-fluent-bridge .fluentform-step.active .step-nav .ff-btn,
@@ -689,13 +739,20 @@ body.jcp-fluent-modal-open {
   .jcp-fluent-bridge .ff-step.ff-active .step-nav .ff-btn-next,
   .jcp-fluent-bridge .ff-step.ff-active .step-nav .ff-btn-prev,
   .jcp-fluent-bridge .ff-step.ff-active .step-nav .ff-btn-submit,
-  .jcp-fluent-bridge .ff_step_nav_last .ff-btn,
-  .jcp-fluent-bridge .ff_step_nav_last .ff-btn-next,
-  .jcp-fluent-bridge .ff_step_nav_last .ff-btn-prev,
-  .jcp-fluent-bridge .ff_step_nav_last .ff-btn-submit {
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .ff-btn,
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .ff-btn-prev,
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .ff-btn-submit,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container .ff-btn,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container .ff-btn-prev,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container .ff-btn-submit,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container .ff-btn,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container .ff-btn-prev,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container .ff-btn-submit {
     flex: 1 1 0;
-    width: auto !important;
+    width: 100% !important;
+    max-width: none !important;
     min-width: 0;
     margin: 0 !important;
+    float: none !important;
   }
 }
