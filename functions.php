@@ -18,6 +18,7 @@ require_once get_template_directory() . '/inc/onboarding.php';
 // Sitewide settings (banner, signup URL, nav CTAs)
 require_once get_template_directory() . '/inc/global-settings.php';
 require_once get_template_directory() . '/inc/fluent-forms-bridge.php';
+require_once get_template_directory() . '/inc/code-embed.php';
 require_once get_template_directory() . '/inc/form-landing.php';
 require_once get_template_directory() . '/inc/nav-mega-menu.php';
 

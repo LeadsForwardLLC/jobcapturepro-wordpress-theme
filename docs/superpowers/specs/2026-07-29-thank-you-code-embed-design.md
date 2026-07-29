@@ -1,7 +1,7 @@
 # Thank You Preset + Code/Embed Block — Design
 
 **Date:** 2026-07-29  
-**Status:** Pending approval  
+**Status:** Shipped  
 **Scope:** A only (Thank You template + global Code/Embed). Singular drag-and-drop elements are deferred.
 
 ## Goal

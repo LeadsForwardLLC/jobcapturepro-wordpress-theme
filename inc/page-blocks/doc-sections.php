@@ -140,6 +140,7 @@ function jcp_page_doc_legacy_key_map(): array {
 		'who_its_for'           => "WHO IT'S FOR",
 		'faq'                   => 'FAQ',
 		'form_embed'            => 'FORM EMBED',
+		'code_embed'            => 'CODE EMBED',
 		'conversion'            => 'CONVERSION',
 		'final_cta'             => 'FINAL CTA',
 		'demo_preview'          => 'DEMO PREVIEW',

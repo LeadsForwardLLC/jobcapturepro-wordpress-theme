@@ -73,6 +73,16 @@ function jcp_page_presets(): array {
 				'final_cta',
 			],
 		],
+		'thank_you' => [
+			'label'       => __( 'Thank You page', 'jcp-core' ),
+			'page_kind'   => 'marketing',
+			'description' => __( 'Post-form thank you — message, calendar embed, secondary CTA', 'jcp-core' ),
+			'block_types' => [
+				'hero',
+				'code_embed',
+				'final_cta',
+			],
+		],
 		'marketing' => [
 			'label'      => __( 'Block page', 'jcp-core' ),
 			'page_kind'  => 'marketing',

@@ -255,6 +255,17 @@ function jcp_page_sanitize_block_props( array $block ): array {
 				$props['points'] = jcp_niche_clean_string_list( $props['points'] );
 			}
 			break;
+		case 'code_embed':
+			if ( array_key_exists( 'headline', $props ) ) {
+				$props['headline'] = sanitize_text_field( (string) $props['headline'] );
+			}
+			if ( array_key_exists( 'subheadline', $props ) ) {
+				$props['subheadline'] = sanitize_text_field( (string) $props['subheadline'] );
+			}
+			if ( array_key_exists( 'embed_code', $props ) ) {
+				$props['embed_code'] = trim( (string) $props['embed_code'] );
+			}
+			break;
 	}
 
 	if ( array_key_exists( 'headline_tag', $props ) ) {

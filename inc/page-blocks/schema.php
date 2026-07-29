@@ -260,6 +260,9 @@ function jcp_page_normalize_content( array $content, int $post_id ): array {
 		if ( function_exists( 'jcp_page_finalize_campaign_document' ) ) {
 			$content = jcp_page_finalize_campaign_document( $content );
 		}
+		if ( function_exists( 'jcp_page_finalize_thank_you_document' ) ) {
+			$content = jcp_page_finalize_thank_you_document( $content );
+		}
 		return $content;
 	}
 	return jcp_page_legacy_to_blocks( $content, $post_id );
@@ -443,8 +446,11 @@ function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 		'nav_cta'         => is_array( $legacy['nav_cta'] ?? null ) ? $legacy['nav_cta'] : [],
 	];
 
-	return function_exists( 'jcp_page_finalize_campaign_document' )
+	$doc = function_exists( 'jcp_page_finalize_campaign_document' )
 		? jcp_page_finalize_campaign_document( $doc )
+		: $doc;
+	return function_exists( 'jcp_page_finalize_thank_you_document' )
+		? jcp_page_finalize_thank_you_document( $doc )
 		: $doc;
 }
 

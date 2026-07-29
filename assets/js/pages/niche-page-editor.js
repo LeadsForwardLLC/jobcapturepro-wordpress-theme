@@ -245,6 +245,14 @@
     core_mechanic: [
       { key: 'show_stats', label: 'Stat row', selector: '.jcp-core-mechanic-meta, .directory-meta', defaultOn: true },
     ],
+    form_embed: [
+      { key: 'show_headline', label: 'Headline', selector: '.jcp-form-embed__intro h2', defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-form-embed__intro p', defaultOn: true },
+    ],
+    code_embed: [
+      { key: 'show_headline', label: 'Headline', selector: '.jcp-code-embed__intro h2', defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-code-embed__intro p', defaultOn: false },
+    ],
     cta_band: [
       { key: 'show_cta_primary', label: 'Button', selector: '.jcp-niche-cta-band .btn-primary', defaultOn: true },
     ],
@@ -282,6 +290,8 @@
     who_its_for: { headline: "Who it's for", audiences: [] },
     faq: { headline: 'Frequently asked questions', items: [] },
     final_cta: { headline: 'Ready to get started?', subheadline: '', cta_primary: { label: 'Start free trial', url: '' }, cta_secondary: { label: 'See how it works', url: '/demo' } },
+    form_embed: { headline: 'Apply for a spot', subheadline: '', shortcode: '', display: 'inline', show_headline: true, show_subheadline: true },
+    code_embed: { headline: 'Book a time', subheadline: '', embed_code: '', show_headline: true, show_subheadline: false },
     cta_band: { cta_primary: { label: 'Get started', url: '' }, band_key: 'cta_band_1' },
     breadcrumb: {},
     core_mechanic: [
@@ -2004,17 +2014,30 @@
   };
 
   const buildBlockContentFieldsHtml = (block) => {
-    if (block.type !== 'form_embed') return '';
-    const shortcode = block.props?.shortcode || flatContent?.form_embed?.shortcode || '';
-    const display = (block.props?.display || flatContent?.form_embed?.display || 'inline') === 'modal' ? 'modal' : 'inline';
-    let html = '<div class="jcp-layout-row jcp-layout-row--stack"><span class="jcp-layout-row__label">Fluent Forms shortcode</span>';
-    html += `<input type="text" class="jcp-structure-text-input" data-block-content-field="shortcode" value="${String(shortcode).replace(/"/g, '&quot;')}" placeholder='[fluentform id="12"]' autocomplete="off" spellcheck="false" />`;
-    html += '<p class="jcp-structure-field-hint">Paste the shortcode, then click Save.</p></div>';
-    html += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Display</span><div class="jcp-layout-btns" data-block-content-setting="display">';
-    html += `<button type="button" class="jcp-layout-btn${display === 'inline' ? ' is-active' : ''}" data-value="inline">Inline</button>`;
-    html += `<button type="button" class="jcp-layout-btn${display === 'modal' ? ' is-active' : ''}" data-value="modal">Modal</button>`;
-    html += '</div></div>';
-    return html;
+    if (block.type === 'form_embed') {
+      const shortcode = block.props?.shortcode || flatContent?.form_embed?.shortcode || '';
+      const display = (block.props?.display || flatContent?.form_embed?.display || 'inline') === 'modal' ? 'modal' : 'inline';
+      let html = '<div class="jcp-layout-row jcp-layout-row--stack"><span class="jcp-layout-row__label">Fluent Forms shortcode</span>';
+      html += `<input type="text" class="jcp-structure-text-input" data-block-content-field="shortcode" value="${String(shortcode).replace(/"/g, '&quot;')}" placeholder='[fluentform id="12"]' autocomplete="off" spellcheck="false" />`;
+      html += '<p class="jcp-structure-field-hint">Paste the shortcode, then click Save.</p></div>';
+      html += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Display</span><div class="jcp-layout-btns" data-block-content-setting="display">';
+      html += `<button type="button" class="jcp-layout-btn${display === 'inline' ? ' is-active' : ''}" data-value="inline">Inline</button>`;
+      html += `<button type="button" class="jcp-layout-btn${display === 'modal' ? ' is-active' : ''}" data-value="modal">Modal</button>`;
+      html += '</div></div>';
+      return html;
+    }
+    if (block.type === 'code_embed') {
+      const embed = block.props?.embed_code || flatContent?.code_embed?.embed_code || '';
+      const escaped = String(embed)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      let html = '<div class="jcp-layout-row jcp-layout-row--stack"><span class="jcp-layout-row__label">Embed code</span>';
+      html += `<textarea class="jcp-structure-text-input jcp-structure-textarea" data-block-content-field="embed_code" rows="5" placeholder="[shortcode] or calendar iframe HTML" autocomplete="off" spellcheck="false">${escaped}</textarea>`;
+      html += '<p class="jcp-structure-field-hint">Shortcode or allowlisted iframe (Calendly, Cal.com, HubSpot, Google Calendar…). Save to apply.</p></div>';
+      return html;
+    }
+    return '';
   };
 
   const buildLayoutControlsHtml = (block) => {
@@ -2818,9 +2841,13 @@
           const key = input.dataset.blockContentField;
           const value = input.value.trim();
           liveBlock.props[key] = value;
-          flatContent.form_embed = flatContent.form_embed || {};
-          flatContent.form_embed[key] = value;
-          const pageInput = document.querySelector(`[data-jcp-input-path="form_embed.${key}"]`);
+          const legacyKey = blockLegacyKey(liveBlock) || liveBlock.type || 'form_embed';
+          flatContent[legacyKey] = flatContent[legacyKey] || {};
+          if (typeof flatContent[legacyKey] !== 'object' || Array.isArray(flatContent[legacyKey])) {
+            flatContent[legacyKey] = {};
+          }
+          flatContent[legacyKey][key] = value;
+          const pageInput = document.querySelector(`[data-jcp-input-path="${legacyKey}.${key}"]`);
           if (pageInput && pageInput !== input) pageInput.value = value;
           recordChange();
         };
@@ -3091,6 +3118,18 @@
         }
         if (typeof flatContent.form_embed.display === 'string') {
           block.props.display = flatContent.form_embed.display;
+        }
+      }
+      if (block.type === 'code_embed' && flatContent.code_embed && typeof flatContent.code_embed === 'object') {
+        block.props = block.props || {};
+        if (typeof flatContent.code_embed.embed_code === 'string') {
+          block.props.embed_code = flatContent.code_embed.embed_code;
+        }
+        if (typeof flatContent.code_embed.headline === 'string') {
+          block.props.headline = flatContent.code_embed.headline;
+        }
+        if (typeof flatContent.code_embed.subheadline === 'string') {
+          block.props.subheadline = flatContent.code_embed.subheadline;
         }
       }
     });

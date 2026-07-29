@@ -67,7 +67,7 @@ function jcp_writer_resolve_preset( ?WP_Post $post, array $content = [] ): strin
  * @return array<string, string> slug => label
  */
 function jcp_writer_selectable_layout_presets(): array {
-	$choices = [ 'industry', 'marketing', 'campaign', 'features', 'comparison', 'minimal' ];
+	$choices = [ 'industry', 'marketing', 'campaign', 'features', 'comparison', 'minimal', 'thank_you' ];
 	$out     = [];
 	foreach ( $choices as $slug ) {
 		$def = jcp_page_get_preset( $slug );
@@ -636,7 +636,7 @@ function jcp_page_create_skeleton_document( WP_Post $post, string $preset ): arr
 	$key       = $post->post_name !== '' ? $post->post_name : sanitize_title( $label );
 
 	return function_exists( 'jcp_page_finalize_campaign_document' )
-		? jcp_page_finalize_campaign_document(
+		? jcp_page_finalize_thank_you_document( jcp_page_finalize_campaign_document(
 			[
 				'version'      => 1,
 				'page_kind'    => $page_kind,
@@ -649,19 +649,21 @@ function jcp_page_create_skeleton_document( WP_Post $post, string $preset ): arr
 				'seo'          => [ 'keywords' => [] ],
 				'settings'     => [ 'hide_breadcrumb' => false ],
 			]
-		)
-		: [
-			'version'      => 1,
-			'page_kind'    => $page_kind,
-			'page_key'     => $key,
-			'page_label'   => $label,
-			'niche_key'    => $key,
-			'niche_label'  => $label,
-			'preset'       => $preset,
-			'blocks'       => jcp_page_blocks_from_preset( $preset ),
-			'seo'          => [ 'keywords' => [] ],
-			'settings'     => [ 'hide_breadcrumb' => false ],
-		];
+		) )
+		: jcp_page_finalize_thank_you_document(
+			[
+				'version'      => 1,
+				'page_kind'    => $page_kind,
+				'page_key'     => $key,
+				'page_label'   => $label,
+				'niche_key'    => $key,
+				'niche_label'  => $label,
+				'preset'       => $preset,
+				'blocks'       => jcp_page_blocks_from_preset( $preset ),
+				'seo'          => [ 'keywords' => [] ],
+				'settings'     => [ 'hide_breadcrumb' => false ],
+			]
+		);
 }
 
 /**

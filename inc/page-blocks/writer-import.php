@@ -137,6 +137,9 @@ function jcp_page_import_writer_document_to_post( int $post_id, string $text ): 
 	if ( $merged['preset'] === 'campaign' && function_exists( 'jcp_page_finalize_campaign_document' ) ) {
 		$merged = jcp_page_finalize_campaign_document( $merged );
 	}
+	if ( $merged['preset'] === 'thank_you' && function_exists( 'jcp_page_finalize_thank_you_document' ) ) {
+		$merged = jcp_page_finalize_thank_you_document( $merged );
+	}
 
 	jcp_page_save_content( $post_id, $merged );
 	update_post_meta( $post_id, jcp_writer_layout_preset_meta_key(), (string) $merged['preset'] );

@@ -174,6 +174,15 @@ function jcp_block_registry(): array {
 			'doc_sections' => [ 'FORM EMBED', 'FORM' ],
 			'page_kinds'   => [ 'marketing', 'industry', 'referral', 'home' ],
 		],
+		'code_embed' => [
+			'type'         => 'code_embed',
+			'label'        => __( 'Code / Embed', 'jcp-core' ),
+			'description'  => __( 'Shortcode or allowlisted iframe (Calendly, Cal.com, etc.)', 'jcp-core' ),
+			'category'     => 'content',
+			'legacy_key'   => 'code_embed',
+			'doc_sections' => [ 'CODE EMBED', 'EMBED' ],
+			'page_kinds'   => [ 'marketing', 'industry', 'referral', 'home' ],
+		],
 		'cta_band' => [
 			'type'         => 'cta_band',
 			'label'        => __( 'CTA band', 'jcp-core' ),
@@ -431,6 +440,13 @@ function jcp_page_default_block_props( string $type ): array {
 			'display'          => 'inline',
 			'show_headline'    => true,
 			'show_subheadline' => true,
+		],
+		'code_embed' => [
+			'headline'         => __( 'Book a time', 'jcp-core' ),
+			'subheadline'      => '',
+			'embed_code'       => '',
+			'show_headline'    => true,
+			'show_subheadline' => false,
 		],
 		'cta_band' => [
 			'cta_primary' => [ 'label' => __( 'Get started', 'jcp-core' ), 'url' => '' ],

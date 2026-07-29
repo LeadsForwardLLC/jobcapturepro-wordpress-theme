@@ -156,6 +156,10 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 		case 'form_embed':
 			jcp_niche_render_form_embed( $props );
 			break;
+		case 'code_embed':
+			$path = ! empty( $block['legacy_key'] ) ? (string) $block['legacy_key'] : 'code_embed';
+			jcp_niche_render_code_embed( $props, $path );
+			break;
 		case 'cta_band':
 			$band_key = ! empty( $props['band_key'] ) ? (string) $props['band_key'] : 'cta_band_1';
 			jcp_niche_render_cta_band( $props, $page_key, $band_key );
