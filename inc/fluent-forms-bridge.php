@@ -109,7 +109,7 @@ function jcp_fluent_bridge_enqueue_assets(): void {
 	}
 
 	jcp_core_enqueue_style( 'jcp-fluent-forms-bridge', 'css/fluent-forms-bridge.css', [ 'jcp-core-base' ] );
-	jcp_core_enqueue_script( 'jcp-fluent-forms-bridge', 'js/fluent-forms-bridge.js', [] );
+	jcp_core_enqueue_script( 'jcp-fluent-forms-bridge', 'js/fluent-forms-bridge.js', [ 'jquery' ] );
 }
 add_action( 'wp_enqueue_scripts', 'jcp_fluent_bridge_enqueue_assets', 40 );
 

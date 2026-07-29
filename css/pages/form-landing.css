@@ -167,7 +167,7 @@ body.jcp-form-landing .tour-dock {
   margin: 0;
 }
 
-/* Kill Fluent bridge / form max-width so embed matches title column */
+/* Fill the title column — do NOT force width on Fluent cells/input-groups (breaks columns + $ prefix). */
 body.jcp-form-landing .jcp-form-landing__embed.jcp-fluent-bridge--inline,
 body.jcp-form-landing .jcp-form-landing__embed.jcp-fluent-bridge {
   width: 100% !important;
@@ -175,34 +175,15 @@ body.jcp-form-landing .jcp-form-landing__embed.jcp-fluent-bridge {
   margin-inline: 0 !important;
 }
 
-body.jcp-form-landing .jcp-form-landing__embed .fluentform,
-body.jcp-form-landing .jcp-form-landing__embed .ff-el-form-1,
-body.jcp-form-landing .jcp-form-landing__embed .ff-el-group,
-body.jcp-form-landing .jcp-form-landing__embed .ff-t-container,
-body.jcp-form-landing .jcp-form-landing__embed .ff-t-cell,
-body.jcp-form-landing .jcp-form-landing__embed .ff-el-input--content,
-body.jcp-form-landing .jcp-form-landing__embed .ff-el-form-control,
-body.jcp-form-landing .jcp-form-landing__embed input[type="text"],
-body.jcp-form-landing .jcp-form-landing__embed input[type="email"],
-body.jcp-form-landing .jcp-form-landing__embed input[type="tel"],
-body.jcp-form-landing .jcp-form-landing__embed input[type="url"],
-body.jcp-form-landing .jcp-form-landing__embed input[type="number"],
-body.jcp-form-landing .jcp-form-landing__embed select,
-body.jcp-form-landing .jcp-form-landing__embed textarea,
-body.jcp-form-landing .jcp-form-landing__embed iframe {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box;
-}
-
-/* Soften Fluent’s own card padding so the form edge tracks the title */
 body.jcp-form-landing .jcp-form-landing__embed .fluentform_wrapper_1,
 body.jcp-form-landing .jcp-form-landing__embed .fluentform,
-body.jcp-form-landing .jcp-form-landing__embed form.frm-fluent-form {
+body.jcp-form-landing .jcp-form-landing__embed form.frm-fluent-form,
+body.jcp-form-landing .jcp-form-landing__embed .ff-el-form-1 {
   width: 100% !important;
   max-width: 100% !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
+  box-sizing: border-box;
 }
 
 .jcp-form-landing__empty {
@@ -253,10 +234,5 @@ body.jcp-form-landing .jcp-form-landing__embed form.frm-fluent-form {
     margin-bottom: 1.35rem;
   }
 
-  /* Two-column Fluent rows stack cleanly on phones */
-  body.jcp-form-landing .jcp-form-landing__embed .ff-t-container,
-  body.jcp-form-landing .jcp-form-landing__embed .ff-t-cell {
-    display: block !important;
-    width: 100% !important;
-  }
+  /* Let Fluent’s own mobile rules handle column stacking — don’t override cell widths. */
 }
