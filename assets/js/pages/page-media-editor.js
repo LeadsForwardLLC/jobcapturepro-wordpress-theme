@@ -1118,9 +1118,10 @@
   };
 
   window.jcpOpenMediaEditor = (el, e) => {
+    // Only intercept while the live editor is active — otherwise allow phone/media links to navigate.
+    if (!api || !isEditingActive()) return true;
     if (e?.preventDefault) e.preventDefault();
     if (e?.stopPropagation) e.stopPropagation();
-    if (!api || !isEditingActive()) return false;
     openPopover(el);
     return false;
   };

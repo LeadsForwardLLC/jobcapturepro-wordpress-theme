@@ -1368,7 +1368,8 @@
   box-shadow: 0 4px 12px rgba(255, 80, 62, 0.4);
   opacity: 1;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  pointer-events: none;
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .demo-phone-mockup:hover .phone-click-hint {

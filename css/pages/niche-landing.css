@@ -2647,11 +2647,18 @@ body.jcp-inline-editing .demo-app-phone-mockup.jcp-media-hit {
   cursor: pointer;
 }
 
-/* Linked phone mockups must not navigate while inline editing */
+/* Linked phone mockups must not navigate while inline editing — clicks open Edit media instead */
 body.jcp-inline-editing .jcp-media-slot .demo-phone-mockup,
 body.jcp-inline-editing .jcp-media-slot .demo-app-phone-mockup,
 body.jcp-inline-editing .jcp-hero-visual-column .demo-phone-mockup {
   pointer-events: none;
+}
+
+/* When not editing, phone mockup links must remain clickable for visitors and logged-in users */
+body:not(.jcp-inline-editing) .demo-phone-mockup,
+body:not(.jcp-inline-editing) .demo-app-phone-mockup,
+body:not(.jcp-inline-editing) .hero-phone-mockup {
+  pointer-events: auto;
 }
 
 body.jcp-inline-editing .jcp-editable-media-image:hover,
