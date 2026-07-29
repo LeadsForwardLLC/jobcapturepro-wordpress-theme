@@ -128,20 +128,92 @@
   });
 
   /**
-   * When Fluent validation fails, scroll the first visible error into view.
-   * Multi-step forms can otherwise fail “silently” if the error sits in a collapsed step.
+   * Multi-step Fluent keeps failed fields on earlier steps (display:none).
+   * Fluent’s own “is in viewport” check treats 0×0 hidden rects as visible, so
+   * Submit can look dead on desktop. Reveal the error step, then scroll.
    */
+  function getStepIndex(step) {
+    if (!step || !step.parentElement) {
+      return -1;
+    }
+    var siblings = step.parentElement.querySelectorAll(
+      ':scope > .fluentform-step, :scope > .ff-step, :scope > .ff-el-form-step'
+    );
+    if (!siblings.length) {
+      siblings = step.parentElement.querySelectorAll('.fluentform-step, .ff-step, .ff-el-form-step');
+    }
+    return Array.prototype.indexOf.call(siblings, step);
+  }
+
+  function isActiveStep(step) {
+    if (!step) {
+      return false;
+    }
+    return (
+      step.classList.contains('active')
+      || step.classList.contains('ff-active')
+      || step.classList.contains('ff_active')
+    );
+  }
+
+  function revealErrorStep(error, formEl) {
+    var step = error.closest('.fluentform-step, .ff-step, .ff-el-form-step');
+    if (!step || isActiveStep(step) || !window.jQuery) {
+      return Promise.resolve(error);
+    }
+    var index = getStepIndex(step);
+    if (index < 0) {
+      return Promise.resolve(error);
+    }
+    var form = formEl || step.closest('form.frm-fluent-form') || document.querySelector('form.frm-fluent-form');
+    if (!form) {
+      return Promise.resolve(error);
+    }
+    window.jQuery(form).trigger('update_slider', {
+      goBackToStep: index,
+      animDuration: 350,
+      isScrollTop: true,
+      actionType: 'prev'
+    });
+    return new Promise(function (resolve) {
+      window.setTimeout(function () {
+        var activeError = form.querySelector(
+          '.fluentform-step.active .ff-el-is-error, .ff-step.active .ff-el-is-error, .ff-el-is-error'
+        );
+        resolve(activeError || error);
+      }, 420);
+    });
+  }
+
   function scrollToFirstError(scope) {
     var root = scope && scope.querySelector ? scope : document;
-    var error = root.querySelector(
-      '.ff-el-is-error .text-danger, .ff-el-is-error, .ff-errors-in-stack .error, .text-danger'
-    );
-    if (!error || typeof error.scrollIntoView !== 'function') {
+    var form = null;
+    if (scope && scope.nodeType === 1) {
+      form = scope.matches && scope.matches('form') ? scope : scope.closest && scope.closest('form');
+      if (!form && scope.querySelector) {
+        form = scope.querySelector('form.frm-fluent-form');
+      }
+    }
+    if (!form) {
+      form = document.querySelector('form.frm-fluent-form');
+    }
+    var error = root.querySelector('.ff-el-is-error')
+      || root.querySelector('.ff-errors-in-stack .error')
+      || root.querySelector('.text-danger');
+    if (!error) {
       return;
     }
-    window.setTimeout(function () {
-      error.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 50);
+    revealErrorStep(error, form).then(function (target) {
+      if (!target || typeof target.scrollIntoView !== 'function') {
+        return;
+      }
+      // Ignore 0×0 rects (still-hidden nodes).
+      var rect = target.getBoundingClientRect();
+      if (rect.width === 0 && rect.height === 0) {
+        return;
+      }
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
   }
 
   function bindFluentHelpers() {
@@ -149,17 +221,26 @@
       return;
     }
     var $ = window.jQuery;
-    $(document)
-      .off('fluentform_submission_failed.jcpBridge')
-      .on('fluentform_submission_failed.jcpBridge', function (e, form) {
-        var el = (form && form.length) ? form[0] : (e && e.target);
+    function onFail(e, payload) {
+      var el = null;
+      if (payload && payload.form && payload.form.length) {
+        el = payload.form[0];
+      } else if (payload && payload.length) {
+        el = payload[0];
+      } else if (e && e.target) {
+        el = e.target;
+      }
+      // Fluent fires validation_failed before it paints .ff-el-is-error — wait a tick.
+      window.setTimeout(function () {
         scrollToFirstError(el || document);
-      });
+      }, 60);
+    }
     $(document)
-      .off('fluentform_submitted_failed.jcpBridge fluentform_validation_failed.jcpBridge')
-      .on('fluentform_submitted_failed.jcpBridge fluentform_validation_failed.jcpBridge', function (e) {
-        scrollToFirstError((e && e.target) || document);
-      });
+      .off('fluentform_submission_failed.jcpBridge fluentform_submitted_failed.jcpBridge fluentform_validation_failed.jcpBridge')
+      .on(
+        'fluentform_submission_failed.jcpBridge fluentform_submitted_failed.jcpBridge fluentform_validation_failed.jcpBridge',
+        onFail
+      );
   }
 
   if (document.readyState === 'loading') {

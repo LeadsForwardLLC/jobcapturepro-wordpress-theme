@@ -10,11 +10,17 @@ body.jcp-form-landing {
   --jcp-form-landing-max: 800px;
   --jcp-form-landing-gutter: 1.25rem;
   margin: 0;
+  padding-top: 0; /* no site header stack on this template */
   min-height: 100dvh;
   background: #ffffff;
   color: var(--jcp-color-text-primary, #111827);
   font-family: var(--jcp-font-family-base, system-ui, -apple-system, Segoe UI, Roboto, sans-serif);
   -webkit-font-smoothing: antialiased;
+}
+
+body.jcp-form-landing,
+html:has(body.jcp-form-landing) {
+  scroll-padding-top: 0;
 }
 
 /* Hide site chrome / floating widgets if anything still injects them */
