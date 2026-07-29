@@ -449,7 +449,11 @@ body.mobile-menu-open .jcp-top-banner {
 }
 
 .jcp-hero .jcp-container {
-  padding: 0;
+  /* Keep side gutters — padding:0 caused edge-to-edge copy on mobile landers */
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: var(--jcp-space-lg);
+  padding-right: var(--jcp-space-lg);
 }
 
 .jcp-hero-title {
@@ -1617,7 +1621,7 @@ body.mobile-menu-open .jcp-top-banner {
 
 @media (max-width: 768px) {
   .directory-header {
-    padding: var(--jcp-space-md) var(--jcp-space-lg);
+    padding: var(--jcp-space-md) max(1.25rem, env(safe-area-inset-right, 0px)) var(--jcp-space-md) max(1.25rem, env(safe-area-inset-left, 0px)) !important;
     gap: var(--jcp-space-md);
   }
 

@@ -1459,7 +1459,7 @@
   }
 
   .timeline-steps {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     gap: var(--jcp-space-xl);
     margin-top: var(--jcp-space-3xl);
   }
@@ -1695,7 +1695,7 @@
 
 @media (max-width: 768px) {
   .ranking-factors-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     gap: var(--jcp-space-lg);
   }
 
@@ -2308,7 +2308,7 @@
 
 @media (max-width: 768px) {
   .guarantees-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     gap: var(--jcp-space-lg);
   }
 

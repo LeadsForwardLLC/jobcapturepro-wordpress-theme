@@ -343,7 +343,15 @@
   }
 
   .jcp-home .jcp-container {
-    padding: 0 var(--jcp-space-md);
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+  }
+
+  .jcp-home .jcp-hero .jcp-container {
+    padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
   }
 }
 
@@ -353,7 +361,10 @@
   }
 
   .jcp-home .jcp-container {
-    padding: 0 var(--jcp-space-md);
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
   }
 }
 
