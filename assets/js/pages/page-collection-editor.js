@@ -163,20 +163,27 @@
   };
 
   const buildFactorCard = (basePath, index, data) => {
+    // While editing, always render card pieces so SHOW toggles can CSS-hide them
+    // without destroying DOM (and so collectFromDom cannot wipe copy).
+    const editing = isEditingActive();
     const flags = sectionFlagsForPath(basePath);
+    const showIcons = editing || flags.showIcons;
+    const showTitles = editing || flags.showTitles;
+    const showBody = editing || flags.showBody;
+    const showStats = editing || flags.showStats;
     const iconPath = `${basePath}.${index}.icon`;
-    const icon = flags.showIcons
+    const icon = showIcons
       ? `<div class="factor-icon-wrapper" data-jcp-icon-path="${iconPath}">
           <img src="${iconUrl(data.icon || 'badge-check')}" class="factor-icon" alt="" width="32" height="32" />
         </div>`
       : '';
-    const title = flags.showTitles
+    const title = showTitles
       ? `<h3 class="factor-title" data-jcp-path="${basePath}.${index}.title">${esc(data.title || '')}</h3>`
       : '';
-    const body = flags.showBody
+    const body = showBody
       ? `<div class="factor-description"><p data-jcp-path="${basePath}.${index}.body">${esc(data.body || '')}</p></div>`
       : '';
-    const stat = (flags.showStats && data.stat_value)
+    const stat = (showStats && data.stat_value)
       ? `<div class="factor-stat">
           <span class="stat-value" data-jcp-path="${basePath}.${index}.stat_value">${esc(data.stat_value)}</span>
           <span class="stat-label" data-jcp-path="${basePath}.${index}.stat_label">${esc(data.stat_label || '')}</span>
@@ -283,11 +290,12 @@
   const buildGuaranteeCard = (basePath, index, data) => {
     const path = `${basePath}.${index}`;
     const section = (api?.getPath?.(api.flatContent, 'who_its_for') || {});
-    const showImages = section.show_card_images !== false && section.show_card_images !== 0 && section.show_card_images !== '0';
-    const showBadges = section.show_card_badges !== false && section.show_card_badges !== 0 && section.show_card_badges !== '0';
-    const showTitles = section.show_card_titles !== false && section.show_card_titles !== 0 && section.show_card_titles !== '0';
-    const showBody = section.show_card_body !== false && section.show_card_body !== 0 && section.show_card_body !== '0';
-    const showStats = section.show_card_stats !== false && section.show_card_stats !== 0 && section.show_card_stats !== '0';
+    const editing = isEditingActive();
+    const showImages = editing || (section.show_card_images !== false && section.show_card_images !== 0 && section.show_card_images !== '0');
+    const showBadges = editing || (section.show_card_badges !== false && section.show_card_badges !== 0 && section.show_card_badges !== '0');
+    const showTitles = editing || (section.show_card_titles !== false && section.show_card_titles !== 0 && section.show_card_titles !== '0');
+    const showBody = editing || (section.show_card_body !== false && section.show_card_body !== 0 && section.show_card_body !== '0');
+    const showStats = editing || (section.show_card_stats !== false && section.show_card_stats !== 0 && section.show_card_stats !== '0');
     const itemShowImage = data.show_image !== false && data.show_image !== 0 && data.show_image !== '0';
     const renderImage = showImages && itemShowImage;
     const imageBlock = data.image_url

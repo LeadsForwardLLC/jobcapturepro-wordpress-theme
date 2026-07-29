@@ -3160,6 +3160,11 @@ body.jcp-inline-editing .jcp-collection-add--timeline {
   display: none !important;
 }
 
+/* Live editor SHOW toggles — hide without deleting nodes */
+.jcp-vis-hidden {
+  display: none !important;
+}
+
 .jcp-section--no-card-titles .factor-title {
   display: none !important;
 }

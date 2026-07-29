@@ -1399,6 +1399,41 @@
     root.querySelectorAll(selector).forEach((el) => el.remove());
   };
 
+  /**
+   * Toggle visibility without destroying DOM (or content via collectFromDom).
+   * Prefer this over omitHiddenNodes for SHOW toggles.
+   */
+  const setNodesVisuallyHidden = (root, selector, hidden) => {
+    if (!root || !selector) return 0;
+    let count = 0;
+    root.querySelectorAll(selector).forEach((el) => {
+      count += 1;
+      if (hidden) {
+        el.classList.add('jcp-vis-hidden');
+        el.style.display = 'none';
+        el.setAttribute('hidden', '');
+      } else {
+        el.classList.remove('jcp-vis-hidden');
+        el.style.removeProperty('display');
+        el.removeAttribute('hidden');
+      }
+    });
+    return count;
+  };
+
+  const setElVisuallyHidden = (el, hidden) => {
+    if (!el) return;
+    if (hidden) {
+      el.classList.add('jcp-vis-hidden');
+      el.style.display = 'none';
+      el.setAttribute('hidden', '');
+    } else {
+      el.classList.remove('jcp-vis-hidden');
+      el.style.removeProperty('display');
+      el.removeAttribute('hidden');
+    }
+  };
+
   const ensureRankingsHeader = (root, block) => {
     if (block.type === 'final_cta') {
       let content = root.querySelector('.cta-content');
@@ -1530,9 +1565,7 @@
   const restoreVisibilityField = (root, block, key, selector) => {
     if (!root || !selector) return;
     if (root.querySelector(selector)) {
-      root.querySelectorAll(selector).forEach((el) => {
-        el.style.display = '';
-      });
+      setNodesVisuallyHidden(root, selector, false);
       return;
     }
     const lk = blockLegacyKey(block);
@@ -1646,23 +1679,29 @@
         enabled = isHeroFieldOn(block, key, defaultOn !== false);
       }
       if (CARD_PIECE_KEYS.has(key)) {
+        // CSS section classes hide/show pieces. Never delete nodes — that made
+        // re-select impossible and let collectFromDom wipe card copy.
         applySectionVisibilityClass(root, key, enabled);
-        needsCollectionRebuild = true;
-        if (!enabled && selector) omitHiddenNodes(root, selector);
+        if (enabled && selector && !root.querySelector(selector)) {
+          needsCollectionRebuild = true;
+        }
         return;
       }
       if (!selector) return;
       if (enabled) {
-        restoreVisibilityField(root, block, key, selector);
-        if (ARRAY_VISIBILITY_KEYS.has(key)) needsCollectionRebuild = true;
+        const found = setNodesVisuallyHidden(root, selector, false);
+        if (!found) {
+          restoreVisibilityField(root, block, key, selector);
+          if (ARRAY_VISIBILITY_KEYS.has(key)) needsCollectionRebuild = true;
+        }
       } else {
-        omitHiddenNodes(root, selector);
+        setNodesVisuallyHidden(root, selector, true);
       }
       if (block.type === 'hero' && (key === 'show_cta_primary' || key === 'show_cta_secondary')) {
         const showPrimary = isHeroFieldOn(block, 'show_cta_primary', true);
         const showSecondary = isHeroFieldOn(block, 'show_cta_secondary', true);
         const actions = root.querySelector('.jcp-actions');
-        if (actions && !showPrimary && !showSecondary) actions.remove();
+        setElVisuallyHidden(actions, !showPrimary && !showSecondary);
       }
       if (key === 'show_cta' || key === 'show_cta_secondary') {
         const showPrimary = key === 'show_cta'
@@ -1672,10 +1711,12 @@
           ? enabled
           : isBlockFieldVisible(block, 'show_cta_secondary', (BLOCK_VISIBILITY_TOGGLES[block.type] || []).find((e) => e.key === 'show_cta_secondary')?.defaultOn !== false);
         const row = root.querySelector('.jcp-section-cta-row');
-        if (row && !showPrimary && !showSecondary) row.remove();
+        setElVisuallyHidden(row, !!(row && !showPrimary && !showSecondary));
         if (showPrimary) {
           root.querySelectorAll(SECTION_CTA_PRIMARY_SELECTOR).forEach((el) => {
-            el.style.display = '';
+            el.classList.remove('jcp-vis-hidden');
+            el.style.removeProperty('display');
+            el.removeAttribute('hidden');
           });
         }
       }
