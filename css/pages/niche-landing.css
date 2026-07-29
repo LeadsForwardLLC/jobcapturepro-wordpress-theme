@@ -3721,7 +3721,9 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   width: 100%;
 }
 
-.jcp-code-embed__output iframe {
+.jcp-code-embed__output iframe,
+.jcp-code-embed__output [id$="-calendar"] iframe,
+.jcp-code-embed__output #jcp-demo-calendar iframe {
   display: block;
   width: 100% !important;
   max-width: 100%;
@@ -3732,9 +3734,20 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   background: #fff;
 }
 
+.jcp-code-embed__output #jcp-demo-calendar {
+  width: 100%;
+  min-height: 640px;
+}
+
 @media (max-width: 767px) {
-  .jcp-code-embed__output iframe {
+  .jcp-code-embed__output iframe,
+  .jcp-code-embed__output [id$="-calendar"] iframe,
+  .jcp-code-embed__output #jcp-demo-calendar iframe {
     min-height: 520px;
     height: 560px;
+  }
+
+  .jcp-code-embed__output #jcp-demo-calendar {
+    min-height: 520px;
   }
 }
