@@ -19,9 +19,9 @@ body.jcp-form-landing .mobile-menu-overlay,
 body.jcp-form-landing .jcp-header-stack,
 body.jcp-form-landing .jcp-footer,
 body.jcp-form-landing .jcp-top-banner,
-body.jcp-form-landing #cruise-float,
-body.jcp-form-landing #cruise-bubble,
-body.jcp-form-landing .cruise-dock {
+body.jcp-form-landing #tour-float,
+body.jcp-form-landing #tour-bubble,
+body.jcp-form-landing .tour-dock {
   display: none !important;
 }
 
