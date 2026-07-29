@@ -1,10 +1,14 @@
 /**
  * Form Landing — full-screen distraction-free template.
  *
+ * Shared shell width keeps logo / close aligned with title + form.
+ *
  * @package JCP_Core
  */
 
 body.jcp-form-landing {
+  --jcp-form-landing-max: 800px;
+  --jcp-form-landing-gutter: 1.25rem;
   margin: 0;
   min-height: 100dvh;
   background: #ffffff;
@@ -41,19 +45,30 @@ body.jcp-form-landing .tour-dock {
   left: 0;
 }
 
+/* Shared content column — header + main use the same edges */
+.jcp-form-landing__shell {
+  width: 100%;
+  max-width: var(--jcp-form-landing-max);
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
 .jcp-form-landing__top {
   position: sticky;
   top: 0;
   z-index: 10;
+  background: #ffffff;
+  padding-block: 0.75rem;
+  padding-inline: max(var(--jcp-form-landing-gutter), env(safe-area-inset-left))
+    max(var(--jcp-form-landing-gutter), env(safe-area-inset-right));
+}
+
+.jcp-form-landing__top .jcp-form-landing__shell {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  min-height: 3.5rem;
-  padding: 0.75rem 1.25rem;
-  padding-left: max(1.25rem, env(safe-area-inset-left));
-  padding-right: max(1.25rem, env(safe-area-inset-right));
-  background: #ffffff;
+  min-height: 2.5rem;
 }
 
 .jcp-form-landing__logo-link {
@@ -80,9 +95,11 @@ body.jcp-form-landing .tour-dock {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   width: 2.5rem;
   height: 2.5rem;
   margin: 0;
+  margin-inline-end: -0.35rem; /* optical: align X with column edge */
   padding: 0;
   border: 1px solid transparent;
   border-radius: 9999px;
@@ -107,22 +124,17 @@ body.jcp-form-landing .tour-dock {
 }
 
 .jcp-form-landing__main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   width: 100%;
-  min-height: calc(100dvh - 3.5rem);
-  padding: 1.5rem 1.25rem 3rem;
-  padding-left: max(1.25rem, env(safe-area-inset-left));
-  padding-right: max(1.25rem, env(safe-area-inset-right));
+  min-height: calc(100dvh - 4rem);
+  padding-top: 1.25rem;
   padding-bottom: max(3rem, env(safe-area-inset-bottom));
+  padding-inline: max(var(--jcp-form-landing-gutter), env(safe-area-inset-left))
+    max(var(--jcp-form-landing-gutter), env(safe-area-inset-right));
   box-sizing: border-box;
 }
 
 .jcp-form-landing__inner {
-  width: 100%;
-  max-width: 780px;
-  margin: 0 auto;
+  padding-bottom: 1rem;
 }
 
 .jcp-form-landing__title {
@@ -151,22 +163,46 @@ body.jcp-form-landing .tour-dock {
 
 .jcp-form-landing__embed {
   width: 100%;
+  max-width: none;
+  margin: 0;
 }
 
-.jcp-form-landing__embed .fluentform,
-.jcp-form-landing__embed .ff-el-group,
-.jcp-form-landing__embed .ff-el-form-control,
-.jcp-form-landing__embed input[type="text"],
-.jcp-form-landing__embed input[type="email"],
-.jcp-form-landing__embed input[type="tel"],
-.jcp-form-landing__embed input[type="url"],
-.jcp-form-landing__embed input[type="number"],
-.jcp-form-landing__embed select,
-.jcp-form-landing__embed textarea,
-.jcp-form-landing__embed iframe {
+/* Kill Fluent bridge / form max-width so embed matches title column */
+body.jcp-form-landing .jcp-form-landing__embed.jcp-fluent-bridge--inline,
+body.jcp-form-landing .jcp-form-landing__embed.jcp-fluent-bridge {
   width: 100% !important;
-  max-width: 100%;
+  max-width: none !important;
+  margin-inline: 0 !important;
+}
+
+body.jcp-form-landing .jcp-form-landing__embed .fluentform,
+body.jcp-form-landing .jcp-form-landing__embed .ff-el-form-1,
+body.jcp-form-landing .jcp-form-landing__embed .ff-el-group,
+body.jcp-form-landing .jcp-form-landing__embed .ff-t-container,
+body.jcp-form-landing .jcp-form-landing__embed .ff-t-cell,
+body.jcp-form-landing .jcp-form-landing__embed .ff-el-input--content,
+body.jcp-form-landing .jcp-form-landing__embed .ff-el-form-control,
+body.jcp-form-landing .jcp-form-landing__embed input[type="text"],
+body.jcp-form-landing .jcp-form-landing__embed input[type="email"],
+body.jcp-form-landing .jcp-form-landing__embed input[type="tel"],
+body.jcp-form-landing .jcp-form-landing__embed input[type="url"],
+body.jcp-form-landing .jcp-form-landing__embed input[type="number"],
+body.jcp-form-landing .jcp-form-landing__embed select,
+body.jcp-form-landing .jcp-form-landing__embed textarea,
+body.jcp-form-landing .jcp-form-landing__embed iframe {
+  width: 100% !important;
+  max-width: 100% !important;
   box-sizing: border-box;
+}
+
+/* Soften Fluent’s own card padding so the form edge tracks the title */
+body.jcp-form-landing .jcp-form-landing__embed .fluentform_wrapper_1,
+body.jcp-form-landing .jcp-form-landing__embed .fluentform,
+body.jcp-form-landing .jcp-form-landing__embed form.frm-fluent-form {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
 }
 
 .jcp-form-landing__empty {
@@ -180,16 +216,47 @@ body.jcp-form-landing .tour-dock {
 }
 
 @media (min-width: 768px) {
-  .jcp-form-landing__top {
-    padding-inline: 2rem;
+  body.jcp-form-landing {
+    --jcp-form-landing-gutter: 1.5rem;
   }
 
   .jcp-form-landing__main {
-    padding-inline: 2rem;
-    padding-top: 2rem;
+    padding-top: 1.75rem;
   }
 
   .jcp-form-landing__logo {
     height: 36px;
+  }
+}
+
+@media (min-width: 880px) {
+  /* Past container + gutters: shell centers; logo/X sit on content edges */
+  body.jcp-form-landing {
+    --jcp-form-landing-gutter: 2rem;
+  }
+}
+
+@media (max-width: 767px) {
+  body.jcp-form-landing {
+    --jcp-form-landing-gutter: 1.125rem;
+  }
+
+  .jcp-form-landing__title {
+    font-size: clamp(1.5rem, 6.5vw, 1.85rem);
+  }
+
+  .jcp-form-landing__supporting {
+    font-size: 1.0625rem;
+  }
+
+  .jcp-form-landing__reassurance {
+    margin-bottom: 1.35rem;
+  }
+
+  /* Two-column Fluent rows stack cleanly on phones */
+  body.jcp-form-landing .jcp-form-landing__embed .ff-t-container,
+  body.jcp-form-landing .jcp-form-landing__embed .ff-t-cell {
+    display: block !important;
+    width: 100% !important;
   }
 }
