@@ -26,7 +26,7 @@
                     <div class="app-screen active" id="login-screen">
                         <div class="app-header">
                             <div class="app-header__left"></div>
-                            <h1 class="app-header__title">JobCapturePro Demo</h1>
+                            <p class="app-header__title">JobCapturePro Demo</h1>
                             <div class="app-header__right"></div>
                         </div>
 
@@ -43,7 +43,7 @@
                     <!-- Home Screen -->
                     <div class="app-screen" id="home-screen">
                         <div class="app-header app-header--title-left">
-                            <h1 class="app-header__title">Check-ins</h1>
+                            <p class="app-header__title">Check-ins</h1>
                             <button type="button" class="location-switcher" id="location-switcher" data-action="switch-location" aria-label="Switch location">
                                 <img src="../../shared/assets/icons/lucide/map-pin.svg" class="location-switcher__icon" alt="" aria-hidden="true">
                                 <span class="location-switcher__label">Austin, TX</span>
@@ -71,12 +71,27 @@
 
                             <div class="empty-state">
                                 <h3>Start capturing proof</h3>
-                                <p>Take a few photos → submit → automatically published everywhere.</p>
+                                <p>Take a few photos, submit, and get published everywhere.</p>
                                 <div class="empty-hint">
                                     <span>Tap <strong>+</strong> to create a check-in</span>
                                 </div>
                             </div>
                             <div class="home-checkin-list" id="home-checkin-list"></div>
+
+                            <div class="demo-outcomes" id="demoOutcomes" hidden>
+                              <p class="demo-outcomes-eyebrow">Automations completed</p>
+                              <h3 class="demo-outcomes-title">This job ran on autopilot</h3>
+                              <ul class="demo-outcomes-list demo-publish-list" id="demoOutcomesList" aria-live="polite"></ul>
+                              <div class="demo-review-received demo-review-received--recap" id="demoReviewReceived" hidden>
+                                <img class="demo-review-received-photo" id="demoReviewReceivedPhoto" src="" alt="" width="56" height="56" loading="lazy">
+                                <div class="demo-review-received-copy">
+                                  <div class="demo-review-received-stars" aria-hidden="true">★★★★★</div>
+                                  <strong>New 5-star review</strong>
+                                  <p>"Great service, fast and very professional!"</p>
+                                  <small>Arrived right after your request</small>
+                                </div>
+                              </div>
+                            </div>
                         </div>
                         <div class="tab-bar">
                             <button class="tab-item active">
@@ -96,7 +111,7 @@
                     <div class="app-screen" id="new-screen">
                         <div class="app-header">
                             <div class="app-header__left"><button class="back-btn" id="btnBackToHome" onclick="goToHome()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
-                            <h1 class="app-header__title">New Check-In</h1>
+                            <p class="app-header__title">New Check-In</h1>
                             <div class="app-header__right"></div>
                         </div>
                         <div class="content-area">
@@ -131,7 +146,7 @@
                     <div class="app-screen" id="edit-screen">
                         <div class="app-header">
                             <div class="app-header__left"><button class="back-btn" id="btnEditBack" onclick="goToHome()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
-                            <h1 class="app-header__title">Edit Check-In</h1>
+                            <p class="app-header__title">Edit Check-In</h1>
                             <div class="app-header__right"></div>
                         </div>
                         <div class="content-area edit-content">
@@ -187,7 +202,7 @@
                     <div class="app-screen" id="review-request-options-screen">
                         <div class="app-header">
                             <div class="app-header__left"><button type="button" class="back-btn" onclick="goBackFromReviewMethod()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
-                            <h1 class="app-header__title">Request Review</h1>
+                            <p class="app-header__title">Request Review</h1>
                             <div class="app-header__right"></div>
                         </div>
                         <div class="content-area review-request-options">
@@ -203,7 +218,7 @@
                     <div class="app-screen" id="request-review-screen">
                         <div class="app-header">
                             <div class="app-header__left"><button type="button" class="back-btn" onclick="goBackToEdit()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
-                            <h1 class="app-header__title">Request Review</h1>
+                            <p class="app-header__title">Request Review</h1>
                             <div class="app-header__right"></div>
                         </div>
                         <div class="content-area">
@@ -235,7 +250,7 @@
                     <div class="app-screen" id="profile-screen">
                         <div class="app-header">
                             <div class="app-header__left"></div>
-                            <h1 class="app-header__title">Profile</h1>
+                            <p class="app-header__title">Profile</h1>
                             <div class="app-header__right"></div>
                         </div>
                         <div class="content-area">
@@ -269,7 +284,7 @@
                     <div class="app-screen" id="edit-profile-screen">
                         <div class="app-header">
                             <div class="app-header__left"><button type="button" class="back-btn" onclick="goToProfile()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
-                            <h1 class="app-header__title">Edit Profile</h1>
+                            <p class="app-header__title">Edit Profile</h1>
                             <div class="app-header__right"></div>
                         </div>
                         <div class="content-area">
@@ -289,7 +304,7 @@
                     <div class="app-screen" id="change-password-screen">
                         <div class="app-header">
                             <div class="app-header__left"><button type="button" class="back-btn" onclick="goToProfile()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
-                            <h1 class="app-header__title">Change Password</h1>
+                            <p class="app-header__title">Change Password</h1>
                             <div class="app-header__right"></div>
                         </div>
                         <div class="content-area">
@@ -430,6 +445,7 @@
                         <span class="create-sheet-item__text-wrap">
                             <span class="create-sheet-item__title">Send Review Request</span>
                             <span class="create-sheet-item__desc">Ask a customer for a review by SMS or email.</span>
+                            <span class="create-sheet-item__demo-note" id="createReviewDemoNote" hidden>Not available in demo</span>
                         </span>
                         <img src="../../shared/assets/icons/lucide/arrow-right.svg" class="lucide-icon lucide-icon-sm" alt="" aria-hidden="true">
                     </button>
@@ -446,13 +462,35 @@
 
         <!-- Review Request Modal -->
         <div class="modal-overlay" id="review-modal">
-            <div class="modal">
-                <h3><img src="../../shared/assets/icons/lucide/mail.svg" class="lucide-icon lucide-icon-sm" alt=""> Send Review Request</h3>
-                <p>Send an automated review request to the customer with photos from this job.</p>
-                <div class="modal-actions">
-                    <button class="btn btn-ghost" onclick="closeReviewDialog()">Cancel</button>
-                    <button class="btn btn-primary" onclick="sendReviewRequest()"><img src="../../shared/assets/icons/lucide/send.svg" class="lucide-icon lucide-icon-sm" alt=""> Send</button>
+            <div class="modal modal--review-demo">
+                <h3>Review request</h3>
+                <p class="modal-sub">This runs automatically after every job. Preview only, nothing for your crew to do.</p>
+                <div class="demo-review-job" id="demoReviewJob">
+                    <img id="demoReviewPhoto" src="" alt="" width="72" height="72" loading="lazy">
+                    <div class="demo-review-job-copy">
+                        <strong id="demoReviewTitle">Water Heater Replacement</strong>
+                        <span id="demoReviewLocation">105 Walnut St, Austin, TX</span>
+                    </div>
                 </div>
+                <textarea class="input-field" id="demoReviewMessage" rows="3" placeholder="Add a personal note (optional)"></textarea>
+                <div class="modal-actions">
+                    <button class="btn btn-ghost" type="button" onclick="closeReviewDialog()">Cancel</button>
+                    <button class="btn btn-primary" type="button" id="btnDemoReviewSend"><img src="../../shared/assets/icons/lucide/send.svg" class="lucide-icon lucide-icon-sm" alt=""> Send</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-publish-overlay" id="demoPublishOverlay" aria-hidden="true">
+            <div class="demo-publish-card">
+                <h3 class="demo-publish-title">Publishing everywhere</h3>
+                <p class="demo-publish-sub">Your job is going live across every channel.</p>
+                <ul class="demo-publish-list">
+                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Published on your website</li>
+                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Posted to social media</li>
+                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Job live on Google Business</li>
+                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Added to JobCapturePro directory</li>
+                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Map pin updated</li>
+                </ul>
             </div>
         </div>
 
@@ -493,7 +531,7 @@
 
                     <!-- Page Context -->
                     <div class="website-header">
-                        <h1>Recent work near you</h1>
+                        <p class="website-header__title">Recent work near you</p>
                         <p>Verified job posts with photos, locations, and dates.</p>
                     </div>
 
@@ -581,59 +619,93 @@
         </div> <!-- /right-panel -->
     </div>
 
+<div class="mobile-spotlight" id="mobileSpotlight" aria-hidden="true"></div>
+<div class="guided-coach-backdrop" id="guidedCoachBackdrop" hidden></div>
+
+<button type="button" class="mobile-guide-pill" id="mobileGuidePill" hidden>
+  <span class="mobile-guide-pill-dot" aria-hidden="true"></span>
+  <span id="mobileGuidePillText">Step 1</span>
+</button>
+
 <div class="mobile-stepper" id="mobile-stepper" style="display:none;">
-<button class="btn btn-primary btn-full" id="btnMobileNext">Next →</button>
+  <div class="mobile-stepper-header">
+    <span class="mobile-stepper-step" id="mobileDemoStep">Step 1 of 6</span>
+    <div class="mobile-stepper-header-actions">
+      <button type="button" class="mobile-guide-minimize" id="mobileGuideMinimize" aria-label="Minimize guide">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14"/></svg>
+      </button>
+      <button type="button" class="mobile-demo-close" id="mobileDemoClose" aria-label="Exit demo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="mobile-stepper-grab" aria-hidden="true"></div>
+  <div class="mobile-stepper-copy">
+    <p class="mobile-stepper-title" id="mobileStepTitle">Start the demo</p>
+    <p class="mobile-stepper-body" id="mobileStepBody">Tap Start Demo to begin.</p>
+    <p class="mobile-stepper-hint" id="mobileStepInteractHint" hidden>Follow the highlight to continue.</p>
+  </div>
+  <button class="btn btn-primary btn-full" id="btnMobileNext" type="button">Next →</button>
+  <button type="button" class="demo-outcomes-reopen" id="demoOutcomesReopenCta" hidden>View results again</button>
+  <div class="mobile-stepper-progress" aria-hidden="true">
+    <span class="mobile-stepper-progress-fill" id="mobileStepProgressFill"></span>
+  </div>
+</div>
+
+<!-- Step 6: outcomes slideshow (website → social → Google → directory → review) -->
+<div class="demo-outcomes-modal" id="demoOutcomesModal" hidden aria-hidden="true" role="dialog" aria-labelledby="demoOutcomesModalTitle">
+  <div class="demo-outcomes-modal__backdrop" id="demoOutcomesModalBackdrop"></div>
+  <div class="demo-outcomes-modal__card">
+    <button type="button" class="demo-outcomes-modal__close mobile-demo-close" id="demoOutcomesModalClose" aria-label="Close">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+    <div class="demo-outcomes-modal__header">
+      <p class="demo-outcomes-modal__eyebrow">Automations completed</p>
+      <h2 class="demo-outcomes-modal__title" id="demoOutcomesModalTitle">This job ran on autopilot</h2>
+      <p class="demo-outcomes-modal__subtitle" id="demoOutcomesSlideLabel">Live on your website</p>
+      <p class="demo-outcomes-modal__counter" id="demoOutcomesSlideCounter" aria-live="polite">1 of 5</p>
+    </div>
+    <div class="demo-outcomes-modal__viewport" id="demoOutcomesViewport">
+      <div class="demo-outcomes-modal__track" id="demoOutcomesTrack"></div>
+    </div>
+    <div class="demo-outcomes-modal__dots" id="demoOutcomesDots" role="tablist" aria-label="Outcome slides"></div>
+    <div class="demo-outcomes-modal__footer">
+      <button type="button" class="btn btn-secondary demo-outcomes-modal__next" id="demoOutcomesNextCta" data-outcomes-action="next">Next</button>
+      <button type="button" class="btn btn-primary demo-outcomes-modal__finish" id="demoOutcomesFinishCta" data-outcomes-action="finish">Get Started Free</button>
+    </div>
+  </div>
 </div>
 
 <!-- FINAL POST-DEMO SALES PANEL -->
 <div id="post-demo-panel" class="post-demo-panel">
-  <div class="post-demo-card">
+  <div class="post-demo-card post-demo-card--simple">
 
     <button
       class="post-demo-x"
       id="postDemoX"
       type="button"
       aria-label="Close"
-      style="position:absolute;top:14px;right:14px;border:none;background:transparent;font-size:18px;cursor:pointer;color:#6b7280;"
     >
       <img src="../../shared/assets/icons/lucide/x.svg" class="lucide-icon lucide-icon-sm" alt="">
     </button>
 
-    <div class="post-demo-hero">
-      <small>Live demo complete</small>
-      <h2>This is how JobCapturePro turns jobs into revenue</h2>
-      <p class="post-demo-hero-subline">Everything you just saw was built from real job activity.</p>
-    </div>
-
-    <p class="post-demo-result">
-      Every completed job now works as a local SEO signal that drives visibility and inbound leads automatically.
-    </p>
+    <h2 class="post-demo-simple-title">Turn every job into more calls</h2>
+    <p class="post-demo-simple-body">Your crew checks in once. JobCapturePro publishes everywhere and collects reviews so you win more work without chasing follow ups.</p>
 
     <div class="post-demo-actions">
       <a class="btn btn-primary post-demo-primary-cta" href="https://app.jobcapturepro.com/onboarding?sessionId=75ad8454-312e-4224-95b7-8f48f5cd0277&amp;step=1&amp;utm_source=jobcapturepro.com&amp;utm_medium=website&amp;utm_campaign=onboarding&amp;utm_content=demo_static_assets">
-        <span class="post-demo-cta-main">Get started →</span>
-        <span class="post-demo-cta-note">Create your JobCapturePro account (free tier available).</span>
+        Get Started Free
       </a>
-
-      <button class="btn btn-secondary" id="viewDirectoryFromSales" type="button">
-        View your listing in the directory
-      </button>
+      <p class="post-demo-note">No credit card required</p>
+      <button class="btn btn-secondary" id="btnReplayDemo" type="button">Replay demo</button>
     </div>
-
-    <p class="post-demo-social-proof">Join contractors using JobCapturePro to turn jobs into inbound leads.</p>
 
   </div>
 </div>
-
-<button
-  class="tour-bubble is-hidden"
-  id="post-demo-bubble"
-  type="button"
-  aria-label="Open results"
->
-  <img src="../../shared/assets/icons/lucide/trending-up.svg" class="lucide-icon lucide-icon-sm" alt="">
-  <span>Results</span>
-</button>
 
 <button
   class="tour-bubble is-hidden"

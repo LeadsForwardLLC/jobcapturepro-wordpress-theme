@@ -153,6 +153,8 @@
   flex: 1;
   padding: var(--jcp-space-sm) var(--jcp-space-md);
   padding-top: var(--jcp-space-md);
+  /* Reserve room so the floating CTA does not collide with the third card */
+  padding-bottom: 3.5rem;
   gap: 6px;
   min-height: 0;
   overflow: hidden;
@@ -184,6 +186,12 @@
   opacity: 0;
   transform: translateY(14px);
   animation: heroPhoneCardReveal 0.5s ease-out forwards;
+  padding: 0.55rem 0.65rem;
+  gap: 0.55rem;
+}
+
+.hero-phone-card .demo-item-title {
+  margin-bottom: 2px;
 }
 
 .hero-phone-card-1 {
@@ -201,10 +209,15 @@
 .hero-phone-cta {
   left: 50%;
   right: auto;
+  bottom: 1.1rem;
   margin-left: 0;
   transform: translate(-50%, 8px);
   opacity: 0;
   animation: heroPhoneCtaReveal 0.45s ease-out 2s forwards, heroPhoneCtaGlow 2.2s ease-in-out 2.6s infinite;
+}
+
+.demo-phone-mockup:hover .hero-phone-cta {
+  transform: translate(-50%, 0) scale(1.05);
 }
 
 @keyframes heroPhoneCtaGlow {
@@ -249,13 +262,38 @@
   }
 }
 
+/* Live demo phone is desktop-only (interactive prototype). Keep visible while editing. */
 @media (max-width: 768px) {
+  .jcp-hero-visual-column:has(.hero-phone-mockup),
+  .jcp-hero-visual:has(.hero-phone-mockup),
+  .hero-visual-stack:has(.hero-phone-mockup) {
+    display: none !important;
+  }
+
+  body.jcp-inline-editing .jcp-hero-visual-column:has(.hero-phone-mockup),
+  body.jcp-inline-editing .jcp-hero-visual:has(.hero-phone-mockup),
+  body.jcp-inline-editing .hero-visual-stack:has(.hero-phone-mockup) {
+    display: flex !important;
+  }
+
+  body.jcp-inline-editing .jcp-hero-visual-column:has(.hero-phone-mockup) {
+    display: block !important;
+  }
+
   .hero-visual-stack {
     min-height: 240px;
   }
 
   .hero-phone-mockup {
     max-width: 260px;
+  }
+
+  .hero-phone-body {
+    padding-bottom: 3.75rem;
+  }
+
+  .hero-phone-cta {
+    bottom: 0.85rem;
   }
 }
 

@@ -181,6 +181,62 @@ function jcp_seo_audit_run( int $post_id ): array {
 		}
 	}
 
+	if ( function_exists( 'jcp_internal_link_post_audit' ) ) {
+		$links = jcp_internal_link_post_audit( $post_id );
+		$in    = (int) ( $links['inbound'] ?? 0 );
+		$out   = (int) ( $links['outbound_internal'] ?? 0 );
+		$ext   = (int) ( $links['outbound_external'] ?? 0 );
+
+		if ( $post->post_status === 'publish' && $in === 0 ) {
+			$issues[] = [
+				'level'   => 'warning',
+				'message' => __( 'No inbound internal links — other site pages do not link here yet. Add links from related trades, features, or blog posts.', 'jcp-core' ),
+			];
+		} elseif ( $in >= 20 ) {
+			$issues[] = [
+				'level'   => 'warning',
+				'message' => sprintf(
+					/* translators: %d: inbound link count */
+					__( 'High inbound internal link count (%d) — verify links are relevant and not over-optimized.', 'jcp-core' ),
+					$in
+				),
+			];
+		}
+
+		if ( $out >= 15 ) {
+			$issues[] = [
+				'level'   => 'warning',
+				'message' => sprintf(
+					/* translators: %d: outbound internal link count */
+					__( 'Many outbound internal links (%d) — consider trimming to the most relevant destinations.', 'jcp-core' ),
+					$out
+				),
+			];
+		} elseif ( $post->post_status === 'publish' && $out <= 1 ) {
+			$issues[] = [
+				'level'   => 'warning',
+				'message' => __( 'Few outbound internal links — link to related trades, demo, or features where it helps readers.', 'jcp-core' ),
+			];
+		}
+
+		if ( $ext > 0 ) {
+			$hosts = (array) ( $links['external_hosts'] ?? [] );
+			$host_list = implode( ', ', array_slice( $hosts, 0, 4 ) );
+			if ( count( $hosts ) > 4 ) {
+				$host_list .= '…';
+			}
+			$issues[] = [
+				'level'   => 'warning',
+				'message' => sprintf(
+					/* translators: 1: count, 2: host list */
+					__( 'Outbound external links present (%1$d) — review destinations: %2$s', 'jcp-core' ),
+					$ext,
+					$host_list !== '' ? $host_list : __( 'external sites', 'jcp-core' )
+				),
+			];
+		}
+	}
+
 	if ( $post->post_status === 'publish' && ! empty( $issues ) ) {
 		$has_error = false;
 		foreach ( $issues as $issue ) {
@@ -267,7 +323,7 @@ function jcp_seo_audit_render_meta_box( WP_Post $post ): void {
 			<?php endforeach; ?>
 		</ul>
 		<p class="description">
-			<?php esc_html_e( 'Complete the Rank Math panel on this screen (focus keyword, SEO title, meta description). JCP checks on-page copy against that keyword.', 'jcp-core' ); ?>
+			<?php esc_html_e( 'Complete the Rank Math panel on this screen (focus keyword, SEO title, meta description). JCP checks on-page copy against that keyword and flags internal/external link balance.', 'jcp-core' ); ?>
 		</p>
 	</div>
 	<style>

@@ -34,9 +34,31 @@
       }
     });
 
-    document.querySelectorAll('.mobile-nav-link').forEach((link) => {
+    document.querySelectorAll('.mobile-nav-link, .mobile-mega-card, .mobile-nav-panel-footer').forEach((link) => {
       link.addEventListener('click', () => closeMenu());
     });
+
+    document.querySelectorAll('.mobile-nav-panel').forEach((panel) => {
+      panel.addEventListener('toggle', () => {
+        if (!panel.open) return;
+        document.querySelectorAll('.mobile-nav-panel').forEach((other) => {
+          if (other !== panel) other.open = false;
+        });
+        document.querySelectorAll('.mobile-nav-resources').forEach((other) => {
+          other.open = false;
+        });
+      });
+    });
+
+    const mobileResources = document.getElementById('mobileNavResources');
+    if (mobileResources) {
+      mobileResources.addEventListener('toggle', () => {
+        if (!mobileResources.open) return;
+        document.querySelectorAll('.mobile-nav-panel').forEach((panel) => {
+          panel.open = false;
+        });
+      });
+    }
 
     const actionsTop = document.getElementById('mobileMenuActionsTop');
     if (actionsTop) {
@@ -59,21 +81,59 @@
     }
   });
 
-  const initResourcesDropdown = () => {
-    const trigger = document.getElementById('navResourcesTrigger');
-    const menu = document.getElementById('navResourcesMenu');
-    const dropdown = document.getElementById('navResourcesDropdown');
-    if (!trigger || !menu || !dropdown) return;
+  const syncMegaPanelTop = () => {
+    const stack = document.getElementById('jcpHeaderStack');
+    if (!stack) return;
+    const rect = stack.getBoundingClientRect();
+    const bottom = Math.ceil(rect.bottom);
+    if (bottom > 0) {
+      document.documentElement.style.setProperty('--jcp-mega-panel-top', `${bottom}px`);
+    }
+  };
+
+  const initNavDropdown = (dropdown) => {
+    if (!dropdown) return;
+
+    const trigger = dropdown.querySelector('.nav-dropdown-trigger');
+    const panelId = trigger ? trigger.getAttribute('aria-controls') : '';
+    const menu = panelId
+      ? document.getElementById(panelId)
+      : dropdown.querySelector('.nav-mega-panel, .nav-dropdown-menu');
+    if (!trigger || !menu) return;
+
+    const isMega = dropdown.classList.contains('nav-mega') || menu.classList.contains('nav-mega-panel');
 
     const open = () => {
+      document.querySelectorAll('.nav-mega.is-open, .nav-dropdown.is-open').forEach((other) => {
+        if (other === dropdown) return;
+        const otherTrigger = other.querySelector('.nav-dropdown-trigger');
+        const otherPanelId = otherTrigger ? otherTrigger.getAttribute('aria-controls') : '';
+        const otherMenu = otherPanelId
+          ? document.getElementById(otherPanelId)
+          : other.querySelector('.nav-mega-panel, .nav-dropdown-menu');
+        if (otherTrigger) otherTrigger.setAttribute('aria-expanded', 'false');
+        if (otherMenu) otherMenu.setAttribute('hidden', '');
+        other.classList.remove('is-open');
+      });
+      document.querySelectorAll('.jcp-header-stack > .jcp-desktop-mega-panels .nav-mega-panel').forEach((panel) => {
+        if (panel === menu) return;
+        panel.setAttribute('hidden', '');
+      });
+      syncMegaPanelTop();
+      requestAnimationFrame(syncMegaPanelTop);
       trigger.setAttribute('aria-expanded', 'true');
       menu.removeAttribute('hidden');
+      dropdown.classList.add('is-open');
+      if (isMega) document.body.classList.add('nav-mega-open');
     };
 
     const close = () => {
       trigger.setAttribute('aria-expanded', 'false');
       menu.setAttribute('hidden', '');
-      trigger.focus();
+      dropdown.classList.remove('is-open');
+      if (!document.querySelector('.nav-mega.is-open')) {
+        document.body.classList.remove('nav-mega-open');
+      }
     };
 
     const isOpen = () => trigger.getAttribute('aria-expanded') === 'true';
@@ -90,20 +150,38 @@
       }
     });
 
+    const isWithinDropdown = (target) => {
+      if (!target) return false;
+      return dropdown.contains(target) || menu.contains(target);
+    };
+
     dropdown.addEventListener('mouseenter', () => {
       if (hoverTimeout) clearTimeout(hoverTimeout);
-      hoverTimeout = setTimeout(open, 200);
+      hoverTimeout = setTimeout(open, isMega ? 120 : 200);
     });
 
     dropdown.addEventListener('mouseleave', () => {
       if (hoverTimeout) clearTimeout(hoverTimeout);
       hoverTimeout = setTimeout(() => {
         if (isOpen()) close();
-      }, 150);
+      }, isMega ? 180 : 150);
     });
 
+    if (isMega) {
+      menu.addEventListener('mouseenter', () => {
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+      });
+
+      menu.addEventListener('mouseleave', () => {
+        if (hoverTimeout) clearTimeout(hoverTimeout);
+        hoverTimeout = setTimeout(() => {
+          if (isOpen()) close();
+        }, 180);
+      });
+    }
+
     document.addEventListener('click', (e) => {
-      if (isOpen() && !dropdown.contains(e.target)) {
+      if (isOpen() && !isWithinDropdown(e.target)) {
         close();
       }
     });
@@ -113,10 +191,11 @@
       if (isOpen()) {
         e.preventDefault();
         close();
+        trigger.focus();
       }
     });
 
-    const items = menu.querySelectorAll('[role="menuitem"]');
+    const items = menu.querySelectorAll('[role="menuitem"], .nav-mega-card, .nav-dropdown-item');
     items.forEach((item, i) => {
       item.addEventListener('click', () => close());
       item.addEventListener('keydown', (e) => {
@@ -143,6 +222,14 @@
         items[0].focus();
       }
     });
+  };
+
+  const initResourcesDropdown = () => {
+    initNavDropdown(document.getElementById('navResourcesDropdown'));
+  };
+
+  const initMegaMenus = () => {
+    document.querySelectorAll('.nav-mega').forEach((dropdown) => initNavDropdown(dropdown));
   };
 
   const initScroll = () => {
@@ -201,9 +288,17 @@
       document.querySelectorAll('.nav-link').forEach((link) => link.classList.remove('is-active'));
       document.querySelectorAll('.mobile-nav-link').forEach((link) => link.classList.remove('is-active'));
       const resourcesTrigger = document.getElementById('navResourcesTrigger');
+      const featuresTrigger = document.getElementById('navFeaturesTrigger');
+      const tradeTrigger = document.getElementById('navByTradeTrigger');
       if (resourcesTrigger) resourcesTrigger.classList.remove('is-active');
+      if (featuresTrigger) featuresTrigger.classList.remove('is-active');
+      if (tradeTrigger) tradeTrigger.classList.remove('is-active');
       const mobileResourcesSummary = document.querySelector('.mobile-nav-resources-summary');
+      const mobileFeaturesSummary = document.querySelector('#mobileNavFeatures .mobile-nav-panel-summary');
+      const mobileTradeSummary = document.querySelector('#mobileNavTrades .mobile-nav-panel-summary');
       if (mobileResourcesSummary) mobileResourcesSummary.classList.remove('is-active');
+      if (mobileFeaturesSummary) mobileFeaturesSummary.classList.remove('is-active');
+      if (mobileTradeSummary) mobileTradeSummary.classList.remove('is-active');
 
       const pathname = (window.location.pathname || '/').replace(/\/$/, '') || '/';
 
@@ -215,8 +310,13 @@
         return page === p || pathname === '/' + p;
       });
       if (activePrimary) {
-        document.querySelectorAll('.nav-link[data-page="' + activePrimary + '"]').forEach((link) => link.classList.add('is-active'));
-        document.querySelectorAll('.mobile-nav-link[data-page="' + activePrimary + '"]').forEach((link) => link.classList.add('is-active'));
+        if (activePrimary === 'industries') {
+          if (tradeTrigger) tradeTrigger.classList.add('is-active');
+          if (mobileTradeSummary) mobileTradeSummary.classList.add('is-active');
+        } else {
+          document.querySelectorAll('.nav-link[data-page="' + activePrimary + '"]').forEach((link) => link.classList.add('is-active'));
+          document.querySelectorAll('.mobile-nav-link[data-page="' + activePrimary + '"]').forEach((link) => link.classList.add('is-active'));
+        }
         return;
       }
 
@@ -238,7 +338,10 @@
         if (hash) {
           const selector = `[data-home-anchor="${hash}"]`;
           document.querySelectorAll(`.nav-link${selector}`).forEach((link) => link.classList.add('is-active'));
+          document.querySelectorAll(`.nav-dropdown-trigger${selector}`).forEach((link) => link.classList.add('is-active'));
           document.querySelectorAll(`.mobile-nav-link${selector}`).forEach((link) => link.classList.add('is-active'));
+          if (hash === '#features' && featuresTrigger) featuresTrigger.classList.add('is-active');
+          if (hash === '#features' && mobileFeaturesSummary) mobileFeaturesSummary.classList.add('is-active');
         }
       }
     };
@@ -250,6 +353,10 @@
   initMobileMenu();
   initScroll();
   initNavLinks();
+  syncMegaPanelTop();
+  window.addEventListener('resize', syncMegaPanelTop);
+  window.addEventListener('scroll', syncMegaPanelTop, { passive: true });
+  initMegaMenus();
   initResourcesDropdown();
 
   // Single delegated listener for CTA click tracking (Matomo)
@@ -260,6 +367,7 @@
     var href = el.getAttribute('href');
     var isTargetHref = false;
     var isReferralOutbound = false;
+    var isOnboardingOutbound = false;
     if (el.tagName === 'A' && href) {
       var path = (href.charAt(0) === '/' ? href.split('?')[0] : (function () { try { return new URL(href, window.location.href).pathname; } catch (err) { return href; } })()).replace(/\/$/, '') || '/';
       var host = '';
@@ -268,14 +376,18 @@
       }
       isTargetHref = path === '/demo' || path === '/referral-program' || path === '/industries' || path.indexOf('/industries/') === 0;
       isReferralOutbound = host.indexOf('firstpromoter.com') !== -1;
+      isOnboardingOutbound = host.indexOf('jobcapturepro.com') !== -1 && path.indexOf('/onboarding') === 0;
     }
-    if (!ctaName && !isTargetHref && !isReferralOutbound) return;
-    ctaName = ctaName || (isReferralOutbound ? 'Join Referral Program' : (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80) || 'CTA');
+    if (!ctaName && !isTargetHref && !isReferralOutbound && !isOnboardingOutbound) return;
+    ctaName = ctaName || (isReferralOutbound ? 'Join Referral Program' : isOnboardingOutbound ? 'Start free trial' : (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80) || 'CTA');
     var pathname = (window.location.pathname || '/').replace(/\/$/, '') || '/';
     var ctaLocation = el.getAttribute('data-cta-location') || (el.closest('header') || el.closest('#jcpGlobalHeader') ? 'header' : el.closest('footer') ? 'footer' : pathname === '/' || pathname === '/home' ? 'homepage' : pathname === '/referral-program' ? 'referral_program' : 'page');
     try {
       if (typeof _paq !== 'undefined') {
         _paq.push(['trackEvent', 'CTA Clicked', ctaName, ctaLocation]);
+        if (isOnboardingOutbound) {
+          _paq.push(['trackEvent', 'Onboarding CTA', ctaName, ctaLocation]);
+        }
       }
     } catch (err) {}
   });

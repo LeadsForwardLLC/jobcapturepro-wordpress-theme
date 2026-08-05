@@ -6,6 +6,8 @@
 
   const progressWrap = document.querySelector('.survey-progress');
   const progressText = document.getElementById('surveyProgressText');
+  const progressFill = document.getElementById('surveyProgressFill');
+  const stepIndicator = document.getElementById('surveyStepIndicator');
   const stepButtons = Array.from(document.querySelectorAll('.stepper-step'));
   const closeBtn = document.getElementById('surveyClose');
   const goalsWrap = document.getElementById('surveyGoals');
@@ -16,55 +18,269 @@
   const deckProgressText = document.getElementById('deckProgressText');
   const deckLaunchBtn = document.getElementById('deckLaunchBtn');
   const deckNextBtn = document.getElementById('deckNextBtn');
+  const deckPrevBtn = document.getElementById('deckPrevBtn');
+  const deckSkipHeader = document.getElementById('deckSkipHeader');
   const rankName = document.getElementById('surveyRankName');
   const rankList = document.getElementById('surveyRankList');
   const rankNumTop = document.getElementById('surveyRankNumTop');
   const rankNumMid = document.getElementById('surveyRankNumMid');
   const rankNumYou = document.getElementById('surveyRankNumYou');
+  const handoffEl = document.getElementById('surveyDesktopHandoff');
+  const handoffStatusEl = document.getElementById('surveyDesktopHandoffStatus');
+  const shareDemoBtn = document.getElementById('surveyShareDemoLink');
 
   const baseUrl = window.JCP_CONFIG && window.JCP_CONFIG.baseUrl
-    ? window.JCP_CONFIG.baseUrl
+    ? window.JCP_CONFIG.baseUrl.replace(/\/$/, '')
     : window.location.origin;
 
-  // If they've already completed the demo form before, skip the form + slides and go straight to run-demo.
-  // (We can only check localStorage client-side.)
-  const shouldAutoRun = (() => {
+  const getDemoRunBase = () => {
+    if (typeof window.JCP_DEMO_SURVEY !== 'undefined' && window.JCP_DEMO_SURVEY.demo_run_url) {
+      return window.JCP_DEMO_SURVEY.demo_run_url;
+    }
+    return new URL('/demo/', window.location.origin).href;
+  };
+
+  const getValue = (id) => (document.getElementById(id)?.value || '').trim();
+
+  const BUSINESS_TYPE_OTHER = 'other';
+
+  const syncNicheOtherField = () => {
+    const wrap = document.getElementById('nicheOtherWrap');
+    const otherInput = document.getElementById('nicheOther');
+    const isOther = getValue('niche') === BUSINESS_TYPE_OTHER;
+    if (wrap) wrap.hidden = !isOther;
+    if (otherInput) {
+      otherInput.required = isOther;
+      if (!isOther) otherInput.value = '';
+    }
+  };
+
+  const getBusinessTypeValue = () => {
+    const selected = getValue('niche');
+    if (selected === BUSINESS_TYPE_OTHER) {
+      return getValue('nicheOther');
+    }
+    return selected;
+  };
+
+  const getBusinessTypeLabel = () => {
+    const nicheSelect = document.getElementById('niche');
+    if (!nicheSelect || !nicheSelect.value) return '';
+    if (nicheSelect.value === BUSINESS_TYPE_OTHER) {
+      return getValue('nicheOther');
+    }
+    const option = nicheSelect.options[nicheSelect.selectedIndex];
+    return option ? option.text.trim() : '';
+  };
+
+  const setBusinessTypeFromStored = (storedType) => {
+    const nicheEl = document.getElementById('niche');
+    const nicheOtherEl = document.getElementById('nicheOther');
+    if (!nicheEl || storedType == null) return;
+    const raw = String(storedType).trim();
+    if (!raw) return;
+    const hasOption = Array.from(nicheEl.options).some((opt) => opt.value === raw);
+    if (hasOption) {
+      nicheEl.value = raw;
+      if (nicheOtherEl) nicheOtherEl.value = '';
+    } else {
+      nicheEl.value = BUSINESS_TYPE_OTHER;
+      if (nicheOtherEl) nicheOtherEl.value = raw;
+    }
+    syncNicheOtherField();
+  };
+
+  const getAttributionPayload = () => (
+    window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function'
+      ? window.JCPLeadAttribution.getPayload()
+      : {}
+  );
+
+  const PROGRESS_KEY = 'jcp_survey_progress';
+  const RETURN_URL_KEY = 'jcp_survey_return_url';
+  const INTAKE_COMPLETE_KEY = 'jcp_demo_intake_complete';
+  const DEMO_SESSION_KEY = 'jcp_demo_session_id';
+
+  const getFormSnapshot = () => ({
+    businessName: getValue('businessName'),
+    niche: getValue('niche'),
+    nicheOther: getValue('nicheOther'),
+    firstName: getValue('firstName'),
+    lastName: getValue('lastName'),
+    email: getValue('email'),
+    goals: Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || []).map((input) => input.value),
+  });
+
+  const applyFormSnapshot = (form) => {
+    if (!form || typeof form !== 'object') return;
+    const setField = (id, val) => {
+      const el = document.getElementById(id);
+      if (el && val != null && String(val).trim() !== '') {
+        el.value = val;
+      }
+    };
+    setField('businessName', form.businessName);
+    if (form.niche === BUSINESS_TYPE_OTHER) {
+      setField('niche', BUSINESS_TYPE_OTHER);
+      setField('nicheOther', form.nicheOther);
+    } else if (form.niche) {
+      setBusinessTypeFromStored(form.niche);
+    }
+    syncNicheOtherField();
+    setField('firstName', form.firstName);
+    setField('lastName', form.lastName);
+    setField('email', form.email);
+    if (goalsWrap && Array.isArray(form.goals)) {
+      goalsWrap.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
+        cb.checked = form.goals.indexOf(cb.value) !== -1;
+      });
+      enforceGoalLimit();
+    }
+  };
+
+  const saveSurveyProgress = () => {
+    const phase = deckSection?.classList.contains('active') ? 'deck' : 'form';
     try {
-      const params = new URLSearchParams(window.location.search || '');
-      if (params.get('mode') === 'run') return false;
-      if (params.get('forceSurvey') === '1') return false; // escape hatch
-      const raw = localStorage.getItem('demoUser');
-      if (!raw) return false;
-      const demoUser = JSON.parse(raw);
-      if (!demoUser || typeof demoUser !== 'object') return false;
-      const hasIdentity = Boolean(
-        (demoUser.firstName || '').trim() &&
-        (demoUser.lastName || '').trim() &&
-        (demoUser.email || '').trim()
+      localStorage.setItem(
+        PROGRESS_KEY,
+        JSON.stringify({
+          phase,
+          currentIndex,
+          deckIndex,
+          form: getFormSnapshot(),
+          updatedAt: Date.now(),
+        })
       );
-      const hasSession = Boolean((localStorage.getItem('jcp_demo_session_id') || '').trim());
-      return hasIdentity && hasSession;
+    } catch (e) {
+      // no-op
+    }
+  };
+
+  const clearSurveyProgress = () => {
+    try {
+      localStorage.removeItem(PROGRESS_KEY);
+    } catch (e) {
+      // no-op
+    }
+  };
+
+  const hasSavedProgress = () => {
+    try {
+      const raw = localStorage.getItem(PROGRESS_KEY);
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      return Boolean(parsed && typeof parsed === 'object');
     } catch (e) {
       return false;
     }
-  })();
+  };
 
-  if (shouldAutoRun) {
-    window.location.replace(`${baseUrl}/demo/?mode=run`);
+  const rememberReturnUrl = () => {
+    try {
+      if (sessionStorage.getItem(RETURN_URL_KEY)) return;
+      const ref = document.referrer || '';
+      const home = `${baseUrl}/`;
+      if (ref && !ref.includes('/demo')) {
+        sessionStorage.setItem(RETURN_URL_KEY, ref);
+      } else {
+        sessionStorage.setItem(RETURN_URL_KEY, home);
+      }
+    } catch (e) {
+      // no-op
+    }
+  };
+
+  let saveProgressTimer;
+  const scheduleSaveProgress = () => {
+    clearTimeout(saveProgressTimer);
+    saveProgressTimer = setTimeout(saveSurveyProgress, 280);
+  };
+
+  const getStoredDemoUser = () => {
+    try {
+      const raw = localStorage.getItem('demoUser');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+      return null;
+    }
+  };
+
+  const markDemoIntakeComplete = () => {
+    try {
+      sessionStorage.setItem(INTAKE_COMPLETE_KEY, '1');
+    } catch (e) {
+      // no-op
+    }
+  };
+
+  const resolveNicheFromSource = (source) => {
+    if (!source || typeof source !== 'object') return getBusinessTypeValue();
+    const select = (source.niche || '').trim();
+    if (select === BUSINESS_TYPE_OTHER) {
+      return (source.nicheOther || '').trim();
+    }
+    return select;
+  };
+
+  const buildPersonalizedDemoUrl = (storedUser) => {
+    const url = new URL(getDemoRunBase());
+    url.searchParams.set('mode', 'run');
+    const source = storedUser && typeof storedUser === 'object' ? storedUser : getFormSnapshot();
+    const firstName = (source.firstName || '').trim();
+    const lastName = (source.lastName || '').trim();
+    const business = (source.businessName || '').trim();
+    const niche = resolveNicheFromSource(source);
+    const email = (source.email || '').trim();
+    if (firstName) url.searchParams.set('name', firstName);
+    if (lastName) url.searchParams.set('last_name', lastName);
+    if (business) url.searchParams.set('business', business);
+    if (niche) url.searchParams.set('niche', niche);
+    if (email) url.searchParams.set('email', email);
+    return url.href;
+  };
+
+  const shouldSkipSurveyForReturningUser = () => {
+    try {
+      const params = new URLSearchParams(window.location.search || '');
+      if (params.get('mode') === 'run') return false;
+      if (params.get('forceSurvey') === '1') return false;
+      if (hasSavedProgress()) return false;
+
+      const demoUser = getStoredDemoUser();
+      if (!demoUser || typeof demoUser !== 'object') return false;
+
+      const hasBusiness = Boolean((demoUser.businessName || '').trim());
+      const hasIdentity = Boolean(
+        (demoUser.email || '').trim() ||
+        ((demoUser.firstName || '').trim() && (demoUser.lastName || '').trim())
+      );
+      if (!hasBusiness || !hasIdentity) return false;
+
+      const intakeDone = sessionStorage.getItem(INTAKE_COMPLETE_KEY) === '1';
+      const hasSession = Boolean((sessionStorage.getItem(DEMO_SESSION_KEY) || '').trim());
+      return intakeDone || hasSession;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  if (shouldSkipSurveyForReturningUser()) {
+    window.location.replace(buildPersonalizedDemoUrl(getStoredDemoUser()));
     return;
   }
 
   let currentIndex = 0;
   let deckIndex = 0;
   let rankTimers = [];
+  let channelTimers = [];
+  const rankBox = document.getElementById('surveyRankBox');
 
   function getSurveySessionId() {
-    const key = 'jcp_demo_session_id';
     try {
-      let id = sessionStorage.getItem(key);
+      let id = sessionStorage.getItem(DEMO_SESSION_KEY);
       if (!id) {
         id = 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
-        sessionStorage.setItem(key, id);
+        sessionStorage.setItem(DEMO_SESSION_KEY, id);
       }
       return id;
     } catch (e) {
@@ -82,13 +298,76 @@
           session_id: getSurveySessionId(),
           event_type: eventType,
           step_number: stepNumber != null ? stepNumber : undefined,
-          metadata: metadata || undefined
+          metadata: metadata || undefined,
+          ...getAttributionPayload(),
         })
       }).catch(function() {});
     } catch (e) {}
   }
 
-  const getValue = (id) => (document.getElementById(id)?.value || '').trim();
+  const isMobileSurvey = () => window.matchMedia('(max-width: 768px)').matches;
+
+  const setHandoffStatus = (message, isError) => {
+    if (!handoffStatusEl) return;
+    handoffStatusEl.textContent = message || '';
+    handoffStatusEl.classList.toggle('is-error', Boolean(isError));
+  };
+
+  const updateDesktopHandoff = () => {
+    if (!handoffEl) return;
+    const deckActive = deckSection?.classList.contains('active');
+    const show = isMobileSurvey() && (currentIndex === 2 || deckActive);
+    handoffEl.hidden = !show;
+    if (shareDemoBtn) {
+      shareDemoBtn.hidden = typeof navigator.share !== 'function';
+    }
+    if (!show) {
+      setHandoffStatus('');
+    }
+  };
+
+  const copyDemoLink = async () => {
+    const url = buildPersonalizedDemoUrl();
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+      } else {
+        const input = document.createElement('textarea');
+        input.value = url;
+        input.setAttribute('readonly', '');
+        input.style.position = 'absolute';
+        input.style.left = '-9999px';
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+      }
+      setHandoffStatus('Link copied. Paste it in a text or email on your computer.');
+      surveyTrack('demo_link_copied', null, { company: getValue('businessName') });
+    } catch (err) {
+      setHandoffStatus('Could not copy automatically. Long-press the address bar and copy the page URL.', true);
+    }
+  };
+
+  const shareDemoLink = async () => {
+    const url = buildPersonalizedDemoUrl();
+    if (typeof navigator.share !== 'function') {
+      copyDemoLink();
+      return;
+    }
+    try {
+      await navigator.share({
+        title: 'JobCapturePro Demo',
+        text: 'Open this on your computer for the full interactive demo.',
+        url,
+      });
+      setHandoffStatus('Link shared. Open it on a desktop or laptop when you are ready.');
+      surveyTrack('demo_link_shared', null, { company: getValue('businessName') });
+    } catch (err) {
+      if (err && err.name === 'AbortError') return;
+      copyDemoLink();
+    }
+  };
 
   // Prefill survey from Early Access form submission (localStorage key: jcp_demo_survey_prefill).
   const prefillFromEarlyAccess = () => {
@@ -105,7 +384,7 @@
       const emailEl = document.getElementById('email');
 
       if (businessNameEl && prefill.company != null) businessNameEl.value = prefill.company;
-      if (nicheEl && prefill.business_type != null) nicheEl.value = prefill.business_type;
+      if (prefill.business_type != null) setBusinessTypeFromStored(prefill.business_type);
       if (firstNameEl && prefill.first_name != null) firstNameEl.value = prefill.first_name;
       if (lastNameEl && prefill.last_name != null) lastNameEl.value = prefill.last_name;
       if (emailEl && prefill.email != null) emailEl.value = prefill.email;
@@ -132,16 +411,34 @@
   };
 
   const updateProgress = () => {
+    const stepNum = currentIndex + 1;
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
     if (progressText) {
-      progressText.textContent = `Step ${currentIndex + 1} of 3`;
+      progressText.textContent = `Step ${stepNum} of 3`;
+    }
+    if (stepIndicator) {
+      stepIndicator.textContent = `Step ${stepNum}/3`;
+      stepIndicator.hidden = !isMobile;
+    }
+    if (progressFill) {
+      progressFill.style.width = `${(stepNum / 3) * 100}%`;
     }
     stepButtons.forEach((btn, idx) => {
       btn.classList.toggle('is-active', idx === currentIndex);
     });
   };
 
+  window.addEventListener('resize', () => {
+    if (progressWrap && !progressWrap.classList.contains('is-hidden')) {
+      updateProgress();
+    }
+    if (deckSection?.classList.contains('active')) {
+      setDeckUI();
+    }
+  });
+
   const getSurveyFormMetadata = () => {
-    const meta = { company: getValue('businessName'), business_type: getValue('niche') };
+    const meta = { company: getValue('businessName'), business_type: getBusinessTypeValue() };
     const goals = Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || []).map((input) => input.value);
     if (goals.length) meta.demo_goals = goals;
     return meta;
@@ -156,8 +453,11 @@
     });
     deckSection?.classList.remove('active');
     progressWrap?.classList.remove('is-hidden');
+    if (deckSkipHeader) deckSkipHeader.hidden = true;
     currentIndex = index;
     updateProgress();
+    updateDesktopHandoff();
+    saveSurveyProgress();
   };
 
   const clearRankTimers = () => {
@@ -179,6 +479,36 @@
     setRankNums(1, 2, 3);
   };
 
+  const clearChannelTimers = () => {
+    if (!channelTimers.length) return;
+    channelTimers.forEach((id) => clearTimeout(id));
+    channelTimers = [];
+  };
+
+  const resetChannelTiles = () => {
+    const slide = deckSlides.find((el) => el.classList.contains('deck-slide--channels'));
+    if (!slide) return;
+    slide.classList.remove('is-sequencing');
+    slide.querySelectorAll('.deck-tile').forEach((tile) => tile.classList.remove('is-visible'));
+  };
+
+  const runChannelsSequence = () => {
+    const slide = deckSlides.find((el) => el.classList.contains('deck-slide--channels'));
+    if (!slide) return;
+    const tiles = [...slide.querySelectorAll('.deck-tile')];
+    if (!tiles.length) return;
+
+    clearChannelTimers();
+    resetChannelTiles();
+    slide.classList.add('is-sequencing');
+
+    tiles.forEach((tile, idx) => {
+      channelTimers.push(setTimeout(() => {
+        tile.classList.add('is-visible');
+      }, 180 + idx * 420));
+    });
+  };
+
   const runRankSequence = () => {
     if (!rankList) return;
     resetRankState();
@@ -194,6 +524,29 @@
     }, 1250));
   };
 
+  const runRankSlideSequence = () => {
+    if (!rankList) return;
+    resetRankState();
+    clearRankTimers();
+
+    if (!isMobileSurvey()) {
+      runRankSequence();
+      return;
+    }
+
+    rankTimers.push(setTimeout(() => {
+      const scrollEl = deckSlidesWrap;
+      if (scrollEl && rankBox) {
+        const top = rankBox.getBoundingClientRect().top
+          - scrollEl.getBoundingClientRect().top
+          + scrollEl.scrollTop
+          - 8;
+        scrollEl.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+      }
+      rankTimers.push(setTimeout(() => runRankSequence(), 650));
+    }, 3000));
+  };
+
   const setDeckUI = () => {
     if (!deckSlides.length) return;
     surveyTrack('slideshow_step_viewed', deckIndex + 1);
@@ -205,45 +558,70 @@
     const shown = deckIndex + 1;
     if (deckProgressText) deckProgressText.textContent = `${shown} / ${total}`;
     if (deckProgressBar) deckProgressBar.style.width = `${(shown / total) * 100}%`;
+    if (stepIndicator && isMobileSurvey()) {
+      stepIndicator.textContent = `${shown}/${total}`;
+      stepIndicator.hidden = false;
+    }
+    if (deckSkipHeader) deckSkipHeader.hidden = !isMobileSurvey();
     const isLast = deckIndex === total - 1;
     if (deckLaunchBtn) deckLaunchBtn.classList.toggle('is-hidden', !isLast);
     if (deckNextBtn) deckNextBtn.classList.toggle('is-hidden', isLast);
+    if (deckPrevBtn) {
+      deckPrevBtn.classList.toggle('is-hidden', isMobileSurvey() || deckIndex === 0);
+    }
+
+    if (deckSlidesWrap) deckSlidesWrap.scrollTop = 0;
 
     if (rankList) {
       const isRankSlide = deckIndex === 3;
       clearRankTimers();
       if (isRankSlide) {
-        runRankSequence();
+        runRankSlideSequence();
       } else {
         resetRankState();
       }
     }
+
+    const isChannelsSlide = deckIndex === 4;
+    clearChannelTimers();
+    if (isChannelsSlide) {
+      runChannelsSequence();
+    } else {
+      resetChannelTiles();
+    }
+
+    saveSurveyProgress();
   };
 
-  const showDeck = () => {
+  const showDeck = (startIndex = 0) => {
     steps.forEach((step) => step.classList.remove('active'));
     deckSection?.classList.add('active');
     progressWrap?.classList.add('is-hidden');
-    deckIndex = 0;
+    if (deckSkipHeader) deckSkipHeader.hidden = !isMobileSurvey();
+    deckIndex = Math.min(Math.max(0, startIndex), Math.max(0, deckSlides.length - 1));
     setDeckUI();
 
     // First slide: if they selected a business type, swap "job" for "[type] job"
     const titleEl = document.getElementById('deckSlide1Title');
-    const nicheSelect = document.getElementById('niche');
-    if (titleEl && nicheSelect && nicheSelect.value) {
-      const option = nicheSelect.options[nicheSelect.selectedIndex];
-      const label = option ? option.text.trim() : '';
-      if (label) {
-        titleEl.textContent = 'Every completed ' + label + ' job should help you win the next one.';
-      }
+    const label = getBusinessTypeLabel();
+    if (titleEl && label) {
+      titleEl.textContent = 'Every completed ' + label + ' job should help you win the next one.';
     }
+    updateDesktopHandoff();
+    saveSurveyProgress();
   };
 
   const validateStep1 = () => {
     const businessName = getValue('businessName');
-    const niche = getValue('niche');
-    if (!businessName || !niche) {
+    const nicheSelect = getValue('niche');
+    const businessType = getBusinessTypeValue();
+    if (!businessName || !nicheSelect) {
       alert('Please enter your business name and type to continue.');
+      return false;
+    }
+    if (nicheSelect === BUSINESS_TYPE_OTHER && !businessType) {
+      alert('Please describe your business type to continue.');
+      document.getElementById('nicheOther')?.focus();
       return false;
     }
     return true;
@@ -295,7 +673,7 @@
       last_name: getValue('lastName'),
       email: getValue('email'),
       company: getValue('businessName'),
-      business_type: getValue('niche'),
+      business_type: getBusinessTypeValue(),
       demo_goals: goals,
     };
     try {
@@ -320,8 +698,9 @@
             last_name: getValue('lastName'),
             email: getValue('email'),
             company: getValue('businessName'),
-            business_type: getValue('niche'),
+            business_type: getBusinessTypeValue(),
             demo_goals: goals,
+            ...getAttributionPayload(),
           }),
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
@@ -336,6 +715,8 @@
     const goals = Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || [])
       .map((input) => input.value);
 
+    markDemoIntakeComplete();
+
     try {
       localStorage.removeItem('demoReturnState');
       localStorage.removeItem('directoryDemoListing');
@@ -346,15 +727,18 @@
     const firstName = getValue('firstName');
     const lastName = getValue('lastName');
     const email = getValue('email');
+    const businessName = getValue('businessName');
+    const niche = getBusinessTypeValue();
     localStorage.setItem('demoUser', JSON.stringify({
-      businessName: getValue('businessName'),
-      niche: getValue('niche'),
+      businessName,
+      niche,
       goals,
       firstName,
       lastName,
       email,
     }));
     saveSurveyPrefillForEarlyAccess();
+    clearSurveyProgress();
 
     const viewedUrl = (typeof window.JCP_DEMO_SURVEY !== 'undefined' && window.JCP_DEMO_SURVEY.rest_viewed_url) || `${baseUrl}/wp-json/jcp/v1/demo-viewed-submit`;
     try {
@@ -362,7 +746,15 @@
         fetch(viewedUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ first_name: firstName, last_name: lastName, email }),
+          body: JSON.stringify({
+            first_name: firstName,
+            last_name: lastName,
+            email,
+            company: businessName,
+            business_type: niche,
+            demo_goals: goals,
+            ...getAttributionPayload(),
+          }),
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
       ]);
@@ -370,7 +762,7 @@
       console.warn('JCP Demo Survey: viewed submit failed', err);
     }
 
-    window.location.href = `${baseUrl}/demo/?mode=run`;
+    window.location.href = buildPersonalizedDemoUrl();
   };
 
   const hydrateRankName = () => {
@@ -433,6 +825,14 @@
       }
       launchDemo();
     }
+
+    if (action === 'copy-demo-link') {
+      copyDemoLink();
+    }
+
+    if (action === 'share-demo-link') {
+      shareDemoLink();
+    }
   });
 
   stepButtons.forEach((btn) => {
@@ -449,12 +849,44 @@
 
   document.getElementById('email')?.addEventListener('input', (e) => {
     e.target.classList.remove('is-error');
+    setHandoffStatus('');
+    scheduleSaveProgress();
   });
 
-  goalsWrap?.addEventListener('change', enforceGoalLimit);
+  ['firstName', 'lastName', 'businessName', 'niche', 'nicheOther'].forEach((id) => {
+    const el = document.getElementById(id);
+    el?.addEventListener('input', () => {
+      setHandoffStatus('');
+      scheduleSaveProgress();
+    });
+    el?.addEventListener('change', () => {
+      setHandoffStatus('');
+      scheduleSaveProgress();
+    });
+  });
+
+  document.getElementById('niche')?.addEventListener('change', syncNicheOtherField);
+
+  goalsWrap?.addEventListener('change', () => {
+    enforceGoalLimit();
+    scheduleSaveProgress();
+  });
+
+  window.addEventListener('resize', updateDesktopHandoff);
 
   const closeSurvey = () => {
-    window.location.href = `${baseUrl}/`;
+    saveSurveyProgress();
+    let returnUrl = `${baseUrl}/`;
+    try {
+      returnUrl = sessionStorage.getItem(RETURN_URL_KEY) || returnUrl;
+    } catch (e) {
+      // no-op
+    }
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+    window.location.href = returnUrl;
   };
 
   closeBtn?.addEventListener('click', closeSurvey);
@@ -466,9 +898,48 @@
 
   enforceGoalLimit();
   hydrateRankName();
+  rememberReturnUrl();
   prefillFromEarlyAccess();
+
+  const params = new URLSearchParams(window.location.search || '');
+  if (params.get('forceSurvey') === '1') {
+    clearSurveyProgress();
+    try {
+      sessionStorage.removeItem(INTAKE_COMPLETE_KEY);
+    } catch (e) {
+      // no-op
+    }
+  }
+
+  let restored = null;
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if (raw && params.get('forceSurvey') !== '1') {
+      restored = JSON.parse(raw);
+    }
+  } catch (e) {
+    restored = null;
+  }
+
+  if (restored && restored.form) {
+    applyFormSnapshot(restored.form);
+  } else {
+    syncNicheOtherField();
+  }
+
   surveyTrack('demo_started', null, getSurveyFormMetadata());
-  showStep(0);
+
+  if (restored && restored.phase === 'deck' && deckSlides.length) {
+    const deckStart = Number.isFinite(restored.deckIndex) ? restored.deckIndex : 0;
+    showDeck(deckStart);
+  } else if (restored && Number.isFinite(restored.currentIndex)) {
+    const stepStart = Math.min(Math.max(0, restored.currentIndex), steps.length - 1);
+    showStep(stepStart);
+  } else {
+    showStep(0);
+  }
+
+  updateDesktopHandoff();
   }
 
   if (document.readyState === 'loading') {

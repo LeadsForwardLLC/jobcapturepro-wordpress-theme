@@ -97,6 +97,12 @@ get_header();
       ?>
     </div>
   </section>
+
+  <?php
+  if ( function_exists( 'jcp_blog_conversion_render_archive_footer' ) ) {
+    jcp_blog_conversion_render_archive_footer( ! empty( $blog_has_posts ) );
+  }
+  ?>
 </main>
 
 <?php if ( ! empty( $blog_has_posts ) ) : ?>

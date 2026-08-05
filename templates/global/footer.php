@@ -42,7 +42,20 @@ $dir_url = home_url( '/directory' );
 $dir_search = $dir_url . '/#search';
 $dir_how = $dir_url . '/#how-it-works';
 $dir_trust = $dir_url . '/#trust';
+$hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && jcp_page_current_hides_site_chrome();
 ?>
+  <?php if ( $hide_site_chrome ) : ?>
+  <footer class="jcp-footer jcp-footer--landing-minimal">
+    <div class="jcp-container jcp-footer-bottom-inner">
+      <nav class="jcp-footer-legal" aria-label="<?php esc_attr_e( 'Legal', 'jcp-core' ); ?>">
+        <a href="<?php echo esc_url( $privacy_url ); ?>"><?php esc_html_e( 'Privacy', 'jcp-core' ); ?></a>
+        <span class="jcp-footer-sep" aria-hidden="true">·</span>
+        <a href="<?php echo esc_url( $terms_url ); ?>"><?php esc_html_e( 'Terms', 'jcp-core' ); ?></a>
+      </nav>
+      <p class="jcp-footer-landing-copy">&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> JobCapturePro</p>
+    </div>
+  </footer>
+  <?php else : ?>
   <footer class="jcp-footer">
     <div class="jcp-container jcp-footer-grid">
       <?php if ( $directory_mode ) : ?>
@@ -60,9 +73,17 @@ $dir_trust = $dir_url . '/#trust';
         </div>
         <div class="jcp-footer-col">
           <h4><?php esc_html_e( 'For contractors', 'jcp-core' ); ?></h4>
-          <a href="<?php echo esc_url( $jcp_onboarding_url_dir_listed ); ?>"><?php esc_html_e( 'Get listed', 'jcp-core' ); ?></a>
+          <a href="<?php echo esc_url( $jcp_onboarding_url_dir_listed ); ?>"<?php
+            if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+              jcp_niche_cta_tracking_attr( $jcp_onboarding_url_dir_listed, 'footer', 'Get listed' );
+            }
+          ?>><?php esc_html_e( 'Get listed', 'jcp-core' ); ?></a>
           <a href="<?php echo esc_url( home_url( '/demo' ) ); ?>"><?php esc_html_e( 'See the live demo', 'jcp-core' ); ?></a>
-          <a href="<?php echo esc_url( $jcp_onboarding_url_dir_started ); ?>"><?php esc_html_e( 'Get started', 'jcp-core' ); ?></a>
+          <a href="<?php echo esc_url( $jcp_onboarding_url_dir_started ); ?>"<?php
+            if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+              jcp_niche_cta_tracking_attr( $jcp_onboarding_url_dir_started, 'footer', 'Get started' );
+            }
+          ?>><?php esc_html_e( 'Get started', 'jcp-core' ); ?></a>
         </div>
       <?php else : ?>
         <div class="jcp-footer-brand">
@@ -87,7 +108,11 @@ $dir_trust = $dir_url . '/#trust';
         <div class="jcp-footer-col">
           <h4>Company</h4>
           <a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a>
-          <a href="<?php echo esc_url( $jcp_onboarding_url ); ?>"><?php esc_html_e( 'Sign up', 'jcp-core' ); ?></a>
+          <a href="<?php echo esc_url( $jcp_onboarding_url ); ?>"<?php
+            if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+              jcp_niche_cta_tracking_attr( $jcp_onboarding_url, 'footer', 'Sign up' );
+            }
+          ?>><?php esc_html_e( 'Sign up', 'jcp-core' ); ?></a>
           <?php
           $about_page = get_page_by_path( 'about' );
           if ( $about_page && $about_page->post_status === 'publish' ) :
@@ -131,6 +156,7 @@ $dir_trust = $dir_url . '/#trust';
       </div>
     </div>
   </footer>
+  <?php endif; ?>
   </div><!-- .jcp-shell -->
   <?php wp_footer(); ?>
 </body>

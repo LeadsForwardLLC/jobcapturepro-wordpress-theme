@@ -1,9 +1,8 @@
-@import url("../../assets/shared/assets/survey.css");
-
 /* =========================================================
    Survey Page Overrides
-   NOTE: We intentionally duplicate Slide 1 styling here (instead of only in the
-   imported file) so cache-busting works via this file's version querystring.
+   Base survey styles load via jcp-core-survey-shared (enqueue.php) so
+   filemtime cache-busting applies. Slide 1 deck styles are duplicated here
+   for the same reason — @import URLs are cached without ?ver= on CDN.
 ========================================================= */
 
 /* Slide card system (Slides 1–3, 6–8). Slide 4/5 are custom layouts. */
@@ -54,27 +53,30 @@
   gap: 12px;
   align-items: start;
   width: 100%;
-  padding: 15px 14px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.94);
-  border: 1px solid rgba(226, 232, 240, 0.98);
-  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.10);
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  box-shadow: none;
+  transform: none;
+  transition: border-color 0.15s ease;
 }
 :is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card:hover {
-  transform: translateY(-1px);
-  border-color: rgba(255, 80, 62, 0.22);
-  box-shadow: 0 22px 56px rgba(15, 23, 42, 0.12);
+  transform: none;
+  border-color: #e5e7eb;
+  box-shadow: none;
 }
 
 :is(.deck-slide--intro, .deck-slide--cards) .deck-flow-icon {
   position: relative;
   width: 42px;
   height: 42px;
-  border-radius: 15px;
+  border-radius: 14px;
   display: grid;
   place-items: center;
-  background: linear-gradient(180deg, rgba(255, 80, 62, 0.16), rgba(255, 138, 61, 0.12));
-  border: 1px solid rgba(255, 80, 62, 0.20);
+  background: rgba(255, 80, 62, 0.1);
+  border: 1px solid rgba(255, 80, 62, 0.16);
+  box-shadow: none;
 }
 :is(.deck-slide--intro, .deck-slide--cards) .deck-flow-icon img {
   width: 18px;
@@ -94,9 +96,9 @@
   font-size: 11px;
   font-weight: 950;
   color: #7c2d12;
-  background: rgba(255, 255, 255, 0.92);
+  background: #ffffff;
   border: 1px solid rgba(255, 80, 62, 0.22);
-  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08);
+  box-shadow: none;
 }
 
 :is(.deck-slide--intro, .deck-slide--cards) .deck-flow-title {

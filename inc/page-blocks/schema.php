@@ -100,7 +100,44 @@ function jcp_niche_is_content_page( ?int $post_id = null ): bool {
  */
 function jcp_page_resolve_kind( array $content, int $post_id ): string {
 	if ( ! empty( $content['page_kind'] ) ) {
-		return (string) $content['page_kind'];
+		$kind = sanitize_key( (string) $content['page_kind'] );
+		if ( in_array( $kind, [ 'industry', 'marketing', 'referral', 'home' ], true ) ) {
+			return $kind;
+		}
+	}
+
+	$preset_slug = ! empty( $content['preset'] ) ? sanitize_key( (string) $content['preset'] ) : '';
+	if ( $preset_slug === '' && $post_id > 0 ) {
+		$post = get_post( $post_id );
+		if ( $post instanceof WP_Post ) {
+			$preset_slug = jcp_writer_resolve_preset( $post, $content );
+		}
+	}
+	if ( $preset_slug !== '' ) {
+		$preset_def = jcp_page_get_preset( $preset_slug );
+		if ( $preset_def && ! empty( $preset_def['page_kind'] ) ) {
+			return (string) $preset_def['page_kind'];
+		}
+	}
+
+	if ( $post_id > 0 ) {
+		$post = get_post( $post_id );
+		if ( $post instanceof WP_Post ) {
+			if ( $post->post_type === 'jcp_niche_landing' ) {
+				return 'industry';
+			}
+			if ( $post->post_type === 'page' ) {
+				if ( get_page_template_slug( $post_id ) === 'page-referral-program.php' || $post->post_name === 'referral-program' ) {
+					return 'referral';
+				}
+				if ( get_page_template_slug( $post_id ) === 'page-home.php' || (int) get_option( 'page_on_front' ) === $post_id ) {
+					return 'home';
+				}
+				if ( jcp_page_uses_block_template( $post_id ) ) {
+					return 'marketing';
+				}
+			}
+		}
 	}
 	if ( ( $content['page_type'] ?? '' ) === 'home' || ( $content['page_type'] ?? '' ) === 'homepage' ) {
 		return 'home';
@@ -110,21 +147,6 @@ function jcp_page_resolve_kind( array $content, int $post_id ): string {
 	}
 	if ( $post_id <= 0 ) {
 		return 'industry';
-	}
-	$post = get_post( $post_id );
-	if ( $post instanceof WP_Post ) {
-		if ( $post->post_type === 'jcp_niche_landing' ) {
-			return 'industry';
-		}
-		if ( get_page_template_slug( $post_id ) === 'page-referral-program.php' || $post->post_name === 'referral-program' ) {
-			return 'referral';
-		}
-		if ( get_page_template_slug( $post_id ) === 'page-home.php' || (int) get_option( 'page_on_front' ) === $post_id ) {
-			return 'home';
-		}
-		if ( jcp_page_uses_block_template( $post_id ) ) {
-			return 'marketing';
-		}
 	}
 	return 'marketing';
 }
@@ -235,6 +257,12 @@ function jcp_page_normalize_content( array $content, int $post_id ): array {
 		if ( empty( $content['page_label'] ) && empty( $content['niche_label'] ) ) {
 			$content['page_label'] = get_the_title( $post_id );
 		}
+		if ( function_exists( 'jcp_page_finalize_campaign_document' ) ) {
+			$content = jcp_page_finalize_campaign_document( $content );
+		}
+		if ( function_exists( 'jcp_page_finalize_thank_you_document' ) ) {
+			$content = jcp_page_finalize_thank_you_document( $content );
+		}
 		return $content;
 	}
 	return jcp_page_legacy_to_blocks( $content, $post_id );
@@ -260,6 +288,7 @@ function jcp_page_get_content( int $post_id ): array {
 	$content = jcp_page_normalize_content( $raw, $post_id );
 	$cleaned = jcp_page_sanitize_content_document( $content );
 	$upgraded = jcp_page_upgrade_industry_media_blocks( $cleaned, $post_id );
+	$upgraded = jcp_page_upgrade_embedded_demo_blocks( $upgraded, $post_id );
 	if ( wp_json_encode( $upgraded ) !== wp_json_encode( $cleaned ) ) {
 		jcp_page_save_content( $post_id, $upgraded );
 		$cleaned = $upgraded;
@@ -300,11 +329,12 @@ function jcp_page_save_content( int $post_id, array $content ): void {
 		$content = jcp_page_normalize_content( $content, $post_id );
 	}
 	$content = jcp_page_sanitize_content_document( $content );
-	update_post_meta(
-		$post_id,
-		jcp_page_content_meta_key(),
-		wp_json_encode( $content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES )
-	);
+	$json    = wp_json_encode( $content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+	if ( ! is_string( $json ) || $json === '' ) {
+		return;
+	}
+	// wp_slash required: update_post_meta() unslashes once and would corrupt JSON backslashes.
+	update_post_meta( $post_id, jcp_page_content_meta_key(), wp_slash( $json ) );
 	// Remove legacy key once upgraded.
 	delete_post_meta( $post_id, jcp_page_legacy_meta_key() );
 }
@@ -328,12 +358,20 @@ function jcp_niche_save_content( int $post_id, array $content ): void {
  */
 function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 	$page_kind = jcp_page_resolve_kind( $legacy, $post_id );
-	$preset    = match ( $page_kind ) {
+	$preset    = ! empty( $legacy['preset'] ) ? sanitize_key( (string) $legacy['preset'] ) : match ( $page_kind ) {
 		'referral' => 'referral',
 		'industry' => 'industry',
 		'home'     => 'home',
 		default    => 'marketing',
 	};
+	if ( ! jcp_page_get_preset( $preset ) ) {
+		$preset = match ( $page_kind ) {
+			'referral' => 'referral',
+			'industry' => 'industry',
+			'home'     => 'home',
+			default    => 'marketing',
+		};
+	}
 	$preset_def = jcp_page_get_preset( $preset );
 	$order     = $preset_def['block_types'] ?? [];
 
@@ -370,8 +408,8 @@ function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 		}
 		if ( $type === 'hero' && is_array( $props ) ) {
 			$block_layout = jcp_block_default_layout( (string) $type, $page_kind );
-			if ( isset( $props['show_visual'] ) ) {
-				$block_layout['hero_variant'] = ! empty( $props['show_visual'] ) ? 'split' : 'centered';
+			if ( isset( $props['show_visual'] ) && empty( $props['show_visual'] ) ) {
+				$block_layout['hero_variant'] = 'centered';
 			}
 			if ( ! empty( $props['rotating_words'] ) ) {
 				$block_layout['hero_variant'] = 'home';
@@ -391,7 +429,7 @@ function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 		$blocks[] = $block;
 	}
 
-	return [
+	$doc = [
 		'version'         => 1,
 		'page_kind'       => $page_kind,
 		'page_key'        => ! empty( $legacy['niche_key'] ) ? (string) $legacy['niche_key'] : ( ! empty( $legacy['page_key'] ) ? (string) $legacy['page_key'] : ( $post_id > 0 ? (string) get_post_field( 'post_name', $post_id ) : '' ) ),
@@ -399,12 +437,21 @@ function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 		'preset'          => $legacy['preset'] ?? $preset,
 		'seo'             => $legacy['seo'] ?? [ 'keywords' => [] ],
 		'settings'        => [
-			'hide_breadcrumb' => ! empty( $legacy['hide_breadcrumb'] ),
+			'hide_breadcrumb'  => ! empty( $legacy['hide_breadcrumb'] ),
+			'hide_site_chrome' => ! empty( $legacy['hide_site_chrome'] ) || ( sanitize_key( (string) ( $legacy['preset'] ?? $preset ) ) === 'campaign' ),
+			'campaign_landing' => ! empty( $legacy['campaign_landing'] ) || ( sanitize_key( (string) ( $legacy['preset'] ?? $preset ) ) === 'campaign' ),
 		],
 		'blocks'          => $blocks,
 		'page_type'       => $legacy['page_type'] ?? ( $page_kind === 'referral' ? 'referral' : '' ),
 		'nav_cta'         => is_array( $legacy['nav_cta'] ?? null ) ? $legacy['nav_cta'] : [],
 	];
+
+	$doc = function_exists( 'jcp_page_finalize_campaign_document' )
+		? jcp_page_finalize_campaign_document( $doc )
+		: $doc;
+	return function_exists( 'jcp_page_finalize_thank_you_document' )
+		? jcp_page_finalize_thank_you_document( $doc )
+		: $doc;
 }
 
 /**
@@ -424,6 +471,8 @@ function jcp_page_blocks_to_legacy( array $content ): array {
 		'preset'           => $content['preset'] ?? '',
 		'seo'              => $content['seo'] ?? [ 'keywords' => [] ],
 		'hide_breadcrumb'  => ! empty( $content['settings']['hide_breadcrumb'] ),
+		'hide_site_chrome' => ! empty( $content['settings']['hide_site_chrome'] ),
+		'campaign_landing' => ! empty( $content['settings']['campaign_landing'] ),
 	];
 	if ( ! empty( $content['nav_cta'] ) && is_array( $content['nav_cta'] ) ) {
 		$legacy['nav_cta'] = $content['nav_cta'];
@@ -489,6 +538,69 @@ function jcp_page_merge_parsed_content( array $parsed, array $existing = [] ): a
 				$parsed['blocks'][ $i ]['props']['cta_url'] = $exist['cta_url'];
 			}
 		}
+	}
+
+	return $parsed;
+}
+
+/**
+ * Merge imported blocks into an existing skeleton document.
+ *
+ * Keeps empty section slots from the skeleton while filling props from import.
+ *
+ * @param array<string, mixed> $parsed   Parsed import document.
+ * @param array<string, mixed> $existing Existing stored content.
+ * @return array<string, mixed>
+ */
+function jcp_page_merge_import_content( array $parsed, array $existing = [] ): array {
+	$parsed = jcp_page_merge_parsed_content( $parsed, $existing );
+
+	if ( empty( $existing['blocks'] ) || empty( $parsed['blocks'] ) ) {
+		return $parsed;
+	}
+
+	$imported_by_key = [];
+	foreach ( (array) $parsed['blocks'] as $block ) {
+		if ( ! is_array( $block ) ) {
+			continue;
+		}
+		$type = (string) ( $block['type'] ?? '' );
+		$key  = $type;
+		if ( ! empty( $block['legacy_key'] ) ) {
+			$key .= ':' . (string) $block['legacy_key'];
+		}
+		$imported_by_key[ $key ] = $block;
+	}
+
+	$merged_blocks = [];
+	foreach ( (array) $existing['blocks'] as $skeleton ) {
+		if ( ! is_array( $skeleton ) ) {
+			continue;
+		}
+		$type = (string) ( $skeleton['type'] ?? '' );
+		$key  = $type;
+		if ( ! empty( $skeleton['legacy_key'] ) ) {
+			$key .= ':' . (string) $skeleton['legacy_key'];
+		}
+		if ( isset( $imported_by_key[ $key ] ) ) {
+			$hit = $imported_by_key[ $key ];
+			unset( $imported_by_key[ $key ] );
+			$skeleton['props']  = $hit['props'] ?? $skeleton['props'] ?? [];
+			$skeleton['layout'] = $hit['layout'] ?? $skeleton['layout'] ?? [];
+			if ( ! empty( $hit['label'] ) ) {
+				$skeleton['label'] = $hit['label'];
+			}
+		}
+		$merged_blocks[] = $skeleton;
+	}
+
+	foreach ( $imported_by_key as $block ) {
+		$merged_blocks[] = $block;
+	}
+
+	$parsed['blocks'] = $merged_blocks;
+	if ( ! empty( $existing['preset'] ) && empty( $parsed['preset'] ) ) {
+		$parsed['preset'] = $existing['preset'];
 	}
 
 	return $parsed;
@@ -585,6 +697,14 @@ function jcp_page_merge_flat_into_blocks( array $doc, array $flat ): array {
 	if ( isset( $flat['hide_breadcrumb'] ) ) {
 		$doc['settings'] = $doc['settings'] ?? [];
 		$doc['settings']['hide_breadcrumb'] = (bool) $flat['hide_breadcrumb'];
+	}
+	if ( isset( $flat['hide_site_chrome'] ) ) {
+		$doc['settings'] = $doc['settings'] ?? [];
+		$doc['settings']['hide_site_chrome'] = (bool) $flat['hide_site_chrome'];
+	}
+	if ( isset( $flat['campaign_landing'] ) ) {
+		$doc['settings'] = $doc['settings'] ?? [];
+		$doc['settings']['campaign_landing'] = (bool) $flat['campaign_landing'];
 	}
 	if ( ! empty( $flat['seo'] ) && is_array( $flat['seo'] ) ) {
 		$doc['seo'] = array_replace_recursive( $doc['seo'] ?? [], $flat['seo'] );

@@ -11,14 +11,8 @@
  * @param WP_Post $post Post.
  */
 function jcp_page_block_structure_render_panel( WP_Post $post ): void {
-	$page_kind = 'marketing';
-	if ( $post->post_type === 'jcp_niche_landing' ) {
-		$page_kind = 'industry';
-	} elseif ( get_page_template_slug( $post->ID ) === 'page-referral-program.php' || $post->post_name === 'referral-program' ) {
-		$page_kind = 'referral';
-	} elseif ( get_page_template_slug( $post->ID ) === 'page-home.php' || (int) get_option( 'page_on_front' ) === (int) $post->ID ) {
-		$page_kind = 'home';
-	}
+	$stored    = jcp_page_get_content( (int) $post->ID );
+	$page_kind = jcp_page_resolve_admin_page_kind( $post, $stored );
 
 	?>
 	<div id="jcp-admin-block-structure" class="jcp-admin-block-structure" data-page-kind="<?php echo esc_attr( $page_kind ); ?>"></div>
@@ -41,16 +35,8 @@ function jcp_page_block_structure_enqueue_assets(): void {
 	$done = true;
 
 	global $post;
-	$page_kind = 'marketing';
-	if ( $post instanceof WP_Post ) {
-		if ( $post->post_type === 'jcp_niche_landing' ) {
-			$page_kind = 'industry';
-		} elseif ( get_page_template_slug( $post->ID ) === 'page-referral-program.php' || $post->post_name === 'referral-program' ) {
-			$page_kind = 'referral';
-		} elseif ( get_page_template_slug( $post->ID ) === 'page-home.php' || (int) get_option( 'page_on_front' ) === (int) $post->ID ) {
-			$page_kind = 'home';
-		}
-	}
+	$stored    = $post instanceof WP_Post ? jcp_page_get_content( (int) $post->ID ) : [];
+	$page_kind = jcp_page_resolve_admin_page_kind( $post instanceof WP_Post ? $post : null, $stored );
 
 	$registry = jcp_block_registry_public( $page_kind );
 	$default_props = [];

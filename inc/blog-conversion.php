@@ -1,0 +1,634 @@
+<?php
+/**
+ * Automatic blog conversion layer — CTAs, trade matching, related hubs.
+ * Zero per-post setup: injects mid-content + end-of-post conversion on singles,
+ * and a CTA strip on the blog archive.
+ *
+ * @package JCP_Core
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Whether blog conversion UI should run on this request.
+ */
+function jcp_blog_conversion_enabled(): bool {
+	return (bool) apply_filters( 'jcp_blog_conversion_enabled', true );
+}
+
+/**
+ * Published industry (trade) pages for matching.
+ *
+ * @return array<int, array{id:int,label:string,slug:string,url:string,tokens:array<int,string>}>
+ */
+function jcp_blog_conversion_trade_catalog(): array {
+	$cached = get_transient( 'jcp_blog_conversion_trades_v1' );
+	if ( is_array( $cached ) ) {
+		return $cached;
+	}
+
+	$posts = get_posts(
+		[
+			'post_type'      => 'jcp_niche_landing',
+			'post_status'    => 'publish',
+			'posts_per_page' => 100,
+			'orderby'        => 'title',
+			'order'          => 'ASC',
+		]
+	);
+
+	$catalog = [];
+	foreach ( $posts as $post ) {
+		$content = function_exists( 'jcp_niche_get_content' ) ? jcp_niche_get_content( (int) $post->ID ) : [];
+		$label   = ! empty( $content['niche_label'] ) ? (string) $content['niche_label'] : get_the_title( $post );
+		$slug    = (string) $post->post_name;
+		$tokens  = [];
+		foreach ( [ $label, $slug, str_replace( '-', ' ', $slug ) ] as $piece ) {
+			$tokens = array_merge( $tokens, jcp_blog_conversion_tokenize( (string) $piece ) );
+		}
+		// Common aliases.
+		$aliases = [
+			'hvac'       => [ 'hvac', 'heating', 'cooling', 'air conditioning', 'furnace' ],
+			'plumbing'   => [ 'plumbing', 'plumber', 'drain', 'water heater', 'pipe' ],
+			'roofing'    => [ 'roofing', 'roofer', 'roof', 'shingle' ],
+			'electrical' => [ 'electrical', 'electrician', 'wiring' ],
+			'landscap'   => [ 'landscaping', 'landscape', 'lawn' ],
+			'foundation' => [ 'foundation', 'foundation repair', 'crawlspace' ],
+		];
+		foreach ( $aliases as $needle => $extra ) {
+			if ( str_contains( strtolower( $slug . ' ' . $label ), $needle ) ) {
+				foreach ( $extra as $alias ) {
+					$tokens = array_merge( $tokens, jcp_blog_conversion_tokenize( $alias ) );
+				}
+			}
+		}
+		$tokens = array_values( array_unique( $tokens ) );
+		if ( $tokens === [] ) {
+			continue;
+		}
+		$catalog[] = [
+			'id'     => (int) $post->ID,
+			'label'  => $label,
+			'slug'   => $slug,
+			'url'    => get_permalink( $post ),
+			'tokens' => $tokens,
+		];
+	}
+
+	set_transient( 'jcp_blog_conversion_trades_v1', $catalog, HOUR_IN_SECONDS );
+	return $catalog;
+}
+
+/**
+ * Clear trade catalog cache when industries change.
+ */
+function jcp_blog_conversion_clear_trade_cache(): void {
+	delete_transient( 'jcp_blog_conversion_trades_v1' );
+}
+add_action( 'save_post_jcp_niche_landing', 'jcp_blog_conversion_clear_trade_cache' );
+add_action( 'after_switch_theme', 'jcp_blog_conversion_clear_trade_cache' );
+
+/**
+ * Tokenize text for matching.
+ *
+ * @param string $text Raw text.
+ * @return array<int, string>
+ */
+function jcp_blog_conversion_tokenize( string $text ): array {
+	if ( function_exists( 'jcp_internal_link_tokenize' ) ) {
+		return jcp_internal_link_tokenize( $text );
+	}
+	$text  = strtolower( wp_strip_all_tags( $text ) );
+	$text  = preg_replace( '/[^a-z0-9\s-]/u', ' ', $text ) ?? '';
+	$parts = preg_split( '/\s+/u', $text, -1, PREG_SPLIT_NO_EMPTY );
+	return is_array( $parts ) ? array_values( array_unique( $parts ) ) : [];
+}
+
+/**
+ * Build a searchable corpus for a blog post.
+ *
+ * @param int $post_id Post ID.
+ */
+function jcp_blog_conversion_post_corpus( int $post_id ): string {
+	$post = get_post( $post_id );
+	if ( ! $post instanceof WP_Post ) {
+		return '';
+	}
+	$bits = [ $post->post_title, $post->post_excerpt, wp_trim_words( wp_strip_all_tags( $post->post_content ), 120, '' ) ];
+	$tags = get_the_tags( $post_id );
+	if ( is_array( $tags ) ) {
+		foreach ( $tags as $tag ) {
+			$bits[] = $tag->name;
+		}
+	}
+	$cats = get_the_category( $post_id );
+	if ( is_array( $cats ) ) {
+		foreach ( $cats as $cat ) {
+			$bits[] = $cat->name;
+		}
+	}
+	$focus = trim( (string) get_post_meta( $post_id, 'rank_math_focus_keyword', true ) );
+	if ( $focus === '' ) {
+		$focus = trim( (string) get_post_meta( $post_id, '_rank_math_focus_keyword', true ) );
+	}
+	if ( $focus !== '' ) {
+		$bits[] = $focus;
+	}
+	return implode( ' ', $bits );
+}
+
+/**
+ * Detect the best-matching trade for a post (or null).
+ *
+ * @param int $post_id Post ID.
+ * @return array{id:int,label:string,slug:string,url:string,score:int}|null
+ */
+function jcp_blog_conversion_detect_trade( int $post_id ): ?array {
+	$corpus = strtolower( jcp_blog_conversion_post_corpus( $post_id ) );
+	if ( $corpus === '' ) {
+		return null;
+	}
+	$tokens = jcp_blog_conversion_tokenize( $corpus );
+	$best   = null;
+	$best_score = 0;
+
+	foreach ( jcp_blog_conversion_trade_catalog() as $trade ) {
+		$score = 0;
+		$label = strtolower( $trade['label'] );
+		$slug  = strtolower( $trade['slug'] );
+		if ( $label !== '' && str_contains( $corpus, $label ) ) {
+			$score += 12;
+		}
+		if ( $slug !== '' && str_contains( $corpus, str_replace( '-', ' ', $slug ) ) ) {
+			$score += 8;
+		}
+		foreach ( $trade['tokens'] as $token ) {
+			if ( in_array( $token, $tokens, true ) || str_contains( $corpus, $token ) ) {
+				$score += strlen( $token ) >= 5 ? 3 : 2;
+			}
+		}
+		if ( $score > $best_score ) {
+			$best_score = $score;
+			$best       = [
+				'id'    => $trade['id'],
+				'label' => $trade['label'],
+				'slug'  => $trade['slug'],
+				'url'   => $trade['url'],
+				'score' => $score,
+			];
+		}
+	}
+
+	if ( ! $best || $best_score < 4 ) {
+		return null;
+	}
+	return $best;
+}
+
+/**
+ * Resolve demo + trial CTAs for blog surfaces.
+ *
+ * @param string $utm_suffix Surface key (blog_end, blog_mid, blog_archive).
+ * @return array{demo: array{label:string,url:string}, trial: array{label:string,url:string}}
+ */
+function jcp_blog_conversion_ctas( string $utm_suffix = 'blog' ): array {
+	$demo_url = home_url( '/demo/' );
+	$trial    = [ 'label' => __( 'Start free trial', 'jcp-core' ), 'url' => home_url( '/demo/' ) ];
+	if ( function_exists( 'jcp_global_resolve_cta' ) ) {
+		$trial = jcp_global_resolve_cta(
+			__( 'Start free trial', 'jcp-core' ),
+			'',
+			'blog_' . $utm_suffix
+		);
+	}
+	return [
+		'demo'  => [
+			'label' => __( 'Watch the live demo', 'jcp-core' ),
+			'url'   => $demo_url,
+		],
+		'trial' => $trial,
+	];
+}
+
+/**
+ * Related blog posts (same tags/categories, then recent fallback).
+ *
+ * @param int $post_id Post ID.
+ * @param int $limit   Max posts.
+ * @return array<int, WP_Post>
+ */
+function jcp_blog_conversion_related_posts( int $post_id, int $limit = 3 ): array {
+	$limit   = max( 1, min( 4, $limit ) );
+	$exclude = [ $post_id ];
+	$found   = [];
+
+	$tag_ids = wp_get_post_tags( $post_id, [ 'fields' => 'ids' ] );
+	if ( is_array( $tag_ids ) && $tag_ids !== [] ) {
+		$by_tag = get_posts(
+			[
+				'post_type'           => 'post',
+				'post_status'         => 'publish',
+				'posts_per_page'      => $limit,
+				'post__not_in'        => $exclude,
+				'tag__in'             => $tag_ids,
+				'ignore_sticky_posts' => true,
+				'no_found_rows'       => true,
+			]
+		);
+		foreach ( $by_tag as $p ) {
+			$found[ (int) $p->ID ] = $p;
+			$exclude[]             = (int) $p->ID;
+		}
+	}
+
+	if ( count( $found ) < $limit ) {
+		$cat_ids = wp_get_post_categories( $post_id );
+		if ( is_array( $cat_ids ) && $cat_ids !== [] ) {
+			$by_cat = get_posts(
+				[
+					'post_type'           => 'post',
+					'post_status'         => 'publish',
+					'posts_per_page'      => $limit - count( $found ),
+					'post__not_in'        => $exclude,
+					'category__in'        => $cat_ids,
+					'ignore_sticky_posts' => true,
+					'no_found_rows'       => true,
+				]
+			);
+			foreach ( $by_cat as $p ) {
+				$found[ (int) $p->ID ] = $p;
+				$exclude[]             = (int) $p->ID;
+			}
+		}
+	}
+
+	if ( count( $found ) < $limit ) {
+		$recent = get_posts(
+			[
+				'post_type'           => 'post',
+				'post_status'         => 'publish',
+				'posts_per_page'      => $limit - count( $found ),
+				'post__not_in'        => $exclude,
+				'ignore_sticky_posts' => true,
+				'no_found_rows'       => true,
+			]
+		);
+		foreach ( $recent as $p ) {
+			$found[ (int) $p->ID ] = $p;
+		}
+	}
+
+	return array_values( array_slice( $found, 0, $limit ) );
+}
+
+/**
+ * Personalized headline/subcopy for end CTA.
+ *
+ * @param int $post_id Post ID.
+ * @return array{headline:string,subheadline:string,note:string}
+ */
+function jcp_blog_conversion_end_copy( int $post_id ): array {
+	$trade = jcp_blog_conversion_detect_trade( $post_id );
+	if ( $trade ) {
+		return [
+			'headline'    => sprintf(
+				/* translators: %s: trade name */
+				__( 'Ready to turn every %s job into more customers?', 'jcp-core' ),
+				$trade['label']
+			),
+			'subheadline' => sprintf(
+				/* translators: %s: trade name */
+				__( 'See how JobCapturePro captures proof from real %s work and publishes it where homeowners already search.', 'jcp-core' ),
+				strtolower( $trade['label'] )
+			),
+			'note'        => __( 'No signup required for the demo · Setup in minutes', 'jcp-core' ),
+		];
+	}
+	return [
+		'headline'    => __( 'Turn completed jobs into more booked work', 'jcp-core' ),
+		'subheadline' => __( 'JobCapturePro captures proof from the jobs you already finish and publishes it across Google, your website, and social — without adding busywork for your crew.', 'jcp-core' ),
+		'note'        => __( 'No signup required for the demo · Setup in minutes', 'jcp-core' ),
+	];
+}
+
+/**
+ * Mid-content strip copy.
+ *
+ * @param int $post_id Post ID.
+ * @return array{eyebrow:string,title:string,body:string}
+ */
+function jcp_blog_conversion_mid_copy( int $post_id ): array {
+	$trade = jcp_blog_conversion_detect_trade( $post_id );
+	if ( $trade ) {
+		return [
+			'eyebrow' => __( 'See it live', 'jcp-core' ),
+			'title'   => sprintf(
+				/* translators: %s: trade name */
+				__( 'Watch how this works for %s companies', 'jcp-core' ),
+				$trade['label']
+			),
+			'body'    => __( 'A two-minute interactive demo — capture a job, publish proof, request a review.', 'jcp-core' ),
+		];
+	}
+	return [
+		'eyebrow' => __( 'See it live', 'jcp-core' ),
+		'title'   => __( 'Prefer to see the product instead of reading about it?', 'jcp-core' ),
+		'body'    => __( 'Launch the interactive demo — no signup required.', 'jcp-core' ),
+	];
+}
+
+/**
+ * Render mid-content conversion strip HTML.
+ *
+ * @param int $post_id Post ID.
+ */
+function jcp_blog_conversion_render_mid_strip( int $post_id ): string {
+	$copy = jcp_blog_conversion_mid_copy( $post_id );
+	$ctas = jcp_blog_conversion_ctas( 'mid' );
+	$demo = $ctas['demo'];
+
+	ob_start();
+	?>
+	<aside class="jcp-blog-mid-cta" data-jcp-blog-cta="mid" aria-label="<?php esc_attr_e( 'Product demo call to action', 'jcp-core' ); ?>">
+		<div class="jcp-blog-mid-cta__inner">
+			<p class="jcp-blog-mid-cta__eyebrow"><?php echo esc_html( $copy['eyebrow'] ); ?></p>
+			<p class="jcp-blog-mid-cta__title"><?php echo esc_html( $copy['title'] ); ?></p>
+			<p class="jcp-blog-mid-cta__body"><?php echo esc_html( $copy['body'] ); ?></p>
+			<a
+				class="btn btn-primary jcp-blog-mid-cta__btn"
+				href="<?php echo esc_url( $demo['url'] ); ?>"
+				<?php
+				if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+					jcp_niche_cta_tracking_attr( $demo['url'], 'blog_mid', $demo['label'] );
+				}
+				?>
+			><?php echo esc_html( $demo['label'] ); ?> →</a>
+		</div>
+	</aside>
+	<?php
+	return (string) ob_get_clean();
+}
+
+/**
+ * Inject mid-content CTA after ~40–50% of paragraphs (once).
+ *
+ * @param string $content Post content.
+ */
+function jcp_blog_conversion_inject_mid_content( string $content ): string {
+	if ( ! jcp_blog_conversion_enabled() || ! is_singular( 'post' ) || ! in_the_loop() || ! is_main_query() ) {
+		return $content;
+	}
+	if ( is_admin() || wp_is_json_request() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return $content;
+	}
+	if ( str_contains( $content, 'jcp-blog-mid-cta' ) ) {
+		return $content;
+	}
+
+	$post_id = get_the_ID();
+	if ( ! $post_id ) {
+		return $content;
+	}
+
+	if ( ! preg_match_all( '/<\/p>/i', $content, $matches, PREG_OFFSET_CAPTURE ) ) {
+		return $content;
+	}
+
+	$closes = $matches[0];
+	$count  = count( $closes );
+	if ( $count < 3 ) {
+		return $content;
+	}
+
+	$insert_idx = (int) max( 1, min( $count - 1, (int) floor( $count * 0.45 ) ) );
+	$offset     = (int) $closes[ $insert_idx ][1] + strlen( (string) $closes[ $insert_idx ][0] );
+	$strip      = jcp_blog_conversion_render_mid_strip( (int) $post_id );
+
+	return substr( $content, 0, $offset ) . $strip . substr( $content, $offset );
+}
+add_filter( 'the_content', 'jcp_blog_conversion_inject_mid_content', 12 );
+
+/**
+ * Wrap bare tables in a scroll container for responsive blog content.
+ *
+ * @param string $content Post content.
+ */
+function jcp_blog_wrap_content_tables( string $content ): string {
+	if ( ! is_singular( 'post' ) || ! in_the_loop() || ! is_main_query() ) {
+		return $content;
+	}
+	if ( is_admin() || wp_is_json_request() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+		return $content;
+	}
+	if ( ! str_contains( $content, '<table' ) ) {
+		return $content;
+	}
+
+	return (string) preg_replace_callback(
+		'/<table\b[^>]*>.*?<\/table>/is',
+		static function ( array $m ): string {
+			$html = $m[0];
+			if ( str_contains( $html, 'jcp-post-table' ) ) {
+				return $html;
+			}
+
+			if ( preg_match( '/\bclass\s*=\s*(["\'])(.*?)\1/i', $html, $cm ) ) {
+				$html = preg_replace(
+					'/\bclass\s*=\s*(["\'])(.*?)\1/i',
+					'class=$1$2 jcp-post-table$1',
+					$html,
+					1
+				);
+			} else {
+				$html = preg_replace( '/<table\b/i', '<table class="jcp-post-table"', $html, 1 );
+			}
+
+			return '<div class="jcp-post-table-wrap">' . $html . '</div>';
+		},
+		$content
+	);
+}
+add_filter( 'the_content', 'jcp_blog_wrap_content_tables', 13 );
+
+/**
+ * Render end-of-post conversion band + related blog posts.
+ *
+ * @param int $post_id Post ID.
+ */
+function jcp_blog_conversion_render_end( int $post_id ): void {
+	if ( ! jcp_blog_conversion_enabled() ) {
+		return;
+	}
+	$copy    = jcp_blog_conversion_end_copy( $post_id );
+	$ctas    = jcp_blog_conversion_ctas( 'end' );
+	$related = jcp_blog_conversion_related_posts( $post_id, 3 );
+	$trade   = jcp_blog_conversion_detect_trade( $post_id );
+	?>
+	<section class="jcp-section jcp-blog-end-conversion" data-jcp-blog-cta="end"<?php echo $trade ? ' data-jcp-trade="' . esc_attr( $trade['slug'] ) . '"' : ''; ?>>
+		<div class="jcp-container jcp-single-post-container">
+			<div class="jcp-blog-end-cta">
+				<div class="jcp-blog-end-cta__copy">
+					<p class="jcp-blog-end-cta__eyebrow"><?php esc_html_e( 'See it live', 'jcp-core' ); ?></p>
+					<h2 class="jcp-blog-end-cta__title"><?php echo esc_html( $copy['headline'] ); ?></h2>
+					<p class="jcp-blog-end-cta__body"><?php echo esc_html( $copy['subheadline'] ); ?></p>
+				</div>
+				<div class="jcp-blog-end-cta__actions">
+					<a
+						class="btn btn-primary jcp-blog-end-cta__btn"
+						href="<?php echo esc_url( $ctas['demo']['url'] ); ?>"
+						<?php
+						if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+							jcp_niche_cta_tracking_attr( $ctas['demo']['url'], 'blog_end', $ctas['demo']['label'] );
+						}
+						?>
+					><?php echo esc_html( $ctas['demo']['label'] ); ?></a>
+					<p class="jcp-blog-end-cta__note"><?php echo esc_html( $copy['note'] ); ?></p>
+				</div>
+			</div>
+
+			<?php if ( $related ) : ?>
+				<div class="jcp-blog-related">
+					<h2 class="jcp-blog-related__title"><?php esc_html_e( 'Related reading', 'jcp-core' ); ?></h2>
+					<div class="jcp-blog-related__grid">
+						<?php foreach ( $related as $post ) : ?>
+							<?php
+							$cats     = get_the_category( (int) $post->ID );
+							$cat_name = ( is_array( $cats ) && isset( $cats[0] ) ) ? $cats[0]->name : '';
+							$thumb    = get_the_post_thumbnail_url( (int) $post->ID, 'medium_large' );
+							?>
+							<a class="jcp-blog-related__card" href="<?php echo esc_url( get_permalink( $post ) ); ?>">
+								<?php if ( is_string( $thumb ) && $thumb !== '' ) : ?>
+									<span class="jcp-blog-related__media" style="background-image: url(<?php echo esc_url( $thumb ); ?>);"></span>
+								<?php else : ?>
+									<span class="jcp-blog-related__media jcp-blog-related__media--empty" aria-hidden="true"></span>
+								<?php endif; ?>
+								<span class="jcp-blog-related__body">
+									<?php if ( $cat_name !== '' ) : ?>
+										<span class="jcp-blog-related__cat"><?php echo esc_html( $cat_name ); ?></span>
+									<?php endif; ?>
+									<strong class="jcp-blog-related__card-title"><?php echo esc_html( get_the_title( $post ) ); ?></strong>
+									<span class="jcp-blog-related__meta">
+										<time datetime="<?php echo esc_attr( get_the_date( 'c', $post ) ); ?>"><?php echo esc_html( get_the_date( '', $post ) ); ?></time>
+									</span>
+								</span>
+							</a>
+						<?php endforeach; ?>
+					</div>
+				</div>
+			<?php endif; ?>
+		</div>
+	</section>
+	<?php
+}
+
+/**
+ * Render archive / blog index CTA strip.
+ */
+function jcp_blog_conversion_render_archive_strip(): void {
+	if ( ! jcp_blog_conversion_enabled() ) {
+		return;
+	}
+	$ctas = jcp_blog_conversion_ctas( 'archive' );
+	?>
+	<section class="jcp-section rankings-section jcp-blog-archive-cta" data-jcp-blog-cta="archive">
+		<div class="jcp-container">
+			<div class="rankings-cta jcp-blog-archive-cta__band">
+				<div class="cta-content">
+					<h3><?php esc_html_e( 'See JobCapturePro turn real jobs into visibility', 'jcp-core' ); ?></h3>
+					<p class="cta-paragraph"><?php esc_html_e( 'Skip the theory — launch the interactive demo and watch a completed job become Google, website, and social proof.', 'jcp-core' ); ?></p>
+				</div>
+				<div class="cta-button-wrapper">
+					<a
+						class="btn btn-primary rankings-cta-btn"
+						href="<?php echo esc_url( $ctas['demo']['url'] ); ?>"
+						<?php
+						if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+							jcp_niche_cta_tracking_attr( $ctas['demo']['url'], 'blog_archive', $ctas['demo']['label'] );
+						}
+						?>
+					><?php echo esc_html( $ctas['demo']['label'] ); ?></a>
+					<p class="cta-note"><?php esc_html_e( 'No signup required · Takes about 2 minutes', 'jcp-core' ); ?></p>
+				</div>
+			</div>
+		</div>
+	</section>
+	<?php
+}
+
+/**
+ * Whether this request is a blog post archive (index, category, tag, author).
+ */
+function jcp_blog_is_post_archive(): bool {
+	return ! is_singular() && ( is_home() || is_category() || is_tag() || is_author() );
+}
+
+/**
+ * Whether the blog-archive sticky bar should render (post archives only, not singles).
+ */
+function jcp_blog_conversion_should_show_sticky(): bool {
+	if ( ! jcp_blog_conversion_enabled() ) {
+		return false;
+	}
+	return jcp_blog_is_post_archive();
+}
+
+/**
+ * Archive demo strip + sticky bar (category, tag, author, blog home).
+ *
+ * @param bool $has_posts Whether the archive query returned posts.
+ */
+function jcp_blog_conversion_render_archive_footer( bool $has_posts ): void {
+	if ( ! $has_posts || ! jcp_blog_conversion_enabled() ) {
+		return;
+	}
+	jcp_blog_conversion_render_archive_strip();
+	jcp_blog_conversion_render_sticky();
+}
+
+/**
+ * Render slim sticky conversion bar markup for the blog archive (hidden until JS reveals).
+ */
+function jcp_blog_conversion_render_sticky(): void {
+	if ( ! jcp_blog_conversion_should_show_sticky() ) {
+		return;
+	}
+	$ctas = jcp_blog_conversion_ctas( 'sticky' );
+	$demo = $ctas['demo'];
+	?>
+	<div
+		id="jcpBlogStickyCta"
+		class="jcp-blog-sticky-cta"
+		hidden
+		data-jcp-blog-cta="sticky"
+		role="region"
+		aria-label="<?php esc_attr_e( 'Demo call to action', 'jcp-core' ); ?>"
+	>
+		<div class="jcp-blog-sticky-cta__inner">
+			<p class="jcp-blog-sticky-cta__copy">
+				<strong><?php esc_html_e( 'See it in 2 minutes', 'jcp-core' ); ?></strong>
+				<span class="jcp-blog-sticky-cta__sep" aria-hidden="true">·</span>
+				<span><?php esc_html_e( 'Interactive demo — no signup required', 'jcp-core' ); ?></span>
+			</p>
+			<div class="jcp-blog-sticky-cta__actions">
+				<a
+					class="btn btn-primary jcp-blog-sticky-cta__btn"
+					href="<?php echo esc_url( $demo['url'] ); ?>"
+					<?php
+					if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+						jcp_niche_cta_tracking_attr( $demo['url'], 'blog_sticky', $demo['label'] );
+					}
+					?>
+				><?php echo esc_html( $demo['label'] ); ?></a>
+				<button
+					type="button"
+					class="jcp-blog-sticky-cta__close"
+					id="jcpBlogStickyCtaClose"
+					aria-label="<?php esc_attr_e( 'Dismiss', 'jcp-core' ); ?>"
+				>×</button>
+			</div>
+		</div>
+	</div>
+	<?php
+}

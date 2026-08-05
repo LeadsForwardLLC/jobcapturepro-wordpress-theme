@@ -56,7 +56,12 @@ function jcp_niche_parse_document( string $text, string $niche_key = '', string 
 
 	$start = 0;
 	foreach ( $lines as $i => $line ) {
-		if ( stripos( $line, 'write content here' ) !== false || strtoupper( trim( $line ) ) === 'HERO' ) {
+		$trim_upper = strtoupper( trim( $line ) );
+		if (
+			stripos( $line, 'write content here' ) !== false
+			|| $trim_upper === 'HERO'
+			|| preg_match( '/^HERO\b/', $trim_upper )
+		) {
 			$start = stripos( $line, 'write content here' ) !== false ? $i + 1 : $i;
 			break;
 		}
@@ -126,6 +131,11 @@ function jcp_niche_parse_document( string $text, string $niche_key = '', string 
 	if ( ! empty( $sections['FAQ'] ) ) {
 		$content['faq'] = jcp_niche_doc_parse_faq( $sections['FAQ'] );
 	}
+	if ( ! empty( $sections['FORM EMBED'] ) ) {
+		$content['form_embed'] = jcp_niche_doc_parse_form_embed( $sections['FORM EMBED'] );
+	} elseif ( ! empty( $sections['FORM'] ) ) {
+		$content['form_embed'] = jcp_niche_doc_parse_form_embed( $sections['FORM'] );
+	}
 	if ( ! empty( $sections['CONVERSION'] ) ) {
 		$content['conversion'] = jcp_niche_doc_parse_conversion( $sections['CONVERSION'] );
 	}
@@ -140,6 +150,27 @@ function jcp_niche_parse_document( string $text, string $niche_key = '', string 
 	}
 	if ( ! empty( $sections['MEDIA PROBLEM'] ) ) {
 		$content['media_text_problem'] = jcp_niche_doc_parse_media_text( $sections['MEDIA PROBLEM'] );
+	}
+	if ( ! empty( $sections['DEMO PREVIEW'] ) ) {
+		$content['demo_preview'] = jcp_niche_doc_parse_demo_preview( $sections['DEMO PREVIEW'] );
+	}
+	if ( ! empty( $sections['PROOF FLOW'] ) ) {
+		$content['proof_flow'] = jcp_niche_doc_parse_proof_flow( $sections['PROOF FLOW'] );
+	}
+	if ( ! empty( $sections['DIRECTORY PREVIEW'] ) ) {
+		$content['directory_preview'] = jcp_niche_doc_parse_directory_preview( $sections['DIRECTORY PREVIEW'] );
+	}
+	if ( ! empty( $sections['CTA BAND'] ) ) {
+		$content['cta_band_1'] = jcp_niche_doc_parse_cta_band( $sections['CTA BAND'] );
+	}
+	if ( ! empty( $sections['COMMISSION'] ) ) {
+		$content['commission'] = jcp_niche_doc_parse_commission( $sections['COMMISSION'] );
+	}
+	if ( ! empty( $sections['PARTNERS'] ) ) {
+		$content['partners'] = jcp_niche_doc_parse_partners( $sections['PARTNERS'] );
+	}
+	if ( ! empty( $sections['SHARE'] ) ) {
+		$content['share'] = jcp_niche_doc_parse_share( $sections['SHARE'] );
 	}
 
 	return jcp_niche_doc_derive_media_text_blocks( $content );
@@ -164,11 +195,40 @@ function jcp_niche_doc_parse_keywords( array $lines ): array {
 }
 
 /**
+ * Field labels recognized in writer documents (line label → next line value).
+ *
+ * @return string[]
+ */
+function jcp_niche_doc_known_field_labels(): array {
+	return [
+		'h1',
+		'subheadline',
+		'headline',
+		'cta',
+		'cta note',
+		'trust line',
+		'closing line',
+		'body',
+		'cue',
+		'footnote',
+		'outro',
+		'quote',
+		'note',
+		'callout badge',
+		'callout title',
+		'callout text',
+		'link label',
+		'link url',
+		'job types',
+	];
+}
+
+/**
  * @param string[] $lines Section lines.
  * @return array<string, mixed>
  */
 function jcp_niche_doc_parse_labeled_fields( array $lines ): array {
-	$labels = [ 'h1', 'subheadline', 'headline', 'cta', 'trust line', 'closing line' ];
+	$labels = jcp_niche_doc_known_field_labels();
 	$out    = [];
 	$count  = count( $lines );
 
@@ -192,6 +252,68 @@ function jcp_niche_doc_parse_labeled_fields( array $lines ): array {
 	}
 
 	return $out;
+}
+
+/**
+ * Parse optional trailing CTA label(s) after a "CTA" field label.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_trailing_cta( array $lines, string $primary_url = '/demo', string $secondary_url = '#how-it-works' ): array {
+	$cta_index = null;
+	foreach ( $lines as $i => $line ) {
+		if ( strtolower( trim( $line ) ) === 'cta' ) {
+			$cta_index = (int) $i;
+		}
+	}
+	if ( $cta_index === null ) {
+		return [
+			'cta_primary'        => [ 'label' => '', 'url' => '' ],
+			'cta_secondary'      => [ 'label' => '', 'url' => '' ],
+			'show_cta'           => false,
+			'show_cta_secondary' => false,
+		];
+	}
+
+	$labels = [];
+	for ( $j = $cta_index + 1; $j < count( $lines ); $j++ ) {
+		$trim = trim( $lines[ $j ] );
+		if ( $trim === '' ) {
+			continue;
+		}
+		$labels[] = $trim;
+		if ( count( $labels ) >= 2 ) {
+			break;
+		}
+	}
+
+	$primary_label   = $labels[0] ?? '';
+	$secondary_label = $labels[1] ?? '';
+
+	return [
+		'cta_primary'        => [
+			'label' => $primary_label,
+			'url'   => $primary_label !== '' ? $primary_url : '',
+		],
+		'cta_secondary'      => [
+			'label' => $secondary_label,
+			'url'   => $secondary_label !== '' ? $secondary_url : '',
+		],
+		'show_cta'           => $primary_label !== '',
+		'show_cta_secondary' => $secondary_label !== '',
+	];
+}
+
+/**
+ * Merge trailing CTA props into a parsed section.
+ *
+ * @param array<string, mixed> $section Parsed section.
+ * @param string[]             $lines   Original section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_merge_section_cta( array $section, array $lines ): array {
+	return array_merge( $section, jcp_niche_doc_parse_trailing_cta( $lines ) );
 }
 
 /**
@@ -281,7 +403,7 @@ function jcp_niche_doc_parse_what_it_is( array $lines ): array {
 			continue;
 		}
 		if ( $mode === 'team_already' ) {
-			if ( stripos( $trim, 'but ' ) === 0 ) {
+			if ( preg_match( '/^(but |jobcapturepro|very little)/i', $trim ) ) {
 				$out['lead'] = $trim;
 				$mode        = 'lead';
 				continue;
@@ -310,7 +432,7 @@ function jcp_niche_doc_parse_what_it_is( array $lines ): array {
 		}
 	}
 
-	return $out;
+	return jcp_niche_doc_merge_section_cta( $out, $lines );
 }
 
 /**
@@ -350,7 +472,6 @@ function jcp_niche_doc_parse_core_mechanic( array $lines ): array {
 function jcp_niche_doc_parse_how_it_works( array $lines ): array {
 	$fields  = jcp_niche_doc_parse_labeled_fields( $lines );
 	$steps     = [];
-	$cta       = '';
 	$current   = null;
 	$skip_next = false;
 
@@ -396,8 +517,6 @@ function jcp_niche_doc_parse_how_it_works( array $lines ): array {
 				continue;
 			}
 			$steps[ $current ]['lines'][] = $trim;
-		} elseif ( stripos( $trim, 'see it' ) !== false ) {
-			$cta = $trim;
 		}
 	}
 
@@ -420,17 +539,250 @@ function jcp_niche_doc_parse_how_it_works( array $lines ): array {
 	}
 	unset( $step );
 
-	if ( $cta === '' ) {
-		$cta = 'See it in action';
-	}
-
-	return [
+	$section = [
 		'headline'    => $fields['headline'] ?? '',
 		'subheadline' => $fields['subheadline'] ?? '',
-		'cta_label'   => $cta,
-		'cta_url'     => '/demo',
 		'steps'       => array_values( $steps ),
 	];
+
+	return jcp_niche_doc_merge_section_cta( $section, $lines );
+}
+
+/**
+ * Whether a writer doc line is indented body copy.
+ *
+ * @param string $line Raw line.
+ */
+function jcp_niche_doc_is_indented_line( string $line ): bool {
+	return $line !== '' && ( $line[0] === ' ' || $line[0] === "\t" );
+}
+
+/**
+ * Whether a line is a template placeholder, not real copy.
+ *
+ * @param string $trim Trimmed line.
+ */
+function jcp_niche_doc_is_placeholder_line( string $trim ): bool {
+	return $trim !== '' && preg_match( '/^\[[^\]]+\]$/', $trim ) === 1;
+}
+
+/**
+ * Whether a line starts a section closing paragraph.
+ *
+ * @param string $trim Trimmed line.
+ */
+function jcp_niche_doc_is_closing_paragraph_start( string $trim ): bool {
+	return (bool) preg_match(
+		'/^(each check-in|this is where|homeowners trust|customers are making|jobcapturepro creates)/i',
+		$trim
+	);
+}
+
+/**
+ * Parse factor cards used by Benefits (with stat footer), Problem, and Check-Ins.
+ *
+ * Each card: short title, indented body, optional orange keyword + ALL CAPS tagline.
+ *
+ * @param string[] $lines      Content lines after labeled fields.
+ * @param bool     $with_stats Include stat_value / stat_label footer lines.
+ * @return array{items: array<int, array<string, string>>, closing: string}
+ */
+function jcp_niche_doc_parse_factor_card_items( array $lines, bool $with_stats = false ): array {
+	$items    = [];
+	$closing  = '';
+	$title    = '';
+	$body     = '';
+	$stat_val = '';
+	$stat_lbl = '';
+
+	$flush = static function () use ( &$items, &$title, &$body, &$stat_val, &$stat_lbl, $with_stats ): void {
+		if ( $title === '' ) {
+			return;
+		}
+		$item = [
+			'title' => $title,
+			'body'  => trim( $body ),
+		];
+		if ( $with_stats ) {
+			if ( $stat_val !== '' ) {
+				$item['stat_value'] = $stat_val;
+			}
+			if ( $stat_lbl !== '' ) {
+				$item['stat_label'] = $stat_lbl;
+			}
+		}
+		$items[]  = $item;
+		$title    = '';
+		$body     = '';
+		$stat_val = '';
+		$stat_lbl = '';
+	};
+
+	foreach ( $lines as $line ) {
+		$trim = trim( $line );
+		if ( $trim === '' || jcp_niche_doc_is_placeholder_line( $trim ) ) {
+			continue;
+		}
+		$low = strtolower( $trim );
+		if ( in_array( $low, [ 'headline', 'subheadline', 'closing line', 'cta' ], true ) ) {
+			if ( $low === 'cta' ) {
+				break;
+			}
+			continue;
+		}
+		if ( jcp_niche_doc_is_closing_paragraph_start( $trim ) && $items !== [] ) {
+			$flush();
+			$closing = $trim;
+			break;
+		}
+
+		if ( jcp_niche_doc_is_indented_line( $line ) ) {
+			if ( $with_stats && $title !== '' && trim( $body ) !== '' && $stat_val !== '' && $stat_lbl === '' ) {
+				$stat_lbl = $trim;
+				$flush();
+				continue;
+			}
+			if ( $title !== '' ) {
+				$body .= ( $body !== '' ? ' ' : '' ) . $trim;
+			}
+			continue;
+		}
+
+		if ( $with_stats && $title !== '' && trim( $body ) !== '' ) {
+			if ( $stat_val === '' && strlen( $trim ) <= 32 ) {
+				$stat_val = $trim;
+				continue;
+			}
+			if ( $stat_val !== '' && $stat_lbl === '' ) {
+				$stat_lbl = $trim;
+				$flush();
+				continue;
+			}
+		}
+
+		if ( $title !== '' && $body === '' && strlen( $trim ) > 60 ) {
+			$body = $trim;
+			continue;
+		}
+
+		$flush();
+		$title = $trim;
+	}
+	$flush();
+
+	return [
+		'items'   => $items,
+		'closing' => $closing,
+	];
+}
+
+/**
+ * Collect simple list items after a labeled heading until a stop label or feature block.
+ *
+ * @param string[] $lines       Section lines.
+ * @param string   $label       Label line (e.g. job types).
+ * @param string[] $stop_labels Labels that end the list.
+ * @return string[]
+ */
+function jcp_niche_doc_parse_list_after_label( array $lines, string $label, array $stop_labels = [] ): array {
+	$items      = [];
+	$collecting = false;
+	$label_low  = strtolower( $label );
+	$stop       = array_map( 'strtolower', $stop_labels );
+
+	foreach ( $lines as $i => $line ) {
+		$trim = trim( $line );
+		$low  = strtolower( $trim );
+		if ( $low === $label_low ) {
+			$collecting = true;
+			continue;
+		}
+		if ( ! $collecting ) {
+			continue;
+		}
+		if ( $trim === '' ) {
+			continue;
+		}
+		if ( in_array( $low, $stop, true ) || $low === 'cta' ) {
+			break;
+		}
+		if ( jcp_niche_doc_is_placeholder_line( $trim ) ) {
+			continue;
+		}
+		$next = trim( (string) ( $lines[ $i + 1 ] ?? '' ) );
+		if ( $next !== '' && jcp_niche_doc_is_indented_line( (string) $lines[ $i + 1 ] ) ) {
+			break;
+		}
+		$items[] = $trim;
+	}
+
+	return $items;
+}
+
+/**
+ * Parse audience / who-it's-for segments (guarantees cards with optional badge + stats).
+ *
+ * @param string[] $lines Section lines after header labels stripped.
+ * @return array<int, array<string, string>>
+ */
+function jcp_niche_doc_parse_audience_segments( array $lines ): array {
+	$segments = [];
+	$current  = null;
+	$pending  = '';
+
+	$flush = static function () use ( &$segments, &$current ): void {
+		if ( ! is_array( $current ) || ( $current['title'] ?? '' ) === '' ) {
+			return;
+		}
+		unset( $current['_pending'] );
+		$segments[] = $current;
+		$current    = null;
+	};
+
+	foreach ( $lines as $line ) {
+		$trim = trim( $line );
+		if ( $trim === '' || jcp_niche_doc_is_placeholder_line( $trim ) ) {
+			continue;
+		}
+		$low = strtolower( $trim );
+		if ( in_array( $low, [ 'headline', 'subheadline', 'cta' ], true ) ) {
+			continue;
+		}
+		if ( in_array( $low, [ 'badge', 'stat number', 'stat label', 'faq target' ], true ) ) {
+			$pending = $low;
+			continue;
+		}
+		if ( $pending !== '' && is_array( $current ) ) {
+			$key = match ( $pending ) {
+				'badge' => 'badge',
+				'stat number' => 'stat_number',
+				'stat label' => 'stat_label',
+				'faq target' => 'faq_target',
+				default => '',
+			};
+			$pending = '';
+			if ( $key !== '' ) {
+				$current[ $key ] = $trim;
+			}
+			continue;
+		}
+		if ( jcp_niche_doc_is_indented_line( $line ) && is_array( $current ) ) {
+			$current['body'] = trim( ( ( $current['body'] ?? '' ) !== '' ? $current['body'] . ' ' : '' ) . $trim );
+			continue;
+		}
+		if ( is_array( $current ) && ( $current['body'] ?? '' ) === '' && strlen( $trim ) > 60 ) {
+			$current['body'] = $trim;
+			continue;
+		}
+		$flush();
+		$current = [
+			'title' => $trim,
+			'body'  => '',
+		];
+	}
+	$flush();
+
+	return $segments;
 }
 
 /**
@@ -477,6 +829,10 @@ function jcp_niche_doc_parse_title_body_pairs( array $lines, string $closing = '
 			$body .= ( $body !== '' ? ' ' : '' ) . $trim;
 			continue;
 		}
+		if ( $title !== '' && $body === '' && strlen( $trim ) > 60 ) {
+			$body = $trim;
+			continue;
+		}
 		$flush();
 		$title = $trim;
 		$body  = '';
@@ -491,47 +847,16 @@ function jcp_niche_doc_parse_title_body_pairs( array $lines, string $closing = '
  * @return array<string, mixed>
  */
 function jcp_niche_doc_parse_check_ins( array $lines ): array {
-	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
-	$body_lines = [];
-	$past_labels = false;
-	foreach ( $lines as $line ) {
-		$low = strtolower( trim( $line ) );
-		if ( in_array( $low, [ 'headline', 'subheadline' ], true ) ) {
-			$past_labels = false;
-			continue;
-		}
-		if ( $low === 'headline' || $low === 'subheadline' ) {
-			continue;
-		}
-		if ( in_array( $low, [ 'headline', 'subheadline' ], true ) ) {
-			continue;
-		}
-		if ( isset( $fields['headline'] ) && trim( $line ) === $fields['headline'] ) {
-			$past_labels = true;
-			continue;
-		}
-		if ( isset( $fields['subheadline'] ) && trim( $line ) === $fields['subheadline'] ) {
-			$past_labels = true;
-			continue;
-		}
-		if ( ! $past_labels && ( $low === 'headline' || $low === 'subheadline' ) ) {
-			continue;
-		}
-		if ( $low === 'headline' || $low === 'subheadline' ) {
-			continue;
-		}
-		if ( strtolower( trim( $line ) ) === 'headline' ) {
-			continue;
-		}
-		$body_lines[] = $line;
-	}
+	$fields    = jcp_niche_doc_parse_labeled_fields( $lines );
+	$job_types = jcp_niche_doc_parse_list_after_label( $lines, 'job types', [ 'closing line' ] );
 
-	// Strip field label lines from body_lines
-	$filtered = [];
-	$skip_next = false;
-	foreach ( $lines as $line ) {
-		$low = strtolower( trim( $line ) );
-		if ( in_array( $low, [ 'headline', 'subheadline' ], true ) ) {
+	$filtered   = [];
+	$skip_next  = false;
+	$skip_types = false;
+	foreach ( $lines as $i => $line ) {
+		$low  = strtolower( trim( $line ) );
+		$trim = trim( $line );
+		if ( in_array( $low, [ 'headline', 'subheadline', 'closing line' ], true ) ) {
 			$skip_next = true;
 			continue;
 		}
@@ -539,23 +864,43 @@ function jcp_niche_doc_parse_check_ins( array $lines ): array {
 			$skip_next = false;
 			continue;
 		}
+		if ( $low === 'job types' ) {
+			$skip_types = true;
+			continue;
+		}
+		if ( $skip_types ) {
+			$next = (string) ( $lines[ $i + 1 ] ?? '' );
+			if ( $next !== '' && jcp_niche_doc_is_indented_line( $next ) ) {
+				$skip_types   = false;
+				$filtered[]   = $line;
+				continue;
+			}
+			if ( $low === 'closing line' ) {
+				$skip_types = false;
+				continue;
+			}
+			continue;
+		}
 		$filtered[] = $line;
 	}
 
-	$parsed = jcp_niche_doc_parse_title_body_pairs( $filtered );
-	$features = array_map(
-		static function ( $item ) {
-			return [ 'title' => $item['title'], 'body' => $item['body'] ];
-		},
-		$parsed['items']
-	);
+	$parsed   = jcp_niche_doc_parse_factor_card_items( $filtered, false );
+	$features = $parsed['items'];
+	$closing  = trim( (string) ( $fields['closing line'] ?? '' ) );
+	if ( $closing === '' ) {
+		$closing = $parsed['closing'] !== '' ? rtrim( $parsed['closing'], '.' ) . '.' : '';
+	}
 
-	return [
-		'headline'    => $fields['headline'] ?? '',
-		'subheadline' => $fields['subheadline'] ?? '',
-		'features'    => $features,
-		'closing'     => $parsed['closing'] !== '' ? rtrim( $parsed['closing'], '.' ) . '.' : '',
-	];
+	return jcp_niche_doc_merge_section_cta(
+		[
+			'headline'    => $fields['headline'] ?? '',
+			'subheadline' => $fields['subheadline'] ?? '',
+			'job_types'   => $job_types,
+			'features'    => $features,
+			'closing'     => $closing,
+		],
+		$lines
+	);
 }
 
 /**
@@ -578,14 +923,12 @@ function jcp_niche_doc_parse_problem( array $lines ): array {
 		}
 		$filtered[] = $line;
 	}
-	$parsed = jcp_niche_doc_parse_title_body_pairs( $filtered, $fields['closing line'] ?? '' );
-	$pain_points = array_map(
-		static function ( $item ) {
-			return [ 'title' => $item['title'], 'body' => $item['body'] ];
-		},
-		$parsed['items']
-	);
-	$closing = $parsed['closing'];
+	$parsed      = jcp_niche_doc_parse_factor_card_items( $filtered, false );
+	$pain_points = $parsed['items'];
+	$closing     = trim( (string) ( $fields['closing line'] ?? '' ) );
+	if ( $closing === '' ) {
+		$closing = $parsed['closing'];
+	}
 	if ( $closing !== '' && stripos( $closing, 'customers are making' ) === 0 ) {
 		foreach ( $filtered as $line ) {
 			$trim = trim( $line );
@@ -602,12 +945,15 @@ function jcp_niche_doc_parse_problem( array $lines ): array {
 		}
 	}
 
-	return [
-		'headline'    => $fields['headline'] ?? '',
-		'subheadline' => $fields['subheadline'] ?? '',
-		'pain_points' => $pain_points,
-		'closing'     => $closing !== '' ? $closing : ( $fields['closing line'] ?? '' ),
-	];
+	return jcp_niche_doc_merge_section_cta(
+		[
+			'headline'    => $fields['headline'] ?? '',
+			'subheadline' => $fields['subheadline'] ?? '',
+			'pain_points' => $pain_points,
+			'closing'     => $closing !== '' ? $closing : '',
+		],
+		$lines
+	);
 }
 
 /**
@@ -615,12 +961,12 @@ function jcp_niche_doc_parse_problem( array $lines ): array {
  * @return array<string, mixed>
  */
 function jcp_niche_doc_parse_benefits( array $lines ): array {
-	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
-	$filtered = [];
+	$fields    = jcp_niche_doc_parse_labeled_fields( $lines );
+	$filtered  = [];
 	$skip_next = false;
 	foreach ( $lines as $line ) {
 		$low = strtolower( trim( $line ) );
-		if ( $low === 'headline' ) {
+		if ( in_array( $low, [ 'headline', 'subheadline', 'closing line' ], true ) ) {
 			$skip_next = true;
 			continue;
 		}
@@ -630,50 +976,31 @@ function jcp_niche_doc_parse_benefits( array $lines ): array {
 		}
 		$filtered[] = $line;
 	}
-	$parsed = jcp_niche_doc_parse_title_body_pairs( $filtered );
-	$items = array_map(
-		static function ( $item ) {
-			return [ 'title' => $item['title'], 'body' => $item['body'] ];
-		},
-		$parsed['items']
-	);
-	$closing = $parsed['closing'];
-	if ( stripos( $closing, 'homeowners trust' ) === 0 ) {
-		foreach ( $filtered as $idx => $line ) {
-			if ( trim( $line ) !== $closing ) {
-				continue;
-			}
-			$next = $filtered[ $idx + 1 ] ?? '';
-			if ( $next !== '' && ( $next[0] === ' ' || $next[0] === "\t" ) ) {
-				$closing = jcp_niche_doc_join_sentences( [ $closing, trim( $next ) ] );
-			}
-			break;
-		}
+	$parsed  = jcp_niche_doc_parse_factor_card_items( $filtered, true );
+	$items   = $parsed['items'];
+	$closing = trim( (string) ( $fields['closing line'] ?? '' ) );
+	if ( $closing === '' ) {
+		$closing = $parsed['closing'];
 	}
 	if ( $closing === '' && ! empty( $items ) ) {
 		$last = end( $items );
-		if ( $last['body'] === '' && strlen( $last['title'] ) > 80 ) {
-			$closing = array_pop( $items )['title'];
-		} elseif ( $last['body'] !== '' && strlen( $last['title'] ) > 40 && stripos( $last['title'], 'homeowners' ) !== false ) {
-			$closing = $last['title'] . ( $last['body'] !== '' ? ' ' . $last['body'] : '' );
-			array_pop( $items );
-		}
-	}
-	// Merge last item if it's clearly a closing paragraph (title + body both present on two lines in one item)
-	if ( $closing === '' && ! empty( $items ) ) {
-		$last_idx = count( $items ) - 1;
-		$last     = $items[ $last_idx ];
-		if ( stripos( $last['title'], 'homeowners trust' ) === 0 ) {
-			$closing = trim( $last['title'] . ' ' . $last['body'] );
+		if ( is_array( $last ) && $last['body'] === '' && strlen( (string) $last['title'] ) > 80 ) {
+			$closing = (string) array_pop( $items )['title'];
+		} elseif ( is_array( $last ) && stripos( (string) $last['title'], 'homeowners trust' ) === 0 ) {
+			$closing = trim( (string) $last['title'] . ' ' . (string) ( $last['body'] ?? '' ) );
 			array_pop( $items );
 		}
 	}
 
-	return [
-		'headline' => $fields['headline'] ?? '',
-		'items'    => $items,
-		'closing'  => $closing,
-	];
+	return jcp_niche_doc_merge_section_cta(
+		[
+			'headline'    => $fields['headline'] ?? '',
+			'subheadline' => $fields['subheadline'] ?? '',
+			'items'       => $items,
+			'closing'     => $closing,
+		],
+		$lines
+	);
 }
 
 /**
@@ -733,41 +1060,54 @@ function jcp_niche_doc_parse_conversion( array $lines ): array {
  * @return array<string, mixed>
  */
 function jcp_niche_doc_parse_differentiation( array $lines ): array {
-	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
+	$fields     = jcp_niche_doc_parse_labeled_fields( $lines );
 	$body_parts = [];
 	$bullets    = [];
 	$mode       = 'body';
+	$skip_next  = false;
 
 	foreach ( $lines as $line ) {
 		$trim = trim( $line );
 		$low  = strtolower( $trim );
-		if ( $low === 'headline' ) {
-			$mode = 'skip';
+		if ( in_array( $low, [ 'headline', 'subheadline', 'body' ], true ) ) {
+			$skip_next = true;
 			continue;
 		}
-		if ( $mode === 'skip' ) {
-			$mode = 'body';
+		if ( $skip_next ) {
+			$skip_next = false;
 			continue;
+		}
+		if ( $low === 'cta' ) {
+			break;
 		}
 		if ( preg_match( '/^no (new|extra|marketing)/i', $trim ) ) {
 			$mode = 'bullets';
 		}
 		if ( $mode === 'bullets' ) {
-			$bullets[] = $trim;
+			if ( $trim !== '' && ! jcp_niche_doc_is_placeholder_line( $trim ) ) {
+				$bullets[] = $trim;
+			}
 			continue;
 		}
-		if ( $trim !== '' && stripos( $trim, 'jobcapturepro' ) !== false || preg_match( '/^you /i', $trim ) ) {
-			$body_parts[] = $trim;
-		} elseif ( $trim !== '' && empty( $bullets ) ) {
+		if ( $trim !== '' && ! jcp_niche_doc_is_placeholder_line( $trim ) ) {
 			$body_parts[] = $trim;
 		}
 	}
 
-	return [
-		'headline' => $fields['headline'] ?? '',
-		'body'     => jcp_niche_doc_join_sentences( $body_parts ),
-		'bullets'  => $bullets,
-	];
+	$body = trim( (string) ( $fields['body'] ?? '' ) );
+	if ( $body === '' ) {
+		$body = jcp_niche_doc_join_sentences( $body_parts );
+	}
+
+	return jcp_niche_doc_merge_section_cta(
+		[
+			'headline'    => $fields['headline'] ?? '',
+			'subheadline' => $fields['subheadline'] ?? '',
+			'body'        => $body,
+			'bullets'     => $bullets,
+		],
+		$lines
+	);
 }
 
 /**
@@ -803,7 +1143,7 @@ function jcp_niche_doc_parse_who_its_for( array $lines ): array {
 	$skip_next = false;
 	foreach ( $lines as $line ) {
 		$low = strtolower( trim( $line ) );
-		if ( $low === 'headline' ) {
+		if ( in_array( $low, [ 'headline', 'subheadline' ], true ) ) {
 			$skip_next = true;
 			continue;
 		}
@@ -813,18 +1153,24 @@ function jcp_niche_doc_parse_who_its_for( array $lines ): array {
 		}
 		$filtered[] = $line;
 	}
-	$parsed = jcp_niche_doc_parse_title_body_pairs( $filtered );
-	$audiences = array_map(
-		static function ( $item ) {
-			return [ 'title' => $item['title'], 'body' => $item['body'] ];
-		},
-		$parsed['items']
-	);
+	$audiences = jcp_niche_doc_parse_audience_segments( $filtered );
+	$variant   = 'guarantees';
+	foreach ( $audiences as $audience ) {
+		if ( ( $audience['badge'] ?? '' ) !== '' || ( $audience['stat_number'] ?? '' ) !== '' ) {
+			$variant = 'guarantees';
+			break;
+		}
+	}
 
-	return [
-		'headline'  => $fields['headline'] ?? '',
-		'audiences' => $audiences,
-	];
+	return jcp_niche_doc_merge_section_cta(
+		[
+			'headline'    => $fields['headline'] ?? '',
+			'subheadline' => $fields['subheadline'] ?? '',
+			'variant'     => $variant,
+			'audiences'   => $audiences,
+		],
+		$lines
+	);
 }
 
 /**
@@ -861,9 +1207,53 @@ function jcp_niche_doc_parse_faq( array $lines ): array {
 		$items[] = [ 'q' => $q, 'a' => '' ];
 	}
 
+	return jcp_niche_doc_merge_section_cta(
+		[
+			'headline' => $fields['headline'] ?? '',
+			'items'    => $items,
+		],
+		$lines
+	);
+}
+
+/**
+ * Parse FORM EMBED / FORM section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_form_embed( array $lines ): array {
+	$fields  = jcp_niche_doc_parse_labeled_fields( $lines );
+	$display = strtolower( trim( (string) ( $fields['display'] ?? 'inline' ) ) );
+	if ( ! in_array( $display, [ 'inline', 'modal' ], true ) ) {
+		$display = 'inline';
+	}
+
+	$shortcode = trim( (string) ( $fields['shortcode'] ?? '' ) );
+	if ( $shortcode === '' ) {
+		// Allow a bare [fluentform ...] line without a Shortcode label.
+		foreach ( $lines as $line ) {
+			$trim = trim( $line );
+			if ( preg_match( '/^\[[a-zA-Z][a-zA-Z0-9_-]*/', $trim ) ) {
+				$shortcode = $trim;
+				break;
+			}
+		}
+	}
+	if ( function_exists( 'jcp_fluent_sanitize_shortcode' ) ) {
+		$shortcode = jcp_fluent_sanitize_shortcode( $shortcode );
+	}
+
+	$headline    = trim( (string) ( $fields['headline'] ?? '' ) );
+	$subheadline = trim( (string) ( $fields['subheadline'] ?? '' ) );
+
 	return [
-		'headline' => $fields['headline'] ?? '',
-		'items'    => $items,
+		'headline'         => $headline,
+		'subheadline'      => $subheadline,
+		'shortcode'        => $shortcode,
+		'display'          => $display,
+		'show_headline'    => $headline !== '',
+		'show_subheadline' => $subheadline !== '',
 	];
 }
 
@@ -883,7 +1273,7 @@ function jcp_niche_doc_parse_final_cta( array $lines ): array {
 			$mode = 'cta';
 			continue;
 		}
-		if ( in_array( $low, [ 'headline', 'subheadline' ], true ) ) {
+		if ( in_array( $low, [ 'headline', 'subheadline', 'cta note' ], true ) ) {
 			$mode = 'fields';
 			continue;
 		}
@@ -893,17 +1283,19 @@ function jcp_niche_doc_parse_final_cta( array $lines ): array {
 	}
 
 	return [
-		'headline'    => $fields['headline'] ?? '',
-		'subheadline' => $fields['subheadline'] ?? '',
-		'cta_primary' => [
+		'headline'         => $fields['headline'] ?? '',
+		'subheadline'      => $fields['subheadline'] ?? '',
+		'cta_primary'      => [
 			'label' => $ctas[0] ?? 'Start free trial',
 			'url'   => '',
 		],
-		'cta_secondary' => [
+		'cta_secondary'    => [
 			'label' => $ctas[1] ?? 'See how it works',
 			'url'   => '/demo',
 		],
-		'cta_note' => 'No credit card required. Setup in under 10 minutes.',
+		'cta_note'         => trim( (string) ( $fields['cta note'] ?? 'No credit card required. Setup in under 10 minutes.' ) ),
+		'show_subheadline' => trim( (string) ( $fields['subheadline'] ?? '' ) ) !== '',
+		'show_cta_note'    => trim( (string) ( $fields['cta note'] ?? '' ) ) !== '',
 	];
 }
 
@@ -963,6 +1355,217 @@ function jcp_niche_doc_parse_media_text( array $lines ): array {
 		'show_cta_note'      => trim( (string) ( $out['cta note'] ?? '' ) ) !== '',
 		'show_divider'       => false,
 	];
+}
+
+/**
+ * Parse DEMO PREVIEW section (interactive phone mockup block).
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_demo_preview( array $lines ): array {
+	$parsed                   = jcp_niche_doc_parse_media_text( $lines );
+	$parsed['media_type']     = 'phone';
+	$parsed['phone_mockup_style'] = 'app_shell';
+	$parsed['show_headline']  = trim( (string) ( $parsed['headline'] ?? '' ) ) !== '';
+	return $parsed;
+}
+
+/**
+ * Parse PROOF FLOW section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_proof_flow( array $lines ): array {
+	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
+	$out    = [
+		'headline'       => $fields['headline'] ?? '',
+		'subheadline'    => $fields['subheadline'] ?? '',
+		'items'          => [],
+		'callout_badge'  => $fields['callout badge'] ?? '',
+		'callout_title'  => $fields['callout title'] ?? '',
+		'callout_text'   => $fields['callout text'] ?? '',
+		'link_label'     => $fields['link label'] ?? '',
+		'link_url'       => $fields['link url'] ?? '#directory-preview',
+	];
+
+	$skip = array_flip( [ 'headline', 'subheadline', 'callout badge', 'callout title', 'callout text', 'link label', 'link url', 'cta' ] );
+	$mode = 'scan';
+	foreach ( $lines as $line ) {
+		$trim = trim( $line );
+		$low  = strtolower( $trim );
+		if ( isset( $skip[ $low ] ) || $low === 'cta' ) {
+			$mode = 'skip_label';
+			continue;
+		}
+		if ( $mode === 'skip_label' ) {
+			$mode = 'scan';
+			continue;
+		}
+		if ( $trim === '' || preg_match( '/^(callout|link)\s/i', $trim ) ) {
+			continue;
+		}
+		if ( ! str_starts_with( $line, ' ' ) && ! str_starts_with( $line, "\t" ) ) {
+			$out['items'][] = [
+				'label' => $trim,
+				'copy'  => '',
+			];
+			$mode = 'item_body';
+			continue;
+		}
+		if ( $mode === 'item_body' && $out['items'] !== [] ) {
+			$idx = count( $out['items'] ) - 1;
+			$out['items'][ $idx ]['copy'] = trim( $trim );
+			$mode                         = 'scan';
+		}
+	}
+
+	return $out;
+}
+
+/**
+ * Parse DIRECTORY PREVIEW section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_directory_preview( array $lines ): array {
+	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
+	$out    = [
+		'headline'    => $fields['headline'] ?? '',
+		'subheadline' => $fields['subheadline'] ?? '',
+		'cards'       => [],
+		'outro'       => $fields['outro'] ?? '',
+	];
+
+	$skip = array_flip( [ 'headline', 'subheadline', 'outro', 'cta' ] );
+	$mode = 'scan';
+	foreach ( $lines as $line ) {
+		$trim = trim( $line );
+		$low  = strtolower( $trim );
+		if ( isset( $skip[ $low ] ) ) {
+			$mode = 'skip_label';
+			continue;
+		}
+		if ( $mode === 'skip_label' ) {
+			$mode = 'scan';
+			continue;
+		}
+		if ( $trim === '' ) {
+			continue;
+		}
+		if ( ! str_starts_with( $line, ' ' ) && ! str_starts_with( $line, "\t" ) ) {
+			$out['cards'][] = [
+				'name'     => $trim,
+				'location' => '',
+				'jobs'     => '',
+				'rating'   => '',
+			];
+			$mode = 'card_detail';
+			continue;
+		}
+		if ( $mode === 'card_detail' && $out['cards'] !== [] ) {
+			$idx   = count( $out['cards'] ) - 1;
+			$parts = array_map( 'trim', explode( '|', $trim ) );
+			$out['cards'][ $idx ]['location'] = $parts[0] ?? '';
+			$out['cards'][ $idx ]['jobs']     = $parts[1] ?? '';
+			$out['cards'][ $idx ]['rating']   = $parts[2] ?? '';
+			$mode                             = 'scan';
+		}
+	}
+
+	$cta = jcp_niche_doc_parse_trailing_cta( $lines );
+	if ( ! empty( $cta['cta_primary']['label'] ) ) {
+		$out['cta_primary'] = $cta['cta_primary'];
+	}
+
+	return $out;
+}
+
+/**
+ * Parse CTA BAND section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_cta_band( array $lines ): array {
+	$cta = jcp_niche_doc_parse_trailing_cta( $lines, 'https://jobcapturepro.firstpromoter.com', '' );
+	return [
+		'cta_primary' => $cta['cta_primary'],
+	];
+}
+
+/**
+ * Parse COMMISSION section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_commission( array $lines ): array {
+	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
+	$out    = [
+		'headline'    => $fields['headline'] ?? '',
+		'subheadline' => $fields['subheadline'] ?? '',
+		'body'        => $fields['body'] ?? '',
+		'footnote'    => $fields['footnote'] ?? '',
+		'rows'        => [],
+	];
+
+	foreach ( $lines as $line ) {
+		$trim = trim( $line );
+		if ( $trim === '' || ! str_contains( $trim, '|' ) ) {
+			continue;
+		}
+		$parts = array_map( 'trim', explode( '|', $trim ) );
+		if ( count( $parts ) < 4 ) {
+			continue;
+		}
+		$out['rows'][] = [
+			'plan'         => $parts[0],
+			'price'        => $parts[1],
+			'monthly'      => $parts[2],
+			'twelve_month' => $parts[3],
+		];
+	}
+
+	return array_merge( $out, jcp_niche_doc_parse_trailing_cta( $lines, 'https://jobcapturepro.firstpromoter.com', '' ) );
+}
+
+/**
+ * Parse PARTNERS section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_partners( array $lines ): array {
+	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
+	return array_merge(
+		[
+			'headline' => $fields['headline'] ?? '',
+			'body'     => $fields['body'] ?? '',
+		],
+		jcp_niche_doc_parse_trailing_cta( $lines, 'https://jobcapturepro.firstpromoter.com', '' )
+	);
+}
+
+/**
+ * Parse SHARE section.
+ *
+ * @param string[] $lines Section lines.
+ * @return array<string, mixed>
+ */
+function jcp_niche_doc_parse_share( array $lines ): array {
+	$fields = jcp_niche_doc_parse_labeled_fields( $lines );
+	return array_merge(
+		[
+			'headline' => $fields['headline'] ?? '',
+			'body'     => $fields['body'] ?? '',
+			'quote'    => $fields['quote'] ?? '',
+			'note'     => $fields['note'] ?? '',
+		],
+		jcp_niche_doc_parse_trailing_cta( $lines, 'https://jobcapturepro.firstpromoter.com', '/demo' )
+	);
 }
 
 /**

@@ -1,0 +1,758 @@
+/**
+ * JobCapturePro — theme-owned Fluent Forms visual bridge.
+ *
+ * Scoped to .jcp-fluent-bridge so global Fluent pages stay untouched.
+ * Maps to theme tokens in css/base.css (--jcp-color-*, --jcp-radius-*, etc.).
+ *
+ * @package JCP_Core
+ */
+
+/* --------------------------------------------------------------------------
+   Shell / modal
+   -------------------------------------------------------------------------- */
+
+.jcp-fluent-bridge {
+  --jcp-ff-primary: var(--jcp-color-primary, #ff5036);
+  --jcp-ff-primary-dark: var(--jcp-color-primary-dark, #e63e28);
+  --jcp-ff-text: var(--jcp-color-text-primary, #111827);
+  --jcp-ff-muted: var(--jcp-color-text-secondary, #6b7280);
+  --jcp-ff-surface: var(--jcp-color-bg-primary, #ffffff);
+  --jcp-ff-soft: var(--jcp-color-bg-secondary, #f9fafb);
+  --jcp-ff-border: var(--jcp-color-border, #e5e7eb);
+  --jcp-ff-radius: var(--jcp-radius-md, 12px);
+  --jcp-ff-radius-lg: var(--jcp-radius-lg, 16px);
+  --jcp-ff-font: var(--jcp-font-family-base, system-ui, sans-serif);
+  font-family: var(--jcp-ff-font);
+  color: var(--jcp-ff-text);
+}
+
+.jcp-fluent-bridge--inline {
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.jcp-fluent-quote-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  visibility: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.jcp-fluent-quote-modal.is-open {
+  visibility: visible;
+  pointer-events: auto;
+  opacity: 1;
+}
+
+.jcp-fluent-quote-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 15, 25, 0.62);
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.jcp-fluent-quote-modal__dialog {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 720px;
+  height: 100%;
+  max-height: 100%;
+  margin: 0 auto;
+  background: var(--jcp-ff-surface, #fff);
+  box-shadow: var(--jcp-shadow-2xl, 0 25px 50px rgba(0, 0, 0, 0.15));
+}
+
+@media (min-width: 768px) {
+  .jcp-fluent-quote-modal {
+    align-items: center;
+    padding: 1.5rem;
+  }
+
+  .jcp-fluent-quote-modal__dialog {
+    height: min(900px, calc(100vh - 3rem));
+    max-height: calc(100vh - 3rem);
+    border-radius: var(--jcp-ff-radius-lg, 16px);
+    overflow: hidden;
+  }
+}
+
+.jcp-fluent-quote-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--jcp-ff-border, #e5e7eb);
+  flex-shrink: 0;
+}
+
+.jcp-fluent-quote-modal__title {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: var(--jcp-font-weight-bold, 700);
+  line-height: var(--jcp-line-height-tight, 1.2);
+  color: var(--jcp-ff-text, #111827);
+}
+
+.jcp-fluent-quote-modal__subtitle {
+  margin: 0.35rem 0 0;
+  font-size: var(--jcp-font-size-sm, 14px);
+  color: var(--jcp-ff-muted, #6b7280);
+  line-height: 1.45;
+}
+
+.jcp-fluent-quote-modal__close {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1px solid var(--jcp-ff-border, #e5e7eb);
+  border-radius: var(--jcp-radius-full, 9999px);
+  background: var(--jcp-ff-soft, #f9fafb);
+  color: var(--jcp-ff-text, #111827);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.jcp-fluent-quote-modal__close:hover,
+.jcp-fluent-quote-modal__close:focus-visible {
+  border-color: var(--jcp-ff-primary, #ff5036);
+  outline: none;
+}
+
+.jcp-fluent-quote-modal__body {
+  flex: 1 1 auto;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 1rem 1.25rem 2rem;
+}
+
+body.jcp-fluent-modal-open {
+  overflow: hidden;
+  touch-action: none;
+}
+
+/* --------------------------------------------------------------------------
+   Inline section chrome
+   -------------------------------------------------------------------------- */
+
+.jcp-form-embed {
+  padding-block: clamp(2.5rem, 5vw, 4rem);
+}
+
+.jcp-form-embed__intro {
+  text-align: center;
+  max-width: 40rem;
+  margin: 0 auto 1.5rem;
+}
+
+.jcp-form-embed__intro h2 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: var(--jcp-font-weight-bold, 700);
+  line-height: var(--jcp-line-height-tight, 1.2);
+}
+
+.jcp-form-embed__intro p {
+  margin: 0;
+  color: var(--jcp-color-text-secondary, #6b7280);
+  font-size: var(--jcp-font-size-lg, 18px);
+}
+
+.jcp-form-embed__panel {
+  /* No outer chrome — Fluent form card already has its own border/shadow. */
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+  min-height: 0;
+}
+
+.jcp-form-embed__shortcode-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0 0 1.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(255, 80, 62, 0.45);
+  background: rgba(255, 80, 62, 0.05);
+}
+
+.jcp-form-embed__shortcode-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--jcp-color-text-primary, #111827);
+}
+
+.jcp-form-embed__shortcode-input {
+  width: 100%;
+  min-height: 48px;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--jcp-color-border, #e5e7eb);
+  border-radius: 10px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9375rem;
+  color: var(--jcp-color-text-primary, #111827);
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.jcp-form-embed__shortcode-input:focus {
+  outline: none;
+  border-color: var(--jcp-color-primary, #ff5036);
+  box-shadow: 0 0 0 3px rgba(255, 80, 62, 0.18);
+}
+
+.jcp-form-embed__shortcode-hint {
+  font-size: 0.75rem;
+  color: var(--jcp-color-text-secondary, #6b7280);
+  line-height: 1.4;
+}
+
+.jcp-form-embed__empty {
+  margin: 0;
+  padding: 1.25rem;
+  text-align: center;
+  color: var(--jcp-color-text-secondary, #6b7280);
+  background: var(--jcp-color-bg-secondary, #f9fafb);
+  border-radius: var(--jcp-radius-md, 12px);
+}
+
+/* --------------------------------------------------------------------------
+   Fluent form internals (scoped)
+   -------------------------------------------------------------------------- */
+
+/* Only constrain the form shell — never force width on cells / input groups. */
+.jcp-fluent-bridge .fluentform,
+.jcp-fluent-bridge form.frm-fluent-form {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.jcp-fluent-bridge .ff-t-container,
+.jcp-fluent-bridge .ff-t-cell,
+.jcp-fluent-bridge .ff-el-group,
+.jcp-fluent-bridge .ff-el-input--content {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.jcp-fluent-bridge .ff-el-input--label label,
+.jcp-fluent-bridge .ff-el-form-check-label {
+  font-weight: var(--jcp-font-weight-semibold, 600);
+  color: var(--jcp-ff-text, #111827);
+  font-size: var(--jcp-font-size-base, 16px);
+}
+
+.jcp-fluent-bridge .ff-el-input--label {
+  margin-bottom: 0.4rem;
+}
+
+.jcp-fluent-bridge .ff-el-group {
+  margin-bottom: 1.15rem;
+}
+
+/* Standalone fields only — currency groups handled below */
+.jcp-fluent-bridge .ff-el-form-control,
+.jcp-fluent-bridge input[type="text"],
+.jcp-fluent-bridge input[type="email"],
+.jcp-fluent-bridge input[type="tel"],
+.jcp-fluent-bridge input[type="url"],
+.jcp-fluent-bridge input[type="number"],
+.jcp-fluent-bridge input[type="password"],
+.jcp-fluent-bridge select,
+.jcp-fluent-bridge textarea {
+  min-height: 3rem;
+  padding: 0.75rem 1rem !important;
+  border: 1.5px solid var(--jcp-ff-border, #e5e7eb) !important;
+  border-radius: var(--jcp-ff-radius, 12px) !important;
+  background: var(--jcp-ff-surface, #fff) !important;
+  color: var(--jcp-ff-text, #111827) !important;
+  font-size: var(--jcp-font-size-base, 16px) !important;
+  font-family: inherit !important;
+  line-height: 1.4;
+  box-shadow: none !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.jcp-fluent-bridge .ff-el-input--content > .ff-el-form-control,
+.jcp-fluent-bridge .ff-el-input--content > input,
+.jcp-fluent-bridge .ff-el-input--content > select,
+.jcp-fluent-bridge .ff-el-input--content > textarea {
+  width: 100% !important;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.jcp-fluent-bridge textarea {
+  min-height: 7.5rem;
+  resize: vertical;
+}
+
+.jcp-fluent-bridge .ff-el-form-control:focus,
+.jcp-fluent-bridge input:focus,
+.jcp-fluent-bridge select:focus,
+.jcp-fluent-bridge textarea:focus {
+  outline: none !important;
+  border-color: var(--jcp-ff-primary, #ff5036) !important;
+  box-shadow: 0 0 0 3px rgba(255, 80, 62, 0.22) !important;
+}
+
+/* Currency / prefix + suffix groups — keep $ inline with the field */
+.jcp-fluent-bridge .ff_input-group {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: stretch !important;
+  width: 100%;
+  max-width: 100%;
+}
+
+.jcp-fluent-bridge .ff_input-group > .ff-el-form-control,
+.jcp-fluent-bridge .ff_input-group > input {
+  width: 1% !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  max-width: none !important;
+}
+
+.jcp-fluent-bridge .ff_input-group-prepend,
+.jcp-fluent-bridge .ff_input-group-append {
+  display: flex !important;
+  flex: 0 0 auto !important;
+}
+
+.jcp-fluent-bridge .ff_input-group-text {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center;
+  width: auto !important;
+  min-width: 2.75rem;
+  min-height: 3rem;
+  padding: 0.75rem 0.85rem !important;
+  border: 1.5px solid var(--jcp-ff-border, #e5e7eb) !important;
+  background: var(--jcp-ff-soft, #f3f4f6) !important;
+  color: var(--jcp-ff-text, #111827) !important;
+  font-size: var(--jcp-font-size-base, 16px) !important;
+  font-weight: var(--jcp-font-weight-semibold, 600);
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.jcp-fluent-bridge .ff_input-group > .ff_input-group-prepend > .ff_input-group-text {
+  border-right: 0 !important;
+  border-radius: var(--jcp-ff-radius, 12px) 0 0 var(--jcp-ff-radius, 12px) !important;
+}
+
+.jcp-fluent-bridge .ff_input-group > .ff_input-group-append > .ff_input-group-text {
+  border-left: 0 !important;
+  border-radius: 0 var(--jcp-ff-radius, 12px) var(--jcp-ff-radius, 12px) 0 !important;
+}
+
+.jcp-fluent-bridge .ff_input-group > .ff-el-form-control:not(:first-child),
+.jcp-fluent-bridge .ff_input-group > input:not(:first-child) {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.jcp-fluent-bridge .ff_input-group > .ff-el-form-control:not(:last-child),
+.jcp-fluent-bridge .ff_input-group > input:not(:last-child) {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+/* Progress — track + orange fill with white % label */
+.jcp-fluent-bridge .ff-el-progress-status,
+.jcp-fluent-bridge .ff_progressbar,
+.jcp-fluent-bridge .ff-el-progress {
+  margin-bottom: 1.25rem;
+}
+
+.jcp-fluent-bridge .ff-el-progress-status,
+.jcp-fluent-bridge .ff_step_titles,
+.jcp-fluent-bridge .ff-step-header {
+  font-size: var(--jcp-font-size-xs, 12px) !important;
+  font-weight: var(--jcp-font-weight-semibold, 600) !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--jcp-ff-muted, #6b7280) !important;
+  margin-bottom: 0.5rem;
+}
+
+.jcp-fluent-bridge .ff-el-progress,
+.jcp-fluent-bridge .ff_progressbar,
+.jcp-fluent-bridge .ff-progress-bar {
+  display: block !important;
+  width: 100% !important;
+  height: 1.5rem !important;
+  min-height: 1.5rem !important;
+  border-radius: var(--jcp-radius-full, 9999px) !important;
+  background: var(--jcp-ff-soft, #f3f4f6) !important;
+  overflow: hidden;
+  box-shadow: none !important;
+}
+
+.jcp-fluent-bridge .ff-el-progress .ff-el-progress-bar,
+.jcp-fluent-bridge .ff-el-progress-bar,
+.jcp-fluent-bridge .ff_progressbar .progress-bar,
+.jcp-fluent-bridge .ff-progress-bar > div {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  min-width: 2.75rem !important;
+  height: 100% !important;
+  min-height: 1.5rem !important;
+  padding: 0 0.55rem !important;
+  border-radius: var(--jcp-radius-full, 9999px) !important;
+  background: var(--jcp-ff-primary, #ff5036) !important;
+  color: #fff !important;
+  font-size: 0.75rem !important;
+  font-weight: var(--jcp-font-weight-bold, 700) !important;
+  letter-spacing: 0.02em;
+  line-height: 1 !important;
+  text-transform: none !important;
+  text-align: right !important;
+  white-space: nowrap !important;
+  box-sizing: border-box !important;
+  transition: width 0.25s ease;
+}
+
+.jcp-fluent-bridge .ff-el-progress-bar > span,
+.jcp-fluent-bridge .ff-el-progress-bar span {
+  display: inline-block !important;
+  color: #fff !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  letter-spacing: inherit;
+  text-transform: none !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Choice cards — light styling without breaking Fluent’s native input/label hit targets */
+.jcp-fluent-bridge .ff-el-form-check {
+  margin: 0 0 0.65rem;
+  padding: 0.85rem 1rem;
+  border: 1.5px solid var(--jcp-ff-border, #e5e7eb);
+  border-radius: var(--jcp-ff-radius, 12px);
+  background: var(--jcp-ff-surface, #fff);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.jcp-fluent-bridge .ff-el-form-check:hover {
+  border-color: var(--jcp-ff-primary, #ff5036);
+  background: rgba(255, 80, 62, 0.04);
+}
+
+.jcp-fluent-bridge .ff-el-form-check:has(input:checked),
+.jcp-fluent-bridge .ff-el-form-check.is-checked,
+.jcp-fluent-bridge .ff-el-form-check.ff_item_selected {
+  border-color: var(--jcp-ff-primary, #ff5036);
+  box-shadow: 0 0 0 3px rgba(255, 80, 62, 0.18);
+  background: rgba(255, 80, 62, 0.06);
+}
+
+.jcp-fluent-bridge .ff-el-form-check input[type="radio"],
+.jcp-fluent-bridge .ff-el-form-check input[type="checkbox"] {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin: 0 0.55rem 0 0;
+  accent-color: var(--jcp-ff-primary, #ff5036);
+  vertical-align: middle;
+  position: static;
+  transform: none;
+  opacity: 1;
+  pointer-events: auto;
+  z-index: auto;
+}
+
+.jcp-fluent-bridge .ff-el-form-check-label {
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+/* Don’t restyle Fluent’s button-list / image choice variants */
+.jcp-fluent-bridge .ff_list_buttons .ff-el-form-check,
+.jcp-fluent-bridge .ff-el-image-holder {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Step titles */
+.jcp-fluent-bridge .ff-el-section-break,
+.jcp-fluent-bridge .ff-section_break_desk,
+.jcp-fluent-bridge .ff-el-section-title {
+  font-size: clamp(1.35rem, 3.2vw, 1.85rem) !important;
+  font-weight: var(--jcp-font-weight-bold, 700) !important;
+  line-height: 1.2 !important;
+  color: var(--jcp-ff-text, #111827) !important;
+  margin: 0 0 0.75rem !important;
+}
+
+.jcp-fluent-bridge .ff-section_break_desk {
+  color: var(--jcp-ff-muted, #6b7280) !important;
+  font-size: var(--jcp-font-size-base, 16px) !important;
+  font-weight: var(--jcp-font-weight-normal, 400) !important;
+}
+
+/* Custom HTML / calc helpers — keep adjacent sentences readable */
+.jcp-fluent-bridge .ff-custom_html,
+.jcp-fluent-bridge .ff-custom-html,
+.jcp-fluent-bridge .ff_summary_container,
+.jcp-fluent-bridge .ff-el-section-break p {
+  line-height: 1.55;
+}
+
+.jcp-fluent-bridge .ff-custom_html strong,
+.jcp-fluent-bridge .ff-custom-html b,
+.jcp-fluent-bridge .ff-el-section-break strong,
+.jcp-fluent-bridge .ff-el-section-break b {
+  margin-right: 0.25em;
+}
+
+/* Validation errors must stay visible */
+.jcp-fluent-bridge .text-danger,
+.jcp-fluent-bridge .error,
+.jcp-fluent-bridge .ff-el-is-error .text-danger {
+  display: block;
+  color: #dc2626 !important;
+  font-size: 0.8125rem !important;
+  margin-top: 0.35rem;
+}
+
+.jcp-fluent-bridge .ff-errors-in-stack.is-active,
+.jcp-fluent-bridge .ff-errors-in-stack:not([style*="display: none"]) {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  border-radius: var(--jcp-ff-radius, 12px);
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+}
+
+/* Buttons — match theme primary / ghost */
+.jcp-fluent-bridge .ff-btn,
+.jcp-fluent-bridge .ff-btn-next,
+.jcp-fluent-bridge .ff-btn-prev,
+.jcp-fluent-bridge .ff-btn-submit,
+.jcp-fluent-bridge button.ff-btn-submit {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--jcp-size-button-md, 44px);
+  padding: 0.75rem 1.25rem !important;
+  border-radius: var(--jcp-ff-radius, 12px) !important;
+  font-weight: var(--jcp-font-weight-semibold, 600) !important;
+  font-size: var(--jcp-font-size-base, 16px) !important;
+  line-height: 1.2 !important;
+  cursor: pointer;
+  pointer-events: auto !important;
+  text-decoration: none !important;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.jcp-fluent-bridge .ff-btn-next,
+.jcp-fluent-bridge .ff-btn-submit,
+.jcp-fluent-bridge button.ff-btn-submit {
+  background: var(--jcp-ff-primary, #ff5036) !important;
+  border: 2px solid var(--jcp-ff-primary, #ff5036) !important;
+  color: #fff !important;
+}
+
+.jcp-fluent-bridge .ff-btn-next:hover,
+.jcp-fluent-bridge .ff-btn-submit:hover,
+.jcp-fluent-bridge button.ff-btn-submit:hover {
+  background: var(--jcp-ff-primary-dark, #e63e28) !important;
+  border-color: var(--jcp-ff-primary-dark, #e63e28) !important;
+  box-shadow: 0 4px 12px rgba(255, 80, 62, 0.3);
+}
+
+.jcp-fluent-bridge .ff-btn-prev {
+  background: transparent !important;
+  border: 2px solid var(--jcp-ff-border, #e5e7eb) !important;
+  color: var(--jcp-ff-text, #111827) !important;
+}
+
+.jcp-fluent-bridge .ff-btn-prev:hover {
+  background: var(--jcp-ff-soft, #f9fafb) !important;
+}
+
+/* Multi-step: keep submit clickable on the active last step (Fluent hides others). */
+.jcp-fluent-bridge .fluentform-step.active .ff-btn-submit,
+.jcp-fluent-bridge .ff-step.active .ff-btn-submit,
+.jcp-fluent-bridge .ff-step.ff-active .ff-btn-submit,
+.jcp-fluent-bridge .ff-step.ff_active .ff-btn-submit,
+.jcp-fluent-bridge .ff_submit_btn_wrapper .ff-btn-submit,
+.jcp-fluent-bridge .ff_step_nav_last .ff-btn-submit {
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Hide nav inside clearly inactive steps only — leave Fluent structure intact */
+.jcp-fluent-bridge .fluentform-step:not(.active) .step-nav,
+.jcp-fluent-bridge .ff-step:not(.active):not(.ff-active):not(.ff_active) .step-nav,
+.jcp-fluent-bridge .ff-el-form-step:not(.active):not(.ff-active):not(.ff_active) .step-nav {
+  display: none !important;
+}
+
+.jcp-fluent-bridge .step-nav,
+.jcp-fluent-bridge .ff_step_nav_last,
+.jcp-fluent-bridge .ff-step-t-container {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.jcp-fluent-bridge .step-nav .ff-btn-submit,
+.jcp-fluent-bridge .ff_step_nav_last .ff-btn-submit,
+.jcp-fluent-bridge .ff_submit_btn_wrapper .ff-btn-submit {
+  width: auto !important;
+  max-width: 100%;
+}
+
+/* Success */
+.jcp-fluent-bridge .ff-message-success,
+.jcp-fluent-bridge .ff-message {
+  padding: 1.25rem 1.5rem !important;
+  border-radius: var(--jcp-ff-radius-lg, 16px) !important;
+  background: var(--jcp-ff-soft, #f9fafb) !important;
+  border: 1px solid var(--jcp-ff-border, #e5e7eb) !important;
+  color: var(--jcp-ff-text, #111827) !important;
+  font-size: var(--jcp-font-size-lg, 18px) !important;
+  line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   Mobile docked step nav (active step only)
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  .jcp-fluent-quote-modal__body {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .jcp-fluent-bridge--inline {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /*
+   * Dock the active step’s action row.
+   * Do NOT target bare .ff_step_nav_last — on Fluent’s final step that class wraps
+   * only Previous, while Submit lives in a sibling .ff_submit_btn_wrapper. Docking
+   * the nav alone left Submit off-screen / covered by the fixed bar.
+   */
+  .jcp-fluent-bridge .fluentform-step.active .step-nav,
+  .jcp-fluent-bridge .ff-step.active .step-nav,
+  .jcp-fluent-bridge .ff-step.ff-active .step-nav,
+  .jcp-fluent-bridge .ff-step.ff_active .step-nav,
+  .jcp-fluent-bridge .ff-el-form-step.active .step-nav,
+  .jcp-fluent-bridge .ff-el-form-step.ff_active .step-nav,
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container,
+  .jcp-fluent-bridge .ff-step.ff_active .ff-inner_submit_container {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100010;
+    display: flex !important;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 0.65rem;
+    margin: 0;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    background: var(--jcp-ff-surface, #fff);
+    border-top: 1px solid var(--jcp-ff-border, #e5e7eb);
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+  }
+
+  /* Final step: flatten Fluent’s 2-column prev/submit row into one dock */
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .ff-t-cell,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container .ff-t-cell,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container .ff-t-cell,
+  .jcp-fluent-bridge .ff-step.ff_active .ff-inner_submit_container .ff-t-cell {
+    float: none !important;
+    width: auto !important;
+    max-width: none !important;
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .step-nav,
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .ff_step_nav_last,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container .step-nav,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container .step-nav,
+  .jcp-fluent-bridge .ff-step.ff_active .ff-inner_submit_container .step-nav {
+    position: static !important;
+    inset: auto !important;
+    display: flex !important;
+    flex: 1 1 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .ff_submit_btn_wrapper,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container .ff_submit_btn_wrapper,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container .ff_submit_btn_wrapper,
+  .jcp-fluent-bridge .ff-step.ff_active .ff-inner_submit_container .ff_submit_btn_wrapper {
+    margin: 0 !important;
+    width: 100%;
+  }
+
+  .jcp-fluent-bridge .fluentform-step.active .step-nav .ff-btn,
+  .jcp-fluent-bridge .fluentform-step.active .step-nav .ff-btn-next,
+  .jcp-fluent-bridge .fluentform-step.active .step-nav .ff-btn-prev,
+  .jcp-fluent-bridge .fluentform-step.active .step-nav .ff-btn-submit,
+  .jcp-fluent-bridge .ff-step.active .step-nav .ff-btn,
+  .jcp-fluent-bridge .ff-step.active .step-nav .ff-btn-next,
+  .jcp-fluent-bridge .ff-step.active .step-nav .ff-btn-prev,
+  .jcp-fluent-bridge .ff-step.active .step-nav .ff-btn-submit,
+  .jcp-fluent-bridge .ff-step.ff-active .step-nav .ff-btn,
+  .jcp-fluent-bridge .ff-step.ff-active .step-nav .ff-btn-next,
+  .jcp-fluent-bridge .ff-step.ff-active .step-nav .ff-btn-prev,
+  .jcp-fluent-bridge .ff-step.ff-active .step-nav .ff-btn-submit,
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .ff-btn,
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .ff-btn-prev,
+  .jcp-fluent-bridge .fluentform-step.active .ff-inner_submit_container .ff-btn-submit,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container .ff-btn,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container .ff-btn-prev,
+  .jcp-fluent-bridge .ff-step.active .ff-inner_submit_container .ff-btn-submit,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container .ff-btn,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container .ff-btn-prev,
+  .jcp-fluent-bridge .ff-step.ff-active .ff-inner_submit_container .ff-btn-submit {
+    flex: 1 1 0;
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0;
+    margin: 0 !important;
+    float: none !important;
+  }
+}

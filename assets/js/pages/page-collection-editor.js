@@ -27,12 +27,13 @@
       stat_value: 'Stat',
       stat_label: 'label',
     }),
-    'check_ins.features': () => ({ title: 'Feature', body: 'Description' }),
-    'problem.pain_points': () => ({ title: 'Pain point', body: 'Description' }),
+    'check_ins.features': () => ({ title: 'Feature', body: 'Description', icon: 'badge-check' }),
+    'problem.pain_points': () => ({ title: 'Pain point', body: 'Description', icon: 'circle-alert' }),
     'who_its_for.audiences': () => ({
       title: 'Audience',
       body: 'Description',
       badge: 'Badge',
+      show_image: true,
       stat_number: '100%',
       stat_label: 'Label',
     }),
@@ -43,9 +44,15 @@
       icon: STAT_BADGE_ICONS[index % STAT_BADGE_ICONS.length],
       css_class: STAT_BADGE_CLASSES[index % STAT_BADGE_CLASSES.length],
     }),
+    'hero.meta_stats': (index = 0) => ({
+      icon: STAT_BADGE_ICONS[index % STAT_BADGE_ICONS.length],
+      label: '1 stat',
+      detail: 'Description',
+      css_class: STAT_BADGE_CLASSES[index % STAT_BADGE_CLASSES.length],
+    }),
   };
 
-  const OBJECT_ARRAY_PATHS = new Set(['core_mechanic']);
+  const OBJECT_ARRAY_PATHS = new Set(['core_mechanic', 'hero.meta_stats']);
 
   const isStringArrayPath = (basePath) => {
     if (OBJECT_ARRAY_PATHS.has(basePath)) return false;
@@ -71,26 +78,49 @@
     if (container.classList.contains('jcp-niche-tags')) return '+ Add tag';
     if (container.classList.contains('conversion-points')) return '+ Add point';
     if (container.classList.contains('jcp-core-mechanic-meta')) return '+ Add stat';
+    if (container.classList.contains('directory-meta') && container.dataset.jcpArray === 'hero.meta_stats') return '+ Add stat';
     if (container.classList.contains('ranking-factors-grid') || container.classList.contains('guarantees-grid')) return '+ Add card';
     return '+ Add item';
   };
 
   const OPTIONAL_DEFAULTS = {
     'conversion.cta_primary': () => ({ label: 'Button label', url: '/demo' }),
+    'what_it_is.cta_primary': () => ({ label: 'Learn more', url: '/demo' }),
+    'what_it_is.cta_secondary': () => ({ label: 'See how it works', url: '#how-it-works' }),
+    'how_it_works.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
+    'how_it_works.cta_secondary': () => ({ label: 'View pricing', url: '/pricing' }),
+    'check_ins.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
+    'problem.cta_primary': () => ({ label: 'Fix this with JobCapturePro', url: '/demo' }),
     'benefits.cta_primary': () => ({ label: 'See it in the demo', url: '/demo' }),
     'benefits.cta_secondary': () => ({ label: 'Learn more', url: '/pricing' }),
+    'differentiation.cta_primary': () => ({ label: 'Get started', url: '/demo' }),
+    'who_its_for.cta_primary': () => ({ label: 'Start free trial', url: '/demo' }),
+    'faq.cta_primary': () => ({ label: 'Still have questions? Book a demo', url: '/demo' }),
     'hero.cta_primary': () => ({ label: 'View the live demo', url: '/demo' }),
     'hero.cta_secondary': () => ({ label: 'Learn how it works', url: '#how-it-works' }),
     'final_cta.cta_primary': () => ({ label: 'Get started', url: '/demo' }),
+    'media_text.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
+    'media_text_check_ins.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
+    'media_text_problem.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
+    'demo_preview.cta_primary': () => ({ label: 'View the live demo', url: '/demo' }),
   };
 
   const OPTIONAL_TEMPLATES = {
     cta: (path, data) => {
-      const cls = path.includes('conversion') ? 'btn btn-primary conversion-cta-btn'
-        : path.includes('benefits') ? 'btn btn-primary'
-          : path.includes('final_cta') ? 'btn btn-primary rankings-cta-btn'
-            : 'btn btn-primary';
-      return `<a href="${esc(data.url)}" class="${cls}" data-jcp-path="${path}.label" data-jcp-href-path="${path}.url">${esc(data.label)}</a>`;
+      const isDemo = /\.(cta_primary)$/.test(path) && (path.includes('media_text') || path.includes('demo_preview'));
+      const cls = path.includes('conversion')
+        ? 'btn btn-primary conversion-cta-btn'
+        : path.includes('benefits')
+          ? 'btn btn-primary'
+          : path.includes('final_cta')
+            ? 'btn btn-primary rankings-cta-btn'
+            : isDemo
+              ? 'btn btn-primary demo-cta-primary'
+              : 'btn btn-primary';
+      const chevron = isDemo
+        ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>'
+        : '';
+      return `<a href="${esc(data.url)}" class="${cls}" data-jcp-path="${path}.label" data-jcp-href-path="${path}.url"><span>${esc(data.label)}</span>${chevron}</a>`;
     },
     link: (path, data) => `<a href="${esc(data.url)}" class="benefits-cta-link" data-jcp-path="${path}.label" data-jcp-href-path="${path}.url">${esc(data.label)}<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg></a>`,
   };
@@ -117,8 +147,43 @@
     return `${base}/shared/assets/icons/lucide/${name}.svg`;
   };
 
+  const sectionFlagsForPath = (basePath) => {
+    const sectionKey = String(basePath || '').split('.')[0];
+    const section = (api?.getPath?.(api.flatContent, sectionKey) || {});
+    const on = (key, fallback = true) => {
+      if (!Object.prototype.hasOwnProperty.call(section, key)) return fallback;
+      return !(section[key] === false || section[key] === 0 || section[key] === '0');
+    };
+    return {
+      showIcons: on('show_icons', true),
+      showTitles: on('show_card_titles', true),
+      showBody: on('show_card_body', true),
+      showStats: on('show_card_stats', true),
+    };
+  };
+
   const buildFactorCard = (basePath, index, data) => {
-    const stat = data.stat_value
+    // While editing, always render card pieces so SHOW toggles can CSS-hide them
+    // without destroying DOM (and so collectFromDom cannot wipe copy).
+    const editing = isEditingActive();
+    const flags = sectionFlagsForPath(basePath);
+    const showIcons = editing || flags.showIcons;
+    const showTitles = editing || flags.showTitles;
+    const showBody = editing || flags.showBody;
+    const showStats = editing || flags.showStats;
+    const iconPath = `${basePath}.${index}.icon`;
+    const icon = showIcons
+      ? `<div class="factor-icon-wrapper" data-jcp-icon-path="${iconPath}">
+          <img src="${iconUrl(data.icon || 'badge-check')}" class="factor-icon" alt="" width="32" height="32" />
+        </div>`
+      : '';
+    const title = showTitles
+      ? `<h3 class="factor-title" data-jcp-path="${basePath}.${index}.title">${esc(data.title || '')}</h3>`
+      : '';
+    const body = showBody
+      ? `<div class="factor-description"><p data-jcp-path="${basePath}.${index}.body">${esc(data.body || '')}</p></div>`
+      : '';
+    const stat = (showStats && data.stat_value)
       ? `<div class="factor-stat">
           <span class="stat-value" data-jcp-path="${basePath}.${index}.stat_value">${esc(data.stat_value)}</span>
           <span class="stat-label" data-jcp-path="${basePath}.${index}.stat_label">${esc(data.stat_label || '')}</span>
@@ -126,11 +191,9 @@
       : '';
     return `
       <div class="ranking-factor-card" data-jcp-array-item="${index}">
-        <div class="factor-icon-wrapper">
-          <img src="${iconUrl(data.icon || 'badge-check')}" class="factor-icon" alt="" width="32" height="32" />
-        </div>
-        <h3 class="factor-title" data-jcp-path="${basePath}.${index}.title">${esc(data.title || '')}</h3>
-        <div class="factor-description"><p data-jcp-path="${basePath}.${index}.body">${esc(data.body || '')}</p></div>
+        ${icon}
+        ${title}
+        ${body}
         ${stat}
       </div>`;
   };
@@ -170,8 +233,31 @@
     return `
       <div class="meta-item jcp-collection-item ${cssClass}" data-jcp-array-item="${index}">
         <div class="meta-label">
-          <img src="${iconUrl(icon)}" class="meta-icon" alt="" width="20" height="20" />
+          <span class="factor-icon-wrapper jcp-hero-meta-icon" data-jcp-icon-path="${path}.icon" title="Click to change icon" role="button" tabindex="0">
+            <img src="${iconUrl(icon)}" class="meta-icon" alt="" width="20" height="20" />
+          </span>
           <strong>${labelHtml}</strong>
+        </div>
+        ${detailHtml}
+      </div>`;
+  };
+
+  const buildHomeMetaStat = (basePath, index, data) => {
+    const path = `${basePath}.${index}`;
+    const label = String(data?.label ?? '');
+    const detail = String(data?.detail ?? '');
+    const cssClass = data?.css_class || STAT_BADGE_CLASSES[index % STAT_BADGE_CLASSES.length];
+    const icon = data?.icon || STAT_BADGE_ICONS[index % STAT_BADGE_ICONS.length];
+    const detailHtml = detail
+      ? `<span data-jcp-path="${path}.detail">${esc(detail)}</span>`
+      : '';
+    return `
+      <div class="meta-item jcp-collection-item ${cssClass}" data-jcp-array-item="${index}">
+        <div class="meta-label">
+          <span class="factor-icon-wrapper jcp-hero-meta-icon" data-jcp-icon-path="${path}.icon" title="Click to change icon" role="button" tabindex="0">
+            <img src="${iconUrl(icon)}" class="meta-icon" alt="" width="20" height="20" />
+          </span>
+          <strong data-jcp-path="${path}.label">${esc(label)}</strong>
         </div>
         ${detailHtml}
       </div>`;
@@ -203,22 +289,43 @@
 
   const buildGuaranteeCard = (basePath, index, data) => {
     const path = `${basePath}.${index}`;
+    const section = (api?.getPath?.(api.flatContent, 'who_its_for') || {});
+    const editing = isEditingActive();
+    const showImages = editing || (section.show_card_images !== false && section.show_card_images !== 0 && section.show_card_images !== '0');
+    const showBadges = editing || (section.show_card_badges !== false && section.show_card_badges !== 0 && section.show_card_badges !== '0');
+    const showTitles = editing || (section.show_card_titles !== false && section.show_card_titles !== 0 && section.show_card_titles !== '0');
+    const showBody = editing || (section.show_card_body !== false && section.show_card_body !== 0 && section.show_card_body !== '0');
+    const showStats = editing || (section.show_card_stats !== false && section.show_card_stats !== 0 && section.show_card_stats !== '0');
+    const itemShowImage = data.show_image !== false && data.show_image !== 0 && data.show_image !== '0';
+    const renderImage = showImages && itemShowImage;
     const imageBlock = data.image_url
       ? `<img src="${esc(data.image_url)}" alt="${esc(data.image_alt || '')}" class="guarantee-image jcp-editable-media-image" loading="lazy" data-jcp-media-url-path="${path}.image_url" data-jcp-media-alt-path="${path}.image_alt" data-jcp-media-types="image" />`
       : `<div class="guarantee-image guarantee-image--empty" data-jcp-media-url-path="${path}.image_url" data-jcp-media-alt-path="${path}.image_alt" data-jcp-media-types="image"></div>`;
-    const badge = data.badge
+    const badge = (showBadges && data.badge)
       ? `<div class="guarantee-badge" data-jcp-path="${path}.badge">${esc(data.badge)}</div>`
       : '';
-    const stat = data.stat_number
+    const imageWrap = renderImage
+      ? `<div class="guarantee-image-wrapper jcp-editable-media-wrap">${imageBlock}${badge}</div>`
+      : (badge ? `<div class="guarantee-badge guarantee-badge--solo" data-jcp-path="${path}.badge">${esc(data.badge || '')}</div>` : '');
+    const title = showTitles ? `<strong data-jcp-path="${path}.title">${esc(data.title || '')}</strong>` : '';
+    const body = showBody ? `<p data-jcp-path="${path}.body">${esc(data.body || '')}</p>` : '';
+    const stat = (showStats && data.stat_number)
       ? `<div class="guarantee-stat"><span class="stat-number" data-jcp-path="${path}.stat_number">${esc(data.stat_number)}</span><span class="stat-label" data-jcp-path="${path}.stat_label">${esc(data.stat_label || '')}</span></div>`
       : '';
     const faqTarget = data.faq_target ? ` data-faq-target="${esc(data.faq_target)}"` : '';
+    const showImageAttr = itemShowImage ? '' : ' data-jcp-show-image="0"';
+    const noImageClass = renderImage ? '' : ' guarantee-item--no-image';
+    const toggleOn = itemShowImage ? ' is-on' : '';
+    const toggleTitle = itemShowImage ? 'Hide this card image' : 'Show this card image';
     return `
-      <a href="#faq" class="guarantee-item" data-jcp-array-item="${index}"${faqTarget}>
-        <div class="guarantee-image-wrapper jcp-editable-media-wrap">${imageBlock}${badge}</div>
+      <a href="#faq" class="guarantee-item${noImageClass}" data-jcp-array-item="${index}"${faqTarget}${showImageAttr}>
+        <button type="button" class="jcp-card-piece-toggle${toggleOn}" data-jcp-audience-toggle="show_image" data-jcp-audience-index="${index}" title="${toggleTitle}" aria-pressed="${itemShowImage ? 'true' : 'false'}" tabindex="-1">
+          <span class="jcp-card-piece-toggle__label">Image</span>
+        </button>
+        ${imageWrap}
         <div class="guarantee-content">
-          <strong data-jcp-path="${path}.title">${esc(data.title || '')}</strong>
-          <p data-jcp-path="${path}.body">${esc(data.body || '')}</p>
+          ${title}
+          ${body}
           ${stat}
         </div>
       </a>`;
@@ -234,6 +341,7 @@
     }
     if (basePath === 'faq.items') return buildFaqItem(index, data);
     if (basePath === 'core_mechanic') return buildStatBadge(basePath, index, data);
+    if (basePath === 'hero.meta_stats') return buildHomeMetaStat(basePath, index, data);
     if (basePath === 'how_it_works.steps') return buildTimelineStep(basePath, index, data);
     if (basePath === 'who_its_for.audiences' && container.classList.contains('guarantees-grid')) {
       return buildGuaranteeCard(basePath, index, data);
@@ -274,17 +382,40 @@
 
   const arrayPathFrom = (el) => el.getAttribute('data-jcp-array') || el.dataset.jcpArray || '';
 
+  const arrayItemsHost = (container) => {
+    if (!container) return null;
+    let host = container.querySelector(':scope > .conversion-points__columns');
+    if (!host && container.classList.contains('conversion-points--columns')) {
+      host = document.createElement('div');
+      host.className = 'conversion-points__columns';
+      const perCol = parseInt(container.getAttribute('data-jcp-per-column') || '5', 10);
+      host.style.setProperty('--jcp-points-per-column', String(perCol));
+      const addBtn = container.querySelector(':scope > .jcp-collection-add');
+      if (addBtn) container.insertBefore(host, addBtn);
+      else container.appendChild(host);
+    }
+    return host || container;
+  };
+
+  const arrayItemsIn = (container) => {
+    const host = arrayItemsHost(container);
+    if (!host) return [];
+    return [...host.querySelectorAll(':scope > [data-jcp-array-item]')];
+  };
+
   const rebuildArrayContainer = (container) => {
     const basePath = arrayPathFrom(container);
     if (!basePath || !api) return;
     const arr = getArray(basePath);
-    container.querySelectorAll(':scope > [data-jcp-array-item], :scope > .jcp-collection-add').forEach((el) => el.remove());
+    const host = arrayItemsHost(container);
+    host.querySelectorAll(':scope > [data-jcp-array-item]').forEach((el) => el.remove());
+    container.querySelectorAll(':scope > .jcp-collection-add').forEach((el) => el.remove());
     const temp = document.createElement('div');
     arr.forEach((item, index) => {
       const html = buildItemHtml(basePath, index, item, container);
       if (!html) return;
       temp.innerHTML = html.trim();
-      if (temp.firstElementChild) container.appendChild(temp.firstElementChild);
+      if (temp.firstElementChild) host.appendChild(temp.firstElementChild);
     });
     if (basePath === 'how_it_works.steps') updateTimelineStepNumbers(container);
   };
@@ -453,7 +584,7 @@
   const bindCollectionControls = (container) => {
     if (!container) return;
     container.querySelectorAll(':scope > .jcp-collection-add').forEach((btn) => bindAddButton(btn, container));
-    container.querySelectorAll(':scope > [data-jcp-array-item]').forEach((item) => {
+    arrayItemsIn(container).forEach((item) => {
       item.classList.add('jcp-collection-item');
       const removeBtn = item.querySelector(':scope > .jcp-collection-remove')
         || item.querySelector('.jcp-collection-remove');
@@ -472,7 +603,6 @@
       btn.setAttribute('aria-label', 'Remove item');
       btn.title = 'Remove';
     btn.textContent = '×';
-    btn.setAttribute('onclick', 'return window.jcpCollectionRemoveClick&&window.jcpCollectionRemoveClick(this,event)');
     item.appendChild(btn);
     }
     const container = item.closest('[data-jcp-array]');
@@ -503,13 +633,19 @@
   };
 
   const injectAddButton = (container) => {
-    let btn = container.querySelector(':scope > .jcp-collection-add');
+    const isTimeline = container.classList.contains('timeline-steps');
+    let btn = isTimeline
+      ? container.parentElement?.querySelector(':scope > .jcp-collection-add--timeline')
+      : container.querySelector(':scope > .jcp-collection-add');
     if (!btn) {
       btn = document.createElement('button');
-      btn.className = 'jcp-collection-add';
+      btn.className = `jcp-collection-add${isTimeline ? ' jcp-collection-add--timeline' : ''}`;
       btn.textContent = addButtonLabel(container);
-      btn.setAttribute('onclick', 'return window.jcpCollectionAddClick&&window.jcpCollectionAddClick(this,event)');
-      container.appendChild(btn);
+      if (isTimeline && container.parentElement) {
+        container.parentElement.appendChild(btn);
+      } else {
+        container.appendChild(btn);
+      }
     }
     bindAddButton(btn, container);
   };
@@ -536,7 +672,7 @@
     if (!isEditingActive()) return;
 
     arrayContainers().forEach((container) => {
-      container.querySelectorAll(':scope > [data-jcp-array-item]').forEach(injectRemoveButton);
+      arrayItemsIn(container).forEach(injectRemoveButton);
       injectAddButton(container);
       bindCollectionControls(container);
     });
@@ -550,6 +686,37 @@
     window.JCP_REFRESH_COLLECTIONS = refreshCollections;
     window.JCP_TEARDOWN_COLLECTIONS = teardownCollections;
     window.JCP_SYNC_COLLECTIONS_FROM_CONTENT = syncCollectionsFromContent;
+
+    if (!window.__JCP_AUDIENCE_TOGGLE_BOUND__) {
+      window.__JCP_AUDIENCE_TOGGLE_BOUND__ = true;
+      document.addEventListener('click', (e) => {
+        const btn = e.target.closest?.('[data-jcp-audience-toggle="show_image"]');
+        if (!btn || !api || !isEditingActive()) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const index = parseInt(btn.getAttribute('data-jcp-audience-index') || '-1', 10);
+        if (Number.isNaN(index) || index < 0) return;
+        const path = `who_its_for.audiences.${index}.show_image`;
+        const current = api.getPath(api.flatContent, path);
+        // New value: flip. Undefined/true means currently shown → hide.
+        const enabled = current === false || current === 0 || current === '0';
+        api.setPath(api.flatContent, path, enabled);
+        const audiences = api.getPath(api.flatContent, 'who_its_for.audiences');
+        if (Array.isArray(audiences) && audiences[index] && typeof audiences[index] === 'object') {
+          audiences[index].show_image = enabled;
+        }
+        const block = (api.pageDocument?.blocks || []).find((entry) => entry.type === 'who_its_for');
+        if (block?.props?.audiences?.[index] && typeof block.props.audiences[index] === 'object') {
+          block.props.audiences[index].show_image = enabled;
+        }
+        syncCollectionsFromContent();
+        refreshCollections();
+        if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+          window.JCP_REFRESH_INLINE_EDITABLE();
+        }
+        api.recordChange();
+      }, true);
+    }
 
     if (isEditingActive()) refreshCollections();
   };

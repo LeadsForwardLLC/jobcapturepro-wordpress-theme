@@ -14,6 +14,7 @@
   if (stack) {
     syncStackHeight();
     window.addEventListener('resize', syncStackHeight);
+    window.addEventListener('orientationchange', syncStackHeight);
     if (typeof ResizeObserver !== 'undefined') {
       const stackObserver = new ResizeObserver(syncStackHeight);
       stackObserver.observe(stack);

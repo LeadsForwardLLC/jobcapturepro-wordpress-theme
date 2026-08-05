@@ -25,6 +25,7 @@ $icon_play = esc_url( jcp_core_icon( 'play' ) );
 $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
 ?>
 <section class="survey-deck" id="surveyDeck">
+  <button type="button" class="deck-skip deck-skip--header" data-action="launch" id="deckSkipHeader" hidden>Skip to demo</button>
   <div class="deck">
     <div class="deck-top">
       <div class="deck-progress">
@@ -40,7 +41,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
       <article class="deck-slide deck-slide--intro is-active">
         <h2 id="deckSlide1Title">Every completed job should help you win the next one.</h2>
         <p class="deck-lead">
-          Capture real work once, and JobCapturePro turns it into proof that shows up across your website, directory, and search—so customers choose you faster.
+          Capture work once. JobCapturePro turns it into proof on your website, directory, and search so customers choose you faster.
         </p>
 
         <div class="deck-flow deck-flow--stack" aria-label="Outcomes">
@@ -50,8 +51,8 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
               <img src="<?php echo esc_url( $icon_camera ); ?>" alt="" />
             </span>
             <div class="deck-flow-body">
-              <div class="deck-flow-title">More proof builds trust faster</div>
-              <div class="deck-flow-sub">Turn job photos into verified work customers can see.</div>
+              <div class="deck-flow-title">More proof builds trust</div>
+              <div class="deck-flow-sub">Job photos become verified work customers can see.</div>
             </div>
           </div>
 
@@ -61,7 +62,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
               <img src="<?php echo esc_url( $icon_shield ); ?>" alt="" />
             </span>
             <div class="deck-flow-body">
-              <div class="deck-flow-title">More trust leads to more calls</div>
+              <div class="deck-flow-title">More trust brings more calls</div>
               <div class="deck-flow-sub">Show real proof where people compare options.</div>
             </div>
           </div>
@@ -72,17 +73,17 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
               <img src="<?php echo esc_url( $icon_phone ); ?>" alt="" />
             </span>
             <div class="deck-flow-body">
-              <div class="deck-flow-title">More calls mean more booked jobs</div>
-              <div class="deck-flow-sub">Win faster decisions without discounting.</div>
+              <div class="deck-flow-title">More calls book more jobs</div>
+              <div class="deck-flow-sub">Win faster without discounting.</div>
             </div>
           </div>
         </div>
       </article>
 
       <article class="deck-slide deck-slide--cards">
-        <h2>One photo is all your team needs to take.</h2>
+        <h2>One photo is all your team needs.</h2>
         <p class="deck-lead">
-          Snap a quick photo and JobCapturePro handles the rest—writing the story, tagging the job, and publishing proof everywhere your customers look.
+          Snap a quick photo. JobCapturePro writes the story, tags the job, and publishes proof everywhere customers look.
         </p>
         <div class="deck-flow deck-flow--stack" aria-label="What happens from one photo">
           <div class="deck-flow-card">
@@ -92,7 +93,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
             </span>
             <div class="deck-flow-body">
               <div class="deck-flow-title">AI writes the job story</div>
-              <div class="deck-flow-sub">Get a clean, customer-friendly update you can publish immediately.</div>
+              <div class="deck-flow-sub">Get a clean update you can publish right away.</div>
             </div>
           </div>
 
@@ -103,7 +104,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
             </span>
             <div class="deck-flow-body">
               <div class="deck-flow-title">Location + services are tagged</div>
-              <div class="deck-flow-sub">Structured proof helps search engines and customers understand the job.</div>
+              <div class="deck-flow-sub">Structured proof helps search and customers understand the job.</div>
             </div>
           </div>
 
@@ -114,16 +115,16 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
             </span>
             <div class="deck-flow-body">
               <div class="deck-flow-title">Publishing happens instantly</div>
-              <div class="deck-flow-sub">Your proof shows up across channels without extra steps from your team.</div>
+              <div class="deck-flow-sub">Proof shows up across channels with no extra steps.</div>
             </div>
           </div>
         </div>
       </article>
 
       <article class="deck-slide deck-slide--cards">
-        <h2>Reviews arrive at the right time, without chasing.</h2>
+        <h2>Reviews arrive at the right time.</h2>
         <p class="deck-lead">
-          When the job wraps up, reviews go out automatically at the moment customers are happiest—so you build reputation without awkward follow-ups.
+          When the job wraps up, reviews go out automatically while customers are happiest, so you build reputation without awkward follow ups.
         </p>
         <div class="deck-flow deck-flow--stack" aria-label="Review outcomes">
           <div class="deck-flow-card">
@@ -133,7 +134,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
             </span>
             <div class="deck-flow-body">
               <div class="deck-flow-title">Higher response rate</div>
-              <div class="deck-flow-sub">Requests land while the experience is fresh—more customers respond.</div>
+              <div class="deck-flow-sub">Requests land while the experience is fresh.</div>
             </div>
           </div>
 
@@ -143,8 +144,8 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
               <img src="<?php echo esc_url( $icon_repeat ); ?>" alt="" />
             </span>
             <div class="deck-flow-body">
-              <div class="deck-flow-title">No manual follow-up</div>
-              <div class="deck-flow-sub">Automated reminders keep it consistent without your time.</div>
+              <div class="deck-flow-title">No manual follow up</div>
+              <div class="deck-flow-sub">Automated reminders keep it consistent.</div>
             </div>
           </div>
 
@@ -155,7 +156,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
             </span>
             <div class="deck-flow-body">
               <div class="deck-flow-title">Trusted public feedback</div>
-              <div class="deck-flow-sub">More real reviews means more confidence and more booked jobs.</div>
+              <div class="deck-flow-sub">More real reviews means more confidence and booked jobs.</div>
             </div>
           </div>
         </div>
@@ -180,7 +181,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
             </div>
             <div class="grid-caption">More completed jobs = more local coverage.</div>
           </div>
-          <div class="grid-box rank-box">
+          <div class="grid-box rank-box" id="surveyRankBox">
             <div class="grid-title">Local map pack</div>
             <div class="rank-list" id="surveyRankList">
               <div class="rank-item is-top" id="surveyRankTop">
@@ -216,10 +217,10 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
         </div>
       </article>
 
-      <article class="deck-slide">
+      <article class="deck-slide deck-slide--channels">
         <h2>Show proof across every channel.</h2>
         <p class="deck-lead">
-          Every check-in updates your website, directory listing, Google Business profile, and social content.
+          Each check-in updates your website, directory, Google Business profile, and social content.
         </p>
         <div class="deck-tiles">
           <div class="deck-tile">
@@ -250,9 +251,9 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
       </article>
 
       <article class="deck-slide deck-slide--cards">
-        <h2>Everything stays consistent without extra work.</h2>
+        <h2>Everything stays consistent.</h2>
         <p class="deck-lead">
-          Your crew keeps working. JobCapturePro keeps your presence updated and consistent so your brand looks sharp without extra admin work.
+          Your crew keeps working. JobCapturePro keeps your presence updated so your brand looks sharp without extra admin.
         </p>
         <div class="deck-flow deck-flow--stack" aria-label="Consistency benefits">
           <div class="deck-flow-card">
@@ -273,7 +274,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
             </span>
             <div class="deck-flow-body">
               <div class="deck-flow-title">No chasing photos</div>
-              <div class="deck-flow-sub">One quick check-in is enough—your team stays moving.</div>
+              <div class="deck-flow-sub">One quick check-in is enough. Your team stays moving.</div>
             </div>
           </div>
 
@@ -293,7 +294,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
       <article class="deck-slide deck-slide--cards">
         <h2>Prospects see proof instantly.</h2>
         <p class="deck-lead">
-          Your work shows up where customers decide—search, maps, your site, and the directory—so you stand out before they even call.
+          Your work shows up where customers decide: search, maps, your site, and the directory, so you stand out before they call.
         </p>
         <div class="deck-flow deck-flow--stack" aria-label="Prospect outcomes">
           <div class="deck-flow-card">
@@ -332,9 +333,9 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
       </article>
 
       <article class="deck-slide deck-slide--cards">
-        <h2 id="deckPersonalTitle">Now watch one job publish everywhere for your business.</h2>
+        <h2 id="deckPersonalTitle">Ready? See one job publish everywhere.</h2>
         <p class="deck-lead" id="deckPersonalLead">
-          You're about to see the live workflow end-to-end—one job turning into proof that builds rankings, trust, and calls.
+          See the live workflow end to end: one job turning into proof that builds rankings, trust, and calls.
         </p>
         <div class="deck-flow deck-flow--stack" aria-label="What you'll see next">
           <div class="deck-flow-card">
@@ -366,7 +367,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
             </span>
             <div class="deck-flow-body">
               <div class="deck-flow-title">Rankings → more calls</div>
-              <div class="deck-flow-sub">As you rise, you get chosen faster—and the phone rings more.</div>
+              <div class="deck-flow-sub">As you rise, you get chosen faster and the phone rings more.</div>
             </div>
           </div>
         </div>
@@ -374,10 +375,10 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
     </div>
 
     <div class="deck-actions">
-      <button class="btn-control" data-action="prev">← Back</button>
-      <button class="btn-control" data-action="next" id="deckNextBtn">Next</button>
+      <button class="btn-control" data-action="prev" id="deckPrevBtn">← Back</button>
+      <button class="btn-control primary" data-action="next" id="deckNextBtn">Next</button>
       <button class="btn-control primary is-hidden" data-action="launch" id="deckLaunchBtn">
-        Launch the live demo →
+        Launch demo →
       </button>
     </div>
   </div>

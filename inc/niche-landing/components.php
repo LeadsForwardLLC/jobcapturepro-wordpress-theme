@@ -31,7 +31,7 @@ function jcp_component_home_meta_stats( array $items, string $path = 'hero.meta_
 		return;
 	}
 	?>
-	<div class="directory-meta">
+	<div class="directory-meta"<?php jcp_niche_array_attr( $path ); ?>>
 		<?php foreach ( $items as $i => $item ) : ?>
 			<?php
 			if ( ! is_array( $item ) ) {
@@ -41,10 +41,13 @@ function jcp_component_home_meta_stats( array $items, string $path = 'hero.meta_
 			$label     = (string) ( $item['label'] ?? '' );
 			$detail    = (string) ( $item['detail'] ?? '' );
 			$css_class = (string) ( $item['css_class'] ?? '' );
+			$icon_path = $path . '.' . $i . '.icon';
 			?>
-			<div class="meta-item<?php echo $css_class !== '' ? ' ' . esc_attr( $css_class ) : ''; ?>">
+			<div class="meta-item jcp-collection-item<?php echo $css_class !== '' ? ' ' . esc_attr( $css_class ) : ''; ?>"<?php jcp_niche_array_item_attr( (int) $i ); ?>>
 				<div class="meta-label">
-					<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="meta-icon" alt="" width="20" height="20" />
+					<span class="factor-icon-wrapper jcp-hero-meta-icon" data-jcp-icon-path="<?php echo esc_attr( $icon_path ); ?>" title="<?php esc_attr_e( 'Click to change icon', 'jcp-core' ); ?>" role="button" tabindex="0">
+						<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="meta-icon" alt="" width="20" height="20" />
+					</span>
 					<strong<?php jcp_niche_editable_attr( $path . '.' . $i . '.label' ); ?>><?php echo esc_html( $label ); ?></strong>
 				</div>
 				<?php if ( $detail !== '' ) : ?>
@@ -57,13 +60,34 @@ function jcp_component_home_meta_stats( array $items, string $path = 'hero.meta_
 }
 
 /**
- * Homepage hero phone mockup with animated cards.
+ * Homepage / industry hero phone mockup with animated cards.
  *
- * @param string $demo_url Demo link.
+ * @param string                                                    $demo_url    Demo link.
+ * @param string                                                    $photo_url   Phone screen photo.
+ * @param string                                                    $photo_alt   Photo alt text.
+ * @param bool                                                      $wrap_visual Wrap in hero-visual shell.
+ * @param array<int, array{title?:string,subtitle?:string}>|null    $cards       Optional status cards (industry-specific).
+ * @param bool                                                      $lock_photo  When true, photo is driven by featured image (industry).
+ * @param string                                                    $cta_label   Floating CTA label on the phone.
  */
-function jcp_component_hero_home_visual( string $demo_url = '', string $photo_url = '', string $photo_alt = '', bool $wrap_visual = true ): void {
-	$demo_url = $demo_url !== '' ? $demo_url : home_url( '/demo/' );
-	$photo    = $photo_url !== '' ? $photo_url : jcp_media_default_phone_image();
+function jcp_component_hero_home_visual( string $demo_url = '', string $photo_url = '', string $photo_alt = '', bool $wrap_visual = true, ?array $cards = null, bool $lock_photo = false, string $cta_label = '' ): void {
+	$demo_url  = $demo_url !== '' ? $demo_url : home_url( '/demo/' );
+	$photo     = $photo_url !== '' ? $photo_url : jcp_media_default_phone_image();
+	$cta_label = trim( $cta_label ) !== '' ? trim( $cta_label ) : __( 'Try the demo', 'jcp-core' );
+	if ( ! is_array( $cards ) || $cards === [] ) {
+		$cards = function_exists( 'jcp_media_industry_phone_cards' )
+			? jcp_media_industry_phone_cards( '' )
+			: [
+				[ 'title' => __( 'New job captured', 'jcp-core' ), 'subtitle' => __( 'Photo uploaded', 'jcp-core' ) ],
+				[ 'title' => __( 'AI check-in complete', 'jcp-core' ), 'subtitle' => __( 'Verified proof ready', 'jcp-core' ) ],
+				[ 'title' => __( 'Published everywhere', 'jcp-core' ), 'subtitle' => __( 'Google Maps • Website • Social', 'jcp-core' ) ],
+			];
+	}
+	$card_icons = [
+		'<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>',
+		'<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+		'<circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>',
+	];
 	if ( $wrap_visual ) {
 		?>
 	<div class="jcp-hero-visual hero-visual">
@@ -78,7 +102,7 @@ function jcp_component_hero_home_visual( string $demo_url = '', string $photo_ur
 				<span class="hero-line hero-line-4"></span>
 				<span class="hero-line hero-line-5"></span>
 			</div>
-			<a href="<?php echo esc_url( $demo_url ); ?>" class="demo-phone-mockup hero-phone-mockup" aria-label="<?php esc_attr_e( 'Try the live demo', 'jcp-core' ); ?>">
+			<a href="<?php echo esc_url( $demo_url ); ?>" class="demo-phone-mockup hero-phone-mockup" aria-label="<?php echo esc_attr( $cta_label ); ?>" data-jcp-phone-cta-path="hero.phone_cta_label">
 				<div class="phone-frame hero-phone-frame">
 					<div class="phone-screen">
 						<div class="phone-content">
@@ -100,55 +124,43 @@ function jcp_component_hero_home_visual( string $demo_url = '', string $photo_ur
 									<img
 										src="<?php echo esc_url( $photo ); ?>"
 										alt="<?php echo esc_attr( $photo_alt ); ?>"
-										class="hero-phone-image jcp-editable-media-image"
+										class="hero-phone-image jcp-editable-media-image<?php echo $lock_photo ? ' jcp-hero-phone-image--featured' : ''; ?>"
 										loading="eager"
 										decoding="async"
+										<?php if ( ! $lock_photo ) : ?>
 										data-jcp-media-url-path="hero.phone_image_url"
 										data-jcp-media-alt-path="hero.phone_image_alt"
 										data-jcp-media-role="phone_screen"
+										<?php else : ?>
+										data-jcp-media-role="phone_screen_featured"
+										data-jcp-media-locked="featured"
+										<?php endif; ?>
 									/>
 								</div>
-								<div class="demo-preview-item hero-phone-card hero-phone-card-1">
+								<?php foreach ( array_values( $cards ) as $ci => $card ) : ?>
+									<?php
+									if ( ! is_array( $card ) ) {
+										continue;
+									}
+									$title    = (string) ( $card['title'] ?? '' );
+									$subtitle = (string) ( $card['subtitle'] ?? '' );
+									$icon_svg = $card_icons[ $ci ] ?? $card_icons[0];
+									?>
+								<div class="demo-preview-item hero-phone-card hero-phone-card-<?php echo (int) ( $ci + 1 ); ?>">
 									<div class="demo-item-icon">
 										<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-											<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-											<circle cx="12" cy="13" r="4"/>
+											<?php echo $icon_svg; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG paths. ?>
 										</svg>
 									</div>
 									<div class="demo-item-content">
-										<div class="demo-item-title"><?php esc_html_e( 'New job captured', 'jcp-core' ); ?></div>
-										<div class="demo-item-subtitle"><?php esc_html_e( 'Photo uploaded', 'jcp-core' ); ?></div>
+										<div class="demo-item-title"><?php echo esc_html( $title ); ?></div>
+										<div class="demo-item-subtitle"><?php echo esc_html( $subtitle ); ?></div>
 									</div>
 								</div>
-								<div class="demo-preview-item hero-phone-card hero-phone-card-2">
-									<div class="demo-item-icon">
-										<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-											<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-											<circle cx="8.5" cy="8.5" r="1.5"/>
-											<polyline points="21 15 16 10 5 21"/>
-										</svg>
-									</div>
-									<div class="demo-item-content">
-										<div class="demo-item-title"><?php esc_html_e( 'AI check-in complete', 'jcp-core' ); ?></div>
-										<div class="demo-item-subtitle"><?php esc_html_e( 'Verified proof ready', 'jcp-core' ); ?></div>
-									</div>
-								</div>
-								<div class="demo-preview-item hero-phone-card hero-phone-card-3">
-									<div class="demo-item-icon">
-										<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-											<circle cx="12" cy="12" r="10"/>
-											<line x1="2" y1="12" x2="22" y2="12"/>
-											<path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-										</svg>
-									</div>
-									<div class="demo-item-content">
-										<div class="demo-item-title"><?php esc_html_e( 'Published everywhere', 'jcp-core' ); ?></div>
-										<div class="demo-item-subtitle"><?php esc_html_e( 'Google Maps • Website • Social', 'jcp-core' ); ?></div>
-									</div>
-								</div>
+								<?php endforeach; ?>
 							</div>
 							<div class="phone-click-hint hero-phone-cta">
-								<span><?php esc_html_e( 'Try the demo', 'jcp-core' ); ?></span>
+								<span><?php echo esc_html( $cta_label ); ?></span>
 								<?php jcp_component_chevron_svg( 20 ); ?>
 							</div>
 						</div>
@@ -172,62 +184,78 @@ function jcp_component_hero_home_visual( string $demo_url = '', string $photo_ur
 function jcp_component_demo_app_phone( string $demo_url = '' ): void {
 	$demo_url = $demo_url !== '' ? $demo_url : home_url( '/demo/' );
 	?>
-	<a href="<?php echo esc_url( $demo_url ); ?>" class="demo-phone-mockup demo-app-phone-mockup" aria-label="<?php esc_attr_e( 'Open the interactive prototype', 'jcp-core' ); ?>">
-		<div class="phone-frame">
-			<div class="phone-screen demo-phone-screen">
-				<div class="phone-content demo-phone-content">
-					<div class="phone-header">
-						<div class="phone-status-bar">
-							<span>9:41</span>
-							<svg class="phone-battery-icon" width="24" height="12" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-								<rect x="1" y="3" width="18" height="6" rx="1.5" fill="currentColor" fill-opacity="1"/>
-								<rect x="1" y="3" width="18" height="6" rx="1.5" stroke="currentColor"/>
-								<path d="M20 5v2h2v-2z" fill="currentColor"/>
-							</svg>
-						</div>
-						<div class="phone-nav"></div>
-					</div>
-					<div class="demo-app-screen">
-						<div class="demo-app-header">
-							<h1><?php esc_html_e( 'Check-ins', 'jcp-core' ); ?></h1>
-						</div>
-						<div class="demo-content-area">
-							<div class="demo-action-tiles">
-								<div class="demo-tile">
-									<div class="demo-tile-icon"><img src="<?php echo esc_url( jcp_core_icon( 'briefcase' ) ); ?>" class="lucide-icon" alt="" width="24" height="24" /></div>
-									<div class="demo-tile-label"><?php esc_html_e( 'My Jobs', 'jcp-core' ); ?></div>
-								</div>
-								<div class="demo-tile">
-									<div class="demo-tile-icon"><img src="<?php echo esc_url( jcp_core_icon( 'users' ) ); ?>" class="lucide-icon" alt="" width="24" height="24" /></div>
-									<div class="demo-tile-label"><?php esc_html_e( 'Team', 'jcp-core' ); ?></div>
-								</div>
-								<div class="demo-tile">
-									<div class="demo-tile-icon"><img src="<?php echo esc_url( jcp_core_icon( 'archive' ) ); ?>" class="lucide-icon" alt="" width="24" height="24" /></div>
-									<div class="demo-tile-label"><?php esc_html_e( 'Archived', 'jcp-core' ); ?></div>
-								</div>
+	<div class="demo-preview-phone-stack">
+		<a href="<?php echo esc_url( $demo_url ); ?>" class="demo-phone-mockup demo-app-phone-mockup demo-preview-phone-mockup hero-phone-mockup" aria-label="<?php esc_attr_e( 'Open the interactive prototype', 'jcp-core' ); ?>">
+			<div class="phone-frame hero-phone-frame">
+				<div class="phone-screen demo-phone-screen">
+					<div class="phone-content demo-phone-content">
+						<div class="phone-header hero-phone-header">
+							<div class="phone-status-bar">
+								<span>9:41</span>
+								<svg class="phone-battery-icon" width="24" height="12" viewBox="0 0 24 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+									<rect x="1" y="3" width="18" height="6" rx="1.5" fill="currentColor" fill-opacity="1"/>
+									<rect x="1" y="3" width="18" height="6" rx="1.5" stroke="currentColor"/>
+									<path d="M20 5v2h2v-2z" fill="currentColor"/>
+								</svg>
 							</div>
-							<div class="demo-empty-state">
-								<h3><?php esc_html_e( 'Start capturing proof', 'jcp-core' ); ?></h3>
-								<p><?php esc_html_e( 'Take a few photos → submit → automatically published everywhere.', 'jcp-core' ); ?></p>
-								<div class="demo-empty-hint"><span><?php esc_html_e( 'Tap', 'jcp-core' ); ?> <strong>+</strong> <?php esc_html_e( 'to create a check-in', 'jcp-core' ); ?></span></div>
+							<div class="hero-phone-live-row">
+								<span class="hero-phone-live-badge"><?php esc_html_e( 'Live', 'jcp-core' ); ?></span>
 							</div>
 						</div>
-						<div class="demo-tab-bar">
-							<div class="demo-tab-item demo-tab-active">
-								<div class="demo-tab-icon"><img src="<?php echo esc_url( jcp_core_icon( 'clipboard-list' ) ); ?>" class="lucide-icon" alt="" width="20" height="20" /></div>
-								<?php esc_html_e( 'Your check-ins', 'jcp-core' ); ?>
+						<div class="demo-app-screen demo-preview-phone-anim" aria-hidden="true">
+							<div class="demo-app-header">
+								<p class="demo-app-header__title"><?php esc_html_e( 'Check-ins', 'jcp-core' ); ?></p>
 							</div>
-							<div class="demo-fab"><img src="<?php echo esc_url( jcp_core_icon( 'plus' ) ); ?>" class="lucide-icon" alt="" width="24" height="24" /></div>
-							<div class="demo-tab-item">
-								<div class="demo-tab-icon"><img src="<?php echo esc_url( jcp_core_icon( 'user' ) ); ?>" class="lucide-icon" alt="" width="20" height="20" /></div>
-								<?php esc_html_e( 'Profile', 'jcp-core' ); ?>
+							<div class="demo-content-area">
+								<div class="demo-action-tiles">
+									<div class="demo-tile">
+										<div class="demo-tile-icon"><img src="<?php echo esc_url( jcp_core_icon( 'briefcase' ) ); ?>" class="lucide-icon" alt="" width="24" height="24" /></div>
+										<div class="demo-tile-label"><?php esc_html_e( 'My Jobs', 'jcp-core' ); ?></div>
+									</div>
+									<div class="demo-tile">
+										<div class="demo-tile-icon"><img src="<?php echo esc_url( jcp_core_icon( 'users' ) ); ?>" class="lucide-icon" alt="" width="24" height="24" /></div>
+										<div class="demo-tile-label"><?php esc_html_e( 'Team', 'jcp-core' ); ?></div>
+									</div>
+									<div class="demo-tile">
+										<div class="demo-tile-icon"><img src="<?php echo esc_url( jcp_core_icon( 'archive' ) ); ?>" class="lucide-icon" alt="" width="24" height="24" /></div>
+										<div class="demo-tile-label"><?php esc_html_e( 'Archived', 'jcp-core' ); ?></div>
+									</div>
+								</div>
+								<div class="demo-empty-state demo-preview-anim-empty">
+									<p class="demo-empty-title"><?php esc_html_e( 'Start capturing proof', 'jcp-core' ); ?></p>
+									<p><?php esc_html_e( 'Take a few photos → submit → automatically published everywhere.', 'jcp-core' ); ?></p>
+									<div class="demo-empty-hint demo-preview-anim-hint"><span><?php esc_html_e( 'Tap', 'jcp-core' ); ?> <strong>+</strong> <?php esc_html_e( 'to create a check-in', 'jcp-core' ); ?></span></div>
+								</div>
+								<div class="demo-preview-checkin-card demo-preview-anim-card">
+									<div class="demo-preview-item">
+										<div class="demo-item-icon">
+											<img src="<?php echo esc_url( jcp_core_icon( 'camera' ) ); ?>" class="lucide-icon" alt="" width="24" height="24" />
+										</div>
+										<div class="demo-item-content">
+											<div class="demo-item-title"><?php esc_html_e( 'New check-in added', 'jcp-core' ); ?></div>
+											<div class="demo-item-subtitle"><?php esc_html_e( 'Photos captured on site', 'jcp-core' ); ?></div>
+										</div>
+									</div>
+									<div class="demo-preview-published-badge"><?php esc_html_e( 'Published', 'jcp-core' ); ?></div>
+								</div>
+							</div>
+							<div class="demo-tab-bar">
+								<div class="demo-tab-item demo-tab-active">
+									<div class="demo-tab-icon"><img src="<?php echo esc_url( jcp_core_icon( 'clipboard-list' ) ); ?>" class="lucide-icon" alt="" width="20" height="20" /></div>
+									<?php esc_html_e( 'Your check-ins', 'jcp-core' ); ?>
+								</div>
+								<div class="demo-fab demo-preview-anim-fab"><img src="<?php echo esc_url( jcp_core_icon( 'plus' ) ); ?>" class="lucide-icon" alt="" width="24" height="24" /></div>
+								<div class="demo-tab-item">
+									<div class="demo-tab-icon"><img src="<?php echo esc_url( jcp_core_icon( 'user' ) ); ?>" class="lucide-icon" alt="" width="20" height="20" /></div>
+									<?php esc_html_e( 'Profile', 'jcp-core' ); ?>
+								</div>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-	</a>
+		</a>
+	</div>
 	<?php
 }
 
@@ -289,10 +317,11 @@ function jcp_component_directory_preview_card( array $card, int $i = 0 ): void {
 /**
  * Audience guarantee card (who it's for — image grid variant).
  *
- * @param array<string, string> $aud   Audience item.
- * @param int                   $index Index for editor paths.
+ * @param array<string, mixed> $aud   Audience item.
+ * @param int                  $index Index for editor paths.
+ * @param array<string, bool>  $vis   Section visibility: show_images, show_badges, show_titles, show_body, show_stats.
  */
-function jcp_component_audience_guarantee_card( array $aud, int $index = 0 ): void {
+function jcp_component_audience_guarantee_card( array $aud, int $index = 0, array $vis = [] ): void {
 	$title      = (string) ( $aud['title'] ?? '' );
 	$body       = (string) ( $aud['body'] ?? '' );
 	$badge      = (string) ( $aud['badge'] ?? '' );
@@ -303,8 +332,24 @@ function jcp_component_audience_guarantee_card( array $aud, int $index = 0 ): vo
 	$faq_target = (string) ( $aud['faq_target'] ?? '' );
 	$path       = 'who_its_for.audiences.' . $index;
 	$href       = $faq_target !== '' ? '#' . ltrim( $faq_target, '#' ) : '#faq';
+
+	$show_images = ! array_key_exists( 'show_images', $vis ) || ! empty( $vis['show_images'] );
+	$show_badges = ! array_key_exists( 'show_badges', $vis ) || ! empty( $vis['show_badges'] );
+	$show_titles = ! array_key_exists( 'show_titles', $vis ) || ! empty( $vis['show_titles'] );
+	$show_body   = ! array_key_exists( 'show_body', $vis ) || ! empty( $vis['show_body'] );
+	$show_stats  = ! array_key_exists( 'show_stats', $vis ) || ! empty( $vis['show_stats'] );
+	$item_image  = ! array_key_exists( 'show_image', $aud ) || ! empty( $aud['show_image'] );
+	$render_image = $show_images && $item_image;
+	$render_badge = $show_badges && $badge !== '';
+	$can_edit     = jcp_niche_user_can_inline_edit();
 	?>
-	<a href="<?php echo esc_url( $href ); ?>" class="guarantee-item"<?php echo $faq_target !== '' ? ' data-faq-target="' . esc_attr( $faq_target ) . '"' : ''; jcp_niche_array_item_attr( $index ); ?>>
+	<a href="<?php echo esc_url( $href ); ?>" class="guarantee-item<?php echo $render_image ? '' : ' guarantee-item--no-image'; ?>"<?php echo $faq_target !== '' ? ' data-faq-target="' . esc_attr( $faq_target ) . '"' : ''; jcp_niche_array_item_attr( $index ); ?><?php echo $item_image ? '' : ' data-jcp-show-image="0"'; ?>>
+		<?php if ( $can_edit ) : ?>
+			<button type="button" class="jcp-card-piece-toggle<?php echo $item_image ? ' is-on' : ''; ?>" data-jcp-audience-toggle="show_image" data-jcp-audience-index="<?php echo esc_attr( (string) $index ); ?>" title="<?php echo $item_image ? esc_attr__( 'Hide this card image', 'jcp-core' ) : esc_attr__( 'Show this card image', 'jcp-core' ); ?>" aria-pressed="<?php echo $item_image ? 'true' : 'false'; ?>" tabindex="-1">
+				<span class="jcp-card-piece-toggle__label"><?php esc_html_e( 'Image', 'jcp-core' ); ?></span>
+			</button>
+		<?php endif; ?>
+		<?php if ( $render_image ) : ?>
 		<div class="guarantee-image-wrapper jcp-editable-media-wrap">
 			<?php if ( $image_url !== '' ) : ?>
 				<img
@@ -316,17 +361,24 @@ function jcp_component_audience_guarantee_card( array $aud, int $index = 0 ): vo
 					data-jcp-media-alt-path="<?php echo esc_attr( $path . '.image_alt' ); ?>"
 					data-jcp-media-types="image"
 				/>
-			<?php else : ?>
+			<?php elseif ( $can_edit ) : ?>
 				<div class="guarantee-image guarantee-image--empty" data-jcp-media-url-path="<?php echo esc_attr( $path . '.image_url' ); ?>" data-jcp-media-alt-path="<?php echo esc_attr( $path . '.image_alt' ); ?>" data-jcp-media-types="image"></div>
 			<?php endif; ?>
-			<?php if ( $badge !== '' ) : ?>
+			<?php if ( $render_badge ) : ?>
 				<div class="guarantee-badge"<?php jcp_niche_editable_attr( $path . '.badge' ); ?>><?php echo esc_html( $badge ); ?></div>
 			<?php endif; ?>
 		</div>
+		<?php elseif ( $render_badge ) : ?>
+			<div class="guarantee-badge guarantee-badge--solo"<?php jcp_niche_editable_attr( $path . '.badge' ); ?>><?php echo esc_html( $badge ); ?></div>
+		<?php endif; ?>
 		<div class="guarantee-content">
+			<?php if ( $show_titles ) : ?>
 			<strong<?php jcp_niche_editable_attr( $path . '.title' ); ?>><?php echo esc_html( $title ); ?></strong>
+			<?php endif; ?>
+			<?php if ( $show_body ) : ?>
 			<p<?php jcp_niche_editable_attr( $path . '.body' ); ?>><?php echo esc_html( $body ); ?></p>
-			<?php if ( $stat_num !== '' ) : ?>
+			<?php endif; ?>
+			<?php if ( $show_stats && $stat_num !== '' ) : ?>
 				<div class="guarantee-stat">
 					<span class="stat-number"<?php jcp_niche_editable_attr( $path . '.stat_number' ); ?>><?php echo esc_html( $stat_num ); ?></span>
 					<span class="stat-label"<?php jcp_niche_editable_attr( $path . '.stat_label' ); ?>><?php echo esc_html( $stat_label ); ?></span>

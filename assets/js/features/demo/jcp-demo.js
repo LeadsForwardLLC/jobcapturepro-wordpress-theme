@@ -145,6 +145,20 @@ function _jcpIsPrototype() {
 const isPrototype = _jcpIsPrototype();
 const isDemoMode = window.JCP_IS_DEMO_MODE === true;
 
+const MOBILE_DEMO_MQ = '(max-width: 1024px)';
+
+function isMobileViewport() {
+  return window.matchMedia(MOBILE_DEMO_MQ).matches;
+}
+
+function isMobileDemoRun() {
+  return isDemoMode && !isPrototype && isMobileViewport();
+}
+
+function isGuidedDemoRun() {
+  return isDemoMode && !isPrototype;
+}
+
 // Features disabled in demo mode
 const demoRestrictions = {
   profileAccess: true,      // Profile button/navigation
@@ -201,7 +215,7 @@ function showDemoRestrictionTooltip(element, message = 'This action is disabled 
  * Apply demo mode restrictions to UI elements
  */
 function applyDemoRestrictions() {
-  if (!isDemoMode) return;
+  if (!isDemoMode || isGuidedDemoRun()) return;
   
   // Add demo mode indicator
   const indicator = document.createElement('div');
@@ -297,17 +311,48 @@ if (isDemoMode) {
   document.head.appendChild(hide);
 }
 
-function getDemoSessionId() {
-  const key = 'jcp_demo_session_id';
+const DEMO_INTAKE_COMPLETE_KEY = 'jcp_demo_intake_complete';
+const DEMO_SESSION_KEY = 'jcp_demo_session_id';
+
+function markDemoIntakeComplete() {
   try {
-    let id = sessionStorage.getItem(key);
+    sessionStorage.setItem(DEMO_INTAKE_COMPLETE_KEY, '1');
+  } catch (e) {
+    // no-op
+  }
+}
+
+function getDemoSessionId() {
+  try {
+    let id = sessionStorage.getItem(DEMO_SESSION_KEY);
     if (!id) {
       id = 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
-      sessionStorage.setItem(key, id);
+      sessionStorage.setItem(DEMO_SESSION_KEY, id);
     }
     return id;
   } catch (e) {
     return 'd_' + Date.now();
+  }
+}
+
+function getDemoContactPayload() {
+  try {
+    const user = JSON.parse(localStorage.getItem('demoUser') || 'null');
+    if (!user || !user.email) return {};
+    const attribution = window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function'
+      ? window.JCPLeadAttribution.getPayload()
+      : {};
+    return {
+      email: String(user.email).trim(),
+      first_name: String(user.firstName || '').trim(),
+      last_name: String(user.lastName || '').trim(),
+      company: String(user.businessName || '').trim(),
+      business_type: String(user.niche || '').trim(),
+      demo_goals: Array.isArray(user.goals) ? user.goals : undefined,
+      ...attribution,
+    };
+  } catch (e) {
+    return {};
   }
 }
 
@@ -319,7 +364,8 @@ function jcpDemoTrack(eventType, stepNumber, metadata) {
       session_id: getDemoSessionId(),
       event_type: eventType,
       step_number: stepNumber != null ? stepNumber : undefined,
-      metadata: metadata || undefined
+      metadata: metadata || undefined,
+      ...getDemoContactPayload(),
     };
     fetch(url, {
       method: 'POST',
@@ -334,12 +380,14 @@ function getDemoUserFromUrl() {
   try {
     const params = new URLSearchParams(window.location.search);
     const name = params.get('name') || params.get('first_name');
+    const lastName = params.get('last_name');
     const business = params.get('business') || params.get('company');
     const niche = params.get('niche') || params.get('business_type');
     const email = params.get('email');
-    if (name || business || niche || email) {
+    if (name || lastName || business || niche || email) {
       return {
         firstName: decodeURIComponent(name || '').trim() || demoUser.firstName,
+        lastName: decodeURIComponent(lastName || '').trim() || demoUser.lastName,
         businessName: decodeURIComponent(business || '').trim() || demoUser.businessName,
         niche: decodeURIComponent(niche || '').trim() || demoUser.niche,
         email: decodeURIComponent(email || '').trim() || ''
@@ -483,38 +531,75 @@ const LOCATION_STORAGE_KEY = 'jcp_active_location_id';
 /* ---------------------------
    Guide Content
 ---------------------------- */
+const DEMO_OUTCOME_ITEMS = [
+  'Published on your website',
+  'Posted to social media',
+  'Live on Google Business',
+  'Added to JobCapturePro directory',
+  'Review request sent',
+];
+
 const demoGuideContent = {
   step1: {
     pill: 'Step 1',
     title: 'Start the demo',
-    body: 'Click “Start Demo” to run the walkthrough.'
+    body: 'Tap Start Demo above. You will walk through the real workflow step by step.',
+    interactHint: 'Tap the highlighted Start Demo button.'
   },
   step2: {
     pill: 'Step 2',
     title: 'Tap + to create a check-in',
-    body: 'This is what your tech does on each job. One quick check-in powers everything.'
+    body: 'This is what your tech does on each job. One quick check-in powers everything.',
+    interactHint: 'Tap the + button, then choose New Check-in.'
   },
   step3: {
     pill: 'Step 3',
     title: 'Add a photo, then submit',
-    body: 'Photos alone generate the job content. Add one photo and press “Submit”.'
+    body: 'Photos generate the job content. Add one photo, then tap Submit.',
+    interactHint: 'Tap the camera, add a photo, then tap Submit.'
   },
   step4: {
     pill: 'Step 4',
     title: 'Publish the job',
-    body: 'Tap “Save & Publish” to push this job to your website + Google + Facebook.'
+    body: 'Tap Publish Everywhere to push this job to your website, Google, social media and directory.',
+    interactHint: 'Tap Publish Everywhere to continue.'
   },
   step5: {
     pill: 'Step 5',
     title: 'Request a review',
-    body: 'Now send a review request.'
+    body: 'Review requests go out automatically. Tap Request Review to preview it.',
+    interactHint: 'Tap Request Review to preview the automatic send.'
   },
   step6: {
-    pill: 'Final Step',
-    title: 'View your listing in the directory',
-    body: 'Your completed job unlocks your verified directory listing. Click to view how customers see you.'
+    pill: 'Final step',
+    title: 'See everything that published',
+    body: 'Swipe the dots to explore what happened automatically for this job.',
+    interactHint: ''
+  },
+  step6Dock: {
+    pill: 'Final step',
+    title: 'Ready to get started?',
+    body: 'Start free and turn every completed job into proof that drives more calls.',
+    interactHint: ''
   }
 };
+
+const OUTCOMES_SLIDE_LABELS = [
+  'Live on your website',
+  'Posted to social media',
+  'Live on Google Business',
+  'Added to JobCapturePro directory',
+  'New 5-star review received',
+];
+
+const outcomesSlideshow = {
+  index: 0,
+  total: 5,
+  isOpen: false,
+  touchStartX: 0,
+};
+
+let outcomesConfettiFrame = null;
 
 
 /* ---------------------------
@@ -897,23 +982,30 @@ function applyFocalPoint() {
     social: $('focus-social')
   };
 
-// PERMANENTLY DISABLE GUIDED DIMMING
-if (state.guideDisabled || state.isFinalStep) {
-  document.body.classList.remove('show-website', 'show-social');
-
-  document
-    .querySelectorAll('.is-dimmed, .is-focused')
-    .forEach(el => {
-      el.classList.remove('is-dimmed');
-      el.classList.remove('is-focused');
+  if (isGuidedDemoRun()) {
+    document.querySelectorAll('.is-dimmed, .is-focused').forEach((el) => {
+      el.classList.remove('is-dimmed', 'is-focused');
     });
+    document.body.classList.remove('show-website', 'show-social');
 
-  return;
-}
+    if (state.guideDisabled || state.isFinalStep) {
+      hideMobileSpotlight();
+      return;
+    }
 
+    positionMobileSpotlight();
+    return;
+  }
 
-  // Default behavior
-  Object.values(zones).forEach(el => {
+  if (state.guideDisabled || state.isFinalStep) {
+    document.body.classList.remove('show-website', 'show-social');
+    document.querySelectorAll('.is-dimmed, .is-focused').forEach((el) => {
+      el.classList.remove('is-dimmed', 'is-focused');
+    });
+    return;
+  }
+
+  Object.values(zones).forEach((el) => {
     if (!el) return;
     el.classList.add('is-dimmed');
     el.classList.remove('is-focused');
@@ -932,32 +1024,181 @@ if (state.guideDisabled || state.isFinalStep) {
     case 'step4':
       focus(zones.phone);
       break;
-
     case 'step5':
       focus(zones.social);
       break;
-
     default:
       focus(zones.website);
   }
-    // Mobile visibility control (responsive guided mode)
-    document.body.classList.toggle(
-      'show-website',
-      ['step4', 'step6'].includes(tour.stepKey)
-    );
 
-    document.body.classList.toggle(
-      'show-social',
-      tour.stepKey === 'step5'
-    );
+  document.body.classList.toggle('show-website', ['step4', 'step6'].includes(tour.stepKey));
+  document.body.classList.toggle('show-social', tour.stepKey === 'step5');
 }
 
 function applyMobileMode() {
-  const isMobile = window.matchMedia('(max-width: 820px)').matches;
+  const isMobile = isMobileViewport();
   document.body.classList.toggle('is-mobile-mode', isMobile);
 
+  const usePhoneShell = isPrototype || (isDemoMode && isMobile);
+  document.body.classList.toggle('jcp-phone-shell', usePhoneShell);
+  document.documentElement.classList.toggle('jcp-demo-run-mobile', isDemoMode && isMobile);
+  document.body.classList.toggle('jcp-guided-demo', isGuidedDemoRun());
+  document.body.classList.toggle('jcp-desktop-guided', isGuidedDemoRun() && !isMobileViewport());
+  document.body.classList.toggle('demo-run-only', isDemoMode);
+
   const stepper = $('mobile-stepper');
-  if (stepper) stepper.style.display = isMobile ? 'flex' : 'none';
+  if (stepper) {
+    if (isGuidedDemoRun()) {
+      stepper.style.display = 'flex';
+    } else {
+      stepper.style.display = 'none';
+    }
+  }
+
+  updateGuidedCoachBackdrop();
+  syncMobileGuideChrome();
+}
+
+function updateGuidedCoachBackdrop() {
+  const backdrop = $('guidedCoachBackdrop');
+  if (!backdrop) return;
+  const show = isGuidedDemoRun() && !mobileGuideCollapsed && !state.isFinalStep;
+  backdrop.hidden = !show;
+}
+
+let mobileGuideCollapsed = false;
+
+function hideMobileSpotlight() {
+  const ring = $('mobileSpotlight');
+  if (ring) ring.style.display = 'none';
+}
+
+function positionMobileSpotlight() {
+  const ring = $('mobileSpotlight');
+  if (!ring || !isGuidedDemoRun() || mobileGuideCollapsed || tour.isHidden || state.guideDisabled || state.isFinalStep) {
+    hideMobileSpotlight();
+    return;
+  }
+
+  const selector = tour.anchors[tour.stepKey];
+  const target = selector ? document.querySelector(selector) : null;
+  if (!target || target.offsetParent === null) {
+    hideMobileSpotlight();
+    return;
+  }
+
+  const pad = 10;
+  const r = target.getBoundingClientRect();
+  ring.style.display = 'block';
+  ring.style.top = `${Math.round(r.top - pad)}px`;
+  ring.style.left = `${Math.round(r.left - pad)}px`;
+  ring.style.width = `${Math.round(r.width + pad * 2)}px`;
+  ring.style.height = `${Math.round(r.height + pad * 2)}px`;
+}
+
+function setMobileGuideCollapsed(collapsed) {
+  mobileGuideCollapsed = collapsed;
+  document.body.classList.toggle('jcp-mobile-guide-collapsed', collapsed);
+  const stepper = $('mobile-stepper');
+  const pill = $('mobileGuidePill');
+  if (stepper) stepper.classList.toggle('is-collapsed', collapsed);
+  if (pill) pill.hidden = !collapsed || state.isFinalStep;
+  updateGuidedCoachBackdrop();
+  if (collapsed && isGuidedDemoRun()) {
+    const stepNum = tour.stepKey && /^step(\d)$/.test(tour.stepKey) ? parseInt(tour.stepKey.slice(-1), 10) : null;
+    jcpDemoTrack('demo_coach_minimized', stepNum);
+  }
+  if (collapsed) {
+    hideMobileSpotlight();
+  } else {
+    positionMobileSpotlight();
+  }
+  updateMobileLayoutMetrics();
+}
+
+function toggleMobileGuideCollapse() {
+  setMobileGuideCollapsed(!mobileGuideCollapsed);
+}
+
+function syncMobileGuideChrome() {
+  if (!isGuidedDemoRun()) {
+    updateGuidedCoachBackdrop();
+    return;
+  }
+
+  const stepKey = tour.stepKey;
+  const step = stepKey === 'step6' && !outcomesSlideshow.isOpen
+    ? demoGuideContent.step6Dock
+    : (stepKey ? demoGuideContent[stepKey] : null);
+  const stepNum = stepKey && /^step(\d)$/.test(stepKey) ? parseInt(stepKey.slice(-1), 10) : null;
+  const total = 6;
+
+  if (stepNum) {
+    safeText('mobileDemoStep', `Step ${stepNum} of ${total}`);
+    const fill = $('mobileStepProgressFill');
+    if (fill) fill.style.width = `${(stepNum / total) * 100}%`;
+  }
+
+  if (step) {
+    safeText('mobileStepTitle', step.title);
+    safeText('mobileStepBody', step.body);
+    safeText('mobileGuidePillText', step.pill);
+  }
+
+  updateMobileStepperLabel();
+  updateMobileLayoutMetrics();
+  positionMobileSpotlight();
+  updateGuidedCoachBackdrop();
+}
+
+function updateMobileLayoutMetrics() {
+  if (!isGuidedDemoRun() || !document.body.classList.contains('is-mobile-mode')) return;
+  const stepper = $('mobile-stepper');
+  let height = 140;
+  if (stepper && !stepper.classList.contains('is-collapsed')) {
+    const style = window.getComputedStyle(stepper);
+    if (style.display !== 'none' && style.visibility !== 'hidden') {
+      height = Math.ceil(stepper.getBoundingClientRect().height);
+    }
+  } else {
+    height = 64;
+  }
+  document.documentElement.style.setProperty('--jcp-stepper-height', `${height}px`);
+}
+
+function getDemoSalesPhoneHref() {
+  const raw =
+    (window.JCP_ONBOARDING && window.JCP_ONBOARDING.salesPhone) ||
+    (window.JCP_CONFIG && window.JCP_CONFIG.salesPhone) ||
+    '';
+  const digits = String(raw).replace(/[^\d+]/g, '');
+  if (digits) return `tel:${digits}`;
+  return `${(baseUrl || '').replace(/\/$/, '')}/contact/`;
+}
+
+function updateMobileStepperLabel() {
+  const btn = $('btnMobileNext');
+  const hint = $('mobileStepInteractHint');
+  if (!btn || !isGuidedDemoRun()) return;
+
+  const label = tour.stepKey ? getNextLabelForStep(tour.stepKey) : 'Next →';
+  btn.textContent = label;
+
+  const hideNext = tour.stepKey !== 'step6' || outcomesSlideshow.isOpen;
+  btn.style.display = hideNext ? 'none' : '';
+
+  const reopen = $('demoOutcomesReopenCta');
+  if (reopen) {
+    const showReopen = tour.stepKey === 'step6' && !outcomesSlideshow.isOpen;
+    reopen.hidden = !showReopen;
+  }
+
+  if (hint) {
+    const step = tour.stepKey ? demoGuideContent[tour.stepKey] : null;
+    const hintText = step?.interactHint || '';
+    hint.textContent = hintText;
+    hint.hidden = !hideNext || !hintText;
+  }
 }
 
 /* =========================================================
@@ -977,12 +1218,19 @@ const tour = {
       step3: '#submit-btn',
       step4: '#btnSavePublish',
       step5: '#btnRequestReview',
-      step6: '#btnViewDirectory',
+      step6: '#demoOutcomesModal',
     }
 };
 
 
 function showTour() {
+  if (isGuidedDemoRun()) {
+    syncMobileGuideChrome();
+    $('tour-float')?.classList.add('is-hidden');
+    $('tour-bubble')?.classList.add('is-hidden');
+    return;
+  }
+
   const el = $('tour-float');
   const bubble = $('tour-bubble');
   if (!el || !bubble) return;
@@ -1001,6 +1249,10 @@ function showTour() {
 }
 
 function minimizeTour() {
+  if (isGuidedDemoRun()) {
+    toggleMobileGuideCollapse();
+    return;
+  }
   if (state.isFinalStep) return;
 
   const el = $('tour-float');
@@ -1041,11 +1293,21 @@ function setTourStep(stepKey) {
       tourEl.classList.toggle('final-step', state.isFinalStep);
     }
   tour.stepKey = stepKey;
+  if (stepKey) {
+    document.body.dataset.tourStep = stepKey;
+  } else {
+    delete document.body.dataset.tourStep;
+  }
+  if (isGuidedDemoRun() && stepKey !== 'step6') {
+    setMobileGuideCollapsed(false);
+  }
   const stepNum = stepKey && stepKey.match(/^step(\d)$/) ? parseInt(stepKey.slice(-1), 10) : null;
-  if (stepNum >= 1 && stepNum <= 5) {
+  if (stepNum >= 1 && stepNum <= 6) {
     jcpDemoTrack('demo_step_viewed', stepNum);
   }
   updateTourNextLabel(getNextLabelForStep(stepKey));
+  updateMobileStepperLabel();
+  syncCreateSheetDemoState();
   // Disable back buttons during guided steps (prevents breaking the flow) — skip on prototype
   if (!isPrototype) {
     lockBackButtons(['step2','step3','step4','step5'].includes(stepKey));
@@ -1087,16 +1349,26 @@ function setTourStep(stepKey) {
     });
 
   updateTourFloating();
+  applyFocalPoint();
+  if (isGuidedDemoRun() && document.body.classList.contains('is-mobile-mode') && stepKey !== 'step6') {
+    resetGuidedMobileScroll();
+  }
+  scrollGuidedStepTarget(stepKey);
 }
 
 function getNextLabelForStep(stepKey) {
   if (stepKey === 'step4') return 'Publish →';
   if (stepKey === 'step5') return 'Send Review →';
-  if (stepKey === 'step6') return 'View Directory →';
+  if (stepKey === 'step6') return 'Get Started Free';
   return 'Next →';
 }
 
 function updateTourFloating() {
+  if (isGuidedDemoRun()) {
+    syncMobileGuideChrome();
+    return;
+  }
+
   if (tour.isHidden || tour.isMinimized) return;
 
   const step = demoGuideContent[tour.stepKey];
@@ -1138,6 +1410,8 @@ function updateTourFloating() {
 }
 
 function positionTourNear() {
+  if (isGuidedDemoRun()) return;
+
   const floatEl = $('tour-float');
   const arrow = $('tour-arrow');
   if (!floatEl || !arrow) return;
@@ -1300,6 +1574,11 @@ if (screenId === 'edit-screen' && !state.hasPublished) {
 
   // Attention
   syncAttentionAnimations();
+
+  if (isGuidedDemoRun() && document.body.classList.contains('is-mobile-mode')) {
+    resetGuidedMobileScroll();
+    updateMobileLayoutMetrics();
+  }
 }
 
 /* =========================================================
@@ -1607,9 +1886,21 @@ function openCreateActionSheet() {
   $('fabNewCheckin')?.classList.remove('fab-attention', 'fab-glow');
   document.querySelectorAll('.fab').forEach((el) => el.classList.add('is-sheet-open'));
 
+  syncCreateSheetDemoState();
   overlay.classList.add('is-open');
   sheet.classList.add('is-open');
   overlay.setAttribute('aria-hidden', 'false');
+}
+
+function syncCreateSheetDemoState() {
+  const reviewBtn = $('create-action-review');
+  const demoNote = $('createReviewDemoNote');
+  if (!reviewBtn) return;
+
+  const disabled = isGuidedDemoRun() && tour.stepKey === 'step2';
+  reviewBtn.classList.toggle('is-demo-disabled', disabled);
+  reviewBtn.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+  if (demoNote) demoNote.hidden = !disabled;
 }
 
 function closeCreateActionSheet() {
@@ -1624,6 +1915,10 @@ function closeCreateActionSheet() {
 }
 
 function handleCreateAction(action) {
+  if (action === 'review' && isGuidedDemoRun() && tour.stepKey === 'step2') {
+    showDemoRestrictionTooltip($('create-action-review'), 'Send review request is not available in the demo');
+    return;
+  }
   closeCreateActionSheet();
   if (action === 'review') {
     goToReviewRequestOptions('home-screen');
@@ -2035,7 +2330,16 @@ websiteContainer.insertAdjacentHTML(
     // MARK AS PUBLISHED
     state.hasPublished = true;
 
-    // EXIT GUIDED MODE PERMANENTLY
+    if (isGuidedDemoRun()) {
+      await runGuidedPublishSequence();
+      setScreen('edit-screen');
+      setTourStep('step5');
+      updateTourFloating();
+      applyFocalPoint();
+      return;
+    }
+
+    // EXIT GUIDED MODE PERMANENTLY (legacy non-guided path)
     state.guideDisabled = true;
 
     // Publish to social
@@ -2053,6 +2357,32 @@ websiteContainer.insertAdjacentHTML(
 
     // CRITICAL: force tooltip + layout refresh
     updateTourFloating();
+}
+
+async function runGuidedPublishSequence() {
+  const overlay = $('demoPublishOverlay');
+  const items = overlay ? [...overlay.querySelectorAll('.demo-publish-item')] : [];
+  if (!overlay || !items.length) {
+    await publishToSocial();
+    return;
+  }
+
+  overlay.classList.add('active');
+  document.body.classList.add('jcp-publish-modal-open');
+  items.forEach((item) => item.classList.remove('is-done'));
+
+  for (let i = 0; i < items.length; i++) {
+    await wait(580);
+    items[i].classList.add('is-done');
+    if (i === 1) {
+      await publishToSocial();
+    }
+  }
+
+  await wait(650);
+  overlay.classList.remove('active');
+  document.body.classList.remove('jcp-publish-modal-open');
+  jcpDemoTrack('demo_publish_completed', 4);
 }
 
 async function publishToSocial() {
@@ -2081,10 +2411,755 @@ async function publishToSocial() {
 
 function openReviewDialog() {
   $('review-modal')?.classList.add('active');
+  document.body.classList.add('jcp-review-modal-open');
 }
 
 function closeReviewDialog() {
   $('review-modal')?.classList.remove('active');
+  document.body.classList.remove('jcp-review-modal-open');
+}
+
+function populateDemoReviewModal() {
+  const checkin = getCurrentCheckinForReview();
+  const title = checkin?.title || 'Water Heater Replacement';
+  const address = checkin?.address || '105 Walnut St';
+  const location = checkin?.location || 'Austin, TX';
+  const imgSrc = checkin?.image || demoPhotos[0];
+
+  safeText('demoReviewTitle', title);
+  safeText('demoReviewLocation', `${address}, ${location}`);
+  const photo = $('demoReviewPhoto');
+  if (photo) photo.src = imgSrc;
+
+  const message = $('demoReviewMessage');
+  if (message) {
+    message.value = 'We loved working with you! If you have a moment to leave a review, it would mean a lot to us.';
+  }
+}
+
+function openDemoReviewModal() {
+  populateDemoReviewModal();
+  $('review-modal')?.classList.add('active');
+  document.body.classList.add('jcp-review-modal-open');
+  setMobileGuideCollapsed(true);
+}
+
+async function confirmDemoReviewSend() {
+  const sendBtn = $('btnDemoReviewSend');
+  if (sendBtn) {
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending…';
+  }
+
+  await wait(900);
+
+  closeReviewDialog();
+  if (tour.stepKey === 'step5') {
+    setMobileGuideCollapsed(false);
+  }
+  if (sendBtn) {
+    sendBtn.disabled = false;
+    sendBtn.textContent = 'Send';
+  }
+
+  await completeGuidedReviewFlow();
+}
+
+async function completeGuidedReviewFlow() {
+  state.metrics.reviews++;
+  safeText('metric-reviews', String(state.metrics.reviews));
+  jcpDemoTrack('demo_review_sent', 5);
+
+  setScreen('home-screen');
+  renderHomeCheckins();
+
+  setTourStep('step6');
+  applyFocalPoint();
+  syncMobileGuideChrome();
+
+  await openOutcomesSlideshow();
+
+  lockBackButtons(false);
+  document.querySelectorAll('.is-disabled').forEach((el) => {
+    el.classList.remove('is-disabled');
+    el.disabled = false;
+  });
+}
+
+function hideDemoOutcomes() {
+  hideDemoOutcomesInline();
+  closeOutcomesSlideshow();
+}
+
+function hideDemoOutcomesInline() {
+  const panel = $('demoOutcomes');
+  const review = $('demoReviewReceived');
+  if (panel) {
+    panel.hidden = true;
+    panel.classList.remove('is-visible');
+  }
+  if (review) {
+    review.hidden = true;
+    review.classList.remove('is-visible');
+  }
+  const list = $('demoOutcomesList');
+  if (list) list.innerHTML = '';
+}
+
+function getDemoDirectoryUrl() {
+  return `${(baseUrl || '').replace(/\/$/, '')}/directory/`;
+}
+
+function getCompanyInitial(name) {
+  const trimmed = String(name || '').trim();
+  return trimmed ? trimmed.charAt(0).toUpperCase() : '?';
+}
+
+function getAvatarColor(initial) {
+  const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6'];
+  const code = String(initial || 'A').charCodeAt(0);
+  return colors[code % colors.length];
+}
+
+function getOutcomesJobContext() {
+  const checkin = getCurrentCheckinForReview();
+  const businessName = demoUser.businessName || 'Your Business';
+  const image = checkin?.image || demoPhotos[0] || '';
+  const address = checkin?.address || '105 Walnut St';
+  const location = checkin?.location || 'Austin, TX';
+  const title = checkin?.title || 'Water Heater Replacement';
+  const summary = checkin?.summary || excerptText(descriptions[0], 16);
+  const nicheLabel = demoUser.niche
+    ? demoUser.niche.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
+    : 'Plumbing';
+  const slug = businessName.toLowerCase().replace(/[^a-z0-9]+/g, '') || 'yourbusiness';
+  const initial = getCompanyInitial(businessName);
+  return {
+    businessName,
+    image,
+    address,
+    location,
+    title,
+    summary,
+    nicheLabel,
+    slug,
+    firstName: demoUser.firstName || 'John',
+    initial,
+    avatarColor: getAvatarColor(initial),
+    jobsCount: state.metrics?.checkins ?? 12,
+    reviewsCount: state.metrics?.reviews ?? 48,
+    rating: '5.0',
+    directoryUrl: getDemoDirectoryUrl(),
+  };
+}
+
+function buildOutcomesSlideHtml(index, ctx) {
+  const e = escapeHtml;
+  const img = e(ctx.image);
+  const title = e(ctx.title);
+  const business = e(ctx.businessName);
+  const address = e(ctx.address);
+  const location = e(ctx.location);
+  const webSummary = e(excerptText(ctx.summary, 8));
+  const socialSummary = e(excerptText(ctx.summary, 12));
+  const gbpSummary = e(excerptText(ctx.summary, 10));
+  const niche = e(ctx.nicheLabel);
+  const slug = e(ctx.slug);
+  const first = e(ctx.firstName);
+  const initial = e(ctx.initial);
+  const jobsCount = Number(ctx.jobsCount) || 12;
+  const reviewsCount = Number(ctx.reviewsCount) || 48;
+  const rating = e(ctx.rating);
+  const directoryUrl = e(ctx.directoryUrl);
+
+  switch (index) {
+    case 0:
+      return `
+        <article class="demo-outcomes-slide" data-slide="0">
+          <div class="outcomes-preview outcomes-preview--website">
+            <div class="outcomes-browser">
+              <div class="outcomes-browser__bar">
+                <span></span><span></span><span></span>
+                <div class="outcomes-browser__url">${slug}.com/jobs</div>
+              </div>
+              <div class="outcomes-browser__body">
+                <p class="outcomes-browser__heading">Recent work from ${business}</p>
+                <div class="outcomes-job-card">
+                  <img src="${img}" alt="" width="120" height="90" loading="lazy">
+                  <div>
+                    <strong>${title}</strong>
+                    <span>${address}, ${location}</span>
+                    <p>${webSummary}</p>
+                    <em>Published just now</em>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>`;
+    case 1:
+      return `
+        <article class="demo-outcomes-slide" data-slide="1">
+          <div class="outcomes-preview outcomes-preview--social">
+            <div class="outcomes-social-card">
+              <div class="outcomes-social-card__head">
+                <span class="outcomes-social-card__avatar">${business.charAt(0)}</span>
+                <div>
+                  <strong>${business}</strong>
+                  <span>Just now · ${location}</span>
+                </div>
+              </div>
+              <p class="outcomes-social-card__copy">${socialSummary}</p>
+              <img class="outcomes-social-card__photo" src="${img}" alt="" width="400" height="220" loading="lazy">
+              <div class="outcomes-social-card__reactions">
+                <span>👍 Like</span><span>💬 Comment</span><span>↗ Share</span>
+              </div>
+            </div>
+          </div>
+        </article>`;
+    case 2:
+      return `
+        <article class="demo-outcomes-slide" data-slide="2">
+          <div class="outcomes-preview outcomes-preview--google">
+            <div class="outcomes-gbp-card">
+              <div class="outcomes-gbp-card__brand">
+                <img src="${assetBase}/shared/assets/icons/lucide/map-pin.svg" class="lucide-icon lucide-icon-sm" alt="">
+                <strong>${business}</strong>
+                <span>Google Business Profile</span>
+              </div>
+              <img class="outcomes-gbp-card__photo" src="${img}" alt="" width="400" height="200" loading="lazy">
+              <h4>${title} completed in ${location}</h4>
+              <p>${gbpSummary}</p>
+              <span class="outcomes-gbp-card__meta">Posted automatically · Verified job</span>
+            </div>
+          </div>
+        </article>`;
+    case 3:
+      return `
+        <article class="demo-outcomes-slide" data-slide="3">
+          <div class="outcomes-preview outcomes-preview--directory">
+            <div class="directory-card is-demo outcomes-directory-card" role="article">
+              <span class="demo-flag">Demo Listing</span>
+              <span class="directory-badge verified">Verified</span>
+              <div class="card-header">
+                <div class="company-mark">
+                  <div class="company-avatar outcomes-demo-avatar">${initial}</div>
+                </div>
+                <div class="card-header-content">
+                  <h3 class="card-name">${business}</h3>
+                </div>
+              </div>
+              <div class="card-location">
+                <span class="card-location-segment">
+                  <img src="${assetBase}/shared/assets/icons/lucide/map-pin.svg" class="lucide-icon lucide-icon-xs" alt="">
+                  <span>${location}</span>
+                </span>
+                <span class="card-location-segment">
+                  <img src="${assetBase}/shared/assets/icons/lucide/briefcase.svg" class="lucide-icon lucide-icon-xs" alt="">
+                  <span>${niche}</span>
+                </span>
+              </div>
+              <div class="card-meta-row">
+                <span class="meta-inline">
+                  <img src="${assetBase}/shared/assets/icons/lucide/camera.svg" class="lucide-icon lucide-icon-xs" alt="">
+                  ${jobsCount} jobs
+                </span>
+                <span class="meta-divider">·</span>
+                <span class="meta-inline">
+                  <img src="${assetBase}/shared/assets/icons/lucide/clock.svg" class="lucide-icon lucide-icon-xs" alt="">
+                  Active just now
+                </span>
+              </div>
+              <div class="card-rating">
+                <div class="stars">★★★★★</div>
+                <span class="rating-text">${rating} (${reviewsCount})</span>
+              </div>
+              <div class="card-footer">
+                <span class="view-profile">View activity</span>
+              </div>
+            </div>
+            <a href="${directoryUrl}" target="_blank" rel="noopener noreferrer" class="outcomes-directory-view-link">View the directory</a>
+          </div>
+        </article>`;
+    default:
+      return `
+        <article class="demo-outcomes-slide" data-slide="4">
+          <div class="outcomes-preview outcomes-preview--review">
+            <div class="outcomes-review-card">
+              <div class="outcomes-review-card__stars" aria-hidden="true">★★★★★</div>
+              <div class="outcomes-review-card__body">
+                <img class="outcomes-review-card__thumb" src="${img}" alt="" width="56" height="56" loading="lazy">
+                <div class="outcomes-review-card__copy">
+                  <strong>New 5-star review</strong>
+                  <p>"Great service, fast and very professional!"</p>
+                  <small>Arrived right after your review request</small>
+                </div>
+              </div>
+              <div class="outcomes-review-card__sent">
+                <img src="${assetBase}/shared/assets/icons/lucide/send.svg" class="lucide-icon lucide-icon-sm" alt="">
+                Review request sent automatically after the job
+              </div>
+            </div>
+          </div>
+        </article>`;
+  }
+}
+
+function renderOutcomesSlides() {
+  const track = $('demoOutcomesTrack');
+  const dots = $('demoOutcomesDots');
+  if (!track || !dots) return;
+
+  const ctx = getOutcomesJobContext();
+  track.innerHTML = Array.from({ length: outcomesSlideshow.total }, (_, i) => buildOutcomesSlideHtml(i, ctx)).join('');
+  dots.innerHTML = Array.from({ length: outcomesSlideshow.total }, (_, i) => (
+    `<button type="button" class="demo-outcomes-dot${i === 0 ? ' is-active' : ''}" data-slide="${i}" aria-label="Slide ${i + 1}" role="tab"></button>`
+  )).join('');
+}
+
+function updateOutcomesSlideshowUi() {
+  const { index, total } = outcomesSlideshow;
+  const track = $('demoOutcomesTrack');
+  if (track) track.style.transform = `translateX(-${index * 100}%)`;
+
+  document.querySelectorAll('.demo-outcomes-slide').forEach((slide, i) => {
+    slide.classList.toggle('is-active', i === index);
+  });
+  document.querySelectorAll('.demo-outcomes-dot').forEach((dot, i) => {
+    dot.classList.toggle('is-active', i === index);
+    dot.setAttribute('aria-selected', i === index ? 'true' : 'false');
+  });
+
+  safeText('demoOutcomesSlideCounter', `${index + 1} of ${total}`);
+  safeText('demoOutcomesSlideLabel', OUTCOMES_SLIDE_LABELS[index] || '');
+
+  const isLast = index >= total - 1;
+  const nextBtn = $('demoOutcomesNextCta');
+  const finishBtn = $('demoOutcomesFinishCta');
+  if (nextBtn) {
+    nextBtn.hidden = isLast;
+    nextBtn.disabled = isLast;
+  }
+  if (finishBtn) {
+    finishBtn.classList.toggle('demo-outcomes-modal__finish--solo', isLast);
+  }
+}
+
+function handleOutcomesModalAction(action) {
+  if (action === 'next') {
+    if (outcomesSlideshow.index < outcomesSlideshow.total - 1) {
+      setOutcomesSlide(outcomesSlideshow.index + 1);
+    }
+    return;
+  }
+  if (action === 'finish') {
+    completeDemoConversion();
+  }
+}
+
+function onOutcomesModalClick(e) {
+  if (e.target.closest('#demoOutcomesModalClose')) {
+    e.preventDefault();
+    closeOutcomesSlideshow();
+    return;
+  }
+  if (e.target.closest('#demoOutcomesModalBackdrop')) {
+    closeOutcomesSlideshow();
+    return;
+  }
+
+  const actionBtn = e.target.closest('[data-outcomes-action]');
+  if (actionBtn) {
+    e.preventDefault();
+    e.stopPropagation();
+    handleOutcomesModalAction(actionBtn.dataset.outcomesAction);
+    return;
+  }
+
+  // Legacy markup (cached demo/index.html)
+  if (e.target.closest('#demoOutcomesNext, #demoOutcomesPrev')) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.target.closest('#demoOutcomesPrev')) return;
+    handleOutcomesModalAction('next');
+    return;
+  }
+  if (e.target.closest('#demoOutcomesFinish, #demoOutcomesStartCta, #demoOutcomesPrimaryCta')) {
+    e.preventDefault();
+    e.stopPropagation();
+    handleOutcomesModalAction('finish');
+  }
+}
+
+function setOutcomesSlide(index, { trackAnalytics = true } = {}) {
+  const clamped = Math.min(Math.max(0, index), outcomesSlideshow.total - 1);
+  outcomesSlideshow.index = clamped;
+  updateOutcomesSlideshowUi();
+  if (trackAnalytics && outcomesSlideshow.isOpen) {
+    jcpDemoTrack('demo_outcomes_slide', clamped + 1);
+  }
+}
+
+function stopOutcomesConfetti() {
+  if (outcomesConfettiFrame) {
+    cancelAnimationFrame(outcomesConfettiFrame);
+    outcomesConfettiFrame = null;
+  }
+  const canvas = document.getElementById('demoOutcomesConfetti');
+  if (canvas) canvas.remove();
+}
+
+function fireOutcomesConfetti() {
+  stopOutcomesConfetti();
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  const canvas = document.createElement('canvas');
+  canvas.id = 'demoOutcomesConfetti';
+  canvas.className = 'demo-outcomes-confetti';
+  canvas.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(canvas);
+
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
+  canvas.style.width = `${width}px`;
+  canvas.style.height = `${height}px`;
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const colors = ['#ff503e', '#ff7a59', '#fbbf24', '#34d399', '#60a5fa', '#ffffff', '#f472b6'];
+  const particleCount = width < 768 ? 90 : 140;
+  const particles = [];
+
+  for (let i = 0; i < particleCount; i++) {
+    particles.push({
+      x: Math.random() * width,
+      y: -20 - Math.random() * height * 0.4,
+      vx: (Math.random() - 0.5) * 5,
+      vy: Math.random() * 4 + 3,
+      w: Math.random() * 7 + 4,
+      h: Math.random() * 4 + 3,
+      rot: Math.random() * Math.PI * 2,
+      vr: (Math.random() - 0.5) * 0.25,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      gravity: 0.18 + Math.random() * 0.1,
+      drag: 0.992,
+      life: 1,
+      decay: 0.005 + Math.random() * 0.004,
+      sway: Math.random() * Math.PI * 2,
+      swaySpeed: 0.04 + Math.random() * 0.03,
+    });
+  }
+
+  const start = performance.now();
+  const maxDuration = 3200;
+
+  function tick(now) {
+    ctx.clearRect(0, 0, width, height);
+    let alive = 0;
+
+    for (const particle of particles) {
+      particle.sway += particle.swaySpeed;
+      particle.vx += Math.sin(particle.sway) * 0.08;
+      particle.vy += particle.gravity;
+      particle.vx *= particle.drag;
+      particle.x += particle.vx;
+      particle.y += particle.vy;
+      particle.rot += particle.vr;
+      particle.life -= particle.decay;
+
+      if (particle.life <= 0 || particle.y > height + 40) continue;
+      alive++;
+
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, particle.life);
+      ctx.translate(particle.x, particle.y);
+      ctx.rotate(particle.rot);
+      ctx.fillStyle = particle.color;
+      ctx.fillRect(-particle.w / 2, -particle.h / 2, particle.w, particle.h);
+      ctx.restore();
+    }
+
+    if (alive > 0 && now - start < maxDuration) {
+      outcomesConfettiFrame = requestAnimationFrame(tick);
+    } else {
+      stopOutcomesConfetti();
+    }
+  }
+
+  outcomesConfettiFrame = requestAnimationFrame(tick);
+}
+
+function openOutcomesSlideshow() {
+  const modal = $('demoOutcomesModal');
+  if (!modal) return;
+
+  hideDemoOutcomesInline();
+  outcomesSlideshow.isOpen = true;
+  outcomesSlideshow.index = 0;
+
+  renderOutcomesSlides();
+  wireOutcomesSlideshow();
+  setOutcomesSlide(0, { trackAnalytics: false });
+
+  modal.hidden = false;
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('jcp-outcomes-modal-open');
+  hideOutcomesCtaDock();
+  setMobileGuideCollapsed(true);
+  updateMobileLayoutMetrics();
+  hideMobileSpotlight();
+  updateGuidedCoachBackdrop();
+  jcpDemoTrack('demo_outcomes_opened', 6);
+
+  requestAnimationFrame(() => {
+    modal.classList.add('is-visible');
+    fireOutcomesConfetti();
+  });
+  syncMobileGuideChrome();
+}
+
+function showOutcomesCtaDock() {
+  if (tour.stepKey !== 'step6' || !isGuidedDemoRun()) return;
+  document.body.classList.add('jcp-outcomes-cta-dock');
+  setMobileGuideCollapsed(false);
+  updateMobileLayoutMetrics();
+  syncMobileGuideChrome();
+}
+
+function hideOutcomesCtaDock() {
+  document.body.classList.remove('jcp-outcomes-cta-dock');
+}
+
+function completeDemoConversion() {
+  jcpDemoTrack('demo_outcomes_completed', 6);
+  if (outcomesSlideshow.isOpen) {
+    closeOutcomesSlideshow({ keepDock: false });
+  }
+  hideOutcomesCtaDock();
+  state.isFinalStep = true;
+  markDemoIntakeComplete();
+  showPostDemoPanel();
+}
+
+function closeOutcomesSlideshow({ keepDock = true } = {}) {
+  const modal = $('demoOutcomesModal');
+  if (!modal || modal.hidden) return;
+
+  stopOutcomesConfetti();
+  outcomesSlideshow.isOpen = false;
+  modal.classList.remove('is-visible');
+  modal.hidden = true;
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('jcp-outcomes-modal-open');
+  if (keepDock && tour.stepKey === 'step6' && isGuidedDemoRun()) {
+    showOutcomesCtaDock();
+  } else {
+    syncMobileGuideChrome();
+  }
+}
+
+function finishOutcomesSlideshow() {
+  completeDemoConversion();
+}
+
+function ensureOutcomesFooterButtons() {
+  const modal = $('demoOutcomesModal');
+  if (!modal) return;
+
+  const card = modal.querySelector('.demo-outcomes-modal__card');
+  if (!card) return;
+
+  let footer = card.querySelector('.demo-outcomes-modal__footer');
+  if (!footer) {
+    footer = document.createElement('div');
+    footer.className = 'demo-outcomes-modal__footer';
+    card.appendChild(footer);
+  }
+
+  if (!$('demoOutcomesNextCta')) {
+    const next = document.createElement('button');
+    next.type = 'button';
+    next.id = 'demoOutcomesNextCta';
+    next.className = 'btn btn-secondary demo-outcomes-modal__next';
+    next.dataset.outcomesAction = 'next';
+    next.textContent = 'Next';
+    footer.appendChild(next);
+  }
+
+  if (!$('demoOutcomesFinishCta')) {
+    const finish = document.createElement('button');
+    finish.type = 'button';
+    finish.id = 'demoOutcomesFinishCta';
+    finish.className = 'btn btn-primary demo-outcomes-modal__finish';
+    finish.dataset.outcomesAction = 'finish';
+    finish.textContent = 'Get Started Free';
+    footer.appendChild(finish);
+  }
+}
+
+function wireOutcomesSlideshow() {
+  const modal = $('demoOutcomesModal');
+  if (!modal) return;
+
+  ensureOutcomesFooterButtons();
+
+  modal.querySelectorAll('.demo-outcomes-modal__actions').forEach((el) => el.remove());
+  modal.querySelectorAll('#demoOutcomesStartCta, #demoOutcomesPrimaryCta, #demoOutcomesPrev, #demoOutcomesNext, #demoOutcomesFinish').forEach((el) => {
+    el.remove();
+  });
+
+  if (modal.dataset.bound !== '1') {
+    modal.dataset.bound = '1';
+    modal.addEventListener('click', onOutcomesModalClick);
+
+    $('demoOutcomesDots')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-slide]');
+      if (!btn) return;
+      setOutcomesSlide(parseInt(btn.dataset.slide, 10));
+    });
+
+    $('demoOutcomesTrack')?.addEventListener('click', (e) => {
+      const link = e.target.closest('.outcomes-directory-view-link');
+      if (!link) return;
+      jcpDemoTrack('cta_clicked', null, { cta: 'view_directory', source: 'demo_outcomes_modal' });
+    });
+
+    const viewport = $('demoOutcomesViewport');
+    if (viewport) {
+      viewport.addEventListener('touchstart', (e) => {
+        outcomesSlideshow.touchStartX = e.changedTouches[0].screenX;
+      }, { passive: true });
+      viewport.addEventListener('touchend', (e) => {
+        const delta = e.changedTouches[0].screenX - outcomesSlideshow.touchStartX;
+        if (Math.abs(delta) < 40) return;
+        if (delta < 0) setOutcomesSlide(outcomesSlideshow.index + 1);
+        else setOutcomesSlide(outcomesSlideshow.index - 1);
+      }, { passive: true });
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (!outcomesSlideshow.isOpen) return;
+      if (e.key === 'Escape') closeOutcomesSlideshow();
+      if (e.key === 'ArrowRight') setOutcomesSlide(outcomesSlideshow.index + 1);
+      if (e.key === 'ArrowLeft') setOutcomesSlide(outcomesSlideshow.index - 1);
+    });
+  }
+}
+
+function getDemoAppScrollParents() {
+  if (isGuidedDemoRun() && document.body.classList.contains('is-mobile-mode')) {
+    const activeApp = document.querySelector('.app-screen.active');
+    const contentArea = activeApp?.querySelector('.content-area');
+    const scrollableScreens = new Set([
+      'edit-screen',
+      'new-screen',
+      'request-review-screen',
+      'review-request-options-screen',
+    ]);
+    if (activeApp && scrollableScreens.has(activeApp.id) && contentArea) {
+      return [contentArea];
+    }
+    return [];
+  }
+  const screen = document.querySelector('.iphone-frame .screen');
+  const activeApp = document.querySelector('.app-screen.active');
+  const contentArea = activeApp?.querySelector('.content-area');
+  const parents = [];
+  if (contentArea) parents.push(contentArea);
+  if (screen) parents.push(screen);
+  return parents;
+}
+
+function resetGuidedMobileScroll() {
+  if (!isGuidedDemoRun() || !document.body.classList.contains('is-mobile-mode')) return;
+  const screen = document.querySelector('.iphone-frame .screen');
+  if (screen) screen.scrollTop = 0;
+  const contentArea = document.querySelector('.app-screen.active .content-area');
+  if (contentArea) contentArea.scrollTop = 0;
+}
+
+function getMobileStepperTop() {
+  const stepper = $('mobile-stepper');
+  if (!stepper || stepper.classList.contains('is-collapsed')) {
+    return window.innerHeight;
+  }
+  const style = window.getComputedStyle(stepper);
+  if (style.display === 'none' || style.visibility === 'hidden') {
+    return window.innerHeight;
+  }
+  return stepper.getBoundingClientRect().top;
+}
+
+function scrollGuidedControlIntoView(target, extraGap = 10) {
+  if (!target || !isGuidedDemoRun() || !document.body.classList.contains('is-mobile-mode')) return;
+
+  const parents = getDemoAppScrollParents();
+  if (!parents.length) return;
+
+  const scrollParent = parents[0];
+  const stepperTop = getMobileStepperTop();
+  const targetRect = target.getBoundingClientRect();
+  const parentRect = scrollParent.getBoundingClientRect();
+  const maxVisibleBottom = Math.min(parentRect.bottom, stepperTop) - extraGap;
+
+  if (targetRect.bottom > maxVisibleBottom) {
+    scrollParent.scrollTop += targetRect.bottom - maxVisibleBottom;
+  } else if (targetRect.top < parentRect.top + 8) {
+    scrollParent.scrollTop += targetRect.top - parentRect.top - 8;
+  }
+}
+
+function scrollGuidedStepTarget(stepKey) {
+  if (!isGuidedDemoRun() || !document.body.classList.contains('is-mobile-mode')) return;
+  if (!stepKey || stepKey === 'step6') return;
+
+  const selector = tour.anchors[stepKey];
+  const target = selector ? document.querySelector(selector) : null;
+  if (!target) return;
+
+  const run = () => {
+    scrollGuidedControlIntoView(target);
+    positionMobileSpotlight();
+  };
+
+  updateMobileLayoutMetrics();
+  requestAnimationFrame(run);
+  setTimeout(run, 280);
+}
+
+function scrollDemoTargetIntoView(target, extraGap = 12) {
+  if (!target) return;
+  if (isGuidedDemoRun() && document.body.classList.contains('is-mobile-mode')) {
+    scrollGuidedControlIntoView(target, extraGap);
+    return;
+  }
+
+  const stepperTop = getMobileStepperTop();
+
+  getDemoAppScrollParents().forEach((scrollParent) => {
+    const parentRect = scrollParent.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const visibleBottom = Math.min(parentRect.bottom, stepperTop) - extraGap;
+
+    if (targetRect.bottom > visibleBottom) {
+      scrollParent.scrollTo({
+        top: scrollParent.scrollTop + (targetRect.bottom - visibleBottom),
+        behavior: 'smooth',
+      });
+      return;
+    }
+
+    if (targetRect.top < parentRect.top + 12) {
+      scrollParent.scrollTo({
+        top: Math.max(0, scrollParent.scrollTop + (targetRect.top - parentRect.top) - 12),
+        behavior: 'smooth',
+      });
+    }
+  });
 }
 
 function buildDirectoryPreview() {
@@ -2121,7 +3196,12 @@ function unlockDirectoryButton() {
 }
 
 async function sendReviewRequest() {
-  // Remove empty state
+  if (isGuidedDemoRun()) {
+    openDemoReviewModal();
+    return;
+  }
+
+  // Legacy path (non-guided)
   document.getElementById('review-empty')?.remove();
 
   // Metrics
@@ -2181,21 +3261,6 @@ async function sendReviewRequest() {
       window.location.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_header_complete'));
     };
   }
-
-  // Reveal header "View Demo Directory" button AFTER demo finishes
-  const btnViewDir = document.getElementById('btnViewDirectory');
-  if (btnViewDir) {
-    btnViewDir.classList.remove('is-hidden');
-    btnViewDir.onclick = function() {
-      jcpDemoTrack('cta_clicked', null, { cta: 'view_main_directory' });
-      openDirectoryProfileFromDemo();
-    };
-  }
-
-  // Let them digest, then show post-demo panel
-  setTimeout(() => {
-    showPostDemoPanel();
-  }, 900);
 }
 
 
@@ -2310,8 +3375,8 @@ function deleteArchivedCheckin() {
 }
 
 function goToRequestReview() {
-  if (isDemoMode && tour.stepKey === 'step5') {
-    sendReviewRequest();
+  if (isGuidedDemoRun() && tour.stepKey === 'step5') {
+    openDemoReviewModal();
     return;
   }
   const checkin = getCurrentCheckinForReview();
@@ -2428,11 +3493,15 @@ function advanceDemo() {
       break;
 
     case 'step5':
-      sendReviewRequest();
+      openDemoReviewModal();
       break;
 
     case 'step6':
-      openDirectoryProfileFromDemo();
+      if (!outcomesSlideshow.isOpen) {
+        openOutcomesSlideshow();
+      } else {
+        finishOutcomesSlideshow();
+      }
       break;
 
     default:
@@ -2440,8 +3509,90 @@ function advanceDemo() {
   }
 }
 
+function resetGuidedDemoFeeds() {
+  initializeWebsite();
+  const feedResets = [
+    {
+      id: 'feed-google',
+      html: `<div class="empty-state" id="google-empty"><h3>No posts yet</h3><p>Posts appear after a job is published.</p></div>`,
+    },
+    {
+      id: 'feed-facebook',
+      html: `<div class="empty-state" id="facebook-empty"><h3>No updates yet</h3><p>Updates appear after a job is published.</p></div>`,
+    },
+    {
+      id: 'feed-review',
+      html: `<div class="empty-state" id="review-empty"><h3>No reviews yet</h3><p>Reviews appear after a request is sent.</p></div>`,
+    },
+  ];
+  feedResets.forEach(({ id, html }) => {
+    const el = $(id);
+    if (el) el.innerHTML = html;
+  });
+}
+
+function resetGuidedEditScreen() {
+  const publishBtn = $('btnSavePublish');
+  if (publishBtn) {
+    publishBtn.disabled = false;
+    publishBtn.classList.remove('is-disabled');
+    publishBtn.innerHTML = `<img src="${assetBase}/shared/assets/icons/lucide/upload.svg" class="lucide-icon lucide-icon-sm" alt=""> Publish Everywhere`;
+    publishBtn.onclick = saveCheckin;
+  }
+  state.photoCount = 0;
+  state.activeCheckinIndex = null;
+  state.activeCheckinFromArchived = false;
+  state.comingFromProcessPhotos = false;
+  const editGrid = $('edit-photo-grid');
+  if (editGrid) editGrid.innerHTML = '';
+  const desc = $('description-field');
+  if (desc) desc.value = descriptions[0];
+}
+
+function restartGuidedDemo() {
+  jcpDemoTrack('demo_replayed', null, { source: 'post_demo_panel' });
+
+  state.isFinalStep = false;
+  hidePostDemoPanel();
+  document.getElementById('post-demo-bubble')?.classList.add('is-hidden');
+  hideDemoOutcomes();
+  hideOutcomesCtaDock();
+  closeReviewDialog();
+  $('demoPublishOverlay')?.classList.remove('active');
+  document.body.classList.remove('jcp-publish-modal-open');
+
+  state.hasPublished = false;
+  state.guideDisabled = false;
+  state.savedCheckins = [];
+  state.metrics = { checkins: 12, posts: 36, reviews: 48 };
+  safeText('metric-checkins', '12');
+  safeText('metric-posts', '36');
+  safeText('metric-reviews', '48');
+  tour.stepKey = 'step1';
+  tour.isHidden = false;
+  tour.isMinimized = false;
+  mobileGuideCollapsed = false;
+
+  resetGuidedDemoFeeds();
+  resetGuidedEditScreen();
+
+  document.querySelectorAll('.app-screen').forEach((s) => s.classList.remove('active'));
+  $('login-screen')?.classList.add('active');
+  state.currentScreen = 'login-screen';
+
+  $('btnStartDemo')?.classList.add('wiggle-attention');
+  setTourStep('step1');
+  showTour();
+  applyFocalPoint();
+  syncMobileGuideChrome();
+  renderHomeCheckins();
+}
+
 function restartTour() {
-  // Hard reset = cleanest, safest restart
+  if (isGuidedDemoRun()) {
+    restartGuidedDemo();
+    return;
+  }
   window.location.reload();
 }
 
@@ -2470,7 +3621,30 @@ function wireControls() {
     state.activeCheckinIndex = null;
   });
 
-  $('btnMobileNext')?.addEventListener('click', () => advanceDemo());
+  $('btnMobileNext')?.addEventListener('click', () => {
+    if (tour.stepKey === 'step6' && !outcomesSlideshow.isOpen) {
+      completeDemoConversion();
+      return;
+    }
+    advanceDemo();
+  });
+
+  $('demoOutcomesReopenCta')?.addEventListener('click', () => {
+    if (tour.stepKey === 'step6' && !outcomesSlideshow.isOpen) {
+      openOutcomesSlideshow();
+    }
+  });
+
+  $('mobileDemoClose')?.addEventListener('click', () => {
+    markDemoIntakeComplete();
+    const returnUrl = sessionStorage.getItem('jcp_survey_return_url') || '/demo/';
+    window.location.href = returnUrl;
+  });
+
+  $('mobileGuideMinimize')?.addEventListener('click', () => toggleMobileGuideCollapse());
+  $('mobileGuidePill')?.addEventListener('click', () => setMobileGuideCollapsed(false));
+  $('guidedCoachBackdrop')?.addEventListener('click', () => setMobileGuideCollapsed(true));
+  $('btnDemoReviewSend')?.addEventListener('click', () => confirmDemoReviewSend());
 
   $('btnStartDemo')?.addEventListener('click', () => {
     $('btnStartDemo')?.classList.remove('wiggle-attention');
@@ -2554,7 +3728,11 @@ function init() {
 
   // Mobile mode
   applyMobileMode();
-  window.addEventListener('resize', applyMobileMode);
+  window.addEventListener('resize', () => {
+    applyMobileMode();
+    updateMobileLayoutMetrics();
+    positionMobileSpotlight();
+  });
 
   // Greeting
   const greeting = document.querySelector('.greeting');
@@ -2569,6 +3747,7 @@ function init() {
   // Wire UI
   wireControls();
   wirePostDemoPanel();
+  wireOutcomesSlideshow();
 
   // Apply demo mode restrictions if in demo mode (not on prototype)
   applyDemoRestrictions();
@@ -2584,6 +3763,7 @@ function init() {
 
   // Prototype page: start on app home screen, no tour, no Start Demo; all controls active
   if (isPrototype) {
+    document.body.classList.add('jcp-phone-shell');
     document.querySelectorAll('.app-screen').forEach((s) => s.classList.remove('active'));
     const homeScreen = document.getElementById('home-screen');
     if (homeScreen) homeScreen.classList.add('active');
@@ -2629,6 +3809,8 @@ function init() {
     clearReturnState();
     return;
   }
+
+  markDemoIntakeComplete();
 
   // Tour start (after DOM paints)
   setTimeout(() => {
@@ -2720,8 +3902,8 @@ function showPostDemoPanel() {
   const panel = document.getElementById('post-demo-panel');
   if (!panel) return;
 
-  const bubble = document.getElementById('post-demo-bubble');
-  bubble?.classList.add('is-hidden');
+  document.getElementById('post-demo-bubble')?.classList.add('is-hidden');
+  setMobileGuideCollapsed(true);
 
   panel.classList.add('active');
   jcpDemoTrack('post_demo_modal_shown');
@@ -2741,61 +3923,14 @@ function showPostDemoPanel() {
     }
   } catch (e) {}
 
-  const navBtn = document.getElementById('dynamicBackBtn');
-  if (navBtn) {
-    navBtn.style.display = 'inline-flex';
-    navBtn.setAttribute('href', `${baseUrl}/directory/`);
-    const label = navBtn.querySelector('span');
-    if (label) {
-      label.textContent = 'View the Directory';
-    }
-    const icon = navBtn.querySelector('svg');
-    if (icon) {
-      icon.innerHTML = '<path d="M12 22s8-4 8-10a8 8 0 1 0-16 0c0 6 8 10 8 10Z"/><circle cx="12" cy="12" r="3"/>';
-    }
-  }
+  hideMobileSpotlight();
+  document.getElementById('tour-float')?.classList.add('is-hidden');
+  document.getElementById('tour-bubble')?.classList.add('is-hidden');
+  document.body.classList.add('jcp-post-demo-open');
+  updateGuidedCoachBackdrop();
 
-  const mobileNavBtn = document.getElementById('mobileDynamicBackBtn');
-  if (mobileNavBtn) {
-    mobileNavBtn.style.display = 'inline-flex';
-    mobileNavBtn.setAttribute('href', `${baseUrl}/directory/`);
-    const label = mobileNavBtn.querySelector('span');
-    if (label) {
-      label.textContent = 'View the Directory';
-    }
-    const icon = mobileNavBtn.querySelector('svg');
-    if (icon) {
-      icon.innerHTML = '<path d="M12 22s8-4 8-10a8 8 0 1 0-16 0c0 6 8 10 8 10Z"/><circle cx="12" cy="12" r="3"/>';
-    }
-  }
-
-  // Keep final tour tooltip visible above modal
-  if (state.isFinalStep) {
-    tour.isHidden = false;
-    tour.isMinimized = false;
-
-    const tourEl = document.getElementById('tour-float');
-    if (tourEl) tourEl.classList.remove('is-hidden');
-
-    // Force re-anchor under "View Demo Directory"
-    requestAnimationFrame(() => {
-      updateTourFloating();
-    });
-  }
-
-  // Remove dimming
-  document.querySelectorAll('.is-dimmed').forEach(el => {
-    el.classList.remove('is-dimmed');
-  });
-
-  // Close on overlay click
   panel.addEventListener('click', postDemoOverlayClose);
-
-  // Close on ESC
   document.addEventListener('keydown', postDemoEscClose);
-
-  document.getElementById('directory-hint')?.classList.remove('is-hidden');
-
 }
 
 function hidePostDemoPanel() {
@@ -2803,14 +3938,24 @@ function hidePostDemoPanel() {
   const bubble = document.getElementById('post-demo-bubble');
   if (!panel || !bubble) return;
 
+  markDemoIntakeComplete();
   panel.classList.remove('active');
-  bubble.classList.remove('is-hidden');
+  document.body.classList.remove('jcp-post-demo-open');
+  if (state.isFinalStep && tour.stepKey === 'step6') {
+    bubble.classList.remove('is-hidden');
+  } else {
+    bubble.classList.add('is-hidden');
+  }
 
   panel.removeEventListener('click', postDemoOverlayClose);
   document.removeEventListener('keydown', postDemoEscClose);
   const dir = document.getElementById('directory-collapsible');
   if (dir) dir.style.display = 'none';
   document.getElementById('directory-hint')?.classList.add('is-hidden');
+
+  if (tour.stepKey === 'step6' && isGuidedDemoRun() && !outcomesSlideshow.isOpen) {
+    showOutcomesCtaDock();
+  }
 }
 
 function postDemoOverlayClose(e) {
@@ -2872,7 +4017,8 @@ function wirePostDemoPanel() {
   if (primaryCta) {
     primaryCta.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
     primaryCta.addEventListener('click', function() {
-      jcpDemoTrack('cta_clicked', null, { cta: 'early_access' });
+      jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free' });
+      jcpDemoTrack('demo_converted');
       // Matomo: Post Demo CTA Click (Early Access), once per session
       try {
         if (typeof _paq !== 'undefined' && !sessionStorage.getItem('jcp_matomo_demo_cta_early_access')) {
@@ -2884,10 +4030,9 @@ function wirePostDemoPanel() {
   }
 
   document
-    .getElementById('viewDirectoryFromSales')
-    ?.addEventListener('click', function() {
-      jcpDemoTrack('cta_clicked', null, { cta: 'view_directory' });
-      openDirectoryProfileFromDemo();
+    .getElementById('btnReplayDemo')
+    ?.addEventListener('click', () => {
+      restartGuidedDemo();
     });
 }
 
@@ -2942,6 +4087,7 @@ window.regenerateDescription = regenerateDescription;
 window.saveCheckin = saveCheckin;
 window.openReviewDialog = openReviewDialog;
 window.closeReviewDialog = closeReviewDialog;
+window.confirmDemoReviewSend = confirmDemoReviewSend;
 window.sendReviewRequest = sendReviewRequest;
 window.openCheckinForEdit = openCheckinForEdit;
 window.advanceDemo = advanceDemo;

@@ -73,8 +73,29 @@
       : (el.dataset.jcpMediaUrlPath ? el.dataset.jcpMediaUrlPath.replace(/\.(media_url|image_url|phone_image_url)$/, '.media_type') : null);
     const linkPath = basePath ? `${basePath}.media_link_url` : null;
     const isPhoneScreen = el.dataset.jcpMediaRole === 'phone_screen'
-      || el.classList?.contains('hero-phone-image');
-    return { slot, urlPath, altPath, typePath, linkPath, basePath, isPhoneScreen, el };
+      || (el.classList?.contains('hero-phone-image') && el.dataset.jcpMediaLocked !== 'featured');
+    const isFeaturedLocked = el.dataset.jcpMediaLocked === 'featured'
+      || el.dataset.jcpMediaRole === 'phone_screen_featured'
+      || !!el.closest?.('[data-jcp-media-locked="featured"]');
+    const phoneStyle = slot?.dataset.jcpPhoneMockupStyle || '';
+    const isLiveDemoPhone = isPhoneScreen || phoneStyle === 'live_demo'
+      || !!el.closest?.('.hero-phone-mockup');
+    const ctaLabelPath = isLiveDemoPhone
+      ? `${basePath || 'hero'}.phone_cta_label`
+      : null;
+    return {
+      slot,
+      urlPath,
+      altPath,
+      typePath,
+      linkPath,
+      ctaLabelPath,
+      basePath,
+      isPhoneScreen,
+      isFeaturedLocked,
+      isLiveDemoPhone,
+      el,
+    };
   };
 
   const resolveWritePaths = (paths, mediaType) => {
@@ -114,11 +135,14 @@
   const isEditableMediaNavigationLink = (anchor) => {
     if (!anchor || anchor.tagName !== 'A') return false;
     if (anchor.hasAttribute('data-jcp-href-path')) return false;
+    // Audience/guarantee cards wrap image + editable text; only the image area is media.
+    if (anchor.classList.contains('guarantee-item')) return false;
     if (anchor.matches(PHONE_MOCKUP_LINK_SELECTOR)) return true;
-    if (anchor.closest('.jcp-media-slot, .jcp-hero-visual-column, .jcp-media-text-media, .demo-preview-visual, .jcp-editable-media-wrap')) {
+    // Linked media chrome (hero/split phone mockups), not content cards that merely include an image.
+    if (anchor.closest('.jcp-media-slot, .jcp-hero-visual-column, .jcp-media-text-media, .demo-preview-visual')) {
       return true;
     }
-    return !!anchor.querySelector('.jcp-editable-media-image, .jcp-hero-slot-image, .hero-phone-image, .jcp-media-text-image');
+    return false;
   };
 
   const resolveMediaClickTarget = (el) => {
@@ -490,6 +514,9 @@
         <button type="button" class="jcp-media-popover__close" aria-label="Close">×</button>
       </div>
       <div class="jcp-media-popover__body">
+        <p class="jcp-media-popover__notice" id="jcpMediaFeaturedNotice" hidden>
+          On industry pages, this photo comes from the WordPress <strong>Featured Image</strong>. Set or change it in the editor sidebar (Featured image).
+        </p>
         <label class="jcp-media-popover__field">
           <span>Media type</span>
           <select id="jcpMediaTypeSelect"></select>
@@ -509,6 +536,10 @@
         <label class="jcp-media-popover__field jcp-media-popover__field--link">
           <span>Link URL <small>(optional)</small></span>
           <input type="url" id="jcpMediaLinkInput" placeholder="Leave empty for no link">
+        </label>
+        <label class="jcp-media-popover__field jcp-media-popover__field--cta-label">
+          <span>Button text</span>
+          <input type="text" id="jcpMediaCtaLabelInput" placeholder="Try the demo" maxlength="48" autocomplete="off">
         </label>
       </div>
       <div class="jcp-media-popover__actions">
@@ -549,25 +580,38 @@
     else el.setAttribute('hidden', '');
   };
 
+  const findPhoneMockup = (ctx) => {
+    if (!ctx) return null;
+    return ctx.el?.closest?.(PHONE_MOCKUP_LINK_SELECTOR)
+      || ctx.slot?.querySelector?.(PHONE_MOCKUP_LINK_SELECTOR)
+      || null;
+  };
+
   const onTypeSelectChange = () => {
     const type = popover.querySelector('#jcpMediaTypeSelect').value;
     const videoField = popover.querySelector('.jcp-media-popover__field--video');
     const imageField = popover.querySelector('.jcp-media-popover__field--image');
     const altField = popover.querySelector('.jcp-media-popover__field--alt');
     const linkField = popover.querySelector('.jcp-media-popover__field--link');
+    const ctaField = popover.querySelector('.jcp-media-popover__field--cta-label');
     const replaceBtn = popover.querySelector('#jcpMediaReplaceBtn');
     const imageLabel = popover.querySelector('#jcpMediaImageUrlLabel');
+    const featuredNotice = popover.querySelector('#jcpMediaFeaturedNotice');
+    const featuredLocked = !!activeMediaContext?.isFeaturedLocked;
 
     const showVideo = type === 'video';
-    const showImage = type === 'image' || (type === 'phone_mockup' && activeMediaContext?.isPhoneScreen);
-    const showAlt = type !== 'video';
+    const showImage = !featuredLocked && (type === 'image' || (type === 'phone_mockup' && activeMediaContext?.isPhoneScreen));
+    const showAlt = !featuredLocked && type !== 'video';
     const showLink = type !== 'video' && !!activeMediaContext?.linkPath;
+    const showCtaLabel = type === 'phone_mockup' && !!activeMediaContext?.ctaLabelPath;
     const showLibrary = showImage && type !== 'video';
 
+    togglePopoverField(featuredNotice, featuredLocked);
     togglePopoverField(videoField, showVideo);
     togglePopoverField(imageField, showImage);
     togglePopoverField(altField, showAlt);
     togglePopoverField(linkField, showLink);
+    togglePopoverField(ctaField, showCtaLabel);
     replaceBtn.hidden = !showLibrary;
     if (replaceBtn.hidden) replaceBtn.setAttribute('hidden', '');
     else replaceBtn.removeAttribute('hidden');
@@ -596,7 +640,7 @@
     const target = resolveMediaClickTarget(el);
     if (!target) return;
     const paths = getMediaPaths(target);
-    if (!paths.urlPath && !paths.altPath && !paths.isPhoneScreen && !paths.basePath) return;
+    if (!paths.urlPath && !paths.altPath && !paths.isPhoneScreen && !paths.isFeaturedLocked && !paths.basePath) return;
 
     activeMediaContext = { ...paths, el: target };
 
@@ -611,7 +655,7 @@
     const writePaths = resolveWritePaths(activeMediaContext, select.value);
     const urlPaths = resolveMediaUrlPaths(activeMediaContext);
 
-    if (urlPaths.imageUrlPath) {
+    if (urlPaths.imageUrlPath && !paths.isFeaturedLocked) {
       const polluted = api.getPath(api.flatContent, urlPaths.imageUrlPath);
       if (isEmbedVideoUrl(polluted)) {
         syncFlatProp(urlPaths.imageUrlPath, '');
@@ -621,9 +665,26 @@
     popover.querySelector('#jcpMediaAltInput').value = writePaths.altPath ? (api.getPath(api.flatContent, writePaths.altPath) || '') : '';
     popover.querySelector('#jcpMediaImageUrlInput').value = readImageUrl(urlPaths);
     popover.querySelector('#jcpMediaVideoUrlInput').value = readVideoUrl(urlPaths);
-    popover.querySelector('#jcpMediaLinkInput').value = paths.linkPath ? (api.getPath(api.flatContent, paths.linkPath) || '') : '';
+    const mockup = findPhoneMockup(activeMediaContext);
+    const storedLink = paths.linkPath ? (api.getPath(api.flatContent, paths.linkPath) || '') : '';
+    popover.querySelector('#jcpMediaLinkInput').value = storedLink || mockup?.getAttribute('href') || '';
+    const storedCta = paths.ctaLabelPath ? (api.getPath(api.flatContent, paths.ctaLabelPath) || '') : '';
+    const liveCta = mockup?.querySelector('.phone-click-hint span, .hero-phone-cta span')?.textContent?.trim() || '';
+    popover.querySelector('#jcpMediaCtaLabelInput').value = storedCta || liveCta || 'Try the demo';
 
     onTypeSelectChange();
+
+    const applyBtn = popover.querySelector('#jcpMediaApplyBtn');
+    if (applyBtn) {
+      // Featured-image lock blocks photo edits, but link/CTA can still be saved.
+      const canApplyWithoutPhoto = !!(paths.ctaLabelPath || paths.linkPath);
+      applyBtn.hidden = !!paths.isFeaturedLocked && !canApplyWithoutPhoto;
+      if (applyBtn.hidden) applyBtn.setAttribute('hidden', '');
+      else applyBtn.removeAttribute('hidden');
+    }
+    if (select) {
+      select.disabled = !!paths.isFeaturedLocked;
+    }
 
     const rect = (target.getBoundingClientRect ? target : el).getBoundingClientRect();
     positionPopover(rect);
@@ -705,8 +766,20 @@
 
     if (writePaths.altPath && mediaType !== 'video') syncMediaAlt(writePaths.altPath, alt);
     if (ctx.typePath) syncFlatProp(ctx.typePath, mediaType);
+    const mockup = findPhoneMockup(ctx);
     if (ctx.linkPath && popover && mediaType !== 'video') {
-      syncFlatProp(ctx.linkPath, popover.querySelector('#jcpMediaLinkInput').value.trim());
+      const link = popover.querySelector('#jcpMediaLinkInput').value.trim();
+      syncFlatProp(ctx.linkPath, link);
+      if (mockup && link) {
+        mockup.setAttribute('href', link);
+      }
+    }
+    if (ctx.ctaLabelPath && popover && mediaType === 'phone_mockup') {
+      const label = popover.querySelector('#jcpMediaCtaLabelInput').value.trim() || 'Try the demo';
+      syncFlatProp(ctx.ctaLabelPath, label);
+      const labelEl = mockup?.querySelector('.phone-click-hint span, .hero-phone-cta span');
+      if (labelEl) labelEl.textContent = label;
+      if (mockup) mockup.setAttribute('aria-label', label);
     }
 
     updateVariantVisibility(ctx.slot, mediaType);
@@ -922,7 +995,14 @@
       slot.addEventListener('click', (e) => {
         if (!isEditingActive()) return;
         if (e.target.closest(EDITOR_CHROME_SELECTOR)) return;
-        if (e.target.closest('.jcp-col-drag-handle')) return;
+        if (e.target.closest('.jcp-col-drag-handle, .jcp-card-piece-toggle, .jcp-collection-remove')) return;
+        // Badge / other editable text on top of media should edit text, not open media.
+        if (
+          e.target.closest('[data-jcp-path]')
+          && !e.target.closest('img, .guarantee-image--empty, .jcp-editable-media-image, .jcp-hero-slot-image, .jcp-media-text-image, .demo-preview-slot-image, .hero-phone-image, .conversion-image')
+        ) {
+          return;
+        }
         if (isWpMediaClick(e.target)) return;
         e.preventDefault();
         e.stopPropagation();
@@ -969,6 +1049,18 @@
     if (!target) return;
     if (target.closest(EDITOR_CHROME_SELECTOR)) return;
     if (isWpMediaClick(target)) return;
+    if (target.closest('.jcp-card-piece-toggle, .jcp-collection-remove, .jcp-collection-add')) return;
+
+    const clickedImage = target.closest(
+      'img, .guarantee-image--empty, .jcp-editable-media-image, .jcp-hero-slot-image, .jcp-media-text-image, .demo-preview-slot-image, .hero-phone-image, .conversion-image'
+    );
+    // Title, body, and badge text win over media/link wrappers.
+    const editableField = target.closest('[data-jcp-path]');
+    if (editableField && !clickedImage) {
+      const cardLink = target.closest('a.guarantee-item');
+      if (cardLink) e.preventDefault();
+      return;
+    }
 
     const mockupLink = target.closest(PHONE_MOCKUP_LINK_SELECTOR);
     if (mockupLink && isEditableMediaNavigationLink(mockupLink)) {
@@ -984,11 +1076,17 @@
       return;
     }
 
-    const mediaHit = target.closest(MEDIA_HIT_SELECTOR);
+    const mediaHit = target.closest(`${MEDIA_HIT_SELECTOR}, .jcp-editable-media-wrap`);
     if (mediaHit) {
       e.preventDefault();
       e.stopPropagation();
       openPopover(mediaHit);
+      return;
+    }
+
+    // Keep FAQ card navigation from firing while editing (clicks outside text/media).
+    if (target.closest('a.guarantee-item')) {
+      e.preventDefault();
     }
   };
 
@@ -1020,9 +1118,10 @@
   };
 
   window.jcpOpenMediaEditor = (el, e) => {
+    // Only intercept while the live editor is active — otherwise allow phone/media links to navigate.
+    if (!api || !isEditingActive()) return true;
     if (e?.preventDefault) e.preventDefault();
     if (e?.stopPropagation) e.stopPropagation();
-    if (!api || !isEditingActive()) return false;
     openPopover(el);
     return false;
   };

@@ -148,7 +148,7 @@
                 <div class="jcp-actions directory-cta-row">
                   <div class="jcp-hero-primary-cta">
                     <a class="btn btn-primary" href="${heroCtas.primaryUrl}">${heroCtas.primaryText}</a>
-                    <span class="jcp-hero-cta-microcopy">No signup. Takes under 5 mins.</span>
+                    <span class="jcp-hero-cta-microcopy jcp-niche-trust-line">No signup. Takes under 5 mins.</span>
                   </div>
                   <a class="btn btn-secondary" href="${heroCtas.secondaryUrl}">${heroCtas.secondaryText}</a>
                 </div>
@@ -359,7 +359,7 @@
                             </div>
                             <div class="demo-app-screen">
                               <div class="demo-app-header">
-                                <h1>Check-ins</h1>
+                                <p class="demo-app-header__title">Check-ins</p>
                               </div>
                               <div class="demo-content-area">
                                 <div class="demo-action-tiles">
@@ -377,7 +377,7 @@
                                   </div>
                                 </div>
                                 <div class="demo-empty-state">
-                                  <h3>Start capturing proof</h3>
+                                  <p class="demo-empty-title">Start capturing proof</p>
                                   <p>Take a few photos → submit → automatically published everywhere.</p>
                                   <div class="demo-empty-hint"><span>Tap <strong>+</strong> to create a check-in</span></div>
                                 </div>

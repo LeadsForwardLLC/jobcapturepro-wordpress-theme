@@ -9,11 +9,18 @@
 // Load helper functions (asset paths, URLs, ACF helpers)
 require_once get_template_directory() . '/inc/helpers.php';
 
+// Brand favicon on all front-end pages (demo, survey, marketing).
+require_once get_template_directory() . '/inc/favicon.php';
+
 // App onboarding handoff URLs (marketing site → SaaS signup)
 require_once get_template_directory() . '/inc/onboarding.php';
 
 // Sitewide settings (banner, signup URL, nav CTAs)
 require_once get_template_directory() . '/inc/global-settings.php';
+require_once get_template_directory() . '/inc/fluent-forms-bridge.php';
+require_once get_template_directory() . '/inc/code-embed.php';
+require_once get_template_directory() . '/inc/form-landing.php';
+require_once get_template_directory() . '/inc/nav-mega-menu.php';
 
 // Load company data functions (description resolution, demo companies, save_post description generation)
 require_once get_template_directory() . '/inc/company-data.php';
@@ -30,15 +37,23 @@ require_once get_template_directory() . '/inc/template-routes.php';
 // SEO for directory and contractor profile pages (meta description, profile titles, schema)
 require_once get_template_directory() . '/inc/seo-directory.php';
 
+// SEO for /demo (noindex, title/meta; uses WP page when published)
+require_once get_template_directory() . '/inc/seo-demo.php';
+
 // Load ACF configuration (if ACF is available)
 require_once get_template_directory() . '/inc/acf-config.php';
 
 // Industry / niche landing pages (CPT, JSON content, /industries/ archive)
 require_once get_template_directory() . '/inc/page-blocks/registry.php';
 require_once get_template_directory() . '/inc/page-blocks/layout.php';
+require_once get_template_directory() . '/inc/page-blocks/section-surface.php';
 require_once get_template_directory() . '/inc/page-blocks/presets.php';
+require_once get_template_directory() . '/inc/page-blocks/campaign-preset.php';
+require_once get_template_directory() . '/inc/page-blocks/writer-tools.php';
 require_once get_template_directory() . '/inc/page-blocks/schema.php';
+require_once get_template_directory() . '/inc/page-blocks/writer-import.php';
 require_once get_template_directory() . '/inc/page-blocks/industry-media.php';
+require_once get_template_directory() . '/inc/page-blocks/demo-migration.php';
 require_once get_template_directory() . '/inc/page-blocks/doc-sections.php';
 require_once get_template_directory() . '/inc/niche-landing/cpt.php';
 require_once get_template_directory() . '/inc/niche-landing/schema.php';
@@ -49,16 +64,19 @@ require_once get_template_directory() . '/inc/niche-landing/components.php';
 require_once get_template_directory() . '/inc/niche-landing/media.php';
 require_once get_template_directory() . '/inc/niche-landing/editable.php';
 require_once get_template_directory() . '/inc/niche-landing/split-block.php';
-require_once get_template_directory() . '/inc/niche-landing/split-block.php';
 require_once get_template_directory() . '/inc/niche-landing/render.php';
 require_once get_template_directory() . '/inc/page-blocks/render.php';
 require_once get_template_directory() . '/inc/page-blocks/rest-content.php';
+require_once get_template_directory() . '/inc/page-blocks/internal-link-index.php';
+require_once get_template_directory() . '/inc/blog-conversion.php';
 require_once get_template_directory() . '/inc/niche-landing/seed.php';
 require_once get_template_directory() . '/inc/page-blocks/migrate-pages.php';
 if ( is_admin() ) {
 	require_once get_template_directory() . '/inc/niche-landing/admin.php';
+	require_once get_template_directory() . '/inc/niche-landing/bulk-create.php';
 	require_once get_template_directory() . '/inc/page-blocks/seo-audit.php';
 	require_once get_template_directory() . '/inc/page-blocks/admin-structure.php';
+	require_once get_template_directory() . '/inc/admin-post-editor.php';
 }
 
 // Canonical form field names (REST params + GHL keys); Demo Survey = source of truth

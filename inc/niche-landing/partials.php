@@ -20,18 +20,43 @@
  * @param string               $stat_value_path  JSON path for stat value.
  * @param string               $stat_label_path  JSON path for stat label.
  * @param int                  $array_index      Optional list index for add/remove UI (-1 = none).
+ * @param string               $icon_path        JSON path for icon slug (e.g. benefits.items.0.icon).
+ * @param bool                 $show_icon        Whether to render the icon wrapper.
  */
-function jcp_niche_factor_card( string $title, string $icon, string $stat_value = '', string $stat_label = '', ?callable $body_cb = null, string $title_path = '', string $stat_value_path = '', string $stat_label_path = '', int $array_index = -1 ): void {
+/**
+ * Ranking / benefit / audience factor card.
+ *
+ * @param string               $title           Title.
+ * @param string               $icon            Lucide icon slug.
+ * @param string               $stat_value      Optional stat value.
+ * @param string               $stat_label      Optional stat label.
+ * @param callable|null        $body_cb         Optional body renderer.
+ * @param string               $title_path      Editable title path.
+ * @param string               $stat_value_path Editable stat value path.
+ * @param string               $stat_label_path Editable stat label path.
+ * @param int                  $array_index     Collection index (-1 if none).
+ * @param string               $icon_path       Editable icon path.
+ * @param bool                 $show_icon       Whether to output the icon.
+ * @param array<string, bool>  $pieces          show_title, show_body, show_stats.
+ */
+function jcp_niche_factor_card( string $title, string $icon, string $stat_value = '', string $stat_label = '', ?callable $body_cb = null, string $title_path = '', string $stat_value_path = '', string $stat_label_path = '', int $array_index = -1, string $icon_path = '', bool $show_icon = true, array $pieces = [] ): void {
+	$show_title = ! array_key_exists( 'show_title', $pieces ) || ! empty( $pieces['show_title'] );
+	$show_body  = ! array_key_exists( 'show_body', $pieces ) || ! empty( $pieces['show_body'] );
+	$show_stats = ! array_key_exists( 'show_stats', $pieces ) || ! empty( $pieces['show_stats'] );
 	?>
 	<div class="ranking-factor-card"<?php if ( $array_index >= 0 ) { jcp_niche_array_item_attr( $array_index ); } ?>>
-		<div class="factor-icon-wrapper">
+		<?php if ( $show_icon ) : ?>
+		<div class="factor-icon-wrapper"<?php if ( $icon_path !== '' ) { echo ' data-jcp-icon-path="' . esc_attr( $icon_path ) . '" title="' . esc_attr__( 'Click to change icon', 'jcp-core' ) . '" role="button" tabindex="0"'; } ?>>
 			<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="factor-icon" alt="" width="32" height="32" />
 		</div>
+		<?php endif; ?>
+		<?php if ( $show_title ) : ?>
 		<h3 class="factor-title"<?php if ( $title_path !== '' ) { jcp_niche_editable_attr( $title_path ); } ?>><?php echo esc_html( $title ); ?></h3>
-		<?php if ( $body_cb ) : ?>
+		<?php endif; ?>
+		<?php if ( $show_body && $body_cb ) : ?>
 			<div class="factor-description"><?php $body_cb(); ?></div>
 		<?php endif; ?>
-		<?php if ( $stat_value !== '' ) : ?>
+		<?php if ( $show_stats && $stat_value !== '' ) : ?>
 			<div class="factor-stat">
 				<span class="stat-value"<?php if ( $stat_value_path !== '' ) { jcp_niche_editable_attr( $stat_value_path ); } ?>><?php echo esc_html( $stat_value ); ?></span>
 				<?php if ( $stat_label !== '' ) : ?>
@@ -189,7 +214,9 @@ function jcp_niche_render_core_mechanic_strip( array $items, string $path_prefix
 			?>
 			<div class="meta-item jcp-collection-item<?php echo $class !== '' ? ' ' . esc_attr( $class ) : ''; ?>"<?php if ( $path_prefix !== '' ) { jcp_niche_array_item_attr( (int) $i ); } ?>>
 				<div class="meta-label">
-					<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="meta-icon" alt="" width="20" height="20" />
+					<span class="factor-icon-wrapper jcp-hero-meta-icon"<?php if ( $base !== '' ) { ?> data-jcp-icon-path="<?php echo esc_attr( $base . '.icon' ); ?>" title="<?php esc_attr_e( 'Click to change icon', 'jcp-core' ); ?>" role="button" tabindex="0"<?php } ?>>
+						<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="meta-icon" alt="" width="20" height="20" />
+					</span>
 					<strong>
 						<?php if ( $base !== '' && ( $value !== '' || $word !== '' ) ) : ?>
 							<span<?php jcp_niche_editable_attr( $base . '.value' ); ?>><?php echo esc_html( $value ); ?></span><?php if ( $word !== '' ) : ?><span<?php jcp_niche_editable_attr( $base . '.label' ); ?>><?php echo esc_html( ' ' . $word ); ?></span><?php endif; ?>
@@ -210,43 +237,83 @@ function jcp_niche_render_core_mechanic_strip( array $items, string $path_prefix
 }
 
 /**
- * Checkmark list for differentiation bullets.
+ * Single checkmark bullet row.
  *
- * @param array<int, string|array<string, string>> $lines        Lines.
- * @param string                                   $path_prefix JSON path prefix (e.g. conversion.points).
+ * @param string $text        Display text.
+ * @param string $path        Optional JSON path for inline editor.
+ * @param int    $index       Array index.
+ * @param bool   $editable    Whether remove control is shown.
  */
-function jcp_niche_render_conversion_points( array $lines, string $path_prefix = '' ): void {
-	if ( empty( $lines ) && $path_prefix === '' ) {
+function jcp_niche_render_conversion_point( string $text, string $path, int $index, bool $editable ): void {
+	if ( $text === '' && ! $editable ) {
 		return;
 	}
 	?>
-	<div class="conversion-points jcp-niche-conversion-points"<?php
-	if ( $path_prefix !== '' ) {
+	<div class="conversion-point jcp-collection-item"<?php if ( $editable ) { jcp_niche_array_item_attr( $index ); } ?>>
+		<div class="conversion-point-icon" aria-hidden="true">
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+				<polyline points="22 4 12 14.01 9 11.01"/>
+			</svg>
+		</div>
+		<div class="conversion-point-text">
+			<strong<?php if ( $path !== '' ) { jcp_niche_editable_attr( $path ); } ?>><?php echo esc_html( $text !== '' ? $text : __( 'New point', 'jcp-core' ) ); ?></strong>
+		</div>
+		<?php if ( $editable ) { jcp_niche_collection_remove_btn(); } ?>
+	</div>
+	<?php
+}
+
+/**
+ * Checkmark list for differentiation bullets and conversion points.
+ *
+ * @param array<int, string|array<string, string>> $lines        Lines.
+ * @param string                                   $path_prefix JSON path prefix (e.g. conversion.points).
+ * @param array<string, mixed>                     $options     {
+ *   @type string $layout     stack|columns — columns fills down then across.
+ *   @type int    $per_column Max items per column when layout is columns.
+ * }
+ */
+function jcp_niche_render_conversion_points( array $lines, string $path_prefix = '', array $options = [] ): void {
+	if ( empty( $lines ) && $path_prefix === '' ) {
+		return;
+	}
+
+	$layout     = (string) ( $options['layout'] ?? 'stack' );
+	$per_column = max( 1, min( 8, (int) ( $options['per_column'] ?? 5 ) ) );
+	$columns    = $layout === 'columns';
+	$editable   = $path_prefix !== '';
+
+	$classes = 'conversion-points jcp-niche-conversion-points';
+	if ( $columns ) {
+		$classes .= ' conversion-points--columns jcp-niche-diff-points';
+	}
+	?>
+	<div class="<?php echo esc_attr( $classes ); ?>"<?php
+	if ( $editable ) {
 		jcp_niche_array_attr( $path_prefix );
 	}
+	if ( $columns ) {
+		printf( ' data-jcp-per-column="%d"', $per_column );
+	}
 	?>>
+		<?php if ( $columns ) : ?>
+			<div class="conversion-points__columns" style="<?php printf( '--jcp-points-per-column:%d;', $per_column ); ?>">
+		<?php endif; ?>
 		<?php foreach ( $lines as $i => $line ) : ?>
 			<?php
 			$text = is_array( $line ) ? (string) ( $line['text'] ?? '' ) : (string) $line;
-			if ( $text === '' ) {
+			if ( $text === '' && ! $editable ) {
 				continue;
 			}
-			$path = $path_prefix !== '' ? $path_prefix . '.' . $i : '';
+			$path = $editable ? $path_prefix . '.' . $i : '';
+			jcp_niche_render_conversion_point( $text, $path, (int) $i, $editable );
 			?>
-			<div class="conversion-point jcp-collection-item"<?php if ( $path_prefix !== '' ) { jcp_niche_array_item_attr( (int) $i ); } ?>>
-				<div class="conversion-point-icon">
-					<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-						<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-						<polyline points="22 4 12 14.01 9 11.01"/>
-					</svg>
-				</div>
-				<div class="conversion-point-text">
-					<strong<?php if ( $path !== '' ) { jcp_niche_editable_attr( $path ); } ?>><?php echo esc_html( $text ); ?></strong>
-				</div>
-				<?php if ( $path_prefix !== '' ) { jcp_niche_collection_remove_btn(); } ?>
-			</div>
 		<?php endforeach; ?>
-		<?php if ( $path_prefix !== '' ) { jcp_niche_collection_add_btn( __( '+ Add point', 'jcp-core' ) ); } ?>
+		<?php if ( $columns ) : ?>
+			</div>
+		<?php endif; ?>
+		<?php if ( $editable ) { jcp_niche_collection_add_btn( __( '+ Add point', 'jcp-core' ) ); } ?>
 	</div>
 	<?php
 }
@@ -256,16 +323,117 @@ function jcp_niche_render_conversion_points( array $lines, string $path_prefix =
  *
  * @param string $text Text.
  * @param string $path Optional JSON path for inline editor.
+ * @param string $hidden_attr Optional style attr when hidden in editor.
  */
-function jcp_niche_render_section_closing( string $text, string $path = '' ): void {
+function jcp_niche_render_section_closing( string $text, string $path = '', string $hidden_attr = '' ): void {
 	if ( $text === '' ) {
 		return;
 	}
 	?>
 	<p class="rankings-supporting jcp-niche-section-closing"<?php
+	echo $hidden_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	if ( $path !== '' ) {
 		jcp_niche_editable_attr( $path );
 	}
 	?>><?php echo esc_html( $text ); ?></p>
+	<?php
+}
+
+/**
+ * Standard section rankings header with SHOW toggles for headline/subheadline.
+ *
+ * @param array<string, mixed> $props       Section props.
+ * @param string               $path_prefix JSON path prefix (e.g. benefits).
+ * @param array<string, mixed> $options     sub_rich (bool).
+ */
+function jcp_niche_render_section_header( array $props, string $path_prefix, array $options = [] ): void {
+	$hl       = jcp_niche_field_visibility( $props, 'show_headline', true );
+	$sub      = jcp_niche_field_visibility( $props, 'show_subheadline', true );
+	$headline = trim( (string) ( $props['headline'] ?? '' ) );
+	$sub_text = trim( (string) ( $props['subheadline'] ?? '' ) );
+	$sub_rich = ! empty( $options['sub_rich'] );
+	$header_class = (string) ( $options['header_class'] ?? 'rankings-header' );
+	$heading_tag  = jcp_niche_heading_tag_from_props( $props, 'h2', false );
+	if ( ! $hl['render'] && ! ( $sub['render'] && $sub_text !== '' ) ) {
+		return;
+	}
+	?>
+	<div class="<?php echo esc_attr( $header_class ); ?>">
+		<?php if ( $hl['render'] && $headline !== '' ) : ?>
+			<?php
+			jcp_niche_open_heading(
+				$heading_tag,
+				'jcp-section-headline',
+				$path_prefix . '.headline',
+				$path_prefix . '.headline_tag',
+				$hl['attr']
+			);
+			jcp_niche_e( $headline );
+			jcp_niche_close_heading( $heading_tag );
+			?>
+		<?php endif; ?>
+		<?php if ( $sub['render'] && $sub_text !== '' ) : ?>
+			<p class="rankings-subtitle"<?php echo $sub['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php
+			if ( $sub_rich ) {
+				jcp_niche_editable_rich_attr( $path_prefix . '.subheadline' );
+				echo '>';
+				jcp_niche_rich_e( $sub_text );
+			} else {
+				jcp_niche_editable_attr( $path_prefix . '.subheadline' );
+				echo '>';
+				jcp_niche_e( $sub_text );
+			}
+			?></p>
+		<?php endif; ?>
+	</div>
+	<?php
+}
+
+/**
+ * Optional primary (+ optional secondary) CTA row for any section.
+ *
+ * @param array<string, mixed> $props     Section props (cta_primary, cta_secondary).
+ * @param string               $base_path JSON path prefix (e.g. check_ins).
+ * @param string               $niche_key Page key for URL resolution.
+ * @param array<string, mixed> $options   secondary (bool), secondary_kind (cta|link).
+ */
+function jcp_niche_render_section_optional_ctas( array $props, string $base_path, string $niche_key = '', array $options = [] ): void {
+	$allow_secondary = ! empty( $options['secondary'] );
+	$secondary_kind  = (string) ( $options['secondary_kind'] ?? 'link' );
+	$primary         = jcp_niche_resolve_cta( $props['cta_primary'] ?? [], $niche_key );
+	$secondary       = jcp_niche_resolve_cta( $props['cta_secondary'] ?? [], $niche_key );
+	$has_primary     = $primary['label'] !== '';
+	$show_primary    = jcp_niche_show_field( $props, 'show_cta', $has_primary );
+	$show_secondary  = $allow_secondary && jcp_niche_show_field( $props, 'show_cta_secondary', false );
+	if ( ! $show_primary && ! $show_secondary ) {
+		return;
+	}
+	$primary_label   = __( 'Section button', 'jcp-core' );
+	$secondary_label = __( 'Secondary link', 'jcp-core' );
+	$has_secondary   = $allow_secondary && $secondary['label'] !== '';
+	$row_classes     = 'jcp-section-cta-row benefits-cta-row';
+	if ( $show_primary && ! $show_secondary ) {
+		$row_classes .= ' jcp-section-cta-row--solo';
+	}
+	?>
+	<div class="<?php echo esc_attr( $row_classes ); ?>">
+		<?php if ( $show_primary ) : ?>
+		<div class="benefits-cta-slot jcp-section-cta-slot"<?php jcp_niche_optional_slot_attr( $base_path . '.cta_primary', 'cta', $primary_label ); ?>>
+			<?php if ( $has_primary ) : ?>
+				<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary"<?php jcp_niche_editable_link_attr( $base_path . '.cta_primary' ); ?>><?php echo esc_html( $primary['label'] ); ?></a>
+			<?php endif; ?>
+		</div>
+		<?php endif; ?>
+		<?php if ( $allow_secondary && $show_secondary ) : ?>
+			<div class="benefits-cta-slot jcp-section-cta-slot"<?php jcp_niche_optional_slot_attr( $base_path . '.cta_secondary', $secondary_kind, $secondary_label ); ?>>
+				<?php if ( $has_secondary ) : ?>
+					<a href="<?php echo esc_url( $secondary['url'] ); ?>" class="benefits-cta-link"<?php jcp_niche_editable_link_attr( $base_path . '.cta_secondary' ); ?>>
+						<?php echo esc_html( $secondary['label'] ); ?>
+						<?php jcp_component_chevron_svg(); ?>
+					</a>
+				<?php endif; ?>
+			</div>
+		<?php endif; ?>
+	</div>
 	<?php
 }

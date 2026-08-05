@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="JobCapturePro">
+  <rect width="32" height="32" rx="8" fill="#ffffff"/>
+  <path d="M21.5 13.25c0 3.73-4.13 7.62-5.52 8.82a.85.85 0 0 1-1.03 0C13.56 20.87 9.43 16.98 9.43 13.25a6.07 6.07 0 0 1 12.14 0Z" fill="none" stroke="#FF503E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="15.5" cy="13.25" r="2.35" fill="#FF503E"/>
+</svg>

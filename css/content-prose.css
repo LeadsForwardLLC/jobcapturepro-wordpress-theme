@@ -1,0 +1,190 @@
+/**
+ * Shared prose styles — lists, tables, blockquotes in blog + block rich text.
+ *
+ * @package JCP_Core
+ */
+
+.jcp-prose ul,
+.jcp-prose ol,
+.jcp-post-content ul,
+.jcp-post-content ol,
+.jcp-marketing [data-jcp-rich="true"] ul,
+.jcp-marketing [data-jcp-rich="true"] ol {
+  margin: var(--jcp-space-lg) 0 var(--jcp-space-xl);
+  padding: var(--jcp-space-md) var(--jcp-space-lg) var(--jcp-space-md) var(--jcp-space-xl);
+  list-style: none;
+  border-left: 3px solid color-mix(in srgb, var(--jcp-color-primary, #ff503e) 55%, transparent);
+  background: color-mix(in srgb, var(--jcp-color-bg-secondary, #f8fafc) 80%, transparent);
+  border-radius: 0 var(--jcp-radius-md, 8px) var(--jcp-radius-md, 8px) 0;
+}
+
+.jcp-prose li,
+.jcp-post-content li,
+.jcp-marketing [data-jcp-rich="true"] li {
+  position: relative;
+  margin: 0 0 var(--jcp-space-sm);
+  padding-left: 1.35rem;
+  line-height: 1.55;
+  color: var(--jcp-color-text-primary);
+}
+
+.jcp-prose li:last-child,
+.jcp-post-content li:last-child,
+.jcp-marketing [data-jcp-rich="true"] li:last-child {
+  margin-bottom: 0;
+}
+
+.jcp-prose ul > li::before,
+.jcp-post-content ul > li::before,
+.jcp-marketing [data-jcp-rich="true"] ul > li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--jcp-color-primary, #ff503e);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--jcp-color-primary, #ff503e) 16%, transparent);
+}
+
+.jcp-prose ol,
+.jcp-post-content ol,
+.jcp-marketing [data-jcp-rich="true"] ol {
+  counter-reset: jcp-prose-ol;
+}
+
+.jcp-prose ol > li,
+.jcp-post-content ol > li,
+.jcp-marketing [data-jcp-rich="true"] ol > li {
+  counter-increment: jcp-prose-ol;
+  padding-left: 1.75rem;
+}
+
+.jcp-prose ol > li::before,
+.jcp-post-content ol > li::before,
+.jcp-marketing [data-jcp-rich="true"] ol > li::before {
+  content: counter(jcp-prose-ol);
+  position: absolute;
+  left: 0;
+  top: 0.1em;
+  width: 1.35rem;
+  height: 1.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--jcp-color-primary, #ff503e) 12%, transparent);
+  color: var(--jcp-color-primary, #ff503e);
+  font-size: 0.7rem;
+  font-weight: var(--jcp-font-weight-bold, 700);
+  line-height: 1;
+}
+
+.jcp-prose li > ul,
+.jcp-prose li > ol,
+.jcp-post-content li > ul,
+.jcp-post-content li > ol,
+.jcp-marketing [data-jcp-rich="true"] li > ul,
+.jcp-marketing [data-jcp-rich="true"] li > ol {
+  margin: var(--jcp-space-sm) 0 0;
+  padding: var(--jcp-space-sm) 0 var(--jcp-space-sm) var(--jcp-space-md);
+  border-left-color: color-mix(in srgb, var(--jcp-color-border, #e5e7eb) 80%, var(--jcp-color-primary, #ff503e));
+  background: transparent;
+  border-radius: 0;
+}
+
+.jcp-prose .jcp-post-table-wrap,
+.jcp-post-content .jcp-post-table-wrap,
+.jcp-prose .wp-block-table,
+.jcp-post-content .wp-block-table {
+  width: 100%;
+  max-width: 100%;
+  margin: var(--jcp-space-2xl) 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--jcp-color-border);
+  border-radius: var(--jcp-radius-lg, 12px);
+  background: var(--jcp-color-surface, #fff);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--jcp-color-text-primary) 4%, transparent);
+}
+
+.jcp-prose table,
+.jcp-post-content table {
+  width: 100%;
+  min-width: 32rem;
+  border-collapse: collapse;
+  border-spacing: 0;
+  font-size: var(--jcp-font-size-sm, 0.9375rem);
+  line-height: 1.5;
+  color: var(--jcp-color-text-primary);
+}
+
+.jcp-prose .jcp-post-table-wrap table,
+.jcp-post-content .jcp-post-table-wrap table,
+.jcp-prose .wp-block-table table,
+.jcp-post-content .wp-block-table table {
+  margin: 0;
+  border: 0;
+  min-width: 32rem;
+}
+
+.jcp-prose table th,
+.jcp-prose table td,
+.jcp-post-content table th,
+.jcp-post-content table td {
+  padding: 0.85rem 1rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--jcp-color-border);
+  border-right: 1px solid var(--jcp-color-border);
+}
+
+.jcp-prose table th:last-child,
+.jcp-prose table td:last-child,
+.jcp-post-content table th:last-child,
+.jcp-post-content table td:last-child {
+  border-right: 0;
+}
+
+.jcp-prose table tr:last-child th,
+.jcp-prose table tr:last-child td,
+.jcp-post-content table tr:last-child th,
+.jcp-post-content table tr:last-child td {
+  border-bottom: 0;
+}
+
+.jcp-prose table thead th,
+.jcp-prose table tr:first-child td,
+.jcp-prose table tr:first-child th,
+.jcp-post-content table thead th,
+.jcp-post-content table tr:first-child td,
+.jcp-post-content table tr:first-child th {
+  background: var(--jcp-color-bg-secondary, #f8fafc);
+  font-weight: var(--jcp-font-weight-bold, 700);
+  font-size: 0.8rem;
+  letter-spacing: 0.02em;
+}
+
+.jcp-prose table tbody tr:nth-child(even) td,
+.jcp-post-content table tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--jcp-color-bg-secondary, #f8fafc) 55%, transparent);
+}
+
+.jcp-prose table td:first-child,
+.jcp-prose table th:first-child,
+.jcp-post-content table td:first-child,
+.jcp-post-content table th:first-child {
+  font-weight: var(--jcp-font-weight-semibold, 600);
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .jcp-prose table th,
+  .jcp-prose table td,
+  .jcp-post-content table th,
+  .jcp-post-content table td {
+    padding: 0.7rem 0.85rem;
+    font-size: 0.8125rem;
+  }
+}

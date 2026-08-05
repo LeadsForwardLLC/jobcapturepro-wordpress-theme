@@ -71,8 +71,16 @@ function jcp_global_settings_handle_save(): void {
 			'secondary_label' => sanitize_text_field( (string) ( $input['nav_cta']['secondary_label'] ?? '' ) ),
 			'secondary_url'   => jcp_global_sanitize_url_field( (string) ( $input['nav_cta']['secondary_url'] ?? '' ) ),
 		],
+		'header_nav' => jcp_global_sanitize_header_nav( $input['header_nav'] ?? [] ),
 		'contact' => [
 			'support_email' => sanitize_email( (string) ( $input['contact']['support_email'] ?? '' ) ),
+		],
+		'fluent_forms' => [
+			'enabled'            => ! empty( $input['fluent_forms']['enabled'] ),
+			'default_shortcode'  => function_exists( 'jcp_fluent_sanitize_shortcode' )
+				? jcp_fluent_sanitize_shortcode( (string) ( $input['fluent_forms']['default_shortcode'] ?? '' ) )
+				: sanitize_text_field( (string) ( $input['fluent_forms']['default_shortcode'] ?? '' ) ),
+			'mount_global_modal' => ! empty( $input['fluent_forms']['mount_global_modal'] ),
 		],
 	];
 
@@ -96,6 +104,7 @@ function jcp_global_settings_render_page(): void {
 	$signup = $s['signup'] ?? [];
 	$nav = $s['nav_cta'] ?? [];
 	$contact = $s['contact'] ?? [];
+	$header_items = jcp_global_resolve_header_nav();
 
 	if ( isset( $_GET['updated'] ) ) {
 		echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__( 'Global settings saved.', 'jcp-core' ) . '</p></div>';
@@ -104,11 +113,85 @@ function jcp_global_settings_render_page(): void {
 	<div class="wrap">
 		<h1><?php esc_html_e( 'JCP Global Settings', 'jcp-core' ); ?></h1>
 		<p class="description">
-			<?php esc_html_e( 'Sitewide banner, signup URLs, and default navigation CTAs. Per-page nav overrides live in each page’s Quick Edit fields.', 'jcp-core' ); ?>
+			<?php esc_html_e( 'Sitewide banner, signup URLs, header navigation, and default CTA buttons. Per-page CTA overrides live in each page’s Quick Edit fields.', 'jcp-core' ); ?>
 		</p>
 
 		<form method="post" action="">
 			<?php wp_nonce_field( 'jcp_global_settings_save', 'jcp_global_settings_nonce' ); ?>
+
+			<h2><?php esc_html_e( 'Header navigation', 'jcp-core' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'Labels and URLs for the main header (desktop + mobile). Features and By Trade keep their mega menus; you can rename them or hide items. New theme defaults appear here automatically — nothing drifts.', 'jcp-core' ); ?>
+			</p>
+			<table class="widefat striped" style="max-width: 960px; margin-bottom: 1.5em;">
+				<thead>
+					<tr>
+						<th style="width: 3rem;"><?php esc_html_e( 'On', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'Label', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'URL', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'Type', 'jcp-core' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $header_items as $item ) : ?>
+						<?php
+						$id   = (string) ( $item['id'] ?? '' );
+						$type = (string) ( $item['type'] ?? 'link' );
+						$base = 'jcp_global[header_nav][items][' . $id . ']';
+						$url_field = in_array( $type, [ 'link', 'trade_mega' ], true ) || ( $type === 'features_mega' );
+						$type_label = match ( $type ) {
+							'features_mega' => __( 'Features mega menu', 'jcp-core' ),
+							'trade_mega'    => __( 'By Trade mega menu', 'jcp-core' ),
+							'dropdown'      => __( 'Dropdown', 'jcp-core' ),
+							default         => __( 'Link', 'jcp-core' ),
+						};
+						?>
+						<tr>
+							<td>
+								<input type="hidden" name="<?php echo esc_attr( $base ); ?>[id]" value="<?php echo esc_attr( $id ); ?>" />
+								<input type="hidden" name="<?php echo esc_attr( $base ); ?>[enabled]" value="0" />
+								<input type="checkbox" name="<?php echo esc_attr( $base ); ?>[enabled]" value="1" <?php checked( ! empty( $item['enabled'] ) ); ?> />
+							</td>
+							<td>
+								<input type="text" class="regular-text" name="<?php echo esc_attr( $base ); ?>[label]" value="<?php echo esc_attr( (string) ( $item['label'] ?? '' ) ); ?>" />
+							</td>
+							<td>
+								<?php if ( $type === 'dropdown' ) : ?>
+									<em class="description"><?php esc_html_e( 'See child links below', 'jcp-core' ); ?></em>
+									<input type="hidden" name="<?php echo esc_attr( $base ); ?>[url]" value="" />
+								<?php elseif ( ! empty( $item['home_anchor'] ) && $type === 'link' ) : ?>
+									<input type="text" class="large-text" name="<?php echo esc_attr( $base ); ?>[url]" value="<?php echo esc_attr( (string) ( $item['url'] ?? '' ) ); ?>" placeholder="<?php echo esc_attr( (string) $item['home_anchor'] ); ?>" />
+									<p class="description"><?php esc_html_e( 'Leave empty to use the homepage section anchor.', 'jcp-core' ); ?></p>
+								<?php else : ?>
+									<input type="text" class="large-text" name="<?php echo esc_attr( $base ); ?>[url]" value="<?php echo esc_attr( (string) ( $item['url'] ?? '' ) ); ?>" placeholder="/path or https://" />
+								<?php endif; ?>
+							</td>
+							<td><code><?php echo esc_html( $type_label ); ?></code></td>
+						</tr>
+						<?php if ( $type === 'dropdown' && ! empty( $item['children'] ) ) : ?>
+							<?php foreach ( (array) $item['children'] as $child ) : ?>
+								<?php
+								$cid  = (string) ( $child['id'] ?? '' );
+								$cbase = $base . '[children][' . $cid . ']';
+								?>
+								<tr style="background: #f6f7f7;">
+									<td style="padding-left: 1.5rem;">
+										<input type="hidden" name="<?php echo esc_attr( $cbase ); ?>[enabled]" value="0" />
+										<input type="checkbox" name="<?php echo esc_attr( $cbase ); ?>[enabled]" value="1" <?php checked( ! empty( $child['enabled'] ) ); ?> />
+									</td>
+									<td>
+										<input type="text" class="regular-text" name="<?php echo esc_attr( $cbase ); ?>[label]" value="<?php echo esc_attr( (string) ( $child['label'] ?? '' ) ); ?>" />
+									</td>
+									<td>
+										<input type="text" class="large-text" name="<?php echo esc_attr( $cbase ); ?>[url]" value="<?php echo esc_attr( (string) ( $child['url'] ?? '' ) ); ?>" placeholder="/path" />
+									</td>
+									<td><span class="description"><?php esc_html_e( 'Resources child', 'jcp-core' ); ?></span></td>
+								</tr>
+							<?php endforeach; ?>
+						<?php endif; ?>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
 
 			<h2><?php esc_html_e( 'Sitewide banner', 'jcp-core' ); ?></h2>
 			<table class="form-table" role="presentation">
@@ -203,7 +286,10 @@ function jcp_global_settings_render_page(): void {
 				</tr>
 				<tr>
 					<th scope="row"><label for="jcp_nav_secondary_url"><?php esc_html_e( 'Secondary URL', 'jcp-core' ); ?></label></th>
-					<td><input type="url" class="large-text" id="jcp_nav_secondary_url" name="jcp_global[nav_cta][secondary_url]" value="<?php echo esc_attr( (string) ( $nav['secondary_url'] ?? '' ) ); ?>" /></td>
+					<td>
+						<input type="url" class="large-text" id="jcp_nav_secondary_url" name="jcp_global[nav_cta][secondary_url]" value="<?php echo esc_attr( (string) ( $nav['secondary_url'] ?? '' ) ); ?>" />
+						<p class="description"><?php esc_html_e( 'Empty + “Login” label = app login URL with nav_login UTM.', 'jcp-core' ); ?></p>
+					</td>
 				</tr>
 			</table>
 
@@ -212,6 +298,43 @@ function jcp_global_settings_render_page(): void {
 				<tr>
 					<th scope="row"><label for="jcp_support_email"><?php esc_html_e( 'Support email', 'jcp-core' ); ?></label></th>
 					<td><input type="email" class="regular-text" id="jcp_support_email" name="jcp_global[contact][support_email]" value="<?php echo esc_attr( (string) ( $contact['support_email'] ?? '' ) ); ?>" /></td>
+				</tr>
+			</table>
+
+			<?php
+			$ff = $s['fluent_forms'] ?? [];
+			?>
+			<h2><?php esc_html_e( 'Fluent Forms bridge', 'jcp-core' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'Theme-owned styling for multi-step Fluent Forms. Leave Fluent Form → Custom CSS blank. Per-page shortcodes live in the Form embed block.', 'jcp-core' ); ?>
+			</p>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Enable theme CSS/JS bridge', 'jcp-core' ); ?></th>
+					<td>
+						<label>
+							<input type="hidden" name="jcp_global[fluent_forms][enabled]" value="0" />
+							<input type="checkbox" name="jcp_global[fluent_forms][enabled]" value="1" <?php checked( ! isset( $ff['enabled'] ) || ! empty( $ff['enabled'] ) ); ?> />
+							<?php esc_html_e( 'On (default)', 'jcp-core' ); ?>
+						</label>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="jcp_ff_shortcode"><?php esc_html_e( 'Default shortcode', 'jcp-core' ); ?></label></th>
+					<td>
+						<input type="text" class="large-text code" id="jcp_ff_shortcode" name="jcp_global[fluent_forms][default_shortcode]" value="<?php echo esc_attr( (string) ( $ff['default_shortcode'] ?? '' ) ); ?>" placeholder='[fluentform id="12"]' />
+						<p class="description"><?php esc_html_e( 'Used when a Form embed block has no shortcode, and for the optional global modal.', 'jcp-core' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><?php esc_html_e( 'Mount global quote modal', 'jcp-core' ); ?></th>
+					<td>
+						<label>
+							<input type="hidden" name="jcp_global[fluent_forms][mount_global_modal]" value="0" />
+							<input type="checkbox" name="jcp_global[fluent_forms][mount_global_modal]" value="1" <?php checked( ! empty( $ff['mount_global_modal'] ) ); ?> />
+							<?php esc_html_e( 'Footer modal opened by links to #apply / #jcp-form-modal or [data-jcp-form-trigger]', 'jcp-core' ); ?>
+						</label>
+					</td>
 				</tr>
 			</table>
 

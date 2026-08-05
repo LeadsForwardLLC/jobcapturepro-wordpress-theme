@@ -8,7 +8,7 @@
 <section class="survey-step" data-step="2">
   <div class="survey-head">
     <div class="survey-eyebrow">Step 3</div>
-    <h2 class="survey-title">Last step — your details</h2>
+    <h2 class="survey-title">Last step: your details</h2>
     <p class="survey-subtitle">
       Enter your name and email, then we'll show you a short preview before your demo.
     </p>

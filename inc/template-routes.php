@@ -16,8 +16,8 @@
  *   single-jcp_company.php, inc/enqueue.php, assets/js/core/jcp-render.js.
  * - No plugin template override; theme owns directory/profile rendering.
  *
- * Directory and company now use rewrite rules + template_include so they are served
- * as 200 with correct title (Rank Math / Yoast compatible) without going through 404.
+ * Directory, company, and demo use rewrite rules + template_include so they are served
+ * as 200 with correct title (Rank Math compatible) without going through 404.
  *
  * @package JCP_Core
  */
@@ -28,6 +28,7 @@
  * @return void
  */
 function jcp_core_register_directory_routes(): void {
+    add_rewrite_rule( '^demo/?$', 'index.php?jcp_route=demo', 'top' );
     add_rewrite_rule( '^directory/?$', 'index.php?jcp_route=directory', 'top' );
     add_rewrite_rule( '^directory/([^/]+)/?$', 'index.php?jcp_route=company&jcp_company_slug=$matches[1]', 'top' );
     add_rewrite_rule( '^company/?$', 'index.php?jcp_route=company', 'top' );
@@ -53,6 +54,12 @@ function jcp_core_register_route_query_var( array $vars ): array {
  */
 function jcp_core_directory_route_template_redirect(): void {
     $route = get_query_var( 'jcp_route', '' );
+
+    if ( $route === 'demo' ) {
+        jcp_core_bootstrap_demo_request();
+        return;
+    }
+
     if ( $route !== 'directory' && $route !== 'company' ) {
         return;
     }
@@ -120,6 +127,12 @@ function jcp_core_directory_route_template_redirect(): void {
  */
 function jcp_core_directory_route_template_include( string $template ): string {
     $route = get_query_var( 'jcp_route', '' );
+    if ( $route === 'demo' ) {
+        $path = get_stylesheet_directory() . '/page-demo.php';
+        if ( file_exists( $path ) ) {
+            return $path;
+        }
+    }
     if ( $route === 'directory' ) {
         $path = get_stylesheet_directory() . '/page-directory.php';
         if ( file_exists( $path ) ) {
@@ -139,6 +152,21 @@ add_action( 'init', 'jcp_core_register_directory_routes' );
 add_filter( 'query_vars', 'jcp_core_register_route_query_var' );
 add_action( 'template_redirect', 'jcp_core_directory_route_template_redirect' );
 add_filter( 'template_include', 'jcp_core_directory_route_template_include', 5 );
+
+/**
+ * Flush rewrite rules once after deploy when route definitions change.
+ *
+ * @return void
+ */
+function jcp_core_maybe_flush_route_rewrites(): void {
+    $version = '2026-05-20-demo-route';
+    if ( get_option( 'jcp_core_route_rewrite_version' ) === $version ) {
+        return;
+    }
+    flush_rewrite_rules( false );
+    update_option( 'jcp_core_route_rewrite_version', $version, false );
+}
+add_action( 'init', 'jcp_core_maybe_flush_route_rewrites', 99 );
 
 /**
  * Force prototype templates by route path.
@@ -209,6 +237,79 @@ function jcp_core_redirect_retired_routes(): void {
 add_action( 'template_redirect', 'jcp_core_redirect_retired_routes', 1 );
 
 /**
+ * Keep /demo/?mode=run on the demo route (avoid canonical redirect to unrelated permalinks).
+ *
+ * @param string|false $redirect_url  Canonical redirect URL.
+ * @param string       $requested_url Requested URL.
+ * @return string|false
+ */
+function jcp_core_prevent_demo_run_canonical_redirect( $redirect_url, $requested_url ) {
+    if ( ! isset( $_GET['mode'] ) || $_GET['mode'] !== 'run' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        return $redirect_url;
+    }
+    $path = trim( (string) parse_url( $requested_url, PHP_URL_PATH ), '/' );
+    if ( $path === 'demo' || str_ends_with( $path, '/demo' ) ) {
+        return false;
+    }
+    return $redirect_url;
+}
+add_filter( 'redirect_canonical', 'jcp_core_prevent_demo_run_canonical_redirect', 10, 2 );
+
+/**
+ * If ?mode=run lands on a non-demo permalink, send to /demo/ with the same params.
+ *
+ * @return void
+ */
+function jcp_core_redirect_stray_demo_run_requests(): void {
+    if ( is_admin() || jcp_core_is_demo_run_request() ) {
+        return;
+    }
+    if ( ! isset( $_GET['mode'] ) || $_GET['mode'] !== 'run' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        return;
+    }
+    wp_safe_redirect( jcp_core_demo_run_url( jcp_core_demo_run_query_args() ), 302 );
+    exit;
+}
+add_action( 'template_redirect', 'jcp_core_redirect_stray_demo_run_requests', 2 );
+
+/**
+ * Keep /demo/ survey HTML out of full-page cache so deploys show immediately.
+ *
+ * @return void
+ */
+function jcp_core_bypass_demo_survey_page_cache(): void {
+    if ( ! jcp_core_is_demo_survey_request() && ! jcp_core_is_demo_run_request() ) {
+        return;
+    }
+    if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+        define( 'DONOTCACHEPAGE', true );
+    }
+    nocache_headers();
+}
+add_action( 'template_redirect', 'jcp_core_bypass_demo_survey_page_cache', 0 );
+
+/**
+ * Critical CSS for mobile demo run — applies before JS so no flash of old chrome.
+ *
+ * @return void
+ */
+function jcp_core_demo_run_critical_css(): void {
+    if ( ! jcp_core_is_demo_run_request() ) {
+        return;
+    }
+    echo '<style id="jcp-demo-run-critical">';
+    echo 'body.jcp-demo-run #tour-float,body.jcp-demo-run #tour-bubble,body.jcp-demo-run .tour-dock{display:none!important}';
+    echo 'body.jcp-demo-run,body.jcp-demo-run #jcp-app{min-height:100dvh;background:#fff;margin:0;padding:0}';
+    echo '@media(max-width:1024px){html.jcp-demo-run-mobile,html.jcp-demo-run-mobile body.jcp-demo-run{height:100%;overflow:hidden;overscroll-behavior:none}body.jcp-demo-run #jcp-app{height:100%;min-height:0;max-height:100dvh;overflow:hidden}}';
+    echo 'body.jcp-demo-run.jcp-desktop-guided,body.jcp-demo-run.jcp-desktop-guided #jcp-app{background:#f3f4f6}';
+    echo '@media(max-width:1024px){';
+    echo 'body.jcp-demo-run .right-panel{display:none!important}';
+    echo '}';
+    echo '</style>';
+}
+add_action( 'wp_head', 'jcp_core_demo_run_critical_css', 1 );
+
+/**
  * Fallback template routing for non-WordPress pages
  * Allows /demo, /pricing, etc. to render even if pages don't exist in WordPress.
  * Directory and company are handled by rewrite + template_include above (not 404).
@@ -248,8 +349,11 @@ function jcp_core_fallback_template_routes(): void {
     $wp_query->is_404 = false;
     status_header( 200 );
 
+    if ( $path_segment === 'demo' ) {
+        jcp_core_bootstrap_demo_request();
+    }
+
     $route_titles = [
-        'demo'            => __( 'Demo', 'jcp-core' ),
         'pricing'         => __( 'Pricing', 'jcp-core' ),
         'contact'         => __( 'Contact', 'jcp-core' ),
         'contact-success' => __( 'Message sent', 'jcp-core' ),

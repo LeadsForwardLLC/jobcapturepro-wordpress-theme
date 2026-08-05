@@ -49,19 +49,21 @@ $dir_trust = $dir_url . '/#trust';
       <a href="<?php echo esc_url( $dir_how ); ?>" class="nav-link" data-home-anchor="#how-it-works"><?php esc_html_e( 'How rankings work', 'jcp-core' ); ?></a>
       <a href="<?php echo esc_url( $dir_trust ); ?>" class="nav-link"><?php esc_html_e( 'Trust & verification', 'jcp-core' ); ?></a>
     <?php else : ?>
+      <?php
+      if ( function_exists( 'jcp_nav_render_desktop_main_items' ) ) {
+          jcp_nav_render_desktop_main_items(
+              [
+                  'home_features'  => $home_features,
+                  'industries_url' => $industries_url,
+              ]
+          );
+      } else {
+          ?>
       <a href="<?php echo $home_how; ?>" class="nav-link" data-home-anchor="#how-it-works">How it works</a>
-      <a href="<?php echo $home_features; ?>" class="nav-link" data-home-anchor="#features">Features</a>
-      <a href="<?php echo esc_url( $industries_url ); ?>" class="nav-link" data-page="industries"><?php esc_html_e( 'By Trade', 'jcp-core' ); ?></a>
       <a href="<?php echo esc_url( home_url( '/pricing' ) ); ?>" class="nav-link" data-page="pricing">Pricing</a>
-      <div class="nav-dropdown" id="navResourcesDropdown">
-        <button type="button" class="nav-dropdown-trigger nav-link" id="navResourcesTrigger" aria-haspopup="true" aria-expanded="false" aria-controls="navResourcesMenu">Resources <svg class="nav-dropdown-chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
-        <div class="nav-dropdown-menu" id="navResourcesMenu" role="menu" aria-labelledby="navResourcesTrigger" hidden>
-          <a href="<?php echo esc_url( home_url( '/blog' ) ); ?>" class="nav-dropdown-item nav-link" role="menuitem" data-page="blog">Blog</a>
-          <a href="<?php echo esc_url( home_url( '/help' ) ); ?>" class="nav-dropdown-item nav-link" role="menuitem" data-page="help">Help Center</a>
-          <a href="<?php echo esc_url( home_url( '/contact' ) ); ?>" class="nav-dropdown-item nav-link" role="menuitem" data-page="contact">Contact</a>
-          <a href="<?php echo esc_url( home_url( '/referral-program' ) ); ?>" class="nav-dropdown-item nav-link" role="menuitem" data-page="referral-program">Referral Program</a>
-        </div>
-      </div>
+          <?php
+      }
+      ?>
     <?php endif; ?>
   </nav>
 
@@ -90,21 +92,34 @@ $dir_trust = $dir_url . '/#trust';
       $nav_ctas    = function_exists( 'jcp_global_resolve_nav_ctas' )
         ? jcp_global_resolve_nav_ctas( $nav_post_id > 0 ? $nav_post_id : null )
         : [
-          'primary'   => [ 'label' => 'Get Started', 'url' => home_url( '/demo' ) ],
-          'secondary' => [ 'label' => 'Online Demo', 'url' => home_url( '/demo' ) ],
+          'primary'   => [
+            'label' => 'Get Started',
+            'url'   => function_exists( 'jcp_core_onboarding_app_url_raw' )
+              ? jcp_core_onboarding_app_url_raw( function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults( 'nav_get_started' ) : [] )
+              : home_url( '/demo' ),
+          ],
+          'secondary' => [
+            'label' => 'Login',
+            'url'   => function_exists( 'jcp_core_app_login_url_raw' )
+              ? jcp_core_app_login_url_raw( function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults( 'nav_login' ) : [] )
+              : 'https://app.jobcapturepro.com/login',
+          ],
         ];
       $secondary_label = $nav_ctas['secondary']['label'];
       $secondary_url   = $nav_ctas['secondary']['url'];
       $primary_label   = $nav_ctas['primary']['label'];
       $primary_url     = $nav_ctas['primary']['url'];
       ?>
-      <a href="<?php echo esc_url( $secondary_url ); ?>" class="btn btn-secondary" id="dynamicBackBtn">
-        <span><?php echo esc_html( $secondary_label ); ?></span>
-        <svg id="dynamicBackIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <path d="M5 12h14M13 5l7 7-7 7"/>
-        </svg>
-      </a>
-      <a href="<?php echo esc_url( $primary_url ); ?>" class="btn btn-primary"><?php echo esc_html( $primary_label ); ?></a>
+      <a href="<?php echo esc_url( $secondary_url ); ?>" class="btn btn-secondary" id="dynamicBackBtn"<?php
+        if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+          jcp_niche_cta_tracking_attr( $secondary_url, 'header', $secondary_label );
+        }
+      ?>><?php echo esc_html( $secondary_label ); ?></a>
+      <a href="<?php echo esc_url( $primary_url ); ?>" class="btn btn-primary"<?php
+        if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+          jcp_niche_cta_tracking_attr( $primary_url, 'header', $primary_label );
+        }
+      ?>><?php echo esc_html( $primary_label ); ?></a>
     <?php endif; ?>
   </div>
 
@@ -153,11 +168,16 @@ $dir_trust = $dir_url . '/#trust';
         </a>
         <a href="<?php echo esc_url( $dir_search ); ?>" class="mobile-btn mobile-btn-primary"><?php echo esc_html__( 'Find a contractor', 'jcp-core' ); ?></a>
       <?php else : ?>
-        <a href="<?php echo esc_url( home_url( '/demo' ) ); ?>" class="mobile-btn mobile-btn-secondary">
-          <span><?php echo esc_html( $secondary_label ); ?></span>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </a>
-        <a href="<?php echo esc_url( $primary_url ); ?>" class="mobile-btn mobile-btn-primary"><?php echo esc_html( $primary_label ); ?></a>
+        <a href="<?php echo esc_url( $secondary_url ); ?>" class="mobile-btn mobile-btn-secondary"<?php
+          if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+            jcp_niche_cta_tracking_attr( $secondary_url, 'header_mobile', $secondary_label );
+          }
+        ?>><?php echo esc_html( $secondary_label ); ?></a>
+        <a href="<?php echo esc_url( $primary_url ); ?>" class="mobile-btn mobile-btn-primary"<?php
+          if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+            jcp_niche_cta_tracking_attr( $primary_url, 'header_mobile', $primary_label );
+          }
+        ?>><?php echo esc_html( $primary_label ); ?></a>
       <?php endif; ?>
     </div>
 
@@ -218,75 +238,16 @@ $dir_trust = $dir_url . '/#trust';
           <span><?php esc_html_e( 'Trust & verification', 'jcp-core' ); ?></span>
         </a>
       <?php else : ?>
-        <a href="<?php echo $home_how; ?>" class="mobile-nav-link" data-home-anchor="#how-it-works">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polygon points="10 8 16 12 10 16 10 8"></polygon>
-          </svg>
-          <span>How it works</span>
-        </a>
-        <a href="<?php echo $home_features; ?>" class="mobile-nav-link" data-home-anchor="#features">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7"></rect>
-            <rect x="14" y="3" width="7" height="7"></rect>
-            <rect x="14" y="14" width="7" height="7"></rect>
-            <rect x="3" y="14" width="7" height="7"></rect>
-          </svg>
-          <span>Features</span>
-        </a>
-        <a href="<?php echo esc_url( $industries_url ); ?>" class="mobile-nav-link" data-page="industries">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M2 20h20"></path>
-            <path d="M5 20V10l7-6 7 6v10"></path>
-            <path d="M9 20v-6h6v6"></path>
-          </svg>
-          <span><?php esc_html_e( 'By Trade', 'jcp-core' ); ?></span>
-        </a>
-        <a href="<?php echo esc_url( home_url( '/pricing' ) ); ?>" class="mobile-nav-link" data-page="pricing">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="2" x2="12" y2="22"></line>
-            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-          </svg>
-          <span>Pricing</span>
-        </a>
-        <details class="mobile-nav-resources" id="mobileNavResources">
-          <summary class="mobile-nav-resources-summary" aria-expanded="false" aria-controls="mobileNavResourcesList">Resources</summary>
-          <div class="mobile-nav-resources-list" id="mobileNavResourcesList">
-            <a href="<?php echo esc_url( home_url( '/blog' ) ); ?>" class="mobile-nav-link" data-page="blog">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                <line x1="8" y1="6" x2="16" y2="6"></line>
-                <line x1="8" y1="10" x2="16" y2="10"></line>
-              </svg>
-              <span>Blog</span>
-            </a>
-            <a href="<?php echo esc_url( home_url( '/help' ) ); ?>" class="mobile-nav-link" data-page="help">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-              </svg>
-              <span><?php esc_html_e( 'Help Center', 'jcp-core' ); ?></span>
-            </a>
-            <a href="<?php echo esc_url( home_url( '/contact' ) ); ?>" class="mobile-nav-link" data-page="contact">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                <polyline points="22,6 12,13 2,6"></polyline>
-              </svg>
-              <span>Contact</span>
-            </a>
-            <a href="<?php echo esc_url( home_url( '/referral-program' ) ); ?>" class="mobile-nav-link" data-page="referral-program">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
-              <span>Referral Program</span>
-            </a>
-          </div>
-        </details>
+        <?php
+        if ( function_exists( 'jcp_nav_render_mobile_main_items' ) ) {
+            jcp_nav_render_mobile_main_items(
+                [
+                    'home_features'  => $home_features,
+                    'industries_url' => $industries_url,
+                ]
+            );
+        }
+        ?>
       <?php endif; ?>
     </nav>
   </div>

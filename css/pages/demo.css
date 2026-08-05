@@ -1,37 +1,68 @@
 /* Shared demo styles are enqueued separately (assets/shared/assets/demo.css) for correct URLs on live. */
 
 /* =========================================================
-   DEMO PAGE - MOBILE NAVIGATION FIX
-   Ensure mobile menu toggle is visible on mobile devices
+   DEMO PAGE - MOBILE NAVIGATION FIX (survey / non-run)
 ========================================================= */
 
-/* Ensure mobile menu toggle shows on mobile for demo page */
 @media (max-width: 768px) {
-  /* Show mobile menu toggle */
   .directory-header .mobile-menu-toggle {
     display: flex !important;
   }
-  
-  /* Hide desktop navigation */
+
   .directory-header .header-nav {
     display: none !important;
   }
-  
-  /* Adjust header actions for mobile */
+
   .directory-header .header-actions {
     gap: var(--jcp-space-xs) !important;
     flex-wrap: wrap;
   }
-  
+
   .directory-header .header-actions .btn {
     font-size: var(--jcp-font-size-sm) !important;
     padding: var(--jcp-space-sm) var(--jcp-space-md) !important;
   }
-  
-  /* Hide some buttons on very small screens to make room for hamburger */
+
   @media (max-width: 480px) {
     .directory-header .header-actions .btn:not(#btnNext) {
       display: none;
     }
+  }
+}
+
+/* =========================================================
+   DEMO RUN — minimal full-viewport shell
+========================================================= */
+
+body.demo-run-only {
+  min-height: 100dvh;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+body.demo-run-only #jcp-app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100dvh;
+  min-height: 100vh;
+}
+
+@media (max-width: 1024px) {
+  html.jcp-demo-run-mobile {
+    height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  html.jcp-demo-run-mobile body.demo-run-only,
+  html.jcp-demo-run-mobile body.jcp-demo-run.demo-run-only {
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+    overscroll-behavior: none;
   }
 }

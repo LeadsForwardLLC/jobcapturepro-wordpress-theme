@@ -128,9 +128,7 @@ function jcp_core_early_access_default_why_interested_options(): array {
         [ 'label' => 'More inbound calls', 'value' => 'More inbound calls' ],
         [ 'label' => 'Better Google visibility', 'value' => 'Better Google visibility' ],
         [ 'label' => 'More customer reviews', 'value' => 'More customer reviews' ],
-        [ 'label' => 'Stronger website trust', 'value' => 'Stronger website trust' ],
         [ 'label' => 'Less marketing busywork', 'value' => 'Less marketing busywork' ],
-        [ 'label' => 'Showcase my work', 'value' => 'Showcase my work' ],
     ];
 }
 
@@ -166,59 +164,151 @@ function jcp_core_early_access_default_referral_options(): array {
 function jcp_core_early_access_default_business_type_options(): array {
     return [
         [
-            'label'   => 'Building & mechanical',
+            'label'   => 'Core Trades',
             'options' => [
                 [ 'value' => 'plumbing', 'label' => 'Plumbing' ],
-                [ 'value' => 'hvac', 'label' => 'HVAC' ],
+                [ 'value' => 'hvac', 'label' => 'HVAC / Heating & Cooling' ],
                 [ 'value' => 'electrical', 'label' => 'Electrical' ],
-                [ 'value' => 'roofing', 'label' => 'Roofing' ],
+                [ 'value' => 'septic-sewer', 'label' => 'Septic & Sewer' ],
+                [ 'value' => 'water-heaters', 'label' => 'Water Heaters' ],
+                [ 'value' => 'water-treatment', 'label' => 'Water Treatment' ],
+                [ 'value' => 'generators', 'label' => 'Generators' ],
             ],
         ],
         [
-            'label'   => 'General contracting & remodeling',
+            'label'   => 'Exterior & Roofing',
             'options' => [
-                [ 'value' => 'general-contractor', 'label' => 'General Contractor' ],
-                [ 'value' => 'handyman', 'label' => 'Handyman' ],
-                [ 'value' => 'remodeling', 'label' => 'Remodeling / Renovation' ],
+                [ 'value' => 'roofing', 'label' => 'Roofing' ],
+                [ 'value' => 'siding-exterior', 'label' => 'Siding & Exterior' ],
+                [ 'value' => 'windows-doors', 'label' => 'Windows & Doors' ],
+                [ 'value' => 'gutters', 'label' => 'Gutters' ],
+                [ 'value' => 'insulation', 'label' => 'Insulation' ],
+                [ 'value' => 'masonry', 'label' => 'Masonry' ],
+                [ 'value' => 'stucco', 'label' => 'Stucco' ],
+                [ 'value' => 'chimney-services', 'label' => 'Chimney Services' ],
             ],
         ],
         [
-            'label'   => 'Outdoor & property',
+            'label'   => 'Remodeling & Construction',
+            'options' => [
+                [ 'value' => 'general-contracting', 'label' => 'General Contracting' ],
+                [ 'value' => 'remodeling', 'label' => 'Remodeling' ],
+                [ 'value' => 'kitchen-remodeling', 'label' => 'Kitchen Remodeling' ],
+                [ 'value' => 'bathroom-remodeling', 'label' => 'Bathroom Remodeling' ],
+                [ 'value' => 'basement-finishing', 'label' => 'Basement Finishing' ],
+                [ 'value' => 'home-additions', 'label' => 'Home Additions' ],
+                [ 'value' => 'handyman', 'label' => 'Handyman Services' ],
+                [ 'value' => 'drywall-plaster', 'label' => 'Drywall & Plaster' ],
+                [ 'value' => 'carpentry-trim', 'label' => 'Carpentry & Trim' ],
+                [ 'value' => 'cabinets-countertops', 'label' => 'Cabinets & Countertops' ],
+                [ 'value' => 'flooring', 'label' => 'Flooring' ],
+                [ 'value' => 'tile', 'label' => 'Tile' ],
+                [ 'value' => 'painting', 'label' => 'Painting' ],
+            ],
+        ],
+        [
+            'label'   => 'Outdoor & Property Services',
             'options' => [
                 [ 'value' => 'landscaping', 'label' => 'Landscaping' ],
-                [ 'value' => 'lawn-care', 'label' => 'Lawn care' ],
-                [ 'value' => 'tree-service', 'label' => 'Tree service' ],
-                [ 'value' => 'pest-control', 'label' => 'Pest control' ],
+                [ 'value' => 'lawn-care', 'label' => 'Lawn Care' ],
+                [ 'value' => 'tree-service', 'label' => 'Tree Service' ],
+                [ 'value' => 'irrigation', 'label' => 'Irrigation' ],
+                [ 'value' => 'hardscaping', 'label' => 'Hardscaping' ],
+                [ 'value' => 'decks-patios', 'label' => 'Decks & Patios' ],
                 [ 'value' => 'fencing', 'label' => 'Fencing' ],
+                [ 'value' => 'snow-removal', 'label' => 'Snow Removal' ],
+                [ 'value' => 'pool-service', 'label' => 'Pool Service' ],
+                [ 'value' => 'pool-construction', 'label' => 'Pool Construction' ],
+                [ 'value' => 'hot-tub-spa', 'label' => 'Hot Tub & Spa Service' ],
+                [ 'value' => 'outdoor-living', 'label' => 'Outdoor Living' ],
             ],
         ],
         [
-            'label'   => 'Cleaning & restoration',
+            'label'   => 'Cleaning & Maintenance',
             'options' => [
-                [ 'value' => 'carpet-cleaning', 'label' => 'Carpet cleaning' ],
-                [ 'value' => 'house-cleaning', 'label' => 'House cleaning' ],
-                [ 'value' => 'pressure-washing', 'label' => 'Pressure washing' ],
-                [ 'value' => 'painting', 'label' => 'Painting (interior / exterior)' ],
+                [ 'value' => 'house-cleaning', 'label' => 'House Cleaning' ],
+                [ 'value' => 'carpet-cleaning', 'label' => 'Carpet Cleaning' ],
+                [ 'value' => 'pressure-washing', 'label' => 'Pressure Washing' ],
+                [ 'value' => 'window-cleaning', 'label' => 'Window Cleaning' ],
+                [ 'value' => 'junk-removal', 'label' => 'Junk Removal' ],
+                [ 'value' => 'dumpster-rental', 'label' => 'Dumpster Rental' ],
+                [ 'value' => 'moving-services', 'label' => 'Moving Services' ],
+                [ 'value' => 'furniture-assembly', 'label' => 'Furniture Assembly' ],
             ],
         ],
         [
-            'label'   => 'Other trades',
+            'label'   => 'Repair & Specialty Services',
             'options' => [
-                [ 'value' => 'flooring', 'label' => 'Flooring' ],
-                [ 'value' => 'windows-doors', 'label' => 'Windows & doors' ],
-                [ 'value' => 'insulation', 'label' => 'Insulation' ],
-                [ 'value' => 'garage-doors', 'label' => 'Garage doors' ],
-                [ 'value' => 'pool-service', 'label' => 'Pool service' ],
-                [ 'value' => 'moving-junk', 'label' => 'Moving / Junk removal' ],
+                [ 'value' => 'appliance-repair', 'label' => 'Appliance Repair' ],
+                [ 'value' => 'garage-doors', 'label' => 'Garage Doors' ],
+                [ 'value' => 'locksmith', 'label' => 'Locksmith' ],
+                [ 'value' => 'pest-control', 'label' => 'Pest Control' ],
+                [ 'value' => 'termite-control', 'label' => 'Termite Control' ],
+                [ 'value' => 'wildlife-removal', 'label' => 'Wildlife Removal' ],
+            ],
+        ],
+        [
+            'label'   => 'Restoration & Structural',
+            'options' => [
+                [ 'value' => 'mold-remediation', 'label' => 'Mold Remediation' ],
+                [ 'value' => 'water-damage-restoration', 'label' => 'Water Damage Restoration' ],
+                [ 'value' => 'fire-damage-restoration', 'label' => 'Fire Damage Restoration' ],
+                [ 'value' => 'foundation-repair', 'label' => 'Foundation Repair' ],
+                [ 'value' => 'basement-waterproofing', 'label' => 'Basement Waterproofing' ],
+                [ 'value' => 'concrete', 'label' => 'Concrete' ],
+                [ 'value' => 'asphalt-paving', 'label' => 'Asphalt & Paving' ],
+            ],
+        ],
+        [
+            'label'   => 'Inspection, Energy & Security',
+            'options' => [
+                [ 'value' => 'home-inspection', 'label' => 'Home Inspection' ],
+                [ 'value' => 'solar-installation', 'label' => 'Solar Installation' ],
+                [ 'value' => 'ev-charger-installation', 'label' => 'EV Charger Installation' ],
+                [ 'value' => 'home-security', 'label' => 'Home Security' ],
+                [ 'value' => 'smart-home-installation', 'label' => 'Smart Home Installation' ],
             ],
         ],
         [
             'label'   => 'Other',
             'options' => [
-                [ 'value' => 'other', 'label' => 'Other home service' ],
+                [ 'value' => 'other', 'label' => 'Other Home Service' ],
             ],
         ],
     ];
+}
+
+/**
+ * Business type select value when the user enters a custom trade.
+ */
+function jcp_core_business_type_other_value(): string {
+    return 'other';
+}
+
+/**
+ * Echo <option> and <optgroup> markup for business type selects.
+ *
+ * @param bool $include_placeholder Whether to include the empty placeholder option.
+ */
+function jcp_core_render_business_type_select_options( bool $include_placeholder = true ): void {
+    if ( $include_placeholder ) {
+        echo '<option value="">' . esc_html__( 'Select your business type', 'jcp-core' ) . '</option>';
+    }
+    foreach ( jcp_core_early_access_default_business_type_options() as $group ) {
+        $group_label = isset( $group['label'] ) ? (string) $group['label'] : '';
+        $options     = isset( $group['options'] ) && is_array( $group['options'] ) ? $group['options'] : [];
+        if ( $group_label === '' || $options === [] ) {
+            continue;
+        }
+        echo '<optgroup label="' . esc_attr( $group_label ) . '">';
+        foreach ( $options as $opt ) {
+            if ( empty( $opt['value'] ) || ! isset( $opt['label'] ) ) {
+                continue;
+            }
+            echo '<option value="' . esc_attr( (string) $opt['value'] ) . '">' . esc_html( (string) $opt['label'] ) . '</option>';
+        }
+        echo '</optgroup>';
+    }
 }
 
 /**

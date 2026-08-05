@@ -51,17 +51,7 @@
 		body.jcp-prototype-page .phone-wrapper {
 			margin: 0;
 		}
-		body.jcp-prototype-page .right-panel,
-		body.jcp-prototype-page .tour-dock,
-		body.jcp-prototype-page #tour-float,
-		body.jcp-prototype-page #tour-bubble,
-		body.jcp-prototype-page .mobile-stepper,
-		body.jcp-prototype-page #post-demo-panel,
-		body.jcp-prototype-page #post-demo-bubble,
-		body.jcp-prototype-page #directory-hint,
-		body.jcp-prototype-page .demo-mode-indicator {
-			display: none !important;
-		}
+		/* Phone-shell hide rules live in assets/shared/assets/demo.css (body.jcp-phone-shell) */
 		/* Component Reference Panel — no box; vertically centered next to phone */
 		.component-reference-panel {
 			width: 380px;
@@ -89,7 +79,7 @@
 		}
 	</style>
 </head>
-<body <?php body_class( 'jcp-prototype-page' ); ?>>
+<body <?php body_class( 'jcp-prototype-page jcp-phone-shell' ); ?>>
 <div class="prototype-page-layout">
 	<div id="jcp-app" data-jcp-page="prototype" data-demo-mode="false"></div>
 	<?php get_template_part( 'templates/partials/component-reference-panel' ); ?>

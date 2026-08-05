@@ -108,6 +108,10 @@ function jcp_demo_analytics_register_rest_route(): void {
                         'slideshow_skipped',
                         'demo_run_started',
                         'demo_step_viewed',
+                        'demo_publish_completed',
+                        'demo_review_sent',
+                        'demo_coach_minimized',
+                        'demo_replayed',
                         'post_demo_modal_shown',
                         'cta_clicked',
                         'demo_converted',
@@ -123,7 +127,37 @@ function jcp_demo_analytics_register_rest_route(): void {
                 'required' => false,
                 'type'    => 'object',
             ],
-        ],
+            'email'        => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_email',
+            ],
+            'first_name'   => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
+            'last_name'    => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
+            'company'      => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
+            'business_type' => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
+            'demo_goals'   => [
+                'required' => false,
+                'type'     => 'array',
+                'items'    => [ 'type' => 'string' ],
+            ],
+        ] + ( function_exists( 'jcp_demo_ghl_attribution_rest_args' ) ? jcp_demo_ghl_attribution_rest_args() : [] ),
     ] );
 }
 
@@ -190,6 +224,26 @@ function jcp_demo_analytics_handle_event( \WP_REST_Request $request ) {
     }
 
     jcp_demo_analytics_upsert_session_from_event( $session_id, $event_type, $metadata, $meta_json );
+
+    if ( function_exists( 'jcp_demo_ghl_maybe_forward_demo_milestone' ) ) {
+        $contact_params = function_exists( 'jcp_demo_ghl_contact_params_from_request' )
+            ? jcp_demo_ghl_contact_params_from_request( $request, is_array( $metadata ) ? $metadata : null )
+            : [
+                'first_name'    => $request->get_param( 'first_name' ),
+                'last_name'     => $request->get_param( 'last_name' ),
+                'email'         => $request->get_param( 'email' ),
+                'company'       => $request->get_param( 'company' ),
+                'business_type' => $request->get_param( 'business_type' ),
+                'demo_goals'    => $request->get_param( 'demo_goals' ),
+            ];
+        jcp_demo_ghl_maybe_forward_demo_milestone(
+            $session_id,
+            $event_type,
+            is_array( $metadata ) ? $metadata : null,
+            $contact_params
+        );
+    }
+
     return new \WP_REST_Response( [ 'ok' => true ], 200 );
 }
 
@@ -317,33 +371,10 @@ add_action( 'after_switch_theme', 'jcp_demo_analytics_maybe_create_sessions_tabl
  * @return string
  */
 function jcp_demo_analytics_business_type_label( string $value ): string {
-    $map = [
-        'plumbing' => 'Plumbing',
-        'hvac' => 'HVAC',
-        'electrical' => 'Electrical',
-        'roofing' => 'Roofing',
-        'general-contractor' => 'General Contractor',
-        'handyman' => 'Handyman',
-        'remodeling' => 'Remodeling / Renovation',
-        'landscaping' => 'Landscaping',
-        'lawn-care' => 'Lawn care',
-        'tree-service' => 'Tree service',
-        'pest-control' => 'Pest control',
-        'fencing' => 'Fencing',
-        'carpet-cleaning' => 'Carpet cleaning',
-        'house-cleaning' => 'House cleaning',
-        'pressure-washing' => 'Pressure washing',
-        'painting' => 'Painting (interior / exterior)',
-        'flooring' => 'Flooring',
-        'windows-doors' => 'Windows & doors',
-        'insulation' => 'Insulation',
-        'garage-doors' => 'Garage doors',
-        'pool-service' => 'Pool service',
-        'moving-junk' => 'Moving / Junk removal',
-        'other' => 'Other home service',
-    ];
-    $v = trim( $value );
-    return isset( $map[ $v ] ) ? $map[ $v ] : $v;
+    if ( function_exists( 'jcp_core_early_access_business_type_label' ) ) {
+        return jcp_core_early_access_business_type_label( $value );
+    }
+    return $value;
 }
 
 /**
@@ -406,8 +437,13 @@ function jcp_demo_analytics_get_stats(): array {
         [ 'label' => 'Demo step 2', 'type' => 'demo_step_viewed', 'num' => 2 ],
         [ 'label' => 'Demo step 3', 'type' => 'demo_step_viewed', 'num' => 3 ],
         [ 'label' => 'Demo step 4', 'type' => 'demo_step_viewed', 'num' => 4 ],
+        [ 'label' => 'Publish completed', 'type' => 'demo_publish_completed', 'num' => 4 ],
         [ 'label' => 'Demo step 5', 'type' => 'demo_step_viewed', 'num' => 5 ],
+        [ 'label' => 'Review sent', 'type' => 'demo_review_sent', 'num' => 5 ],
+        [ 'label' => 'Demo step 6', 'type' => 'demo_step_viewed', 'num' => 6 ],
         [ 'label' => 'Post-demo modal shown', 'type' => 'post_demo_modal_shown', 'num' => null ],
+        [ 'label' => 'Demo replayed', 'type' => 'demo_replayed', 'num' => null ],
+        [ 'label' => 'Converted (Get Started)', 'type' => 'demo_converted', 'num' => null ],
     ];
 
     $prev_count = $total_sessions;

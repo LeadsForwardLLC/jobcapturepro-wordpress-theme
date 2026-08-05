@@ -97,6 +97,72 @@ function jcp_core_icon( string $icon_name ): string {
 }
 
 /**
+ * Canonical URL for launching the interactive demo (?mode=run).
+ *
+ * @param array<string, string> $args Optional query arguments.
+ * @return string
+ */
+function jcp_core_demo_run_url( array $args = [] ): string {
+    $url = home_url( '/demo/' );
+    if ( $args !== [] ) {
+        $url = add_query_arg( $args, $url );
+    }
+    return $url;
+}
+
+/**
+ * Sanitized query args allowed on demo run URLs.
+ *
+ * @return array<string, string>
+ */
+function jcp_core_demo_run_query_args(): array {
+    $allowed = [ 'mode', 'name', 'first_name', 'last_name', 'business', 'company', 'niche', 'business_type', 'email', 'forceSurvey' ];
+    $out     = [ 'mode' => 'run' ];
+    foreach ( $allowed as $key ) {
+        if ( ! isset( $_GET[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+            continue;
+        }
+        $val = wp_unslash( $_GET[ $key ] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        if ( is_string( $val ) && $val !== '' ) {
+            $out[ $key ] = sanitize_text_field( $val );
+        }
+    }
+    return $out;
+}
+
+/**
+ * Whether the current request is already on a valid demo run route.
+ *
+ * @return bool
+ */
+function jcp_core_is_demo_run_request(): bool {
+    if ( ! isset( $_GET['mode'] ) || $_GET['mode'] !== 'run' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        return false;
+    }
+    $path = trim( (string) parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH ), '/' );
+    if ( $path === 'demo' ) {
+        return true;
+    }
+    return is_page_template( 'page-demo.php' );
+}
+
+/**
+ * Whether the current request is the demo survey (not ?mode=run).
+ *
+ * @return bool
+ */
+function jcp_core_is_demo_survey_request(): bool {
+    if ( isset( $_GET['mode'] ) && $_GET['mode'] === 'run' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        return false;
+    }
+    $path = trim( (string) parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH ), '/' );
+    if ( $path === 'demo' ) {
+        return true;
+    }
+    return is_page_template( 'page-demo.php' );
+}
+
+/**
  * Get page detection for conditional enqueuing
  *
  * @return array Associative array of page booleans
@@ -109,7 +175,7 @@ function jcp_core_get_page_detection(): array {
     return [
         'is_home'         => is_front_page() || $path === '' || $path === 'home',
         'is_prototype'    => is_page_template( 'page-prototype.php' ) || is_page( 'prototype' ) || $is_prototype_path,
-        'is_demo'         => is_page_template( 'page-demo.php' ) || is_page( 'demo' ) || $path === 'demo',
+        'is_demo'         => is_page_template( 'page-demo.php' ) || is_page( 'demo' ) || $path === 'demo' || get_query_var( 'jcp_route', '' ) === 'demo',
         'is_pricing'      => is_page_template( 'page-pricing.php' ) || is_page( 'pricing' ) || $path === 'pricing',
         'is_contact'      => is_page_template( 'page-contact.php' ) || is_page( 'contact' ) || $path === 'contact',
         'is_contact_success' => $path === 'contact-success',
@@ -118,6 +184,7 @@ function jcp_core_get_page_detection(): array {
         'is_company'      => is_singular( 'jcp_company' ) || is_page( 'company' ) || $path === 'company' || ( preg_match( '#^directory/[^/]+$#', $path ) === 1 ),
         'is_ui_library'   => is_page_template( 'page-ui-library.php' ) || is_page( 'ui-library' ) || $path === 'ui-library',
         'is_wp_plugin_prototype' => is_page_template( 'page-wp-plugin-prototype.php' ) || is_page( 'wp-plugin-prototype' ) || $path === 'wp-plugin-prototype',
+        'is_form_landing' => is_page_template( 'page-form-landing.php' ),
         'is_blog'         => is_home() || is_archive() || is_single() || is_search(),
         'is_single'       => is_single() && ! is_singular( 'jcp_company' ),
         'is_page'         => is_page() && ! is_page_template(),
@@ -245,20 +312,29 @@ function jcp_core_enqueue_page_block_editor( int $post_id ): void {
 	jcp_core_enqueue_script( 'jcp-niche-page-editor', 'js/pages/niche-page-editor.js', [ 'jcp-page-media-editor', 'jcp-page-collection-editor' ] );
 	$page_doc  = jcp_page_get_content( $post_id );
 	$page_kind = jcp_page_resolve_kind( $page_doc, $post_id );
+	wp_add_inline_script(
+		'jcp-niche-page-editor',
+		"window.JCP_ASSET_BASE = window.JCP_ASSET_BASE || '" . esc_url_raw( get_stylesheet_directory_uri() . '/assets' ) . "';",
+		'before'
+	);
 	wp_localize_script(
 		'jcp-niche-page-editor',
 		'JCP_NICHE_EDITOR',
 		[
 			'postId'    => $post_id,
+			'assetBase' => get_stylesheet_directory_uri() . '/assets',
 			'restUrl'   => rest_url( 'jcp/v1/page/' . $post_id ),
 			'nonce'     => wp_create_nonce( 'wp_rest' ),
 			'adminUrl'  => get_edit_post_link( $post_id, 'raw' ),
 			'url'       => get_permalink( $post_id ),
 			'bootstrap' => [
-				'blocks'   => $page_doc,
-				'content'  => jcp_page_get_content_flat( $post_id ),
-				'registry' => jcp_block_registry_public( $page_kind ),
-				'pageKind' => $page_kind,
+				'blocks'       => $page_doc,
+				'content'      => jcp_page_get_content_flat( $post_id ),
+				'registry'     => jcp_block_registry_public( $page_kind ),
+				'pageKind'     => $page_kind,
+				'linkIndex'    => function_exists( 'jcp_internal_link_editor_payload' )
+					? jcp_internal_link_editor_payload( $post_id )
+					: [ 'pages' => [], 'current_path' => '' ],
 			],
 			'strings'   => [
 				'mediaTitle'  => __( 'Choose or upload media', 'jcp-core' ),

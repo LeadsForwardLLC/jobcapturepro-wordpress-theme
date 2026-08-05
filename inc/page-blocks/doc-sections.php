@@ -32,6 +32,8 @@ function jcp_page_doc_section_synonyms(): array {
 		'CHECK INS'   => 'CHECK-INS',
 		'CHECKINS'    => 'CHECK-INS',
 		'WHO ITS FOR' => "WHO IT'S FOR",
+		'DEMO'        => 'DEMO PREVIEW',
+		'DIRECTORY'   => 'DIRECTORY PREVIEW',
 	];
 }
 
@@ -137,8 +139,17 @@ function jcp_page_doc_legacy_key_map(): array {
 		'differentiation'       => 'DIFFERENTIATION',
 		'who_its_for'           => "WHO IT'S FOR",
 		'faq'                   => 'FAQ',
+		'form_embed'            => 'FORM EMBED',
+		'code_embed'            => 'CODE EMBED',
 		'conversion'            => 'CONVERSION',
 		'final_cta'             => 'FINAL CTA',
+		'demo_preview'          => 'DEMO PREVIEW',
+		'proof_flow'            => 'PROOF FLOW',
+		'directory_preview'     => 'DIRECTORY PREVIEW',
+		'cta_band_1'            => 'CTA BAND',
+		'commission'            => 'COMMISSION',
+		'partners'              => 'PARTNERS',
+		'share'                 => 'SHARE',
 	];
 }
 
@@ -199,17 +210,20 @@ function jcp_page_doc_section_label( string $section ): string {
  * Section headers writers should use for a page kind (import guide).
  *
  * @param string $page_kind industry|marketing|referral|home.
+ * @param string $preset    Optional layout preset slug.
  * @return array<int, array{header:string,label:string,on_page:bool}>
  */
-function jcp_page_doc_sections_for_kind( string $page_kind ): array {
+function jcp_page_doc_sections_for_kind( string $page_kind, string $preset = '' ): array {
 	$out       = [];
 	$seen      = [];
-	$preset    = match ( $page_kind ) {
-		'referral' => 'referral',
-		'industry' => 'industry',
-		'home'     => 'home',
-		default    => 'marketing',
-	};
+	if ( $preset === '' ) {
+		$preset = match ( $page_kind ) {
+			'referral' => 'referral',
+			'industry' => 'industry',
+			'home'     => 'home',
+			default    => 'marketing',
+		};
+	}
 	$preset_def = jcp_page_get_preset( $preset );
 	$preset_types = [];
 	foreach ( (array) ( $preset_def['block_types'] ?? [] ) as $entry ) {
@@ -257,14 +271,22 @@ function jcp_page_doc_sections_for_kind( string $page_kind ): array {
 		'CORE MECHANIC',
 		'MEDIA CORE',
 		'HOW IT WORKS',
+		'DEMO PREVIEW',
+		'PROOF FLOW',
 		'CHECK-INS',
 		'MEDIA CHECK-INS',
+		'CTA BAND',
 		'PROBLEM',
 		'MEDIA PROBLEM',
 		'BENEFITS',
 		'DIFFERENTIATION',
 		"WHO IT'S FOR",
+		'DIRECTORY PREVIEW',
+		'COMMISSION',
+		'PARTNERS',
+		'SHARE',
 		'FAQ',
+		'FORM EMBED',
 		'CONVERSION',
 		'FINAL CTA',
 	];
@@ -283,11 +305,45 @@ function jcp_page_doc_sections_for_kind( string $page_kind ): array {
 }
 
 /**
+ * Doc sections for a layout preset slug.
+ *
+ * @param string $preset Preset slug.
+ * @return array<int, array{header:string,label:string,on_page:bool}>
+ */
+function jcp_page_doc_sections_for_preset( string $preset ): array {
+	$def = jcp_page_get_preset( $preset );
+	$page_kind = $def ? (string) ( $def['page_kind'] ?? 'marketing' ) : 'marketing';
+	return jcp_page_doc_sections_for_kind( $page_kind, $preset );
+}
+
+/**
+ * HTML list items for the admin import section guide.
+ *
+ * @param string $preset Preset slug.
+ */
+function jcp_page_doc_sections_guide_html( string $preset ): string {
+	$html     = '';
+	$sections = jcp_page_doc_sections_for_preset( $preset );
+	foreach ( $sections as $row ) {
+		$class = ! empty( $row['on_page'] ) ? 'is-on-page' : 'is-extra';
+		$html .= '<li class="' . esc_attr( $class ) . '">';
+		$html .= '<code>' . esc_html( (string) $row['header'] ) . '</code>';
+		$html .= '<span>' . esc_html( (string) $row['label'] ) . '</span>';
+		if ( empty( $row['on_page'] ) ) {
+			$html .= '<em>' . esc_html__( 'optional on this page', 'jcp-core' ) . '</em>';
+		}
+		$html .= '</li>';
+	}
+	return $html;
+}
+
+/**
  * Resolve page kind for admin import UI.
  *
- * @param WP_Post|null $post Post.
+ * @param WP_Post|null         $post    Post.
+ * @param array<string, mixed> $content Stored content (optional).
  */
-function jcp_page_resolve_admin_page_kind( ?WP_Post $post ): string {
+function jcp_page_resolve_admin_page_kind( ?WP_Post $post, array $content = [] ): string {
 	if ( ! $post instanceof WP_Post ) {
 		return 'marketing';
 	}
@@ -300,10 +356,7 @@ function jcp_page_resolve_admin_page_kind( ?WP_Post $post ): string {
 	if ( get_page_template_slug( $post ) === 'page-home.php' || (int) get_option( 'page_on_front' ) === (int) $post->ID ) {
 		return 'home';
 	}
-	if ( jcp_page_uses_block_template( (int) $post->ID ) ) {
-		return 'marketing';
-	}
-	return 'marketing';
+	return jcp_page_resolve_kind( $content, (int) $post->ID );
 }
 
 /**
@@ -364,9 +417,10 @@ function jcp_page_doc_section_in_blocks( array $blocks, string $section ): bool 
  * @param array<string, mixed> $legacy    Parsed legacy content.
  * @param array<string, mixed> $blocks_doc Blocks document.
  * @param string               $page_kind Page kind.
+ * @param string               $preset    Optional layout preset slug.
  * @return array<string, mixed>
  */
-function jcp_page_doc_build_import_report( array $legacy, array $blocks_doc, string $page_kind ): array {
+function jcp_page_doc_build_import_report( array $legacy, array $blocks_doc, string $page_kind, string $preset = '' ): array {
 	$blocks       = (array) ( $blocks_doc['blocks'] ?? [] );
 	$imported     = [];
 	$skipped      = [];
@@ -397,9 +451,12 @@ function jcp_page_doc_build_import_report( array $legacy, array $blocks_doc, str
 	}
 
 	$applicable = array_values( array_filter(
-		jcp_page_doc_sections_for_kind( $page_kind ),
+		jcp_page_doc_sections_for_kind( $page_kind, $preset ),
 		static fn( array $row ): bool => ! empty( $row['on_page'] )
 	) );
+
+	$preset_def   = $preset !== '' ? jcp_page_get_preset( $preset ) : null;
+	$preset_label = $preset_def ? (string) ( $preset_def['label'] ?? $preset ) : jcp_page_kind_label( $page_kind );
 
 	$message_parts = [];
 	if ( $imported ) {
@@ -414,7 +471,7 @@ function jcp_page_doc_build_import_report( array $legacy, array $blocks_doc, str
 	if ( $skipped ) {
 		$message_parts[] = sprintf(
 			/* translators: %d: number of sections */
-			_n( '%d section parsed but not used on this page type (see list below).', '%d sections parsed but not used on this page type (see list below).', count( $skipped ), 'jcp-core' ),
+			_n( '%d section parsed but not in this layout’s default stack (add the block in Page Structure to use it).', '%d sections parsed but not in this layout’s default stack (add the block in Page Structure to use them).', count( $skipped ), 'jcp-core' ),
 			count( $skipped )
 		);
 	}
@@ -422,7 +479,8 @@ function jcp_page_doc_build_import_report( array $legacy, array $blocks_doc, str
 
 	return [
 		'page_kind'       => $page_kind,
-		'page_kind_label' => jcp_page_kind_label( $page_kind ),
+		'page_kind_label' => $preset_label,
+		'preset'          => $preset,
 		'imported'        => $imported,
 		'skipped'         => $skipped,
 		'blocks'          => $block_labels,

@@ -74,3 +74,25 @@ function jcp_core_onboarding_app_url_raw( array $query_extra = [] ): string {
 function jcp_core_onboarding_app_url( array $query_extra = [] ): string {
 	return esc_url( jcp_core_onboarding_app_url_raw( $query_extra ) );
 }
+
+/**
+ * App login URL with marketing UTM params (no onboarding sessionId).
+ *
+ * @param array<string, string> $query_extra Merge into query string; overrides defaults if keys match.
+ * @return string Absolute URL.
+ */
+function jcp_core_app_login_url_raw( array $query_extra = [] ): string {
+	$base = 'https://app.jobcapturepro.com/login';
+	$args = array_merge( jcp_core_onboarding_utm_defaults(), $query_extra );
+	return add_query_arg( $args, $base );
+}
+
+/**
+ * Escaped app login URL for HTML href attributes.
+ *
+ * @param array<string, string> $query_extra Same as jcp_core_app_login_url_raw().
+ * @return string
+ */
+function jcp_core_app_login_url( array $query_extra = [] ): string {
+	return esc_url( jcp_core_app_login_url_raw( $query_extra ) );
+}

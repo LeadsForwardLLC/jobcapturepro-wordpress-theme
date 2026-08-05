@@ -202,3 +202,34 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ============================================================
+   VIDEO EMBEDS (blog, pages, block content)
+   ============================================================ */
+
+.video-embed {
+  width: 100%;
+  max-width: 800px;
+  aspect-ratio: 16 / 9;
+  margin: var(--jcp-space-2xl) auto;
+  border: 2px solid var(--jcp-color-border);
+  border-radius: var(--jcp-radius-lg);
+  overflow: hidden;
+  background: #0f172a;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.video-embed iframe,
+.video-embed video {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .video-embed {
+    margin: var(--jcp-space-xl) auto;
+    border-radius: var(--jcp-radius-md);
+  }
+}

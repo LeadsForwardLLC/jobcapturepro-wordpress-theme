@@ -23,6 +23,89 @@ function jcp_niche_editable_attr( string $path ): void {
 }
 
 /**
+ * Allowed HTML heading tags for editable section headlines.
+ *
+ * @param bool $allow_h1 Whether H1 is permitted (hero only).
+ * @return array<int, string>
+ */
+function jcp_niche_allowed_heading_tags( bool $allow_h1 = false ): array {
+	$tags = [ 'h2', 'h3', 'h4', 'h5', 'h6' ];
+	if ( $allow_h1 ) {
+		array_unshift( $tags, 'h1' );
+	}
+	return $tags;
+}
+
+/**
+ * Sanitize a heading tag string.
+ *
+ * @param mixed  $tag      Raw tag.
+ * @param string $default  Fallback when invalid.
+ * @param bool   $allow_h1 Whether H1 is allowed.
+ */
+function jcp_niche_sanitize_heading_tag( $tag, string $default = 'h2', bool $allow_h1 = false ): string {
+	$tag     = strtolower( trim( (string) $tag ) );
+	$allowed = jcp_niche_allowed_heading_tags( $allow_h1 );
+	$default = in_array( $default, $allowed, true ) ? $default : ( $allow_h1 ? 'h1' : 'h2' );
+	return in_array( $tag, $allowed, true ) ? $tag : $default;
+}
+
+/**
+ * Resolve headline tag from block/section props.
+ *
+ * @param array<string, mixed> $props    Props.
+ * @param string               $default  Default tag.
+ * @param bool                 $allow_h1 Whether H1 is allowed.
+ */
+function jcp_niche_heading_tag_from_props( array $props, string $default = 'h2', bool $allow_h1 = false ): string {
+	return jcp_niche_sanitize_heading_tag( $props['headline_tag'] ?? $default, $default, $allow_h1 );
+}
+
+/**
+ * Open an editable heading element (H1–H6).
+ *
+ * @param string $tag        Heading tag (already sanitized).
+ * @param string $class      CSS class list.
+ * @param string $text_path  data-jcp-path for the text.
+ * @param string $tag_path   data-jcp-heading-tag-path for the tag prop.
+ * @param string $extra_attr Raw extra attributes (already escaped).
+ */
+function jcp_niche_open_heading( string $tag, string $class, string $text_path, string $tag_path = '', string $extra_attr = '', bool $allow_h1 = false ): void {
+	$tag = jcp_niche_sanitize_heading_tag( $tag, $allow_h1 ? 'h1' : 'h2', $allow_h1 );
+	echo '<' . tag_escape( $tag );
+	if ( $class !== '' ) {
+		echo ' class="' . esc_attr( $class ) . '"';
+	}
+	if ( $tag_path !== '' ) {
+		echo ' data-jcp-heading-tag-path="' . esc_attr( $tag_path ) . '"';
+	}
+	echo $extra_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	if ( $text_path !== '' ) {
+		jcp_niche_editable_attr( $text_path );
+	}
+	echo '>';
+}
+
+/**
+ * Close a heading element opened with jcp_niche_open_heading().
+ *
+ * @param string $tag Heading tag.
+ */
+function jcp_niche_close_heading( string $tag ): void {
+	$tag = jcp_niche_sanitize_heading_tag( $tag, 'h2', true );
+	echo '</' . tag_escape( $tag ) . '>';
+}
+
+/**
+ * Editable rich text (allows inline links in the live editor).
+ *
+ * @param string $path e.g. what_it_is.subheadline.
+ */
+function jcp_niche_editable_rich_attr( string $path ): void {
+	echo ' data-jcp-path="' . esc_attr( $path ) . '" data-jcp-rich="true"';
+}
+
+/**
  * Data attributes for editable link (label + url paths).
  *
  * @param string $base_path e.g. hero.cta_primary (maps to .label and .url).
@@ -65,9 +148,12 @@ function jcp_niche_array_item_attr( int $index ): void {
  * @param bool $list_item Use compact positioning for checklist rows.
  */
 function jcp_niche_collection_remove_btn( bool $list_item = false ): void {
+	if ( ! jcp_niche_user_can_inline_edit() ) {
+		return;
+	}
 	$class = 'jcp-collection-remove' . ( $list_item ? ' jcp-collection-remove--list-item' : '' );
 	printf(
-		'<button type="button" class="%1$s" aria-label="%2$s" title="%3$s" tabindex="-1" onclick="return window.jcpCollectionRemoveClick&amp;&amp;window.jcpCollectionRemoveClick(this,event)">×</button>',
+		'<button type="button" class="%1$s" aria-label="%2$s" title="%3$s" tabindex="-1">×</button>',
 		esc_attr( $class ),
 		esc_attr__( 'Remove item', 'jcp-core' ),
 		esc_attr__( 'Remove', 'jcp-core' )
@@ -80,11 +166,14 @@ function jcp_niche_collection_remove_btn( bool $list_item = false ): void {
  * @param string $label Button label.
  */
 function jcp_niche_collection_add_btn( string $label = '' ): void {
+	if ( ! jcp_niche_user_can_inline_edit() ) {
+		return;
+	}
 	if ( $label === '' ) {
 		$label = __( '+ Add item', 'jcp-core' );
 	}
 	printf(
-		'<button type="button" class="jcp-collection-add" tabindex="-1" onclick="return window.jcpCollectionAddClick&amp;&amp;window.jcpCollectionAddClick(this,event)">%s</button>',
+		'<button type="button" class="jcp-collection-add" tabindex="-1">%s</button>',
 		esc_html( $label )
 	);
 }
@@ -166,6 +255,23 @@ function jcp_page_sanitize_block_props( array $block ): array {
 				$props['points'] = jcp_niche_clean_string_list( $props['points'] );
 			}
 			break;
+		case 'code_embed':
+			if ( array_key_exists( 'headline', $props ) ) {
+				$props['headline'] = sanitize_text_field( (string) $props['headline'] );
+			}
+			if ( array_key_exists( 'subheadline', $props ) ) {
+				$props['subheadline'] = sanitize_text_field( (string) $props['subheadline'] );
+			}
+			if ( array_key_exists( 'embed_code', $props ) ) {
+				$props['embed_code'] = trim( (string) $props['embed_code'] );
+			}
+			break;
+	}
+
+	if ( array_key_exists( 'headline_tag', $props ) ) {
+		$allow_h1              = $type === 'hero';
+		$default_tag           = $allow_h1 ? 'h1' : ( in_array( $type, [ 'final_cta', 'media_text', 'demo_preview' ], true ) ? 'h3' : 'h2' );
+		$props['headline_tag'] = jcp_niche_sanitize_heading_tag( $props['headline_tag'], $default_tag, $allow_h1 );
 	}
 
 	$block['props'] = $props;
@@ -223,13 +329,16 @@ function jcp_niche_cta_tracking_attr( string $url, string $location, string $cta
 	$path = is_string( $path ) ? rtrim( $path, '/' ) : '';
 
 	$is_referral_outbound = $host !== '' && str_contains( $host, 'firstpromoter.com' );
+	$is_onboarding        = $host !== '' && str_contains( $host, 'jobcapturepro.com' ) && str_contains( $path, '/onboarding' );
 	$is_key_conversion    = in_array( $path, [ '/demo', '/referral-program' ], true );
 
-	if ( ! $is_referral_outbound && ! $is_key_conversion ) {
+	if ( ! $is_referral_outbound && ! $is_onboarding && ! $is_key_conversion ) {
 		return;
 	}
 
-	$name = $cta_name !== '' ? $cta_name : ( $is_referral_outbound ? 'Join Referral Program' : '' );
+	$name = $cta_name !== ''
+		? $cta_name
+		: ( $is_referral_outbound ? 'Join Referral Program' : ( $is_onboarding ? 'Start free trial' : '' ) );
 	if ( $name !== '' ) {
 		echo ' data-cta="' . esc_attr( $name ) . '"';
 	}

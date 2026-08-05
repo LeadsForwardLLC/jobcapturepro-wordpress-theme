@@ -1,0 +1,13 @@
+---
+description: Always commit and push completed theme work without waiting to be asked
+alwaysApply: true
+---
+
+# Always push completed work
+
+When finishing an implementation task in this theme repo:
+
+1. Commit the relevant changes (follow the repo commit-message style).
+2. Push to `origin` on the current branch immediately — do **not** wait for the user to say "push" or "commit".
+3. Only skip push if the user explicitly says not to, or if there is nothing to commit.
+4. After push, briefly confirm the commit hash / that it landed on remote.

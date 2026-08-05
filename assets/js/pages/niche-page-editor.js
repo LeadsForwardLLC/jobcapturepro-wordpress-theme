@@ -39,11 +39,233 @@
     { value: 'home', label: 'Homepage', hint: 'Rotating headline + live phone' },
   ];
 
+  const SECTION_SURFACE_PRESETS = [
+    { value: 'default', label: 'Default', hint: 'Keep the site gradient' },
+    { value: 'white', label: 'White', swatch: '#ffffff' },
+    { value: 'off_white', label: 'Cream', swatch: '#f6f5f2' },
+    { value: 'dark', label: 'Brand', swatch: 'brand' },
+    { value: 'image', label: 'Photo', swatch: 'image' },
+    { value: 'custom', label: 'Custom', swatch: 'custom' },
+  ];
+
+  const SECTION_SURFACE_CLASS_NAMES = [
+    'jcp-has-section-surface',
+    'jcp-section-surface--white',
+    'jcp-section-surface--off_white',
+    'jcp-section-surface--dark',
+    'jcp-section-surface--image',
+    'jcp-section-surface--custom',
+  ];
+
+  const SECTION_CTA_PRIMARY_SELECTOR = '.jcp-section-cta-row [data-jcp-optional$=".cta_primary"]';
+  const SECTION_CTA_SECONDARY_SELECTOR = '.jcp-section-cta-row [data-jcp-optional$=".cta_secondary"]';
+
+  const SECTION_CTA_PRIMARY_DEFAULTS = {
+    what_it_is: { label: 'Learn more', url: '/demo' },
+    how_it_works: { label: 'See it in action', url: '/demo' },
+    check_ins: { label: 'See it in action', url: '/demo' },
+    problem: { label: 'Fix this with JobCapturePro', url: '/demo' },
+    benefits: { label: 'See it in the demo', url: '/demo' },
+    differentiation: { label: 'Get started', url: '/demo' },
+    who_its_for: { label: 'Start free trial', url: '/demo' },
+    faq: { label: 'Still have questions? Book a demo', url: '/demo' },
+  };
+
+  const SECTION_CTA_SECONDARY_DEFAULTS = {
+    how_it_works: { label: 'View pricing', url: '/pricing' },
+    benefits: { label: 'Learn more', url: '/pricing' },
+    what_it_is: { label: 'See how it works', url: '#how-it-works' },
+  };
+
+  const syncOptionalCtaSlotsFromContent = () => {
+    if (typeof window.JCP_SYNC_COLLECTIONS_FROM_CONTENT === 'function') {
+      window.JCP_SYNC_COLLECTIONS_FROM_CONTENT();
+    }
+    if (typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
+      window.JCP_REFRESH_COLLECTIONS();
+    }
+    if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+      window.JCP_REFRESH_INLINE_EDITABLE();
+    }
+  };
+
+  const SECTION_HEADLINE_SELECTOR = '.rankings-header .jcp-section-headline, .rankings-header h2, .rankings-header h3, .rankings-header h4, .rankings-header h5, .rankings-header h6';
+  const HEADING_LEVELS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
+  const HEADING_TAG_BLOCKS = new Set([
+    'hero', 'benefits', 'what_it_is', 'problem', 'check_ins', 'who_its_for',
+    'how_it_works', 'differentiation', 'faq', 'final_cta', 'conversion',
+    'proof_flow', 'directory_preview', 'media_text', 'demo_preview',
+    'commission', 'partners', 'share',
+  ]);
+
+  const defaultHeadlineTagForType = (type) => {
+    if (type === 'hero') return 'h1';
+    if (type === 'final_cta' || type === 'media_text' || type === 'demo_preview') return 'h3';
+    return 'h2';
+  };
+
+  const sanitizeHeadingTag = (tag, allowH1) => {
+    const value = String(tag || '').toLowerCase();
+    const allowed = allowH1 ? HEADING_LEVELS : HEADING_LEVELS.filter((level) => level !== 'h1');
+    const fallback = allowH1 ? 'h1' : 'h2';
+    return allowed.includes(value) ? value : fallback;
+  };
+
+  const resolveHeadlineTag = (block) => {
+    const allowH1 = block.type === 'hero';
+    const root = findBlockRootEl(block);
+    if (root) {
+      const el = root.querySelector('[data-jcp-heading-tag-path]')
+        || root.querySelector(headlineDomSelectorFor(block.type));
+      if (el) {
+        const domTag = String(el.tagName || '').toLowerCase();
+        if (HEADING_LEVELS.includes(domTag)) {
+          return sanitizeHeadingTag(domTag, allowH1);
+        }
+      }
+    }
+    const raw = block.props?.headline_tag || defaultHeadlineTagForType(block.type);
+    return sanitizeHeadingTag(raw, allowH1);
+  };
+
+  const headlineDomSelectorFor = (type) => {
+    if (type === 'hero') return '.jcp-hero-title';
+    if (type === 'final_cta') return '.cta-content .jcp-section-headline, .cta-content h3, .cta-content h2, .cta-content h4, .cta-content h5, .cta-content h6';
+    if (type === 'media_text' || type === 'demo_preview') return '.demo-preview-title, .jcp-section-headline';
+    if (type === 'conversion') return '.conversion-content .jcp-section-headline, .conversion-content .rankings-header :is(h1,h2,h3,h4,h5,h6)';
+    return SECTION_HEADLINE_SELECTOR;
+  };
+
+  const BLOCK_VISIBILITY_TOGGLES = {
+    hero: [
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-hero-subtitle', defaultOn: true },
+      { key: 'show_trust_line', label: 'Trust line', selector: '.jcp-niche-trust-line', defaultOn: true },
+      { key: 'show_cta_primary', label: 'Primary button', selector: '.jcp-hero-primary-cta', defaultOn: true },
+      { key: 'show_cta_secondary', label: 'Secondary button', selector: '.jcp-actions .btn-secondary', defaultOn: true },
+      { key: 'show_meta_stats', label: 'Proof stats', selector: '.directory-meta', defaultOn: true },
+    ],
+    benefits: [
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
+      { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
+      { key: 'show_card_body', label: 'Card body', selector: '.factor-description', defaultOn: true },
+      { key: 'show_card_stats', label: 'Card stats', selector: '.factor-stat', defaultOn: true },
+      { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
+      { key: 'show_cta', label: 'Primary button', selector: SECTION_CTA_PRIMARY_SELECTOR, defaultOn: false },
+      { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
+    ],
+    what_it_is: [
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
+      { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
+      { key: 'show_card_body', label: 'Card body', selector: '.factor-description, .jcp-niche-card-lead', defaultOn: true },
+      { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
+      { key: 'show_cta', label: 'Primary button', selector: SECTION_CTA_PRIMARY_SELECTOR, defaultOn: false },
+      { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
+    ],
+    problem: [
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
+      { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
+      { key: 'show_card_body', label: 'Card body', selector: '.factor-description', defaultOn: true },
+      { key: 'show_closing', label: 'Closing line', selector: '.jcp-niche-section-closing', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+    ],
+    check_ins: [
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_tags', label: 'Job tags', selector: '.jcp-niche-tags-wrap', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
+      { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title', defaultOn: true },
+      { key: 'show_card_body', label: 'Card body', selector: '.factor-description', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+    ],
+    who_its_for: [
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_cards', label: 'Cards', selector: '.guarantees-grid, .ranking-factors-grid', defaultOn: true },
+      { key: 'show_card_images', label: 'Card images', selector: '.guarantee-image-wrapper', defaultOn: true },
+      { key: 'show_card_badges', label: 'Card badges', selector: '.guarantee-badge', defaultOn: true },
+      { key: 'show_card_titles', label: 'Card titles', selector: '.factor-title, .guarantee-content > strong', defaultOn: true },
+      { key: 'show_card_body', label: 'Card body', selector: '.factor-description, .guarantee-content > p', defaultOn: true },
+      { key: 'show_card_stats', label: 'Card stats', selector: '.guarantee-stat, .factor-stat', defaultOn: true },
+      { key: 'show_icons', label: 'Icons', selector: '.factor-icon-wrapper', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+    ],
+    how_it_works: [
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_steps', label: 'Step cards', selector: '.timeline-steps', defaultOn: true },
+      { key: 'show_cta', label: 'Primary button', selector: SECTION_CTA_PRIMARY_SELECTOR, defaultOn: true },
+      { key: 'show_cta_secondary', label: 'Secondary link', selector: SECTION_CTA_SECONDARY_SELECTOR, defaultOn: false },
+    ],
+    differentiation: [
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-niche-diff-lead', defaultOn: true },
+      { key: 'show_icons', label: 'Checkmarks', selector: '.conversion-point-icon', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+    ],
+    faq: [
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_items', label: 'FAQ items', selector: '.faq-grid', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.jcp-section-cta-row', defaultOn: false },
+    ],
+    final_cta: [
+      { key: 'show_headline', label: 'Headline', selector: '.cta-content .jcp-section-headline, .cta-content h3, .cta-content h2, .cta-content h4, .cta-content h5, .cta-content h6', defaultOn: true },
+      { key: 'show_subheadline', label: 'Supporting text', selector: '.cta-paragraph', defaultOn: true },
+      { key: 'show_cta', label: 'Button', selector: '.rankings-cta-btn, .cta-button-wrapper .jcp-optional-restore', defaultOn: true },
+      { key: 'show_cta_note', label: 'Text under button', selector: '.cta-note', defaultOn: true },
+    ],
+    conversion: [
+      { key: 'show_headline', label: 'Headline', selector: '.conversion-content .jcp-section-headline, .conversion-content .rankings-header :is(h1,h2,h3,h4,h5,h6)', defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.conversion-content .rankings-subtitle', defaultOn: true },
+      { key: 'show_points', label: 'Checklist', selector: '.conversion-points', defaultOn: true },
+      { key: 'show_media', label: 'Side image', selector: '.conversion-visual', defaultOn: true },
+      { key: 'show_stats', label: 'Stat badges', selector: '.conversion-stats', defaultOn: true },
+      { key: 'show_cta', label: 'Button', selector: '.conversion-cta', defaultOn: true },
+    ],
+    proof_flow: [
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_items', label: 'Channel items', selector: '.proof-flow', defaultOn: true },
+      { key: 'show_callout', label: 'Callout box', selector: '.real-job-proof-callout', defaultOn: true },
+      { key: 'show_link', label: 'Bottom link', selector: '.timeline-cta', defaultOn: true },
+    ],
+    directory_preview: [
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+      { key: 'show_cards', label: 'Directory cards', selector: '.directory-grid', defaultOn: true },
+      { key: 'show_outro', label: 'Outro line', selector: '.directory-preview-outro', defaultOn: true },
+      { key: 'show_cta', label: 'Section button', selector: '.directory-preview-cta', defaultOn: false },
+    ],
+    core_mechanic: [
+      { key: 'show_stats', label: 'Stat row', selector: '.jcp-core-mechanic-meta, .directory-meta', defaultOn: true },
+    ],
+    form_embed: [
+      { key: 'show_headline', label: 'Headline', selector: '.jcp-form-embed__intro h2', defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-form-embed__intro p', defaultOn: true },
+    ],
+    code_embed: [
+      { key: 'show_headline', label: 'Headline', selector: '.jcp-code-embed__intro h2', defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.jcp-code-embed__intro p', defaultOn: false },
+    ],
+    cta_band: [
+      { key: 'show_cta_primary', label: 'Button', selector: '.jcp-niche-cta-band .btn-primary', defaultOn: true },
+    ],
+  };
+
   let flatContent = bootstrap.content && typeof bootstrap.content === 'object' ? bootstrap.content : {};
   let pageDocument = bootstrap.blocks && Array.isArray(bootstrap.blocks.blocks)
     ? bootstrap.blocks
     : { version: 1, blocks: [] };
   let registry = Array.isArray(bootstrap.registry) ? bootstrap.registry : [];
+  const linkIndex = bootstrap.linkIndex && typeof bootstrap.linkIndex === 'object'
+    ? bootstrap.linkIndex
+    : { pages: [], current_path: '' };
   let editing = false;
   let dirty = false;
   let structureOpen = false;
@@ -54,10 +276,11 @@
   let historyIndex = -1;
   let savedSnapshot = null;
   const detachedPool = new Map();
+  const structureTabByBlockId = new Map();
   let recordTimer = null;
 
   const defaultProps = {
-    hero: { h1: 'Page headline', subheadline: '', cta_primary: { label: 'Start free trial', url: '' }, cta_secondary: { label: 'See how it works', url: '#how-it-works' }, trust_line: '' },
+    hero: { h1: 'Page headline', subheadline: '', cta_primary: { label: 'View the live demo', url: '/demo' }, cta_secondary: { label: 'See how it works', url: '#how-it-works' }, trust_line: '' },
     what_it_is: { headline: 'Section headline', subheadline: '' },
     how_it_works: { headline: 'How it works', subheadline: '', cta_label: 'See it in action', cta_url: '/demo', steps: [] },
     check_ins: { headline: 'Section headline', subheadline: '', features: [] },
@@ -67,6 +290,8 @@
     who_its_for: { headline: "Who it's for", audiences: [] },
     faq: { headline: 'Frequently asked questions', items: [] },
     final_cta: { headline: 'Ready to get started?', subheadline: '', cta_primary: { label: 'Start free trial', url: '' }, cta_secondary: { label: 'See how it works', url: '/demo' } },
+    form_embed: { headline: 'Apply for a spot', subheadline: '', shortcode: '', display: 'inline', show_headline: true, show_subheadline: true },
+    code_embed: { headline: 'Book a time', subheadline: '', embed_code: '', show_headline: true, show_subheadline: false },
     cta_band: { cta_primary: { label: 'Get started', url: '' }, band_key: 'cta_band_1' },
     breadcrumb: {},
     core_mechanic: [
@@ -83,6 +308,11 @@
       headline: 'See it in action',
       body: '',
       cta_primary: { label: 'Launch Interactive Demo', url: '/demo' },
+      cta_note: 'No signup required • Takes 2 minutes',
+      show_headline: true,
+      show_body: true,
+      show_cta: true,
+      show_cta_note: true,
     },
     directory_preview: { headline: 'Section headline', cards: [] },
     media_text: {
@@ -134,13 +364,18 @@
   const bar = document.createElement('div');
   bar.className = 'jcp-niche-edit-bar';
   bar.innerHTML = `
-    <strong class="jcp-niche-edit-bar-title">Page editor</strong>
-    <button type="button" class="btn btn-secondary" id="jcpNicheUndo" disabled aria-label="Undo">Undo</button>
-    <button type="button" class="btn btn-secondary" id="jcpNicheRedo" disabled aria-label="Redo">Redo</button>
-    <button type="button" class="btn btn-secondary" id="jcpNicheStructureBtn">Page structure</button>
-    <button type="button" class="btn btn-primary" id="jcpNicheToggleEdit">Click to edit page</button>
-    <button type="button" class="btn btn-secondary" id="jcpNicheSave" disabled aria-label="Save changes">Save changes</button>
-    <span id="jcpNicheStatus" class="jcp-niche-edit-status" aria-live="polite"></span>
+    <div class="jcp-niche-edit-bar__start">
+      <strong class="jcp-niche-edit-bar-title">Page editor</strong>
+      <span id="jcpNicheStatus" class="jcp-niche-edit-status" aria-live="polite"></span>
+    </div>
+    <div class="jcp-niche-edit-bar__actions">
+      <button type="button" class="btn btn-secondary jcp-niche-edit-bar__icon-btn" id="jcpNicheUndo" disabled aria-label="Undo" title="Undo">↶</button>
+      <button type="button" class="btn btn-secondary jcp-niche-edit-bar__icon-btn" id="jcpNicheRedo" disabled aria-label="Redo" title="Redo">↷</button>
+      <button type="button" class="btn btn-secondary" id="jcpNicheStructureBtn">Structure</button>
+      <button type="button" class="btn btn-secondary" id="jcpNicheTextLink" hidden>Link</button>
+      <button type="button" class="btn btn-primary" id="jcpNicheToggleEdit">Edit page</button>
+      <button type="button" class="btn btn-secondary" id="jcpNicheSave" disabled aria-label="Save changes">Save</button>
+    </div>
     <a href="${cfg.adminUrl || '#'}" class="jcp-niche-edit-link">WP Admin</a>
   `;
 
@@ -152,7 +387,11 @@
       <h2>Page structure</h2>
       <button type="button" class="jcp-block-structure__close" id="jcpStructureClose" aria-label="Close">×</button>
     </div>
-    <p class="jcp-block-structure__hint">Drag to reorder. Click a section to scroll the preview. Rename titles for this page only — click Save to publish.</p>
+    <p class="jcp-block-structure__hint">Drag sections to reorder. Click ⚙ to adjust layout, background, and visibility.</p>
+    <div class="jcp-block-structure__page-options">
+      <span class="jcp-layout-group__label">Page</span>
+      <button type="button" class="jcp-layout-chip" id="jcpToggleBreadcrumb" title="Show breadcrumb trail in the hero">Breadcrumb</button>
+    </div>
     <ul class="jcp-block-structure__list" id="jcpBlockList"></ul>
     <button type="button" class="btn btn-secondary jcp-block-structure__add" id="jcpAddBlockBtn">+ Add block</button>
   `;
@@ -169,14 +408,61 @@
   `;
 
   const popover = document.createElement('div');
-  popover.className = 'jcp-niche-link-popover';
+  popover.className = 'jcp-editor-modal jcp-cta-link-modal';
   popover.hidden = true;
   popover.innerHTML = `
-    <label>Button link URL</label>
-    <input type="text" id="jcpNicheLinkUrl" placeholder="/demo or https://..." />
-    <div class="jcp-niche-link-popover-actions">
-      <button type="button" class="btn btn-primary" id="jcpNicheLinkApply">Apply</button>
-      <button type="button" class="btn btn-secondary" id="jcpNicheLinkCancel">Cancel</button>
+    <button type="button" class="jcp-editor-modal__backdrop" aria-label="Close"></button>
+    <div class="jcp-editor-modal__panel jcp-niche-link-popover" role="dialog" aria-labelledby="jcpCtaLinkModalTitle">
+      <strong id="jcpCtaLinkModalTitle">Edit button</strong>
+      <label for="jcpNicheLinkLabel">Button text</label>
+      <input type="text" id="jcpNicheLinkLabel" placeholder="Start free trial" />
+      <label for="jcpNicheLinkUrl">URL</label>
+      <input type="text" id="jcpNicheLinkUrl" placeholder="/demo or https://..." />
+      <div class="jcp-niche-link-popover-actions">
+        <button type="button" class="btn btn-primary" id="jcpNicheLinkApply">Apply</button>
+        <button type="button" class="btn btn-secondary" id="jcpNicheLinkCancel">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  const textLinkPopover = document.createElement('div');
+  textLinkPopover.className = 'jcp-editor-modal jcp-text-link-modal';
+  textLinkPopover.hidden = true;
+  textLinkPopover.innerHTML = `
+    <button type="button" class="jcp-editor-modal__backdrop" aria-label="Close"></button>
+    <div class="jcp-editor-modal__panel jcp-niche-link-popover jcp-niche-text-link-popover" role="dialog" aria-labelledby="jcpTextLinkModalTitle">
+      <div class="jcp-niche-link-popover__header">
+        <strong id="jcpTextLinkModalTitle">Internal link</strong>
+        <div class="jcp-niche-link-popover__hint" id="jcpNicheTextLinkHint"></div>
+      </div>
+
+      <div class="jcp-niche-link-popover__seo" id="jcpNicheLinkSeo"></div>
+
+      <div class="jcp-niche-link-popover__suggestions">
+        <div class="jcp-niche-link-popover__suggestions-title">Suggested pages</div>
+        <div class="jcp-niche-link-popover__suggestions-list" id="jcpNicheLinkSuggestions"></div>
+      </div>
+
+      <label>Link URL</label>
+      <input type="text" id="jcpNicheTextLinkUrl" placeholder="/industries/plumbing/" />
+
+      <div class="jcp-niche-link-popover-actions">
+        <button type="button" class="btn btn-primary" id="jcpNicheTextLinkApply">Insert link</button>
+        <button type="button" class="btn btn-secondary" id="jcpNicheTextLinkCancel">Close</button>
+      </div>
+    </div>
+  `;
+
+  const iconPopover = document.createElement('div');
+  iconPopover.className = 'jcp-editor-modal jcp-icon-picker-modal';
+  iconPopover.hidden = true;
+  iconPopover.innerHTML = `
+    <button type="button" class="jcp-editor-modal__backdrop" aria-label="Close"></button>
+    <div class="jcp-editor-modal__panel jcp-niche-icon-popover" role="dialog" aria-labelledby="jcpIconPickerTitle">
+      <strong id="jcpIconPickerTitle">Choose icon</strong>
+      <p class="jcp-niche-icon-popover__hint">Applies to the card you clicked. Use “Icons” in Show on page to hide all icons in this section.</p>
+      <div class="jcp-niche-icon-popover__grid" id="jcpNicheIconGrid"></div>
+      <button type="button" class="btn btn-secondary" id="jcpNicheIconCancel">Close</button>
     </div>
   `;
 
@@ -184,6 +470,8 @@
   document.body.appendChild(structurePanel);
   document.body.appendChild(addModal);
   document.body.appendChild(popover);
+  document.body.appendChild(textLinkPopover);
+  document.body.appendChild(iconPopover);
   document.body.classList.add('jcp-niche-editing');
 
   const statusEl = bar.querySelector('#jcpNicheStatus');
@@ -193,9 +481,230 @@
   const toggleBtn = bar.querySelector('#jcpNicheToggleEdit');
   const structureBtn = bar.querySelector('#jcpNicheStructureBtn');
   const blockListEl = structurePanel.querySelector('#jcpBlockList');
+  const breadcrumbToggleBtn = structurePanel.querySelector('#jcpToggleBreadcrumb');
   const addBlockListEl = addModal.querySelector('#jcpAddBlockList');
   const adminLink = bar.querySelector('.jcp-niche-edit-link');
+  const textLinkBtn = bar.querySelector('#jcpNicheTextLink');
   let activeLink = null;
+  let activeRichField = null;
+  let activeBlockId = null;
+
+  const openEditorModal = (modalEl, { focusSelector } = {}) => {
+    if (!modalEl) return;
+    (document.documentElement || document.body).appendChild(modalEl);
+    modalEl.hidden = false;
+    modalEl.removeAttribute('hidden');
+    document.body.classList.add('jcp-editor-modal-open');
+    document.documentElement.classList.add('jcp-editor-modal-open');
+    document.querySelectorAll('.jcp-editor-modal').forEach((el) => {
+      if (el !== modalEl) {
+        el.hidden = true;
+        el.setAttribute('hidden', '');
+      }
+    });
+    const focusEl = focusSelector ? modalEl.querySelector(focusSelector) : null;
+    if (focusEl) {
+      requestAnimationFrame(() => focusEl.focus());
+    }
+  };
+
+  const closeEditorModal = (modalEl) => {
+    if (!modalEl) return;
+    modalEl.hidden = true;
+    modalEl.setAttribute('hidden', '');
+    if (!document.querySelector('.jcp-editor-modal:not([hidden])')) {
+      document.body.classList.remove('jcp-editor-modal-open');
+      document.documentElement.classList.remove('jcp-editor-modal-open');
+    }
+  };
+
+  const closeCtaLinkModal = () => {
+    closeEditorModal(popover);
+    activeLink = null;
+  };
+
+  const closeTextLinkModal = () => {
+    closeEditorModal(textLinkPopover);
+    activeRichField = null;
+  };
+
+  const ICON_CHOICES = [
+    'badge-check', 'map-pin', 'star', 'phone', 'building-2', 'message-square',
+    'camera', 'clock', 'earth', 'share-2', 'users', 'briefcase', 'hard-hat',
+    'trending-up', 'shield-check', 'wrench', 'zap', 'target', 'heart',
+    'sparkles', 'image-off', 'circle-alert', 'circle-check',
+  ];
+
+  const iconGridEl = iconPopover.querySelector('#jcpNicheIconGrid');
+  const resolveIconAssetBase = () => {
+    if (window.JCP_ASSET_BASE) return window.JCP_ASSET_BASE;
+    if (cfg.assetBase) return cfg.assetBase;
+    const src = document.currentScript?.src
+      || document.querySelector('script[src*="niche-page-editor"]')?.src
+      || '';
+    if (src.includes('/js/pages/')) return src.split('/js/pages/')[0];
+    return '';
+  };
+  if (!window.JCP_ASSET_BASE) {
+    window.JCP_ASSET_BASE = resolveIconAssetBase();
+  }
+  const iconAssetBase = () => window.JCP_ASSET_BASE || resolveIconAssetBase();
+  const iconUrl = (name) => `${iconAssetBase()}/shared/assets/icons/lucide/${name}.svg`;
+  let activeIconTarget = null;
+
+  ICON_CHOICES.forEach((name) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'jcp-niche-icon-popover__btn';
+    btn.dataset.iconName = name;
+    btn.title = name;
+    btn.innerHTML = `<img src="${iconUrl(name)}" alt="" width="20" height="20" />`;
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!activeIconTarget) return;
+      const path = activeIconTarget.dataset.jcpIconPath;
+      if (!path) return;
+      setPath(flatContent, path, name);
+      const blockRoot = activeIconTarget.closest('[data-jcp-block-id]');
+      const blockId = blockRoot?.dataset?.jcpBlockId;
+      const block = (pageDocument.blocks || []).find((entry) => entry.id === blockId);
+      if (block) {
+        block.props = block.props || {};
+        const lk = blockLegacyKey(block);
+        const relPath = lk && path.startsWith(`${lk}.`) ? path.slice(lk.length + 1) : path;
+        setPath(block.props, relPath, name);
+      }
+      const img = activeIconTarget.querySelector('.factor-icon, .meta-icon');
+      if (img) img.src = iconUrl(name);
+      closeIconPicker();
+      recordChange();
+    });
+    iconGridEl.appendChild(btn);
+  });
+
+  const closeIconPicker = () => {
+    closeEditorModal(iconPopover);
+    activeIconTarget = null;
+  };
+
+  const openIconPicker = (wrapper) => {
+    activeIconTarget = wrapper;
+    openEditorModal(iconPopover);
+  };
+
+  document.addEventListener('mousedown', (e) => {
+    if (!editing) return;
+    const wrapper = e.target.closest('[data-jcp-icon-path]');
+    if (!wrapper) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openIconPicker(wrapper);
+  }, true);
+
+  document.addEventListener('keydown', (e) => {
+    if (!editing || e.key !== 'Enter' && e.key !== ' ') return;
+    const wrapper = e.target.closest('[data-jcp-icon-path]');
+    if (!wrapper) return;
+    e.preventDefault();
+    openIconPicker(wrapper);
+  }, true);
+
+  iconPopover.querySelector('.jcp-editor-modal__backdrop').addEventListener('click', closeIconPicker);
+  iconPopover.querySelector('#jcpNicheIconCancel').addEventListener('click', closeIconPicker);
+
+  const isRichField = (el) => el && el.getAttribute('data-jcp-rich') === 'true';
+
+  const isLinkableTextField = (el) => {
+    if (!el?.hasAttribute?.('data-jcp-path')) return false;
+    if (el.hasAttribute('data-jcp-href-path')) return false;
+    if (el.closest('.jcp-collection-add, .jcp-collection-remove, .jcp-optional-restore')) return false;
+    const tag = el.tagName;
+    if (['BUTTON', 'INPUT', 'TEXTAREA', 'SELECT'].includes(tag)) return false;
+    return true;
+  };
+
+  const findLinkableFieldFromNode = (node) => {
+    if (!node) return null;
+    const start = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+    if (!start) return null;
+    let el = start;
+    while (el) {
+      if (el.matches?.('[data-jcp-path]') && isLinkableTextField(el)) return el;
+      el = el.parentElement;
+    }
+    return null;
+  };
+
+  const promoteFieldToRichIfNeeded = (el) => {
+    if (!el || isRichField(el)) return;
+    if (/<a[\s>]/i.test(el.innerHTML || '')) {
+      el.setAttribute('data-jcp-rich', 'true');
+    }
+  };
+
+  let pendingLinkRange = null;
+  let pendingLinkField = null;
+
+  const rememberLinkSelection = () => {
+    if (!editing) return;
+    const sel = window.getSelection();
+    if (!sel?.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) return;
+    const field = findLinkableFieldFromNode(range.commonAncestorContainer);
+    if (!field) return;
+    try {
+      pendingLinkRange = range.cloneRange();
+      pendingLinkField = field;
+    } catch (e) {
+      // ignore range clone errors
+    }
+  };
+
+  const getLinkContext = () => {
+    const sel = window.getSelection();
+    let range = null;
+    let field = null;
+
+    if (sel?.rangeCount && !sel.isCollapsed) {
+      range = sel.getRangeAt(0);
+      field = findLinkableFieldFromNode(range.commonAncestorContainer);
+    }
+
+    if ((!field || !range || range.collapsed) && pendingLinkField && pendingLinkRange) {
+      range = pendingLinkRange;
+      field = pendingLinkField;
+    }
+
+    if (!field) {
+      field = findLinkableFieldFromNode(sel?.anchorNode)
+        || findLinkableFieldFromNode(document.activeElement);
+    }
+
+    return { range, field };
+  };
+
+  const markExistingInlineLinks = () => {
+    document.querySelectorAll('[data-jcp-path]').forEach((el) => {
+      if (!isLinkableTextField(el)) return;
+      promoteFieldToRichIfNeeded(el);
+    });
+  };
+
+  const sanitizeRichHtml = (html) => {
+    const doc = new DOMParser().parseFromString(`<div>${html || ''}</div>`, 'text/html');
+    const root = doc.body.firstElementChild;
+    if (!root) return '';
+    const walk = (node) => {
+      if (node.nodeType === Node.TEXT_NODE) return node.textContent || '';
+      if (node.nodeName === 'A') {
+        const href = (node.getAttribute('href') || '#').replace(/"/g, '&quot;');
+        return `<a href="${href}">${node.textContent || ''}</a>`;
+      }
+      return Array.from(node.childNodes).map(walk).join('');
+    };
+    return walk(root);
+  };
 
   const getMain = () => document.querySelector('main.jcp-home, main.jcp-niche, main[data-page-kind]');
 
@@ -209,17 +718,44 @@
     return custom || blockLabel(block.type);
   };
 
-  const scrollToBlock = (block) => {
+  const focusStructureBlock = (block, { scrollPage = false, expand = true } = {}) => {
+    if (!block?.id) return;
+    activeBlockId = block.id;
+    if (!structureOpen) openStructure();
+
+    blockListEl.querySelectorAll('.jcp-block-structure__item').forEach((el) => {
+      const isTarget = el.dataset.blockId === block.id;
+      el.classList.toggle('is-active', isTarget);
+      const layout = el.querySelector('.jcp-block-structure__layout');
+      if (!layout) return;
+      if (isTarget && expand) {
+        layout.classList.remove('is-collapsed');
+      } else if (!isTarget) {
+        layout.classList.add('is-collapsed');
+      }
+      if (isTarget) {
+        el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    });
+
+    document.querySelectorAll('[data-jcp-block-id]').forEach((el) => {
+      el.classList.toggle('jcp-block-is-selected', el.dataset.jcpBlockId === block.id);
+    });
+
+    if (!scrollPage) return;
     const main = getMain();
-    if (!main || !block?.id) return;
-    const el = main.querySelector(`[data-jcp-block-id="${block.id}"]`);
+    const el = main?.querySelector(`[data-jcp-block-id="${block.id}"]`);
     if (!el) return;
-    const bar = document.querySelector('.jcp-niche-edit-bar');
-    const offset = (bar?.offsetHeight || 0) + 16;
+    const barEl = document.querySelector('.jcp-niche-edit-bar');
+    const offset = (barEl?.offsetHeight || 0) + 16;
     const top = el.getBoundingClientRect().top + window.scrollY - offset;
     window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
     el.classList.add('jcp-block-scroll-target');
     window.setTimeout(() => el.classList.remove('jcp-block-scroll-target'), 1500);
+  };
+
+  const scrollToBlock = (block) => {
+    focusStructureBlock(block, { scrollPage: true, expand: true });
   };
 
   const setBlockInstanceLabel = (block, value) => {
@@ -268,11 +804,21 @@
     const sel = BLOCK_SELECTORS[block.type];
     if (!sel) return null;
 
-    const match = [...main.querySelectorAll(sel)].find((node) => {
+    const stamped = [...main.querySelectorAll(sel)].find((node) => {
       const root = getBlockRoot(node);
       return root && root.dataset.jcpBlockId === block.id;
     });
-    return match ? getBlockRoot(match) : null;
+    if (stamped) {
+      const root = getBlockRoot(stamped);
+      if (root) root.dataset.jcpBlockId = block.id;
+      return root;
+    }
+
+    // Niche pages typically have one section per type — use it when ids aren't stamped yet.
+    const fallback = main.querySelector(sel);
+    const root = fallback ? getBlockRoot(fallback) : null;
+    if (root) root.dataset.jcpBlockId = block.id;
+    return root;
   };
 
   const applyColumnGrids = (root, cols) => {
@@ -293,15 +839,935 @@
     return root;
   };
 
+  const SECTION_SURFACE_DEFAULTS = {
+    preset: 'default',
+    color: '#ffffff',
+    opacity: 100,
+    image_url: '',
+  };
+
   const defaultLayout = (type) => {
+    const surface = { ...SECTION_SURFACE_DEFAULTS };
     if (type === 'hero') {
-      if (PAGE_KIND === 'referral') return { hero_variant: 'centered' };
-      if (PAGE_KIND === 'home') return { hero_variant: 'home' };
-      return { hero_variant: 'condensed' };
+      if (PAGE_KIND === 'referral') return { hero_variant: 'centered', align: 'center', section_surface: surface };
+      if (PAGE_KIND === 'home') return { hero_variant: 'home', align: 'center', section_surface: surface };
+      return { hero_variant: 'condensed', align: 'center', section_surface: surface };
     }
-    const layout = { align: 'center', width: 'contained' };
+    const layout = {
+      align: 'center',
+      width: 'contained',
+      section_surface: surface,
+    };
     if (type === 'breadcrumb') layout.align = 'left';
     return layout;
+  };
+
+  const isHeroVisualOn = (block) => {
+    block.props = block.props || {};
+    if (block.props.show_visual === true || block.props.show_visual === false) {
+      return block.props.show_visual === true;
+    }
+    return resolveHeroVariant(block) !== 'centered';
+  };
+
+  const heroMediaMode = (block) => {
+    if (!isHeroVisualOn(block)) return 'hide';
+    return block.props?.media_position === 'left' ? 'left' : 'right';
+  };
+
+  const getLiveBlock = (block) => (pageDocument.blocks || []).find((entry) => entry.id === block.id) || block;
+
+  const coerceVisibilityBool = (val, fallback) => {
+    if (val === true || val === 1 || val === '1' || val === 'true') return true;
+    if (val === false || val === 0 || val === '0' || val === 'false') return false;
+    return fallback;
+  };
+
+  const SECTION_VISIBILITY_CLASS_MAP = {
+    show_icons: 'jcp-section--no-icons',
+    show_card_titles: 'jcp-section--no-card-titles',
+    show_card_body: 'jcp-section--no-card-body',
+    show_card_stats: 'jcp-section--no-card-stats',
+    show_card_images: 'jcp-section--no-card-images',
+    show_card_badges: 'jcp-section--no-card-badges',
+  };
+
+  const applySectionVisibilityClass = (root, key, enabled) => {
+    if (!root || !SECTION_VISIBILITY_CLASS_MAP[key]) return;
+    const cls = SECTION_VISIBILITY_CLASS_MAP[key];
+    const targets = new Set([root]);
+    if (root.matches?.('section') || root.classList.contains('jcp-section')) {
+      targets.add(root);
+    }
+    root.querySelectorAll('section, .jcp-section').forEach((el) => targets.add(el));
+    targets.forEach((el) => {
+      el.classList.toggle(cls, !enabled);
+    });
+  };
+
+  const isHeroFieldOn = (block, key, defaultOn = true) => {
+    const liveBlock = getLiveBlock(block);
+    if (liveBlock.props && Object.prototype.hasOwnProperty.call(liveBlock.props, key)) {
+      return coerceVisibilityBool(liveBlock.props[key], defaultOn);
+    }
+    const lk = blockLegacyKey(liveBlock);
+    if (lk) {
+      const val = getPath(flatContent, `${lk}.${key}`);
+      if (val !== undefined) return coerceVisibilityBool(val, defaultOn);
+    }
+    return defaultOn;
+  };
+
+  const resolveSectionSurface = (block) => {
+    const layout = block.layout || {};
+    return { ...SECTION_SURFACE_DEFAULTS, ...(layout.section_surface || {}) };
+  };
+
+  const isBlockFieldVisible = (block, key, defaultOn = true) => {
+    if (block.props && Object.prototype.hasOwnProperty.call(block.props, key)) {
+      return coerceVisibilityBool(block.props[key], defaultOn);
+    }
+    const lk = blockLegacyKey(block);
+    if (lk) {
+      const val = getPath(flatContent, `${lk}.${key}`);
+      if (val !== undefined) return coerceVisibilityBool(val, defaultOn);
+    }
+    return defaultOn;
+  };
+
+  const applyIconVisibilityToRoot = (root, enabled) => {
+    applySectionVisibilityClass(root, 'show_icons', enabled);
+  };
+
+  const ensureSectionCtaRow = (root, block) => {
+    if (!root || !block) return;
+    const lk = blockLegacyKey(block);
+    if (!lk) return;
+    const host = root.querySelector('.jcp-container') || root;
+    let row = root.querySelector('.jcp-section-cta-row');
+    if (!row) {
+      row = document.createElement('div');
+      row.className = 'jcp-section-cta-row benefits-cta-row jcp-section-cta-row--solo';
+      host.appendChild(row);
+    }
+    let slot = row.querySelector('[data-jcp-optional$=".cta_primary"]');
+    if (!slot) {
+      slot = document.createElement('div');
+      slot.className = 'benefits-cta-slot jcp-section-cta-slot';
+      slot.dataset.jcpOptional = `${lk}.cta_primary`;
+      slot.dataset.jcpOptionalKind = 'cta';
+      slot.dataset.jcpOptionalLabel = 'Section button';
+      row.appendChild(slot);
+    }
+  };
+
+  const setBlockFieldVisible = (block, key, enabled, selector) => {
+    const liveBlock = getLiveBlock(block);
+    liveBlock.props = liveBlock.props || {};
+    liveBlock.props[key] = enabled;
+    const lk = blockLegacyKey(liveBlock);
+    if (lk) setPath(flatContent, `${lk}.${key}`, enabled);
+
+    const root = ensureBlockRoot(findBlockRootEl(liveBlock));
+    if (key === 'show_cta' && enabled && lk) {
+      const primaryPath = `${lk}.cta_primary`;
+      const primary = getPath(flatContent, primaryPath);
+      if (!primary || !String(primary.label || '').trim()) {
+        const defaults = SECTION_CTA_PRIMARY_DEFAULTS[lk] || { label: 'Learn more', url: '/demo' };
+        setPath(flatContent, primaryPath, { ...defaults });
+        liveBlock.props.cta_primary = { ...defaults };
+      }
+      if (root) ensureSectionCtaRow(root, liveBlock);
+      syncOptionalCtaSlotsFromContent();
+    }
+
+    if (key === 'show_cta_secondary' && enabled && lk) {
+      const secPath = `${lk}.cta_secondary`;
+      const sec = getPath(flatContent, secPath);
+      if (!sec || !String(sec.label || '').trim()) {
+        const defaults = SECTION_CTA_SECONDARY_DEFAULTS[lk] || { label: 'Learn more', url: '/pricing' };
+        setPath(flatContent, secPath, { ...defaults });
+        liveBlock.props.cta_secondary = { ...defaults };
+      }
+      if (root) ensureSectionCtaRow(root, liveBlock);
+      syncOptionalCtaSlotsFromContent();
+    }
+
+    syncBlockVisibilityToDom(liveBlock);
+    if (selector && root) {
+      const first = root.querySelector(selector);
+      if (first && typeof first.scrollIntoView === 'function') {
+        first.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      } else if (enabled === false) {
+        // Headline/subheadline live above the cards — scroll section into view so the change is obvious.
+        root.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+    recordChange();
+  };
+
+  const clearSectionSurfaceEl = (el) => {
+    if (!el) return;
+    el.classList.remove(...SECTION_SURFACE_CLASS_NAMES);
+    el.removeAttribute('data-jcp-surface');
+    el.removeAttribute('data-jcp-surface-color');
+    el.removeAttribute('data-jcp-surface-opacity');
+    el.removeAttribute('data-jcp-surface-image');
+    el.style.removeProperty('--jcp-section-bg-color');
+    el.style.removeProperty('--jcp-section-bg-opacity');
+    el.style.removeProperty('--jcp-section-bg-image');
+  };
+
+  const applySectionSurfaceToDom = (block, root) => {
+    if (!root || block.type === 'breadcrumb') return;
+    const surface = resolveSectionSurface(block);
+    const preset = surface.preset || 'default';
+    clearSectionSurfaceEl(root);
+    if (preset === 'default') return;
+
+    root.classList.add('jcp-has-section-surface', `jcp-section-surface--${preset}`);
+    root.dataset.jcpSurface = preset;
+    root.dataset.jcpSurfaceOpacity = String(surface.opacity ?? 100);
+    const alpha = Math.max(0, Math.min(100, Number(surface.opacity ?? 100))) / 100;
+    root.style.setProperty('--jcp-section-bg-opacity', String(alpha));
+    if (preset === 'custom') {
+      const color = surface.color || '#ffffff';
+      root.dataset.jcpSurfaceColor = color;
+      root.style.setProperty('--jcp-section-bg-color', color);
+    }
+    if (preset === 'image') {
+      if (surface.image_url) {
+        root.dataset.jcpSurfaceImage = surface.image_url;
+        root.style.setProperty('--jcp-section-bg-image', `url(${surface.image_url})`);
+      }
+    }
+  };
+
+  const setSectionSurface = (block, patch, { refreshList = false } = {}) => {
+    const liveBlock = (pageDocument.blocks || []).find((entry) => entry.id === block.id) || block;
+    liveBlock.layout = liveBlock.layout || defaultLayout(liveBlock.type);
+    liveBlock.layout.section_surface = {
+      ...resolveSectionSurface(liveBlock),
+      ...patch,
+    };
+    const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
+    applySectionSurfaceToDom(liveBlock, root);
+    if (refreshList) {
+      renderBlockList();
+    } else {
+      refreshSectionSurfaceControls(liveBlock);
+    }
+    recordChange();
+  };
+
+  const refreshSectionSurfaceControls = (block) => {
+    const li = blockListEl.querySelector(`[data-block-id="${block.id}"]`);
+    if (!li) return;
+    const backgroundPanel = li.querySelector('[data-structure-panel="background"]');
+    if (!backgroundPanel) return;
+    backgroundPanel.innerHTML = buildSectionSurfaceHtml(block);
+    bindSectionSurfaceControls(li, block);
+  };
+
+  const bindSectionSurfaceControls = (li, block) => {
+    li.querySelectorAll('[data-section-surface-preset]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setSectionSurface(block, { preset: btn.dataset.sectionSurfacePreset });
+      });
+    });
+    li.querySelectorAll('[data-section-surface-color]').forEach((input) => {
+      input.addEventListener('input', (e) => {
+        e.stopPropagation();
+        setSectionSurface(block, { color: input.value }, { refreshList: false });
+        const hex = li.querySelector('[data-section-surface-color-hex]');
+        if (hex) hex.value = input.value;
+      });
+    });
+    li.querySelectorAll('[data-section-surface-color-hex]').forEach((input) => {
+      input.addEventListener('change', (e) => {
+        e.stopPropagation();
+        const val = input.value.trim();
+        if (!/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(val)) return;
+        setSectionSurface(block, { color: val }, { refreshList: false });
+        const picker = li.querySelector('[data-section-surface-color]');
+        if (picker) picker.value = val;
+      });
+    });
+    li.querySelectorAll('[data-section-surface-opacity]').forEach((input) => {
+      input.addEventListener('input', (e) => {
+        e.stopPropagation();
+        const opacity = parseInt(input.value, 10) || 0;
+        const valEl = input.closest('.jcp-surface-opacity')?.querySelector('.jcp-surface-opacity__val');
+        if (valEl) valEl.textContent = `${opacity}%`;
+        setSectionSurface(block, { opacity }, { refreshList: false });
+      });
+    });
+    li.querySelectorAll('[data-section-surface-image]').forEach((input) => {
+      input.addEventListener('change', (e) => {
+        e.stopPropagation();
+        setSectionSurface(block, { image_url: input.value.trim() }, { refreshList: false });
+        refreshSectionSurfaceControls(block);
+      });
+    });
+    li.querySelector('[data-section-surface-pick]')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openSurfaceImagePicker(block);
+    });
+    li.querySelectorAll('[data-section-surface-clear]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setSectionSurface(block, { image_url: '' }, { refreshList: false });
+        refreshSectionSurfaceControls(block);
+      });
+    });
+  };
+
+  const isBreadcrumbVisible = () => {
+    if (pageDocument.settings && typeof pageDocument.settings.hide_breadcrumb === 'boolean') {
+      return !pageDocument.settings.hide_breadcrumb;
+    }
+    return !flatContent.hide_breadcrumb;
+  };
+
+  const setBreadcrumbVisible = (visible) => {
+    pageDocument.settings = pageDocument.settings || {};
+    pageDocument.settings.hide_breadcrumb = !visible;
+    flatContent.hide_breadcrumb = !visible;
+    document.querySelectorAll('.jcp-niche-breadcrumb').forEach((el) => {
+      el.style.display = visible ? '' : 'none';
+    });
+    recordChange();
+  };
+
+  const buildStructureSection = (title, body, { extraClass = '' } = {}) => {
+    if (!body || !String(body).trim()) return '';
+    return `<div class="jcp-structure-section${extraClass ? ` ${extraClass}` : ''}">
+      <div class="jcp-structure-section__title">${title}</div>
+      <div class="jcp-structure-section__body">${body}</div>
+    </div>`;
+  };
+
+  const buildSectionSurfaceHtml = (block) => {
+    if (block.type === 'breadcrumb') return '';
+    const surface = resolveSectionSurface(block);
+    const preset = surface.preset || 'default';
+
+    let html = '<div class="jcp-surface-swatches" data-setting="section_surface_preset">';
+    SECTION_SURFACE_PRESETS.forEach((item) => {
+      const active = preset === item.value ? ' is-active' : '';
+      const swatchClass = item.swatch ? ` jcp-surface-swatch--${item.swatch === 'brand' ? 'brand' : item.swatch === 'image' ? 'image' : item.swatch === 'custom' ? 'custom' : 'solid'}` : ' jcp-surface-swatch--default';
+      const swatchStyle = item.swatch && !['brand', 'image', 'custom'].includes(item.swatch) ? ` style="--jcp-swatch-color:${item.swatch}"` : '';
+      html += `<button type="button" class="jcp-surface-swatch${swatchClass}${active}" data-section-surface-preset="${item.value}" title="${item.hint || item.label}" aria-label="${item.label}">
+        <span class="jcp-surface-swatch__chip"${swatchStyle}></span>
+        <span class="jcp-surface-swatch__label">${item.label}</span>
+      </button>`;
+    });
+    html += '</div>';
+
+    if (['white', 'off_white', 'dark', 'custom'].includes(preset)) {
+      html += `<div class="jcp-surface-advanced">
+        <label class="jcp-surface-opacity">
+          <span>Opacity</span>
+          <input type="range" min="0" max="100" step="5" value="${Number(surface.opacity ?? 100)}" data-section-surface-opacity />
+          <strong class="jcp-surface-opacity__val">${Number(surface.opacity ?? 100)}%</strong>
+        </label>`;
+      if (preset === 'custom') {
+        html += `<label class="jcp-surface-color">
+          <span>Color</span>
+          <input type="color" class="jcp-surface-color__picker" data-section-surface-color value="${surface.color || '#ffffff'}" />
+          <input type="text" class="jcp-surface-color__hex" data-section-surface-color-hex value="${surface.color || '#ffffff'}" maxlength="7" />
+        </label>`;
+      }
+      html += '</div>';
+    }
+
+    if (preset === 'image') {
+      const imageUrl = surface.image_url || '';
+      const previewStyle = imageUrl ? ` style="background-image:url('${imageUrl.replace(/'/g, '%27')}')"` : '';
+      html += `<div class="jcp-surface-image-card">
+        <div class="jcp-surface-image-card__preview"${previewStyle}>
+          <span class="jcp-surface-image-card__placeholder">${imageUrl ? '' : 'No image selected'}</span>
+        </div>
+        <div class="jcp-surface-image-card__actions">
+          <button type="button" class="jcp-surface-image-card__btn" data-section-surface-pick>${imageUrl ? 'Change photo' : 'Choose photo'}</button>
+          ${imageUrl ? '<button type="button" class="jcp-surface-image-card__btn jcp-surface-image-card__btn--ghost" data-section-surface-clear>Remove</button>' : ''}
+        </div>
+        <input type="hidden" data-section-surface-image value="${imageUrl}" />
+      </div>`;
+    }
+
+    return html;
+  };
+
+  const buildBlockVisibilityHtml = (block) => {
+    const toggles = [...(BLOCK_VISIBILITY_TOGGLES[block.type] || [])];
+    if (block.type === 'media_text' || block.type === 'demo_preview') {
+      toggles.unshift(
+        { key: 'show_headline', label: 'Headline', selector: '.demo-preview-title, .jcp-section-headline' },
+      );
+      toggles.push(
+        { key: 'show_badge', label: 'Badge' },
+        { key: 'show_subheadline', label: 'Subheadline' },
+        { key: 'show_cue', label: 'Lead' },
+        { key: 'show_body', label: 'Body' },
+        { key: 'show_cta', label: 'Button' },
+        { key: 'show_cta_note', label: 'Note' },
+      );
+    }
+    if (!toggles.length && !HEADING_TAG_BLOCKS.has(block.type)) return '';
+    let html = '';
+    if (HEADING_TAG_BLOCKS.has(block.type)) {
+      html += buildHeadingLevelHtml(block);
+    }
+    if (toggles.length) {
+      html += '<div class="jcp-layout-chips">';
+      toggles.forEach(({ key, label, defaultOn }) => {
+        let on = false;
+        if (block.type === 'media_text' || block.type === 'demo_preview') {
+          on = isSplitToggleOn(block, key);
+        } else if (block.type === 'hero') {
+          on = isHeroFieldOn(block, key, defaultOn !== false);
+        } else {
+          on = isBlockFieldVisible(block, key, defaultOn !== false);
+        }
+        html += `<button type="button" class="jcp-layout-chip${on ? ' is-on' : ''}" data-block-field-toggle="${key}"${(block.type === 'media_text' || block.type === 'demo_preview') ? ' data-split-toggle="1"' : ''}>${label}</button>`;
+      });
+      html += '</div>';
+    }
+    return html;
+  };
+
+  const buildHeadingLevelHtml = (block) => {
+    const current = resolveHeadlineTag(block);
+    const allowH1 = block.type === 'hero';
+    const hint = allowH1
+      ? 'Page title — always H1'
+      : 'H1 is reserved for the hero';
+    let html = `<div class="jcp-heading-level" data-heading-level-block="${block.id || ''}">`;
+    html += `<div class="jcp-heading-level__header"><span class="jcp-layout-row__label">Headline level</span><span class="jcp-heading-level__hint">${hint}</span></div>`;
+    html += '<div class="jcp-heading-level__btns" role="group" aria-label="Headline level">';
+    HEADING_LEVELS.forEach((level) => {
+      const locked = level === 'h1' ? !allowH1 : allowH1 && level !== 'h1';
+      const active = current === level ? ' is-active' : '';
+      const disabled = locked ? ' disabled' : '';
+      const title = locked
+        ? (level === 'h1' ? 'Only the hero can use H1' : 'Hero stays H1 for SEO')
+        : `Use ${level.toUpperCase()}`;
+      html += `<button type="button" class="jcp-heading-level__btn${active}" data-heading-tag="${level}" title="${title}"${disabled}><span class="jcp-heading-level__tag">${level.toUpperCase()}</span></button>`;
+    });
+    html += '</div></div>';
+    return html;
+  };
+
+  const replaceHeadingElementTag = (el, newTag) => {
+    if (!el || el.tagName.toLowerCase() === newTag) return el;
+    const next = document.createElement(newTag);
+    Array.from(el.attributes).forEach((attr) => {
+      next.setAttribute(attr.name, attr.value);
+    });
+    while (el.firstChild) {
+      next.appendChild(el.firstChild);
+    }
+    el.replaceWith(next);
+    return next;
+  };
+
+  const setBlockHeadlineTag = (block, tag) => {
+    const liveBlock = getLiveBlock(block);
+    const allowH1 = liveBlock.type === 'hero';
+    const nextTag = sanitizeHeadingTag(tag, allowH1);
+    // Hero is always the page H1 — never demote it.
+    const applied = allowH1 ? 'h1' : nextTag;
+    liveBlock.props = liveBlock.props || {};
+    liveBlock.props.headline_tag = applied;
+    const lk = blockLegacyKey(liveBlock);
+    if (lk) setPath(flatContent, `${lk}.headline_tag`, applied);
+
+    const root = ensureBlockRoot(findBlockRootEl(liveBlock));
+    if (root && !allowH1) {
+      const selector = headlineDomSelectorFor(liveBlock.type);
+      const el = root.querySelector(`[data-jcp-heading-tag-path="${lk}.headline_tag"]`)
+        || root.querySelector('[data-jcp-heading-tag-path]')
+        || root.querySelector(selector);
+      if (el) {
+        const updated = replaceHeadingElementTag(el, applied);
+        if (updated && !updated.classList.contains('jcp-section-headline') && liveBlock.type !== 'media_text' && liveBlock.type !== 'demo_preview' && liveBlock.type !== 'hero') {
+          updated.classList.add('jcp-section-headline');
+        }
+        if (updated && lk) {
+          updated.setAttribute('data-jcp-heading-tag-path', `${lk}.headline_tag`);
+        }
+        if (updated && typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+          window.JCP_REFRESH_INLINE_EDITABLE();
+        }
+        if (updated && updated.isContentEditable) {
+          showHeadingFloat(updated);
+          updated.focus();
+        }
+      }
+    }
+
+    if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+      window.JCP_REFRESH_INLINE_EDITABLE();
+    }
+    recordChange();
+    renderBlockList();
+  };
+
+  const INLINE_SHOW_PRIORITY = [
+    'show_cards',
+    'show_card_images',
+    'show_card_badges',
+    'show_card_titles',
+    'show_card_body',
+    'show_card_stats',
+    'show_icons',
+    'show_headline',
+    'show_subheadline',
+    'show_items',
+    'show_steps',
+    'show_cta',
+    'show_cta_secondary',
+    'show_cta_primary',
+    'show_media',
+  ];
+
+  const syncInlineSectionChrome = (root, block) => {
+    if (!editing) {
+      document.querySelectorAll('.jcp-inline-show-bar').forEach((el) => el.remove());
+      return;
+    }
+    if (!root || !block) return;
+    const liveBlock = getLiveBlock(block);
+    let bar = root.querySelector(':scope > .jcp-inline-show-bar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.className = 'jcp-inline-show-bar';
+      bar.setAttribute('contenteditable', 'false');
+      root.insertBefore(bar, root.firstChild);
+    }
+    const toggles = (BLOCK_VISIBILITY_TOGGLES[liveBlock.type] || [])
+      .slice()
+      .sort((a, b) => {
+        const rank = (key) => {
+          const i = INLINE_SHOW_PRIORITY.indexOf(key);
+          return i < 0 ? 999 : i;
+        };
+        return rank(a.key) - rank(b.key) || String(a.label).localeCompare(String(b.label));
+      });
+    if (!toggles.length && !HEADING_TAG_BLOCKS.has(liveBlock.type)) {
+      bar.remove();
+      return;
+    }
+    let html = '<span class="jcp-inline-show-bar__label">Show</span><div class="jcp-inline-show-bar__chips">';
+    toggles.forEach(({ key, label, defaultOn }) => {
+      let on = false;
+      if (liveBlock.type === 'media_text' || liveBlock.type === 'demo_preview') {
+        on = isSplitToggleOn(liveBlock, key);
+      } else if (liveBlock.type === 'hero') {
+        on = isHeroFieldOn(liveBlock, key, defaultOn !== false);
+      } else {
+        on = isBlockFieldVisible(liveBlock, key, defaultOn !== false);
+      }
+      html += `<button type="button" class="jcp-inline-show-chip${on ? ' is-on' : ''}" data-inline-field-toggle="${key}" title="${on ? 'Hide' : 'Show'} ${label}">${label}</button>`;
+    });
+    html += '</div>';
+    if (HEADING_TAG_BLOCKS.has(liveBlock.type) && liveBlock.type !== 'hero') {
+      const current = resolveHeadlineTag(liveBlock);
+      html += '<span class="jcp-inline-show-bar__label">Headline</span><div class="jcp-inline-show-bar__chips jcp-inline-show-bar__chips--heading">';
+      HEADING_LEVELS.filter((level) => level !== 'h1').forEach((level) => {
+        html += `<button type="button" class="jcp-inline-show-chip${current === level ? ' is-on' : ''}" data-inline-heading-tag="${level}">${level.toUpperCase()}</button>`;
+      });
+      html += '</div>';
+    }
+    bar.innerHTML = html;
+  };
+
+  const refreshAllInlineSectionChrome = () => {
+    if (!editing) {
+      document.querySelectorAll('.jcp-inline-show-bar').forEach((el) => el.remove());
+      return;
+    }
+    (pageDocument.blocks || []).forEach((block) => {
+      const root = ensureBlockRoot(findBlockRootEl(block));
+      if (root) syncInlineSectionChrome(root, block);
+    });
+  };
+
+  const CARD_PIECE_KEYS = new Set([
+    'show_icons',
+    'show_card_titles',
+    'show_card_body',
+    'show_card_stats',
+    'show_card_images',
+    'show_card_badges',
+  ]);
+
+  /**
+   * Toggle visibility without destroying DOM (or content via collectFromDom).
+   */
+  const setNodesVisuallyHidden = (root, selector, hidden) => {
+    if (!root || !selector) return 0;
+    let count = 0;
+    root.querySelectorAll(selector).forEach((el) => {
+      count += 1;
+      if (hidden) {
+        el.classList.add('jcp-vis-hidden');
+        el.style.display = 'none';
+        el.setAttribute('hidden', '');
+      } else {
+        el.classList.remove('jcp-vis-hidden');
+        el.style.removeProperty('display');
+        el.removeAttribute('hidden');
+      }
+    });
+    return count;
+  };
+
+  const setElVisuallyHidden = (el, hidden) => {
+    if (!el) return;
+    if (hidden) {
+      el.classList.add('jcp-vis-hidden');
+      el.style.display = 'none';
+      el.setAttribute('hidden', '');
+    } else {
+      el.classList.remove('jcp-vis-hidden');
+      el.style.removeProperty('display');
+      el.removeAttribute('hidden');
+    }
+  };
+
+  const ensureRankingsHeader = (root, block) => {
+    if (block.type === 'final_cta') {
+      let content = root.querySelector('.cta-content');
+      if (content) return content;
+      const wrap = root.querySelector('.rankings-cta');
+      if (!wrap) return null;
+      content = document.createElement('div');
+      content.className = 'cta-content';
+      wrap.insertBefore(content, wrap.firstChild);
+      return content;
+    }
+    if (block.type === 'conversion') {
+      let header = root.querySelector('.conversion-content .rankings-header');
+      if (header) return header;
+      const copy = root.querySelector('.conversion-content');
+      if (!copy) return null;
+      header = document.createElement('div');
+      header.className = 'rankings-header';
+      copy.insertBefore(header, copy.firstChild);
+      return header;
+    }
+    let header = root.querySelector('.rankings-header');
+    if (header) return header;
+    const container = root.querySelector('.jcp-container') || root;
+    header = document.createElement('div');
+    header.className = 'rankings-header';
+    container.insertBefore(header, container.firstChild);
+    return header;
+  };
+
+  const insertBeforeCtaOrEnd = (host, node) => {
+    if (!host || !node) return;
+    const cta = host.querySelector('.jcp-section-cta-row, .demo-cta-wrapper, .directory-preview-cta, .conversion-cta');
+    if (cta) host.insertBefore(node, cta);
+    else host.appendChild(node);
+  };
+
+  const recreateArrayContainer = (root, block, key) => {
+    const lk = blockLegacyKey(block);
+    const host = root.querySelector('.jcp-container') || root;
+    if (!host) return null;
+
+    if (key === 'show_cards' && block.type === 'who_its_for') {
+      const variant = String(getPath(flatContent, 'who_its_for.variant') || block.props?.variant || 'guarantees');
+      const grid = document.createElement('div');
+      if (variant === 'guarantees') {
+        grid.className = 'guarantees-grid';
+      } else {
+        grid.className = 'ranking-factors-grid jcp-niche-split-grid';
+      }
+      grid.setAttribute('data-jcp-array', 'who_its_for.audiences');
+      insertBeforeCtaOrEnd(host, grid);
+      return grid;
+    }
+
+    if (key === 'show_cards' && block.type === 'directory_preview') {
+      const grid = document.createElement('div');
+      grid.className = 'directory-grid preview-grid';
+      insertBeforeCtaOrEnd(host, grid);
+      return grid;
+    }
+
+    if (key === 'show_items' && block.type === 'faq') {
+      const grid = document.createElement('div');
+      grid.className = 'faq-grid';
+      grid.setAttribute('data-jcp-array', 'faq.items');
+      insertBeforeCtaOrEnd(host, grid);
+      return grid;
+    }
+
+    if (key === 'show_items' && block.type === 'proof_flow') {
+      const flow = document.createElement('div');
+      flow.className = 'proof-flow';
+      insertBeforeCtaOrEnd(host, flow);
+      return flow;
+    }
+
+    if (key === 'show_steps' && block.type === 'how_it_works') {
+      const steps = document.createElement('div');
+      steps.className = 'timeline-steps';
+      steps.setAttribute('data-jcp-array', 'how_it_works.steps');
+      insertBeforeCtaOrEnd(host, steps);
+      return steps;
+    }
+
+    if (key === 'show_tags' && block.type === 'check_ins') {
+      const wrap = document.createElement('div');
+      wrap.className = 'jcp-niche-tags-wrap';
+      const list = document.createElement('ul');
+      list.className = 'jcp-niche-tags';
+      list.setAttribute('data-jcp-array', 'check_ins.job_types');
+      wrap.appendChild(list);
+      insertBeforeCtaOrEnd(host, wrap);
+      return wrap;
+    }
+
+    if (key === 'show_points' && block.type === 'conversion') {
+      const points = document.createElement('div');
+      points.className = 'conversion-points';
+      points.setAttribute('data-jcp-array', 'conversion.points');
+      const copy = root.querySelector('.conversion-content') || host;
+      insertBeforeCtaOrEnd(copy, points);
+      return points;
+    }
+
+    if (key === 'show_meta_stats' && block.type === 'hero') {
+      const meta = document.createElement('div');
+      meta.className = 'directory-meta';
+      meta.setAttribute('data-jcp-array', 'hero.meta_stats');
+      const copy = root.querySelector('.jcp-hero-copy, .hero-copy') || host;
+      copy.appendChild(meta);
+      return meta;
+    }
+
+    // Generic fallback: recreate an empty node matching the first selector class.
+    const config = (BLOCK_VISIBILITY_TOGGLES[block.type] || []).find((entry) => entry.key === key);
+    const selector = config?.selector || '';
+    const className = String(selector).split(',')[0].trim().replace(/^\./, '').split(' ')[0];
+    if (!className || className.includes('[') || className.includes(':')) return null;
+    const el = document.createElement('div');
+    el.className = className;
+    if (lk && key === 'show_callout') {
+      el.className = 'real-job-proof-callout';
+    }
+    insertBeforeCtaOrEnd(host, el);
+    return el;
+  };
+
+  const restoreVisibilityField = (root, block, key, selector) => {
+    if (!root || !selector) return;
+    if (root.querySelector(selector)) {
+      setNodesVisuallyHidden(root, selector, false);
+      return;
+    }
+    const lk = blockLegacyKey(block);
+    if (!lk) return;
+
+    if (key === 'show_headline') {
+      const header = ensureRankingsHeader(root, block);
+      if (!header) return;
+      const tag = sanitizeHeadingTag(getPath(flatContent, `${lk}.headline_tag`) || (block.type === 'final_cta' ? 'h3' : 'h2'), false);
+      const el = document.createElement(tag);
+      el.className = 'jcp-section-headline';
+      el.setAttribute('data-jcp-path', `${lk}.headline`);
+      el.setAttribute('data-jcp-heading-tag-path', `${lk}.headline_tag`);
+      el.textContent = String(getPath(flatContent, `${lk}.headline`) || '');
+      header.insertBefore(el, header.firstChild);
+      return;
+    }
+
+    if (key === 'show_subheadline') {
+      const header = ensureRankingsHeader(root, block);
+      if (!header) return;
+      const el = document.createElement('p');
+      el.className = block.type === 'final_cta'
+        ? 'cta-paragraph'
+        : (block.type === 'differentiation' ? 'jcp-niche-diff-lead' : 'rankings-subtitle');
+      const textPath = block.type === 'differentiation' ? `${lk}.body` : `${lk}.subheadline`;
+      el.setAttribute('data-jcp-path', textPath);
+      el.textContent = String(getPath(flatContent, textPath) || '');
+      header.appendChild(el);
+      return;
+    }
+
+    if (key === 'show_closing') {
+      const container = root.querySelector('.jcp-container') || root;
+      const el = document.createElement('p');
+      el.className = 'rankings-supporting jcp-niche-section-closing';
+      el.setAttribute('data-jcp-path', `${lk}.closing`);
+      el.textContent = String(getPath(flatContent, `${lk}.closing`) || '');
+      container.appendChild(el);
+      return;
+    }
+
+    if (key === 'show_cta_note' && block.type === 'final_cta') {
+      let wrap = root.querySelector('.cta-button-wrapper');
+      if (!wrap) {
+        const rankings = root.querySelector('.rankings-cta');
+        if (!rankings) return;
+        wrap = document.createElement('div');
+        wrap.className = 'cta-button-wrapper';
+        rankings.appendChild(wrap);
+      }
+      const note = document.createElement('p');
+      note.className = 'cta-note';
+      note.setAttribute('data-jcp-path', `${lk}.cta_note`);
+      note.textContent = String(getPath(flatContent, `${lk}.cta_note`) || '');
+      wrap.appendChild(note);
+      return;
+    }
+
+    // Card grids / lists / media shells: recreate then refill from content.
+    if ([
+      'show_cards',
+      'show_items',
+      'show_steps',
+      'show_tags',
+      'show_points',
+      'show_meta_stats',
+      'show_callout',
+      'show_media',
+      'show_link',
+      'show_outro',
+      'show_stats',
+    ].includes(key)) {
+      recreateArrayContainer(root, block, key);
+    }
+  };
+
+  const ARRAY_VISIBILITY_KEYS = new Set([
+    'show_cards',
+    'show_items',
+    'show_steps',
+    'show_tags',
+    'show_points',
+    'show_meta_stats',
+  ]);
+
+  const syncBlockVisibilityToDom = (block) => {
+    const toggles = [...(BLOCK_VISIBILITY_TOGGLES[block.type] || [])];
+    if (block.type === 'media_text' || block.type === 'demo_preview') {
+      toggles.unshift({ key: 'show_headline', label: 'Headline', selector: '.demo-preview-title, .jcp-section-headline' });
+      toggles.push(
+        { key: 'show_badge', selector: '.demo-badge' },
+        { key: 'show_subheadline', selector: '.jcp-split-subheadline' },
+        { key: 'show_cue', selector: '.demo-preview-cue' },
+        { key: 'show_body', selector: '.demo-preview-description, .jcp-media-text-body' },
+      );
+    }
+    if (!toggles.length) return;
+    const root = ensureBlockRoot(findBlockRootEl(block));
+    if (!root) return;
+    let needsCollectionRebuild = false;
+    toggles.forEach(({ key, selector, defaultOn }) => {
+      if (!selector && !CARD_PIECE_KEYS.has(key)) return;
+      let enabled = isBlockFieldVisible(block, key, defaultOn !== false);
+      if (block.type === 'media_text' || block.type === 'demo_preview') {
+        if (['show_badge', 'show_subheadline', 'show_cue', 'show_body', 'show_headline'].includes(key)) {
+          enabled = isSplitToggleOn(block, key);
+        }
+      }
+      if (block.type === 'hero') {
+        enabled = isHeroFieldOn(block, key, defaultOn !== false);
+      }
+      if (CARD_PIECE_KEYS.has(key)) {
+        // CSS section classes hide/show pieces. Never delete nodes — that made
+        // re-select impossible and let collectFromDom wipe card copy.
+        applySectionVisibilityClass(root, key, enabled);
+        if (enabled && selector && !root.querySelector(selector)) {
+          needsCollectionRebuild = true;
+        }
+        return;
+      }
+      if (!selector) return;
+      if (enabled) {
+        const found = setNodesVisuallyHidden(root, selector, false);
+        if (!found) {
+          restoreVisibilityField(root, block, key, selector);
+          if (ARRAY_VISIBILITY_KEYS.has(key)) needsCollectionRebuild = true;
+        }
+      } else {
+        setNodesVisuallyHidden(root, selector, true);
+      }
+      if (block.type === 'hero' && (key === 'show_cta_primary' || key === 'show_cta_secondary')) {
+        const showPrimary = isHeroFieldOn(block, 'show_cta_primary', true);
+        const showSecondary = isHeroFieldOn(block, 'show_cta_secondary', true);
+        const actions = root.querySelector('.jcp-actions');
+        setElVisuallyHidden(actions, !showPrimary && !showSecondary);
+      }
+      if (key === 'show_cta' || key === 'show_cta_secondary') {
+        const showPrimary = key === 'show_cta'
+          ? enabled
+          : isBlockFieldVisible(block, 'show_cta', (BLOCK_VISIBILITY_TOGGLES[block.type] || []).find((e) => e.key === 'show_cta')?.defaultOn !== false);
+        const showSecondary = key === 'show_cta_secondary'
+          ? enabled
+          : isBlockFieldVisible(block, 'show_cta_secondary', (BLOCK_VISIBILITY_TOGGLES[block.type] || []).find((e) => e.key === 'show_cta_secondary')?.defaultOn !== false);
+        const row = root.querySelector('.jcp-section-cta-row');
+        setElVisuallyHidden(row, !!(row && !showPrimary && !showSecondary));
+        if (showPrimary) {
+          root.querySelectorAll(SECTION_CTA_PRIMARY_SELECTOR).forEach((el) => {
+            el.classList.remove('jcp-vis-hidden');
+            el.style.removeProperty('display');
+            el.removeAttribute('hidden');
+          });
+        }
+      }
+    });
+    if (needsCollectionRebuild && typeof window.JCP_SYNC_COLLECTIONS_FROM_CONTENT === 'function') {
+      window.JCP_SYNC_COLLECTIONS_FROM_CONTENT();
+      if (typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
+        window.JCP_REFRESH_COLLECTIONS();
+      }
+      if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+        window.JCP_REFRESH_INLINE_EDITABLE();
+      }
+      if (typeof window.JCP_REFRESH_PAGE_MEDIA_UI === 'function') {
+        window.JCP_REFRESH_PAGE_MEDIA_UI();
+      }
+    }
+    syncInlineSectionChrome(root, block);
+  };
+
+  let surfaceImageFrame = null;
+  const openSurfaceImagePicker = (block) => {
+    if (!window.wp?.media) {
+      window.alert('Media library is not available. Try refreshing the page.');
+      return;
+    }
+    if (!surfaceImageFrame) {
+      surfaceImageFrame = window.wp.media({
+        title: 'Section background image',
+        button: { text: 'Use image' },
+        multiple: false,
+        library: { type: 'image' },
+      });
+      surfaceImageFrame.on('select', () => {
+        const targetBlock = surfaceImageFrame._jcpSurfaceBlock;
+        if (!targetBlock) return;
+        const attachment = surfaceImageFrame.state().get('selection').first().toJSON();
+        const url = attachment.url || '';
+        if (url) setSectionSurface(targetBlock, { image_url: url });
+      });
+    }
+    surfaceImageFrame._jcpSurfaceBlock = block;
+    surfaceImageFrame.open();
+  };
+
+  const syncBreadcrumbToggleUi = () => {
+    if (!breadcrumbToggleBtn) return;
+    breadcrumbToggleBtn.classList.toggle('is-on', isBreadcrumbVisible());
   };
 
   const normalizePageDocumentBlocks = () => {
@@ -325,12 +1791,21 @@
         if (!block.layout.hero_variant) {
           block.layout.hero_variant = resolveHeroVariant(block);
         }
+        if (!block.layout.align) {
+          block.layout.align = PAGE_KIND === 'referral' ? 'center' : 'center';
+        }
         block.props = block.props || {};
-        block.props.show_visual = block.layout.hero_variant !== 'centered';
+        if (block.props.show_visual !== true && block.props.show_visual !== false) {
+          block.props.show_visual = block.layout.hero_variant !== 'centered';
+        }
       }
       if (block.type === 'media_text' && !block.props?.media_position) {
         block.props = { ...defaultProps.media_text, ...(block.props || {}) };
       }
+      block.layout.section_surface = {
+        ...SECTION_SURFACE_DEFAULTS,
+        ...(block.layout.section_surface || {}),
+      };
     });
   };
 
@@ -344,7 +1819,9 @@
 
   const resolveLayout = (block) => {
     if (block.type === 'hero') {
-      return { hero_variant: resolveHeroVariant(block) };
+      const layout = { ...defaultLayout('hero'), ...(block.layout || {}) };
+      const align = ['left', 'center', 'right'].includes(layout.align) ? layout.align : 'center';
+      return { hero_variant: resolveHeroVariant(block), align };
     }
     const layout = { ...defaultLayout(block.type), ...(block.layout || {}) };
     if (block.type !== 'hero' && layout.columns === undefined) layout.columns = 0;
@@ -353,7 +1830,8 @@
 
   const layoutClassNames = (block) => {
     if (block.type === 'hero') {
-      return `jcp-hero-variant-${resolveHeroVariant(block)}`;
+      const layout = resolveLayout(block);
+      return `jcp-hero-variant-${resolveHeroVariant(block)} jcp-layout-align-${layout.align}`;
     }
     const layout = resolveLayout(block);
     const classes = [
@@ -371,18 +1849,21 @@
     const found = registry.find((b) => b.type === type);
     if (found?.layout_options) return found.layout_options;
     if (type === 'hero') {
-      return { hero_variant: true, media_position: true };
+      return { hero_variant: true, media_position: true, align: true };
     }
-    if (type === 'media_text') {
+    if (type === 'media_text' || type === 'demo_preview' || type === 'conversion') {
       return { media_position: true, align: true, width: true };
     }
-    if (type === 'demo_preview' || type === 'conversion') {
-      return { media_position: true };
+    if (type === 'core_mechanic' || type === 'breadcrumb') {
+      return type === 'core_mechanic' ? { align: true, width: true } : {};
     }
-    if (type === 'core_mechanic') {
-      return {};
-    }
-    return { align: true, width: true };
+    const columnTypes = [
+      'how_it_works', 'check_ins', 'problem', 'benefits', 'who_its_for', 'proof_flow',
+      'what_it_is', 'differentiation', 'faq', 'directory_preview',
+    ];
+    const options = { align: true, width: true };
+    if (columnTypes.includes(type)) options.columns = true;
+    return options;
   };
 
   const legacyKeyFor = (type) => {
@@ -418,27 +1899,63 @@
 
       if (block.type === 'hero') {
         const variant = resolveHeroVariant(block);
+        const layout = resolveLayout(block);
         ['split', 'centered', 'stacked', 'condensed', 'home'].forEach((v) => {
           root.classList.remove(`jcp-hero-variant-${v}`);
           root.querySelector('.jcp-niche-hero')?.classList.remove(`jcp-hero-variant-${v}`);
         });
-        root.classList.add(`jcp-hero-variant-${variant}`);
-        root.querySelector('.jcp-niche-hero')?.classList.add(`jcp-hero-variant-${variant}`);
-        const visual = root.querySelector('.jcp-hero-visual');
-        if (visual) visual.setAttribute('aria-hidden', variant === 'centered' ? 'true' : 'false');
-        return;
+        ['left', 'center', 'right'].forEach((a) => {
+          root.classList.remove(`jcp-layout-align-${a}`);
+          root.querySelector('.jcp-niche-hero')?.classList.remove(`jcp-layout-align-${a}`);
+        });
+        root.classList.remove('jcp-hero-has-visual', 'jcp-hero--no-visual');
+        root.classList.add(`jcp-hero-variant-${variant}`, `jcp-layout-align-${layout.align}`);
+        const heroSection = root.querySelector('.jcp-niche-hero') || root;
+        heroSection.classList.remove('jcp-hero-variant-split', 'jcp-hero-variant-centered', 'jcp-hero-variant-stacked', 'jcp-hero-variant-condensed', 'jcp-hero-variant-home');
+        heroSection.classList.remove('jcp-layout-align-left', 'jcp-layout-align-center', 'jcp-layout-align-right');
+        heroSection.classList.add(`jcp-hero-variant-${variant}`, `jcp-layout-align-${layout.align}`);
+        heroSection.classList.toggle('jcp-niche-hero--internal', variant === 'condensed');
+        heroSection.classList.toggle('jcp-niche-hero--condensed', variant === 'condensed');
+        heroSection.classList.toggle('jcp-hero-has-visual', isHeroVisualOn(block));
+        heroSection.classList.toggle('jcp-hero--no-visual', !isHeroVisualOn(block));
+        root.classList.toggle('jcp-hero-has-visual', isHeroVisualOn(block));
+        root.classList.toggle('jcp-hero--no-visual', !isHeroVisualOn(block));
+        const visualCol = root.querySelector('.jcp-hero-visual-column');
+        if (visualCol) {
+          visualCol.style.display = isHeroVisualOn(block) ? '' : 'none';
+          visualCol.setAttribute('aria-hidden', isHeroVisualOn(block) ? 'false' : 'true');
+        }
+        const grid = root.querySelector('[data-jcp-media-position-path="hero.media_position"]');
+        if (grid) {
+          const pos = block.props?.media_position === 'left' ? 'left' : 'right';
+          grid.classList.remove('jcp-split-layout--media-left', 'jcp-split-layout--media-right');
+          grid.classList.add(`jcp-split-layout--media-${pos}`);
+        }
+        const showPrimary = isHeroFieldOn(block, 'show_cta_primary', true);
+        const showSecondary = isHeroFieldOn(block, 'show_cta_secondary', true);
+        const actions = root.querySelector('.jcp-actions');
+        if (actions) actions.style.display = (showPrimary || showSecondary) ? '' : 'none';
+        root.querySelector('.jcp-hero-primary-cta')?.style.setProperty('display', showPrimary ? '' : 'none');
+        root.querySelector('.jcp-actions .btn-secondary')?.style.setProperty('display', showSecondary ? '' : 'none');
+      } else {
+        LAYOUT_CLASS_NAMES.filter((cls) => cls.startsWith('jcp-layout-') || cls.startsWith('jcp-block-cols-')).forEach((cls) => root.classList.remove(cls));
+        layoutClassNames(block).split(' ').filter(Boolean).forEach((cls) => root.classList.add(cls));
+        applyColumnGrids(root, resolveLayout(block).columns);
+
+        if (block.type === 'media_text') {
+          const section = root.querySelector('.jcp-media-text') || root;
+          section.classList.remove('jcp-media-text--media-left', 'jcp-media-text--media-right');
+          const pos = block.props?.media_position === 'left' ? 'left' : 'right';
+          section.classList.add(`jcp-media-text--media-${pos}`);
+        }
       }
 
-      LAYOUT_CLASS_NAMES.filter((cls) => cls.startsWith('jcp-layout-') || cls.startsWith('jcp-block-cols-')).forEach((cls) => root.classList.remove(cls));
-      layoutClassNames(block).split(' ').filter(Boolean).forEach((cls) => root.classList.add(cls));
-      applyColumnGrids(root, resolveLayout(block).columns);
+      applySectionSurfaceToDom(block, root);
+      syncBlockVisibilityToDom(block);
+    });
 
-      if (block.type === 'media_text') {
-        const section = root.querySelector('.jcp-media-text') || root;
-        section.classList.remove('jcp-media-text--media-left', 'jcp-media-text--media-right');
-        const pos = block.props?.media_position === 'left' ? 'left' : 'right';
-        section.classList.add(`jcp-media-text--media-${pos}`);
-      }
+    document.querySelectorAll('.jcp-niche-breadcrumb').forEach((el) => {
+      el.style.display = isBreadcrumbVisible() ? '' : 'none';
     });
   };
 
@@ -460,149 +1977,372 @@
     }
     if (liveBlock.type === 'hero' && key === 'hero_variant') {
       liveBlock.props = liveBlock.props || {};
-      liveBlock.props.show_visual = value !== 'centered';
+      const lk = blockLegacyKey(liveBlock) || 'hero';
+      if (value === 'centered') {
+        liveBlock.props.show_visual = false;
+        liveBlock.layout.align = 'center';
+        setPath(flatContent, `${lk}.show_visual`, false);
+      } else if (value === 'stacked') {
+        liveBlock.props.show_visual = true;
+        if (!['left', 'center', 'right'].includes(liveBlock.layout?.align)) {
+          liveBlock.layout.align = 'center';
+        }
+        setPath(flatContent, `${lk}.show_visual`, true);
+      } else if (value === 'split') {
+        liveBlock.props.show_visual = true;
+        setPath(flatContent, `${lk}.show_visual`, true);
+      } else if (value === 'condensed') {
+        if (liveBlock.props.show_visual !== true && liveBlock.props.show_visual !== false) {
+          liveBlock.props.show_visual = false;
+          setPath(flatContent, `${lk}.show_visual`, false);
+        }
+        if (!liveBlock.layout?.align) {
+          liveBlock.layout.align = 'left';
+        }
+      }
+    }
+    if (liveBlock.type === 'hero' && key === 'align') {
+      liveBlock.layout = { ...resolveLayout(liveBlock), align: value };
+      applyLayoutToDom();
+      renderBlockList();
+      recordChange();
+      return;
     }
     applyLayoutToDom();
     renderBlockList();
     recordChange();
   };
 
+  const buildBlockContentFieldsHtml = (block) => {
+    if (block.type === 'form_embed') {
+      const shortcode = block.props?.shortcode || flatContent?.form_embed?.shortcode || '';
+      const display = (block.props?.display || flatContent?.form_embed?.display || 'inline') === 'modal' ? 'modal' : 'inline';
+      let html = '<div class="jcp-layout-row jcp-layout-row--stack"><span class="jcp-layout-row__label">Fluent Forms shortcode</span>';
+      html += `<input type="text" class="jcp-structure-text-input" data-block-content-field="shortcode" value="${String(shortcode).replace(/"/g, '&quot;')}" placeholder='[fluentform id="12"]' autocomplete="off" spellcheck="false" />`;
+      html += '<p class="jcp-structure-field-hint">Paste the shortcode, then click Save.</p></div>';
+      html += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Display</span><div class="jcp-layout-btns" data-block-content-setting="display">';
+      html += `<button type="button" class="jcp-layout-btn${display === 'inline' ? ' is-active' : ''}" data-value="inline">Inline</button>`;
+      html += `<button type="button" class="jcp-layout-btn${display === 'modal' ? ' is-active' : ''}" data-value="modal">Modal</button>`;
+      html += '</div></div>';
+      return html;
+    }
+    if (block.type === 'code_embed') {
+      const embed = block.props?.embed_code || flatContent?.code_embed?.embed_code || '';
+      const escaped = String(embed)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      let html = '<div class="jcp-layout-row jcp-layout-row--stack"><span class="jcp-layout-row__label">Embed code</span>';
+      html += `<textarea class="jcp-structure-text-input jcp-structure-textarea" data-block-content-field="embed_code" rows="5" placeholder="[shortcode], HTML, or booking widget script" autocomplete="off" spellcheck="false">${escaped}</textarea>`;
+      html += '<p class="jcp-structure-field-hint">Shortcode or allowlisted iframe (Calendly, Cal.com, HubSpot, Google Calendar…). Save to apply.</p></div>';
+      return html;
+    }
+    return '';
+  };
+
   const buildLayoutControlsHtml = (block) => {
     const layout = resolveLayout(block);
     const options = layoutOptionsFor(block.type);
-    let html = '<div class="jcp-block-structure__layout">';
+    let layoutBody = '';
 
-    if (options.hero_variant) {
+    if (block.type === 'hero') {
+      block.props = block.props || {};
       const variant = resolveHeroVariant(block);
-      const variants = PAGE_KIND === 'home' ? HERO_VARIANTS : HERO_VARIANTS.filter((v) => v.value !== 'home');
-      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Hero style</span><div class="jcp-layout-btns jcp-layout-btns--stacked" data-setting="hero_variant">';
-      variants.forEach((item) => {
-        const active = variant === item.value ? ' is-active' : '';
-        html += `<button type="button" class="jcp-layout-btn jcp-layout-btn--variant${active}" data-value="${item.value}" title="${item.hint}">${item.label}</button>`;
-      });
-      html += '</div></div>';
+      const heroLayout = resolveLayout(block);
+      const align = heroLayout.align || (PAGE_KIND === 'home' ? 'left' : 'center');
+      const variants = PAGE_KIND === 'home'
+        ? HERO_VARIANTS.filter((v) => v.value === 'home')
+        : HERO_VARIANTS.filter((v) => v.value !== 'home');
+
+      if (options.hero_variant && variants.length) {
+        layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Hero style</span><div class="jcp-layout-btns jcp-layout-btns--stacked" data-setting="hero_variant">';
+        variants.forEach((item) => {
+          const active = variant === item.value ? ' is-active' : '';
+          layoutBody += `<button type="button" class="jcp-layout-btn jcp-layout-btn--variant${active}" data-value="${item.value}" title="${item.hint}">${item.label}</button>`;
+        });
+        layoutBody += '</div></div>';
+      }
+
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Text align</span><div class="jcp-layout-btns" data-setting="align">';
+      layoutBody += ['left', 'center', 'right'].map((value) => {
+        const label = value === 'left' ? 'Left' : value === 'center' ? 'Center' : 'Right';
+        const active = align === value ? ' is-active' : '';
+        return `<button type="button" class="jcp-layout-btn${active}" data-value="${value}">${label}</button>`;
+      }).join('');
+      layoutBody += '</div></div>';
+
+      const mediaMode = heroMediaMode(block);
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Media</span><div class="jcp-layout-btns" data-setting="hero_media_mode">';
+      layoutBody += ['hide', 'left', 'right'].map((value) => {
+        const label = value === 'hide' ? 'Hide' : value === 'left' ? 'Left' : 'Right';
+        const active = mediaMode === value ? ' is-active' : '';
+        return `<button type="button" class="jcp-layout-btn${active}" data-hero-media-mode="${value}">${label}</button>`;
+      }).join('');
+      layoutBody += '</div></div>';
     }
 
-    if (options.media_position) {
+    if (options.media_position && block.type !== 'hero') {
       const pos = block.props?.media_position === 'left' ? 'left' : 'right';
-      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Media</span><div class="jcp-layout-btns" data-setting="media_position">';
-      html += `<button type="button" class="jcp-layout-btn${pos === 'left' ? ' is-active' : ''}" data-value="left">Left</button>`;
-      html += `<button type="button" class="jcp-layout-btn${pos === 'right' ? ' is-active' : ''}" data-value="right">Right</button>`;
-      html += '</div></div>';
+      const mediaLabel = block.type === 'conversion' ? 'Image side' : 'Media side';
+      layoutBody += `<div class="jcp-layout-row"><span class="jcp-layout-row__label">${mediaLabel}</span><div class="jcp-layout-btns" data-setting="media_position">`;
+      layoutBody += `<button type="button" class="jcp-layout-btn${pos === 'left' ? ' is-active' : ''}" data-value="left">Left</button>`;
+      layoutBody += `<button type="button" class="jcp-layout-btn${pos === 'right' ? ' is-active' : ''}" data-value="right">Right</button>`;
+      layoutBody += '</div></div>';
     }
 
-    if (options.align) {
-      html += `<div class="jcp-layout-group"><span class="jcp-layout-group__label">Align</span><div class="jcp-layout-btns" data-setting="align">`;
-      html += ['left', 'center', 'right'].map((value) => {
+    if (options.align && block.type !== 'hero') {
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Align</span><div class="jcp-layout-btns" data-setting="align">';
+      layoutBody += ['left', 'center', 'right'].map((value) => {
         const label = value === 'left' ? 'Left' : value === 'center' ? 'Center' : 'Right';
         const active = layout.align === value ? ' is-active' : '';
         return `<button type="button" class="jcp-layout-btn${active}" data-value="${value}">${label}</button>`;
       }).join('');
-      html += '</div></div>';
+      layoutBody += '</div></div>';
     }
 
     if (options.width) {
-      html += `<div class="jcp-layout-group"><span class="jcp-layout-group__label">Width</span><div class="jcp-layout-btns" data-setting="width">`;
-      html += ['contained', 'wide', 'full'].map((value) => {
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Width</span><div class="jcp-layout-btns" data-setting="width">';
+      layoutBody += ['contained', 'wide', 'full'].map((value) => {
         const label = value === 'contained' ? 'Box' : value === 'wide' ? 'Wide' : 'Full';
         const active = layout.width === value ? ' is-active' : '';
         return `<button type="button" class="jcp-layout-btn${active}" data-value="${value}">${label}</button>`;
       }).join('');
-      html += '</div></div>';
+      layoutBody += '</div></div>';
     }
 
     if (options.columns) {
       const cols = Number(layout.columns || 0);
-      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Columns</span><div class="jcp-layout-btns" data-setting="columns">';
-      html += ['0', '1', '2', '3', '4'].map((value) => {
+      layoutBody += '<div class="jcp-layout-row"><span class="jcp-layout-row__label">Columns</span><div class="jcp-layout-btns" data-setting="columns">';
+      layoutBody += ['0', '1', '2', '3', '4'].map((value) => {
         const label = value === '0' ? 'Auto' : value;
         const active = String(cols) === value ? ' is-active' : '';
         return `<button type="button" class="jcp-layout-btn${active}" data-value="${value}">${label}</button>`;
       }).join('');
-      html += '</div></div>';
+      layoutBody += '</div></div>';
     }
 
-    if (block.type === 'hero') {
-      block.props = block.props || {};
-      const toggles = [
-        { key: 'show_cta_primary', label: 'Primary button' },
-        { key: 'show_cta_secondary', label: 'Secondary button' },
-        { key: 'show_trust_line', label: 'Trust line' },
-      ];
-      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Show</span><div class="jcp-layout-toggles">';
-      toggles.forEach(({ key, label }) => {
-        const checked = block.props[key] !== false ? ' checked' : '';
-        html += `<label class="jcp-layout-toggle"><input type="checkbox" data-hero-toggle="${key}"${checked}> ${label}</label>`;
-      });
-      html += '</div></div>';
-    }
+    const backgroundBody = block.type !== 'breadcrumb' ? buildSectionSurfaceHtml(block) : '';
+    const visibilityBody = buildBlockVisibilityHtml(block);
+    const contentBody = buildBlockContentFieldsHtml(block);
+    const activeTab = structureTabByBlockId.get(block.id) || (contentBody ? 'content' : 'layout');
+    const tabButtons = [];
+    const tabPanels = [];
+    const addTab = (id, label, body) => {
+      if (!body || !String(body).trim()) return;
+      const isActive = id === activeTab;
+      tabButtons.push(`<button type="button" class="jcp-structure-tab${isActive ? ' is-active' : ''}" data-structure-tab="${id}" role="tab">${label}</button>`);
+      tabPanels.push(`<div class="jcp-structure-panel${isActive ? ' is-active' : ''}" data-structure-panel="${id}" role="tabpanel">${body}</div>`);
+    };
+    addTab('content', 'Content', contentBody);
+    addTab('layout', 'Layout', layoutBody);
+    addTab('background', 'Background', backgroundBody);
+    addTab('visibility', 'Show', visibilityBody);
 
-    if (block.type === 'media_text' || block.type === 'demo_preview') {
-      block.props = block.props || {};
-      const toggles = [
-        { key: 'show_badge', label: 'Badge' },
-        { key: 'show_subheadline', label: 'Subheadline' },
-        { key: 'show_cue', label: 'Lead line' },
-        { key: 'show_body', label: 'Body' },
-        { key: 'show_cta', label: 'Button' },
-        { key: 'show_cta_note', label: 'Button note' },
-      ];
-      html += '<div class="jcp-layout-group"><span class="jcp-layout-group__label">Show</span><div class="jcp-layout-toggles">';
-      toggles.forEach(({ key, label }) => {
-        const checked = isSplitToggleOn(block, key) ? ' checked' : '';
-        html += `<label class="jcp-layout-toggle"><input type="checkbox" data-split-toggle="${key}"${checked}> ${label}</label>`;
-      });
-      html += '</div></div>';
-    }
-
-    html += '</div>';
-    return html;
+    if (!tabButtons.length) return '';
+    return `<div class="jcp-block-structure__layout is-collapsed">
+      <div class="jcp-structure-tabs" role="tablist">${tabButtons.join('')}</div>
+      <div class="jcp-structure-panels">${tabPanels.join('')}</div>
+    </div>`;
   };
 
   const SPLIT_TOGGLE_DEFAULTS = {
+    show_headline: true,
     show_badge: false,
     show_subheadline: true,
     show_cue: false,
     show_body: true,
     show_cta: false,
-    show_cta_note: false,
+    show_cta_note: true,
   };
 
+  const SPLIT_TOGGLE_KEYS = [
+    'show_headline',
+    'show_badge',
+    'show_subheadline',
+    'show_cue',
+    'show_body',
+    'show_cta',
+    'show_cta_note',
+  ];
+
   const isSplitToggleOn = (block, key) => {
-    const val = block.props?.[key];
-    if (val === true) return true;
-    if (val === false) return false;
+    if (block.props && Object.prototype.hasOwnProperty.call(block.props, key)) {
+      return coerceVisibilityBool(block.props[key], SPLIT_TOGGLE_DEFAULTS[key] ?? false);
+    }
+    const lk = blockLegacyKey(block);
+    if (lk) {
+      const val = getPath(flatContent, `${lk}.${key}`);
+      if (val !== undefined) return coerceVisibilityBool(val, SPLIT_TOGGLE_DEFAULTS[key] ?? false);
+    }
     return SPLIT_TOGGLE_DEFAULTS[key] ?? false;
   };
 
+  const syncSplitBlockPropsFromFlat = (block) => {
+    const lk = blockLegacyKey(block);
+    if (!lk) return;
+    block.props = block.props || {};
+    SPLIT_TOGGLE_KEYS.forEach((key) => {
+      const val = getPath(flatContent, `${lk}.${key}`);
+      if (val === true || val === false) block.props[key] = val;
+    });
+  };
+
+  const syncSplitTogglesToDom = (onlyBlock = null) => {
+    const blocks = onlyBlock ? [onlyBlock] : (pageDocument.blocks || []);
+    blocks.forEach((block) => {
+      if (!block || (block.type !== 'media_text' && block.type !== 'demo_preview')) return;
+      syncSplitBlockPropsFromFlat(block);
+      const root = ensureBlockRoot(findBlockRootEl(block));
+      if (!root) return;
+      const copy = root.querySelector('.demo-preview-text, .jcp-split-col--copy') || root;
+
+      SPLIT_TOGGLE_KEYS.forEach((key) => {
+        if (key === 'show_cta' || key === 'show_cta_note') return;
+        const selector = SPLIT_TOGGLE_SELECTORS[key];
+        if (!selector) return;
+        const enabled = isSplitToggleOn(block, key);
+        const existing = root.querySelector(selector);
+        if (!enabled) {
+          if (existing) existing.remove();
+          return;
+        }
+        if (existing) {
+          existing.style.display = '';
+          return;
+        }
+        // Restore omitted piece from props so editors can turn SHOW back on without reload.
+        const lk = blockLegacyKey(block);
+        if (!lk || !copy) return;
+        if (key === 'show_badge') {
+          const badge = document.createElement('div');
+          badge.className = 'demo-badge';
+          badge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg><span data-jcp-path="${lk}.badge"></span>`;
+          const span = badge.querySelector('[data-jcp-path]');
+          if (span) span.textContent = String(getPath(flatContent, `${lk}.badge`) || 'See it in action');
+          copy.insertBefore(badge, copy.firstChild);
+        } else if (key === 'show_headline') {
+          const tag = sanitizeHeadingTag(getPath(flatContent, `${lk}.headline_tag`) || 'h3', false);
+          const el = document.createElement(tag);
+          el.className = 'demo-preview-title jcp-section-headline';
+          el.setAttribute('data-jcp-path', `${lk}.headline`);
+          el.setAttribute('data-jcp-heading-tag-path', `${lk}.headline_tag`);
+          el.textContent = String(getPath(flatContent, `${lk}.headline`) || '');
+          copy.insertBefore(el, copy.querySelector('.jcp-split-subheadline, .demo-preview-cue, .demo-preview-description, .demo-cta-wrapper'));
+        } else if (key === 'show_subheadline') {
+          const el = document.createElement('p');
+          el.className = 'rankings-subtitle jcp-split-subheadline';
+          el.setAttribute('data-jcp-path', `${lk}.subheadline`);
+          el.textContent = String(getPath(flatContent, `${lk}.subheadline`) || '');
+          copy.insertBefore(el, copy.querySelector('.demo-preview-cue, .demo-preview-description, .demo-cta-wrapper'));
+        } else if (key === 'show_cue') {
+          const el = document.createElement('p');
+          el.className = 'demo-preview-cue';
+          el.setAttribute('data-jcp-path', `${lk}.cue`);
+          el.textContent = String(getPath(flatContent, `${lk}.cue`) || '');
+          copy.insertBefore(el, copy.querySelector('.demo-preview-description, .demo-cta-wrapper'));
+        } else if (key === 'show_body') {
+          const el = document.createElement('p');
+          el.className = 'demo-preview-description';
+          el.setAttribute('data-jcp-path', `${lk}.body`);
+          el.textContent = String(getPath(flatContent, `${lk}.body`) || '');
+          copy.insertBefore(el, copy.querySelector('.demo-cta-wrapper'));
+        }
+      });
+
+      const showCta = isSplitToggleOn(block, 'show_cta');
+      const showNote = isSplitToggleOn(block, 'show_cta_note');
+      let wrapper = root.querySelector('.demo-cta-wrapper');
+      if (!showCta && !showNote) {
+        if (wrapper) wrapper.remove();
+        return;
+      }
+      if (!wrapper && copy) {
+        wrapper = document.createElement('div');
+        wrapper.className = 'demo-cta-wrapper';
+        copy.appendChild(wrapper);
+      }
+      if (!wrapper) return;
+      wrapper.style.display = '';
+      const slot = root.querySelector('.demo-cta-slot');
+      if (!showCta && slot) slot.remove();
+      if (showCta && !slot) ensureSplitCtaSlot(root, block);
+      root.querySelectorAll('.demo-cta-note').forEach((el) => {
+        if (!showNote) el.remove();
+        else el.style.display = '';
+      });
+      if (showNote && !root.querySelector('.demo-cta-note')) {
+        const note = document.createElement('p');
+        note.className = 'demo-cta-note';
+        const lk = blockLegacyKey(block);
+        if (lk) {
+          note.setAttribute('data-jcp-path', `${lk}.cta_note`);
+          note.textContent = String(getPath(flatContent, `${lk}.cta_note`) || '');
+        }
+        wrapper.appendChild(note);
+      }
+    });
+  };
+
   const SPLIT_TOGGLE_SELECTORS = {
+    show_headline: '.demo-preview-title',
     show_badge: '.demo-badge',
     show_subheadline: '.jcp-split-subheadline',
     show_cue: '.demo-preview-cue',
     show_body: '.demo-preview-description',
-    show_cta: '.demo-cta-primary',
+    show_cta: '.demo-cta-slot',
     show_cta_note: '.demo-cta-note',
   };
 
-  const setBlockSplitToggle = (block, key, enabled) => {
-    block.props = block.props || {};
-    block.props[key] = enabled;
+  const ensureSplitCtaSlot = (root, block) => {
+    if (!root || !block) return;
     const lk = blockLegacyKey(block);
+    if (!lk) return;
+    let wrapper = root.querySelector('.demo-cta-wrapper');
+    if (!wrapper) return;
+    let slot = root.querySelector('.demo-cta-slot');
+    if (!slot) {
+      slot = document.createElement('div');
+      slot.className = 'demo-cta-slot benefits-cta-slot';
+      slot.dataset.jcpOptional = `${lk}.cta_primary`;
+      slot.dataset.jcpOptionalKind = 'cta';
+      slot.dataset.jcpOptionalLabel = 'Button';
+      wrapper.insertBefore(slot, wrapper.querySelector('.demo-cta-note'));
+    }
+    if (!slot.querySelector('.demo-cta-primary, .jcp-optional-restore') && isSplitToggleOn(block, 'show_cta')) {
+      if (typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
+        window.JCP_REFRESH_COLLECTIONS();
+      }
+    }
+  };
+
+  const setBlockSplitToggle = (block, key, enabled) => {
+    const liveBlock = getLiveBlock(block);
+    liveBlock.props = liveBlock.props || {};
+    liveBlock.props[key] = enabled;
+    const lk = blockLegacyKey(liveBlock);
     if (lk) setPath(flatContent, `${lk}.${key}`, enabled);
 
-    const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
-    const selector = SPLIT_TOGGLE_SELECTORS[key];
-    if (root && selector) {
-      root.querySelectorAll(selector).forEach((el) => {
-        el.style.display = enabled ? '' : 'none';
-      });
-      if (key === 'show_cta' || key === 'show_cta_note') {
-        const wrapper = root.querySelector('.demo-cta-wrapper');
-        if (wrapper) {
-          const showCta = isSplitToggleOn(block, 'show_cta');
-          const showNote = isSplitToggleOn(block, 'show_cta_note');
-          wrapper.style.display = (showCta || showNote) ? '' : 'none';
-        }
+    const root = ensureBlockRoot(findBlockRootEl(liveBlock));
+    if (key === 'show_cta' && enabled && lk) {
+      const ctaPath = `${lk}.cta_primary`;
+      const cta = getPath(flatContent, ctaPath);
+      if (!cta || !String(cta.label || '').trim()) {
+        setPath(flatContent, ctaPath, {
+          label: liveBlock.type === 'demo_preview' ? 'Launch Interactive Demo' : 'See it in action',
+          url: '/demo',
+        });
+      }
+      if (root) ensureSplitCtaSlot(root, liveBlock);
+    }
+
+    syncSplitTogglesToDom(liveBlock);
+
+    if (enabled && (key === 'show_cta' || key === 'show_cta_note')) {
+      if (typeof window.JCP_SYNC_COLLECTIONS_FROM_CONTENT === 'function') {
+        window.JCP_SYNC_COLLECTIONS_FROM_CONTENT();
+      }
+      if (typeof window.JCP_REFRESH_COLLECTIONS === 'function') {
+        window.JCP_REFRESH_COLLECTIONS();
       }
     }
     if (enabled && typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
@@ -612,24 +2352,52 @@
   };
 
   const setBlockHeroToggle = (block, key, enabled) => {
-    block.props = block.props || {};
-    block.props[key] = enabled;
-    const lk = blockLegacyKey(block);
+    const liveBlock = getLiveBlock(block);
+    liveBlock.props = liveBlock.props || {};
+    liveBlock.props[key] = enabled;
+    const lk = blockLegacyKey(liveBlock);
     if (lk) setPath(flatContent, `${lk}.${key}`, enabled);
-
-    const root = document.querySelector(`[data-jcp-block-id="${block.id}"]`);
-    if (root) {
-      if (key === 'show_cta_primary') {
-        root.querySelector('.jcp-hero-primary-cta')?.style.setProperty('display', enabled ? '' : 'none');
-      }
-      if (key === 'show_cta_secondary') {
-        root.querySelector('.jcp-actions .btn-secondary')?.style.setProperty('display', enabled ? '' : 'none');
-      }
-      if (key === 'show_trust_line') {
-        root.querySelector('.jcp-niche-trust-line')?.style.setProperty('display', enabled ? '' : 'none');
-      }
-    }
+    applyLayoutToDom();
     recordChange();
+  };
+
+  const setHeroMediaMode = (block, mode) => {
+    const liveBlock = (pageDocument.blocks || []).find((entry) => entry.id === block.id) || block;
+    liveBlock.props = liveBlock.props || {};
+    const lk = blockLegacyKey(liveBlock) || 'hero';
+    if (mode === 'hide') {
+      liveBlock.props.show_visual = false;
+      setPath(flatContent, `${lk}.show_visual`, false);
+    } else {
+      liveBlock.props.show_visual = true;
+      liveBlock.props.media_position = mode;
+      setPath(flatContent, `${lk}.show_visual`, true);
+      setPath(flatContent, `${lk}.media_position`, mode);
+    }
+    applyLayoutToDom();
+    applyMediaPositionToDom();
+    renderBlockList();
+    recordChange();
+  };
+
+  const refreshVisibilityChips = (structureItem, block) => {
+    const liveBlock = getLiveBlock(block);
+    if (!structureItem) return;
+    structureItem.querySelectorAll('[data-block-field-toggle]').forEach((btn) => {
+      const key = btn.dataset.blockFieldToggle;
+      if (!key) return;
+      let on = false;
+      if (btn.dataset.splitToggle) {
+        on = isSplitToggleOn(liveBlock, key);
+      } else if (liveBlock.type === 'hero') {
+        const config = (BLOCK_VISIBILITY_TOGGLES.hero || []).find((entry) => entry.key === key);
+        on = isHeroFieldOn(liveBlock, key, config?.defaultOn !== false);
+      } else {
+        const config = (BLOCK_VISIBILITY_TOGGLES[liveBlock.type] || []).find((entry) => entry.key === key);
+        on = isBlockFieldVisible(liveBlock, key, config?.defaultOn !== false);
+      }
+      btn.classList.toggle('is-on', on);
+    });
   };
 
   const updateDirtyState = () => {
@@ -805,13 +2573,97 @@
     applyLayoutToDom();
   };
 
+  const isHrefEditControl = (node) => (
+    !!node?.classList?.contains?.('jcp-edit-href-btn')
+    || node?.tagName === 'SVG'
+    || !!node?.closest?.('.jcp-edit-href-btn')
+  );
+
+  const getLinkLabelText = (el) => {
+    if (!el) return '';
+    let text = '';
+    el.childNodes.forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        text += node.textContent || '';
+        return;
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) return;
+      if (isHrefEditControl(node) || node.tagName === 'SVG') return;
+      text += node.textContent || '';
+    });
+    return text.replace(/\s+/g, ' ').trim();
+  };
+
+  const setLinkLabelText = (el, label) => {
+    if (!el) return;
+    const keep = [...el.querySelectorAll(':scope > .jcp-edit-href-btn, :scope > svg')];
+    const labelSpan = el.querySelector(':scope > span:not(.jcp-edit-href-btn)');
+    if (labelSpan) {
+      labelSpan.textContent = label;
+      keep.forEach((node) => {
+        if (!el.contains(node)) el.appendChild(node);
+      });
+      return;
+    }
+    [...el.childNodes].forEach((node) => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        node.remove();
+        return;
+      }
+      if (node.nodeType === Node.ELEMENT_NODE && !isHrefEditControl(node) && node.tagName !== 'SVG') {
+        node.remove();
+      }
+    });
+    const textNode = document.createTextNode(label);
+    const firstKeep = el.querySelector(':scope > .jcp-edit-href-btn, :scope > svg');
+    if (firstKeep) el.insertBefore(textNode, firstKeep);
+    else el.appendChild(textNode);
+    keep.forEach((node) => {
+      if (!el.contains(node)) el.appendChild(node);
+    });
+  };
+
+  const ensureHrefEditControls = () => {
+    document.querySelectorAll('[data-jcp-href-path]').forEach((el) => {
+      let btn = el.querySelector(':scope > .jcp-edit-href-btn');
+      if (!editing) {
+        if (btn) btn.remove();
+        return;
+      }
+      if (!btn) {
+        btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'jcp-edit-href-btn';
+        btn.textContent = 'Edit link';
+        btn.setAttribute('contenteditable', 'false');
+        btn.setAttribute('tabindex', '-1');
+        btn.setAttribute('aria-label', 'Edit button link');
+        el.insertBefore(btn, el.firstChild);
+      }
+    });
+  };
+
   const applyFlatContentToDom = () => {
     document.querySelectorAll('[data-jcp-path]').forEach((el) => {
       const path = el.getAttribute('data-jcp-path');
       if (!path) return;
+      if (el.matches('input, textarea, select')) return;
       const val = getPath(flatContent, path);
       if (val === undefined || val === null) return;
-      el.textContent = isListLinePath(path) ? cleanStepLineText(String(val)) : String(val);
+      if (isRichField(el)) {
+        el.innerHTML = sanitizeRichHtml(String(val));
+      } else if (el.hasAttribute('data-jcp-href-path')) {
+        setLinkLabelText(el, isListLinePath(path) ? cleanStepLineText(String(val)) : String(val));
+      } else {
+        el.textContent = isListLinePath(path) ? cleanStepLineText(String(val)) : String(val);
+      }
+    });
+    document.querySelectorAll('[data-jcp-input-path]').forEach((el) => {
+      const path = el.getAttribute('data-jcp-input-path');
+      if (!path) return;
+      const val = getPath(flatContent, path);
+      if (val === undefined || val === null) return;
+      el.value = String(val);
     });
     document.querySelectorAll('[data-jcp-href-path]').forEach((el) => {
       const path = el.getAttribute('data-jcp-href-path');
@@ -819,6 +2671,7 @@
       const val = getPath(flatContent, path);
       if (val !== undefined && val !== null) el.setAttribute('href', String(val));
     });
+    ensureHrefEditControls();
   };
 
   const applyStructureChange = () => {
@@ -836,27 +2689,55 @@
     (pageDocument.blocks || []).forEach((block, index) => {
       if (!block || typeof block !== 'object') return;
       const li = document.createElement('li');
-      li.className = 'jcp-block-structure__item';
+      const isActive = block.id === activeBlockId;
+      li.className = `jcp-block-structure__item${isActive ? ' is-active' : ''}`;
       li.dataset.index = String(index);
+      li.dataset.blockId = block.id;
       const defaultLabel = blockLabel(block.type);
+      const layoutHtml = buildLayoutControlsHtml(block);
       li.innerHTML = `
         <div class="jcp-block-structure__row">
           <span class="jcp-block-structure__handle" aria-hidden="true" title="Drag to reorder">⋮⋮</span>
-          <input
-            type="text"
-            class="jcp-block-structure__label-input"
-            aria-label="Section title on this page"
-            title="Rename for this page only"
-          >
-          <button type="button" class="jcp-block-structure__remove" data-index="${index}" aria-label="Remove block">Remove</button>
+          <div class="jcp-block-structure__meta">
+            <span class="jcp-block-structure__type">${defaultLabel}</span>
+            <input
+              type="text"
+              class="jcp-block-structure__label-input"
+              aria-label="Section title on this page"
+              title="Rename for this page only"
+            >
+          </div>
+          ${layoutHtml ? '<button type="button" class="jcp-block-structure__settings" aria-label="Section settings" title="Settings">⚙</button>' : ''}
+          <button type="button" class="jcp-block-structure__remove" data-index="${index}" aria-label="Remove section">×</button>
         </div>
-        ${buildLayoutControlsHtml(block)}
+        ${layoutHtml}
       `;
       const handle = li.querySelector('.jcp-block-structure__handle');
       const labelInput = li.querySelector('.jcp-block-structure__label-input');
       labelInput.value = blockDisplayLabel(block);
       labelInput.placeholder = defaultLabel;
 
+      if (isActive) {
+        li.querySelector('.jcp-block-structure__layout')?.classList.remove('is-collapsed');
+      }
+
+      li.querySelectorAll('.jcp-structure-tab').forEach((tabBtn) => {
+        tabBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const tab = tabBtn.dataset.structureTab;
+          const layoutRoot = li.querySelector('.jcp-block-structure__layout');
+          if (!layoutRoot || !tab) return;
+          structureTabByBlockId.set(block.id, tab);
+          layoutRoot.querySelectorAll('.jcp-structure-tab').forEach((btn) => {
+            btn.classList.toggle('is-active', btn.dataset.structureTab === tab);
+          });
+          layoutRoot.querySelectorAll('.jcp-structure-panel').forEach((panel) => {
+            panel.classList.toggle('is-active', panel.dataset.structurePanel === tab);
+          });
+        });
+      });
+
+      const settingsBtn = li.querySelector('.jcp-block-structure__settings');
       handle.draggable = true;
       handle.addEventListener('dragstart', (e) => {
         dragIndex = index;
@@ -872,6 +2753,16 @@
         if (e.target.closest('input, button, .jcp-block-structure__handle, .jcp-block-structure__layout')) return;
         scrollToBlock(block);
       });
+
+      if (settingsBtn) {
+        settingsBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const layout = li.querySelector('.jcp-block-structure__layout');
+          const willExpand = layout?.classList.contains('is-collapsed');
+          focusStructureBlock(block, { scrollPage: false, expand: willExpand });
+          layout?.classList.toggle('is-collapsed', !willExpand);
+        });
+      }
 
       labelInput.addEventListener('click', (e) => e.stopPropagation());
       labelInput.addEventListener('keydown', (e) => {
@@ -912,7 +2803,25 @@
       li.querySelectorAll('.jcp-layout-btn').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          const setting = btn.closest('[data-setting]').dataset.setting;
+          if (btn.dataset.sectionSurfacePreset) return;
+          const contentSetting = btn.closest('[data-block-content-setting]');
+          if (contentSetting) {
+            const liveBlock = (pageDocument.blocks || []).find((entry) => entry.id === block.id) || block;
+            liveBlock.props = liveBlock.props || {};
+            const key = contentSetting.dataset.blockContentSetting;
+            const value = btn.dataset.value;
+            liveBlock.props[key] = value;
+            flatContent.form_embed = flatContent.form_embed || {};
+            flatContent.form_embed[key] = value;
+            contentSetting.querySelectorAll('.jcp-layout-btn').forEach((b) => {
+              b.classList.toggle('is-active', b.dataset.value === value);
+            });
+            recordChange();
+            return;
+          }
+          const settingHost = btn.closest('[data-setting]');
+          if (!settingHost) return;
+          const setting = settingHost.dataset.setting;
           let value = btn.dataset.value;
           if (setting === 'hero_variant') {
             setBlockLayout(block, setting, value);
@@ -925,16 +2834,66 @@
           setBlockLayout(block, setting, value);
         });
       });
-      li.querySelectorAll('[data-hero-toggle]').forEach((input) => {
-        input.addEventListener('change', (e) => {
+      li.querySelectorAll('[data-block-content-field]').forEach((input) => {
+        const syncField = () => {
+          const liveBlock = (pageDocument.blocks || []).find((entry) => entry.id === block.id) || block;
+          liveBlock.props = liveBlock.props || {};
+          const key = input.dataset.blockContentField;
+          const value = input.value.trim();
+          liveBlock.props[key] = value;
+          const legacyKey = blockLegacyKey(liveBlock) || liveBlock.type || 'form_embed';
+          flatContent[legacyKey] = flatContent[legacyKey] || {};
+          if (typeof flatContent[legacyKey] !== 'object' || Array.isArray(flatContent[legacyKey])) {
+            flatContent[legacyKey] = {};
+          }
+          flatContent[legacyKey][key] = value;
+          const pageInput = document.querySelector(`[data-jcp-input-path="${legacyKey}.${key}"]`);
+          if (pageInput && pageInput !== input) pageInput.value = value;
+          recordChange();
+        };
+        input.addEventListener('click', (e) => e.stopPropagation());
+        input.addEventListener('input', () => {
+          scheduleRecordChange();
+        });
+        input.addEventListener('change', syncField);
+        input.addEventListener('blur', syncField);
+      });
+      bindSectionSurfaceControls(li, block);
+      li.querySelectorAll('[data-block-field-toggle]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          setBlockHeroToggle(block, input.dataset.heroToggle, input.checked);
+          const liveBlock = getLiveBlock(block);
+          const key = btn.dataset.blockFieldToggle;
+          if (btn.dataset.splitToggle) {
+            const enabled = !isSplitToggleOn(liveBlock, key);
+            setBlockSplitToggle(liveBlock, key, enabled);
+            refreshVisibilityChips(li, liveBlock);
+            return;
+          }
+          const config = (BLOCK_VISIBILITY_TOGGLES[liveBlock.type] || []).find((entry) => entry.key === key);
+          const defaultOn = config?.defaultOn !== false;
+          if (liveBlock.type === 'hero') {
+            const enabled = !isHeroFieldOn(liveBlock, key, defaultOn);
+            setBlockHeroToggle(liveBlock, key, enabled);
+            refreshVisibilityChips(li, liveBlock);
+            return;
+          }
+          const enabled = !isBlockFieldVisible(liveBlock, key, defaultOn);
+          setBlockFieldVisible(liveBlock, key, enabled, config?.selector || '');
+          refreshVisibilityChips(li, liveBlock);
         });
       });
-      li.querySelectorAll('[data-split-toggle]').forEach((input) => {
-        input.addEventListener('change', (e) => {
+      li.querySelectorAll('[data-heading-tag]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
           e.stopPropagation();
-          setBlockSplitToggle(block, input.dataset.splitToggle, input.checked);
+          if (btn.disabled) return;
+          setBlockHeadlineTag(block, btn.dataset.headingTag);
+        });
+      });
+      li.querySelectorAll('[data-hero-media-mode]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          setHeroMediaMode(block, btn.dataset.heroMediaMode);
         });
       });
       blockListEl.appendChild(li);
@@ -984,6 +2943,9 @@
   };
 
   const refreshEditorChrome = () => {
+    syncSplitTogglesToDom();
+    syncBreadcrumbToggleUi();
+    refreshAllInlineSectionChrome();
     if (typeof window.JCP_REFRESH_PAGE_MEDIA_UI === 'function') {
       window.JCP_REFRESH_PAGE_MEDIA_UI();
     }
@@ -1000,6 +2962,7 @@
     structurePanel.hidden = false;
     structurePanel.removeAttribute('hidden');
     document.body.classList.add('jcp-structure-open');
+    structureBtn.classList.add('is-active');
     renderBlockList();
     if (editing) refreshEditorChrome();
   };
@@ -1009,6 +2972,7 @@
     structurePanel.hidden = true;
     structurePanel.setAttribute('hidden', '');
     document.body.classList.remove('jcp-structure-open');
+    structureBtn.classList.remove('is-active');
     closeAddModal();
   };
 
@@ -1088,8 +3052,8 @@
 
   const isStringArrayItemPath = (el) => {
     const item = el.closest('[data-jcp-array-item]');
-    const container = item?.parentElement;
-    if (!item || !container?.matches('[data-jcp-array]')) return false;
+    const container = item?.closest('[data-jcp-array]');
+    if (!item || !container) return false;
     const basePath = container.dataset.jcpArray;
     const path = el.getAttribute('data-jcp-path');
     if (!basePath || !path?.startsWith(`${basePath}.`)) return false;
@@ -1099,40 +3063,75 @@
   const isObjectArrayItemPath = (el) => {
     const path = el.getAttribute('data-jcp-path');
     if (!path) return false;
-    return /^core_mechanic\.\d+\.(?:value|label|detail)$/.test(path);
+    return /^(?:core_mechanic\.\d+\.(?:value|label|detail)|hero\.meta_stats\.\d+\.(?:label|detail))$/.test(path);
+  };
+
+  const META_STAT_CSS_CLASSES = ['meta-stat-photo', 'meta-stat-channels', 'meta-stat-busywork'];
+
+  const collectObjectArrayFromDom = (container, basePath, fields) => {
+    const items = [...container.querySelectorAll(':scope > [data-jcp-array-item]')];
+    const arr = items.map((item) => {
+      const index = item.getAttribute('data-jcp-array-item');
+      const prev = getPath(flatContent, `${basePath}.${index}`) || {};
+      const readField = (field) => {
+        const el = item.querySelector(`[data-jcp-path="${basePath}.${index}.${field}"]`);
+        return (el?.textContent || '').trim();
+      };
+      const entry = { ...(typeof prev === 'object' && prev ? prev : {}) };
+      fields.forEach((field) => {
+        entry[field] = readField(field);
+      });
+      if (basePath === 'hero.meta_stats') {
+        const cssClass = META_STAT_CSS_CLASSES.find((cls) => item.classList.contains(cls));
+        if (cssClass) entry.css_class = cssClass;
+      }
+      return entry;
+    });
+    setPath(flatContent, basePath, arr);
   };
 
   const collectObjectArraysFromDom = () => {
     document.querySelectorAll('[data-jcp-array="core_mechanic"]').forEach((container) => {
-      const basePath = 'core_mechanic';
-      const items = [...container.querySelectorAll(':scope > [data-jcp-array-item]')];
-      const arr = items.map((item) => {
-        const index = item.getAttribute('data-jcp-array-item');
-        const readField = (field) => {
-          const el = item.querySelector(`[data-jcp-path="${basePath}.${index}.${field}"]`);
-          return (el?.textContent || '').trim();
-        };
-        const prev = getPath(flatContent, `${basePath}.${index}`) || {};
-        const value = readField('value');
-        const label = readField('label');
-        const detail = readField('detail');
-        return {
-          ...(typeof prev === 'object' && prev ? prev : {}),
-          value,
-          label,
-          detail,
-        };
-      });
-      setPath(flatContent, basePath, arr);
+      collectObjectArrayFromDom(container, 'core_mechanic', ['value', 'label', 'detail']);
+    });
+    document.querySelectorAll('[data-jcp-array="hero.meta_stats"]').forEach((container) => {
+      collectObjectArrayFromDom(container, 'hero.meta_stats', ['label', 'detail']);
     });
   };
 
   const syncListBlockPropsFromFlat = () => {
     (pageDocument.blocks || []).forEach((block) => {
-      if (!block || block.type !== 'core_mechanic') return;
+      if (!block) return;
       const key = blockLegacyKey(block);
-      if (!key || !Array.isArray(flatContent[key])) return;
-      block.props = JSON.parse(JSON.stringify(flatContent[key]));
+      if (!key) return;
+      if (block.type === 'core_mechanic' && Array.isArray(flatContent[key])) {
+        block.props = JSON.parse(JSON.stringify(flatContent[key]));
+      }
+      if (block.type === 'hero' && Array.isArray(flatContent[key]?.meta_stats)) {
+        block.props = block.props || {};
+        block.props.meta_stats = JSON.parse(JSON.stringify(flatContent[key].meta_stats));
+      }
+      if (block.type === 'form_embed' && flatContent.form_embed && typeof flatContent.form_embed === 'object') {
+        block.props = block.props || {};
+        if (typeof flatContent.form_embed.shortcode === 'string') {
+          block.props.shortcode = flatContent.form_embed.shortcode;
+        }
+        if (typeof flatContent.form_embed.display === 'string') {
+          block.props.display = flatContent.form_embed.display;
+        }
+      }
+      if (block.type === 'code_embed' && flatContent.code_embed && typeof flatContent.code_embed === 'object') {
+        block.props = block.props || {};
+        if (typeof flatContent.code_embed.embed_code === 'string') {
+          block.props.embed_code = flatContent.code_embed.embed_code;
+        }
+        if (typeof flatContent.code_embed.headline === 'string') {
+          block.props.headline = flatContent.code_embed.headline;
+        }
+        if (typeof flatContent.code_embed.subheadline === 'string') {
+          block.props.subheadline = flatContent.code_embed.subheadline;
+        }
+      }
     });
   };
 
@@ -1147,7 +3146,8 @@
     document.querySelectorAll('[data-jcp-array]').forEach((container) => {
       const basePath = container.dataset.jcpArray;
       if (!basePath || basePath === 'core_mechanic') return;
-      const items = [...container.querySelectorAll(':scope > [data-jcp-array-item]')];
+      const host = container.querySelector(':scope > .conversion-points__columns') || container;
+      const items = [...host.querySelectorAll(':scope > [data-jcp-array-item]')];
       if (!items.length) {
         setPath(flatContent, basePath, []);
         return;
@@ -1168,11 +3168,27 @@
   const collectFromDom = () => {
     document.querySelectorAll('[data-jcp-path]').forEach((el) => {
       if (isStringArrayItemPath(el) || isObjectArrayItemPath(el)) return;
+      if (el.matches('input, textarea, select')) return;
       const path = el.getAttribute('data-jcp-path');
       if (!path) return;
+      if (el.hasAttribute('data-jcp-href-path')) {
+        const raw = getLinkLabelText(el);
+        setPath(flatContent, path, isListLinePath(path) ? cleanStepLineText(raw) : raw);
+        return;
+      }
+      if (isRichField(el) || /<a[\s>]/i.test(el.innerHTML || '')) {
+        if (!isRichField(el)) el.setAttribute('data-jcp-rich', 'true');
+        setPath(flatContent, path, sanitizeRichHtml(el.innerHTML));
+        return;
+      }
       const raw = (el.textContent || '').trim();
       const value = isListLinePath(path) ? cleanStepLineText(raw) : raw;
       setPath(flatContent, path, value);
+    });
+    document.querySelectorAll('[data-jcp-input-path]').forEach((el) => {
+      const path = el.getAttribute('data-jcp-input-path');
+      if (!path) return;
+      setPath(flatContent, path, (el.value || '').trim());
     });
     document.querySelectorAll('[data-jcp-href-path]').forEach((el) => {
       const path = el.getAttribute('data-jcp-href-path');
@@ -1194,6 +3210,90 @@
         el.removeAttribute('spellcheck');
       }
     });
+    ensureHrefEditControls();
+  };
+
+  let headingFloatEl = null;
+  let headingFloatTarget = null;
+
+  const findBlockForHeadingEl = (el) => {
+    const root = el.closest('[data-jcp-block-id]');
+    if (!root) return null;
+    const id = root.getAttribute('data-jcp-block-id');
+    return (pageDocument.blocks || []).find((block) => block.id === id) || null;
+  };
+
+  const hideHeadingFloat = () => {
+    if (headingFloatEl) headingFloatEl.classList.remove('is-visible');
+    headingFloatTarget = null;
+  };
+
+  const ensureHeadingFloat = () => {
+    if (headingFloatEl) return headingFloatEl;
+    headingFloatEl = document.createElement('div');
+    headingFloatEl.className = 'jcp-heading-float';
+    headingFloatEl.setAttribute('contenteditable', 'false');
+    headingFloatEl.innerHTML = HEADING_LEVELS.map((level) => (
+      `<button type="button" class="jcp-heading-float__btn" data-heading-tag="${level}">${level.toUpperCase()}</button>`
+    )).join('');
+    document.body.appendChild(headingFloatEl);
+    headingFloatEl.addEventListener('mousedown', (e) => e.preventDefault());
+    headingFloatEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-heading-tag]');
+      if (!btn || btn.disabled || !headingFloatTarget) return;
+      const block = findBlockForHeadingEl(headingFloatTarget);
+      if (!block) return;
+      setBlockHeadlineTag(block, btn.dataset.headingTag);
+      const root = ensureBlockRoot(findBlockRootEl(block));
+      const next = root?.querySelector('[data-jcp-heading-tag-path]') || root?.querySelector(headlineDomSelectorFor(block.type));
+      if (next) {
+        headingFloatTarget = next;
+        showHeadingFloat(next);
+        next.focus();
+      }
+    });
+    return headingFloatEl;
+  };
+
+  const showHeadingFloat = (el) => {
+    if (!editing || !el) {
+      hideHeadingFloat();
+      return;
+    }
+    const block = findBlockForHeadingEl(el);
+    if (!block || !HEADING_TAG_BLOCKS.has(block.type)) {
+      hideHeadingFloat();
+      return;
+    }
+    const float = ensureHeadingFloat();
+    const current = resolveHeadlineTag(block);
+    const allowH1 = block.type === 'hero';
+    float.querySelectorAll('[data-heading-tag]').forEach((btn) => {
+      const level = btn.dataset.headingTag;
+      const locked = level === 'h1' ? !allowH1 : allowH1 && level !== 'h1';
+      btn.disabled = locked;
+      btn.classList.toggle('is-active', current === level);
+    });
+    headingFloatTarget = el;
+    const rect = el.getBoundingClientRect();
+    float.style.left = `${Math.max(12, rect.left + window.scrollX)}px`;
+    float.style.top = `${Math.max(12, rect.top + window.scrollY)}px`;
+    float.classList.add('is-visible');
+  };
+
+  const bindHeadingFloatEvents = () => {
+    document.addEventListener('focusin', (e) => {
+      if (!editing) return;
+      const heading = e.target.closest('[data-jcp-heading-tag-path], .jcp-hero-title, .jcp-section-headline, .demo-preview-title');
+      if (!heading || !heading.isContentEditable) {
+        if (!e.target.closest('.jcp-heading-float')) hideHeadingFloat();
+        return;
+      }
+      showHeadingFloat(heading);
+    });
+    document.addEventListener('scroll', () => {
+      if (headingFloatTarget) showHeadingFloat(headingFloatTarget);
+    }, true);
   };
 
   const enableEditing = () => {
@@ -1201,7 +3301,9 @@
     document.body.classList.add('jcp-inline-editing');
     toggleBtn.textContent = 'Editing — click text to change';
     toggleBtn.classList.add('is-active');
-    if (!dirty) statusEl.textContent = 'Click text or images to edit. Drag ⋮⋮ on a column to swap sides.';
+    if (textLinkBtn) textLinkBtn.hidden = false;
+    if (!dirty) statusEl.textContent = '';
+    markExistingInlineLinks();
     bindEditableFields();
     applyCleanLinesToDom();
     refreshEditorChrome();
@@ -1211,9 +3313,14 @@
   const disableEditing = () => {
     editing = false;
     document.body.classList.remove('jcp-inline-editing');
-    toggleBtn.textContent = 'Click to edit page';
+    toggleBtn.textContent = 'Edit page';
     toggleBtn.classList.remove('is-active');
-    popover.hidden = true;
+    if (textLinkBtn) textLinkBtn.hidden = true;
+    hideHeadingFloat();
+    closeCtaLinkModal();
+    closeTextLinkModal();
+    closeIconPicker();
+    document.querySelectorAll('.jcp-inline-show-bar').forEach((el) => el.remove());
     if (typeof window.JCP_TEARDOWN_COLLECTIONS === 'function') {
       window.JCP_TEARDOWN_COLLECTIONS();
     }
@@ -1235,12 +3342,55 @@
   });
 
   structurePanel.querySelector('#jcpStructureClose').addEventListener('click', closeStructure);
+  breadcrumbToggleBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setBreadcrumbVisible(!isBreadcrumbVisible());
+    syncBreadcrumbToggleUi();
+  });
   structurePanel.querySelector('#jcpAddBlockBtn').addEventListener('click', openAddModal);
   addModal.querySelector('#jcpAddBlockCancel').addEventListener('click', closeAddModal);
   addModal.querySelector('.jcp-block-add-modal__dialog').addEventListener('click', (e) => e.stopPropagation());
   addModal.addEventListener('click', (e) => {
     if (e.target === addModal) closeAddModal();
   });
+
+  document.addEventListener('click', (e) => {
+    if (!editing) return;
+    const chip = e.target.closest('[data-inline-field-toggle], [data-inline-heading-tag]');
+    if (!chip) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const root = chip.closest('[data-jcp-block-id], .jcp-block-root');
+    if (!root) return;
+    const blockId = root.getAttribute('data-jcp-block-id') || root.dataset.jcpBlockId;
+    const block = (pageDocument.blocks || []).find((entry) => entry.id === blockId)
+      || (pageDocument.blocks || []).find((entry) => {
+        const el = findBlockRootEl(entry);
+        return el === root || el?.contains(chip);
+      });
+    if (!block) return;
+    const liveBlock = getLiveBlock(block);
+
+    if (chip.dataset.inlineHeadingTag) {
+      setBlockHeadlineTag(liveBlock, chip.dataset.inlineHeadingTag);
+      syncInlineSectionChrome(ensureBlockRoot(findBlockRootEl(liveBlock)), liveBlock);
+      return;
+    }
+
+    const key = chip.dataset.inlineFieldToggle;
+    if (!key) return;
+    if (liveBlock.type === 'media_text' || liveBlock.type === 'demo_preview') {
+      setBlockSplitToggle(liveBlock, key, !isSplitToggleOn(liveBlock, key));
+    } else if (liveBlock.type === 'hero') {
+      const config = (BLOCK_VISIBILITY_TOGGLES.hero || []).find((entry) => entry.key === key);
+      setBlockHeroToggle(liveBlock, key, !isHeroFieldOn(liveBlock, key, config?.defaultOn !== false));
+    } else {
+      const config = (BLOCK_VISIBILITY_TOGGLES[liveBlock.type] || []).find((entry) => entry.key === key);
+      setBlockFieldVisible(liveBlock, key, !isBlockFieldVisible(liveBlock, key, config?.defaultOn !== false), config?.selector || '');
+    }
+    syncInlineSectionChrome(ensureBlockRoot(findBlockRootEl(liveBlock)), liveBlock);
+    if (structureOpen) renderBlockList();
+  }, true);
 
   toggleBtn.addEventListener('click', () => {
     if (editing) disableEditing();
@@ -1254,7 +3404,7 @@
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a');
     if (!dirty || !link || link === adminLink) return;
-    if (link.closest('.jcp-niche-edit-bar, .jcp-block-structure, .jcp-block-add-modal, .jcp-niche-link-popover')) return;
+    if (link.closest('.jcp-niche-edit-bar, .jcp-block-structure, .jcp-block-add-modal, .jcp-editor-modal')) return;
     if (editing && link.hasAttribute('data-jcp-href-path')) return;
     if (link.target === '_blank' || link.hasAttribute('download')) return;
     const href = link.getAttribute('href');
@@ -1264,38 +3414,489 @@
 
   document.addEventListener('input', (e) => {
     if (!editing || suppressRecord) return;
+    if (e.target.matches('[data-jcp-input-path]')) {
+      updateDirtyState();
+      scheduleRecordChange();
+      return;
+    }
     if (!e.target.matches('[data-jcp-path]')) return;
+    if (e.target.hasAttribute('data-jcp-href-path')) ensureHrefEditControls();
     updateDirtyState();
     scheduleRecordChange();
   });
+
+  document.addEventListener('mousedown', (e) => {
+    if (!editing) return;
+    if (e.target.closest('.jcp-edit-href-btn')) {
+      // Keep the button from stealing text-selection focus awkwardly before click opens the modal.
+      e.preventDefault();
+    }
+  }, true);
+
+  const openCtaLinkModal = (link, { focusLabel = false } = {}) => {
+    if (!link) return;
+    activeLink = link;
+    popover.querySelector('#jcpNicheLinkLabel').value = getLinkLabelText(link);
+    popover.querySelector('#jcpNicheLinkUrl').value = link.getAttribute('href') || '';
+    openEditorModal(popover, {
+      focusSelector: focusLabel ? '#jcpNicheLinkLabel' : '#jcpNicheLinkUrl',
+    });
+  };
 
   document.addEventListener('click', (e) => {
     if (!editing) return;
     const link = e.target.closest('[data-jcp-href-path]');
     if (!link) return;
+    // Never follow CTA hrefs while editing.
     e.preventDefault();
+    const editBtn = e.target.closest('.jcp-edit-href-btn');
+    // Normal click edits button text inline; only the Edit link control opens the URL modal.
+    if (!editBtn) return;
     e.stopPropagation();
-    activeLink = link;
-    popover.querySelector('#jcpNicheLinkUrl').value = link.getAttribute('href') || '';
-    popover.hidden = false;
-    popover.removeAttribute('hidden');
-    const rect = link.getBoundingClientRect();
-    popover.style.top = `${Math.min(window.innerHeight - 120, rect.bottom + 8)}px`;
-    popover.style.left = `${Math.max(8, Math.min(window.innerWidth - 320, rect.left))}px`;
+    openCtaLinkModal(link, { focusLabel: false });
   });
 
+  document.addEventListener('dblclick', (e) => {
+    if (!editing) return;
+    const link = e.target.closest('[data-jcp-href-path]');
+    if (!link || e.target.closest('.jcp-edit-href-btn')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openCtaLinkModal(link, { focusLabel: true });
+  });
+
+  popover.querySelector('.jcp-editor-modal__backdrop').addEventListener('click', closeCtaLinkModal);
   popover.querySelector('#jcpNicheLinkApply').addEventListener('click', () => {
     if (!activeLink) return;
-    activeLink.setAttribute('href', popover.querySelector('#jcpNicheLinkUrl').value.trim());
-    popover.hidden = true;
-    popover.setAttribute('hidden', '');
+    const label = popover.querySelector('#jcpNicheLinkLabel').value.trim();
+    const url = popover.querySelector('#jcpNicheLinkUrl').value.trim();
+    setLinkLabelText(activeLink, label);
+    activeLink.setAttribute('href', url);
+    ensureHrefEditControls();
+    closeCtaLinkModal();
     recordChange();
   });
 
-  popover.querySelector('#jcpNicheLinkCancel').addEventListener('click', () => {
-    popover.hidden = true;
-    popover.setAttribute('hidden', '');
-    activeLink = null;
+  popover.querySelector('#jcpNicheLinkCancel').addEventListener('click', closeCtaLinkModal);
+
+  const normalizeInternalHref = (href) => {
+    if (!href) return '';
+    let h = String(href).trim();
+    if (h === '' || h.startsWith('#') || h.startsWith('javascript:')) return '';
+    if (!h.startsWith('/')) {
+      try {
+        const u = new URL(h, window.location.origin);
+        h = u.pathname + u.search + u.hash;
+      } catch (e) {
+        return '';
+      }
+    }
+    return h.startsWith('/') ? h : '';
+  };
+
+  const getCurrentInternalLinkCounts = () => {
+    const counts = new Map();
+    document.querySelectorAll('[data-jcp-path] a[href]').forEach((a) => {
+      if (a.hasAttribute('data-jcp-href-path')) return;
+      const raw = a.getAttribute('href');
+      const href = normalizeInternalHref(raw);
+      if (!href) return;
+      counts.set(href, (counts.get(href) || 0) + 1);
+    });
+    return counts;
+  };
+
+  const LINK_STOP_WORDS = new Set([
+    'a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'has', 'have', 'in', 'is', 'it',
+    'of', 'on', 'or', 'that', 'the', 'their', 'this', 'to', 'was', 'were', 'will', 'with', 'your',
+    'our', 'we', 'you', 'more', 'every', 'into', 'how', 'what', 'when', 'who', 'why',
+  ]);
+
+  const tokenizeLinkText = (text) => {
+    const raw = String(text || '').toLowerCase().replace(/<[^>]+>/g, ' ').replace(/[^a-z0-9\s-]/g, ' ');
+    return [...new Set(raw.split(/\s+/).map((part) => part.trim()).filter((part) => part.length >= 3 && !LINK_STOP_WORDS.has(part)))];
+  };
+
+  const isValidInternalTarget = (href) => {
+    const path = normalizeInternalHref(href);
+    if (!path || path === '/' || path === linkIndex.current_path) return false;
+    const lower = path.toLowerCase();
+    if (lower.startsWith('/@') || lower.startsWith('/channel/') || lower.includes('/wp-admin')) return false;
+    const segments = path.split('/').filter(Boolean);
+    if (segments.length === 1 && /^@?[a-z0-9_-]{3,}$/i.test(segments[0])) {
+      const allowed = new Set(['demo', 'pricing', 'blog', 'contact', 'features', 'industries', 'resources', 'directory']);
+      if (!allowed.has(segments[0].replace(/^@/, ''))) return false;
+    }
+    return true;
+  };
+
+  const scoreLinkTarget = (page, anchorTokens, anchorPhrase, pageCounts) => {
+    const keywords = new Set([
+      ...(Array.isArray(page.keywords) ? page.keywords : []),
+      ...tokenizeLinkText(page.label),
+      ...tokenizeLinkText(page.focus_keyword),
+      ...tokenizeLinkText(page.href.replace(/\//g, ' ')),
+    ]);
+    const focus = String(page.focus_keyword || '').toLowerCase();
+    const label = String(page.label || '').toLowerCase();
+    const phrase = String(anchorPhrase || '').toLowerCase().trim();
+    const hrefLower = String(page.href || '').toLowerCase();
+    const slug = hrefLower.split('/').filter(Boolean).pop() || '';
+    const phraseSlug = phrase.replace(/\s+/g, '-');
+    const phraseCompact = phrase.replace(/\s+/g, '');
+
+    let relevance = 0;
+    let exactMatch = false;
+
+    if (phrase.length >= 3) {
+      if (slug === phraseSlug || slug === phraseCompact || slug === phrase) {
+        relevance += 120;
+        exactMatch = true;
+      }
+      if (label === phrase) {
+        relevance += 100;
+        exactMatch = true;
+      }
+      if (hrefLower === `/${phraseSlug}` || hrefLower.endsWith(`/${phraseSlug}`)) {
+        relevance += 90;
+        exactMatch = true;
+      }
+      if (focus === phrase) relevance += 70;
+      if (focus.includes(phrase)) relevance += 28;
+      if (label.includes(phrase)) relevance += 32;
+      if (hrefLower.includes(phraseSlug)) relevance += 24;
+    }
+
+    anchorTokens.forEach((token) => {
+      if (slug === token) {
+        relevance += 80;
+        exactMatch = true;
+      }
+      if (keywords.has(token)) relevance += 14;
+      if (focus.includes(token)) relevance += 10;
+      if (label.includes(token)) relevance += 8;
+      if (slug.includes(token)) relevance += 12;
+    });
+
+    const siteInlinks = Number(page.site_inlinks) || 0;
+    const onPageCount = pageCounts.get(page.href) || 0;
+    const gapScore = Math.max(0, 3 - siteInlinks) * 10 + (onPageCount === 0 ? 6 : 0);
+    const hubBoost = !exactMatch && (page.hub === 'feature' || page.hub === 'trade') ? 4 : 0;
+
+    return {
+      href: page.href,
+      label: page.label || page.href,
+      hub: page.hub || 'page',
+      count: onPageCount,
+      siteInlinks,
+      focus_keyword: page.focus_keyword || '',
+      score: relevance + gapScore + hubBoost,
+      relevance,
+      gapScore,
+      exactMatch,
+      reason: '',
+    };
+  };
+
+  const buildLinkSuggestionReason = (item, anchorPhrase) => {
+    const bits = [];
+    if (item.exactMatch && anchorPhrase) {
+      bits.push('Best match for your selection');
+    } else if (item.relevance >= 18 && anchorPhrase) {
+      bits.push('Matches your selected text');
+    } else if (item.focus_keyword && anchorPhrase && item.focus_keyword.toLowerCase().includes(anchorPhrase.toLowerCase())) {
+      bits.push(`Aligns with focus keyword “${item.focus_keyword}”`);
+    }
+    if (item.siteInlinks === 0) {
+      bits.push('No inbound internal links site-wide yet');
+    } else if (item.siteInlinks <= 1) {
+      bits.push('Underlinked across the site');
+    }
+    if (item.count > 0) {
+      bits.push(`Already linked ${item.count}× on this page`);
+    }
+    if (!bits.length) {
+      bits.push(item.hub === 'trade' ? 'Trade landing page' : item.hub === 'feature' ? 'Feature page' : 'Related site page');
+    }
+    return bits.slice(0, 2).join(' · ');
+  };
+
+  const getSuggestedInternalPages = (counts, anchorText = '') => {
+    const anchorPhrase = String(anchorText || '').trim();
+    const anchorTokens = tokenizeLinkText(anchorPhrase);
+    const catalog = Array.isArray(linkIndex.pages) ? linkIndex.pages : [];
+    const scored = catalog
+      .filter((page) => page && isValidInternalTarget(page.href))
+      .map((page) => scoreLinkTarget(page, anchorTokens, anchorPhrase, counts))
+      .map((item) => ({ ...item, reason: buildLinkSuggestionReason(item, anchorPhrase) }))
+      .sort((a, b) => {
+        if (anchorPhrase) {
+          if (Number(b.exactMatch) !== Number(a.exactMatch)) return Number(b.exactMatch) - Number(a.exactMatch);
+          if (b.relevance !== a.relevance) return b.relevance - a.relevance;
+        }
+        return (b.score - a.score) || (a.siteInlinks - b.siteInlinks) || a.label.localeCompare(b.label);
+      });
+
+    const groups = [
+      { key: 'match', title: 'Best match for your selection', items: [] },
+      { key: 'gap', title: 'Pages that need more internal links', items: [] },
+      { key: 'related', title: 'Other relevant pages', items: [] },
+    ];
+
+    scored.forEach((item) => {
+      if (anchorPhrase && item.exactMatch && groups[0].items.length < 6) {
+        groups[0].items.push(item);
+        return;
+      }
+      if (anchorTokens.length && item.relevance < 8 && item.gapScore < 10) {
+        return;
+      }
+      if (item.relevance >= 12 && groups[0].items.length < 6) {
+        groups[0].items.push(item);
+      } else if (item.gapScore >= 20 && groups[1].items.length < 6) {
+        groups[1].items.push(item);
+      } else if (item.relevance >= 6 && groups[2].items.length < 8) {
+        groups[2].items.push(item);
+      } else if (!anchorTokens.length && groups[2].items.length < 8) {
+        groups[2].items.push(item);
+      }
+    });
+
+    if (!groups[0].items.length && anchorPhrase && scored.length) {
+      const fallback = scored.filter((item) => item.relevance >= 8 || item.exactMatch);
+      groups[0].items = (fallback.length ? fallback : scored).slice(0, 5);
+    } else if (!groups[0].items.length && scored.length) {
+      groups[0].items = scored.slice(0, 5);
+    }
+
+    return { groups, flat: scored.slice(0, 20), anchorTokens };
+  };
+
+  const renderLinkSuggestionButton = (s) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'jcp-niche-link-popover__suggestion-btn';
+    btn.dataset.href = s.href;
+
+    const copy = document.createElement('span');
+    copy.className = 'jcp-niche-link-popover__suggestion-copy';
+
+    const label = document.createElement('span');
+    label.className = 'jcp-niche-link-popover__suggestion-label';
+    label.textContent = s.label;
+    copy.appendChild(label);
+
+    if (s.reason) {
+      const reason = document.createElement('span');
+      reason.className = 'jcp-niche-link-popover__suggestion-reason';
+      reason.textContent = s.reason;
+      copy.appendChild(reason);
+    }
+
+    btn.appendChild(copy);
+
+    const meta = document.createElement('span');
+    meta.className = 'jcp-niche-link-popover__suggestion-meta';
+    if (s.exactMatch) {
+      const badge = document.createElement('span');
+      badge.className = 'jcp-niche-link-popover__suggestion-badge jcp-niche-link-popover__suggestion-badge--match';
+      badge.textContent = 'Best match';
+      meta.appendChild(badge);
+    } else if (s.siteInlinks === 0) {
+      const badge = document.createElement('span');
+      badge.className = 'jcp-niche-link-popover__suggestion-badge';
+      badge.textContent = 'Needs links';
+      meta.appendChild(badge);
+    }
+    if (s.count) {
+      const c = document.createElement('span');
+      c.className = 'jcp-niche-link-popover__suggestion-count';
+      c.textContent = String(s.count);
+      meta.appendChild(c);
+    }
+    if (meta.childNodes.length) btn.appendChild(meta);
+
+    btn.addEventListener('click', () => {
+      const urlInput = textLinkPopover.querySelector('#jcpNicheTextLinkUrl');
+      if (urlInput) urlInput.value = s.href;
+    });
+    return btn;
+  };
+
+  const expandCollapsedRangeToWord = (range) => {
+    try {
+      if (!range || !range.collapsed) return range;
+      const sc = range.startContainer;
+      if (!sc || sc.nodeType !== Node.TEXT_NODE) return range;
+      const text = sc.textContent || '';
+      if (!text) return range;
+      const offset = Math.max(0, Math.min(range.startOffset, text.length));
+      if (offset >= text.length) return range;
+
+      const isWord = (ch) => /[A-Za-z0-9]/.test(ch);
+      let start = offset;
+      let end = offset;
+      while (start > 0 && isWord(text[start - 1])) start -= 1;
+      while (end < text.length && isWord(text[end])) end += 1;
+      if (start === end) return range;
+
+      const r = document.createRange();
+      r.setStart(sc, start);
+      r.setEnd(sc, end);
+      return r;
+    } catch (e) {
+      return range;
+    }
+  };
+
+  const openTextLinkPopover = () => {
+    const { range, field } = getLinkContext();
+    activeRichField = field || null;
+    statusEl.textContent = '';
+
+    const counts = getCurrentInternalLinkCounts();
+    const anchorText = range && !range.collapsed ? range.toString() : '';
+    const { groups, flat, anchorTokens } = getSuggestedInternalPages(counts, anchorText);
+
+    const hintEl = textLinkPopover.querySelector('#jcpNicheTextLinkHint');
+    const seoEl = textLinkPopover.querySelector('#jcpNicheLinkSeo');
+    const listEl = textLinkPopover.querySelector('#jcpNicheLinkSuggestions');
+
+    const totalLinks = [...counts.values()].reduce((a, b) => a + b, 0);
+    const uniqueLinks = counts.size;
+    const underlinked = flat.filter((item) => item.siteInlinks <= 1).length;
+
+    if (!field) {
+      hintEl.textContent = 'Click inside a text paragraph first.';
+    } else if (anchorText) {
+      hintEl.textContent = `Link “${anchorText.slice(0, 48)}${anchorText.length > 48 ? '…' : ''}” — pick a page or paste a URL.`;
+    } else {
+      hintEl.textContent = 'Select the words you want to link, then choose a URL.';
+    }
+
+    seoEl.innerHTML = '';
+    const seoTop = document.createElement('div');
+    seoTop.innerHTML = `<strong>On this page:</strong> ${totalLinks} internal link${totalLinks === 1 ? '' : 's'} · ${uniqueLinks} unique destination${uniqueLinks === 1 ? '' : 's'}`;
+    seoEl.appendChild(seoTop);
+
+    const seoGap = document.createElement('div');
+    seoGap.className = 'jcp-niche-link-popover__seo-top';
+    if (underlinked > 0) {
+      seoGap.textContent = `${underlinked} high-value page${underlinked === 1 ? '' : 's'} still underlinked site-wide — prioritize those below.`;
+    } else if (anchorTokens.length) {
+      seoGap.textContent = `Scored ${flat.length} pages against “${anchorTokens.slice(0, 4).join(', ')}”.`;
+    } else {
+      seoGap.textContent = 'Select anchor text to rank suggestions by topical relevance.';
+    }
+    seoEl.appendChild(seoGap);
+
+    const topTargets = flat
+      .filter((s) => s.count > 0)
+      .slice(0, 3)
+      .map((s) => `${s.label} (${s.count})`)
+      .join(', ');
+    if (topTargets) {
+      const t = document.createElement('div');
+      t.textContent = `Already linked here: ${topTargets}`;
+      t.className = 'jcp-niche-link-popover__seo-note';
+      seoEl.appendChild(t);
+    }
+
+    listEl.innerHTML = '';
+    const rendered = groups.filter((group) => group.items.length);
+    if (!rendered.length) {
+      const empty = document.createElement('div');
+      empty.className = 'jcp-niche-link-popover__empty';
+      empty.textContent = 'No linkable pages found. Publish more JCP pages or paste a URL manually.';
+      listEl.appendChild(empty);
+    } else {
+      rendered.forEach((group) => {
+        const title = document.createElement('div');
+        title.className = 'jcp-niche-link-popover__suggestions-title';
+        title.textContent = group.title;
+        listEl.appendChild(title);
+        group.items.forEach((s) => listEl.appendChild(renderLinkSuggestionButton(s)));
+      });
+    }
+
+    const urlInput = textLinkPopover.querySelector('#jcpNicheTextLinkUrl');
+    if (urlInput) {
+      const topMatch = groups[0]?.items?.[0] || flat[0];
+      urlInput.value = topMatch?.href || '';
+    }
+
+    openEditorModal(textLinkPopover, { focusSelector: '#jcpNicheTextLinkUrl' });
+  };
+
+  if (textLinkBtn) {
+    textLinkBtn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      rememberLinkSelection();
+    });
+    textLinkBtn.addEventListener('click', openTextLinkPopover);
+  }
+
+  textLinkPopover.querySelector('#jcpNicheTextLinkApply').addEventListener('click', () => {
+    const url = textLinkPopover.querySelector('#jcpNicheTextLinkUrl').value.trim();
+    if (!url) return;
+
+    const { range, field } = getLinkContext();
+    const rich = field || activeRichField;
+    if (!rich) {
+      statusEl.textContent = 'Click inside a text paragraph first.';
+      return;
+    }
+
+    let linkRange = range;
+    if (!linkRange || linkRange.collapsed) {
+      statusEl.textContent = 'Select the text you want to link first.';
+      return;
+    }
+
+    if (!rich.contains(linkRange.commonAncestorContainer)) {
+      statusEl.textContent = 'Selection must be inside the same paragraph.';
+      return;
+    }
+
+    linkRange = expandCollapsedRangeToWord(linkRange);
+    const sel = window.getSelection();
+    if (sel) {
+      sel.removeAllRanges();
+      sel.addRange(linkRange);
+    }
+
+    const label = linkRange.toString() || url;
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.textContent = label;
+    linkRange.deleteContents();
+    linkRange.insertNode(anchor);
+
+    if (!isRichField(rich)) {
+      rich.setAttribute('data-jcp-rich', 'true');
+    }
+
+    pendingLinkRange = null;
+    pendingLinkField = null;
+    closeTextLinkModal();
+    statusEl.textContent = '';
+    recordChange();
+  });
+
+  textLinkPopover.querySelector('.jcp-editor-modal__backdrop').addEventListener('click', closeTextLinkModal);
+  textLinkPopover.querySelector('#jcpNicheTextLinkCancel').addEventListener('click', closeTextLinkModal);
+
+  document.addEventListener('selectionchange', () => {
+    rememberLinkSelection();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!editing) return;
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      rememberLinkSelection();
+      openTextLinkPopover();
+    }
   });
 
   saveBtn.addEventListener('click', async () => {
@@ -1336,6 +3937,18 @@
       return;
     }
     if (e.key === 'Escape') {
+      if (!iconPopover.hidden) {
+        closeIconPicker();
+        return;
+      }
+      if (!textLinkPopover.hidden) {
+        closeTextLinkModal();
+        return;
+      }
+      if (!popover.hidden) {
+        closeCtaLinkModal();
+        return;
+      }
       if (!addModal.hidden) {
         closeAddModal();
         return;
@@ -1351,6 +3964,24 @@
     return UNSAVED_MSG;
   });
 
+  const bindBlockSelection = () => {
+    const main = getMain();
+    if (!main || main.dataset.jcpBlockSelectBound === '1') return;
+    main.dataset.jcpBlockSelectBound = '1';
+    main.addEventListener('click', (e) => {
+      if (!editing) return;
+      if (e.target.closest(
+        '[data-jcp-path], [data-jcp-href-path], .jcp-collection-add, .jcp-collection-remove, '
+        + '.jcp-optional-restore, .jcp-media-picker, .jcp-split-col-handle, .jcp-editor-modal, '
+        + 'button:not([data-jcp-block-id]), input, textarea, select, summary, details'
+      )) return;
+      const root = e.target.closest('[data-jcp-block-id]');
+      if (!root) return;
+      const block = (pageDocument.blocks || []).find((entry) => entry.id === root.dataset.jcpBlockId);
+      if (block) focusStructureBlock(block, { scrollPage: false, expand: true });
+    });
+  };
+
   initHistory();
   normalizePageDocumentBlocks();
   sanitizeFlatContentInPlace();
@@ -1358,6 +3989,8 @@
   applyCleanLinesToDom();
   applyLayoutToDom();
   applyMediaPositionToDom();
+  markExistingInlineLinks();
+  bindHeadingFloatEvents();
 
   const editorApi = {
     getPath,
@@ -1382,6 +4015,7 @@
     }
   };
   initSubEditors();
+  bindBlockSelection();
 
   if (new URLSearchParams(window.location.search).get('jcp_edit') === '1') {
     enableEditing();
@@ -1402,5 +4036,7 @@
       requestAnimationFrame(refreshEditorChrome);
     }
     if (structureOpen) renderBlockList();
+    bindBlockSelection();
+    syncSplitTogglesToDom();
   });
 })();

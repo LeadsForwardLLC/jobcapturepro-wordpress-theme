@@ -27,6 +27,9 @@ function jcp_page_render( int $post_id ): void {
 	if ( $page_kind === 'marketing' ) {
 		$main_class .= ' jcp-page-marketing';
 	}
+	if ( function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ) ) {
+		$main_class .= ' jcp-page-campaign jcp-home';
+	}
 
 	echo '<main class="' . esc_attr( $main_class ) . '" data-niche="' . esc_attr( $page_key ) . '" data-page-kind="' . esc_attr( $page_kind ) . '">';
 
@@ -42,6 +45,7 @@ function jcp_page_render( int $post_id ): void {
 		'page_key'    => $page_key,
 		'page_kind'   => $page_kind,
 		'is_referral' => $is_ref,
+		'is_campaign' => function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ),
 	];
 
 	foreach ( $blocks as $block ) {
@@ -83,12 +87,20 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 
 	$block_id = esc_attr( (string) ( $block['id'] ?? 'b-' . $type ) );
 	$layout   = jcp_block_resolve_layout( $block, (string) ( $ctx['page_kind'] ?? 'industry' ) );
-	$classes  = 'jcp-block-root ' . jcp_block_layout_classes( $layout, $type );
+	$surface  = jcp_section_surface_block_attrs( $layout );
+	$classes  = trim( 'jcp-block-root ' . jcp_block_layout_classes( $layout, $type ) . ' ' . $surface['class'] );
+	$data_str = '';
+	foreach ( $surface['data'] as $key => $val ) {
+		$data_str .= sprintf( ' data-%s="%s"', esc_attr( $key ), esc_attr( $val ) );
+	}
+	$style_attr = $surface['style'] !== '' ? ' style="' . esc_attr( $surface['style'] ) . '"' : '';
 	printf(
-		'<div class="%1$s" data-jcp-block-id="%2$s" data-jcp-block-type="%3$s">',
+		'<div class="%1$s" data-jcp-block-id="%2$s" data-jcp-block-type="%3$s"%4$s%5$s>',
 		esc_attr( $classes ),
 		$block_id,
-		esc_attr( $type )
+		esc_attr( $type ),
+		$style_attr,
+		$data_str
 	);
 
 	switch ( $type ) {
@@ -96,7 +108,9 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 			// Breadcrumb markup is rendered inside the industry hero section.
 			break;
 		case 'hero':
-			$c['_hero_variant'] = jcp_block_resolve_hero_variant( $layout );
+			$hero_layout          = jcp_block_resolve_layout( $block, (string) ( $ctx['page_kind'] ?? 'marketing' ) );
+			$c['_hero_variant']   = jcp_block_resolve_hero_variant( $hero_layout );
+			$c['_hero_align']     = (string) ( $hero_layout['align'] ?? 'center' );
 			jcp_niche_render_hero( $c, $page_key );
 			break;
 		case 'media_text':
@@ -109,6 +123,10 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 			jcp_niche_render_what_it_is( $c_what );
 			break;
 		case 'core_mechanic':
+			// Campaign pages mirror these stats into the hero (homepage pattern) — skip the duplicate strip.
+			if ( ! empty( $ctx['is_campaign'] ) && ! empty( $legacy['hero']['meta_stats'] ) ) {
+				break;
+			}
 			jcp_page_render_core_mechanic_block( $props );
 			break;
 		case 'how_it_works':
@@ -134,6 +152,13 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 			break;
 		case 'final_cta':
 			jcp_niche_render_final_cta( $c, $page_key );
+			break;
+		case 'form_embed':
+			jcp_niche_render_form_embed( $props );
+			break;
+		case 'code_embed':
+			$path = ! empty( $block['legacy_key'] ) ? (string) $block['legacy_key'] : 'code_embed';
+			jcp_niche_render_code_embed( $props, $path );
 			break;
 		case 'cta_band':
 			$band_key = ! empty( $props['band_key'] ) ? (string) $props['band_key'] : 'cta_band_1';
