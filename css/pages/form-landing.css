@@ -20,7 +20,8 @@ body.jcp-form-landing {
 
 body.jcp-form-landing,
 html:has(body.jcp-form-landing) {
-  scroll-padding-top: 0;
+  /* Keep Fluent validation targets clear of the sticky logo/close bar. */
+  scroll-padding-top: 4.5rem;
 }
 
 /* Hide site chrome / floating widgets if anything still injects them */

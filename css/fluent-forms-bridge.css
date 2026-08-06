@@ -537,6 +537,41 @@ body.jcp-fluent-modal-open {
   margin-top: 0.35rem;
 }
 
+.jcp-fluent-bridge .ff-el-is-error {
+  border-radius: var(--jcp-ff-radius, 12px);
+}
+
+.jcp-fluent-bridge .ff-el-is-error > .ff-el-input--label label,
+.jcp-fluent-bridge .ff-el-is-error > .ff-el-input--label {
+  color: #b91c1c;
+}
+
+/* Sticky notice when Submit/Next fails — Fluent often hides errors on other steps */
+.jcp-ff-validation-notice {
+  display: none;
+  position: sticky;
+  top: 0.75rem;
+  z-index: 100020;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+  box-shadow: 0 8px 24px rgba(153, 27, 27, 0.12);
+}
+
+.jcp-ff-validation-notice.is-visible {
+  display: block;
+}
+
+body.jcp-form-landing .jcp-ff-validation-notice {
+  top: 4.25rem; /* below sticky logo/close bar */
+}
+
 .jcp-fluent-bridge .ff-errors-in-stack.is-active,
 .jcp-fluent-bridge .ff-errors-in-stack:not([style*="display: none"]) {
   margin: 1rem 0;
