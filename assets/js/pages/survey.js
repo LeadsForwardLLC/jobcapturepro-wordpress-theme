@@ -318,16 +318,27 @@
   function surveyTrack(eventType, stepNumber, metadata) {
     const restEventUrl = (typeof window.JCP_DEMO_SURVEY !== 'undefined' && window.JCP_DEMO_SURVEY.rest_event_url) ? window.JCP_DEMO_SURVEY.rest_event_url : baseUrl + '/wp-json/jcp/v1/demo-event';
     try {
+      const body = {
+        session_id: getSurveySessionId(),
+        event_type: eventType,
+        step_number: stepNumber != null ? stepNumber : undefined,
+        metadata: metadata || undefined,
+        ...getAttributionPayload(),
+      };
+      const firstName = getValue('firstName');
+      const lastName = getValue('lastName');
+      const email = getValue('email');
+      const company = getValue('businessName');
+      if (firstName) body.first_name = firstName;
+      if (lastName) body.last_name = lastName;
+      if (email) body.email = email;
+      if (company) body.company = company;
+      const niche = getBusinessTypeValue();
+      if (niche) body.business_type = niche;
       fetch(restEventUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: getSurveySessionId(),
-          event_type: eventType,
-          step_number: stepNumber != null ? stepNumber : undefined,
-          metadata: metadata || undefined,
-          ...getAttributionPayload(),
-        })
+        body: JSON.stringify(body)
       }).catch(function() {});
     } catch (e) {}
   }
