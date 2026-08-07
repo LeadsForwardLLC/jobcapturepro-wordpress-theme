@@ -68,6 +68,11 @@ function jcp_core_register_demo_survey_rest_routes(): void {
                 'type'              => 'array',
                 'items'             => [ 'type' => 'string' ],
             ],
+            'referral_source' => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
         ] + jcp_demo_ghl_attribution_rest_args(),
     ] );
 
@@ -113,6 +118,11 @@ function jcp_core_register_demo_survey_rest_routes(): void {
                 'required'          => false,
                 'type'              => 'array',
                 'items'             => [ 'type' => 'string' ],
+            ],
+            'referral_source' => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
             ],
         ] + jcp_demo_ghl_attribution_rest_args(),
     ] );
@@ -178,7 +188,7 @@ function jcp_demo_ghl_merge_attribution_from_request( array $params, \WP_REST_Re
  * Normalize demo contact fields for GHL webhook payloads.
  *
  * @param array<string, mixed> $params Request params.
- * @return array{first_name: string, last_name: string, email: string, phone: string, company: string, business_type: string, service_area: string, use_case: string}
+ * @return array{first_name: string, last_name: string, email: string, phone: string, company: string, business_type: string, service_area: string, use_case: string, referral_source: string}
  */
 function jcp_demo_ghl_normalize_contact_params( array $params ): array {
     $first_name    = isset( $params['first_name'] ) ? trim( (string) $params['first_name'] ) : '';
@@ -188,6 +198,7 @@ function jcp_demo_ghl_normalize_contact_params( array $params ): array {
     $company       = isset( $params['company'] ) ? trim( (string) $params['company'] ) : '';
     $business_type = isset( $params['business_type'] ) ? trim( (string) $params['business_type'] ) : '';
     $service_area  = isset( $params['service_area'] ) ? trim( (string) $params['service_area'] ) : '';
+    $referral_source = isset( $params['referral_source'] ) ? trim( (string) $params['referral_source'] ) : '';
 
     $demo_goals = $params['demo_goals'] ?? [];
     if ( ! is_array( $demo_goals ) ) {
@@ -205,20 +216,21 @@ function jcp_demo_ghl_normalize_contact_params( array $params ): array {
     }
 
     return [
-        'first_name'    => $first_name,
-        'last_name'     => $last_name,
-        'email'         => $email,
-        'phone'         => $phone,
-        'company'       => $company,
-        'business_type' => $business_type_label,
-        'service_area'  => $service_area,
-        'use_case'      => implode( ', ', $demo_goals ),
-        'utm_source'    => isset( $params['utm_source'] ) ? trim( (string) $params['utm_source'] ) : '',
-        'utm_medium'    => isset( $params['utm_medium'] ) ? trim( (string) $params['utm_medium'] ) : '',
-        'utm_campaign'  => isset( $params['utm_campaign'] ) ? trim( (string) $params['utm_campaign'] ) : '',
-        'utm_content'   => isset( $params['utm_content'] ) ? trim( (string) $params['utm_content'] ) : '',
-        'landing_page'  => isset( $params['landing_page'] ) ? trim( (string) $params['landing_page'] ) : '',
-        'referrer'      => isset( $params['referrer'] ) ? trim( (string) $params['referrer'] ) : '',
+        'first_name'       => $first_name,
+        'last_name'        => $last_name,
+        'email'            => $email,
+        'phone'            => $phone,
+        'company'          => $company,
+        'business_type'    => $business_type_label,
+        'service_area'     => $service_area,
+        'use_case'         => implode( ', ', $demo_goals ),
+        'referral_source'  => $referral_source,
+        'utm_source'       => isset( $params['utm_source'] ) ? trim( (string) $params['utm_source'] ) : '',
+        'utm_medium'       => isset( $params['utm_medium'] ) ? trim( (string) $params['utm_medium'] ) : '',
+        'utm_campaign'     => isset( $params['utm_campaign'] ) ? trim( (string) $params['utm_campaign'] ) : '',
+        'utm_content'      => isset( $params['utm_content'] ) ? trim( (string) $params['utm_content'] ) : '',
+        'landing_page'     => isset( $params['landing_page'] ) ? trim( (string) $params['landing_page'] ) : '',
+        'referrer'         => isset( $params['referrer'] ) ? trim( (string) $params['referrer'] ) : '',
     ];
 }
 
@@ -249,6 +261,10 @@ function jcp_demo_ghl_build_webhook_body( string $event, array $params, array $t
         JCP_GHL_KEY_REFERRER      => $contact['referrer'],
     ];
     $body = http_build_query( $scalar, '', '&', PHP_QUERY_RFC3986 );
+    if ( $contact['referral_source'] !== '' ) {
+        // Match Early Access: Referral Source[] for GHL multi-select custom fields.
+        $body .= '&' . rawurlencode( JCP_GHL_KEY_REFERRAL_SOURCE ) . '%5B%5D=' . rawurlencode( $contact['referral_source'] );
+    }
     foreach ( $tags as $tag ) {
         $tag = trim( (string) $tag );
         if ( $tag === '' ) {
@@ -297,6 +313,7 @@ function jcp_core_demo_survey_submit_handler( \WP_REST_Request $request ): \WP_R
             'business_type' => $request->get_param( 'business_type' ),
             'service_area'  => $request->get_param( 'service_area' ),
             'demo_goals'    => $request->get_param( 'demo_goals' ),
+            'referral_source' => $request->get_param( 'referral_source' ),
         ],
         $request
     );
@@ -360,6 +377,7 @@ function jcp_demo_ghl_contact_params_from_request( \WP_REST_Request $request, $m
             'business_type' => $request->get_param( 'business_type' ),
             'service_area'  => $request->get_param( 'service_area' ),
             'demo_goals'    => $request->get_param( 'demo_goals' ),
+            'referral_source' => $request->get_param( 'referral_source' ),
         ],
         $request
     );
@@ -376,6 +394,9 @@ function jcp_demo_ghl_contact_params_from_request( \WP_REST_Request $request, $m
     }
     if ( ( ! is_array( $params['demo_goals'] ) || empty( $params['demo_goals'] ) ) && ! empty( $metadata['demo_goals'] ) && is_array( $metadata['demo_goals'] ) ) {
         $params['demo_goals'] = $metadata['demo_goals'];
+    }
+    if ( trim( (string) ( $params['referral_source'] ?? '' ) ) === '' && ! empty( $metadata['referral_source'] ) ) {
+        $params['referral_source'] = $metadata['referral_source'];
     }
 
     return $params;
@@ -557,6 +578,7 @@ function jcp_core_demo_viewed_submit_handler( \WP_REST_Request $request ): \WP_R
                 'business_type' => $request->get_param( 'business_type' ),
                 'service_area'  => $request->get_param( 'service_area' ),
                 'demo_goals'    => $request->get_param( 'demo_goals' ),
+                'referral_source' => $request->get_param( 'referral_source' ),
             ],
             $request
         )
