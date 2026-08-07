@@ -244,10 +244,10 @@ H1
 Subheadline
 [1–2 sentences, max ~35 words — keyword in first or second sentence of the page]
 CTA
-Start free trial
+Start free 14-day trial
 See how it works
 Trust Line
-No credit card · Free trial · Setup in under 10 minutes
+No credit card · Free 14-day trial · Setup in under 10 minutes
 
 WHAT IT IS
 Headline
@@ -513,7 +513,7 @@ CTA Note
 [Text under the button — optional]
 
 CTA
-Start free trial
+Start free 14-day trial
 See how it works
 BODY;
 }
@@ -579,10 +579,11 @@ PROMPT;
 		$intro .= <<<'CRO'
 
 CAMPAIGN / CRO RULES (this page is for cold traffic):
-- Lead with ONE clear offer (free trial, limited cohort, case study, etc.) — state scarcity or deadline honestly if you use it
+- Lead with ONE clear offer (free 14-day trial, limited cohort, case study, etc.) — state scarcity or deadline honestly if you use it
 - Hero: outcome-focused H1, subheadline = who it's for + what they get + why act now
 - Repeat the SAME primary CTA button label in hero, how-it-works, and final CTA
 - Secondary CTA only for low-commitment proof (demo video) — never compete with the primary action
+- When the primary CTA is a trial signup, prefer “Start free 14-day trial” with “No credit card required” as the note
 - Problem section: agitate pains they already feel; benefits = outcomes not features
 - FAQ must handle real objections: time, crew burden, tools they already use, offer terms, what happens next
 - Shorter sentences; no long SEO essays — every line should move someone toward the form or signup
@@ -766,10 +767,10 @@ H1
 Subheadline
 [1–2 sentences — keyword in first or second sentence of the page]
 CTA
-Start free trial
+Start free 14-day trial
 See how it works
 Trust Line
-No credit card · Free trial · Setup in under 10 minutes
+No credit card · Free 14-day trial · Setup in under 10 minutes
 SNIP,
 		'WHAT IT IS' => <<<'SNIP'
 WHAT IT IS
@@ -981,7 +982,7 @@ Subheadline
 CTA Note
 [Text under the button — optional]
 CTA
-Start free trial
+Start free 14-day trial
 See how it works
 SNIP,
 		'MEDIA CORE' => <<<'SNIP'

@@ -338,7 +338,7 @@ function jcp_niche_cta_tracking_attr( string $url, string $location, string $cta
 
 	$name = $cta_name !== ''
 		? $cta_name
-		: ( $is_referral_outbound ? 'Join Referral Program' : ( $is_onboarding ? 'Start free trial' : '' ) );
+		: ( $is_referral_outbound ? 'Join Referral Program' : ( $is_onboarding ? 'Start free 14-day trial' : '' ) );
 	if ( $name !== '' ) {
 		echo ' data-cta="' . esc_attr( $name ) . '"';
 	}

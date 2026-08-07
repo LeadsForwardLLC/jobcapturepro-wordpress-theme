@@ -579,7 +579,7 @@ const demoGuideContent = {
   step6Dock: {
     pill: 'Final step',
     title: 'Ready to get started?',
-    body: 'Start free and turn every completed job into proof that drives more calls.',
+    body: 'Start a free 14-day trial — or apply for a one-on-one personalized demo if you want a walkthrough with our team.',
     interactHint: ''
   }
 };
@@ -1359,7 +1359,7 @@ function setTourStep(stepKey) {
 function getNextLabelForStep(stepKey) {
   if (stepKey === 'step4') return 'Publish →';
   if (stepKey === 'step5') return 'Send Review →';
-  if (stepKey === 'step6') return 'Get Started Free';
+  if (stepKey === 'step6') return 'Continue';
   return 'Next →';
 }
 
@@ -2996,7 +2996,7 @@ function ensureOutcomesFooterButtons() {
     finish.id = 'demoOutcomesFinishCta';
     finish.className = 'btn btn-primary demo-outcomes-modal__finish';
     finish.dataset.outcomesAction = 'finish';
-    finish.textContent = 'Get Started Free';
+    finish.textContent = 'Continue';
     footer.appendChild(finish);
   }
 }
@@ -3256,7 +3256,7 @@ async function sendReviewRequest() {
   // Update top CTA
   const headerCta = document.getElementById('btnNext');
   if (headerCta) {
-    headerCta.textContent = 'Get Started →';
+    headerCta.textContent = 'Start free trial →';
     headerCta.onclick = () => {
       window.location.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_header_complete'));
     };
@@ -4017,7 +4017,7 @@ function wirePostDemoPanel() {
   if (primaryCta) {
     primaryCta.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
     primaryCta.addEventListener('click', function() {
-      jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free' });
+      jcpDemoTrack('cta_clicked', null, { cta: 'start_free_trial' });
       jcpDemoTrack('demo_converted');
       // Matomo: Post Demo CTA Click (Early Access), once per session
       try {
@@ -4026,6 +4026,13 @@ function wirePostDemoPanel() {
           sessionStorage.setItem('jcp_matomo_demo_cta_early_access', '1');
         }
       } catch (e) {}
+    });
+  }
+
+  const secondaryCta = document.querySelector('.post-demo-secondary-cta');
+  if (secondaryCta) {
+    secondaryCta.addEventListener('click', function() {
+      jcpDemoTrack('cta_clicked', null, { cta: 'personalized_demo', source: 'demo_post_panel' });
     });
   }
 

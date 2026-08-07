@@ -443,7 +443,7 @@ function jcp_demo_analytics_get_stats(): array {
         [ 'label' => 'Demo step 6', 'type' => 'demo_step_viewed', 'num' => 6 ],
         [ 'label' => 'Post-demo modal shown', 'type' => 'post_demo_modal_shown', 'num' => null ],
         [ 'label' => 'Demo replayed', 'type' => 'demo_replayed', 'num' => null ],
-        [ 'label' => 'Converted (Get Started)', 'type' => 'demo_converted', 'num' => null ],
+        [ 'label' => 'Converted (Start free trial)', 'type' => 'demo_converted', 'num' => null ],
     ];
 
     $prev_count = $total_sessions;

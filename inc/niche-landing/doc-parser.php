@@ -345,7 +345,7 @@ function jcp_niche_doc_parse_hero( array $lines ): array {
 		'h1'          => $fields['h1'] ?? '',
 		'subheadline' => $fields['subheadline'] ?? '',
 		'cta_primary' => [
-			'label' => $ctas[0] ?? 'Start free trial',
+			'label' => $ctas[0] ?? 'Start free 14-day trial',
 			'url'   => '',
 		],
 		'cta_secondary' => [
@@ -1286,14 +1286,14 @@ function jcp_niche_doc_parse_final_cta( array $lines ): array {
 		'headline'         => $fields['headline'] ?? '',
 		'subheadline'      => $fields['subheadline'] ?? '',
 		'cta_primary'      => [
-			'label' => $ctas[0] ?? 'Start free trial',
+			'label' => $ctas[0] ?? 'Start free 14-day trial',
 			'url'   => '',
 		],
 		'cta_secondary'    => [
 			'label' => $ctas[1] ?? 'See how it works',
 			'url'   => '/demo',
 		],
-		'cta_note'         => trim( (string) ( $fields['cta note'] ?? 'No credit card required. Setup in under 10 minutes.' ) ),
+		'cta_note'         => trim( (string) ( $fields['cta note'] ?? 'No credit card required' ) ),
 		'show_subheadline' => trim( (string) ( $fields['subheadline'] ?? '' ) ) !== '',
 		'show_cta_note'    => trim( (string) ( $fields['cta note'] ?? '' ) ) !== '',
 	];

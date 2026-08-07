@@ -124,7 +124,7 @@
     {
       id: 'faq-pricing-trial',
       question: 'Is there a free trial?',
-      answer: 'We offer early access pricing for founding members. Contact us to learn more about current offers and see if you qualify for special pricing.'
+      answer: 'Yes. You can start a free 14-day trial with no credit card required. Explore the platform with your own jobs and cancel anytime before it converts.'
     },
     {
       id: 'faq-pricing-cancel',
@@ -186,8 +186,9 @@
           ${plan.features.map(renderFeature).join('')}
         </ul>
         <a class="btn ${plan.featured ? 'btn-primary' : 'btn-secondary'}" href="${escapeAttr(onboardingCtaHref)}">
-          ${hasPricing ? 'Get started' : 'Contact sales'}
+          ${hasPricing ? 'Start free 14-day trial' : 'Contact sales'}
         </a>
+        ${hasPricing ? '<p class="jcp-plan-cta-note">No credit card required</p>' : ''}
       </article>
     `;
   };
@@ -425,7 +426,7 @@
               </div>
             </div>
             <div class="jcp-actions jcp-compare-actions">
-              <a class="btn btn-primary" href="${escapeAttr(onboardingCtaHref)}">Get started</a>
+              <a class="btn btn-primary" href="${escapeAttr(onboardingCtaHref)}">Start free 14-day trial</a>
               <a class="btn btn-secondary" href="/demo">See the Demo</a>
             </div>
           </div>

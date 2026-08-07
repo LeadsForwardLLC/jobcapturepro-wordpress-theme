@@ -1232,7 +1232,7 @@ function jcp_niche_render_final_cta( array $c, string $niche_key ): void {
 		return;
 	}
 	$primary = jcp_niche_resolve_cta( $f['cta_primary'] ?? [], $niche_key );
-	$note    = ! empty( $f['cta_note'] ) ? (string) $f['cta_note'] : __( 'No signup required. Setup in minutes.', 'jcp-core' );
+	$note    = ! empty( $f['cta_note'] ) ? (string) $f['cta_note'] : __( 'No credit card required', 'jcp-core' );
 	$btn     = $primary['label'] !== '' ? $primary['label'] : __( 'See your business in the live demo', 'jcp-core' );
 	$url     = $primary['url'] !== '' ? $primary['url'] : home_url( '/demo/' );
 	$show_sub = jcp_niche_show_field( $f, 'show_subheadline', true );

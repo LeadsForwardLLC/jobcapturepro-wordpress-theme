@@ -36,7 +36,7 @@ function jcp_global_settings_defaults(): array {
 			'step'       => '1',
 		],
 		'nav_cta' => [
-			'primary_label'   => 'Get Started',
+			'primary_label'   => 'Start free trial',
 			'primary_url'     => '',
 			'secondary_label' => 'Login',
 			'secondary_url'   => '',
@@ -409,7 +409,7 @@ function jcp_global_resolve_cta( string $label, string $url, string $utm_content
  */
 function jcp_global_resolve_nav_ctas( ?int $post_id = null ): array {
 	$global = jcp_global_settings()['nav_cta'] ?? [];
-	$primary_label   = (string) ( $global['primary_label'] ?? 'Get Started' );
+	$primary_label   = (string) ( $global['primary_label'] ?? 'Start free trial' );
 	$primary_url     = (string) ( $global['primary_url'] ?? '' );
 	$secondary_label = (string) ( $global['secondary_label'] ?? 'Login' );
 	$secondary_url   = (string) ( $global['secondary_url'] ?? '' );
@@ -441,6 +441,11 @@ function jcp_global_resolve_nav_ctas( ?int $post_id = null ): array {
 	if ( $is_legacy_demo ) {
 		$secondary_label = 'Login';
 		$secondary_url   = '';
+	}
+
+	// Migrate legacy Get Started primary CTA → Start free trial.
+	if ( preg_match( '/^get\s*started$/i', trim( $primary_label ) ) ) {
+		$primary_label = 'Start free trial';
 	}
 
 	return [
