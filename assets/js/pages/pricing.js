@@ -198,8 +198,19 @@
     if (!root) return;
 
     const pageTitle = (root.dataset.pageTitle || '').trim();
-    const pageSupporting = (root.dataset.pageSupporting || '').trim();
-    const heroTitle = pageTitle || 'Choose the plan that matches your growth';
+    const pageSupportingRaw = (root.dataset.pageSupporting || '').trim();
+    const scrubRetiredPromo = (text) => {
+      if (!text) return text;
+      return text
+        .replace(/Get early bird pricing and unlock the benefits of turning real work into reviews, visibility, and trust that drives inbound demand\./gi,
+          'Start a free 14-day trial and turn real work into reviews, visibility, and trust that drives inbound demand.')
+        .replace(/Get early bird pricing/gi, 'Start a free 14-day trial')
+        .replace(/early bird pricing/gi, 'free 14-day trial pricing')
+        .replace(/early bird/gi, 'free trial')
+        .replace(/founding crew/gi, 'customers');
+    };
+    const pageSupporting = scrubRetiredPromo(pageSupportingRaw);
+    const heroTitle = scrubRetiredPromo(pageTitle) || 'Choose the plan that matches your growth';
     const heroSubtitle = pageSupporting || 'Each tier aligns to business maturity and visibility goals. Start a free 14-day trial and turn real work into reviews, visibility, and trust that drives inbound demand.';
 
     // Load FAQ component if available

@@ -29,6 +29,10 @@ if ( have_posts() ) {
 $title            = trim( (string) $page_title ) !== '' ? $page_title : $default_title;
 $subtitle         = $supporting !== '' ? $supporting : $default_supporting;
 $supporting_plain = $supporting !== '' ? wp_strip_all_tags( $page_content ) : $subtitle;
+if ( function_exists( 'jcp_core_replace_retired_promo_copy' ) ) {
+	$title            = jcp_core_replace_retired_promo_copy( $title );
+	$supporting_plain = jcp_core_replace_retired_promo_copy( $supporting_plain );
+}
 ?>
 <div id="jcp-app" data-jcp-page="pricing" data-page-title="<?php echo esc_attr( $title ); ?>" data-page-supporting="<?php echo esc_attr( $supporting_plain ); ?>"></div>
 <?php
