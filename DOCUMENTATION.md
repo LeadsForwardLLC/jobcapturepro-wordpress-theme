@@ -834,7 +834,7 @@ The theme posts form submissions to **two separate** GoHighLevel inbound webhook
 
 | Form | Purpose | Webhook URL constant | File |
 |------|---------|----------------------|------|
-| **Early Access** | Founding crew signup → Early Access automation | `JCP_GHL_WEBHOOK_URL_DEFAULT` | `inc/rest-early-access.php` |
+| **Early Access** | Lead signup → Early Access automation | `JCP_GHL_WEBHOOK_URL_DEFAULT` | `inc/rest-early-access.php` |
 | **Demo Survey** | Demo signup (opt-in + viewed-demo) → single workflow with Event branching | `JCP_GHL_DEMO_SURVEY_WEBHOOK_URL` | `inc/rest-demo-survey.php` |
 
 - **Early Access:** REST route `POST /wp-json/jcp/v1/early-access-submit`. Payload: `application/x-www-form-urlencoded`, flat key-value. Keys: First Name, Email, Phone, Company, Trade, Message, Referral Source[].
@@ -859,7 +859,7 @@ The theme posts form submissions to **two separate** GoHighLevel inbound webhook
 
 | Form | Page / trigger | Purpose |
 |------|----------------|---------|
-| **Early Access** | `/early-access` | Founding crew signup. Collects contact info, business type, why interested, referral source. One submission per submit; payload goes to Early Access webhook only. |
+| **Early Access** | `/early-access` | Lead signup form. Collects contact info, business type, why interested, referral source. One submission per submit; payload goes to Early Access webhook only. |
 | **Demo Survey** | `/demo` (no `mode=run`) | Demo opt-in and viewed-demo tracking. Step 3 "Continue to preview" sends full form to Demo webhook (Event= demo-opt-in). "Skip to demo" / "Launch the live demo" sends minimal payload to same webhook (Event= demo-viewed). GHL branches on Event. |
 
 ### Data Flow

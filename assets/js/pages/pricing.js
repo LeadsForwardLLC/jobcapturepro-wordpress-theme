@@ -200,7 +200,7 @@
     const pageTitle = (root.dataset.pageTitle || '').trim();
     const pageSupporting = (root.dataset.pageSupporting || '').trim();
     const heroTitle = pageTitle || 'Choose the plan that matches your growth';
-    const heroSubtitle = pageSupporting || 'Each tier aligns to business maturity and visibility goals. Get early bird pricing and unlock the benefits of turning real work into reviews, visibility, and trust that drives inbound demand.';
+    const heroSubtitle = pageSupporting || 'Each tier aligns to business maturity and visibility goals. Start a free 14-day trial and turn real work into reviews, visibility, and trust that drives inbound demand.';
 
     // Load FAQ component if available
     const faqHTML = typeof window.renderFAQ === 'function' 

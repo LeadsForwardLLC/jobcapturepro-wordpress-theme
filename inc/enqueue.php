@@ -43,8 +43,8 @@ function jcp_core_enqueue_assets(): void {
     // Always load navigation JS (skip on prototype - no header/footer)
     if ( ! $pages['is_prototype'] ) {
         jcp_core_enqueue_script( 'jcp-core-nav', 'js/core/jcp-nav.js' );
-        // Early bird banner dismiss behavior (no-op if banner not present).
-        jcp_core_enqueue_script( 'jcp-core-earlybird-banner', 'js/core/jcp-earlybird-banner.js', [ 'jcp-core-nav' ] );
+        // Site banner dismiss behavior (no-op if banner not present).
+        jcp_core_enqueue_script( 'jcp-core-site-banner', 'js/core/jcp-site-banner.js', [ 'jcp-core-nav' ] );
     }
 
     // UI Library page (internal documentation - shows all components)
