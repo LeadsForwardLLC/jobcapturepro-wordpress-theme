@@ -613,7 +613,8 @@
     if (deckSlidesWrap) deckSlidesWrap.scrollTop = 0;
 
     if (rankList) {
-      const isRankSlide = deckIndex === 3;
+      const rankSlideIndex = deckSlides.findIndex((el) => el.classList.contains('deck-slide--rank'));
+      const isRankSlide = rankSlideIndex >= 0 && deckIndex === rankSlideIndex;
       clearRankTimers();
       if (isRankSlide) {
         runRankSlideSequence();
@@ -622,7 +623,8 @@
       }
     }
 
-    const isChannelsSlide = deckIndex === 4;
+    const channelsSlideIndex = deckSlides.findIndex((el) => el.classList.contains('deck-slide--channels'));
+    const isChannelsSlide = channelsSlideIndex >= 0 && deckIndex === channelsSlideIndex;
     clearChannelTimers();
     if (isChannelsSlide) {
       runChannelsSequence();

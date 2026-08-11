@@ -1205,6 +1205,19 @@ select.survey-input {
   transform: translateY(0);
 }
 
+.deck-integrations {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  color: #1e3a5f;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  text-align: left;
+}
+
 /* Legacy alias — only used on channels slide */
 .deck-tiles {
   display: flex;
