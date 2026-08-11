@@ -46,7 +46,7 @@
   "media_text": {
     "headline": "Every completed plumbing job should bring in the next call",
     "subheadline": "Turn real service calls into proof homeowners trust before they dial.",
-    "body": "Your plumbers already take job photos. JobCapturePro turns those into check-ins, Google updates, website proof, and review requests — without adding admin work to the office or the truck.",
+    "body": "Your plumbers already take job photos. JobCapturePro turns those into check-ins, Google updates, and website proof — and makes it easy to request a review on site with a QR code.",
     "media_type": "image",
     "media_url": "",
     "media_alt": "Plumber capturing job photos on site",
@@ -89,7 +89,7 @@
       {
         "title": "Review",
         "lines": [
-          "A review request goes out while the homeowner still remembers the experience",
+          "Your tech shows a QR code while the homeowner still remembers the experience",
           "Right after the leak stops · Right after the water is back on · Right after the job is done",
           "Five-star reviews go public · Anything lower comes to you first"
         ]
@@ -154,7 +154,7 @@
     "items": [
       { "title": "More local visibility", "body": "Recent service calls keep your Google listing active and visible" },
       { "title": "More homeowner trust", "body": "Customers can see real plumbing jobs before they pick up the phone" },
-      { "title": "More reviews automatically", "body": "Requests go out while the homeowner is still relieved the issue is fixed" },
+      { "title": "More reviews on the spot", "body": "Crew asks with a QR code while the homeowner is still relieved the issue is fixed" },
       { "title": "More consistent online activity", "body": "Your jobs keep your website and Google presence active without manual posting" },
       { "title": "Stronger local search presence", "body": "Real job activity supports long-term plumbing SEO software performance" },
       { "title": "More booked jobs", "body": "Visible proof helps homeowners choose your company over competitors" }
@@ -204,7 +204,7 @@
       { "q": "Is this real job content?", "a": "Yes. Every update comes from actual plumbing jobs, photos, and service activity." },
       { "q": "Will this help my Google visibility?", "a": "Yes. Consistent plumbing job activity helps keep your Google Business Profile active and visible locally." },
       { "q": "Do I need to replace my current software?", "a": "No. JobCapturePro works alongside tools like Housecall Pro, CompanyCam, Workiz, and QuickBooks." },
-      { "q": "How do review requests work?", "a": "Review requests are sent automatically after the job while the experience is still fresh." },
+      { "q": "How do review requests work?", "a": "After the job, your tech shows a QR code (or sends a link) so the homeowner can leave a review on the spot while the experience is still fresh." },
       { "q": "How long does setup take?", "a": "Most plumbing companies are live within a few days." },
       { "q": "Does this work for small plumbing companies?", "a": "Yes. If you are consistently completing jobs, the system works. More jobs simply create more visibility over time." }
     ]

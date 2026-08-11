@@ -43,7 +43,7 @@
       features: [
         '1 location included',
         { text: 'Unlimited check-in tracking', tooltip: 'Track unlimited jobs/check-ins for your included location.' },
-        { text: 'Automated review requests', tooltip: 'Automatically send review requests via SMS/email after a job is completed.' },
+        { text: 'On-site review requests', tooltip: 'After each job, your crew shows a QR code or sends a link so the customer can leave a review while the experience is fresh.' },
         { text: 'Team activity feed', tooltip: 'See check-ins and activity across your team in one place.' },
         'Email support'
       ]
@@ -119,7 +119,7 @@
     {
       id: 'faq-pricing-pricing',
       question: 'What is included in each plan?',
-      answer: 'All plans include core features like photo capture, proof generation, and basic publishing. Higher tiers add CRM integrations, automated reviews, social automation, and advanced reporting. See the comparison table above for details.'
+      answer: 'All plans include core features like photo capture, proof generation, basic publishing, and on-site QR review requests. Higher tiers add CRM integrations, social automation, and advanced reporting. See the comparison table above for details.'
     },
     {
       id: 'faq-pricing-trial',
@@ -372,13 +372,13 @@
 
               <!-- Reviews -->
               <div class="jcp-compare-row jcp-compare-group">
-                <div>Manual review requests</div>
+                <div>On-site QR review requests</div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
               </div>
               <div class="jcp-compare-row">
-                <div>Automated review sequences</div>
+                <div>Review link option</div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>

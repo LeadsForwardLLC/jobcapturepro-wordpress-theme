@@ -545,7 +545,7 @@ const DEMO_OUTCOME_ITEMS = [
   'Posted to social media',
   'Live on Google Business',
   'Added to JobCapturePro directory',
-  'Review request sent',
+  'Review request presented',
 ];
 
 const demoGuideContent = {
@@ -576,8 +576,8 @@ const demoGuideContent = {
   step5: {
     pill: 'Step 5',
     title: 'Request a review',
-    body: 'Review requests go out automatically. Tap Request Review to preview it.',
-    interactHint: 'Tap Request Review to preview the automatic send.'
+    body: 'Before leaving, your tech shows a QR code so the customer can leave a review on the spot. Tap Request Review to preview it.',
+    interactHint: 'Tap Request Review to preview the QR handoff.'
   },
   step6: {
     pill: 'Final step',
@@ -2706,7 +2706,7 @@ function buildOutcomesSlideHtml(index, ctx) {
               </div>
               <div class="outcomes-review-card__sent">
                 <img src="${assetBase}/shared/assets/icons/lucide/send.svg" class="lucide-icon lucide-icon-sm" alt="">
-                Review request sent automatically after the job
+                Review request presented with a QR code after the job
               </div>
             </div>
           </div>
@@ -3223,8 +3223,8 @@ async function sendReviewRequest() {
     <div class="feed-card">
       <div class="feed-image"><img src="${demoPhotos[0]}" alt="Job" width="400" height="300" loading="lazy"></div>
       <div class="feed-content">
-        <h4>Review Request Sent</h4>
-        <p>SMS sent automatically</p>
+        <h4>Review Request Shown</h4>
+        <p>QR code presented on site</p>
       </div>
     </div>
   `);

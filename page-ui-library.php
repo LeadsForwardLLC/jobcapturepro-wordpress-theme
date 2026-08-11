@@ -90,7 +90,7 @@ $icon = function( $name ) {
 				<div class="hero-copy jcp-hero-copy">
 					<h1 class="jcp-hero-title">Automatically turn every completed job into more <span class="jcp-hero-rotating-word" aria-live="polite">visibility</span></h1>
 					<p class="jcp-hero-subtitle">
-						Your team already takes job photos. JobCapturePro automatically turns those jobs into website updates, Google visibility, social posts, directory listings, and review requests so your work keeps bringing in new business.
+						Your team already takes job photos. JobCapturePro turns those jobs into website updates, Google visibility, social posts, and directory listings — and your crew can ask for a review on site with a QR code.
 					</p>
 					<div class="directory-cta-row jcp-actions">
 						<a class="btn btn-primary directory-cta directory-cta-secondary" href="/demo">Watch the Live Demo</a>
@@ -183,7 +183,7 @@ $icon = function( $name ) {
 							<div class="step-number">4</div>
 							<div class="step-content">
 								<h4 class="step-title">Review</h4>
-								<p class="step-description">Smart review requests go out at the right moment.</p>
+								<p class="step-description">Crew shows a QR code so customers can review on the spot.</p>
 							</div>
 						</div>
 					</div>

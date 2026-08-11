@@ -16,7 +16,7 @@ $icon_tag = esc_url( jcp_core_icon( 'tag' ) );
 $icon_rocket = esc_url( jcp_core_icon( 'rocket' ) );
 $icon_send = esc_url( jcp_core_icon( 'send' ) );
 $icon_star = esc_url( jcp_core_icon( 'star' ) );
-$icon_repeat = esc_url( jcp_core_icon( 'repeat' ) );
+$icon_qr = esc_url( jcp_core_icon( 'qr-code' ) );
 $icon_play = esc_url( jcp_core_icon( 'play' ) );
 $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
 $icon_plug = esc_url( jcp_core_icon( 'plug' ) );
@@ -148,9 +148,9 @@ $icon_plug = esc_url( jcp_core_icon( 'plug' ) );
       </article>
 
       <article class="deck-slide deck-slide--cards">
-        <h2>Reviews arrive at the right time.</h2>
+        <h2>Ask for reviews while it still matters.</h2>
         <p class="deck-lead">
-          When the job wraps up, reviews go out automatically while customers are happiest, so you build reputation without awkward follow ups.
+          After the job, your crew shows a QR code so the customer can leave a review on the spot — while they are happiest and still standing there.
         </p>
         <div class="deck-flow deck-flow--stack" aria-label="Review outcomes">
           <div class="deck-flow-card">
@@ -160,18 +160,18 @@ $icon_plug = esc_url( jcp_core_icon( 'plug' ) );
             </span>
             <div class="deck-flow-body">
               <div class="deck-flow-title">Higher response rate</div>
-              <div class="deck-flow-sub">Requests land while the experience is fresh.</div>
+              <div class="deck-flow-sub">Ask in person while the experience is fresh.</div>
             </div>
           </div>
 
           <div class="deck-flow-card">
             <span class="deck-flow-icon" aria-hidden="true">
               <span class="deck-flow-step" aria-hidden="true">2</span>
-              <img src="<?php echo esc_url( $icon_repeat ); ?>" alt="" />
+              <img src="<?php echo esc_url( $icon_qr ); ?>" alt="" />
             </span>
             <div class="deck-flow-body">
-              <div class="deck-flow-title">No manual follow up</div>
-              <div class="deck-flow-sub">Automated reminders keep it consistent.</div>
+              <div class="deck-flow-title">QR handoff on site</div>
+              <div class="deck-flow-sub">Takes seconds before your tech leaves the job.</div>
             </div>
           </div>
 
