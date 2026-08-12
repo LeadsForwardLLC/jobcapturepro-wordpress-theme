@@ -288,17 +288,21 @@
   const acculevelMarkets = {
     triadelphia: {
       label: "Triadelphia, WV",
-      image: img("acculevel-triadelphia-timeline.png"),
-      report: img("acculevel-triadelphia-report.png"),
+      preview: img("acculevel-localfalcon-triadelphia-scans-preview.webp"),
+      previewFallback: img("acculevel-localfalcon-triadelphia-scans-preview.jpg"),
+      full: img("acculevel-localfalcon-triadelphia-scans.webp"),
+      fullFallback: img("acculevel-localfalcon-triadelphia-scans.jpg"),
       headline: "0% → 100%",
-      detail: "Share of Local Voice reached 100% for basement waterproofing; foundation repair reached approximately 89% in the latest supplied scan.",
+      detail: "LocalFalcon scans for basement waterproofing and foundation repair moved from all-red, 0% Share of Local Voice in March 2026 to predominantly green coverage by June — with tracked searches reaching as high as 100% SoLV.",
     },
     monroe: {
       label: "Monroe, MI",
-      image: img("acculevel-monroe-timeline.png"),
-      report: img("acculevel-monroe-report.png"),
-      headline: "0% → ~97%",
-      detail: "Share of Local Voice reached approximately 97% for basement waterproofing; foundation repair reached approximately 84% in the latest supplied scan.",
+      preview: img("acculevel-localfalcon-monroe-scans-preview.webp"),
+      previewFallback: img("acculevel-localfalcon-monroe-scans-preview.jpg"),
+      full: img("acculevel-localfalcon-monroe-scans.webp"),
+      fullFallback: img("acculevel-localfalcon-monroe-scans.jpg"),
+      headline: "0% → ~96%",
+      detail: "Monroe scans show the same arc: March grids at 0% SoLV, then steady gains through spring. Latest supplied scans reached approximately 96% SoLV for basement waterproofing and ~84% for foundation repair.",
     },
   };
 
@@ -331,9 +335,15 @@
         <div class="case-tabs">${Object.entries(acculevelMarkets)
           .map(([key, item]) => `<button class="case-tab ${selectedCaseMarket === key ? "active" : ""}" data-case-market="${key}" type="button">${item.label}</button>`)
           .join("")}</div>
-        <div class="timeline-frame"><img src="${market.image}" alt="${market.label} LocalFalcon scan timeline" /><i class="timeline-gradient"></i></div>
+        <button class="scan-preview" type="button" data-lightbox-src="${market.full}" data-lightbox-fallback="${market.fullFallback}" aria-label="Open ${market.label} LocalFalcon scans full size">
+          <picture>
+            <source srcset="${market.preview}" type="image/webp" />
+            <img src="${market.previewFallback}" alt="${market.label} LocalFalcon scan history — click to enlarge" loading="lazy" />
+          </picture>
+          <span class="scan-preview-hint">Click to enlarge</span>
+        </button>
         <div class="case-metric-row"><div class="case-metric"><span>Starting visibility</span><b>0% SoLV</b></div><div class="case-metric"><span>Latest high</span><b class="good">${market.headline.split("→")[1].trim()}</b></div><div class="case-metric"><span>Rollout</span><b>111 locations</b></div></div>
-        <div class="case-source"><span>${market.detail}</span><button class="link-button" type="button" data-report="${market.report}">View source report ↗</button></div>
+        <div class="case-source"><span>${market.detail}</span><button class="link-button" type="button" data-lightbox-src="${market.full}" data-lightbox-fallback="${market.fullFallback}">View full LocalFalcon scans ↗</button></div>
       </div>
     </div>`
       : "";
@@ -536,7 +546,9 @@
     if (state.chapter === 4) stage.querySelectorAll("[data-engine]").forEach((el) => el.addEventListener("click", () => { selectedEngine = Number(el.dataset.engine); render(); }));
     if (state.chapter === 5) {
       stage.querySelectorAll("[data-case-market]").forEach((el) => el.addEventListener("click", () => { selectedCaseMarket = el.dataset.caseMarket; render(); }));
-      stage.querySelectorAll("[data-report]").forEach((el) => el.addEventListener("click", () => openReport(el.dataset.report)));
+      stage.querySelectorAll("[data-lightbox-src]").forEach((el) =>
+        el.addEventListener("click", () => openLightbox(el.dataset.lightboxSrc, el.dataset.lightboxFallback || el.dataset.lightboxSrc))
+      );
     }
     if (state.chapter === 6) stage.querySelectorAll("[data-segment]").forEach((el) => el.addEventListener("click", () => setState({ segment: el.dataset.segment })));
     if (state.chapter === 7) {
@@ -580,9 +592,20 @@
     setTimeout(() => toast.classList.remove("show"), 1700);
   }
 
-  function openReport(src) {
-    $("#reportImage").src = src;
-    $("#reportModal").hidden = false;
+  function openLightbox(src, fallback) {
+    const imgEl = $("#reportImage");
+    const modal = $("#reportModal");
+    if (!imgEl || !modal) return;
+    imgEl.onerror = () => {
+      if (fallback && imgEl.getAttribute("src") !== fallback) imgEl.src = fallback;
+    };
+    imgEl.src = src || fallback;
+    modal.hidden = false;
+  }
+
+  function closeLightbox() {
+    const modal = $("#reportModal");
+    if (modal) modal.hidden = true;
   }
 
   function openCustomizer() {
@@ -651,11 +674,17 @@
       showToast("Reset to defaults");
     });
     $("#presentBtn").addEventListener("click", () => setState({ presenting: !state.presenting }));
-    $("#closeReport").addEventListener("click", () => {
-      $("#reportModal").hidden = true;
-    });
+    $("#closeReport")?.addEventListener("click", closeLightbox);
+    $("#closeReportBackdrop")?.addEventListener("click", closeLightbox);
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && state.presenting) setState({ presenting: false });
+      if (e.key === "Escape") {
+        const modal = $("#reportModal");
+        if (modal && !modal.hidden) {
+          closeLightbox();
+          return;
+        }
+        if (state.presenting) setState({ presenting: false });
+      }
       if (e.key === "ArrowRight" && !e.target.matches("input, textarea, select")) goTo(state.chapter + 1);
       if (e.key === "ArrowLeft" && !e.target.matches("input, textarea, select")) goTo(state.chapter - 1);
     });
