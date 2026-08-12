@@ -43,7 +43,7 @@ function jcp_pricing_plans(): array {
 				'Single location',
 				'Technician-first mobile check-ins',
 				'On-site QR review requests',
-				'Website proof publishing',
+				'Geotagged, local-SEO website publishing',
 				'Admin dashboard access',
 			],
 		],
@@ -80,10 +80,10 @@ function jcp_pricing_plans(): array {
 			],
 			'includes'    => [
 				'CRM integrations (Housecall Pro, Jobber, ServiceTitan, CompanyCam, and more)',
+				'Geotagged images + local-SEO website content',
+				'Google Maps / Business Profile posting',
 				'On-site QR / link review requests',
-				'Social and Google Business Profile posting',
 				'Up to 3 locations',
-				'Priority support',
 			],
 		],
 		'enterprise' => [
@@ -119,9 +119,9 @@ function jcp_pricing_plans(): array {
 			'includes'    => [
 				'Unlimited locations',
 				'Custom integrations and API access',
+				'Geotagged local-SEO publish across markets',
 				'Organization-wide reporting',
 				'Dedicated onboarding',
-				'White-label support',
 			],
 		],
 	];

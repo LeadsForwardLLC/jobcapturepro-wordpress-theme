@@ -158,16 +158,16 @@
         id: "enterprise",
         name: (enterprise && enterprise.name) || "Enterprise",
         price: enterprise ? `$${enterprise.monthly}` : "$399",
-        reason: "Custom connectivity, org-wide control, or a larger location footprint makes Enterprise the cleanest fit.",
+        reason: "Custom connectivity, org-wide control, or a larger footprint — so every location can publish geotagged, local-search-ready proof at scale.",
         includes: (enterprise && enterprise.includes) || [],
       };
     }
-    if (state.automation || Number(state.locations) > 1 || state.priorities.some((x) => ["More reviews", "Consistent content", "Multi-location control"].includes(x))) {
+    if (state.automation || Number(state.locations) > 1 || state.priorities.some((x) => ["More reviews", "Consistent content", "Multi-location control", "Local visibility"].includes(x))) {
       return {
         id: "scale",
         name: (scale && scale.name) || "Scale",
         price: scale ? `$${scale.monthly}` : "$249",
-        reason: "They need the proof engine to run consistently across completed jobs, reviews, social, and Google visibility.",
+        reason: "They need the proof engine running on every job — local Maps visibility, geotagged website content, reviews, and social — the signals AI search and homebuyers both trust.",
         includes: (scale && scale.includes) || [],
       };
     }
@@ -175,7 +175,7 @@
       id: "starter",
       name: (starter && starter.name) || "Starter",
       price: starter ? `$${starter.monthly}` : "$99",
-      reason: "A simple mobile-led proof workflow is the most practical place to start for a single location.",
+      reason: "A simple mobile-led workflow: capture the job, publish local-search-ready proof, and ask for the review on site.",
       includes: (starter && starter.includes) || [],
     };
   }
@@ -225,10 +225,10 @@
         : `Turn every completed job into <em>more calls.</em>`;
     const company = state.prospectName || (partner ? "your clients" : affiliate ? "contractors you know" : "your team");
     const body = partner
-      ? `${esc(company)} already take job photos. JobCapturePro turns that activity into website, Google, social, and directory proof — plus an on-site QR review ask — so you can deliver visibility without becoming their content team.`
+      ? `${esc(company)} already take job photos. JobCapturePro turns that work into local Maps visibility, geotagged website content, social, and directory proof — plus an on-site QR review ask. Today’s search (including AI answers) rewards real work, real reviews, and real credibility — exactly what your clients already produce.`
       : affiliate
-        ? `Refer contractors and home-service businesses to JobCapturePro and earn <strong>20% recurring commission for 12 months</strong> when they become paid customers. It’s an easy recommend: they already finish jobs and take photos — JCP makes that proof show up online.`
-        : `${esc(company)} already takes job photos. JobCapturePro turns them into Google updates, website content, social posts, and directory listings — then your crew asks for a review on site with a QR code.`;
+        ? `Refer contractors and home-service businesses to JobCapturePro and earn <strong>20% recurring commission for 12 months</strong> when they become paid customers. It’s an easy recommend: they already finish jobs and take photos — JCP turns that into local SEO proof buyers and AI search engines both trust.`
+        : `${esc(company)} already takes job photos. JobCapturePro turns them into Google Maps updates, local-search-optimized website content, social posts, and directory listings — then your crew asks for a review on site with a QR code. Real jobs. Real proof. More leads.`;
     const eyebrow = partner ? "Partner walkthrough" : affiliate ? "Affiliate program" : "Product walkthrough";
     return `<section class="chapter cover">
     <img class="cover-image" src="${img("jcp-product-visual.png")}" alt="JobCapturePro completed-job publishing workflow" />
@@ -252,23 +252,23 @@
         ? "The people you refer already have the content."
         : "You already have the content.";
     const intro = partner
-      ? `Completed jobs rarely become consistent, location-specific marketing for the ${esc(state.trade.toLowerCase())} clients you serve.`
+      ? `Completed jobs rarely become consistent local SEO and Maps proof for the ${esc(state.trade.toLowerCase())} clients you serve — even though AI search and homebuyers both reward real work and real reviews.`
       : affiliate
-        ? `Most ${esc(state.trade.toLowerCase())} teams already finish jobs and take photos — but that proof never becomes website content, Google activity, directory presence, or a timely review ask.`
-        : `For ${esc(state.trade.toLowerCase())} teams, completed jobs rarely make it from the camera roll to the places customers decide who to call.`;
+        ? `Most ${esc(state.trade.toLowerCase())} teams already finish jobs and take photos — but that proof never becomes Maps visibility, geotagged website content, directory presence, or a timely review ask.`
+        : `For ${esc(state.trade.toLowerCase())} teams, completed jobs rarely make it from the camera roll to Google Maps, local search, and the trust signals that turn browsers into leads.`;
     return `<section class="chapter content-pad">
     ${chapterHeader(2, "The missed opportunity", title, intro)}
     <div class="problem-layout">
       <div class="problem-statement">One real job can become proof in <em>five places.</em></div>
       <div class="channel-stack">
-        <div class="channel-line"><strong>Google Maps</strong><span>Localized updates</span></div>
-        <div class="channel-line"><strong>Your website</strong><span>Search-ready job proof</span></div>
-        <div class="channel-line"><strong>Social media</strong><span>Consistent project content</span></div>
+        <div class="channel-line"><strong>Google Maps</strong><span>Local visibility that drives calls</span></div>
+        <div class="channel-line"><strong>Your website</strong><span>Geotagged, local-SEO content</span></div>
+        <div class="channel-line"><strong>Social media</strong><span>Consistent project proof</span></div>
         <div class="channel-line"><strong>Directory</strong><span>Verified public listing</span></div>
         <div class="channel-line"><strong>Review requests</strong><span>On-site QR / link handoff</span></div>
       </div>
     </div>
-    <div class="proof-strip"><div class="proof-stat"><b>1 photo</b><span>proof everywhere</span></div><div class="proof-stat"><b>4 channels</b><span>website, Google, social + directory</span></div><div class="proof-stat"><b>+ reviews</b><span>QR ask before you leave</span></div></div>
+    <div class="proof-strip"><div class="proof-stat"><b>Local SEO</b><span>Maps + site proof that wins leads</span></div><div class="proof-stat"><b>AI-ready</b><span>real work, reviews, credibility</span></div><div class="proof-stat"><b>+ reviews</b><span>QR ask before you leave</span></div></div>
   </section>`;
   }
 
@@ -302,7 +302,7 @@
   function renderGap() {
     const gap = calcGap();
     return `<section class="chapter content-pad">
-    ${chapterHeader(4, "Proof gap", "Make the invisible work visible.", "These are completed jobs that could reinforce local trust — but may not leave a consistent public trail today.")}
+    ${chapterHeader(4, "Proof gap", "Make the invisible work visible.", "These are completed jobs that could strengthen local Maps presence, website SEO, and review credibility — but may not leave a consistent public trail today.")}
     <div class="gap-layout">
       <div>
         <div class="big-number"><span>${gap.unused}</span></div>
@@ -325,15 +325,15 @@
 
   const engineSteps = [
     { title: "Capture", short: "App or completed-job automation", detail: "One check-in starts the system.", bullets: ["Technician-first mobile photo check-in", "CRM-triggered check-in from completed jobs", `Works with ${integrationLine()}`] },
-    { title: "Optimize", short: "Job context becomes search-ready proof", detail: "JCP prepares the job to be useful online.", bullets: ["SEO keyword, tags, and description", "Image filtering and priority selection", "WebP, filenames, alt text, coordinates, and schema"] },
-    { title: "Distribute", short: "Publish proof where buyers look", detail: "One real job supports four publish channels.", bullets: ["Website / WordPress check-in display", "Google Business Profile posting", "Facebook, Instagram, and X scheduling", "JobCapturePro directory listing"] },
-    { title: "Convert", short: "Ask for the review on site", detail: "Before leaving, crew shows a QR code (or sends a link) — the fifth place proof shows up.", bullets: ["On-site QR handoff while the customer is happiest", "Optional review link if they prefer", "More reviews without awkward office follow-ups"] },
+    { title: "Optimize", short: "Built for local search — not generic posts", detail: "Unlike most platforms, JobCapturePro builds local SEO into every job before it publishes.", bullets: ["Images geotagged to the actual job location", "SEO-ready titles, tags, descriptions, alt text, and schema", "WebP optimization and clean filenames for search and AI"] },
+    { title: "Distribute", short: "Publish where local buyers (and AI) look", detail: "One real job supports four publish channels — with website content optimized for local search.", bullets: ["Website / WordPress: geotagged, local-SEO job pages", "Google Business Profile / Maps posts that drive calls", "Facebook, Instagram, and X scheduling", "JobCapturePro directory listing"] },
+    { title: "Convert", short: "Ask for the review on site", detail: "Before leaving, crew shows a QR code (or sends a link) — the credibility signal AI search and neighbors both trust.", bullets: ["On-site QR handoff while the customer is happiest", "Optional review link if they prefer", "More reviews without awkward office follow-ups"] },
   ];
 
   function renderEngine() {
     const detail = engineSteps[selectedEngine];
     return `<section class="chapter content-pad">
-    ${chapterHeader(5, "How it works", "One job in. Proof everywhere.", "JobCapturePro connects job completion to the marketing work that usually gets delayed or forgotten.")}
+    ${chapterHeader(5, "How it works", "One job in. Proof everywhere.", "JobCapturePro turns completed work into local Maps visibility, geotagged website content, reviews, and social — the proof today’s search engines and AI answers actually value.")}
     <div class="engine">
       <div class="engine-flow">${engineSteps.map((step, i) => `<button class="engine-step ${selectedEngine === i ? "active" : ""}" data-engine="${i}" type="button"><span class="step-no">0${i + 1}</span><h3>${step.title}</h3><p>${step.short}</p></button>`).join("")}</div>
       <div class="engine-detail"><strong>${detail.detail}</strong><ul>${detail.bullets.map((x) => `<li>${x}</li>`).join("")}</ul></div>
@@ -405,16 +405,16 @@
       : "";
 
     return `<section class="chapter content-pad">
-    ${chapterHeader(6, "Customer proof", "Real teams. Real results.", "Short snippets from operators and agencies. Acculevel Maps proof is available when local SEO is part of the conversation.")}
+    ${chapterHeader(6, "Customer proof", "Real work. Real Maps. Real results.", "Operators and agencies who turned job proof into local visibility. Acculevel LocalFalcon scans show what consistent Maps coverage can look like.")}
     <div class="reviews-grid">${reviewCards}</div>
     ${acculevel}
   </section>`;
   }
 
   const segments = {
-    owner: { label: "Owner-operator", range: "$0–$2M", title: "Get the job off the camera roll and in front of the next customer.", story: "Capture proof from the field, publish it, and build a visible record of real work without another marketing chore.", points: [["Best for", "Simple local visibility and owned proof"], ["You’ll use", "Mobile check-in and website proof"], ["Common win", "Photos finally turn into inbound trust"]] },
-    growth: { label: "Growth-stage", range: "$2M–$10M", title: "Standardize proof and reviews before growth makes the leaks bigger.", story: "Connect completed jobs to four publish channels plus an on-site review ask — with less dependence on someone remembering each task.", points: [["Best for", "Consistency across every completed job"], ["You’ll use", "CRM integrations, QR reviews, GBP, social, directory"], ["Common win", "Marketing stops depending on spare time"]] },
-    enterprise: { label: "Multi-location", range: "$10M+", title: "Make every location visible without losing control.", story: "Centralize proof generation, publishing, integrations, and reporting while each location stays connected.", points: [["Best for", "Control with local visibility"], ["You’ll use", "Org access, custom integration, reporting"], ["Common win", "Every market stays active without a content team"]] },
+    owner: { label: "Owner-operator", range: "$0–$2M", title: "Get the job off the camera roll and onto Maps and local search.", story: "Capture proof from the field, publish geotagged website content, show up on Google, and build the credibility AI search and neighbors trust — without another marketing chore.", points: [["Best for", "Local Maps visibility and owned proof"], ["You’ll use", "Mobile check-in + local-SEO website publish"], ["Common win", "Photos finally turn into inbound leads"]] },
+    growth: { label: "Growth-stage", range: "$2M–$10M", title: "Standardize local SEO, Maps posts, and reviews before growth leaks proof.", story: "Connect every completed job to Maps, geotagged website content, social, directory, and an on-site review ask — so local search keeps compounding as you scale.", points: [["Best for", "Consistent local SEO across every job"], ["You’ll use", "CRM integrations, geotagged site proof, GBP, QR reviews"], ["Common win", "Marketing stops depending on spare time"]] },
+    enterprise: { label: "Multi-location", range: "$10M+", title: "Make every market visible on Maps without losing control.", story: "Centralize proof generation, local SEO publishing, integrations, and reporting while each location keeps showing real work in its own market.", points: [["Best for", "Multi-market Maps + local SEO control"], ["You’ll use", "Org access, custom integration, reporting"], ["Common win", "Every market stays active without a content team"]] },
   };
 
   function renderFit() {
@@ -500,10 +500,10 @@
   }
 
   const objections = [
-    { title: "We already have a CRM", answer: "Keep it. JobCapturePro doesn’t replace scheduling — it turns completed-job activity into proof most CRMs never publish. We integrate with Housecall Pro, Jobber, ServiceTitan, CompanyCam, and more." },
+    { title: "We already have a CRM", answer: "Keep it. JobCapturePro doesn’t replace scheduling — it turns completed-job activity into local Maps posts, geotagged website content, and reviews most CRMs never publish. We integrate with Housecall Pro, Jobber, ServiceTitan, CompanyCam, and more." },
     { title: "Will my techs actually use it?", answer: "It’s built around a simple photo check-in. The review is a QR they show before leaving — seconds on site, not another office task next week." },
-    { title: "We already post on social", answer: "Helpful — social is one of four publish channels. The bigger opportunity is website proof, Google updates, directory presence, and an on-site review ask from the same job." },
-    { title: "Does this guarantee rankings?", answer: "No honest platform can. What you get is a steady supply of real, location-based job proof published well. Results still depend on your market, site, and execution." },
+    { title: "We already post on social", answer: "Helpful — social is one of four publish channels. The bigger opportunity is local SEO on your website (geotagged job images), Google Maps updates, directory presence, and an on-site review ask from the same job." },
+    { title: "Does this guarantee rankings?", answer: "No honest platform can. What you get is a steady supply of what today’s search — including AI answers — actually rewards: real jobs, geotagged proof, reviews, and local credibility. Results still depend on your market, site, and execution." },
     { title: "Is this worth the cost?", answer: "Compare it to the manual work it replaces and the unused proof inventory we just looked at. You can start with a free 14-day trial — no credit card — and pricing stays current on our pricing page." },
     { title: "We don’t have time for another tool", answer: "That’s exactly why it ties to job completion. Capture happens with the work; the QR review takes seconds before you leave." },
   ];
