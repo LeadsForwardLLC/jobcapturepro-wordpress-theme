@@ -116,9 +116,15 @@ function jcp_sales_tool_build_config( int $post_id = 0 ): array {
 
 	$asset_base = trailingslashit( get_template_directory_uri() ) . 'assets/jcp-sales-tool';
 
+	$script_admin_url = '';
+	if ( current_user_can( 'edit_pages' ) ) {
+		$script_admin_url = admin_url( 'edit.php?post_type=jcp_sales_deck&page=jcp-sales-call-script' );
+	}
+
 	return [
 		'assetBase'   => $asset_base,
 		'pricingUrl'  => $pricing_url,
+		'scriptAdminUrl' => $script_admin_url,
 		'extraLocationFee' => function_exists( 'jcp_pricing_extra_location_fee' ) ? jcp_pricing_extra_location_fee() : 100,
 		'plans'       => $plans,
 		'trial'       => $trial,

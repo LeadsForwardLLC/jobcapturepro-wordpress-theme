@@ -13,6 +13,9 @@ require_once __DIR__ . '/cpt.php';
 require_once __DIR__ . '/meta.php';
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/enqueue.php';
+if ( is_admin() ) {
+	require_once __DIR__ . '/admin-script.php';
+}
 
 /**
  * Flush rewrites once after sales deck CPT is introduced.

@@ -39,6 +39,9 @@ if ( ! empty( $config['presenter']['logoUrl'] ) ) {
           <button data-mode="partner" type="button"><?php esc_html_e( 'Partner', 'jcp-core' ); ?></button>
         </div>
         <button class="quiet-btn" id="customizeBtn" type="button"><?php esc_html_e( 'Customize', 'jcp-core' ); ?></button>
+        <?php if ( ! empty( $config['scriptAdminUrl'] ) ) : ?>
+        <a class="quiet-btn" id="scriptBtn" href="<?php echo esc_url( (string) $config['scriptAdminUrl'] ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Call script', 'jcp-core' ); ?></a>
+        <?php endif; ?>
         <button class="quiet-btn" id="resetBtn" type="button"><?php esc_html_e( 'Reset', 'jcp-core' ); ?></button>
         <button class="outline-btn" id="presentBtn" type="button"><?php esc_html_e( 'Present', 'jcp-core' ); ?></button>
       </div>
@@ -52,7 +55,7 @@ if ( ! empty( $config['presenter']['logoUrl'] ) ) {
         <span id="progressLabel">01 / 10</span>
         <div class="progress-track"><i id="progressBar"></i></div>
       </div>
-      <button class="next-btn" id="nextBtn" type="button"><span><?php esc_html_e( 'Start the call', 'jcp-core' ); ?></span> →</button>
+      <button class="next-btn" id="nextBtn" type="button"><span><?php esc_html_e( 'Continue', 'jcp-core' ); ?></span> →</button>
     </footer>
   </main>
 </div>

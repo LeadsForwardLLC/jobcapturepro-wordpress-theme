@@ -16,8 +16,8 @@
     { id: "proof", label: "Proof" },
     { id: "fit", label: "Right fit" },
     { id: "plan", label: "Plan" },
-    { id: "objections", label: "Objections" },
-    { id: "close", label: "Close" },
+    { id: "objections", label: "Questions" },
+    { id: "close", label: "Next steps" },
   ];
 
   const prospectSeed = cfg.prospect || {};
@@ -51,10 +51,15 @@
     salesNotes: "",
     nextStep: "Start a free 14-day trial and connect one real job workflow.",
     followUpDate: "",
-    presenting: false,
+    presenting: true,
   };
 
   let state = loadState();
+  if (new URLSearchParams(window.location.search).get("present") === "0") {
+    state.presenting = false;
+  } else if (new URLSearchParams(window.location.search).get("present") === "1") {
+    state.presenting = true;
+  }
   let saveTimer;
   let selectedEngine = 0;
   let selectedObjection = 0;
@@ -120,7 +125,7 @@
 
   function chapterHeader(number, eyebrow, title, intro) {
     return `<div class="chapter-head">
-    <span class="eyebrow">Chapter ${String(number).padStart(2, "0")} · ${eyebrow}</span>
+    <span class="eyebrow">${eyebrow}</span>
     <h2>${title}</h2>
     <p>${intro}</p>
   </div>`;
@@ -183,11 +188,11 @@
     return `<section class="chapter cover">
     <img class="cover-image" src="${img("jcp-product-visual.png")}" alt="JobCapturePro completed-job publishing workflow" />
     <div class="cover-copy">
-      <span class="eyebrow">${partner ? "Partner presentation" : "Live sales presentation"}</span>
+      <span class="eyebrow">${partner ? "Partner walkthrough" : "Product walkthrough"}</span>
       <h1>${title}</h1>
       <p>${esc(company)} already takes job photos. JobCapturePro turns them into Google updates, website content, social posts, and directory listings — then your crew asks for a review on site with a QR code.</p>
-      <p class="cover-integrations">Already on ${esc(integrationLine())}? We integrate with the tools crews already use.</p>
-      <button class="start-btn" type="button" data-go="1">See the proof engine →</button>
+      <p class="cover-integrations">Already on ${esc(integrationLine())}? We integrate with the tools your crews already use.</p>
+      <button class="start-btn" type="button" data-go="1">See how it works →</button>
     </div>
     <div class="cover-callout">${state.repName ? `Presented by ${esc(state.repName)} · ` : ""}${esc(state.prospectName || (partner ? "Partner overview" : "Prospect presentation"))}</div>
   </section>`;
@@ -216,8 +221,8 @@
     const channels = ["Website", "Google Business Profile", "Facebook / Instagram", "Directory", "Review requests"];
     const priorities = ["Local visibility", "More reviews", "Faster follow-up", "Consistent content", "Multi-location control"];
     return `<section class="chapter content-pad">
-    ${chapterHeader(3, "Diagnose", "Start with the work they already do.", "Mirror the Demo Assessment: where photos go, how proof gets published, and how reviews are asked for today.")}
-    <div class="prompt-banner"><strong>Ask this first</strong><p>“Walk me through what happens to the photos after a job is finished — and how you ask for the review before you leave.”</p></div>
+    ${chapterHeader(3, "Your workflow", "Start with the work you already do.", "A few quick inputs so we can show what this looks like for your volume — not a generic demo.")}
+    <div class="prompt-banner"><strong>Together on this call</strong><p>Walk through what happens to photos after a job finishes — and how you ask for the review before you leave.</p></div>
     <div class="form-grid">
       <div class="field"><label for="jobsPerWeek">Completed jobs per week</label><input id="jobsPerWeek" type="number" min="1" max="10000" value="${state.jobsPerWeek}"></div>
       <div class="field"><label for="locations">Locations</label><input id="locations" type="number" min="1" max="500" value="${state.locations}"></div>
@@ -241,7 +246,7 @@
   function renderGap() {
     const gap = calcGap();
     return `<section class="chapter content-pad">
-    ${chapterHeader(4, "Proof gap", "Make the invisible work visible.", "Completed jobs that could reinforce local trust — but currently leave no consistent public trail.")}
+    ${chapterHeader(4, "Proof gap", "Make the invisible work visible.", "These are completed jobs that could reinforce local trust — but may not leave a consistent public trail today.")}
     <div class="gap-layout">
       <div>
         <div class="big-number"><span>${gap.unused}</span></div>
@@ -334,22 +339,22 @@
       : "";
 
     return `<section class="chapter content-pad">
-    ${chapterHeader(6, "Customer proof", "Operators and agencies are already winning with it.", "Short, high-trust snippets first. Acculevel Maps proof optional when the call needs local SEO evidence.")}
+    ${chapterHeader(6, "Customer proof", "Real teams. Real results.", "Short snippets from operators and agencies. Acculevel Maps proof is available when local SEO is part of the conversation.")}
     <div class="reviews-grid">${reviewCards}</div>
     ${acculevel}
   </section>`;
   }
 
   const segments = {
-    owner: { label: "Owner-operator", range: "$0–$2M", title: "Get the job off the camera roll and in front of the next customer.", story: "Capture proof from the field, publish it, and build a visible record of real work without another marketing chore.", points: [["Lead with", "Simplicity, local visibility, and owned proof"], ["Show", "Mobile check-in and website proof"], ["Listen for", "Feast-or-famine demand and unused photos"]] },
-    growth: { label: "Growth-stage", range: "$2M–$10M", title: "Standardize proof and reviews before growth makes the leaks bigger.", story: "Connect completed jobs to four publish channels plus an on-site review ask — with less dependence on someone remembering each task.", points: [["Lead with", "Consistency and conversion support"], ["Show", "CRM integrations, QR reviews, GBP, social, directory"], ["Listen for", "Slow follow-up and inconsistent execution"]] },
-    enterprise: { label: "Multi-location", range: "$10M+", title: "Make every location visible without losing control.", story: "Centralize proof generation, publishing, integrations, and reporting while each location stays connected.", points: [["Lead with", "Control and location-level visibility"], ["Show", "Org access, custom integration, reporting"], ["Listen for", "Fragmented execution across markets"]] },
+    owner: { label: "Owner-operator", range: "$0–$2M", title: "Get the job off the camera roll and in front of the next customer.", story: "Capture proof from the field, publish it, and build a visible record of real work without another marketing chore.", points: [["Best for", "Simple local visibility and owned proof"], ["You’ll use", "Mobile check-in and website proof"], ["Common win", "Photos finally turn into inbound trust"]] },
+    growth: { label: "Growth-stage", range: "$2M–$10M", title: "Standardize proof and reviews before growth makes the leaks bigger.", story: "Connect completed jobs to four publish channels plus an on-site review ask — with less dependence on someone remembering each task.", points: [["Best for", "Consistency across every completed job"], ["You’ll use", "CRM integrations, QR reviews, GBP, social, directory"], ["Common win", "Marketing stops depending on spare time"]] },
+    enterprise: { label: "Multi-location", range: "$10M+", title: "Make every location visible without losing control.", story: "Centralize proof generation, publishing, integrations, and reporting while each location stays connected.", points: [["Best for", "Control with local visibility"], ["You’ll use", "Org access, custom integration, reporting"], ["Common win", "Every market stays active without a content team"]] },
   };
 
   function renderFit() {
     const fit = segments[state.segment];
     return `<section class="chapter content-pad">
-    ${chapterHeader(7, "Right fit", "Tell the story at their altitude.", "Choose the operating stage that sounds most like the prospect.")}
+    ${chapterHeader(7, "Right fit", "Match the story to how you operate.", "Pick the stage that sounds most like your business. The workflow stays the same — the emphasis changes.")}
     <div class="fit-layout">
       <div class="segment-tabs">${Object.entries(segments)
         .map(([key, item]) => `<button type="button" data-segment="${key}" class="segment-tab ${state.segment === key ? "active" : ""}"><strong>${item.label}</strong><span>${item.range}</span></button>`)
@@ -376,7 +381,7 @@
         <a class="plan-cta" href="${esc(cta.primaryUrl || pricingLink)}" target="_blank" rel="noopener">${esc(cta.primaryLabel || "Start free 14-day trial")} →</a>
       </aside>`;
     return `<section class="chapter content-pad">
-    ${chapterHeader(8, state.mode === "partner" ? "Partner rollout" : "Plan", state.mode === "partner" ? "Start focused. Prove the workflow. Expand." : "Match the plan to the workflow.", "Qualify for the operating need first. Price lands better after they see what they will actually use.")}
+    ${chapterHeader(8, state.mode === "partner" ? "Partner rollout" : "Recommended plan", state.mode === "partner" ? "Start focused. Prove the workflow. Expand." : "Match the plan to your workflow.", state.mode === "partner" ? "A controlled rollout connects product, client workflow, and reporting before you expand." : "We’ll recommend a plan based on locations and how automated you want this. Prices stay current on our pricing page.")}
     <div class="plan-layout">
       <div class="plan-controls">
         <div class="field"><span class="field-label">Company stage</span><div class="choice-row">${Object.entries(segments)
@@ -392,21 +397,21 @@
   }
 
   const objections = [
-    { title: "We already have a CRM", answer: "Good. JCP is not asking you to replace the system that schedules jobs. It uses completed-job activity to create the proof and visibility most CRMs leave behind — and we integrate with tools like Housecall Pro, Jobber, ServiceTitan, and CompanyCam.", proof: "Confirm their CRM and show the capture path." },
-    { title: "My techs won’t use it", answer: "The app is built around a simple photo check-in. Reviews are an on-site QR handoff that takes seconds before they leave — not another office task later.", proof: "Confirm photo habits and who owns the ask today." },
-    { title: "We already post on social", answer: "Useful — but social is only one of four publish channels. The bigger opportunity is turning each real job into website proof, Google Business Profile activity, directory presence, social, and an on-site review ask.", proof: "Ask how often the same job reaches all four channels plus a review ask." },
-    { title: "Will this guarantee rankings?", answer: "No responsible platform can guarantee rankings. JCP gives you a consistent supply of real, location-based job proof and the technical layer to publish it well.", proof: "Keep this measured; use GeoGrid reporting over time." },
-    { title: "It feels expensive", answer: "Compare it to the manual workflow it replaces and the proof inventory currently going unused.", proof: "Use their proof-gap estimate. Do not invent a lead ROI." },
-    { title: "We don’t have time", answer: "That is the problem. Marketing from completed work fails when it depends on spare time. JCP connects the work to job completion — including a quick QR review ask on site.", proof: "Clarify who captures photos and what can be automated." },
+    { title: "We already have a CRM", answer: "Keep it. JobCapturePro doesn’t replace scheduling — it turns completed-job activity into proof most CRMs never publish. We integrate with Housecall Pro, Jobber, ServiceTitan, CompanyCam, and more." },
+    { title: "Will my techs actually use it?", answer: "It’s built around a simple photo check-in. The review is a QR they show before leaving — seconds on site, not another office task next week." },
+    { title: "We already post on social", answer: "Helpful — social is one of four publish channels. The bigger opportunity is website proof, Google updates, directory presence, and an on-site review ask from the same job." },
+    { title: "Does this guarantee rankings?", answer: "No honest platform can. What you get is a steady supply of real, location-based job proof published well. Results still depend on your market, site, and execution." },
+    { title: "Is this worth the cost?", answer: "Compare it to the manual work it replaces and the unused proof inventory we just looked at. You can start with a free 14-day trial — no credit card — and pricing stays current on our pricing page." },
+    { title: "We don’t have time for another tool", answer: "That’s exactly why it ties to job completion. Capture happens with the work; the QR review takes seconds before you leave." },
   ];
 
   function renderObjections() {
     const item = objections[selectedObjection];
     return `<section class="chapter content-pad">
-    ${chapterHeader(9, "Objections", "Stay grounded. Show the mechanism.", "The strongest response is specific to their workflow and honest about what the product can and cannot guarantee.")}
+    ${chapterHeader(9, "Common questions", "Straight answers.", "These are the questions we hear most from contractors and partners.")}
     <div class="objection-layout">
       <div class="objection-list">${objections.map((x, i) => `<button type="button" data-objection="${i}" class="objection-btn ${selectedObjection === i ? "active" : ""}">${x.title}</button>`).join("")}</div>
-      <div class="objection-response"><span class="eyebrow">Say this</span><h3>${item.title}</h3><p class="say-this">“${item.answer}”</p><p class="proof-check rep-only"><strong>Proof check:</strong> ${item.proof}</p></div>
+      <div class="objection-response"><span class="eyebrow">Answer</span><h3>${item.title}</h3><p class="say-this">${item.answer}</p></div>
     </div>
   </section>`;
   }
@@ -437,7 +442,7 @@
   }
 
   function renderClose() {
-    const company = state.prospectName || "this prospect";
+    const company = state.prospectName || "your business";
     const gap = calcGap();
     const plan = recommendPlan();
     const today = new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date());
@@ -445,7 +450,7 @@
     const pathDetail = state.mode === "partner" ? "Start with a focused client cohort, prove the workflow, then expand." : plan.reason;
     const logoSrc = (cfg.presenter && cfg.presenter.logoUrl) || img("jcp-logo-dark.png");
     return `<section class="chapter content-pad">
-    ${chapterHeader(10, "Close", "Make the next step concrete.", "Confirm the problem, the right rollout, and one action that moves the deal forward.")}
+    ${chapterHeader(10, "Next steps", "A clear path forward.", "Here’s a one-page summary of what we covered — plus a free trial when you’re ready.")}
     <div class="close-layout">
       <div class="close-notes rep-only">
         <div class="field"><label for="nextStep">Agreed next step</label><textarea id="nextStep">${esc(state.nextStep)}</textarea></div>
@@ -454,19 +459,28 @@
       </div>
       <article class="recap" id="recap">
         <div class="recap-top"><div class="brand"><img src="${logoSrc}" alt="JobCapturePro" /></div><span class="recap-date">${today}</span></div>
-        <h3>${esc(state.prospectName || "Prospect")} · call recap</h3>
-        <h4>What we heard</h4><p>${esc(company)} completes about <strong>${gap.monthly} jobs per month</strong>. Roughly <strong>${gap.unused}</strong> may not be consistently published as public proof. Priorities: ${esc(state.priorities.join(", ") || "visibility and proof consistency")}.</p>
+        <h3>${esc(state.prospectName || "Your business")} · summary</h3>
+        <h4>What we covered</h4><p>${esc(company)} completes about <strong>${gap.monthly} jobs per month</strong>. Roughly <strong>${gap.unused}</strong> may not be consistently published as public proof today. Focus areas: ${esc(state.priorities.join(", ") || "visibility and proof consistency")}.</p>
         <h4>Recommended path</h4><p><strong>${path}${state.mode === "contractor" && state.showPricing ? ` · ${plan.price}/month` : ""}.</strong> ${pathDetail}</p>
-        <h4>Next step</h4><p id="recapNextStep">${esc(state.nextStep || defaults.nextStep)}${state.followUpDate ? ` Target: ${esc(state.followUpDate)}.` : ""}</p>
+        <h4>Suggested next step</h4><p id="recapNextStep">${esc(state.nextStep || defaults.nextStep)}${state.followUpDate ? ` Target: ${esc(state.followUpDate)}.` : ""}</p>
         <div id="recapNotesWrap" class="rep-only" ${state.salesNotes ? "" : "hidden"}><h4>Notes</h4><p id="recapNotes">${esc(state.salesNotes)}</p></div>
         <div class="recap-ctas">
           <a class="plan-cta" href="${esc(cta.primaryUrl || "#")}" target="_blank" rel="noopener">${esc(cta.primaryLabel || "Start free 14-day trial")}</a>
           <a class="plan-cta plan-cta--secondary" href="${esc(cta.secondaryUrl || cfg.pricingUrl || "/pricing/")}" target="_blank" rel="noopener">${esc(cta.secondaryLabel || "See live pricing")}</a>
+          <button class="plan-cta plan-cta--secondary" type="button" id="downloadPdfBtn">Download PDF summary</button>
         </div>
-        <div class="recap-actions rep-only"><button class="copy-btn" id="copyRecap" type="button">Copy recap</button><button class="print-btn" id="printRecap" type="button">Print / PDF</button></div>
+        <div class="recap-actions rep-only"><button class="copy-btn" id="copyRecap" type="button">Copy summary</button></div>
       </article>
     </div>
   </section>`;
+  }
+
+  function downloadProspectPdf() {
+    const recap = $("#recap");
+    if (!recap) return;
+    document.body.classList.add("print-leavebehind");
+    window.print();
+    setTimeout(() => document.body.classList.remove("print-leavebehind"), 500);
   }
 
   function render() {
@@ -486,7 +500,7 @@
     const next = $("#nextBtn");
     next.disabled = state.chapter === list.length - 1;
     next.style.opacity = next.disabled ? ".35" : "1";
-    next.querySelector("span").textContent = state.chapter === 0 ? "Start the call" : state.chapter === list.length - 2 ? "Build recap" : "Next chapter";
+    next.querySelector("span").textContent = state.chapter === 0 ? "Continue" : state.chapter === list.length - 2 ? "See next steps" : "Next";
     document.body.classList.toggle("is-presenting", !!state.presenting);
     const presentBtn = $("#presentBtn");
     if (presentBtn) presentBtn.textContent = state.presenting ? "Exit present" : "Present";
@@ -553,7 +567,9 @@
       const copyBtn = $("#copyRecap");
       if (copyBtn) copyBtn.addEventListener("click", async () => { await copyText(recapText()); showToast("Recap copied"); });
       const printBtn = $("#printRecap");
-      if (printBtn) printBtn.addEventListener("click", () => window.print());
+      if (printBtn) printBtn.addEventListener("click", downloadProspectPdf);
+      const pdfBtn = $("#downloadPdfBtn");
+      if (pdfBtn) pdfBtn.addEventListener("click", downloadProspectPdf);
     }
   }
 
@@ -578,12 +594,14 @@
     $("#settingLeadLift").value = state.acculevelLeadLift;
     $("#settingPricing").checked = state.showPricing;
     $("#settingAcculevel").checked = state.showAcculevel;
+    $("#customizer").classList.add("open");
     $("#customizer").setAttribute("aria-hidden", "false");
     $("#drawerBackdrop").hidden = false;
     document.body.classList.add("customizer-open");
   }
 
   function closeCustomizer() {
+    $("#customizer").classList.remove("open");
     $("#customizer").setAttribute("aria-hidden", "true");
     $("#drawerBackdrop").hidden = true;
     document.body.classList.remove("customizer-open");
