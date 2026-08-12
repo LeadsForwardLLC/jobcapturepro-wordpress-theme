@@ -1,7 +1,7 @@
 (() => {
   const cfg = window.JCP_SALES_TOOL || {};
   const assetBase = (cfg.assetBase || "").replace(/\/$/, "");
-  const assetVer = "20260812c";
+  const assetVer = "20260812d";
   const img = (name) => `${assetBase}/assets/${name}?v=${assetVer}`;
   const plans = cfg.plans || {};
   const reviews = Array.isArray(cfg.reviews) ? cfg.reviews : [];
@@ -587,8 +587,15 @@
       <article class="recap" id="recap">
         <div class="recap-top"><div class="brand"><img src="${logo}" alt="JobCapturePro" /></div><span class="recap-date">${today}</span></div>
         <h3>${esc(state.prospectName || (isAffiliate() ? "Affiliate" : isPartner() ? "Partner" : "Your business"))} · summary</h3>
-        <h4>What we covered</h4><p>${isChannelPartner() ? `JobCapturePro turns completed ${esc(state.trade.toLowerCase())} jobs into website, Google, social, and directory proof — plus an on-site QR review ask.` : `${esc(company)} completes about <strong>${gap.monthly} jobs per month</strong>. Roughly <strong>${gap.unused}</strong> may not be consistently published as public proof today.`} Focus areas: ${esc(state.priorities.join(", ") || "visibility and proof consistency")}.</p>
+        <p class="recap-lede">Real jobs become local Maps visibility, geotagged website proof, reviews, and social — credibility Google, neighbors, and AI search all reward.</p>
+        ${isChannelPartner() ? "" : `<div class="recap-metrics">
+          <div class="recap-metric"><span>Jobs / month</span><strong>${gap.monthly}</strong></div>
+          <div class="recap-metric"><span>Underused proof</span><strong>${gap.unused}</strong></div>
+          <div class="recap-metric recap-metric--accent"><span>Recommended</span><strong>${esc(path)}</strong></div>
+        </div>`}
+        <h4>What we covered</h4><p>${isChannelPartner() ? `JobCapturePro turns completed ${esc(state.trade.toLowerCase())} jobs into local Maps visibility, geotagged website content, social, and directory proof — plus an on-site QR review ask.` : `${esc(company)} completes about <strong>${gap.monthly} jobs per month</strong>. Roughly <strong>${gap.unused}</strong> may not be consistently published as public proof today — proof that could strengthen local Maps presence, website SEO, and reviews.`} Focus areas: ${esc(state.priorities.join(", ") || "visibility and proof consistency")}.</p>
         <h4>Recommended path</h4><p><strong>${path}${!isChannelPartner() && state.showPricing ? ` · ${plan.price}/month` : ""}.</strong> ${pathDetail}</p>
+        <div class="recap-why"><strong>Why this matters now:</strong> Local Maps drives calls. Website content is geotagged to the job and optimized for local search. AI-era search values real work, real reviews, and real credibility.</div>
         <h4>Suggested next step</h4><p id="recapNextStep">${esc(state.nextStep || defaults.nextStep)}${state.followUpDate ? ` Target: ${esc(state.followUpDate)}.` : ""}</p>
         <div id="recapNotesWrap" class="rep-only" ${state.salesNotes ? "" : "hidden"}><h4>Notes</h4><p id="recapNotes">${esc(state.salesNotes)}</p></div>
         <div class="recap-ctas">
@@ -596,18 +603,284 @@
           <a class="plan-cta plan-cta--secondary" href="${esc(secondaryHref)}" target="_blank" rel="noopener">${esc(secondaryLabel)}</a>
           <button class="plan-cta plan-cta--secondary" type="button" id="downloadPdfBtn">Download PDF summary</button>
         </div>
-        <div class="recap-actions rep-only"><button class="copy-btn" id="copyRecap" type="button">Copy summary</button></div>
+        <div class="recap-actions"><button class="copy-btn" id="copyRecap" type="button">Copy summary</button></div>
       </article>
     </div>
   </section>`;
   }
 
+  function leavebehindPayload() {
+    const gap = calcGap();
+    const plan = recommendPlan();
+    const today = new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date());
+    const company = state.prospectName || (isAffiliate() ? "Affiliate partner" : isPartner() ? "Strategic partner" : "Your business");
+    const logo = (cfg.presenter && cfg.presenter.logoUrl) || img("jcp-logo-dark.png");
+    const trialUrl = cta.primaryUrl || cfg.pricingUrl || "https://jobcapturepro.com/pricing/";
+    const pricingUrl = cfg.pricingUrl || "https://jobcapturepro.com/pricing/";
+    let path = plan.name;
+    let pathDetail = plan.reason;
+    let priceLine = state.showPricing ? `${plan.price}/month` : "";
+    let primaryLabel = cta.primaryLabel || "Start free 14-day trial";
+    if (isAffiliate()) {
+      path = "Affiliate referral program";
+      pathDetail = "Earn 20% recurring commission for 12 months on paid referrals.";
+      priceLine = "20% × 12 months";
+      primaryLabel = "Join the referral program";
+    } else if (isPartner()) {
+      path = "Strategic partner path";
+      pathDetail = "15% recurring for as long as referred customers stay active.";
+      priceLine = "15% residual";
+      primaryLabel = "Apply as a partner";
+    }
+    const includes = !isChannelPartner() && Array.isArray(plan.includes) ? plan.includes.slice(0, 5) : [
+      "Geotagged images at the real job location",
+      "Website content optimized for local search",
+      "Google Maps / Business Profile publishing",
+      "On-site QR review requests",
+      "Social + directory distribution",
+    ];
+    return { gap, plan, today, company, logo, trialUrl, pricingUrl, path, pathDetail, priceLine, primaryLabel, includes };
+  }
+
+  function buildLeavebehindHtml() {
+    const d = leavebehindPayload();
+    const titleName = (state.prospectName || "JobCapturePro").replace(/[^\w\s-]/g, "").trim() || "JobCapturePro";
+    const covered = isChannelPartner()
+      ? `JobCapturePro turns completed ${esc(state.trade.toLowerCase())} jobs into local Maps visibility, geotagged website content, social, and directory proof — plus an on-site QR review ask.`
+      : `${esc(d.company)} completes about <strong>${d.gap.monthly} jobs per month</strong>. Roughly <strong>${d.gap.unused}</strong> may not be consistently published as public proof today.`;
+    const priorities = esc(state.priorities.join(", ") || "Local visibility, reviews, and consistent proof");
+    const next = esc(state.nextStep || defaults.nextStep) + (state.followUpDate ? ` Target: ${esc(state.followUpDate)}.` : "");
+    const notes = state.salesNotes ? `<section class="lb-block"><h2>Notes</h2><p>${esc(state.salesNotes)}</p></section>` : "";
+    const includes = d.includes.map((x) => `<li>${esc(x)}</li>`).join("");
+    const presented = state.repName ? `Presented by ${esc(state.repName)}` : "Prepared with JobCapturePro";
+    const modeLabel = isAffiliate() ? "Affiliate" : isPartner() ? "Partner" : "Contractor";
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>JobCapturePro — ${esc(titleName)} summary</title>
+<style>
+  @page { size: letter; margin: 0.42in; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "DM Sans", "Segoe UI", Helvetica, Arial, sans-serif;
+    color: #111827;
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .sheet { max-width: 8.5in; margin: 0 auto; }
+  .accent { height: 8px; background: linear-gradient(90deg, #ff5036 0%, #ff7a66 55%, #111827 100%); }
+  .top {
+    display: flex; align-items: center; justify-content: space-between; gap: 20px;
+    padding: 22px 0 16px; border-bottom: 2px solid #111827;
+  }
+  .top img { display: block; height: 28px; width: auto; }
+  .top-meta { text-align: right; font-size: 11px; color: #6b7280; line-height: 1.45; }
+  .top-meta strong { display: block; color: #111827; font-size: 12px; }
+  .hero { padding: 22px 0 8px; }
+  .eyebrow {
+    display: inline-block; margin: 0 0 10px; padding: 4px 9px;
+    border-radius: 999px; background: #fff2ef; color: #c2410c;
+    font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  }
+  h1 {
+    margin: 0 0 10px; font-family: Manrope, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 32px; line-height: 1.12; letter-spacing: -0.03em;
+  }
+  .lede { margin: 0; max-width: 6.6in; color: #4b5563; font-size: 14px; line-height: 1.55; }
+  .metrics {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
+    margin: 22px 0 8px;
+  }
+  .metric {
+    padding: 14px 14px 12px; border: 1px solid #e5e7eb; border-radius: 12px;
+    background: #f9fafb;
+  }
+  .metric span {
+    display: block; margin-bottom: 6px; color: #6b7280;
+    font-size: 10px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  }
+  .metric strong {
+    display: block; font-family: Manrope, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 26px; line-height: 1.1; letter-spacing: -0.03em; color: #111827;
+  }
+  .metric em { display: block; margin-top: 4px; font-style: normal; color: #6b7280; font-size: 11px; }
+  .metric.accent-card { background: #111827; border-color: #111827; color: #fff; }
+  .metric.accent-card span { color: #ffb4a8; }
+  .metric.accent-card strong, .metric.accent-card em { color: #fff; }
+  .grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 18px; margin-top: 18px; }
+  .lb-block h2 {
+    margin: 0 0 8px; color: #2563eb; font-size: 11px; font-weight: 800;
+    letter-spacing: .08em; text-transform: uppercase;
+  }
+  .lb-block p { margin: 0; color: #374151; font-size: 13px; line-height: 1.55; }
+  .lb-block p strong { color: #111827; }
+  .plan-card {
+    padding: 16px; border-radius: 14px; background: #111827; color: #f5f6f1;
+  }
+  .plan-card .kicker { color: #ff7a66; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .plan-card h3 {
+    margin: 8px 0 4px; font-family: Manrope, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 28px; color: #fff; letter-spacing: -0.03em;
+  }
+  .plan-card .price { margin: 0 0 10px; color: #e5e7eb; font-size: 14px; font-weight: 700; }
+  .plan-card p { margin: 0; color: #d1d5db; font-size: 12px; line-height: 1.5; }
+  .plan-card ul { margin: 12px 0 0; padding: 0; list-style: none; }
+  .plan-card li {
+    position: relative; margin: 0 0 7px; padding-left: 16px;
+    color: #f3f4f6; font-size: 12px; line-height: 1.4;
+  }
+  .plan-card li::before { content: "+"; position: absolute; left: 0; color: #ff5036; font-weight: 800; }
+  .why {
+    margin-top: 16px; padding: 14px 16px; border-left: 4px solid #ff5036;
+    background: #fff7f5; border-radius: 0 12px 12px 0;
+  }
+  .why h2 { margin: 0 0 6px; color: #c2410c; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .why p { margin: 0; color: #374151; font-size: 12.5px; line-height: 1.5; }
+  .next {
+    margin-top: 16px; padding: 14px 16px; border: 1px solid #e5e7eb; border-radius: 12px;
+  }
+  .cta-bar {
+    margin-top: 18px; padding: 14px 16px; display: flex; justify-content: space-between; gap: 16px; align-items: center;
+    border-radius: 12px; background: #ff5036; color: #fff;
+  }
+  .cta-bar strong { display: block; font-size: 14px; }
+  .cta-bar span { display: block; margin-top: 3px; font-size: 11px; opacity: .92; word-break: break-all; }
+  .cta-bar .pill {
+    flex: 0 0 auto; padding: 8px 12px; border-radius: 999px; background: #fff; color: #111827;
+    font-size: 11px; font-weight: 800; white-space: nowrap;
+  }
+  .foot {
+    margin-top: 14px; display: flex; justify-content: space-between; gap: 12px;
+    color: #9ca3af; font-size: 10px;
+  }
+  @media print {
+    body { background: #fff; }
+    .sheet { max-width: none; }
+  }
+</style>
+</head>
+<body>
+  <article class="sheet">
+    <div class="accent"></div>
+    <header class="top">
+      <img src="${esc(d.logo)}" alt="JobCapturePro" />
+      <div class="top-meta"><strong>${modeLabel} summary</strong>${esc(d.today)}</div>
+    </header>
+    <div class="hero">
+      <span class="eyebrow">Leave-behind · one page</span>
+      <h1>${esc(d.company)}</h1>
+      <p class="lede">Real jobs become local Maps visibility, geotagged website proof, reviews, and social — the credibility Google, neighbors, and AI search answers all reward.</p>
+    </div>
+    <div class="metrics">
+      <div class="metric"><span>Jobs / month</span><strong>${isChannelPartner() ? "—" : d.gap.monthly}</strong><em>${isChannelPartner() ? "Partner / affiliate overview" : "Completed volume discussed"}</em></div>
+      <div class="metric"><span>Underused proof</span><strong>${isChannelPartner() ? "—" : d.gap.unused}</strong><em>${isChannelPartner() ? "Proof inventory opportunity" : "Not consistently published"}</em></div>
+      <div class="metric accent-card"><span>Recommended</span><strong>${esc(d.path)}</strong><em>${esc(d.priceLine || "Custom fit")}</em></div>
+    </div>
+    <div class="grid">
+      <div>
+        <section class="lb-block">
+          <h2>What we covered</h2>
+          <p>${covered} Focus areas: <strong>${priorities}</strong>.</p>
+        </section>
+        <section class="why">
+          <h2>Why this matters now</h2>
+          <p>Local Maps coverage drives calls. Website content from JobCapturePro is optimized for local search — images geotagged to the actual job, SEO built in. AI-era search values exactly what you already create: real work, real proof, real reviews, real credibility.</p>
+        </section>
+        <section class="next lb-block" style="margin-top:16px">
+          <h2>Suggested next step</h2>
+          <p>${next}</p>
+        </section>
+        ${notes}
+      </div>
+      <aside class="plan-card">
+        <div class="kicker">Recommended path</div>
+        <h3>${esc(d.path)}</h3>
+        <div class="price">${esc(d.priceLine || "Talk through fit")}</div>
+        <p>${esc(d.pathDetail)}</p>
+        <ul>${includes}</ul>
+      </aside>
+    </div>
+    <div class="cta-bar">
+      <div><strong>${esc(d.primaryLabel)}</strong><span>${esc(d.trialUrl)}</span></div>
+      <div class="pill">No credit card · 14 days</div>
+    </div>
+    <footer class="foot">
+      <span>${presented}</span>
+      <span>Pricing: ${esc(d.pricingUrl)}</span>
+    </footer>
+  </article>
+</body>
+</html>`;
+  }
+
   function downloadProspectPdf() {
-    const recap = $("#recap");
-    if (!recap) return;
-    document.body.classList.add("print-leavebehind");
-    window.print();
-    setTimeout(() => document.body.classList.remove("print-leavebehind"), 500);
+    const html = buildLeavebehindHtml();
+    const titleName = (state.prospectName || "summary").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-") || "summary";
+    let frame = document.getElementById("leavebehindPrintFrame");
+    if (!frame) {
+      frame = document.createElement("iframe");
+      frame.id = "leavebehindPrintFrame";
+      frame.title = "PDF leave-behind";
+      frame.setAttribute("aria-hidden", "true");
+      frame.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none;";
+      document.body.appendChild(frame);
+    }
+
+    const prevTitle = document.title;
+    document.title = `JobCapturePro-${titleName}-summary`;
+
+    const win = frame.contentWindow;
+    const doc = frame.contentDocument;
+    if (!win || !doc) {
+      document.body.classList.add("print-leavebehind");
+      window.print();
+      setTimeout(() => {
+        document.body.classList.remove("print-leavebehind");
+        document.title = prevTitle;
+      }, 800);
+      showToast("Choose “Save as PDF” in the print dialog");
+      return;
+    }
+
+    doc.open();
+    doc.write(html);
+    doc.close();
+
+    const runPrint = () => {
+      try {
+        win.focus();
+        win.print();
+      } catch (err) {
+        document.body.classList.add("print-leavebehind");
+        window.print();
+        setTimeout(() => document.body.classList.remove("print-leavebehind"), 800);
+      }
+      showToast("Choose “Save as PDF” in the print dialog");
+      setTimeout(() => {
+        document.title = prevTitle;
+      }, 1200);
+    };
+
+    const images = Array.from(doc.images || []);
+    if (!images.length) {
+      setTimeout(runPrint, 60);
+      return;
+    }
+    Promise.all(
+      images.map(
+        (image) =>
+          image.complete
+            ? Promise.resolve()
+            : new Promise((resolve) => {
+                image.onload = resolve;
+                image.onerror = resolve;
+              })
+      )
+    ).then(() => setTimeout(runPrint, 80));
   }
 
   function render() {
