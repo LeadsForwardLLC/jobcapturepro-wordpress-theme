@@ -185,7 +185,7 @@
     <div class="cover-copy">
       <span class="eyebrow">${partner ? "Partner presentation" : "Live sales presentation"}</span>
       <h1>${title}</h1>
-      <p>${esc(company)} already takes job photos. JobCapturePro turns them into Google updates, website content, social posts, and an on-site review ask — so the work keeps marketing itself.</p>
+      <p>${esc(company)} already takes job photos. JobCapturePro turns them into Google updates, website content, social posts, and directory listings — then your crew asks for a review on site with a QR code.</p>
       <p class="cover-integrations">Already on ${esc(integrationLine())}? We integrate with the tools crews already use.</p>
       <button class="start-btn" type="button" data-go="1">See the proof engine →</button>
     </div>
@@ -198,21 +198,22 @@
     return `<section class="chapter content-pad">
     ${chapterHeader(2, "The missed opportunity", partner ? "Your clients already have the content." : "You already have the content.", partner ? `Completed jobs rarely become consistent, location-specific marketing for the ${esc(state.trade.toLowerCase())} clients you serve.` : `For ${esc(state.trade.toLowerCase())} teams, completed jobs rarely make it from the camera roll to the places customers decide who to call.`)}
     <div class="problem-layout">
-      <div class="problem-statement">One real job can become proof in <em>four places.</em></div>
+      <div class="problem-statement">One real job can become proof in <em>five places.</em></div>
       <div class="channel-stack">
         <div class="channel-line"><strong>Google Maps</strong><span>Localized updates</span></div>
         <div class="channel-line"><strong>Your website</strong><span>Search-ready job proof</span></div>
         <div class="channel-line"><strong>Social media</strong><span>Consistent project content</span></div>
+        <div class="channel-line"><strong>Directory</strong><span>Verified public listing</span></div>
         <div class="channel-line"><strong>Review requests</strong><span>On-site QR / link handoff</span></div>
       </div>
     </div>
-    <div class="proof-strip"><div class="proof-stat"><b>1 photo</b><span>proof everywhere</span></div><div class="proof-stat"><b>4 channels</b><span>website, Google, social + directory</span></div><div class="proof-stat"><b>Seconds on site</b><span>QR review before you leave</span></div></div>
+    <div class="proof-strip"><div class="proof-stat"><b>1 photo</b><span>proof everywhere</span></div><div class="proof-stat"><b>4 channels</b><span>website, Google, social + directory</span></div><div class="proof-stat"><b>+ reviews</b><span>QR ask before you leave</span></div></div>
   </section>`;
   }
 
   function renderDiagnose() {
     const crmOptions = ["Housecall Pro", "Jobber", "ServiceTitan", "CompanyCam", "FieldEdge", "Workiz", "QuickBooks", "HighLevel", "Other / none"];
-    const channels = ["Website", "Google Business Profile", "Facebook / Instagram", "Review requests"];
+    const channels = ["Website", "Google Business Profile", "Facebook / Instagram", "Directory", "Review requests"];
     const priorities = ["Local visibility", "More reviews", "Faster follow-up", "Consistent content", "Multi-location control"];
     return `<section class="chapter content-pad">
     ${chapterHeader(3, "Diagnose", "Start with the work they already do.", "Mirror the Demo Assessment: where photos go, how proof gets published, and how reviews are asked for today.")}
@@ -264,8 +265,8 @@
   const engineSteps = [
     { title: "Capture", short: "App or completed-job automation", detail: "One check-in starts the system.", bullets: ["Technician-first mobile photo check-in", "CRM-triggered check-in from completed jobs", `Works with ${integrationLine()}`] },
     { title: "Optimize", short: "Job context becomes search-ready proof", detail: "JCP prepares the job to be useful online.", bullets: ["SEO keyword, tags, and description", "Image filtering and priority selection", "WebP, filenames, alt text, coordinates, and schema"] },
-    { title: "Distribute", short: "Publish proof where buyers look", detail: "One real job can support multiple trust surfaces.", bullets: ["Website / WordPress check-in display", "Google Business Profile posting", "Facebook, Instagram, and X scheduling"] },
-    { title: "Convert", short: "Ask for the review on site", detail: "Before leaving, crew shows a QR code (or sends a link).", bullets: ["On-site QR handoff while the customer is happiest", "Optional review link if they prefer", "More reviews without awkward office follow-ups"] },
+    { title: "Distribute", short: "Publish proof where buyers look", detail: "One real job supports four publish channels.", bullets: ["Website / WordPress check-in display", "Google Business Profile posting", "Facebook, Instagram, and X scheduling", "JobCapturePro directory listing"] },
+    { title: "Convert", short: "Ask for the review on site", detail: "Before leaving, crew shows a QR code (or sends a link) — the fifth place proof shows up.", bullets: ["On-site QR handoff while the customer is happiest", "Optional review link if they prefer", "More reviews without awkward office follow-ups"] },
   ];
 
   function renderEngine() {
@@ -341,7 +342,7 @@
 
   const segments = {
     owner: { label: "Owner-operator", range: "$0–$2M", title: "Get the job off the camera roll and in front of the next customer.", story: "Capture proof from the field, publish it, and build a visible record of real work without another marketing chore.", points: [["Lead with", "Simplicity, local visibility, and owned proof"], ["Show", "Mobile check-in and website proof"], ["Listen for", "Feast-or-famine demand and unused photos"]] },
-    growth: { label: "Growth-stage", range: "$2M–$10M", title: "Standardize proof and reviews before growth makes the leaks bigger.", story: "Connect completed jobs to consistent content, on-site review asks, social, and GBP — with less dependence on someone remembering each task.", points: [["Lead with", "Consistency and conversion support"], ["Show", "CRM integrations, QR reviews, GBP, social"], ["Listen for", "Slow follow-up and inconsistent execution"]] },
+    growth: { label: "Growth-stage", range: "$2M–$10M", title: "Standardize proof and reviews before growth makes the leaks bigger.", story: "Connect completed jobs to four publish channels plus an on-site review ask — with less dependence on someone remembering each task.", points: [["Lead with", "Consistency and conversion support"], ["Show", "CRM integrations, QR reviews, GBP, social, directory"], ["Listen for", "Slow follow-up and inconsistent execution"]] },
     enterprise: { label: "Multi-location", range: "$10M+", title: "Make every location visible without losing control.", story: "Centralize proof generation, publishing, integrations, and reporting while each location stays connected.", points: [["Lead with", "Control and location-level visibility"], ["Show", "Org access, custom integration, reporting"], ["Listen for", "Fragmented execution across markets"]] },
   };
 
@@ -393,7 +394,7 @@
   const objections = [
     { title: "We already have a CRM", answer: "Good. JCP is not asking you to replace the system that schedules jobs. It uses completed-job activity to create the proof and visibility most CRMs leave behind — and we integrate with tools like Housecall Pro, Jobber, ServiceTitan, and CompanyCam.", proof: "Confirm their CRM and show the capture path." },
     { title: "My techs won’t use it", answer: "The app is built around a simple photo check-in. Reviews are an on-site QR handoff that takes seconds before they leave — not another office task later.", proof: "Confirm photo habits and who owns the ask today." },
-    { title: "We already post on social", answer: "Useful — but social is only one surface. The bigger opportunity is turning each real job into website proof, Google Business Profile activity, directory presence, and an on-site review ask.", proof: "Ask how often the same job reaches all four surfaces." },
+    { title: "We already post on social", answer: "Useful — but social is only one of four publish channels. The bigger opportunity is turning each real job into website proof, Google Business Profile activity, directory presence, social, and an on-site review ask.", proof: "Ask how often the same job reaches all four channels plus a review ask." },
     { title: "Will this guarantee rankings?", answer: "No responsible platform can guarantee rankings. JCP gives you a consistent supply of real, location-based job proof and the technical layer to publish it well.", proof: "Keep this measured; use GeoGrid reporting over time." },
     { title: "It feels expensive", answer: "Compare it to the manual workflow it replaces and the proof inventory currently going unused.", proof: "Use their proof-gap estimate. Do not invent a lead ROI." },
     { title: "We don’t have time", answer: "That is the problem. Marketing from completed work fails when it depends on spare time. JCP connects the work to job completion — including a quick QR review ask on site.", proof: "Clarify who captures photos and what can be automated." },

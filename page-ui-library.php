@@ -109,7 +109,7 @@ $icon = function( $name ) {
 								<img src="<?php echo $icon('map'); ?>" class="meta-icon" alt="">
 								<strong>4 channels</strong>
 							</div>
-							<span>website, directory, GBP, social</span>
+							<span>website, Google, social + directory</span>
 						</div>
 						<div class="meta-item">
 							<div class="meta-label">
@@ -248,10 +248,10 @@ $icon = function( $name ) {
 							<img src="<?php echo $icon('star'); ?>" class="factor-icon" alt="">
 						</div>
 						<h3 class="factor-title">More reviews</h3>
-						<p class="factor-description">Requests go out while the job is fresh and credible.</p>
+						<p class="factor-description">Crew shows a QR code on site while the customer is still happy.</p>
 						<div class="factor-stat">
 							<span class="stat-value">Reviews</span>
-							<span class="stat-label">on autopilot</span>
+							<span class="stat-label">on the spot</span>
 						</div>
 					</div>
 				</div>
@@ -424,7 +424,7 @@ $icon = function( $name ) {
 					</details>
 					<details class="faq-item">
 						<summary>Where does proof get published?</summary>
-						<p>Your website, the JobCapturePro directory, Google Business Profile, and social — all automated.</p>
+						<p>Proof publishes to four channels — website, Google Business Profile, social, and the JobCapturePro directory. Reviews are a fifth step: your crew presents a QR code (or sends a link) on site after the job.</p>
 					</details>
 					<details class="faq-item">
 						<summary>Is this real activity or staged content?</summary>

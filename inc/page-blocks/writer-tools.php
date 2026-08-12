@@ -278,7 +278,7 @@ CORE MECHANIC
 1 photo
  Proof created instantly
 4 channels
- Google, website, social, directory
+ website, Google, social + directory
 0 busywork
  Nothing new for your crew
 
@@ -802,7 +802,7 @@ CORE MECHANIC
 1 photo
  Proof created instantly
 4 channels
- Google, website, social, directory
+ website, Google, social + directory
 0 busywork
  Nothing new for your crew
 SNIP,
@@ -1085,8 +1085,8 @@ Website
  Automatically added as live job content
 Social Media
  Shared as job proof on social channels
-Reviews
- Auto review collection
+Directory
+ Listed with verified job activity homeowners can trust
 
 Callout Badge
 Verified Job Proof

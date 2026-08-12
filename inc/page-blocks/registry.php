@@ -494,7 +494,7 @@ function jcp_page_default_block_props( string $type ): array {
 			[
 				'value'  => '4',
 				'label'  => 'channels',
-				'detail' => __( 'Google, website, social, directory', 'jcp-core' ),
+				'detail' => __( 'website, Google, social + directory', 'jcp-core' ),
 			],
 			[
 				'value'  => '0',

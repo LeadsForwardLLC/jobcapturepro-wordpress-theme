@@ -40,7 +40,7 @@
   },
   "core_mechanic": [
     { "value": "1", "label": "completed job", "detail": "Proof published automatically" },
-    { "value": "4", "label": "channels", "detail": "Google, website, social, directory" },
+    { "value": "4", "label": "channels", "detail": "website, Google, social + directory" },
     { "value": "0", "label": "extra admin", "detail": "Nothing new for your crew to manage" }
   ],
   "media_text": {

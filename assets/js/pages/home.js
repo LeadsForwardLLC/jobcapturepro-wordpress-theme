@@ -165,7 +165,7 @@
                       <img src="${icon('map')}" class="meta-icon" alt="">
                       <strong>4 channels</strong>
                     </div>
-                    <span>shared on website + social</span>
+                    <span>website, Google, social + directory</span>
                   </div>
                   <div class="meta-item meta-stat-busywork">
                     <div class="meta-label">
@@ -329,7 +329,7 @@
                       Watch how JobCapturePro turns a single job photo into verified proof across Google Maps, your website, and directory listings — then ask for a review on site with a QR code.
                     </p>
                     <p class="demo-preview-cue">
-                      You will see how one job becomes Google updates, website proof, directory presence, and review requests.
+                      You will see how one job becomes Google updates, website proof, directory presence, social posts, and an on-site review request.
                     </p>
                     <div class="demo-cta-wrapper">
                       <a href="/demo" class="btn btn-primary demo-cta-primary">
@@ -448,11 +448,11 @@
               </div>
               <div class="proof-flow-item">
                 <div class="factor-icon-wrapper">
-                  <img src="${icon('star')}" class="factor-icon" alt="">
+                  <img src="${icon('building-2')}" class="factor-icon" alt="">
                 </div>
                 <div class="proof-flow-content">
-                  <h4 class="proof-flow-label">Reviews</h4>
-                  <p class="proof-flow-copy">Auto review collection</p>
+                  <h4 class="proof-flow-label">Directory</h4>
+                  <p class="proof-flow-copy">Listed with verified job activity homeowners can trust</p>
                 </div>
               </div>
             </div>
@@ -533,10 +533,10 @@
                   <img src="${icon('star')}" class="factor-icon" alt="">
                 </div>
                 <h3 class="factor-title">More reviews</h3>
-                <p class="factor-description">Requests go out while the job is fresh and credible.</p>
+                <p class="factor-description">Crew shows a QR code on site while the customer is still happy.</p>
                 <div class="factor-stat">
                   <span class="stat-value">Reviews</span>
-                  <span class="stat-label">on autopilot</span>
+                  <span class="stat-label">on the spot</span>
                 </div>
               </div>
 
@@ -818,7 +818,7 @@
 
               <details class="faq-item">
                 <summary>Where does proof get published?</summary>
-                <p>Your proof can appear on your website, your Google Business Profile, your social channels, inside your JobCapturePro public directory listing, and in review requests you send to customers.</p>
+                <p>Your proof publishes to four channels — website, Google Business Profile, social, and the JobCapturePro directory. Reviews are a fifth step: your crew presents a QR code (or sends a link) on site after the job.</p>
               </details>
 
               <details class="faq-item">

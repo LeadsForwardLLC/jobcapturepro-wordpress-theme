@@ -296,7 +296,7 @@
     breadcrumb: {},
     core_mechanic: [
       { value: '1', label: 'photo', detail: 'Proof created instantly' },
-      { value: '4', label: 'channels', detail: 'Google, website, social, directory' },
+      { value: '4', label: 'channels', detail: 'website, Google, social + directory' },
       { value: '0', label: 'busywork', detail: 'Nothing new for your crew' },
     ],
     commission: {},

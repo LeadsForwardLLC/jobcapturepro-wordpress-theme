@@ -14,7 +14,7 @@
     "show_trust_line": true,
     "meta_stats": [
       { "icon": "camera", "label": "1 photo", "detail": "proof everywhere", "css_class": "meta-stat-photo" },
-      { "icon": "map", "label": "4 channels", "detail": "shared on website + social", "css_class": "meta-stat-channels" },
+      { "icon": "map", "label": "4 channels", "detail": "website, Google, social + directory", "css_class": "meta-stat-channels" },
       { "icon": "clock", "label": "0 busywork", "detail": "no extra work from you", "css_class": "meta-stat-busywork" }
     ]
   },
@@ -36,7 +36,7 @@
     "badge": "Live Demo",
     "headline": "See it in action",
     "body": "Watch how JobCapturePro turns a single job photo into verified proof across Google Maps, your website, and directory listings — then ask for a review on site with a QR code.",
-    "cue": "You will see how one job becomes Google updates, website proof, directory presence, and an on-site review request.",
+    "cue": "You will see how one job becomes Google updates, website proof, directory presence, social posts, and an on-site review request.",
     "cta_primary": { "label": "Launch Interactive Demo", "url": "/demo" },
     "cta_note": "No signup required • Takes 2 minutes",
     "show_cta": true,
@@ -51,7 +51,7 @@
       { "icon": "map-pin", "label": "Google Business Profile", "copy": "Published as a real job update on Google" },
       { "icon": "earth", "label": "Website", "copy": "Automatically added as live job content" },
       { "icon": "share-2", "label": "Social Media", "copy": "Shared as job proof on social channels" },
-      { "icon": "star", "label": "Reviews", "copy": "Auto review collection" }
+      { "icon": "building-2", "label": "Directory", "copy": "Listed with verified job activity homeowners can trust" }
     ],
     "callout_badge": "Verified Job Proof",
     "callout_title": "All JobCapturePro customers are added to the verified directory",
@@ -68,7 +68,7 @@
       { "icon": "badge-check", "title": "Verified proof", "body": "Real check-ins replace claims with proof homeowners trust.", "stat_value": "Proof", "stat_label": "from real jobs" },
       { "icon": "map-pin", "title": "Local visibility", "body": "Fresh job activity drives stronger map coverage and ranking.", "stat_value": "Map", "stat_label": "coverage grows" },
       { "icon": "message-square", "title": "Consistent presence", "body": "Social and GBP stay active without manual posting.", "stat_value": "Always", "stat_label": "on brand" },
-      { "icon": "star", "title": "More reviews", "body": "Requests go out while the job is fresh and credible.", "stat_value": "Reviews", "stat_label": "on autopilot" },
+      { "icon": "star", "title": "More reviews", "body": "Crew shows a QR code on site while the customer is still happy.", "stat_value": "Reviews", "stat_label": "on the spot" },
       { "icon": "building-2", "title": "Directory presence", "body": "Get listed across our verified contractor directory instantly.", "stat_value": "Directory", "stat_label": "auto-updated" },
       { "icon": "phone", "title": "More calls", "body": "Visibility multiplies across search, maps, and directory channels.", "stat_value": "Calls", "stat_label": "keep coming" }
     ],
@@ -174,7 +174,7 @@
         ]
       },
       { "q": "What exactly happens after we capture a job?", "a": "One photo or a completed job triggers an AI check in that becomes publishable proof. It can update your website, keep your Google Business Profile active, and publish social content. Your crew then shows a QR code or sends a link so the customer can leave a review on the spot." },
-      { "q": "Where does proof get published?", "a": "Your proof can appear on your website, your Google Business Profile, your social channels, inside your JobCapturePro public directory listing, and in review requests you send to customers." },
+      { "q": "Where does proof get published?", "a": "Proof publishes to four channels — your website, Google Business Profile, social, and the JobCapturePro public directory. Reviews are a fifth step: your crew presents a QR code (or sends a link) on site after the job." },
       { "q": "How do reviews work?", "a": "After each job, your crew presents a QR code (or sends a review link) while the experience is fresh. That gets more reviews without relying on awkward office follow-ups days later." },
       { "id": "faq-integrations-locations", "q": "Can we use JobCapturePro for multiple locations?", "a": "Yes. Each location can have its own Google Business Profile and connected social accounts, with organization level management for multi location teams." },
       { "q": "What is the JobCapturePro public directory and why does it matter?", "a": "Every member gets a public directory listing that is powered by real job activity and proof. Homeowners can see who is active and credible, and companies that post consistently earn stronger placement and more trust over time." }

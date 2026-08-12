@@ -26,7 +26,7 @@
   },
   "core_mechanic": [
     { "value": "1", "label": "job photo", "detail": "Becomes multi-channel proof" },
-    { "value": "4", "label": "channels", "detail": "Google, site, social, directory" },
+    { "value": "4", "label": "channels", "detail": "website, Google, social + directory" },
     { "value": "0", "label": "extra steps", "detail": "Crew captures and moves on" }
   ],
   "problem": {
