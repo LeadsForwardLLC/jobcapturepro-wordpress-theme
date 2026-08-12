@@ -660,7 +660,7 @@ body.is-presenting #scriptBtn {
   grid-template-columns: 1fr;
 }
 body.is-presenting .plan-layout:has(.plan-controls.rep-only) .recommendation {
-  max-width: 720px;
+  max-width: none;
 }
 
 .mode-switch button { white-space: nowrap; }
@@ -687,6 +687,17 @@ body.is-presenting .topbar::before {
   margin-right: auto;
   font-weight: 800;
   color: var(--ink);
+}
+/* When rep-only columns hide, don't leave content stuck in a narrow grid track */
+body.is-presenting .close-layout,
+body.is-presenting .plan-layout:has(.plan-controls.rep-only) {
+  grid-template-columns: minmax(0, 1fr) !important;
+  max-width: 960px;
+}
+body.is-presenting .close-layout .recap,
+body.is-presenting .plan-layout:has(.plan-controls.rep-only) .recommendation {
+  width: 100%;
+  max-width: none;
 }
 
 .cover-integrations {

@@ -1,7 +1,7 @@
 (() => {
   const cfg = window.JCP_SALES_TOOL || {};
   const assetBase = (cfg.assetBase || "").replace(/\/$/, "");
-  const assetVer = "20260812d";
+  const assetVer = "20260812e";
   const img = (name) => `${assetBase}/assets/${name}?v=${assetVer}`;
   const plans = cfg.plans || {};
   const reviews = Array.isArray(cfg.reviews) ? cfg.reviews : [];
@@ -100,7 +100,15 @@
   }
 
   function chapterList() {
-    return baseChapters;
+    return baseChapters.map((chapter) => {
+      if (chapter.id === "plan" && isChannelPartner()) {
+        return { ...chapter, label: isAffiliate() ? "Earn" : "Partner" };
+      }
+      if (chapter.id === "diagnose" && isChannelPartner()) {
+        return { ...chapter, label: "Example" };
+      }
+      return chapter;
+    });
   }
 
   function goTo(index) {
@@ -189,6 +197,28 @@
   function isChannelPartner() {
     return isPartner() || isAffiliate();
   }
+  function audienceLabel() {
+    return isAffiliate() ? "Affiliate" : isPartner() ? "Partner" : "Contractor";
+  }
+  function displayName() {
+    const named = String(state.prospectName || "").trim();
+    if (named) return named;
+    if (isAffiliate()) return "Your referral network";
+    if (isPartner()) return "Your agency";
+    return "Your business";
+  }
+  function defaultNextStep(mode = state.mode) {
+    if (mode === "affiliate") return "Join the referral program and share your link with one contractor this week.";
+    if (mode === "partner") return "Apply as a strategic partner and pick one client for a pilot.";
+    return "Start a free 14-day trial and connect one real job workflow.";
+  }
+  function siteUrl(path) {
+    try {
+      return new URL(path, window.location.origin).toString();
+    } catch {
+      return path;
+    }
+  }
 
   /** Affiliate = 20% x 12 months. Partner = 15% residual while customer stays active. */
   function commissionRows() {
@@ -262,7 +292,7 @@
       <div class="problem-statement">One real job can become proof in <em>five places.</em></div>
       <div class="channel-stack">
         <div class="channel-line"><strong>Google Maps</strong><span>Local visibility that drives calls</span></div>
-        <div class="channel-line"><strong>Your website</strong><span>Geotagged, local-SEO content</span></div>
+        <div class="channel-line"><strong>${isChannelPartner() ? "Their website" : "Your website"}</strong><span>Geotagged, local-SEO content</span></div>
         <div class="channel-line"><strong>Social media</strong><span>Consistent project proof</span></div>
         <div class="channel-line"><strong>Directory</strong><span>Verified public listing</span></div>
         <div class="channel-line"><strong>Review requests</strong><span>On-site QR / link handoff</span></div>
@@ -276,11 +306,26 @@
     const crmOptions = ["Housecall Pro", "Jobber", "ServiceTitan", "CompanyCam", "FieldEdge", "Workiz", "QuickBooks", "HighLevel", "Other / none"];
     const channels = ["Website", "Google Business Profile", "Facebook / Instagram", "Directory", "Review requests"];
     const priorities = ["Local visibility", "More reviews", "Faster follow-up", "Consistent content", "Multi-location control"];
+    const title = isAffiliate()
+      ? "Use a contractor you’d refer."
+      : isPartner()
+        ? "Use a client you’d put on this."
+        : "Start with the work you already do.";
+    const intro = isAffiliate()
+      ? "Plug in numbers for a typical shop you send over — so the proof-gap story is concrete when you pitch JobCapturePro."
+      : isPartner()
+        ? "Walk a real (or typical) client’s volume so the rest of the deck is about their workflow, not a generic demo."
+        : "A few quick inputs so we can show what this looks like for your volume — not a generic demo.";
+    const banner = isAffiliate()
+      ? "<strong>For the referral pitch</strong><p>Estimate jobs, photo capture, and how often that work becomes public proof for a contractor you’d refer.</p>"
+      : isPartner()
+        ? "<strong>For the client pilot</strong><p>Estimate jobs, photo capture, and publishing habits for the account you’d onboard first.</p>"
+        : "<strong>Together on this call</strong><p>Walk through what happens to photos after a job finishes — and how you ask for the review before you leave.</p>";
     return `<section class="chapter content-pad">
-    ${chapterHeader(3, "Your workflow", "Start with the work you already do.", "A few quick inputs so we can show what this looks like for your volume — not a generic demo.")}
-    <div class="prompt-banner"><strong>Together on this call</strong><p>Walk through what happens to photos after a job finishes — and how you ask for the review before you leave.</p></div>
+    ${chapterHeader(3, isChannelPartner() ? "Example workflow" : "Your workflow", title, intro)}
+    <div class="prompt-banner">${banner}</div>
     <div class="form-grid">
-      <div class="field"><label for="jobsPerWeek">Completed jobs per week</label><input id="jobsPerWeek" type="number" min="1" max="10000" value="${state.jobsPerWeek}"></div>
+      <div class="field"><label for="jobsPerWeek">${isChannelPartner() ? "Completed jobs per week (example shop)" : "Completed jobs per week"}</label><input id="jobsPerWeek" type="number" min="1" max="10000" value="${state.jobsPerWeek}"></div>
       <div class="field"><label for="locations">Locations</label><input id="locations" type="number" min="1" max="500" value="${state.locations}"></div>
       <div class="field"><label for="crm">Current system</label><select id="crm">${crmOptions.map((x) => `<option ${state.crm === x ? "selected" : ""}>${x}</option>`).join("")}</select></div>
       <div class="field"><label for="responseTime">Typical lead response</label><select id="responseTime">${["Under 5 minutes", "5–30 minutes", "30–60 minutes", "1–4 hours", "Same day", "Next day or later", "Not sure"].map((x) => `<option ${state.responseTime === x ? "selected" : ""}>${x}</option>`).join("")}</select></div>
@@ -301,12 +346,20 @@
 
   function renderGap() {
     const gap = calcGap();
+    const intro = isAffiliate()
+      ? "These numbers become your pitch: completed jobs that could strengthen a contractor’s local Maps presence, website SEO, and reviews — but may not leave a public trail today."
+      : isPartner()
+        ? "These numbers become the client story: completed jobs that could strengthen local Maps presence, website SEO, and reviews — but may not leave a consistent public trail today."
+        : "These are completed jobs that could strengthen local Maps presence, website SEO, and review credibility — but may not leave a consistent public trail today.";
+    const label = isChannelPartner()
+      ? "completed jobs per month a shop like this may leave unused as public proof."
+      : "completed jobs per month may be going unused as public proof.";
     return `<section class="chapter content-pad">
-    ${chapterHeader(4, "Proof gap", "Make the invisible work visible.", "These are completed jobs that could strengthen local Maps presence, website SEO, and review credibility — but may not leave a consistent public trail today.")}
+    ${chapterHeader(4, "Proof gap", "Make the invisible work visible.", intro)}
     <div class="gap-layout">
       <div>
         <div class="big-number"><span>${gap.unused}</span></div>
-        <p class="big-label">completed jobs per month may be going unused as public proof.</p>
+        <p class="big-label">${label}</p>
         <div class="gap-meter"><i class="visible" style="width:${100 - gap.unusedPct}%"></i><i class="unused" style="width:${gap.unusedPct}%"></i></div>
         <div class="meter-key"><span>${gap.visible} visible</span><span>${gap.unused} underused</span></div>
       </div>
@@ -333,7 +386,7 @@
   function renderEngine() {
     const detail = engineSteps[selectedEngine];
     return `<section class="chapter content-pad">
-    ${chapterHeader(5, "How it works", "One job in. Proof everywhere.", "JobCapturePro turns completed work into local Maps visibility, geotagged website content, reviews, and social — the proof today’s search engines and AI answers actually value.")}
+    ${chapterHeader(5, "How it works", "One job in. Proof everywhere.", isAffiliate() ? "Show contractors a simple system: completed work becomes local Maps visibility, geotagged website content, reviews, and social — then you earn when they subscribe." : isPartner() ? "Show clients a simple system: completed work becomes local Maps visibility, geotagged website content, reviews, and social — without a content team." : "JobCapturePro turns completed work into local Maps visibility, geotagged website content, reviews, and social — the proof today’s search engines and AI answers actually value.")}
     <div class="engine">
       <div class="engine-flow">${engineSteps.map((step, i) => `<button class="engine-step ${selectedEngine === i ? "active" : ""}" data-engine="${i}" type="button"><span class="step-no">0${i + 1}</span><h3>${step.title}</h3><p>${step.short}</p></button>`).join("")}</div>
       <div class="engine-detail"><strong>${detail.detail}</strong><ul>${detail.bullets.map((x) => `<li>${x}</li>`).join("")}</ul></div>
@@ -405,7 +458,7 @@
       : "";
 
     return `<section class="chapter content-pad">
-    ${chapterHeader(6, "Customer proof", "Real work. Real Maps. Real results.", "Operators and agencies who turned job proof into local visibility. Acculevel LocalFalcon scans show what consistent Maps coverage can look like.")}
+    ${chapterHeader(6, "Customer proof", "Real work. Real Maps. Real results.", isAffiliate() ? "Use these snippets when you refer. Acculevel LocalFalcon scans help when Maps/SEO is the buying trigger." : isPartner() ? "Proof you can show in a client pitch. Acculevel LocalFalcon scans help when Maps/SEO is the buying trigger." : "Operators and agencies who turned job proof into local visibility. Acculevel LocalFalcon scans show what consistent Maps coverage can look like.")}
     <div class="reviews-grid">${reviewCards}</div>
     ${acculevel}
   </section>`;
@@ -419,8 +472,18 @@
 
   function renderFit() {
     const fit = segments[state.segment];
+    const title = isAffiliate()
+      ? "Match the story to who you refer."
+      : isPartner()
+        ? "Match the story to the clients you serve."
+        : "Match the story to how you operate.";
+    const intro = isAffiliate()
+      ? "Pick the stage that sounds most like the contractors you send over. Same product — different pitch emphasis."
+      : isPartner()
+        ? "Pick the stage that sounds most like your typical client. Same workflow — different rollout story."
+        : "Pick the stage that sounds most like your business. The workflow stays the same — the emphasis changes.";
     return `<section class="chapter content-pad">
-    ${chapterHeader(7, "Right fit", "Match the story to how you operate.", "Pick the stage that sounds most like your business. The workflow stays the same — the emphasis changes.")}
+    ${chapterHeader(7, "Right fit", title, intro)}
     <div class="fit-layout">
       <div class="segment-tabs">${Object.entries(segments)
         .map(([key, item]) => `<button type="button" data-segment="${key}" class="segment-tab ${state.segment === key ? "active" : ""}"><strong>${item.label}</strong><span>${item.range}</span></button>`)
@@ -499,19 +562,47 @@
   </section>`;
   }
 
-  const objections = [
-    { title: "We already have a CRM", answer: "Keep it. JobCapturePro doesn’t replace scheduling — it turns completed-job activity into local Maps posts, geotagged website content, and reviews most CRMs never publish. We integrate with Housecall Pro, Jobber, ServiceTitan, CompanyCam, and more." },
-    { title: "Will my techs actually use it?", answer: "It’s built around a simple photo check-in. The review is a QR they show before leaving — seconds on site, not another office task next week." },
-    { title: "We already post on social", answer: "Helpful — social is one of four publish channels. The bigger opportunity is local SEO on your website (geotagged job images), Google Maps updates, directory presence, and an on-site review ask from the same job." },
-    { title: "Does this guarantee rankings?", answer: "No honest platform can. What you get is a steady supply of what today’s search — including AI answers — actually rewards: real jobs, geotagged proof, reviews, and local credibility. Results still depend on your market, site, and execution." },
-    { title: "Is this worth the cost?", answer: "Compare it to the manual work it replaces and the unused proof inventory we just looked at. You can start with a free 14-day trial — no credit card — and pricing stays current on our pricing page." },
-    { title: "We don’t have time for another tool", answer: "That’s exactly why it ties to job completion. Capture happens with the work; the QR review takes seconds before you leave." },
-  ];
+  function objectionsForMode() {
+    if (isAffiliate()) {
+      return [
+        { title: "Will contractors actually buy?", answer: "You’re recommending something they already do — finish jobs and take photos. JobCapturePro turns that into Maps visibility, geotagged website proof, and reviews. Point them at the free trial; you earn when they become a paid customer." },
+        { title: "How do I get paid?", answer: "Join the referral program, share your link, and earn 20% recurring commission for 12 months on paid accounts under program terms." },
+        { title: "Is this hard to explain?", answer: "Keep it simple: one check-in → local SEO proof on their website and Google → QR review ask on site. That’s the pitch." },
+        { title: "Does this guarantee rankings?", answer: "No honest platform can. What you can say honestly: it publishes the real-work proof Google, neighbors, and AI answers reward — geotagged jobs, reviews, and local credibility." },
+        { title: "What if they already post on social?", answer: "Social is one channel. The bigger gap for most shops is Maps posts, geotagged website content, directory presence, and an on-site review ask from the same job." },
+        { title: "I don’t have time to sell software", answer: "That’s why it’s a referral motion, not a full sales cycle. Share the demo or referral link; JobCapturePro handles onboarding." },
+      ];
+    }
+    if (isPartner()) {
+      return [
+        { title: "Will this conflict with our other tools?", answer: "Keep the CRM and project tools. JobCapturePro sits after job completion — geotagged website proof, Maps/GBP, social, directory, and an on-site QR review ask." },
+        { title: "How do partner economics work?", answer: "Strategic partners who sell and support earn 15% recurring for as long as the customer stays an active paid account — stronger than a 12-month affiliate cut when you’re doing the heavy lifting." },
+        { title: "Will techs at our clients use it?", answer: "It’s a simple photo check-in. The review is a QR shown before leaving — seconds on site, not another office chore." },
+        { title: "Does this guarantee rankings?", answer: "No. What you deliver is a steady supply of real, location-based proof published well — the signals local search and AI answers reward. Results still depend on market, site, and execution." },
+        { title: "Is margin worth the effort?", answer: "Compare residual commission plus delivery leverage: you’re productizing proof and local SEO instead of building content by hand every month." },
+        { title: "We don’t have bandwidth for another platform", answer: "Start with one pilot client, confirm integrations, prove Maps/proof consistency, then expand. That’s the partner path on the Plan chapter." },
+      ];
+    }
+    return [
+      { title: "We already have a CRM", answer: "Keep it. JobCapturePro doesn’t replace scheduling — it turns completed-job activity into local Maps posts, geotagged website content, and reviews most CRMs never publish. We integrate with Housecall Pro, Jobber, ServiceTitan, CompanyCam, and more." },
+      { title: "Will my techs actually use it?", answer: "It’s built around a simple photo check-in. The review is a QR they show before leaving — seconds on site, not another office task next week." },
+      { title: "We already post on social", answer: "Helpful — social is one of four publish channels. The bigger opportunity is local SEO on your website (geotagged job images), Google Maps updates, directory presence, and an on-site review ask from the same job." },
+      { title: "Does this guarantee rankings?", answer: "No honest platform can. What you get is a steady supply of what today’s search — including AI answers — actually rewards: real jobs, geotagged proof, reviews, and local credibility. Results still depend on your market, site, and execution." },
+      { title: "Is this worth the cost?", answer: "Compare it to the manual work it replaces and the unused proof inventory we just looked at. You can start with a free 14-day trial — no credit card — and pricing stays current on our pricing page." },
+      { title: "We don’t have time for another tool", answer: "That’s exactly why it ties to job completion. Capture happens with the work; the QR review takes seconds before you leave." },
+    ];
+  }
 
   function renderObjections() {
-    const item = objections[selectedObjection];
+    const objections = objectionsForMode();
+    const item = objections[Math.min(selectedObjection, objections.length - 1)];
+    const intro = isAffiliate()
+      ? "These are the questions affiliates hear when recommending JobCapturePro."
+      : isPartner()
+        ? "These are the questions agencies and consultants hear when pitching JobCapturePro to clients."
+        : "These are the questions we hear most from contractors.";
     return `<section class="chapter content-pad">
-    ${chapterHeader(9, "Common questions", "Straight answers.", "These are the questions we hear most from contractors and partners.")}
+    ${chapterHeader(9, "Common questions", "Straight answers.", intro)}
     <div class="objection-layout">
       <div class="objection-list">${objections.map((x, i) => `<button type="button" data-objection="${i}" class="objection-btn ${selectedObjection === i ? "active" : ""}">${x.title}</button>`).join("")}</div>
       <div class="objection-response"><span class="eyebrow">Answer</span><h3>${item.title}</h3><p class="say-this">${item.answer}</p></div>
@@ -520,12 +611,18 @@
   }
 
   function recapText() {
-    const company = state.prospectName || "Prospect";
+    const company = displayName();
     const gap = calcGap();
     const plan = recommendPlan();
     const priorities = state.priorities.length ? state.priorities.join(", ") : "visibility and proof consistency";
-    const path = state.mode === "partner" ? "Partner pilot." : `${plan.name}${state.showPricing ? ` at ${plan.price}/month` : ""}. ${plan.reason}`;
-    return `JobCapturePro ${state.mode === "partner" ? "partner" : "sales"} recap — ${company}\n\nWhat we heard\n${company} completes about ${gap.monthly} jobs per month. Roughly ${gap.unused} may not be consistently published as public proof. Priorities: ${priorities}.\n\nRecommended path\n${path}\n\nNext step\n${state.nextStep || defaults.nextStep}${state.followUpDate ? ` Target: ${state.followUpDate}.` : ""}\n\nNotes\n${state.salesNotes || "No additional notes."}\n`;
+    let path;
+    if (isAffiliate()) path = "Affiliate referral program — 20% recurring for 12 months on paid referrals.";
+    else if (isPartner()) path = "Strategic partner path — 15% residual while customers stay active.";
+    else path = `${plan.name}${state.showPricing ? ` at ${plan.price}/month` : ""}. ${plan.reason}`;
+    const heard = isChannelPartner()
+      ? `Example ${state.trade.toLowerCase()} shop completes about ${gap.monthly} jobs/month; roughly ${gap.unused} may not become consistent public proof. Priorities: ${priorities}.`
+      : `${company} completes about ${gap.monthly} jobs per month. Roughly ${gap.unused} may not be consistently published as public proof. Priorities: ${priorities}.`;
+    return `JobCapturePro ${audienceLabel().toLowerCase()} recap — ${company}\n\nWhat we covered\n${heard}\n\nRecommended path\n${path}\n\nNext step\n${state.nextStep || defaultNextStep()}${state.followUpDate ? ` Target: ${state.followUpDate}.` : ""}\n\nNotes\n${state.salesNotes || "No additional notes."}\n`;
   }
 
   async function copyText(text) {
@@ -545,58 +642,77 @@
   }
 
   function renderClose() {
-    const company = state.prospectName || (isChannelPartner() ? "your network" : "your business");
+    const company = displayName();
     const gap = calcGap();
     const plan = recommendPlan();
     const today = new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date());
     const logo = (cfg.presenter && cfg.presenter.logoUrl) || img("jcp-logo-dark.png");
+    const nextDefault = defaultNextStep();
     let path;
     let pathDetail;
-    let primaryHref = cta.primaryUrl || "#";
+    let primaryHref = cta.primaryUrl || cfg.pricingUrl || "/pricing/";
     let primaryLabel = cta.primaryLabel || "Start free 14-day trial";
     let secondaryHref = cta.secondaryUrl || cfg.pricingUrl || "/pricing/";
     let secondaryLabel = cta.secondaryLabel || "See live pricing";
+    let lede;
+    let why;
+    let covered;
+    let metricJobsLabel = "Jobs / month";
+    let metricUnusedLabel = "Underused proof";
 
     if (isAffiliate()) {
       path = "Affiliate referral program";
-      pathDetail = "Earn 20% recurring commission for 12 months on paid referrals.";
+      pathDetail = "Earn 20% recurring commission for 12 months when contractors you refer become paid customers.";
       primaryHref = "/referral-program/";
       primaryLabel = "Join the referral program";
       secondaryHref = "/demo/";
       secondaryLabel = "Share the live demo";
+      lede = "Help contractors turn finished jobs into local Maps visibility, geotagged website proof, reviews, and social — and earn when they become customers.";
+      why = "<strong>Why affiliates win with this:</strong> You’re recommending real work → real proof. Local Maps and AI search reward the same thing JobCapturePro publishes: geotagged jobs, reviews, and credibility.";
+      covered = `Using the example shop from this call: about <strong>${gap.monthly} jobs/month</strong>, with roughly <strong>${gap.unused}</strong> potentially unpublished as public proof. That’s the story you can tell when you refer. Focus areas: ${esc(state.priorities.join(", ") || "visibility and reviews")}.`;
+      metricJobsLabel = "Example jobs / mo";
+      metricUnusedLabel = "Proof left on table";
     } else if (isPartner()) {
       path = "Strategic partner path";
-      pathDetail = "15% recurring for as long as referred customers stay active — apply as a partner and scope the rollout.";
+      pathDetail = "15% recurring for as long as referred customers stay active — pilot one client, prove the workflow, then expand.";
       primaryHref = "/referral-program/";
       primaryLabel = "Apply as a partner";
       secondaryHref = cfg.pricingUrl || "/pricing/";
       secondaryLabel = "See live pricing";
+      lede = "Productize local SEO proof for clients: Maps visibility, geotagged website content, reviews, and social — without becoming their content team.";
+      why = "<strong>Why partners win with this:</strong> Clients already create the assets. You deliver Maps + local-SEO publishing and residual economics while the account stays active.";
+      covered = `For a client like this call’s example: about <strong>${gap.monthly} jobs/month</strong>, with roughly <strong>${gap.unused}</strong> potentially unpublished. Focus areas: ${esc(state.priorities.join(", ") || "visibility and reviews")}.`;
+      metricJobsLabel = "Client jobs / mo";
+      metricUnusedLabel = "Unused client proof";
     } else {
       path = plan.name;
       pathDetail = plan.reason;
+      lede = "Real jobs become local Maps visibility, geotagged website proof, reviews, and social — credibility Google, neighbors, and AI search all reward.";
+      why = "<strong>Why this matters now:</strong> Local Maps drives calls. Website content is geotagged to the job and optimized for local search. AI-era search values real work, real reviews, and real credibility.";
+      covered = `${esc(company)} completes about <strong>${gap.monthly} jobs per month</strong>. Roughly <strong>${gap.unused}</strong> may not be consistently published as public proof today — proof that could strengthen local Maps presence, website SEO, and reviews. Focus areas: ${esc(state.priorities.join(", ") || "visibility and proof consistency")}.`;
     }
 
     return `<section class="chapter content-pad">
     ${chapterHeader(10, "Next steps", "A clear path forward.", isAffiliate() ? "Get your referral link and start sharing JobCapturePro with contractors who already take job photos." : isPartner() ? "Apply as a strategic partner, pilot one client workflow, then expand." : "Here’s a one-page summary of what we covered — plus a free trial when you’re ready.")}
     <div class="close-layout">
       <div class="close-notes rep-only">
-        <div class="field"><label for="nextStep">Agreed next step</label><textarea id="nextStep">${esc(state.nextStep)}</textarea></div>
+        <div class="field"><label for="nextStep">Agreed next step</label><textarea id="nextStep">${esc(state.nextStep || nextDefault)}</textarea></div>
         <div class="field"><label for="followUpDate">Target date</label><input id="followUpDate" type="date" value="${esc(state.followUpDate)}"></div>
         <div class="field"><label for="salesNotes">Call notes</label><textarea id="salesNotes" placeholder="Decision criteria, stakeholders, integration questions…">${esc(state.salesNotes)}</textarea></div>
       </div>
       <article class="recap" id="recap">
-        <div class="recap-top"><div class="brand"><img src="${logo}" alt="JobCapturePro" /></div><span class="recap-date">${today}</span></div>
-        <h3>${esc(state.prospectName || (isAffiliate() ? "Affiliate" : isPartner() ? "Partner" : "Your business"))} · summary</h3>
-        <p class="recap-lede">Real jobs become local Maps visibility, geotagged website proof, reviews, and social — credibility Google, neighbors, and AI search all reward.</p>
-        ${isChannelPartner() ? "" : `<div class="recap-metrics">
-          <div class="recap-metric"><span>Jobs / month</span><strong>${gap.monthly}</strong></div>
-          <div class="recap-metric"><span>Underused proof</span><strong>${gap.unused}</strong></div>
-          <div class="recap-metric recap-metric--accent"><span>Recommended</span><strong>${esc(path)}</strong></div>
-        </div>`}
-        <h4>What we covered</h4><p>${isChannelPartner() ? `JobCapturePro turns completed ${esc(state.trade.toLowerCase())} jobs into local Maps visibility, geotagged website content, social, and directory proof — plus an on-site QR review ask.` : `${esc(company)} completes about <strong>${gap.monthly} jobs per month</strong>. Roughly <strong>${gap.unused}</strong> may not be consistently published as public proof today — proof that could strengthen local Maps presence, website SEO, and reviews.`} Focus areas: ${esc(state.priorities.join(", ") || "visibility and proof consistency")}.</p>
-        <h4>Recommended path</h4><p><strong>${path}${!isChannelPartner() && state.showPricing ? ` · ${plan.price}/month` : ""}.</strong> ${pathDetail}</p>
-        <div class="recap-why"><strong>Why this matters now:</strong> Local Maps drives calls. Website content is geotagged to the job and optimized for local search. AI-era search values real work, real reviews, and real credibility.</div>
-        <h4>Suggested next step</h4><p id="recapNextStep">${esc(state.nextStep || defaults.nextStep)}${state.followUpDate ? ` Target: ${esc(state.followUpDate)}.` : ""}</p>
+        <div class="recap-top"><div class="brand"><img src="${logo}" alt="JobCapturePro" /></div><span class="recap-date">${audienceLabel()} · ${today}</span></div>
+        <h3>${esc(company)} · summary</h3>
+        <p class="recap-lede">${lede}</p>
+        <div class="recap-metrics">
+          <div class="recap-metric"><span>${metricJobsLabel}</span><strong>${gap.monthly}</strong></div>
+          <div class="recap-metric"><span>${metricUnusedLabel}</span><strong>${gap.unused}</strong></div>
+          <div class="recap-metric recap-metric--accent"><span>Recommended</span><strong>${esc(isChannelPartner() ? (isAffiliate() ? "Affiliate" : "Partner") : path)}</strong></div>
+        </div>
+        <h4>What we covered</h4><p>${covered}</p>
+        <h4>Recommended path</h4><p><strong>${esc(path)}${!isChannelPartner() && state.showPricing ? ` · ${plan.price}/month` : isAffiliate() ? " · 20% × 12 months" : isPartner() ? " · 15% residual" : ""}.</strong> ${esc(pathDetail)}</p>
+        <div class="recap-why">${why}</div>
+        <h4>Suggested next step</h4><p id="recapNextStep">${esc(state.nextStep || nextDefault)}${state.followUpDate ? ` Target: ${esc(state.followUpDate)}.` : ""}</p>
         <div id="recapNotesWrap" class="rep-only" ${state.salesNotes ? "" : "hidden"}><h4>Notes</h4><p id="recapNotes">${esc(state.salesNotes)}</p></div>
         <div class="recap-ctas">
           <a class="plan-cta" href="${esc(primaryHref)}" target="_blank" rel="noopener">${esc(primaryLabel)}</a>
@@ -613,53 +729,121 @@
     const gap = calcGap();
     const plan = recommendPlan();
     const today = new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date());
-    const company = state.prospectName || (isAffiliate() ? "Affiliate partner" : isPartner() ? "Strategic partner" : "Your business");
+    const company = displayName();
     const logo = (cfg.presenter && cfg.presenter.logoUrl) || img("jcp-logo-dark.png");
-    const trialUrl = cta.primaryUrl || cfg.pricingUrl || "https://jobcapturepro.com/pricing/";
-    const pricingUrl = cfg.pricingUrl || "https://jobcapturepro.com/pricing/";
+    const pricingUrl = siteUrl(cfg.pricingUrl || "/pricing/");
+    const referralUrl = siteUrl("/referral-program/");
+    const demoUrl = siteUrl("/demo/");
     let path = plan.name;
     let pathDetail = plan.reason;
-    let priceLine = state.showPricing ? `${plan.price}/month` : "";
+    let priceLine = state.showPricing ? `${plan.price}/month` : "Talk through fit";
     let primaryLabel = cta.primaryLabel || "Start free 14-day trial";
+    let primaryUrl = siteUrl((cta.primaryUrl && !String(cta.primaryUrl).includes("sessionId") ? cta.primaryUrl : null) || cfg.pricingUrl || "/pricing/");
+    let ctaPill = "No credit card · 14 days";
+    let lede;
+    let why;
+    let covered;
+    let metricJobs = { label: "Jobs / month", value: String(gap.monthly), note: "From this call’s inputs" };
+    let metricUnused = { label: "Underused proof", value: String(gap.unused), note: "Not consistently published" };
+    let includes = Array.isArray(plan.includes) ? plan.includes.slice(0, 5) : [];
+
     if (isAffiliate()) {
-      path = "Affiliate referral program";
-      pathDetail = "Earn 20% recurring commission for 12 months on paid referrals.";
+      path = "Affiliate program";
+      pathDetail = "Earn 20% recurring commission for 12 months when contractors you refer become paid customers.";
       priceLine = "20% × 12 months";
       primaryLabel = "Join the referral program";
+      primaryUrl = referralUrl;
+      ctaPill = "Share · refer · earn";
+      lede = "Refer contractors who already finish jobs and take photos. JobCapturePro turns that work into local Maps visibility, geotagged website proof, reviews, and social — and you earn when they become customers.";
+      why = "You’re recommending what local search and AI answers reward: real jobs, geotagged proof, reviews, and credibility. Use the example shop numbers from this call when you pitch.";
+      covered = `Example ${esc(state.trade.toLowerCase())} shop from this call: about <strong>${gap.monthly} jobs/month</strong>, with roughly <strong>${gap.unused}</strong> potentially left unpublished as public proof.`;
+      metricJobs = { label: "Example jobs / mo", value: String(gap.monthly), note: "Typical shop from this call" };
+      metricUnused = { label: "Proof left on table", value: String(gap.unused), note: "Pitch inventory, not a lead promise" };
+      includes = [
+        "20% recurring commission for 12 months",
+        "Easy pitch: jobs they already finish",
+        "Maps + geotagged local-SEO website proof",
+        "On-site QR review requests",
+        "Share demo or referral link",
+      ];
     } else if (isPartner()) {
-      path = "Strategic partner path";
-      pathDetail = "15% recurring for as long as referred customers stay active.";
+      path = "Strategic partner";
+      pathDetail = "15% recurring for as long as referred customers stay active — pilot, prove, expand.";
       priceLine = "15% residual";
       primaryLabel = "Apply as a partner";
+      primaryUrl = referralUrl;
+      ctaPill = "Pilot → prove → expand";
+      lede = "Deliver a proof engine for clients: local Maps visibility, geotagged website content, reviews, and social — without staffing a content team for every account.";
+      why = "Clients already create the work. You productize local SEO publishing and earn residual commission while accounts stay active.";
+      covered = `Client example from this call: about <strong>${gap.monthly} jobs/month</strong>, with roughly <strong>${gap.unused}</strong> potentially unpublished. Focus areas: ${esc(state.priorities.join(", ") || "visibility and reviews")}.`;
+      metricJobs = { label: "Client jobs / mo", value: String(gap.monthly), note: "Pilot account example" };
+      metricUnused = { label: "Unused client proof", value: String(gap.unused), note: "Delivery opportunity" };
+      includes = [
+        "15% residual while customer is active",
+        "Pilot → prove → expand motion",
+        "Geotagged local-SEO website publish",
+        "Google Maps / GBP + review QR",
+        "CRM integrations for client stacks",
+      ];
+    } else {
+      lede = "Real jobs become local Maps visibility, geotagged website proof, reviews, and social — the credibility Google, neighbors, and AI search answers all reward.";
+      why = "Local Maps coverage drives calls. Website content from JobCapturePro is optimized for local search — images geotagged to the actual job, SEO built in. AI-era search values real work, real proof, real reviews, and real credibility.";
+      covered = `${esc(company)} completes about <strong>${gap.monthly} jobs per month</strong>. Roughly <strong>${gap.unused}</strong> may not be consistently published as public proof today.`;
+      if (!includes.length) {
+        includes = [
+          "Geotagged images at the real job location",
+          "Website content optimized for local search",
+          "Google Maps / Business Profile publishing",
+          "On-site QR review requests",
+          "Social + directory distribution",
+        ];
+      }
+      // Prefer clean marketing URLs on the leave-behind (not long onboarding session links)
+      if (String(primaryUrl).includes("sessionId") || String(primaryUrl).includes("onboarding")) {
+        primaryUrl = siteUrl("/pricing/");
+      }
     }
-    const includes = !isChannelPartner() && Array.isArray(plan.includes) ? plan.includes.slice(0, 5) : [
-      "Geotagged images at the real job location",
-      "Website content optimized for local search",
-      "Google Maps / Business Profile publishing",
-      "On-site QR review requests",
-      "Social + directory distribution",
-    ];
-    return { gap, plan, today, company, logo, trialUrl, pricingUrl, path, pathDetail, priceLine, primaryLabel, includes };
+
+    return {
+      gap,
+      plan,
+      today,
+      company,
+      logo,
+      pricingUrl,
+      referralUrl,
+      demoUrl,
+      path,
+      pathDetail,
+      priceLine,
+      primaryLabel,
+      primaryUrl,
+      ctaPill,
+      lede,
+      why,
+      covered,
+      metricJobs,
+      metricUnused,
+      includes,
+      priorities: state.priorities.join(", ") || "Local visibility, reviews, and consistent proof",
+      next: (state.nextStep || defaultNextStep()) + (state.followUpDate ? ` Target: ${state.followUpDate}.` : ""),
+      notes: state.salesNotes || "",
+      modeLabel: audienceLabel(),
+      presented: state.repName ? `Presented by ${state.repName}` : "Prepared with JobCapturePro",
+    };
   }
 
   function buildLeavebehindHtml() {
     const d = leavebehindPayload();
-    const titleName = (state.prospectName || "JobCapturePro").replace(/[^\w\s-]/g, "").trim() || "JobCapturePro";
-    const covered = isChannelPartner()
-      ? `JobCapturePro turns completed ${esc(state.trade.toLowerCase())} jobs into local Maps visibility, geotagged website content, social, and directory proof — plus an on-site QR review ask.`
-      : `${esc(d.company)} completes about <strong>${d.gap.monthly} jobs per month</strong>. Roughly <strong>${d.gap.unused}</strong> may not be consistently published as public proof today.`;
-    const priorities = esc(state.priorities.join(", ") || "Local visibility, reviews, and consistent proof");
-    const next = esc(state.nextStep || defaults.nextStep) + (state.followUpDate ? ` Target: ${esc(state.followUpDate)}.` : "");
-    const notes = state.salesNotes ? `<section class="lb-block"><h2>Notes</h2><p>${esc(state.salesNotes)}</p></section>` : "";
+    const titleName = d.company.replace(/[^\w\s-]/g, "").trim() || "JobCapturePro";
     const includes = d.includes.map((x) => `<li>${esc(x)}</li>`).join("");
-    const presented = state.repName ? `Presented by ${esc(state.repName)}` : "Prepared with JobCapturePro";
-    const modeLabel = isAffiliate() ? "Affiliate" : isPartner() ? "Partner" : "Contractor";
+    const notes = d.notes ? `<section class="lb-block"><h2>Notes</h2><p>${esc(d.notes)}</p></section>` : "";
 
     return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>JobCapturePro — ${esc(titleName)} summary</title>
+<title>JobCapturePro — ${esc(d.modeLabel)} — ${esc(titleName)} summary</title>
 <style>
   @page { size: letter; margin: 0.42in; }
   * { box-sizing: border-box; }
@@ -688,7 +872,7 @@
   }
   h1 {
     margin: 0 0 10px; font-family: Manrope, "Segoe UI", Helvetica, Arial, sans-serif;
-    font-size: 32px; line-height: 1.12; letter-spacing: -0.03em;
+    font-size: 32px; line-height: 1.12; letter-spacing: -0.03em; color: #111827;
   }
   .lede { margin: 0; max-width: 6.6in; color: #4b5563; font-size: 14px; line-height: 1.55; }
   .metrics {
@@ -708,9 +892,9 @@
     font-size: 26px; line-height: 1.1; letter-spacing: -0.03em; color: #111827;
   }
   .metric em { display: block; margin-top: 4px; font-style: normal; color: #6b7280; font-size: 11px; }
-  .metric.accent-card { background: #111827; border-color: #111827; color: #fff; }
+  .metric.accent-card { background: #111827; border-color: #111827; }
   .metric.accent-card span { color: #ffb4a8; }
-  .metric.accent-card strong, .metric.accent-card em { color: #fff; }
+  .metric.accent-card strong, .metric.accent-card em { color: #ffffff; }
   .grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 18px; margin-top: 18px; }
   .lb-block h2 {
     margin: 0 0 8px; color: #2563eb; font-size: 11px; font-weight: 800;
@@ -724,7 +908,7 @@
   .plan-card .kicker { color: #ff7a66; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
   .plan-card h3 {
     margin: 8px 0 4px; font-family: Manrope, "Segoe UI", Helvetica, Arial, sans-serif;
-    font-size: 28px; color: #fff; letter-spacing: -0.03em;
+    font-size: 26px; color: #ffffff; letter-spacing: -0.03em;
   }
   .plan-card .price { margin: 0 0 10px; color: #e5e7eb; font-size: 14px; font-weight: 700; }
   .plan-card p { margin: 0; color: #d1d5db; font-size: 12px; line-height: 1.5; }
@@ -747,15 +931,15 @@
     margin-top: 18px; padding: 14px 16px; display: flex; justify-content: space-between; gap: 16px; align-items: center;
     border-radius: 12px; background: #ff5036; color: #fff;
   }
-  .cta-bar strong { display: block; font-size: 14px; }
-  .cta-bar span { display: block; margin-top: 3px; font-size: 11px; opacity: .92; word-break: break-all; }
+  .cta-bar strong { display: block; font-size: 14px; color: #ffffff; }
+  .cta-bar span { display: block; margin-top: 3px; font-size: 12px; color: #ffe8e3; }
   .cta-bar .pill {
     flex: 0 0 auto; padding: 8px 12px; border-radius: 999px; background: #fff; color: #111827;
     font-size: 11px; font-weight: 800; white-space: nowrap;
   }
   .foot {
     margin-top: 14px; display: flex; justify-content: space-between; gap: 12px;
-    color: #9ca3af; font-size: 10px;
+    color: #6b7280; font-size: 10px;
   }
   @media print {
     body { background: #fff; }
@@ -768,49 +952,49 @@
     <div class="accent"></div>
     <header class="top">
       <img src="${esc(d.logo)}" alt="JobCapturePro" />
-      <div class="top-meta"><strong>${modeLabel} summary</strong>${esc(d.today)}</div>
+      <div class="top-meta"><strong>${esc(d.modeLabel)} summary</strong>${esc(d.today)}</div>
     </header>
     <div class="hero">
       <span class="eyebrow">Leave-behind · one page</span>
       <h1>${esc(d.company)}</h1>
-      <p class="lede">Real jobs become local Maps visibility, geotagged website proof, reviews, and social — the credibility Google, neighbors, and AI search answers all reward.</p>
+      <p class="lede">${esc(d.lede)}</p>
     </div>
     <div class="metrics">
-      <div class="metric"><span>Jobs / month</span><strong>${isChannelPartner() ? "—" : d.gap.monthly}</strong><em>${isChannelPartner() ? "Partner / affiliate overview" : "Completed volume discussed"}</em></div>
-      <div class="metric"><span>Underused proof</span><strong>${isChannelPartner() ? "—" : d.gap.unused}</strong><em>${isChannelPartner() ? "Proof inventory opportunity" : "Not consistently published"}</em></div>
-      <div class="metric accent-card"><span>Recommended</span><strong>${esc(d.path)}</strong><em>${esc(d.priceLine || "Custom fit")}</em></div>
+      <div class="metric"><span>${esc(d.metricJobs.label)}</span><strong>${esc(d.metricJobs.value)}</strong><em>${esc(d.metricJobs.note)}</em></div>
+      <div class="metric"><span>${esc(d.metricUnused.label)}</span><strong>${esc(d.metricUnused.value)}</strong><em>${esc(d.metricUnused.note)}</em></div>
+      <div class="metric accent-card"><span>Recommended</span><strong>${esc(d.path)}</strong><em>${esc(d.priceLine)}</em></div>
     </div>
     <div class="grid">
       <div>
         <section class="lb-block">
           <h2>What we covered</h2>
-          <p>${covered} Focus areas: <strong>${priorities}</strong>.</p>
+          <p>${d.covered} Focus areas: <strong>${esc(d.priorities)}</strong>.</p>
         </section>
         <section class="why">
           <h2>Why this matters now</h2>
-          <p>Local Maps coverage drives calls. Website content from JobCapturePro is optimized for local search — images geotagged to the actual job, SEO built in. AI-era search values exactly what you already create: real work, real proof, real reviews, real credibility.</p>
+          <p>${esc(d.why)}</p>
         </section>
         <section class="next lb-block" style="margin-top:16px">
           <h2>Suggested next step</h2>
-          <p>${next}</p>
+          <p>${esc(d.next)}</p>
         </section>
         ${notes}
       </div>
       <aside class="plan-card">
         <div class="kicker">Recommended path</div>
         <h3>${esc(d.path)}</h3>
-        <div class="price">${esc(d.priceLine || "Talk through fit")}</div>
+        <div class="price">${esc(d.priceLine)}</div>
         <p>${esc(d.pathDetail)}</p>
         <ul>${includes}</ul>
       </aside>
     </div>
     <div class="cta-bar">
-      <div><strong>${esc(d.primaryLabel)}</strong><span>${esc(d.trialUrl)}</span></div>
-      <div class="pill">No credit card · 14 days</div>
+      <div><strong>${esc(d.primaryLabel)}</strong><span>${esc(d.primaryUrl.replace(/^https?:\/\//, ""))}</span></div>
+      <div class="pill">${esc(d.ctaPill)}</div>
     </div>
     <footer class="foot">
-      <span>${presented}</span>
-      <span>Pricing: ${esc(d.pricingUrl)}</span>
+      <span>${esc(d.presented)}</span>
+      <span>${isChannelPartner() ? `Referral: ${esc(d.referralUrl.replace(/^https?:\/\//, ""))}` : `Pricing: ${esc(d.pricingUrl.replace(/^https?:\/\//, ""))}`}</span>
     </footer>
   </article>
 </body>
@@ -819,7 +1003,7 @@
 
   function downloadProspectPdf() {
     const html = buildLeavebehindHtml();
-    const titleName = (state.prospectName || "summary").replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-") || "summary";
+    const titleName = displayName().replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "-") || "summary";
     let frame = document.getElementById("leavebehindPrintFrame");
     if (!frame) {
       frame = document.createElement("iframe");
@@ -831,7 +1015,7 @@
     }
 
     const prevTitle = document.title;
-    document.title = `JobCapturePro-${titleName}-summary`;
+    document.title = `JobCapturePro-${audienceLabel()}-${titleName}-summary`;
 
     const win = frame.contentWindow;
     const doc = frame.contentDocument;
@@ -859,7 +1043,7 @@
         window.print();
         setTimeout(() => document.body.classList.remove("print-leavebehind"), 800);
       }
-      showToast("Choose “Save as PDF” in the print dialog");
+      showToast("Choose “Save as PDF” · set Color on");
       setTimeout(() => {
         document.title = prevTitle;
       }, 1200);
@@ -888,7 +1072,14 @@
     const renderers = [renderCover, renderProblem, renderDiagnose, renderGap, renderEngine, renderProof, renderFit, renderPlan, renderObjections, renderClose];
     stage.innerHTML = renderers[state.chapter]();
     const prospectInput = $("#prospectName");
-    if (prospectInput) prospectInput.value = state.prospectName;
+    if (prospectInput) {
+      prospectInput.value = state.prospectName;
+      prospectInput.placeholder = isAffiliate()
+        ? "Affiliate name or network"
+        : isPartner()
+          ? "Agency or partner name"
+          : "Company name";
+    }
     const metaLabel = document.querySelector(".call-meta label");
     if (metaLabel) metaLabel.textContent = isPartner() ? "Partner" : isAffiliate() ? "Affiliate" : "Prospect";
     document.querySelectorAll("[data-mode]").forEach((button) => button.classList.toggle("active", button.dataset.mode === state.mode));
@@ -959,7 +1150,7 @@
           state[id] = e.target.value;
           saveState();
           const nextEl = $("#recapNextStep");
-          if (nextEl) nextEl.textContent = `${state.nextStep || defaults.nextStep}${state.followUpDate ? ` Target: ${state.followUpDate}.` : ""}`;
+          if (nextEl) nextEl.textContent = `${state.nextStep || defaultNextStep()}${state.followUpDate ? ` Target: ${state.followUpDate}.` : ""}`;
           const notes = $("#recapNotes");
           if (notes) notes.textContent = state.salesNotes;
           const wrap = $("#recapNotesWrap");
@@ -1051,7 +1242,21 @@
     $("#nextBtn").addEventListener("click", () => goTo(state.chapter + 1));
     $("#prospectName").addEventListener("input", (e) => setState({ prospectName: e.target.value }, false));
     document.querySelectorAll("[data-mode]").forEach((btn) =>
-      btn.addEventListener("click", () => setState({ mode: btn.dataset.mode }))
+      btn.addEventListener("click", () => {
+        const mode = btn.dataset.mode;
+        const knownDefaults = [
+          defaults.nextStep,
+          defaultNextStep("contractor"),
+          defaultNextStep("affiliate"),
+          defaultNextStep("partner"),
+        ];
+        const patch = { mode };
+        if (!state.nextStep || knownDefaults.includes(state.nextStep)) {
+          patch.nextStep = defaultNextStep(mode);
+        }
+        selectedObjection = 0;
+        setState(patch);
+      })
     );
     $("#customizeBtn").addEventListener("click", openCustomizer);
     $("#closeCustomizer").addEventListener("click", closeCustomizer);
