@@ -61,6 +61,10 @@ function jcp_admin_minimal_page_templates( array $templates ): array {
 		$out['page-form-landing.php'] = $templates['page-form-landing.php'];
 	}
 
+	if ( isset( $templates['page-sales-tool.php'] ) ) {
+		$out['page-sales-tool.php'] = $templates['page-sales-tool.php'];
+	}
+
 	return $out !== [] ? $out : $templates;
 }
 

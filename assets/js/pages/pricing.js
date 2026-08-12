@@ -31,12 +31,11 @@
     }
   })();
 
-  // Pricing data with monthly and yearly prices
-  // Features can be strings or { text: string, tooltip: string } for items with tooltips
-  const pricingData = {
+  // Pricing data — prefer shared PHP catalog (JCP_PRICING) so sales tool + pricing stay aligned.
+  const pricingDataFallback = {
     starter: {
       monthly: 99,
-      yearly: 79, // 20% discount
+      yearly: 79,
       name: 'Starter',
       description: 'Everything a single-location business needs to turn check-ins into reviews.',
       pill: 'Single-location',
@@ -50,14 +49,14 @@
     },
     scale: {
       monthly: 249,
-      yearly: 199, // 20% discount
+      yearly: 199,
       name: 'Scale',
       description: 'Built for multi-location brands ready to grow without adding overhead.',
       pill: 'Most popular',
       features: [
         'Everything in Starter',
         { text: 'Multi-location support', tooltip: 'Manage multiple operating locations under one account.' },
-        { text: 'CRM integration', tooltip: 'Connect systems like Housecall Pro, Workiz, QuickBooks, and CompanyCam.' },
+        { text: 'CRM integration', tooltip: 'Connect systems like Housecall Pro, Jobber, ServiceTitan, and CompanyCam.' },
         'WordPress plugin',
         'Social Media posting',
         'Google Business Profile posting',
@@ -69,7 +68,7 @@
     },
     enterprise: {
       monthly: 399,
-      yearly: 319, // 20% discount
+      yearly: 319,
       name: 'Enterprise',
       description: 'AI-powered insights and a dedicated team behind every location.',
       pill: 'Enterprise',
@@ -83,6 +82,10 @@
       ]
     }
   };
+  const pricingData =
+    window.JCP_PRICING && window.JCP_PRICING.plans && typeof window.JCP_PRICING.plans === 'object'
+      ? { ...pricingDataFallback, ...window.JCP_PRICING.plans }
+      : pricingDataFallback;
 
   // Escape HTML for tooltip content (safe for innerHTML)
   const escapeHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

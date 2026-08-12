@@ -40,6 +40,11 @@ function jcp_core_enqueue_assets(): void {
         return;
     }
 
+    // Sales Tool: assets enqueued by inc/sales-tool/enqueue.php (priority 5).
+    if ( ! empty( $pages['is_sales_tool'] ) ) {
+        return;
+    }
+
     // Always load navigation JS (skip on prototype - no header/footer)
     if ( ! $pages['is_prototype'] ) {
         jcp_core_enqueue_script( 'jcp-core-nav', 'js/core/jcp-nav.js' );
@@ -109,6 +114,9 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-pricing', 'css/pages/pricing.css', [ 'jcp-core-sections' ] );
         jcp_core_enqueue_script( 'jcp-shared-faq', 'js/features/faq.js' );
         jcp_core_enqueue_script( 'jcp-core-pricing', 'js/pages/pricing.js', [ 'jcp-shared-faq' ] );
+        if ( function_exists( 'jcp_pricing_localize_payload' ) ) {
+            wp_localize_script( 'jcp-core-pricing', 'JCP_PRICING', jcp_pricing_localize_payload() );
+        }
         $render_deps[] = 'jcp-core-pricing';
     }
 
