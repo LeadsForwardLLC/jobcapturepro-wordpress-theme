@@ -89,11 +89,11 @@ function jcp_sales_tool_call_script_chapters(): array {
 		],
 		[
 			'id'    => 'plan',
-			'label' => '08 · Plan',
-			'goal'  => 'Recommend a plan from live pricing. Link out — don’t invent prices.',
-			'say'   => 'Based on locations and how automated you want this, [Starter / Scale / Enterprise] is the cleanest fit. Pricing stays current on our pricing page, and you can start with a free 14-day trial — no credit card.',
-			'ask'   => 'Does that match how many locations and integrations you need in the first 30 days?',
-			'avoid' => 'Don’t negotiate custom pricing live without a scoped proposal.',
+			'label' => '08 · Plan / earn',
+			'goal'  => 'Match the audience: contractor plan, affiliate economics, or partner residual.',
+			'say'   => 'Contractor: recommend Starter/Scale/Enterprise from live pricing. Affiliate: 20% recurring for 12 months when someone you refer becomes a paid customer. Partner: for agencies doing real selling and support — 15% recurring for as long as that customer stays active. That’s stronger than a 12-month cut without promising 20% forever.',
+			'ask'   => 'Are you referring casually, or will you sell and support this with clients?',
+			'avoid' => 'Don’t invent custom commission rates live. Point partners to apply and scope terms.',
 		],
 		[
 			'id'    => 'objections',

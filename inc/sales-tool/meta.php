@@ -110,7 +110,7 @@ function jcp_sales_tool_get_settings( int $post_id ): array {
 	$out['presenter_type']      = sanitize_key( (string) ( $out['presenter_type'] ?? 'internal' ) );
 	$out['presenter_name']      = sanitize_text_field( (string) ( $out['presenter_name'] ?? '' ) );
 	$out['presenter_logo_id']   = absint( $out['presenter_logo_id'] ?? 0 );
-	$out['mode']                = in_array( (string) ( $out['mode'] ?? '' ), [ 'contractor', 'partner' ], true ) ? (string) $out['mode'] : 'contractor';
+	$out['mode']                = in_array( (string) ( $out['mode'] ?? '' ), [ 'contractor', 'affiliate', 'partner' ], true ) ? (string) $out['mode'] : 'contractor';
 	$out['company']             = sanitize_text_field( (string) ( $out['company'] ?? '' ) );
 	$out['trade']               = sanitize_text_field( (string) ( $out['trade'] ?? 'Home services' ) );
 	$out['jobs_per_week']       = max( 1, absint( $out['jobs_per_week'] ?? 20 ) );
@@ -253,7 +253,8 @@ function jcp_sales_tool_render_meta_box( WP_Post $post ): void {
 			<label for="jcp_st_mode"><?php esc_html_e( 'Story mode', 'jcp-core' ); ?></label>
 			<select name="jcp_st[mode]" id="jcp_st_mode">
 				<option value="contractor" <?php selected( $s['mode'], 'contractor' ); ?>><?php esc_html_e( 'Contractor (direct)', 'jcp-core' ); ?></option>
-				<option value="partner" <?php selected( $s['mode'], 'partner' ); ?>><?php esc_html_e( 'Agency / partner', 'jcp-core' ); ?></option>
+				<option value="affiliate" <?php selected( $s['mode'], 'affiliate' ); ?>><?php esc_html_e( 'Affiliate / referral', 'jcp-core' ); ?></option>
+				<option value="partner" <?php selected( $s['mode'], 'partner' ); ?>><?php esc_html_e( 'Agency / strategic partner', 'jcp-core' ); ?></option>
 			</select>
 		</div>
 		<div>
@@ -417,7 +418,8 @@ function jcp_sales_tool_save_meta( int $post_id ): void {
 	$out['presenter_type']      = sanitize_key( (string) ( $raw['presenter_type'] ?? 'internal' ) );
 	$out['presenter_name']      = sanitize_text_field( (string) ( $raw['presenter_name'] ?? '' ) );
 	$out['presenter_logo_id']   = absint( $raw['presenter_logo_id'] ?? 0 );
-	$out['mode']                = ( ( $raw['mode'] ?? '' ) === 'partner' ) ? 'partner' : 'contractor';
+	$mode_raw = sanitize_key( (string) ( $raw['mode'] ?? 'contractor' ) );
+	$out['mode'] = in_array( $mode_raw, [ 'contractor', 'affiliate', 'partner' ], true ) ? $mode_raw : 'contractor';
 	$out['company']             = sanitize_text_field( (string) ( $raw['company'] ?? '' ) );
 	$out['trade']               = sanitize_text_field( (string) ( $raw['trade'] ?? 'Home services' ) );
 	$out['jobs_per_week']       = max( 1, absint( $raw['jobs_per_week'] ?? 20 ) );

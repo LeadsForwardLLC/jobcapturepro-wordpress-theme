@@ -36,6 +36,7 @@ if ( ! empty( $config['presenter']['logoUrl'] ) ) {
       <div class="top-actions">
         <div class="mode-switch" aria-label="<?php esc_attr_e( 'Presentation audience', 'jcp-core' ); ?>">
           <button data-mode="contractor" type="button"><?php esc_html_e( 'Contractor', 'jcp-core' ); ?></button>
+          <button data-mode="affiliate" type="button"><?php esc_html_e( 'Affiliate', 'jcp-core' ); ?></button>
           <button data-mode="partner" type="button"><?php esc_html_e( 'Partner', 'jcp-core' ); ?></button>
         </div>
         <button class="quiet-btn" id="customizeBtn" type="button"><?php esc_html_e( 'Customize', 'jcp-core' ); ?></button>

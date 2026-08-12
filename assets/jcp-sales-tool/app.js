@@ -1,7 +1,8 @@
 (() => {
   const cfg = window.JCP_SALES_TOOL || {};
   const assetBase = (cfg.assetBase || "").replace(/\/$/, "");
-  const img = (name) => `${assetBase}/assets/${name}`;
+  const assetVer = "20260812c";
+  const img = (name) => `${assetBase}/assets/${name}?v=${assetVer}`;
   const plans = cfg.plans || {};
   const reviews = Array.isArray(cfg.reviews) ? cfg.reviews : [];
   const cta = cfg.cta || {};
@@ -24,7 +25,7 @@
   const defaults = {
     prospectName: prospectSeed.company || "",
     repName: (cfg.presenter && cfg.presenter.name) || "",
-    mode: prospectSeed.mode === "partner" ? "partner" : "contractor",
+    mode: ["partner", "affiliate"].includes(prospectSeed.mode) ? prospectSeed.mode : "contractor",
     trade: prospectSeed.trade || "Home services",
     showPricing: cfg.flags ? !!cfg.flags.showPricing : true,
     showAcculevel: cfg.flags ? !!cfg.flags.showAcculevel : true,
@@ -179,29 +180,84 @@
     };
   }
 
+  function isPartner() {
+    return state.mode === "partner";
+  }
+  function isAffiliate() {
+    return state.mode === "affiliate";
+  }
+  function isChannelPartner() {
+    return isPartner() || isAffiliate();
+  }
+
+  /** Affiliate = 20% x 12 months. Partner = 15% residual while customer stays active. */
+  function commissionRows() {
+    const rows = [
+      { plan: "Starter", monthly: 99 },
+      { plan: "Scale", monthly: 249 },
+      { plan: "Enterprise", monthly: 399 },
+    ];
+    if (isAffiliate()) {
+      return rows.map((r) => ({
+        ...r,
+        rate: "20%",
+        monthlyPay: `$${(r.monthly * 0.2).toFixed(2)}`,
+        term: "12 months",
+        potential: `$${(r.monthly * 0.2 * 12).toFixed(2)}`,
+      }));
+    }
+    return rows.map((r) => ({
+      ...r,
+      rate: "15%",
+      monthlyPay: `$${(r.monthly * 0.15).toFixed(2)}`,
+      term: "While customer is active",
+      potential: `$${(r.monthly * 0.15).toFixed(2)}/mo ongoing`,
+    }));
+  }
+
   function renderCover() {
-    const partner = state.mode === "partner";
+    const partner = isPartner();
+    const affiliate = isAffiliate();
     const title = partner
       ? `Give every client a proof engine that creates <em>more calls.</em>`
-      : `Turn every completed job into <em>more calls.</em>`;
-    const company = state.prospectName || (partner ? "your clients" : "your team");
+      : affiliate
+        ? `Earn recurring commissions by helping contractors turn jobs into <em>marketing.</em>`
+        : `Turn every completed job into <em>more calls.</em>`;
+    const company = state.prospectName || (partner ? "your clients" : affiliate ? "contractors you know" : "your team");
+    const body = partner
+      ? `${esc(company)} already take job photos. JobCapturePro turns that activity into website, Google, social, and directory proof — plus an on-site QR review ask — so you can deliver visibility without becoming their content team.`
+      : affiliate
+        ? `Refer contractors and home-service businesses to JobCapturePro and earn <strong>20% recurring commission for 12 months</strong> when they become paid customers. It’s an easy recommend: they already finish jobs and take photos — JCP makes that proof show up online.`
+        : `${esc(company)} already takes job photos. JobCapturePro turns them into Google updates, website content, social posts, and directory listings — then your crew asks for a review on site with a QR code.`;
+    const eyebrow = partner ? "Partner walkthrough" : affiliate ? "Affiliate program" : "Product walkthrough";
     return `<section class="chapter cover">
     <img class="cover-image" src="${img("jcp-product-visual.png")}" alt="JobCapturePro completed-job publishing workflow" />
     <div class="cover-copy">
-      <span class="eyebrow">${partner ? "Partner walkthrough" : "Product walkthrough"}</span>
+      <span class="eyebrow">${eyebrow}</span>
       <h1>${title}</h1>
-      <p>${esc(company)} already takes job photos. JobCapturePro turns them into Google updates, website content, social posts, and directory listings — then your crew asks for a review on site with a QR code.</p>
-      <p class="cover-integrations">Already on ${esc(integrationLine())}? We integrate with the tools your crews already use.</p>
+      <p>${body}</p>
+      <p class="cover-integrations">Already on ${esc(integrationLine())}? We integrate with the tools crews already use.</p>
       <button class="start-btn" type="button" data-go="1">See how it works →</button>
     </div>
-    <div class="cover-callout">${state.repName ? `Presented by ${esc(state.repName)} · ` : ""}${esc(state.prospectName || (partner ? "Partner overview" : "Prospect presentation"))}</div>
+    <div class="cover-callout">${state.repName ? `Presented by ${esc(state.repName)} · ` : ""}${esc(state.prospectName || (partner ? "Partner overview" : affiliate ? "Affiliate overview" : "Prospect presentation"))}</div>
   </section>`;
   }
 
   function renderProblem() {
-    const partner = state.mode === "partner";
+    const partner = isPartner();
+    const affiliate = isAffiliate();
+    const title = partner
+      ? "Your clients already have the content."
+      : affiliate
+        ? "The people you refer already have the content."
+        : "You already have the content.";
+    const intro = partner
+      ? `Completed jobs rarely become consistent, location-specific marketing for the ${esc(state.trade.toLowerCase())} clients you serve.`
+      : affiliate
+        ? `Most ${esc(state.trade.toLowerCase())} teams already finish jobs and take photos — but that proof never becomes website content, Google activity, directory presence, or a timely review ask.`
+        : `For ${esc(state.trade.toLowerCase())} teams, completed jobs rarely make it from the camera roll to the places customers decide who to call.`;
     return `<section class="chapter content-pad">
-    ${chapterHeader(2, "The missed opportunity", partner ? "Your clients already have the content." : "You already have the content.", partner ? `Completed jobs rarely become consistent, location-specific marketing for the ${esc(state.trade.toLowerCase())} clients you serve.` : `For ${esc(state.trade.toLowerCase())} teams, completed jobs rarely make it from the camera roll to the places customers decide who to call.`)}
+    ${chapterHeader(2, "The missed opportunity", title, intro)}
     <div class="problem-layout">
       <div class="problem-statement">One real job can become proof in <em>five places.</em></div>
       <div class="channel-stack">
@@ -302,7 +358,7 @@
       full: img("acculevel-localfalcon-monroe-scans.webp"),
       fullFallback: img("acculevel-localfalcon-monroe-scans.jpg"),
       headline: "0% → ~96%",
-      detail: "Monroe scans show the same arc: March grids at 0% SoLV, then steady gains through spring. Latest supplied scans reached approximately 96% SoLV for basement waterproofing and ~84% for foundation repair.",
+      detail: "Monroe LocalFalcon scans move from all-red 0% SoLV in March 2026 to strong green coverage by June — latest supplied scans reached about 96% SoLV for basement waterproofing and ~84% for foundation repair.",
     },
   };
 
@@ -377,23 +433,60 @@
   function renderPlan() {
     const plan = recommendPlan();
     const pricingLink = cfg.pricingUrl || "/pricing/";
-    const partnerRollout =
-      state.mode === "partner"
-        ? `<aside class="recommendation">
-        <span class="plan-kicker">Recommended motion</span><h3>Partner rollout</h3><p class="plan-reason">Prove one repeatable client workflow, document the result, then expand.</p>
-        <div class="partner-path"><div class="partner-step"><span>Phase 01</span><h4>Pilot</h4><p>Select a focused cohort and confirm integrations.</p></div><div class="partner-step"><span>Phase 02</span><h4>Prove</h4><p>Track check-ins, publishing, reviews, and Maps visibility.</p></div><div class="partner-step"><span>Phase 03</span><h4>Expand</h4><p>Turn the working motion into a repeatable partner offer.</p></div></div>
-        <p class="plan-note">Partner economics require a scoped proposal.</p>
-      </aside>`
-        : `<aside class="recommendation">
+    const referralUrl = "/referral-program/";
+    const rows = commissionRows();
+    const commissionTable = `<div class="commission-table" role="table" aria-label="Commission examples">
+        <div class="commission-row commission-row--head" role="row"><span>Plan</span><span>Price</span><span>Your cut</span><span>Term</span></div>
+        ${rows.map((r) => `<div class="commission-row" role="row"><span>${r.plan}</span><span>$${r.monthly}/mo</span><span>${r.monthlyPay}/mo</span><span>${r.term}</span></div>`).join("")}
+      </div>`;
+
+    let aside;
+    if (isAffiliate()) {
+      aside = `<aside class="recommendation">
+        <span class="plan-kicker">Affiliate program</span><h3>20% for 12 months</h3>
+        <p class="plan-reason">Share your referral link. When a contractor becomes a paid customer, you earn 20% recurring commission for 12 months on that account.</p>
+        ${commissionTable}
+        <p class="plan-note">Commissions apply to active paid customers under program terms. Prices stay current on <a href="${esc(pricingLink)}" target="_blank" rel="noopener">our pricing page</a>.</p>
+        <a class="plan-cta" href="${esc(referralUrl)}" target="_blank" rel="noopener">Join the referral program →</a>
+      </aside>`;
+    } else if (isPartner()) {
+      aside = `<aside class="recommendation">
+        <span class="plan-kicker">Strategic partner</span><h3>15% for the life of the account</h3>
+        <p class="plan-reason">Partners who sell and support JobCapturePro with clients earn <strong>15% recurring commission for as long as the customer remains an active paid account</strong> — healthier than 20% forever, stronger than a 12-month affiliate cut when you’re doing the heavy lifting.</p>
+        ${commissionTable}
+        <div class="partner-path" style="margin-top:16px"><div class="partner-step"><span>Phase 01</span><h4>Pilot</h4><p>Select a focused client cohort and confirm integrations.</p></div><div class="partner-step"><span>Phase 02</span><h4>Prove</h4><p>Track check-ins, publishing, reviews, and Maps visibility.</p></div><div class="partner-step"><span>Phase 03</span><h4>Expand</h4><p>Turn the working motion into a repeatable partner offer.</p></div></div>
+        <p class="plan-note">Enhanced partner terms are scoped by fit and volume. Apply via the referral program and note you’re a strategic partner.</p>
+        <a class="plan-cta" href="${esc(referralUrl)}" target="_blank" rel="noopener">Apply as a partner →</a>
+      </aside>`;
+    } else {
+      aside = `<aside class="recommendation">
         <span class="plan-kicker">Recommended fit</span><h3>${plan.name}</h3>${state.showPricing ? `<p class="price">${plan.price} <span>/ month</span></p>` : ""}<p class="plan-reason">${plan.reason}</p>
         <ul class="included">${(plan.includes || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
         <p class="plan-note">${state.showPricing ? `Additional locations: $${cfg.extraLocationFee || 100} each. ` : ""}Prices stay current on <a href="${esc(pricingLink)}" target="_blank" rel="noopener">our pricing page</a>.</p>
         <a class="plan-cta" href="${esc(cta.primaryUrl || pricingLink)}" target="_blank" rel="noopener">${esc(cta.primaryLabel || "Start free 14-day trial")} →</a>
       </aside>`;
+    }
+
+    const headline = isAffiliate()
+      ? "Affiliate economics"
+      : isPartner()
+        ? "Partner economics"
+        : "Recommended plan";
+    const sub = isAffiliate()
+      ? "Earn when contractors you refer become customers."
+      : isPartner()
+        ? "Earn while you sell and support the proof engine."
+        : "Match the plan to your workflow.";
+    const lead = isAffiliate()
+      ? "Simple referral economics — 20% recurring for 12 months on paid accounts."
+      : isPartner()
+        ? "For agencies and consultants doing real selling: residual commission while the customer stays active."
+        : "We’ll recommend a plan based on locations and how automated you want this. Prices stay current on our pricing page.";
+
     return `<section class="chapter content-pad">
-    ${chapterHeader(8, state.mode === "partner" ? "Partner rollout" : "Recommended plan", state.mode === "partner" ? "Start focused. Prove the workflow. Expand." : "Match the plan to your workflow.", state.mode === "partner" ? "A controlled rollout connects product, client workflow, and reporting before you expand." : "We’ll recommend a plan based on locations and how automated you want this. Prices stay current on our pricing page.")}
+    ${chapterHeader(8, isAffiliate() || isPartner() ? "Earn with JCP" : "Plan", headline, sub + " " + lead)}
     <div class="plan-layout">
-      <div class="plan-controls">
+      <div class="plan-controls ${isChannelPartner() ? "rep-only" : ""}">
         <div class="field"><span class="field-label">Company stage</span><div class="choice-row">${Object.entries(segments)
           .map(([key, item]) => radioChoice("planSegment", key, item.label, state.segment === key))
           .join("")}</div></div>
@@ -401,7 +494,7 @@
         <div class="field"><span class="field-label">Workflow</span><div class="choice-row">${checkboxChoice("automation", "yes", "Automate from CRM", state.automation)}${checkboxChoice("customIntegration", "yes", "Custom integration / API", state.customIntegration)}</div></div>
         <div class="field"><span class="field-label">Important outcomes</span><div class="choice-row">${["Local visibility", "More reviews", "Faster follow-up", "Consistent content", "Multi-location control"].map((x) => checkboxChoice("planPriorities", x, x, state.priorities.includes(x))).join("")}</div></div>
       </div>
-      ${partnerRollout}
+      ${aside}
     </div>
   </section>`;
   }
@@ -452,15 +545,39 @@
   }
 
   function renderClose() {
-    const company = state.prospectName || "your business";
+    const company = state.prospectName || (isChannelPartner() ? "your network" : "your business");
     const gap = calcGap();
     const plan = recommendPlan();
     const today = new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(new Date());
-    const path = state.mode === "partner" ? "Partner pilot" : plan.name;
-    const pathDetail = state.mode === "partner" ? "Start with a focused client cohort, prove the workflow, then expand." : plan.reason;
-    const logoSrc = (cfg.presenter && cfg.presenter.logoUrl) || img("jcp-logo-dark.png");
+    const logo = (cfg.presenter && cfg.presenter.logoUrl) || img("jcp-logo-dark.png");
+    let path;
+    let pathDetail;
+    let primaryHref = cta.primaryUrl || "#";
+    let primaryLabel = cta.primaryLabel || "Start free 14-day trial";
+    let secondaryHref = cta.secondaryUrl || cfg.pricingUrl || "/pricing/";
+    let secondaryLabel = cta.secondaryLabel || "See live pricing";
+
+    if (isAffiliate()) {
+      path = "Affiliate referral program";
+      pathDetail = "Earn 20% recurring commission for 12 months on paid referrals.";
+      primaryHref = "/referral-program/";
+      primaryLabel = "Join the referral program";
+      secondaryHref = "/demo/";
+      secondaryLabel = "Share the live demo";
+    } else if (isPartner()) {
+      path = "Strategic partner path";
+      pathDetail = "15% recurring for as long as referred customers stay active — apply as a partner and scope the rollout.";
+      primaryHref = "/referral-program/";
+      primaryLabel = "Apply as a partner";
+      secondaryHref = cfg.pricingUrl || "/pricing/";
+      secondaryLabel = "See live pricing";
+    } else {
+      path = plan.name;
+      pathDetail = plan.reason;
+    }
+
     return `<section class="chapter content-pad">
-    ${chapterHeader(10, "Next steps", "A clear path forward.", "Here’s a one-page summary of what we covered — plus a free trial when you’re ready.")}
+    ${chapterHeader(10, "Next steps", "A clear path forward.", isAffiliate() ? "Get your referral link and start sharing JobCapturePro with contractors who already take job photos." : isPartner() ? "Apply as a strategic partner, pilot one client workflow, then expand." : "Here’s a one-page summary of what we covered — plus a free trial when you’re ready.")}
     <div class="close-layout">
       <div class="close-notes rep-only">
         <div class="field"><label for="nextStep">Agreed next step</label><textarea id="nextStep">${esc(state.nextStep)}</textarea></div>
@@ -468,15 +585,15 @@
         <div class="field"><label for="salesNotes">Call notes</label><textarea id="salesNotes" placeholder="Decision criteria, stakeholders, integration questions…">${esc(state.salesNotes)}</textarea></div>
       </div>
       <article class="recap" id="recap">
-        <div class="recap-top"><div class="brand"><img src="${logoSrc}" alt="JobCapturePro" /></div><span class="recap-date">${today}</span></div>
-        <h3>${esc(state.prospectName || "Your business")} · summary</h3>
-        <h4>What we covered</h4><p>${esc(company)} completes about <strong>${gap.monthly} jobs per month</strong>. Roughly <strong>${gap.unused}</strong> may not be consistently published as public proof today. Focus areas: ${esc(state.priorities.join(", ") || "visibility and proof consistency")}.</p>
-        <h4>Recommended path</h4><p><strong>${path}${state.mode === "contractor" && state.showPricing ? ` · ${plan.price}/month` : ""}.</strong> ${pathDetail}</p>
+        <div class="recap-top"><div class="brand"><img src="${logo}" alt="JobCapturePro" /></div><span class="recap-date">${today}</span></div>
+        <h3>${esc(state.prospectName || (isAffiliate() ? "Affiliate" : isPartner() ? "Partner" : "Your business"))} · summary</h3>
+        <h4>What we covered</h4><p>${isChannelPartner() ? `JobCapturePro turns completed ${esc(state.trade.toLowerCase())} jobs into website, Google, social, and directory proof — plus an on-site QR review ask.` : `${esc(company)} completes about <strong>${gap.monthly} jobs per month</strong>. Roughly <strong>${gap.unused}</strong> may not be consistently published as public proof today.`} Focus areas: ${esc(state.priorities.join(", ") || "visibility and proof consistency")}.</p>
+        <h4>Recommended path</h4><p><strong>${path}${!isChannelPartner() && state.showPricing ? ` · ${plan.price}/month` : ""}.</strong> ${pathDetail}</p>
         <h4>Suggested next step</h4><p id="recapNextStep">${esc(state.nextStep || defaults.nextStep)}${state.followUpDate ? ` Target: ${esc(state.followUpDate)}.` : ""}</p>
         <div id="recapNotesWrap" class="rep-only" ${state.salesNotes ? "" : "hidden"}><h4>Notes</h4><p id="recapNotes">${esc(state.salesNotes)}</p></div>
         <div class="recap-ctas">
-          <a class="plan-cta" href="${esc(cta.primaryUrl || "#")}" target="_blank" rel="noopener">${esc(cta.primaryLabel || "Start free 14-day trial")}</a>
-          <a class="plan-cta plan-cta--secondary" href="${esc(cta.secondaryUrl || cfg.pricingUrl || "/pricing/")}" target="_blank" rel="noopener">${esc(cta.secondaryLabel || "See live pricing")}</a>
+          <a class="plan-cta" href="${esc(primaryHref)}" target="_blank" rel="noopener">${esc(primaryLabel)}</a>
+          <a class="plan-cta plan-cta--secondary" href="${esc(secondaryHref)}" target="_blank" rel="noopener">${esc(secondaryLabel)}</a>
           <button class="plan-cta plan-cta--secondary" type="button" id="downloadPdfBtn">Download PDF summary</button>
         </div>
         <div class="recap-actions rep-only"><button class="copy-btn" id="copyRecap" type="button">Copy summary</button></div>
@@ -500,7 +617,7 @@
     const prospectInput = $("#prospectName");
     if (prospectInput) prospectInput.value = state.prospectName;
     const metaLabel = document.querySelector(".call-meta label");
-    if (metaLabel) metaLabel.textContent = state.mode === "partner" ? "Partner" : "Prospect";
+    if (metaLabel) metaLabel.textContent = isPartner() ? "Partner" : isAffiliate() ? "Affiliate" : "Prospect";
     document.querySelectorAll("[data-mode]").forEach((button) => button.classList.toggle("active", button.dataset.mode === state.mode));
     const list = chapterList();
     $("#progressLabel").textContent = `${String(state.chapter + 1).padStart(2, "0")} / ${String(list.length).padStart(2, "0")}`;
