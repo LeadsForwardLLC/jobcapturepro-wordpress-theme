@@ -438,6 +438,10 @@
         <div class="case-logo">Accu<span>level</span></div>
         <div class="case-number">111</div><div class="case-number-label">locations installed with JobCapturePro</div>
         <p class="case-copy">Selected LocalFalcon scans moved from all-red, 0% Share of Local Voice grids to predominantly green coverage. The strongest tracked search reached 100% Share of Local Voice.</p>
+        <div class="solv-def" role="note">
+          <strong>SoLV<sup>®</sup></strong>
+          <span>Share of Local Voice — a Local Falcon metric for how often a business ranks in Google’s local 3-Pack (top three map results) across a geographic grid scan.</span>
+        </div>
         <div class="case-proof-note">${leadLift === null ? "Verified result: expanded Google Maps visibility. Direct lead lift is not claimed unless separately verified." : `<strong>Verified lead impact:</strong> +${leadLift}% leads during the measured period.`}</div>
       </div>
       <div class="case-visual">
@@ -451,7 +455,11 @@
           </picture>
           <span class="scan-preview-hint">Click to enlarge</span>
         </button>
-        <div class="case-metric-row"><div class="case-metric"><span>Starting visibility</span><b>0% SoLV</b></div><div class="case-metric"><span>Latest high</span><b class="good">${market.headline.split("→")[1].trim()}</b></div><div class="case-metric"><span>Rollout</span><b>111 locations</b></div></div>
+        <div class="case-metric-row">
+          <div class="case-metric"><span>Starting visibility</span><b>0% <abbr class="term-tip" title="Share of Local Voice — how often the business ranks in Google’s local 3-Pack across a Local Falcon map-grid scan.">SoLV</abbr></b></div>
+          <div class="case-metric"><span>Latest high</span><b class="good">${market.headline.split("→")[1].trim()}</b></div>
+          <div class="case-metric"><span>Rollout</span><b>111 locations</b></div>
+        </div>
         <div class="case-source"><span>${market.detail}</span><button class="link-button" type="button" data-lightbox-src="${market.full}" data-lightbox-fallback="${market.fullFallback}">View full LocalFalcon scans ↗</button></div>
       </div>
     </div>`
