@@ -40,7 +40,7 @@ function jcp_pricing_plans(): array {
 				'Email support',
 			],
 			'includes'    => [
-				'Single location',
+				'1 location included',
 				'Technician-first mobile check-ins',
 				'On-site QR review requests',
 				'Geotagged, local-SEO website publishing',
@@ -57,9 +57,10 @@ function jcp_pricing_plans(): array {
 			'featured'    => true,
 			'features'    => [
 				'Everything in Starter',
+				'1 location included',
 				[
 					'text'    => 'Multi-location support',
-					'tooltip' => 'Manage multiple operating locations under one account.',
+					'tooltip' => 'Add more operating locations under one account. Extra locations are $199/month each.',
 				],
 				[
 					'text'    => 'CRM integration',
@@ -76,14 +77,14 @@ function jcp_pricing_plans(): array {
 					'text'    => 'Priority support',
 					'tooltip' => 'Faster responses and escalation for time-sensitive issues.',
 				],
-				'Add more locations any time',
+				'Add more locations any time (+$199/mo each)',
 			],
 			'includes'    => [
+				'1 location included · add more at $199/mo',
 				'CRM integrations (Housecall Pro, Jobber, ServiceTitan, CompanyCam, and more)',
 				'Geotagged images + local-SEO website content',
 				'Google Maps / Business Profile posting',
 				'On-site QR / link review requests',
-				'Up to 3 locations',
 			],
 		],
 		'enterprise' => [
@@ -95,6 +96,7 @@ function jcp_pricing_plans(): array {
 			'pill'        => 'Enterprise',
 			'features'    => [
 				'Everything in Scale',
+				'1 location included',
 				[
 					'text'    => 'AI-powered insights',
 					'tooltip' => 'Patterns and opportunities from your check-ins and reviews, surfaced by AI.',
@@ -113,11 +115,11 @@ function jcp_pricing_plans(): array {
 				],
 				[
 					'text'    => 'Add locations and AI credits on demand',
-					'tooltip' => 'Scale locations and AI usage as needed without replatforming.',
+					'tooltip' => 'Add operating locations at $199/month each and scale AI usage as needed.',
 				],
 			],
 			'includes'    => [
-				'Unlimited locations',
+				'1 location included · add more at $199/mo',
 				'Custom integrations and API access',
 				'Geotagged local-SEO publish across markets',
 				'Organization-wide reporting',
@@ -131,7 +133,7 @@ function jcp_pricing_plans(): array {
  * Extra location fee (monthly).
  */
 function jcp_pricing_extra_location_fee(): int {
-	return 100;
+	return 199;
 }
 
 /**

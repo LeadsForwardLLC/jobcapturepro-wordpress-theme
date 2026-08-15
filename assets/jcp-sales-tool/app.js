@@ -1,7 +1,7 @@
 (() => {
   const cfg = window.JCP_SALES_TOOL || {};
   const assetBase = (cfg.assetBase || "").replace(/\/$/, "");
-  const assetVer = "20260812e";
+  const assetVer = "20260815a";
   const img = (name) => `${assetBase}/assets/${name}?v=${assetVer}`;
   const plans = cfg.plans || {};
   const reviews = Array.isArray(cfg.reviews) ? cfg.reviews : [];
@@ -161,30 +161,35 @@
     const starter = planFromId("starter");
     const scale = planFromId("scale");
     const enterprise = planFromId("enterprise");
-    if (state.customIntegration || Number(state.locations) > 3 || state.segment === "enterprise") {
+    const locFee = cfg.extraLocationFee || 199;
+    const locs = Math.max(1, Number(state.locations) || 1);
+    if (state.customIntegration || state.segment === "enterprise" || locs >= 8) {
       return {
         id: "enterprise",
         name: (enterprise && enterprise.name) || "Enterprise",
         price: enterprise ? `$${enterprise.monthly}` : "$399",
-        reason: "Custom connectivity, org-wide control, or a larger footprint — so every location can publish geotagged, local-search-ready proof at scale.",
+        reason: "Custom connectivity or org-wide control — every location can publish geotagged, local-search-ready proof, with locations added as you grow.",
         includes: (enterprise && enterprise.includes) || [],
+        locationNote: locs > 1 ? `${locs} locations → 1 included + ${locs - 1} × $${locFee}/mo` : `1 location included · extras $${locFee}/mo`,
       };
     }
-    if (state.automation || Number(state.locations) > 1 || state.priorities.some((x) => ["More reviews", "Consistent content", "Multi-location control", "Local visibility"].includes(x))) {
+    if (state.automation || locs > 1 || state.priorities.some((x) => ["More reviews", "Consistent content", "Multi-location control", "Local visibility"].includes(x))) {
       return {
         id: "scale",
         name: (scale && scale.name) || "Scale",
         price: scale ? `$${scale.monthly}` : "$249",
-        reason: "They need the proof engine running on every job — local Maps visibility, geotagged website content, reviews, and social — the signals AI search and homebuyers both trust.",
+        reason: "They need the proof engine on every job — Maps visibility, geotagged website content, reviews, and social — with room to add locations at $" + locFee + "/mo each.",
         includes: (scale && scale.includes) || [],
+        locationNote: locs > 1 ? `${locs} locations → 1 included + ${locs - 1} × $${locFee}/mo` : `1 location included · extras $${locFee}/mo`,
       };
     }
     return {
       id: "starter",
       name: (starter && starter.name) || "Starter",
       price: starter ? `$${starter.monthly}` : "$99",
-      reason: "A simple mobile-led workflow: capture the job, publish local-search-ready proof, and ask for the review on site.",
+      reason: "A simple mobile-led workflow for one location: capture the job, publish local-search-ready proof, and ask for the review on site.",
       includes: (starter && starter.includes) || [],
+      locationNote: `1 location included`,
     };
   }
 
@@ -386,7 +391,7 @@
   function renderEngine() {
     const detail = engineSteps[selectedEngine];
     return `<section class="chapter content-pad">
-    ${chapterHeader(5, "How it works", "One job in. Proof everywhere.", isAffiliate() ? "Show contractors a simple system: completed work becomes local Maps visibility, geotagged website content, reviews, and social — then you earn when they subscribe." : isPartner() ? "Show clients a simple system: completed work becomes local Maps visibility, geotagged website content, reviews, and social — without a content team." : "JobCapturePro turns completed work into local Maps visibility, geotagged website content, reviews, and social — the proof today’s search engines and AI answers actually value.")}
+    ${chapterHeader(5, "How it works", "One job in. Proof everywhere.", isAffiliate() ? "Show contractors: completed work becomes Maps 3-Pack fuel, geotagged website content, reviews, and social — then you earn when they subscribe." : isPartner() ? "Show clients: completed work becomes Maps visibility, geotagged website content, reviews, and social — without a content team." : "JobCapturePro turns completed work into Maps visibility, geotagged website content, reviews, and social — proof that wins local 3-Pack attention and AI answers.")}
     <div class="engine">
       <div class="engine-flow">${engineSteps.map((step, i) => `<button class="engine-step ${selectedEngine === i ? "active" : ""}" data-engine="${i}" type="button"><span class="step-no">0${i + 1}</span><h3>${step.title}</h3><p>${step.short}</p></button>`).join("")}</div>
       <div class="engine-detail"><strong>${detail.detail}</strong><ul>${detail.bullets.map((x) => `<li>${x}</li>`).join("")}</ul></div>
@@ -397,21 +402,22 @@
   const acculevelMarkets = {
     triadelphia: {
       label: "Triadelphia, WV",
-      preview: img("acculevel-localfalcon-triadelphia-scans-preview.webp"),
-      previewFallback: img("acculevel-localfalcon-triadelphia-scans-preview.jpg"),
-      full: img("acculevel-localfalcon-triadelphia-scans.webp"),
-      fullFallback: img("acculevel-localfalcon-triadelphia-scans.jpg"),
-      headline: "0% → 100%",
-      detail: "LocalFalcon scans for basement waterproofing and foundation repair moved from all-red, 0% Share of Local Voice in March 2026 to predominantly green coverage by June — with tracked searches reaching as high as 100% SoLV.",
+      search: "Basement waterproofing",
+      before: 0,
+      after: 100,
+      beforeLabel: "Mar 2026",
+      afterLabel: "Jun 2026",
+      detail: "Tracked Local Falcon scans moved from all-red 0% SoLV to full green coverage — peaking at 100% Share of Local Voice.",
     },
     monroe: {
       label: "Monroe, MI",
-      preview: img("acculevel-localfalcon-monroe-scans-preview.webp"),
-      previewFallback: img("acculevel-localfalcon-monroe-scans-preview.jpg"),
-      full: img("acculevel-localfalcon-monroe-scans.webp"),
-      fullFallback: img("acculevel-localfalcon-monroe-scans.jpg"),
-      headline: "0% → ~96%",
-      detail: "Monroe LocalFalcon scans move from all-red 0% SoLV in March 2026 to strong green coverage by June — latest supplied scans reached about 96% SoLV for basement waterproofing and ~84% for foundation repair.",
+      search: "Basement waterproofing",
+      before: 0,
+      after: 96,
+      beforeLabel: "Mar 2026",
+      afterLabel: "Jun 2026",
+      secondary: "~84% SoLV on foundation repair",
+      detail: "Monroe scans moved from 0% SoLV to ~96% on basement waterproofing (~84% on foundation repair) — far more 3-Pack presence across the map grid.",
     },
   };
 
@@ -419,8 +425,70 @@
     return "★★★★★".slice(0, Math.max(0, Math.min(5, n)));
   }
 
+  /** Deterministic pseudo-random for stable grid patterns */
+  function gridSeed(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) h = (h * 31 + str.charCodeAt(i)) >>> 0;
+    return () => {
+      h = (h * 1664525 + 1013904223) >>> 0;
+      return h / 4294967296;
+    };
+  }
+
+  function solvGridHtml(key, pct, cols = 7, rows = 5) {
+    const rand = gridSeed(`${key}-${pct}`);
+    const cells = [];
+    const total = cols * rows;
+    const strongCount = Math.round((Math.max(0, Math.min(100, pct)) / 100) * total);
+    const ranks = Array.from({ length: total }, (_, i) => i);
+    for (let i = ranks.length - 1; i > 0; i--) {
+      const j = Math.floor(rand() * (i + 1));
+      [ranks[i], ranks[j]] = [ranks[j], ranks[i]];
+    }
+    const strong = new Set(ranks.slice(0, strongCount));
+    for (let i = 0; i < total; i++) {
+      const tone = strong.has(i) ? (rand() > 0.35 ? "hot" : "warm") : rand() > 0.55 ? "cold" : "dead";
+      cells.push(`<i class="lf-cell lf-cell--${tone}" aria-hidden="true"></i>`);
+    }
+    return `<div class="lf-grid" style="--lf-cols:${cols}" role="img" aria-label="Local Falcon style map grid at ${pct}% Share of Local Voice">${cells.join("")}</div>`;
+  }
+
+  function renderLocalFalconCard(marketKey) {
+    const market = acculevelMarkets[marketKey];
+    const leadLift = state.acculevelLeadLift === "" ? null : Number(state.acculevelLeadLift);
+    const delta = Math.max(0, market.after - market.before);
+    return `<div class="lf-card">
+      <div class="lf-card-head">
+        <div>
+          <span class="lf-kicker">Local Falcon map scan</span>
+          <h4>${esc(market.label)}</h4>
+          <p class="lf-search">Search tracked: <strong>${esc(market.search)}</strong></p>
+        </div>
+        <div class="lf-delta"><span>SoLV gain</span><strong>+${delta} pts</strong></div>
+      </div>
+      <div class="lf-compare">
+        <div class="lf-panel">
+          <div class="lf-panel-top"><span>${esc(market.beforeLabel)}</span><b>${market.before}% SoLV</b></div>
+          ${solvGridHtml(`${marketKey}-before`, market.before)}
+          <p class="lf-panel-caption">Weak Maps coverage — rarely in the Google 3-Pack across the scan radius.</p>
+        </div>
+        <div class="lf-arrow" aria-hidden="true">→</div>
+        <div class="lf-panel lf-panel--after">
+          <div class="lf-panel-top"><span>${esc(market.afterLabel)}</span><b class="good">${market.after}% SoLV</b></div>
+          ${solvGridHtml(`${marketKey}-after`, market.after)}
+          <p class="lf-panel-caption">Strong 3-Pack presence across the grid — far more pin drops where nearby homeowners search.</p>
+        </div>
+      </div>
+      <p class="lf-detail">${esc(market.detail)}${market.secondary ? ` ${esc(market.secondary)}.` : ""}</p>
+      <div class="lf-value">
+        <strong>What this means for leads</strong>
+        <p>Google’s local 3-Pack is where most map clicks and calls start. Higher SoLV = more of those top-three slots across the area they serve${leadLift === null ? " — more chances to be the contractor homeowners call." : "."}</p>
+        ${leadLift === null ? "" : `<p class="lf-verified"><strong>Verified lead impact:</strong> +${leadLift}% leads during the measured period.</p>`}
+      </div>
+    </div>`;
+  }
+
   function renderProof() {
-    const market = acculevelMarkets[selectedCaseMarket];
     const leadLift = state.acculevelLeadLift === "" ? null : Number(state.acculevelLeadLift);
     const reviewCards = reviews
       .map(
@@ -433,40 +501,30 @@
       .join("");
 
     const acculevel = state.showAcculevel
-      ? `<div class="case-layout case-layout--compact">
+      ? `<div class="case-layout case-layout--maps">
       <div class="case-story">
         <div class="case-logo">Accu<span>level</span></div>
         <div class="case-number">111</div><div class="case-number-label">locations installed with JobCapturePro</div>
-        <p class="case-copy">Selected LocalFalcon scans moved from all-red, 0% Share of Local Voice grids to predominantly green coverage. The strongest tracked search reached 100% Share of Local Voice.</p>
-        <div class="solv-def" role="note">
-          <strong>SoLV<sup>®</sup></strong>
-          <span>Share of Local Voice — a Local Falcon metric for how often a business ranks in Google’s local 3-Pack (top three map results) across a geographic grid scan.</span>
+        <p class="case-copy">Acculevel used JobCapturePro to publish real job proof at scale. Local Falcon scans then measured how often they showed up in Google’s local 3-Pack across map grids — Share of Local Voice (SoLV).</p>
+        <div class="lf-primer">
+          <div class="lf-primer-item"><span>Local Falcon</span><strong>Map-grid ranking tool</strong><p>Drops pins across a radius around a market and checks Google Maps results at each point.</p></div>
+          <div class="lf-primer-item"><span>Scan radius / grid</span><strong>Where buyers search nearby</strong><p>Each cell is a point in the service area. Color shows whether Acculevel ranked in the top three.</p></div>
+          <div class="lf-primer-item"><span>SoLV®</span><strong>Share of Local Voice</strong><p>How often they rank in the Google 3-Pack across that grid — the slots that drive local calls.</p></div>
         </div>
-        <div class="case-proof-note">${leadLift === null ? "Verified result: expanded Google Maps visibility. Direct lead lift is not claimed unless separately verified." : `<strong>Verified lead impact:</strong> +${leadLift}% leads during the measured period.`}</div>
+        <div class="case-proof-note">${leadLift === null ? "Verified: Maps / SoLV coverage expanded dramatically. Lead % is only shown when separately verified in deck settings." : `<strong>Verified lead impact:</strong> +${leadLift}% leads during the measured period.`}</div>
       </div>
       <div class="case-visual">
         <div class="case-tabs">${Object.entries(acculevelMarkets)
           .map(([key, item]) => `<button class="case-tab ${selectedCaseMarket === key ? "active" : ""}" data-case-market="${key}" type="button">${item.label}</button>`)
           .join("")}</div>
-        <button class="scan-preview" type="button" data-lightbox-src="${market.full}" data-lightbox-fallback="${market.fullFallback}" aria-label="Open ${market.label} LocalFalcon scans full size">
-          <picture>
-            <source srcset="${market.preview}" type="image/webp" />
-            <img src="${market.previewFallback}" alt="${market.label} LocalFalcon scan history — click to enlarge" loading="lazy" />
-          </picture>
-          <span class="scan-preview-hint">Click to enlarge</span>
-        </button>
-        <div class="case-metric-row">
-          <div class="case-metric"><span>Starting visibility</span><b>0% <abbr class="term-tip" title="Share of Local Voice — how often the business ranks in Google’s local 3-Pack across a Local Falcon map-grid scan.">SoLV</abbr></b></div>
-          <div class="case-metric"><span>Latest high</span><b class="good">${market.headline.split("→")[1].trim()}</b></div>
-          <div class="case-metric"><span>Rollout</span><b>111 locations</b></div>
-        </div>
-        <div class="case-source"><span>${market.detail}</span><button class="link-button" type="button" data-lightbox-src="${market.full}" data-lightbox-fallback="${market.fullFallback}">View full LocalFalcon scans ↗</button></div>
+        ${renderLocalFalconCard(selectedCaseMarket)}
+        <div class="lf-legend"><span><i class="lf-swatch lf-swatch--dead"></i> Rarely in 3-Pack</span><span><i class="lf-swatch lf-swatch--hot"></i> Strong 3-Pack</span><span>Source: Local Falcon SoLV scans</span></div>
       </div>
     </div>`
       : "";
 
     return `<section class="chapter content-pad">
-    ${chapterHeader(6, "Customer proof", "Real work. Real Maps. Real results.", isAffiliate() ? "Use these snippets when you refer. Acculevel LocalFalcon scans help when Maps/SEO is the buying trigger." : isPartner() ? "Proof you can show in a client pitch. Acculevel LocalFalcon scans help when Maps/SEO is the buying trigger." : "Operators and agencies who turned job proof into local visibility. Acculevel LocalFalcon scans show what consistent Maps coverage can look like.")}
+    ${chapterHeader(6, "Customer proof", "Real work. Real Maps. Real results.", isAffiliate() ? "Use these snippets when you refer. Acculevel’s Local Falcon story shows what stronger Maps 3-Pack coverage looks like." : isPartner() ? "Proof for a client pitch. Acculevel’s Local Falcon scans show Maps 3-Pack coverage before vs after — and why that drives calls." : "Operators and agencies who turned job proof into local visibility. Acculevel’s Local Falcon scans make the Maps gain obvious.")}
     <div class="reviews-grid">${reviewCards}</div>
     ${acculevel}
   </section>`;
@@ -530,10 +588,11 @@
         <a class="plan-cta" href="${esc(referralUrl)}" target="_blank" rel="noopener">Apply as a partner →</a>
       </aside>`;
     } else {
+      const locFee = cfg.extraLocationFee || 199;
       aside = `<aside class="recommendation">
         <span class="plan-kicker">Recommended fit</span><h3>${plan.name}</h3>${state.showPricing ? `<p class="price">${plan.price} <span>/ month</span></p>` : ""}<p class="plan-reason">${plan.reason}</p>
         <ul class="included">${(plan.includes || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
-        <p class="plan-note">${state.showPricing ? `Additional locations: $${cfg.extraLocationFee || 100} each. ` : ""}Prices stay current on <a href="${esc(pricingLink)}" target="_blank" rel="noopener">our pricing page</a>.</p>
+        <p class="plan-note">${state.showPricing ? `${esc(plan.locationNote || `1 location included · extras $${locFee}/mo`)}. ` : ""}Every plan includes one location; add more on Scale/Enterprise at $${locFee}/mo each. Prices stay current on <a href="${esc(pricingLink)}" target="_blank" rel="noopener">our pricing page</a>.</p>
         <a class="plan-cta" href="${esc(cta.primaryUrl || pricingLink)}" target="_blank" rel="noopener">${esc(cta.primaryLabel || "Start free 14-day trial")} →</a>
       </aside>`;
     }
@@ -552,7 +611,7 @@
       ? "Simple referral economics — 20% recurring for 12 months on paid accounts."
       : isPartner()
         ? "For agencies and consultants doing real selling: residual commission while the customer stays active."
-        : "We’ll recommend a plan based on locations and how automated you want this. Prices stay current on our pricing page.";
+        : "We’ll recommend a plan based on locations and automation. Each plan includes 1 location; extras are $199/mo on Scale and Enterprise.";
 
     return `<section class="chapter content-pad">
     ${chapterHeader(8, isAffiliate() || isPartner() ? "Earn with JCP" : "Plan", headline, sub + " " + lead)}

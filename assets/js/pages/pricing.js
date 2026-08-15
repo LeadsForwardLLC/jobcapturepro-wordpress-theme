@@ -55,14 +55,15 @@
       pill: 'Most popular',
       features: [
         'Everything in Starter',
-        { text: 'Multi-location support', tooltip: 'Manage multiple operating locations under one account.' },
+        '1 location included',
+        { text: 'Multi-location support', tooltip: 'Add more operating locations under one account. Extra locations are $199/month each.' },
         { text: 'CRM integration', tooltip: 'Connect systems like Housecall Pro, Jobber, ServiceTitan, and CompanyCam.' },
         'WordPress plugin',
         'Social Media posting',
         'Google Business Profile posting',
         { text: 'Advanced analytics', tooltip: 'Deeper reporting across check-ins, reviews, and performance by location.' },
         { text: 'Priority support', tooltip: 'Faster responses and escalation for time-sensitive issues.' },
-        'Add more locations any time'
+        'Add more locations any time (+$199/mo each)'
       ],
       featured: true
     },
@@ -74,11 +75,12 @@
       pill: 'Enterprise',
       features: [
         'Everything in Scale',
+        '1 location included',
         { text: 'AI-powered insights', tooltip: 'Patterns and opportunities from your check-ins and reviews, surfaced by AI.' },
         { text: 'Custom integrations', tooltip: 'Custom API integrations and tailored workflows for complex stacks.' },
         { text: 'Dedicated account manager', tooltip: 'A single point of contact for rollout, strategy, and ongoing success.' },
         { text: 'SLA guarantee', tooltip: 'Priority handling with service-level commitments for support/uptime.' },
-        { text: 'Add locations and AI credits on demand', tooltip: 'Scale locations and AI usage as needed without replatforming.' }
+        { text: 'Add locations and AI credits on demand', tooltip: 'Add operating locations at $199/month each and scale AI usage as needed.' }
       ]
     }
   };
@@ -86,6 +88,10 @@
     window.JCP_PRICING && window.JCP_PRICING.plans && typeof window.JCP_PRICING.plans === 'object'
       ? { ...pricingDataFallback, ...window.JCP_PRICING.plans }
       : pricingDataFallback;
+  const extraLocationFee =
+    window.JCP_PRICING && Number(window.JCP_PRICING.extraLocationFee)
+      ? Number(window.JCP_PRICING.extraLocationFee)
+      : 199;
 
   // Escape HTML for tooltip content (safe for innerHTML)
   const escapeHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -260,7 +266,7 @@
               <div class="jcp-pricing-extras__head">
                 <p class="jcp-pricing-notes-label">Add-ons</p>
                 <h3 class="jcp-addons__title">Extend your plan as you grow</h3>
-                <p class="jcp-addons__sub">Each plan includes <strong>one</strong> operating location. Add another location for <strong>$199/month</strong> when you’re ready.</p>
+                <p class="jcp-addons__sub">Each plan includes <strong>one</strong> operating location. Add another location for <strong>$${extraLocationFee}/month</strong> when you’re ready.</p>
               </div>
 
               <div class="jcp-addons__grid jcp-addons__grid--three">
@@ -286,7 +292,7 @@
                       <div class="jcp-addon-card__name">Additional Location</div>
                       <div class="jcp-addon-card__note">Available on Scale and Enterprise</div>
                       <div class="jcp-addon-card__price">
-                        <span class="jcp-addon-card__amount">$199</span><span class="jcp-addon-card__period">/mo</span>
+                        <span class="jcp-addon-card__amount">$${extraLocationFee}</span><span class="jcp-addon-card__period">/mo</span>
                       </div>
                     </div>
                   </div>
