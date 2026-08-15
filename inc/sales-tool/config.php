@@ -118,7 +118,7 @@ function jcp_sales_tool_build_config( int $post_id = 0 ): array {
 
 	$script_admin_url = '';
 	if ( current_user_can( 'edit_pages' ) ) {
-		$script_admin_url = admin_url( 'edit.php?post_type=jcp_sales_deck&page=jcp-sales-call-script' );
+		$script_admin_url = admin_url( 'admin.php?page=jcp-sales-call-script' );
 	}
 
 	return [

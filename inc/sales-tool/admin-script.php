@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function jcp_sales_tool_register_script_page(): void {
 	add_submenu_page(
-		'edit.php?post_type=jcp_sales_deck',
+		'jcp-theme-settings',
 		__( 'Call Script', 'jcp-core' ),
 		__( 'Call Script', 'jcp-core' ),
 		'edit_pages',
@@ -22,7 +22,7 @@ function jcp_sales_tool_register_script_page(): void {
 		'jcp_sales_tool_render_script_page'
 	);
 }
-add_action( 'admin_menu', 'jcp_sales_tool_register_script_page' );
+add_action( 'admin_menu', 'jcp_sales_tool_register_script_page', 12 );
 
 /**
  * Script content keyed by chapter id, with mode-specific say lines.
