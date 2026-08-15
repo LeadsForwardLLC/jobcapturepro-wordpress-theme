@@ -95,6 +95,11 @@
       return;
     }
 
+    // Never intercept anything inside a Fluent Form (next/prev/submit/Choices).
+    if (event.target.closest('form.frm-fluent-form, .fluentform, .ff-el-group, .choices')) {
+      return;
+    }
+
     var trigger = event.target.closest('a, button');
     if (!trigger || !isFormTrigger(trigger)) {
       return;
@@ -105,7 +110,7 @@
       || trigger.classList.contains('ff-btn-submit')
       || trigger.classList.contains('ff-btn-next')
       || trigger.classList.contains('ff-btn-prev')
-      || trigger.closest('.step-nav, .ff_step_nav_last, .ff_submit_btn_wrapper')
+      || trigger.closest('.step-nav, .ff_step_nav_last, .ff_submit_btn_wrapper, .ff-inner_submit_container')
     ) {
       return;
     }
@@ -189,6 +194,11 @@
     var top = document.querySelector('.jcp-form-landing__top');
     var h = top ? top.getBoundingClientRect().height : 0;
     return Math.max(72, Math.round(h) + 16);
+  }
+
+  /** Keep Fluent multi-step auto-scroll clear of the Form Landing sticky bar. */
+  function syncFluentScrollOffset() {
+    window.ff_scroll_top_offset = stickyOffset();
   }
 
   function showValidationNotice(form, message) {
@@ -281,11 +291,16 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bindFluentHelpers);
+    document.addEventListener('DOMContentLoaded', function () {
+      syncFluentScrollOffset();
+      bindFluentHelpers();
+    });
   } else {
+    syncFluentScrollOffset();
     bindFluentHelpers();
   }
   window.setTimeout(bindFluentHelpers, 500);
+  window.addEventListener('resize', syncFluentScrollOffset);
 
   window.jcpFluentQuoteOpen = function (id) {
     openModal(getModal(id || 'jcp-form-modal'));

@@ -267,15 +267,16 @@ body.jcp-fluent-modal-open {
   margin-bottom: 1.15rem;
 }
 
-/* Standalone fields only — currency groups handled below */
-.jcp-fluent-bridge .ff-el-form-control,
-.jcp-fluent-bridge input[type="text"],
+/* Standalone fields only — currency groups handled below.
+   Never restyle Choices.js internals or the hidden <select> it manages. */
+.jcp-fluent-bridge .ff-el-form-control:not(.choices__input):not([data-choice]),
+.jcp-fluent-bridge input[type="text"]:not(.choices__input),
 .jcp-fluent-bridge input[type="email"],
 .jcp-fluent-bridge input[type="tel"],
 .jcp-fluent-bridge input[type="url"],
 .jcp-fluent-bridge input[type="number"],
 .jcp-fluent-bridge input[type="password"],
-.jcp-fluent-bridge select,
+.jcp-fluent-bridge select:not(.choices__input):not([data-choice]),
 .jcp-fluent-bridge textarea {
   min-height: 3rem;
   padding: 0.75rem 1rem !important;
@@ -290,13 +291,63 @@ body.jcp-fluent-modal-open {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.jcp-fluent-bridge .ff-el-input--content > .ff-el-form-control,
-.jcp-fluent-bridge .ff-el-input--content > input,
-.jcp-fluent-bridge .ff-el-input--content > select,
+.jcp-fluent-bridge .ff-el-input--content > .ff-el-form-control:not(.choices__input):not([data-choice]),
+.jcp-fluent-bridge .ff-el-input--content > input:not(.choices__input),
+.jcp-fluent-bridge .ff-el-input--content > select:not(.choices__input):not([data-choice]),
 .jcp-fluent-bridge .ff-el-input--content > textarea {
   width: 100% !important;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+/* Choices (Company Niche, etc.): leave plugin layout alone; keep dropdown above steps */
+.jcp-fluent-bridge .choices {
+  position: relative;
+  z-index: 2;
+}
+
+.jcp-fluent-bridge .choices.is-open {
+  z-index: 100050;
+  overflow: visible !important;
+}
+
+.jcp-fluent-bridge .choices__inner {
+  min-height: 3rem;
+  padding: 0.5rem 0.85rem !important;
+  border: 1.5px solid var(--jcp-ff-border, #e5e7eb) !important;
+  border-radius: var(--jcp-ff-radius, 12px) !important;
+  background: var(--jcp-ff-surface, #fff) !important;
+  color: var(--jcp-ff-text, #111827) !important;
+  font-size: var(--jcp-font-size-base, 16px) !important;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.jcp-fluent-bridge .choices.is-focused .choices__inner,
+.jcp-fluent-bridge .choices.is-open .choices__inner {
+  border-color: var(--jcp-ff-primary, #ff5036) !important;
+  box-shadow: 0 0 0 3px rgba(255, 80, 62, 0.22) !important;
+}
+
+.jcp-fluent-bridge .choices__list--dropdown,
+.jcp-fluent-bridge .choices__list[aria-expanded] {
+  z-index: 100051 !important;
+  border: 1.5px solid var(--jcp-ff-border, #e5e7eb) !important;
+  border-radius: var(--jcp-ff-radius, 12px) !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14) !important;
+}
+
+/*
+ * Fluent’s step shell uses overflow:hidden for transitions, which clips Choices
+ * dropdowns and makes required niche selects feel “broken” before Submit.
+ * Only lift overflow while a Choices menu is open.
+ */
+.jcp-fluent-bridge .ff-step-container:has(.choices.is-open),
+.jcp-fluent-bridge .fluentform-step.active:has(.choices.is-open),
+.jcp-fluent-bridge .ff-step.active:has(.choices.is-open),
+.jcp-fluent-bridge .ff-step.ff-active:has(.choices.is-open),
+.jcp-fluent-bridge .ff-step-body:has(.choices.is-open) {
+  overflow: visible !important;
 }
 
 .jcp-fluent-bridge textarea {
@@ -304,9 +355,9 @@ body.jcp-fluent-modal-open {
   resize: vertical;
 }
 
-.jcp-fluent-bridge .ff-el-form-control:focus,
-.jcp-fluent-bridge input:focus,
-.jcp-fluent-bridge select:focus,
+.jcp-fluent-bridge .ff-el-form-control:focus:not(.choices__input):not([data-choice]),
+.jcp-fluent-bridge input:focus:not(.choices__input),
+.jcp-fluent-bridge select:focus:not(.choices__input):not([data-choice]),
 .jcp-fluent-bridge textarea:focus {
   outline: none !important;
   border-color: var(--jcp-ff-primary, #ff5036) !important;
@@ -649,7 +700,7 @@ body.jcp-form-landing .jcp-ff-validation-notice {
 
 .jcp-fluent-bridge .step-nav,
 .jcp-fluent-bridge .ff_step_nav_last,
-.jcp-fluent-bridge .ff-step-t-container {
+.jcp-fluent-bridge .ff-inner_submit_container {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
