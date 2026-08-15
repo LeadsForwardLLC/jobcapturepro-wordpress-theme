@@ -55,9 +55,10 @@ add_action( 'init', 'jcp_sales_deck_register_cpt' );
 /**
  * Keep the JCP parent menu open on Sales Deck screens.
  *
- * @param string $parent_file Current parent file.
+ * @param string|null $parent_file Current parent file.
+ * @return string
  */
-function jcp_sales_deck_parent_file( string $parent_file ): string {
+function jcp_sales_deck_parent_file( $parent_file ) {
 	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 	if ( $screen && $screen->post_type === 'jcp_sales_deck' ) {
 		return 'jcp-theme-settings';
@@ -66,16 +67,17 @@ function jcp_sales_deck_parent_file( string $parent_file ): string {
 	if ( isset( $_GET['page'] ) && sanitize_key( (string) wp_unslash( $_GET['page'] ) ) === 'jcp-sales-call-script' ) {
 		return 'jcp-theme-settings';
 	}
-	return $parent_file;
+	return is_string( $parent_file ) ? $parent_file : '';
 }
 add_filter( 'parent_file', 'jcp_sales_deck_parent_file' );
 
 /**
  * Highlight the correct JCP submenu on Sales Deck screens.
  *
- * @param string $submenu_file Current submenu file.
+ * @param string|null $submenu_file Current submenu file.
+ * @return string
  */
-function jcp_sales_deck_submenu_file( string $submenu_file ): string {
+function jcp_sales_deck_submenu_file( $submenu_file ) {
 	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 	if ( $screen && $screen->post_type === 'jcp_sales_deck' ) {
 		if ( $screen->base === 'post' && $screen->action === 'add' ) {
@@ -87,6 +89,6 @@ function jcp_sales_deck_submenu_file( string $submenu_file ): string {
 	if ( isset( $_GET['page'] ) && sanitize_key( (string) wp_unslash( $_GET['page'] ) ) === 'jcp-sales-call-script' ) {
 		return 'jcp-sales-call-script';
 	}
-	return $submenu_file;
+	return is_string( $submenu_file ) ? $submenu_file : '';
 }
 add_filter( 'submenu_file', 'jcp_sales_deck_submenu_file' );
