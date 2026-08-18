@@ -72,3 +72,16 @@ function jcp_case_study_nocache_headers(): void {
 	header( 'X-JCP-Cache: bypass-case-study' );
 }
 add_action( 'template_redirect', 'jcp_case_study_nocache_headers', 0 );
+
+/**
+ * Exclude /case-study/ from SiteGround Dynamic Cache (campaign form must not stick).
+ *
+ * @param array<int, string> $excluded_urls Excluded URL parts.
+ * @return array<int, string>
+ */
+function jcp_case_study_sgo_exclude_urls( array $excluded_urls ): array {
+	$excluded_urls[] = '/case-study/';
+	$excluded_urls[] = '/case-study';
+	return $excluded_urls;
+}
+add_filter( 'sgo_exclude_urls_from_cache', 'jcp_case_study_sgo_exclude_urls' );
