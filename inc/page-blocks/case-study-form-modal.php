@@ -48,3 +48,17 @@ function jcp_page_upgrade_case_study_form_modal( array $content, int $post_id ):
 	$content['blocks'] = $blocks;
 	return $content;
 }
+
+/**
+ * Avoid stale HTML for the case-study campaign (modal markup must stay fresh).
+ */
+function jcp_case_study_nocache_headers(): void {
+	if ( is_admin() || ! is_singular() ) {
+		return;
+	}
+	if ( get_post_field( 'post_name', get_queried_object_id() ) !== 'case-study' ) {
+		return;
+	}
+	nocache_headers();
+}
+add_action( 'template_redirect', 'jcp_case_study_nocache_headers', 0 );

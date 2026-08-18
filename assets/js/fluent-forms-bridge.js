@@ -21,6 +21,31 @@
     return document.querySelector('.jcp-fluent-quote-modal');
   }
 
+  /**
+   * Fluent often leaves Submit in a sibling .ff_submit_btn_wrapper while
+   * .ff-inner_submit_container only holds Previous (empty column-2). Move
+   * Submit into that column so the mobile dock CSS pins both actions.
+   */
+  function normalizeStepSubmitDock(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    var steps = scope.querySelectorAll('.fluentform-step, .ff-step, .ff-el-form-step');
+    Array.prototype.forEach.call(steps, function (step) {
+      var wrapper = step.querySelector(
+        ':scope > .ff_submit_btn_wrapper, :scope > .ff-el-group.ff_submit_btn_wrapper'
+      );
+      if (!wrapper) {
+        return;
+      }
+      var col2 =
+        step.querySelector('.ff-inner_submit_container .ff-t-column-2')
+        || step.querySelector('.ff-inner_submit_container .ff-t-cell:last-child');
+      if (!col2 || col2.contains(wrapper)) {
+        return;
+      }
+      col2.appendChild(wrapper);
+    });
+  }
+
   function openModal(modal) {
     if (!modal) {
       return;
@@ -29,6 +54,7 @@
     modal.classList.add(OPEN_CLASS);
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add(BODY_CLASS);
+    normalizeStepSubmitDock(modal);
     var closeBtn = modal.querySelector('[data-jcp-form-close]');
     if (closeBtn && typeof closeBtn.focus === 'function') {
       closeBtn.focus();
@@ -211,6 +237,14 @@
     return Math.max(72, Math.round(h) + 16);
   }
 
+  function getScrollHost(el) {
+    var modalBody = el && el.closest ? el.closest('.jcp-fluent-quote-modal__body') : null;
+    if (modalBody) {
+      return modalBody;
+    }
+    return null;
+  }
+
   /** Keep Fluent multi-step auto-scroll clear of the Form Landing sticky bar. */
   function syncFluentScrollOffset() {
     window.ff_scroll_top_offset = stickyOffset();
@@ -269,6 +303,13 @@
       if (rect.width === 0 && rect.height === 0) {
         return;
       }
+      var host = getScrollHost(target);
+      if (host) {
+        var hostRect = host.getBoundingClientRect();
+        var nextTop = host.scrollTop + (rect.top - hostRect.top) - Math.max(24, stickyOffset() / 3);
+        host.scrollTo({ top: Math.max(0, nextTop), behavior: 'smooth' });
+        return;
+      }
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
       // Re-adjust for sticky form-landing header covering the field.
       window.setTimeout(function () {
@@ -297,24 +338,52 @@
         scrollToFirstError(el || document);
       }, 60);
     }
+    function onStepOrReady(e) {
+      var root = (e && e.target && e.target.nodeType === 1) ? e.target : document;
+      normalizeStepSubmitDock(root.closest ? (root.closest('.jcp-fluent-bridge') || root) : document);
+    }
     $(document)
       .off('fluentform_submission_failed.jcpBridge fluentform_submitted_failed.jcpBridge fluentform_validation_failed.jcpBridge')
       .on(
         'fluentform_submission_failed.jcpBridge fluentform_submitted_failed.jcpBridge fluentform_validation_failed.jcpBridge',
         onFail
       );
+    $(document)
+      .off(
+        'fluentform_init.jcpBridgeDock fluentform_init_step.jcpBridgeDock fluentform_step_change.jcpBridgeDock fluentform_step_changed.jcpBridgeDock fluentform_step_down.jcpBridgeDock fluentform_step_up.jcpBridgeDock'
+      )
+      .on(
+        'fluentform_init.jcpBridgeDock fluentform_init_step.jcpBridgeDock fluentform_step_change.jcpBridgeDock fluentform_step_changed.jcpBridgeDock fluentform_step_down.jcpBridgeDock fluentform_step_up.jcpBridgeDock',
+        onStepOrReady
+      );
+    // Fluent step transitions: re-dock after Next/Prev paints.
+    $(document)
+      .off('click.jcpBridgeDock')
+      .on('click.jcpBridgeDock', '.ff-btn-next, .ff-btn-prev', function () {
+        window.setTimeout(function () {
+          normalizeStepSubmitDock(document);
+        }, 50);
+        window.setTimeout(function () {
+          normalizeStepSubmitDock(document);
+        }, 400);
+      });
   }
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
       syncFluentScrollOffset();
       bindFluentHelpers();
+      normalizeStepSubmitDock(document);
     });
   } else {
     syncFluentScrollOffset();
     bindFluentHelpers();
+    normalizeStepSubmitDock(document);
   }
   window.setTimeout(bindFluentHelpers, 500);
+  window.setTimeout(function () {
+    normalizeStepSubmitDock(document);
+  }, 500);
   window.addEventListener('resize', syncFluentScrollOffset);
 
   function openModalFromHash() {

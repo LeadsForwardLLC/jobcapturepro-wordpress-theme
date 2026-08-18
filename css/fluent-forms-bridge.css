@@ -864,6 +864,45 @@ body.jcp-form-landing .jcp-ff-validation-notice {
     width: 100%;
   }
 
+  /*
+   * Fallback: some Fluent forms leave Submit as a sibling of the empty
+   * .ff-inner_submit_container (not inside column-2). JS relocates it; until
+   * then, pin the orphan wrapper so Submit is still reachable on mobile.
+   */
+  .jcp-fluent-bridge .fluentform-step.active > .ff_submit_btn_wrapper,
+  .jcp-fluent-bridge .ff-step.active > .ff_submit_btn_wrapper,
+  .jcp-fluent-bridge .ff-step.ff-active > .ff_submit_btn_wrapper,
+  .jcp-fluent-bridge .ff-step.ff_active > .ff_submit_btn_wrapper {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100011;
+    margin: 0 !important;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    background: var(--jcp-ff-surface, #fff);
+    border-top: 1px solid var(--jcp-ff-border, #e5e7eb);
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+    box-sizing: border-box;
+  }
+
+  /* When both prev dock + orphan submit exist, stack submit above prev bar */
+  .jcp-fluent-bridge .fluentform-step.active:has(> .ff_submit_btn_wrapper) .ff-inner_submit_container,
+  .jcp-fluent-bridge .ff-step.active:has(> .ff_submit_btn_wrapper) .ff-inner_submit_container,
+  .jcp-fluent-bridge .ff-step.ff-active:has(> .ff_submit_btn_wrapper) .ff-inner_submit_container {
+    bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px));
+    box-shadow: none;
+    border-top: 0;
+    background: transparent;
+    padding-bottom: 0;
+  }
+
+  .jcp-fluent-bridge .fluentform-step.active:has(> .ff_submit_btn_wrapper),
+  .jcp-fluent-bridge .ff-step.active:has(> .ff_submit_btn_wrapper),
+  .jcp-fluent-bridge .ff-step.ff-active:has(> .ff_submit_btn_wrapper) {
+    padding-bottom: calc(8.5rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
   .jcp-fluent-bridge .fluentform-step.active .step-nav .ff-btn,
   .jcp-fluent-bridge .fluentform-step.active .step-nav .ff-btn-next,
   .jcp-fluent-bridge .fluentform-step.active .step-nav .ff-btn-prev,
