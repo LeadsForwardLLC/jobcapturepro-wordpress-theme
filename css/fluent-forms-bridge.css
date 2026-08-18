@@ -74,13 +74,33 @@
   box-shadow: var(--jcp-shadow-2xl, 0 25px 50px rgba(0, 0, 0, 0.15));
 }
 
+/* True fullscreen takeover (case study / campaign apply) */
+.jcp-fluent-quote-modal--takeover {
+  align-items: stretch;
+  padding: 0;
+}
+
+.jcp-fluent-quote-modal--takeover .jcp-fluent-quote-modal__overlay {
+  display: none;
+}
+
+.jcp-fluent-quote-modal--takeover .jcp-fluent-quote-modal__dialog {
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 @media (min-width: 768px) {
-  .jcp-fluent-quote-modal {
+  .jcp-fluent-quote-modal:not(.jcp-fluent-quote-modal--takeover) {
     align-items: center;
     padding: 1.5rem;
   }
 
-  .jcp-fluent-quote-modal__dialog {
+  .jcp-fluent-quote-modal:not(.jcp-fluent-quote-modal--takeover) .jcp-fluent-quote-modal__dialog {
     height: min(900px, calc(100vh - 3rem));
     max-height: calc(100vh - 3rem);
     border-radius: var(--jcp-ff-radius-lg, 16px);
@@ -137,6 +157,37 @@
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   padding: 1rem 1.25rem 2rem;
+}
+
+.jcp-fluent-quote-modal--takeover .jcp-fluent-quote-modal__header {
+  padding: 1rem 1.25rem 0.85rem;
+  padding-inline: max(1.25rem, env(safe-area-inset-left)) max(1.25rem, env(safe-area-inset-right));
+}
+
+.jcp-fluent-quote-modal--takeover .jcp-fluent-quote-modal__body {
+  padding: 1rem max(1.25rem, env(safe-area-inset-left)) calc(2rem + env(safe-area-inset-bottom, 0px)) max(1.25rem, env(safe-area-inset-right));
+}
+
+.jcp-fluent-quote-modal--takeover .jcp-fluent-quote-modal__body .fluentform,
+.jcp-fluent-quote-modal--takeover .jcp-fluent-quote-modal__body form.frm-fluent-form {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.jcp-form-embed--modal-cta .jcp-form-embed__intro {
+  text-align: center;
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+.jcp-form-embed--modal-cta .jcp-form-embed__modal-actions {
+  margin: 1.25rem 0 0;
+}
+
+.jcp-form-embed--modal-cta .jcp-form-embed__shortcode-field {
+  margin-top: 1.5rem;
+  max-width: 40rem;
+  margin-inline: auto;
 }
 
 body.jcp-fluent-modal-open {

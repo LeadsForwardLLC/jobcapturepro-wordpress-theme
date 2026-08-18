@@ -157,17 +157,22 @@ add_action( 'wp_footer', 'jcp_fluent_bridge_render_global_modal', 25 );
  * @param array<string, mixed> $args Modal args.
  */
 function jcp_fluent_render_quote_modal( array $args ): void {
-	$id         = sanitize_html_class( (string) ( $args['id'] ?? 'jcp-form-modal' ) );
-	$headline   = (string) ( $args['headline'] ?? '' );
+	$id          = sanitize_html_class( (string) ( $args['id'] ?? 'jcp-form-modal' ) );
+	$headline    = (string) ( $args['headline'] ?? '' );
 	$subheadline = (string) ( $args['subheadline'] ?? '' );
-	$shortcode  = jcp_fluent_sanitize_shortcode( (string) ( $args['shortcode'] ?? '' ) );
+	$shortcode   = jcp_fluent_sanitize_shortcode( (string) ( $args['shortcode'] ?? '' ) );
+	$takeover    = ! empty( $args['takeover'] );
 	if ( $shortcode === '' ) {
 		return;
+	}
+	$classes = 'jcp-fluent-quote-modal jcp-fluent-bridge';
+	if ( $takeover ) {
+		$classes .= ' jcp-fluent-quote-modal--takeover';
 	}
 	?>
 	<div
 		id="<?php echo esc_attr( $id ); ?>"
-		class="jcp-fluent-quote-modal jcp-fluent-bridge"
+		class="<?php echo esc_attr( $classes ); ?>"
 		role="dialog"
 		aria-modal="true"
 		aria-hidden="true"
@@ -210,6 +215,11 @@ function jcp_niche_render_form_embed( array $props ): void {
 		$display = 'inline';
 	}
 
+	// Case study campaign: always use fullscreen modal takeover.
+	if ( is_singular() && get_post_field( 'post_name', get_queried_object_id() ) === 'case-study' ) {
+		$display = 'modal';
+	}
+
 	$show_headline    = ! array_key_exists( 'show_headline', $props ) || ! empty( $props['show_headline'] );
 	$show_subheadline = ! array_key_exists( 'show_subheadline', $props ) || ! empty( $props['show_subheadline'] );
 
@@ -223,12 +233,53 @@ function jcp_niche_render_form_embed( array $props ): void {
 	}
 
 	if ( $display === 'modal' ) {
+		$cta_label = $headline !== '' ? $headline : __( 'Apply now', 'jcp-core' );
+		?>
+		<section id="apply" class="jcp-section jcp-form-embed jcp-form-embed--modal-cta" data-jcp-form-display="modal">
+			<div class="jcp-container">
+				<div class="jcp-form-embed__intro">
+					<?php if ( $show_headline && $headline !== '' ) : ?>
+						<h2<?php if ( function_exists( 'jcp_niche_editable_attr' ) ) { jcp_niche_editable_attr( 'form_embed.headline' ); } ?>><?php echo esc_html( $headline ); ?></h2>
+					<?php endif; ?>
+					<?php if ( $show_subheadline && $subheadline !== '' ) : ?>
+						<p<?php if ( function_exists( 'jcp_niche_editable_attr' ) ) { jcp_niche_editable_attr( 'form_embed.subheadline' ); } ?>><?php echo esc_html( $subheadline ); ?></p>
+					<?php endif; ?>
+					<p class="jcp-form-embed__modal-actions">
+						<button
+							type="button"
+							class="btn btn-primary"
+							data-jcp-form-trigger
+							data-jcp-form-target="jcp-form-modal"
+						>
+							<?php esc_html_e( 'Apply for a Case Study Spot', 'jcp-core' ); ?>
+						</button>
+					</p>
+				</div>
+				<?php if ( current_user_can( 'edit_posts' ) ) : ?>
+					<label class="jcp-form-embed__shortcode-field">
+						<span class="jcp-form-embed__shortcode-label"><?php esc_html_e( 'Fluent Forms shortcode', 'jcp-core' ); ?></span>
+						<input
+							type="text"
+							class="jcp-form-embed__shortcode-input"
+							data-jcp-input-path="form_embed.shortcode"
+							value="<?php echo esc_attr( $shortcode ); ?>"
+							placeholder='[fluentform id="12"]'
+							autocomplete="off"
+							spellcheck="false"
+						/>
+						<span class="jcp-form-embed__shortcode-hint"><?php esc_html_e( 'Form opens in a fullscreen modal for visitors. Paste shortcode, then Save.', 'jcp-core' ); ?></span>
+					</label>
+				<?php endif; ?>
+			</div>
+		</section>
+		<?php
 		jcp_fluent_render_quote_modal(
 			[
 				'id'          => 'jcp-form-modal',
-				'headline'    => $headline !== '' ? $headline : __( 'Apply now', 'jcp-core' ),
+				'headline'    => $cta_label,
 				'subheadline' => $subheadline,
 				'shortcode'   => $shortcode,
+				'takeover'    => true,
 			]
 		);
 		return;

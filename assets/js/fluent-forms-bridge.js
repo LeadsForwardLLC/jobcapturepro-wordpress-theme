@@ -48,6 +48,24 @@
     lastFocus = null;
   }
 
+  function hrefOpensFormModal(href) {
+    if (!href) {
+      return false;
+    }
+    if (href === '#apply' || href === '#jcp-form-modal') {
+      return true;
+    }
+    try {
+      var url = new URL(href, window.location.href);
+      if (url.origin !== window.location.origin) {
+        return false;
+      }
+      return url.hash === '#apply' || url.hash === '#jcp-form-modal';
+    } catch (e) {
+      return /#apply$/.test(href) || /#jcp-form-modal$/.test(href);
+    }
+  }
+
   function resolveModalFromTrigger(el) {
     var target = el.getAttribute('data-jcp-form-target') || '';
     if (target.indexOf('#') === 0) {
@@ -57,13 +75,13 @@
       return getModal(target);
     }
     var href = el.getAttribute('href') || '';
-    if (href === '#apply' || href === '#jcp-form-modal') {
-      var modal = getModal(href === '#apply' ? 'jcp-form-modal' : href.slice(1));
+    if (hrefOpensFormModal(href)) {
+      var modal = getModal('jcp-form-modal');
       if (modal) {
         return modal;
       }
       // Inline form: let browser scroll to #apply.
-      if (href === '#apply' && document.getElementById('apply')) {
+      if ((href === '#apply' || /#apply$/.test(href)) && document.getElementById('apply')) {
         return null;
       }
     }
@@ -78,10 +96,7 @@
       return true;
     }
     var href = el.getAttribute('href') || '';
-    if (href === '#jcp-form-modal') {
-      return true;
-    }
-    if (href === '#apply' && getModal('jcp-form-modal')) {
+    if (hrefOpensFormModal(href) && getModal('jcp-form-modal')) {
       return true;
     }
     return false;
@@ -301,6 +316,22 @@
   }
   window.setTimeout(bindFluentHelpers, 500);
   window.addEventListener('resize', syncFluentScrollOffset);
+
+  function openModalFromHash() {
+    if (window.location.hash !== '#apply' && window.location.hash !== '#jcp-form-modal') {
+      return;
+    }
+    var modal = getModal('jcp-form-modal');
+    if (modal) {
+      openModal(modal);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', openModalFromHash);
+  } else {
+    openModalFromHash();
+  }
+  window.addEventListener('hashchange', openModalFromHash);
 
   window.jcpFluentQuoteOpen = function (id) {
     openModal(getModal(id || 'jcp-form-modal'));
