@@ -59,6 +59,16 @@ function jcp_case_study_nocache_headers(): void {
 	if ( get_post_field( 'post_name', get_queried_object_id() ) !== 'case-study' ) {
 		return;
 	}
+	if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+		define( 'DONOTCACHEPAGE', true );
+	}
+	if ( ! defined( 'DONOTCACHEDYNAMIC' ) ) {
+		define( 'DONOTCACHEDYNAMIC', true );
+	}
 	nocache_headers();
+	// SiteGround / Cloudflare-facing hints (in addition to nocache_headers).
+	header( 'Cache-Control: no-cache, must-revalidate, max-age=0, no-store, private' );
+	header( 'Pragma: no-cache' );
+	header( 'X-JCP-Cache: bypass-case-study' );
 }
 add_action( 'template_redirect', 'jcp_case_study_nocache_headers', 0 );

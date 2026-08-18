@@ -46,4 +46,24 @@ jobs:
           WP_ROOT="$(dirname "$(dirname "$(dirname "${REMOTE_PATH%/}")")")"
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -p "${SSH_PORT}" \
             "${SSH_USER}@${SSH_HOST}" \
-            "cd '${WP_ROOT}' && (wp sg purge 2>/dev/null || wp cache flush 2>/dev/null || wp rocket clean --confirm 2>/dev/null || true)"
+            "cd '${WP_ROOT}' && \
+              (wp sg purge || true) && \
+              (wp sg purge --url='https://jobcapturepro.com/case-study/' || true) && \
+              (wp sg purge --url='https://jobcapturepro.com/case-study' || true) && \
+              (wp cache flush || true) && \
+              (wp rocket clean --confirm || true) && \
+              (wp eval 'if (function_exists(\"sg_cachepress_purge_cache\")) { sg_cachepress_purge_cache(); } if (function_exists(\"sg_cachepress_purge_everything\")) { sg_cachepress_purge_everything(); }' || true)"
+          # Warm + verify origin after purge (query bust forces PHP once).
+          curl -fsS -o /dev/null -A 'JCP-Deploy-Purge' "https://jobcapturepro.com/case-study/?purge=$(date +%s)" || true
+          sleep 2
+          # Hit canonical URL so Dynamic Cache (if any) stores the fresh modal HTML.
+          curl -fsS -o /tmp/jcp-case-study.html -A 'JCP-Deploy-Purge' "https://jobcapturepro.com/case-study/" || true
+          if ! grep -q 'jcp-fluent-quote-modal--takeover' /tmp/jcp-case-study.html; then
+            echo 'WARN: /case-study/ HTML still missing modal takeover after purge'
+            # One more purge attempt then re-check
+            ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes -p "${SSH_PORT}" \
+              "${SSH_USER}@${SSH_HOST}" \
+              "cd '${WP_ROOT}' && (wp sg purge || wp cache flush || true)"
+            curl -fsS -o /tmp/jcp-case-study.html -A 'JCP-Deploy-Purge' "https://jobcapturepro.com/case-study/?force=$(date +%s)" || true
+          fi
+          grep -E 'jcp-form-modal|data-jcp-form-display' /tmp/jcp-case-study.html | head -5 || true
