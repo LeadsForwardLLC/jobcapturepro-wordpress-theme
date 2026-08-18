@@ -402,6 +402,49 @@
   }
   window.addEventListener('hashchange', openModalFromHash);
 
+  /**
+   * SiteGround Dynamic Cache can keep a stale HIT for /case-study/ after deploys
+   * when `wp sg` is unavailable. If we detect the old inline embed, soft-reload
+   * once with a cache-busting query so visitors get the modal takeover HTML.
+   */
+  function rescueStaleCaseStudyInline() {
+    try {
+      if (!/\/case-study\/?$/.test(window.location.pathname)) {
+        return;
+      }
+      if (window.location.search && /(?:^|[?&])(?:jcp|qa|v|nocache|fresh|purge)=/.test(window.location.search)) {
+        return;
+      }
+      if (document.getElementById('jcp-form-modal')) {
+        return;
+      }
+      var apply = document.getElementById('apply');
+      if (!apply || apply.getAttribute('data-jcp-form-display') !== 'inline') {
+        return;
+      }
+      if (!apply.querySelector('.jcp-fluent-bridge--inline, form.frm-fluent-form')) {
+        return;
+      }
+      if (window.sessionStorage && window.sessionStorage.getItem('jcpCsCacheBust') === '1') {
+        return;
+      }
+      if (window.sessionStorage) {
+        window.sessionStorage.setItem('jcpCsCacheBust', '1');
+      }
+      var bust = 'jcp=' + String(Date.now());
+      var next = window.location.pathname + '?' + bust + window.location.hash;
+      window.location.replace(next);
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', rescueStaleCaseStudyInline);
+  } else {
+    rescueStaleCaseStudyInline();
+  }
+
   window.jcpFluentQuoteOpen = function (id) {
     openModal(getModal(id || 'jcp-form-modal'));
   };
