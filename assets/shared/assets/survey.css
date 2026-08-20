@@ -278,6 +278,75 @@ body.survey-only #jcp-app {
   flex-direction:column;
   gap:10px;
 }
+
+/* Step 1 social proof — compact quote strip under Next */
+.survey-proof {
+  margin-top: 28px;
+  padding-top: 22px;
+  border-top: 1px solid #e5e7eb;
+}
+.survey-proof-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 20px;
+}
+.survey-proof-item {
+  min-width: 0;
+  padding: 0 4px;
+}
+.survey-proof-item + .survey-proof-item {
+  border-left: 1px solid #e5e7eb;
+  padding-left: 20px;
+}
+.survey-proof-quote {
+  margin: 0 0 10px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #4b5563;
+  font-weight: 500;
+}
+.survey-proof-by {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 1.3;
+}
+.survey-proof-by strong {
+  color: #111827;
+  font-weight: 800;
+}
+.survey-proof-by span {
+  color: #9ca3af;
+  font-weight: 600;
+}
+@media (max-width: 720px) {
+  .survey-proof {
+    margin-top: 22px;
+    padding-top: 18px;
+  }
+  .survey-proof-list {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .survey-proof-item {
+    padding: 0;
+  }
+  .survey-proof-item + .survey-proof-item {
+    border-left: 0;
+    border-top: 1px solid #eef2f7;
+    padding-left: 0;
+    padding-top: 14px;
+  }
+  .survey-proof-quote {
+    font-size: 14px;
+  }
+}
+
 .survey-trust-inline{
   color:#6b7280;
   font-weight:800;

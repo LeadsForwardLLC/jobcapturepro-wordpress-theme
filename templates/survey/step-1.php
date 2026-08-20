@@ -56,4 +56,27 @@ $demo_btn      = 'Next step';
   <div class="survey-actions-row">
     <button type="button" class="survey-btn" data-action="next"><?php echo esc_html( $demo_btn ); ?></button>
   </div>
+
+  <?php
+  $survey_proof = function_exists( 'jcp_sales_tool_default_reviews' )
+    ? array_slice( jcp_sales_tool_default_reviews(), 0, 3 )
+    : [];
+  if ( $survey_proof ) :
+    ?>
+  <aside class="survey-proof" aria-label="<?php esc_attr_e( 'What customers say', 'jcp-core' ); ?>">
+    <ul class="survey-proof-list">
+      <?php foreach ( $survey_proof as $review ) : ?>
+        <li class="survey-proof-item">
+          <p class="survey-proof-quote">&ldquo;<?php echo esc_html( (string) ( $review['quote'] ?? '' ) ); ?>&rdquo;</p>
+          <p class="survey-proof-by">
+            <strong><?php echo esc_html( (string) ( $review['name'] ?? '' ) ); ?></strong>
+            <?php if ( ! empty( $review['role'] ) ) : ?>
+              <span><?php echo esc_html( (string) $review['role'] ); ?></span>
+            <?php endif; ?>
+          </p>
+        </li>
+      <?php endforeach; ?>
+    </ul>
+  </aside>
+  <?php endif; ?>
 </section>
