@@ -59,7 +59,7 @@ $demo_btn      = 'Next step';
 
   <?php
   $survey_proof = function_exists( 'jcp_sales_tool_default_reviews' )
-    ? array_slice( jcp_sales_tool_default_reviews(), 0, 3 )
+    ? jcp_sales_tool_default_reviews()
     : [];
   if ( $survey_proof ) :
     ?>

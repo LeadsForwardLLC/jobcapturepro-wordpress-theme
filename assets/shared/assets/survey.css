@@ -290,16 +290,21 @@ body.survey-only #jcp-app {
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0 20px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 24px;
 }
 .survey-proof-item {
   min-width: 0;
-  padding: 0 4px;
+  padding: 0;
 }
-.survey-proof-item + .survey-proof-item {
-  border-left: 1px solid #e5e7eb;
-  padding-left: 20px;
+@media (min-width: 721px) {
+  .survey-proof-item:nth-child(odd) {
+    padding-right: 12px;
+    border-right: 1px solid #e5e7eb;
+  }
+  .survey-proof-item:nth-child(even) {
+    padding-left: 12px;
+  }
 }
 .survey-proof-quote {
   margin: 0 0 10px;
@@ -333,13 +338,13 @@ body.survey-only #jcp-app {
     grid-template-columns: 1fr;
     gap: 14px;
   }
-  .survey-proof-item {
+  .survey-proof-item:nth-child(odd),
+  .survey-proof-item:nth-child(even) {
     padding: 0;
+    border-right: 0;
   }
   .survey-proof-item + .survey-proof-item {
-    border-left: 0;
     border-top: 1px solid #eef2f7;
-    padding-left: 0;
     padding-top: 14px;
   }
   .survey-proof-quote {
