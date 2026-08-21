@@ -12,29 +12,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Default customer review snippets for the proof chapter.
  *
- * @return list<array{name:string,role:string,quote:string,rating?:int}>
+ * @return list<array{id:string,name:string,role:string,quote:string,rating?:int}>
  */
 function jcp_sales_tool_default_reviews(): array {
 	return [
 		[
+			'id'     => 'trent-ellison',
 			'name'   => 'Trent Ellison',
 			'role'   => 'Home service operator',
 			'quote'  => 'Easy to use and really smart. Makes it super simple to turn completed work into useful online content — and the review side is amazing.',
 			'rating' => 5,
 		],
 		[
+			'id'     => 'brian-hardy',
 			'name'   => 'Brian Hardy',
 			'role'   => 'Contractor',
 			'quote'  => 'Awesome — it takes my work site pictures and turns them into a marketing campaign.',
 			'rating' => 5,
 		],
 		[
+			'id'     => 'heriberto-eddie-roman',
 			'name'   => 'Heriberto Eddie Roman',
 			'role'   => 'Business owner',
 			'quote'  => 'JobCapturePro has been a game changer for my business!',
 			'rating' => 5,
 		],
 		[
+			'id'     => 'peter-bonk',
 			'name'   => 'Peter Bonk',
 			'role'   => 'Marketing agency',
 			'quote'  => 'One of the easiest marketing wins we\'ve had for an HVAC client. Techs already take photos — now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.',
