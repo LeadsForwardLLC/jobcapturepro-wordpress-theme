@@ -149,6 +149,7 @@ function jcp_page_presets(): array {
 				'how_it_works',
 				'demo_preview',
 				'proof_flow',
+				'testimonials',
 				'benefits',
 				'who_its_for',
 				'directory_preview',

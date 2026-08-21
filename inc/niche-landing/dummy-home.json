@@ -59,6 +59,50 @@
     "link_label": "Learn more about the JobCapturePro directory",
     "link_url": "#directory-preview"
   },
+  "testimonials": {
+    "eyebrow": "Customer stories",
+    "headline": "Trusted by contractors who already take the photos",
+    "subheadline": "Real operators and agencies using JobCapturePro to turn completed jobs into visibility, content, and reviews.",
+    "featured_key": "peter-bonk",
+    "autoplay": true,
+    "autoplay_ms": 6000,
+    "show_stars": true,
+    "show_roles": true,
+    "show_eyebrow": true,
+    "show_headline": true,
+    "show_subheadline": true,
+    "section_id": "testimonials",
+    "reviews": [
+      {
+        "id": "trent-ellison",
+        "name": "Trent Ellison",
+        "role": "Home service operator",
+        "quote": "Easy to use and really smart. Makes it super simple to turn completed work into useful online content — and the review side is amazing.",
+        "rating": 5
+      },
+      {
+        "id": "brian-hardy",
+        "name": "Brian Hardy",
+        "role": "Contractor",
+        "quote": "Awesome — it takes my work site pictures and turns them into a marketing campaign.",
+        "rating": 5
+      },
+      {
+        "id": "heriberto-eddie-roman",
+        "name": "Heriberto Eddie Roman",
+        "role": "Business owner",
+        "quote": "JobCapturePro has been a game changer for my business!",
+        "rating": 5
+      },
+      {
+        "id": "peter-bonk",
+        "name": "Peter Bonk",
+        "role": "Marketing agency",
+        "quote": "One of the easiest marketing wins we've had for an HVAC client. Techs already take photos — now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.",
+        "rating": 5
+      }
+    ]
+  },
   "benefits": {
     "headline": "Benefits that show up in the market",
     "subheadline": "JobCapturePro creates proof customers can see, rankings that improve, and demand that compounds.",

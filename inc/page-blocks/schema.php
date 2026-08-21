@@ -292,6 +292,9 @@ function jcp_page_get_content( int $post_id ): array {
 	if ( function_exists( 'jcp_page_upgrade_case_study_form_modal' ) ) {
 		$upgraded = jcp_page_upgrade_case_study_form_modal( $upgraded, $post_id );
 	}
+	if ( function_exists( 'jcp_page_upgrade_home_testimonials' ) ) {
+		$upgraded = jcp_page_upgrade_home_testimonials( $upgraded, $post_id );
+	}
 	if ( wp_json_encode( $upgraded ) !== wp_json_encode( $cleaned ) ) {
 		jcp_page_save_content( $post_id, $upgraded );
 		$cleaned = $upgraded;
