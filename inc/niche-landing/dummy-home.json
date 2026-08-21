@@ -13,9 +13,9 @@
     "cta_microcopy": "No signup. Takes under 5 mins.",
     "show_trust_line": true,
     "meta_stats": [
-      { "icon": "camera", "label": "1 photo", "detail": "proof everywhere", "css_class": "meta-stat-photo" },
-      { "icon": "map", "label": "4 channels", "detail": "web, maps, social", "css_class": "meta-stat-channels" },
-      { "icon": "clock", "label": "0 busywork", "detail": "zero work for you", "css_class": "meta-stat-busywork" }
+      { "icon": "camera", "label": "1 photo", "detail": "Becomes proof on every channel", "css_class": "meta-stat-photo" },
+      { "icon": "map", "label": "4 channels", "detail": "Website, Google, social & directory", "css_class": "meta-stat-channels" },
+      { "icon": "clock", "label": "0 busywork", "detail": "Your crew just takes the photo", "css_class": "meta-stat-busywork" }
     ]
   },
   "how_it_works": {

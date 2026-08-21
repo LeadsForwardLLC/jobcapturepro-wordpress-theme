@@ -20,35 +20,40 @@ function jcp_page_home_balanced_meta_stats(): array {
 		[
 			'icon'      => 'camera',
 			'label'     => '1 photo',
-			'detail'    => 'proof everywhere',
+			'detail'    => 'Becomes proof on every channel',
 			'css_class' => 'meta-stat-photo',
 		],
 		[
 			'icon'      => 'map',
 			'label'     => '4 channels',
-			'detail'    => 'web, maps, social',
+			'detail'    => 'Website, Google, social & directory',
 			'css_class' => 'meta-stat-channels',
 		],
 		[
 			'icon'      => 'clock',
 			'label'     => '0 busywork',
-			'detail'    => 'zero work for you',
+			'detail'    => 'Your crew just takes the photo',
 			'css_class' => 'meta-stat-busywork',
 		],
 	];
 }
 
 /**
- * Whether a hero meta_stats row still uses known unbalanced copy.
+ * Whether a hero meta_stats row still uses outdated copy.
  *
  * @param array<int, mixed> $stats Stats rows.
  */
 function jcp_page_home_meta_stats_need_balance( array $stats ): bool {
-	$unbalanced_details = [
+	$outdated_details = [
 		'shared on website, google, social + directory',
 		'website, google, social + directory',
 		'no extra work from you',
 		'zero admin work',
+		'proof everywhere',
+		'web, maps, social',
+		'site, maps, social',
+		'zero work for you',
+		'no work from you',
 	];
 
 	foreach ( $stats as $row ) {
@@ -56,7 +61,7 @@ function jcp_page_home_meta_stats_need_balance( array $stats ): bool {
 			continue;
 		}
 		$detail = strtolower( trim( (string) ( $row['detail'] ?? '' ) ) );
-		if ( in_array( $detail, $unbalanced_details, true ) ) {
+		if ( $detail === '' || in_array( $detail, $outdated_details, true ) ) {
 			return true;
 		}
 	}

@@ -102,21 +102,21 @@ $icon = function( $name ) {
 								<img src="<?php echo $icon('camera'); ?>" class="meta-icon" alt="">
 								<strong>1 photo</strong>
 							</div>
-							<span>proof everywhere</span>
+							<span>Becomes proof on every channel</span>
 						</div>
 						<div class="meta-item">
 							<div class="meta-label">
 								<img src="<?php echo $icon('map'); ?>" class="meta-icon" alt="">
 								<strong>4 channels</strong>
 							</div>
-							<span>web, maps, social</span>
+							<span>Website, Google, social & directory</span>
 						</div>
 						<div class="meta-item">
 							<div class="meta-label">
 								<img src="<?php echo $icon('clock'); ?>" class="meta-icon" alt="">
 								<strong>0 busywork</strong>
 							</div>
-							<span>zero work for you</span>
+							<span>Your crew just takes the photo</span>
 						</div>
 					</div>
 				</div>

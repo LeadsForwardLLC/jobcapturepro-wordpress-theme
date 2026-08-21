@@ -190,9 +190,11 @@
   justify-content: flex-start;
 }
 .jcp-home .meta-label strong {
-  font-size: clamp(16px, 1.8vw, 22px);
-  line-height: 1.25;
+  font-size: clamp(14px, 1.2vw, 17px) !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.01em;
   display: inline-block;
+  white-space: nowrap;
 }
 .jcp-home .meta-stat-photo .meta-label strong {
   color: var(--jcp-color-primary);
@@ -273,7 +275,7 @@
   }
 
   .jcp-home .meta-label strong {
-    font-size: clamp(14px, 4vw, 18px);
+    font-size: clamp(13px, 3.5vw, 16px) !important;
   }
 }
 
