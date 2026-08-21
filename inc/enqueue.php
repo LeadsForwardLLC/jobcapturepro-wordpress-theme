@@ -96,8 +96,10 @@ function jcp_core_enqueue_assets(): void {
         $uses_blocks = $front_id > 0 && get_post_meta( $front_id, jcp_page_content_meta_key(), true );
         if ( $uses_blocks ) {
             jcp_core_enqueue_script( 'jcp-core-home-interactions', 'js/pages/home-interactions.js' );
+            jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [ 'jcp-core-home-interactions' ] );
         } else {
             jcp_core_enqueue_script( 'jcp-core-home', 'js/pages/home.js' );
+            jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [ 'jcp-core-home' ] );
             $render_deps[] = 'jcp-core-home';
             $home_ctas = [
                 'primary_text'   => 'View the live demo',
