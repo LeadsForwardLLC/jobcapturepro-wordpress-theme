@@ -187,6 +187,7 @@ function jcp_niche_render_step_lines( array $lines, string $path_prefix ): void 
 
 /**
  * Homepage-style core mechanic row (1 photo / 4 channels / 0 busywork).
+ * Uses the shared meta-stats component so layout matches the homepage hero.
  *
  * @param array<int, array<string, string>> $items       Items.
  * @param string                            $path_prefix JSON path prefix.
@@ -196,54 +197,25 @@ function jcp_niche_render_core_mechanic_strip( array $items, string $path_prefix
 	if ( empty( $normalized ) ) {
 		return;
 	}
-	?>
-	<div class="directory-meta jcp-core-mechanic-meta"<?php if ( $path_prefix !== '' ) { jcp_niche_array_attr( $path_prefix ); } ?>>
-		<?php foreach ( $normalized as $i => $item ) : ?>
-			<?php
-			$raw = $items[ $i ] ?? [];
-			if ( ! is_array( $raw ) ) {
-				continue;
-			}
-			$icon   = (string) ( $item['icon'] ?? 'check' );
-			$value  = trim( (string) ( $raw['value'] ?? '' ) );
-			$word   = trim( (string) ( $raw['label'] ?? '' ) );
-			$detail = (string) ( $item['detail'] ?? '' );
-			$base   = $path_prefix !== '' ? $path_prefix . '.' . $i : '';
-			$class  = (string) ( $item['css_class'] ?? '' );
-			$combined = (string) ( $item['label'] ?? '' );
-			?>
-			<div class="meta-item jcp-collection-item<?php echo $class !== '' ? ' ' . esc_attr( $class ) : ''; ?>"<?php if ( $path_prefix !== '' ) { jcp_niche_array_item_attr( (int) $i ); } ?>>
-				<div class="meta-label">
-					<span class="factor-icon-wrapper jcp-hero-meta-icon"<?php if ( $base !== '' ) { ?> data-jcp-icon-path="<?php echo esc_attr( $base . '.icon' ); ?>" title="<?php esc_attr_e( 'Click to change icon', 'jcp-core' ); ?>" role="button" tabindex="0"<?php } ?>>
-						<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="meta-icon" alt="" width="20" height="20" />
-					</span>
-					<strong>
-						<?php if ( $base !== '' && ( $value !== '' || $word !== '' ) ) : ?>
-							<span<?php jcp_niche_editable_attr( $base . '.value' ); ?>><?php echo esc_html( $value ); ?></span><?php if ( $word !== '' ) : ?><span<?php jcp_niche_editable_attr( $base . '.label' ); ?>><?php echo esc_html( ' ' . $word ); ?></span><?php endif; ?>
-						<?php else : ?>
-							<?php echo esc_html( $combined ); ?>
-						<?php endif; ?>
-					</strong>
-				</div>
-				<?php if ( $detail !== '' ) : ?>
-					<span class="meta-detail"<?php if ( $base !== '' ) { jcp_niche_editable_attr( $base . '.detail' ); } ?>><?php echo esc_html( $detail ); ?></span>
-				<?php endif; ?>
-				<?php if ( $path_prefix !== '' ) { jcp_niche_collection_remove_btn(); } ?>
-			</div>
-		<?php endforeach; ?>
-		<?php if ( $path_prefix !== '' ) { jcp_niche_collection_add_btn( __( '+ Add stat', 'jcp-core' ) ); } ?>
-	</div>
-	<?php
+
+	$for_component = [];
+	foreach ( $normalized as $i => $item ) {
+		$raw = is_array( $items[ $i ] ?? null ) ? $items[ $i ] : [];
+		$row = [
+			'icon'      => (string) ( $item['icon'] ?? 'check' ),
+			'label'     => (string) ( $item['label'] ?? '' ),
+			'detail'    => (string) ( $item['detail'] ?? '' ),
+			'css_class' => (string) ( $item['css_class'] ?? '' ),
+			'value'     => trim( (string) ( $raw['value'] ?? '' ) ),
+			'word'      => trim( (string) ( $raw['label'] ?? '' ) ),
+		];
+		$for_component[] = $row;
+	}
+
+	jcp_component_home_meta_stats( $for_component, $path_prefix, 'jcp-core-mechanic-meta', $path_prefix !== '' );
 }
 
-/**
- * Single checkmark bullet row.
- *
- * @param string $text        Display text.
- * @param string $path        Optional JSON path for inline editor.
- * @param int    $index       Array index.
- * @param bool   $editable    Whether remove control is shown.
- */
+
 function jcp_niche_render_conversion_point( string $text, string $path, int $index, bool $editable ): void {
 	if ( $text === '' && ! $editable ) {
 		return;

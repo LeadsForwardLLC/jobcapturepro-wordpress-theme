@@ -4788,6 +4788,27 @@ body.jcp-guided-demo #post-demo-panel.active .post-demo-x {
   color: #6b7280;
 }
 
+.post-demo-card--simple .post-demo-secondary-cta {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  min-height: 48px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  margin-top: 0;
+}
+
+.post-demo-secondary-note {
+  margin: 8px 0 16px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.post-demo-card--simple .post-demo-replay {
+  width: 100%;
+}
+
 body.jcp-guided-demo #post-demo-panel.active {
   display: flex !important;
   align-items: center;

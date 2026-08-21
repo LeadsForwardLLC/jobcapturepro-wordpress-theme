@@ -138,86 +138,174 @@
 }
 
 /* ============================================================
-   HERO META ITEMS
+   META STATS (shared: homepage hero, core mechanic, UI library)
+   Layout: [icon] title
+                  detail
    ============================================================ */
 
-.directory-meta {
+.directory-meta,
+.jcp-meta-stats {
   display: flex;
-  gap: var(--jcp-space-3xl);
+  gap: clamp(1rem, 2.5vw, 2rem);
   margin-top: var(--jcp-space-lg);
   padding-top: 0;
   border-top: none !important;
-  flex-wrap: nowrap; /* Force single line */
+  flex-wrap: nowrap;
   align-items: flex-start;
+  width: 100%;
 }
 
-.meta-item {
+.directory-meta .meta-item,
+.jcp-meta-stats .meta-item {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 0.75rem;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.directory-meta .meta-copy,
+.jcp-meta-stats .meta-copy {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
-.meta-label {
-  display: flex;
-  align-items: center;
-  gap: var(--jcp-space-sm);
+/* Legacy wrapper (icon + title only) — keep usable if still present */
+.directory-meta .meta-label,
+.jcp-meta-stats .meta-label {
+  display: contents;
 }
 
 .meta-icon {
-  width: 28px;
-  height: 28px;
-  opacity: 0.8;
+  width: 20px;
+  height: 20px;
+  opacity: 0.9;
   flex-shrink: 0;
-  transition: transform 0.3s ease;
+  transition: transform 0.25s ease;
 }
 
-/* Hero / stat-row icon badges: white glyph on brand orange (not ranking-card layout) */
 .directory-meta .factor-icon-wrapper,
-.directory-meta .jcp-hero-meta-icon {
-  width: 44px;
-  height: 44px;
+.directory-meta .jcp-hero-meta-icon,
+.jcp-meta-stats .factor-icon-wrapper,
+.jcp-meta-stats .jcp-hero-meta-icon {
+  width: 40px;
+  height: 40px;
   margin-bottom: 0;
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--jcp-color-primary);
 }
 
 .directory-meta .factor-icon-wrapper .meta-icon,
 .directory-meta .factor-icon-wrapper .factor-icon,
-.directory-meta .jcp-hero-meta-icon .meta-icon {
-  width: 22px;
-  height: 22px;
+.directory-meta .jcp-hero-meta-icon .meta-icon,
+.jcp-meta-stats .factor-icon-wrapper .meta-icon,
+.jcp-meta-stats .jcp-hero-meta-icon .meta-icon {
+  width: 20px;
+  height: 20px;
   opacity: 1;
   filter: brightness(0) invert(1);
 }
 
 .meta-item:hover .meta-icon {
-  transform: scale(1.1);
+  transform: scale(1.08);
   opacity: 1;
 }
 
-.meta-label strong {
+.directory-meta .meta-title,
+.directory-meta .meta-copy strong,
+.directory-meta .meta-label strong,
+.jcp-meta-stats .meta-title,
+.jcp-meta-stats .meta-copy strong {
   font-weight: var(--jcp-font-weight-extrabold);
   color: var(--jcp-color-primary);
-  font-size: clamp(20px, 2.5vw, 28px);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-size: 0.9375rem; /* 15px — stays on one line */
+  line-height: 1.25;
+  letter-spacing: -0.01em;
   display: block;
-  margin-bottom: 0;
+  margin: 0;
+  white-space: nowrap;
 }
 
-.meta-item span,
-.meta-item .meta-detail {
-  font-size: var(--jcp-font-size-sm);
+.directory-meta .meta-detail,
+.directory-meta .meta-copy .meta-detail,
+.jcp-meta-stats .meta-detail {
+  font-size: 0.8125rem; /* 13px */
   color: var(--jcp-color-text-secondary);
-  line-height: var(--jcp-line-height-normal);
+  line-height: 1.4;
   font-weight: var(--jcp-font-weight-medium);
+  white-space: normal;
+  max-width: 13.5rem;
 }
 
-/* Inline editor splits stat labels into spans inside strong — keep hero stat styling */
-.meta-label strong span {
+/* Colored titles by stat type */
+.meta-stat-photo .meta-title,
+.meta-stat-photo .meta-copy strong,
+.meta-stat-photo .meta-label strong {
+  color: var(--jcp-color-primary);
+}
+
+.meta-stat-channels .meta-title,
+.meta-stat-channels .meta-copy strong,
+.meta-stat-channels .meta-label strong {
+  color: var(--jcp-color-info);
+}
+
+.meta-stat-busywork .meta-title,
+.meta-stat-busywork .meta-copy strong,
+.meta-stat-busywork .meta-label strong {
+  color: var(--jcp-color-success);
+}
+
+/* Inline editor splits titles into spans — inherit title styles */
+.directory-meta .meta-title span,
+.directory-meta .meta-label strong span,
+.jcp-meta-stats .meta-title span {
   color: inherit;
   font-size: inherit;
   font-weight: inherit;
   line-height: inherit;
+  white-space: inherit;
+}
+
+@media (max-width: 768px) {
+  .directory-meta,
+  .jcp-meta-stats {
+    gap: var(--jcp-space-md);
+    flex-wrap: wrap;
+  }
+
+  .directory-meta .meta-item,
+  .jcp-meta-stats .meta-item {
+    flex: 1 1 calc(50% - var(--jcp-space-md));
+    min-width: 9.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .directory-meta,
+  .jcp-meta-stats {
+    flex-direction: column;
+    gap: var(--jcp-space-md);
+  }
+
+  .directory-meta .meta-item,
+  .jcp-meta-stats .meta-item {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .directory-meta .meta-detail,
+  .jcp-meta-stats .meta-detail {
+    max-width: none;
+  }
 }
 
 

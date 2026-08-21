@@ -195,10 +195,10 @@ function jcp_blog_conversion_detect_trade( int $post_id ): ?array {
  */
 function jcp_blog_conversion_ctas( string $utm_suffix = 'blog' ): array {
 	$demo_url = home_url( '/demo/' );
-	$trial    = [ 'label' => __( 'Start free trial', 'jcp-core' ), 'url' => home_url( '/demo/' ) ];
+	$trial    = [ 'label' => __( 'Start free 14-day trial', 'jcp-core' ), 'url' => home_url( '/demo/' ) ];
 	if ( function_exists( 'jcp_global_resolve_cta' ) ) {
 		$trial = jcp_global_resolve_cta(
-			__( 'Start free trial', 'jcp-core' ),
+			__( 'Start free 14-day trial', 'jcp-core' ),
 			'',
 			'blog_' . $utm_suffix
 		);

@@ -56,4 +56,58 @@ $demo_btn      = 'Next step';
   <div class="survey-actions-row">
     <button type="button" class="survey-btn" data-action="next"><?php echo esc_html( $demo_btn ); ?></button>
   </div>
+
+  <?php
+  /**
+   * Demo step-1 proof quotes — kept short & even so the strip stays balanced.
+   * Names/roles match sales-deck reviews; copy is trimmed for this surface.
+   *
+   * @var list<array{name:string,role:string,quote:string}>
+   */
+  $survey_proof = [
+    [
+      'name'  => 'Trent Ellison',
+      'role'  => 'Home service operator',
+      'quote' => 'Easy to use and really smart. Turns completed jobs into useful online content — and the review side is amazing.',
+    ],
+    [
+      'name'  => 'Brian Hardy',
+      'role'  => 'Contractor',
+      'quote' => 'Awesome — it takes my work site pictures and turns them into a full marketing campaign automatically.',
+    ],
+    [
+      'name'  => 'Heriberto Eddie Roman',
+      'role'  => 'Business owner',
+      'quote' => 'JobCapturePro has been a game changer for my business — simple capture with real results online.',
+    ],
+    [
+      'name'  => 'Peter Bonk',
+      'role'  => 'Marketing agency',
+      'quote' => 'One of the easiest wins for our HVAC client. Photos become GBP posts, website content, social, and reviews.',
+    ],
+  ];
+  ?>
+  <aside class="survey-proof" aria-label="<?php esc_attr_e( 'What customers say', 'jcp-core' ); ?>">
+    <div class="survey-proof-banner">
+      <span class="survey-proof-stars" aria-hidden="true">★★★★★</span>
+      <p class="survey-proof-banner-text">
+        <strong><?php esc_html_e( '5-star reviewed', 'jcp-core' ); ?></strong>
+        <span><?php esc_html_e( 'by contractors & agencies using JobCapturePro', 'jcp-core' ); ?></span>
+      </p>
+    </div>
+    <ul class="survey-proof-list">
+      <?php foreach ( $survey_proof as $review ) : ?>
+        <li class="survey-proof-item">
+          <span class="survey-proof-item-stars" aria-label="<?php esc_attr_e( '5 out of 5 stars', 'jcp-core' ); ?>">★★★★★</span>
+          <p class="survey-proof-quote">&ldquo;<?php echo esc_html( (string) ( $review['quote'] ?? '' ) ); ?>&rdquo;</p>
+          <p class="survey-proof-by">
+            <strong><?php echo esc_html( (string) ( $review['name'] ?? '' ) ); ?></strong>
+            <?php if ( ! empty( $review['role'] ) ) : ?>
+              <span><?php echo esc_html( (string) $review['role'] ); ?></span>
+            <?php endif; ?>
+          </p>
+        </li>
+      <?php endforeach; ?>
+    </ul>
+  </aside>
 </section>

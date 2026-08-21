@@ -50,8 +50,7 @@ function jcp_demo_analytics_maybe_create_table(): void {
 
 /**
  * Create demo sessions table if it doesn't exist.
- * Stores session-level summary only: session_id, optional business_name/business_type, timestamps, flags.
- * No phone; no full email. WP is not a lead system.
+ * Stores session-level summary: session_id, business/contact fields, timestamps, flags.
  */
 function jcp_demo_analytics_maybe_create_sessions_table(): void {
     global $wpdb;
@@ -63,6 +62,8 @@ function jcp_demo_analytics_maybe_create_sessions_table(): void {
         business_name varchar(255) DEFAULT NULL,
         business_type varchar(255) DEFAULT NULL,
         demo_goals longtext DEFAULT NULL,
+        contact_name varchar(255) DEFAULT NULL,
+        contact_email varchar(255) DEFAULT NULL,
         demo_started_at datetime NOT NULL,
         demo_completed tinyint(1) NOT NULL DEFAULT 0,
         demo_converted tinyint(1) NOT NULL DEFAULT 0,
@@ -76,6 +77,12 @@ function jcp_demo_analytics_maybe_create_sessions_table(): void {
     dbDelta( $sql );
     if ( $wpdb->get_var( "SHOW COLUMNS FROM $table LIKE 'demo_goals'" ) !== 'demo_goals' ) {
         $wpdb->query( "ALTER TABLE $table ADD COLUMN demo_goals longtext DEFAULT NULL AFTER business_type" );
+    }
+    if ( $wpdb->get_var( "SHOW COLUMNS FROM $table LIKE 'contact_name'" ) !== 'contact_name' ) {
+        $wpdb->query( "ALTER TABLE $table ADD COLUMN contact_name varchar(255) DEFAULT NULL AFTER demo_goals" );
+    }
+    if ( $wpdb->get_var( "SHOW COLUMNS FROM $table LIKE 'contact_email'" ) !== 'contact_email' ) {
+        $wpdb->query( "ALTER TABLE $table ADD COLUMN contact_email varchar(255) DEFAULT NULL AFTER contact_name" );
     }
 }
 
@@ -223,7 +230,18 @@ function jcp_demo_analytics_handle_event( \WP_REST_Request $request ) {
         return new \WP_REST_Response( [ 'ok' => true ], 200 );
     }
 
-    jcp_demo_analytics_upsert_session_from_event( $session_id, $event_type, $metadata, $meta_json );
+    jcp_demo_analytics_upsert_session_from_event(
+        $session_id,
+        $event_type,
+        $metadata,
+        $meta_json,
+        [
+            'email'      => $request->get_param( 'email' ),
+            'first_name' => $request->get_param( 'first_name' ),
+            'last_name'  => $request->get_param( 'last_name' ),
+            'company'    => $request->get_param( 'company' ),
+        ]
+    );
 
     if ( function_exists( 'jcp_demo_ghl_maybe_forward_demo_milestone' ) ) {
         $contact_params = function_exists( 'jcp_demo_ghl_contact_params_from_request' )
@@ -248,22 +266,62 @@ function jcp_demo_analytics_handle_event( \WP_REST_Request $request ) {
 }
 
 /**
- * Upsert session row from a demo event. No PII (no phone, no full email).
+ * Upsert session row from a demo event.
  * Called after inserting an event. Fails silently if sessions table missing.
  *
- * @param string       $session_id  Session ID.
- * @param string       $event_type  Event type just inserted.
- * @param array|null   $metadata    Decoded metadata (may contain company, business_type).
- * @param string|null  $meta_json   Raw JSON (unused; for future use).
+ * @param string              $session_id Session ID.
+ * @param string              $event_type Event type just inserted.
+ * @param array|null          $metadata   Decoded metadata (may contain company, business_type).
+ * @param string|null         $meta_json  Raw JSON (unused; for future use).
+ * @param array<string,mixed> $contact    Optional contact fields from the REST request.
  */
-function jcp_demo_analytics_upsert_session_from_event( string $session_id, string $event_type, $metadata, $meta_json ): void {
+function jcp_demo_analytics_upsert_session_from_event( string $session_id, string $event_type, $metadata, $meta_json, array $contact = [] ): void {
     jcp_demo_analytics_maybe_create_sessions_table();
     global $wpdb;
     $stable = $wpdb->prefix . JCP_DEMO_SESSIONS_TABLE;
     $now    = current_time( 'mysql' );
 
+    $contact_email = '';
+    if ( ! empty( $contact['email'] ) && is_email( (string) $contact['email'] ) ) {
+        $contact_email = sanitize_email( (string) $contact['email'] );
+    }
+    $first = isset( $contact['first_name'] ) ? trim( (string) $contact['first_name'] ) : '';
+    $last  = isset( $contact['last_name'] ) ? trim( (string) $contact['last_name'] ) : '';
+    $contact_name = trim( $first . ' ' . $last );
+    $contact_name  = $contact_name !== '' ? substr( sanitize_text_field( $contact_name ), 0, 255 ) : null;
+    $contact_email = $contact_email !== '' ? substr( $contact_email, 0, 255 ) : null;
+    $company_from_contact = isset( $contact['company'] ) ? trim( (string) $contact['company'] ) : '';
+    $company_from_contact = $company_from_contact !== '' ? substr( sanitize_text_field( $company_from_contact ), 0, 255 ) : null;
+
+    $apply_contact_updates = static function () use ( $wpdb, $stable, $session_id, $contact_name, $contact_email, $company_from_contact ): void {
+        if ( $contact_name === null && $contact_email === null && $company_from_contact === null ) {
+            return;
+        }
+        $existing = $wpdb->get_row( $wpdb->prepare( "SELECT session_id FROM $stable WHERE session_id = %s LIMIT 1", $session_id ), ARRAY_A );
+        if ( empty( $existing ) ) {
+            return;
+        }
+        $updates = [];
+        $formats = [];
+        if ( $company_from_contact !== null ) {
+            $updates['business_name'] = $company_from_contact;
+            $formats[] = '%s';
+        }
+        if ( $contact_name !== null ) {
+            $updates['contact_name'] = $contact_name;
+            $formats[] = '%s';
+        }
+        if ( $contact_email !== null ) {
+            $updates['contact_email'] = $contact_email;
+            $formats[] = '%s';
+        }
+        if ( ! empty( $updates ) ) {
+            $wpdb->update( $stable, $updates, [ 'session_id' => $session_id ], $formats, [ '%s' ] );
+        }
+    };
+
     if ( in_array( $event_type, [ 'demo_started', 'demo_run_started' ], true ) ) {
-        $business_name = null;
+        $business_name = $company_from_contact;
         $business_type = null;
         if ( is_array( $metadata ) && ! empty( $metadata ) ) {
             $name = isset( $metadata['company'] ) ? $metadata['company'] : ( isset( $metadata['business_name'] ) ? $metadata['business_name'] : null );
@@ -275,20 +333,26 @@ function jcp_demo_analytics_upsert_session_from_event( string $session_id, strin
             }
         }
         $wpdb->query( $wpdb->prepare(
-            "INSERT INTO $stable (session_id, business_name, business_type, demo_started_at, demo_completed, demo_converted, conversion_at)
-             VALUES (%s, %s, %s, %s, 0, 0, NULL)
+            "INSERT INTO $stable (session_id, business_name, business_type, contact_name, contact_email, demo_started_at, demo_completed, demo_converted, conversion_at)
+             VALUES (%s, %s, %s, %s, %s, %s, 0, 0, NULL)
              ON DUPLICATE KEY UPDATE
              demo_started_at = IF(demo_started_at IS NULL OR demo_started_at > %s, %s, demo_started_at),
              business_name = COALESCE(NULLIF(TRIM(business_name), ''), %s),
-             business_type = COALESCE(NULLIF(TRIM(business_type), ''), %s)",
+             business_type = COALESCE(NULLIF(TRIM(business_type), ''), %s),
+             contact_name = COALESCE(NULLIF(TRIM(contact_name), ''), %s),
+             contact_email = COALESCE(NULLIF(TRIM(contact_email), ''), %s)",
             $session_id,
             $business_name ?: null,
             $business_type ?: null,
+            $contact_name,
+            $contact_email,
             $now,
             $now,
             $now,
             $business_name ?: null,
-            $business_type ?: null
+            $business_type ?: null,
+            $contact_name,
+            $contact_email
         ) );
         return;
     }
@@ -300,6 +364,8 @@ function jcp_demo_analytics_upsert_session_from_event( string $session_id, strin
         $name = isset( $metadata['company'] ) ? $metadata['company'] : ( isset( $metadata['business_name'] ) ? $metadata['business_name'] : null );
         if ( is_string( $name ) && trim( $name ) !== '' ) {
             $business_name = substr( sanitize_text_field( trim( $name ) ), 0, 255 );
+        } elseif ( $company_from_contact !== null ) {
+            $business_name = $company_from_contact;
         }
         if ( isset( $metadata['business_type'] ) && is_string( $metadata['business_type'] ) && trim( $metadata['business_type'] ) !== '' ) {
             $business_type = substr( sanitize_text_field( trim( $metadata['business_type'] ) ), 0, 255 );
@@ -329,12 +395,22 @@ function jcp_demo_analytics_upsert_session_from_event( string $session_id, strin
                 $updates['demo_goals'] = $demo_goals_json;
                 $formats[] = '%s';
             }
+            if ( $contact_name !== null ) {
+                $updates['contact_name'] = $contact_name;
+                $formats[] = '%s';
+            }
+            if ( $contact_email !== null ) {
+                $updates['contact_email'] = $contact_email;
+                $formats[] = '%s';
+            }
             if ( ! empty( $updates ) ) {
                 $wpdb->update( $stable, $updates, [ 'session_id' => $session_id ], $formats, [ '%s' ] );
             }
         }
         return;
     }
+
+    $apply_contact_updates();
 
     if ( $event_type === 'post_demo_modal_shown' ) {
         $wpdb->update(
@@ -413,10 +489,35 @@ function jcp_demo_analytics_get_stats(): array {
     );
 
     $cta_counts = [
-        'early_access'        => (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table WHERE event_type = 'cta_clicked' AND metadata LIKE '%early_access%'" ),
-        'view_directory'      => (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table WHERE event_type = 'cta_clicked' AND metadata LIKE '%view_directory%' AND metadata NOT LIKE '%view_main_directory%'" ),
-        'view_main_directory' => (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table WHERE event_type = 'cta_clicked' AND metadata LIKE '%view_main_directory%'" ),
+        'early_access'         => (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table WHERE event_type = 'cta_clicked' AND (metadata LIKE '%early_access%' OR metadata LIKE '%get_started_free%')" ),
+        'view_directory'       => (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table WHERE event_type = 'cta_clicked' AND metadata LIKE '%view_directory%' AND metadata NOT LIKE '%view_main_directory%'" ),
+        'view_main_directory'  => (int) $wpdb->get_var( "SELECT COUNT(*) FROM $table WHERE event_type = 'cta_clicked' AND metadata LIKE '%view_main_directory%'" ),
+        'start_free_trial'     => (int) $wpdb->get_var( "SELECT COUNT(DISTINCT session_id) FROM $table WHERE event_type = 'cta_clicked' AND (metadata LIKE '%\"cta\":\"start_free_trial\"%' OR metadata LIKE '%\"cta\":\"get_started_free\"%')" ),
+        'personalized_demo'    => (int) $wpdb->get_var( "SELECT COUNT(DISTINCT session_id) FROM $table WHERE event_type = 'cta_clicked' AND metadata LIKE '%\"cta\":\"personalized_demo\"%'" ),
+        'replay_demo'          => (int) $wpdb->get_var(
+            "SELECT COUNT(DISTINCT session_id) FROM $table WHERE
+                (event_type = 'cta_clicked' AND metadata LIKE '%\"cta\":\"replay_demo\"%')
+                OR event_type = 'demo_replayed'"
+        ),
     ];
+
+    $post_demo_shown = (int) $wpdb->get_var( "SELECT COUNT(DISTINCT session_id) FROM $table WHERE event_type = 'post_demo_modal_shown'" );
+    $post_demo_cta_rates = [];
+    foreach (
+        [
+            'start_free_trial'  => __( 'Start free 14-day trial', 'jcp-core' ),
+            'personalized_demo' => __( 'Apply for a personalized demo', 'jcp-core' ),
+            'replay_demo'       => __( 'Replay demo', 'jcp-core' ),
+        ] as $key => $label
+    ) {
+        $count = (int) ( $cta_counts[ $key ] ?? 0 );
+        $post_demo_cta_rates[] = [
+            'key'   => $key,
+            'label' => $label,
+            'count' => $count,
+            'pct'   => $post_demo_shown > 0 ? round( ( $count / $post_demo_shown ) * 100, 1 ) : 0.0,
+        ];
+    }
 
     $steps = [];
     $step_defs = [
@@ -428,9 +529,6 @@ function jcp_demo_analytics_get_stats(): array {
         [ 'label' => 'Slideshow step 3', 'type' => 'slideshow_step_viewed', 'num' => 3 ],
         [ 'label' => 'Slideshow step 4', 'type' => 'slideshow_step_viewed', 'num' => 4 ],
         [ 'label' => 'Slideshow step 5', 'type' => 'slideshow_step_viewed', 'num' => 5 ],
-        [ 'label' => 'Slideshow step 6', 'type' => 'slideshow_step_viewed', 'num' => 6 ],
-        [ 'label' => 'Slideshow step 7', 'type' => 'slideshow_step_viewed', 'num' => 7 ],
-        [ 'label' => 'Slideshow step 8', 'type' => 'slideshow_step_viewed', 'num' => 8 ],
         [ 'label' => 'Slideshow skipped', 'type' => 'slideshow_skipped', 'num' => null ],
         [ 'label' => 'Demo run started', 'type' => 'demo_run_started', 'num' => null ],
         [ 'label' => 'Demo step 1', 'type' => 'demo_step_viewed', 'num' => 1 ],
@@ -443,7 +541,7 @@ function jcp_demo_analytics_get_stats(): array {
         [ 'label' => 'Demo step 6', 'type' => 'demo_step_viewed', 'num' => 6 ],
         [ 'label' => 'Post-demo modal shown', 'type' => 'post_demo_modal_shown', 'num' => null ],
         [ 'label' => 'Demo replayed', 'type' => 'demo_replayed', 'num' => null ],
-        [ 'label' => 'Converted (Get Started)', 'type' => 'demo_converted', 'num' => null ],
+        [ 'label' => 'Converted (Start free trial)', 'type' => 'demo_converted', 'num' => null ],
     ];
 
     $prev_count = $total_sessions;
@@ -476,6 +574,7 @@ function jcp_demo_analytics_get_stats(): array {
 
     $demo_conversions = (int) $wpdb->get_var( "SELECT COUNT(DISTINCT session_id) FROM $table WHERE event_type = 'demo_converted'" );
     $conversion_rate = $total_sessions > 0 ? round( ( $demo_conversions / $total_sessions ) * 100, 1 ) : 0.0;
+    $post_demo_conversion_rate = $completed > 0 ? round( ( $demo_conversions / $completed ) * 100, 1 ) : 0.0;
 
     $data_since = jcp_demo_analytics_get_data_since();
 
@@ -571,10 +670,13 @@ function jcp_demo_analytics_get_stats(): array {
     return [
         'funnel'                   => $steps,
         'cta_counts'               => $cta_counts,
+        'post_demo_shown'          => $post_demo_shown,
+        'post_demo_cta_rates'      => $post_demo_cta_rates,
         'completion_rate'          => $completion_rate,
         'total_sessions'           => $total_sessions,
         'demo_conversions'         => $demo_conversions,
         'conversion_rate'          => $conversion_rate,
+        'post_demo_conversion_rate'=> $post_demo_conversion_rate,
         'data_since'               => $data_since,
         'avg_time_to_completion_seconds'   => $avg_time_seconds,
         'median_time_to_completion_seconds' => $median_time_seconds,
@@ -689,11 +791,11 @@ function jcp_demo_analytics_median_seconds( array $seconds ): int {
 }
 
 /**
- * Get session-level records for admin (read-only). No PII. WP is not a lead system.
+ * Get session-level records for admin (read-only), including post-demo CTA clicks.
  *
  * @param string $filter 'all' or 'converted'.
  * @param int    $limit  Max rows (default 25).
- * @return array<int, array{ session_id: string, business_name: string|null, business_type: string|null, demo_started_at: string, demo_completed: bool, demo_converted: bool, conversion_at: string|null }>
+ * @return array<int, array<string, mixed>>
  */
 function jcp_demo_analytics_get_sessions( string $filter = 'all', int $limit = 25 ): array {
     if ( ! current_user_can( 'manage_options' ) ) {
@@ -702,28 +804,93 @@ function jcp_demo_analytics_get_sessions( string $filter = 'all', int $limit = 2
     global $wpdb;
     jcp_demo_analytics_maybe_create_sessions_table();
     $stable = $wpdb->prefix . JCP_DEMO_SESSIONS_TABLE;
+    $etable = $wpdb->prefix . JCP_DEMO_EVENTS_TABLE;
     $limit  = max( 1, min( 100, $limit ) );
     $order  = 'ORDER BY demo_started_at DESC LIMIT ' . (int) $limit;
     if ( $filter === 'converted' ) {
-        $rows = $wpdb->get_results( "SELECT session_id, business_name, business_type, demo_started_at, demo_completed, demo_converted, conversion_at FROM $stable WHERE demo_converted = 1 $order", ARRAY_A );
+        $rows = $wpdb->get_results( "SELECT session_id, business_name, business_type, contact_name, contact_email, demo_started_at, demo_completed, demo_converted, conversion_at FROM $stable WHERE demo_converted = 1 $order", ARRAY_A );
     } else {
-        $rows = $wpdb->get_results( "SELECT session_id, business_name, business_type, demo_started_at, demo_completed, demo_converted, conversion_at FROM $stable $order", ARRAY_A );
+        $rows = $wpdb->get_results( "SELECT session_id, business_name, business_type, contact_name, contact_email, demo_started_at, demo_completed, demo_converted, conversion_at FROM $stable $order", ARRAY_A );
     }
     if ( ! is_array( $rows ) ) {
         return [];
     }
+
+    $session_ids = array_values( array_filter( array_map( static function ( $row ) {
+        return isset( $row['session_id'] ) ? (string) $row['session_id'] : '';
+    }, $rows ) ) );
+
+    $cta_by_session = [];
+    if ( ! empty( $session_ids ) ) {
+        $placeholders = implode( ',', array_fill( 0, count( $session_ids ), '%s' ) );
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- placeholders built safely.
+        $sql = $wpdb->prepare(
+            "SELECT session_id, event_type, metadata FROM $etable
+             WHERE session_id IN ($placeholders)
+               AND (event_type = 'cta_clicked' OR event_type = 'demo_replayed')
+             ORDER BY id ASC",
+            ...$session_ids
+        );
+        $event_rows = $wpdb->get_results( $sql, ARRAY_A );
+        if ( is_array( $event_rows ) ) {
+            foreach ( $event_rows as $erow ) {
+                $sid = (string) ( $erow['session_id'] ?? '' );
+                if ( $sid === '' ) {
+                    continue;
+                }
+                if ( ! isset( $cta_by_session[ $sid ] ) ) {
+                    $cta_by_session[ $sid ] = [];
+                }
+                $cta_key = '';
+                if ( ( $erow['event_type'] ?? '' ) === 'demo_replayed' ) {
+                    $cta_key = 'replay_demo';
+                } else {
+                    $meta = isset( $erow['metadata'] ) ? json_decode( (string) $erow['metadata'], true ) : null;
+                    if ( is_array( $meta ) && ! empty( $meta['cta'] ) ) {
+                        $cta_key = sanitize_key( (string) $meta['cta'] );
+                        if ( $cta_key === 'get_started_free' ) {
+                            $cta_key = 'start_free_trial';
+                        }
+                    }
+                }
+                if ( $cta_key !== '' && ! in_array( $cta_key, $cta_by_session[ $sid ], true ) ) {
+                    $cta_by_session[ $sid ][] = $cta_key;
+                }
+            }
+        }
+    }
+
+    $cta_labels = [
+        'start_free_trial'  => __( 'Start free 14-day trial', 'jcp-core' ),
+        'personalized_demo' => __( 'Personalized demo', 'jcp-core' ),
+        'replay_demo'       => __( 'Replay demo', 'jcp-core' ),
+        'view_directory'    => __( 'View directory listing', 'jcp-core' ),
+        'view_main_directory' => __( 'View main directory', 'jcp-core' ),
+        'early_access'      => __( 'Early access', 'jcp-core' ),
+    ];
+
     $out = [];
     foreach ( $rows as $row ) {
         $bt = isset( $row['business_type'] ) && trim( (string) $row['business_type'] ) !== '' ? (string) $row['business_type'] : null;
+        $sid = isset( $row['session_id'] ) ? (string) $row['session_id'] : '';
+        $cta_keys = $cta_by_session[ $sid ] ?? [];
+        $cta_display = [];
+        foreach ( $cta_keys as $key ) {
+            $cta_display[] = $cta_labels[ $key ] ?? $key;
+        }
         $out[] = [
-            'session_id'            => isset( $row['session_id'] ) ? (string) $row['session_id'] : '',
+            'session_id'            => $sid,
             'business_name'         => isset( $row['business_name'] ) && trim( (string) $row['business_name'] ) !== '' ? (string) $row['business_name'] : null,
             'business_type'         => $bt,
             'business_type_display' => $bt ? jcp_demo_analytics_business_type_label( $bt ) : null,
+            'contact_name'          => isset( $row['contact_name'] ) && trim( (string) $row['contact_name'] ) !== '' ? (string) $row['contact_name'] : null,
+            'contact_email'         => isset( $row['contact_email'] ) && trim( (string) $row['contact_email'] ) !== '' ? (string) $row['contact_email'] : null,
             'demo_started_at'       => isset( $row['demo_started_at'] ) ? (string) $row['demo_started_at'] : '',
             'demo_completed'        => ! empty( $row['demo_completed'] ),
             'demo_converted'        => ! empty( $row['demo_converted'] ),
             'conversion_at'         => isset( $row['conversion_at'] ) && trim( (string) $row['conversion_at'] ) !== '' ? (string) $row['conversion_at'] : null,
+            'post_demo_ctas'        => $cta_keys,
+            'post_demo_ctas_display'=> $cta_display,
         ];
     }
     return $out;

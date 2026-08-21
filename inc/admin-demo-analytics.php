@@ -72,6 +72,9 @@ function jcp_demo_analytics_render_page(): void {
         <?php
         $demo_conversions = (int) ( $stats['demo_conversions'] ?? 0 );
         $conversion_rate  = (float) ( $stats['conversion_rate'] ?? 0 );
+        $post_demo_shown  = (int) ( $stats['post_demo_shown'] ?? 0 );
+        $post_demo_conversion_rate = (float) ( $stats['post_demo_conversion_rate'] ?? 0 );
+        $post_demo_cta_rates = $stats['post_demo_cta_rates'] ?? [];
         $business_type_dist = $stats['business_type_distribution'] ?? [];
         $demo_goals_dist    = $stats['demo_goals_distribution'] ?? [];
         ?>
@@ -79,13 +82,16 @@ function jcp_demo_analytics_render_page(): void {
             <div class="jcp-demo-analytics-col" style="min-width: 0; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; padding: 18px; box-shadow: 0 1px 1px rgba(0,0,0,.04); align-self: start;">
                 <h2 style="margin: 0 0 14px 0; font-size: 1.1em; color: #1d2327; font-weight: 600;"><?php esc_html_e( 'Overall', 'jcp-core' ); ?></h2>
                 <div class="jcp-demo-conversion-box" style="margin-bottom: 16px; padding: 14px 16px; border: 1px solid #2271b1; border-radius: 4px; background: #f0f6fc;">
-                    <p style="margin: 0 0 6px 0; font-size: 11px; color: #50575e; text-transform: uppercase; letter-spacing: 0.02em;"><?php esc_html_e( 'Demo → Early Access Conversion', 'jcp-core' ); ?></p>
+                    <p style="margin: 0 0 6px 0; font-size: 11px; color: #50575e; text-transform: uppercase; letter-spacing: 0.02em;"><?php esc_html_e( 'Demo → Start free trial', 'jcp-core' ); ?></p>
                     <?php if ( $total_sessions === 0 ) : ?>
                         <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1d2327;"><?php esc_html_e( 'No demo sessions yet.', 'jcp-core' ); ?></p>
                     <?php elseif ( $demo_conversions === 0 ) : ?>
-                        <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1d2327;"><?php esc_html_e( 'No conversions recorded yet.', 'jcp-core' ); ?></p>
+                        <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1d2327;"><?php esc_html_e( 'No trial conversions recorded yet.', 'jcp-core' ); ?></p>
                     <?php else : ?>
                         <p style="margin: 0; font-size: 18px; font-weight: 700; color: #2271b1;"><button type="button" class="button-link" id="jcp-demo-analytics-sessions-converted" data-filter="converted" style="font-size: 18px; font-weight: 700; color: #2271b1;"><?php echo esc_html( sprintf( __( '%1$d of %2$d demos converted (%3$s%%)', 'jcp-core' ), $demo_conversions, $total_sessions, (string) $conversion_rate ) ); ?></button></p>
+                        <?php if ( $post_demo_shown > 0 ) : ?>
+                        <p style="margin: 6px 0 0 0; font-size: 12px; color: #50575e;"><?php echo esc_html( sprintf( __( '%1$s%% of completed demos clicked Start free trial', 'jcp-core' ), (string) $post_demo_conversion_rate ) ); ?></p>
+                        <?php endif; ?>
                     <?php endif; ?>
                 </div>
                 <table class="widefat striped" style="width: 100%; margin-bottom: 0;">
@@ -93,6 +99,10 @@ function jcp_demo_analytics_render_page(): void {
                         <tr>
                             <td style="font-weight: 500;"><?php esc_html_e( 'Total sessions (started)', 'jcp-core' ); ?></td>
                             <td><button type="button" class="button-link" id="jcp-demo-analytics-sessions-all" data-filter="all"><?php echo (int) $stats['total_sessions']; ?></button></td>
+                        </tr>
+                        <tr>
+                            <td style="font-weight: 500;"><?php esc_html_e( 'Reached end-screen', 'jcp-core' ); ?></td>
+                            <td><?php echo (int) $post_demo_shown; ?></td>
                         </tr>
                         <tr>
                             <td style="font-weight: 500;"><?php esc_html_e( 'Demo completion rate', 'jcp-core' ); ?></td>
@@ -116,20 +126,40 @@ function jcp_demo_analytics_render_page(): void {
                 <?php endif; ?>
             </div>
             <div class="jcp-demo-analytics-col" style="min-width: 0; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; padding: 18px; box-shadow: 0 1px 1px rgba(0,0,0,.04); align-self: start;">
-                <h2 style="margin: 0 0 14px 0; font-size: 1.1em; color: #1d2327; font-weight: 600;"><?php esc_html_e( 'CTA clicks', 'jcp-core' ); ?></h2>
+                <h2 style="margin: 0 0 14px 0; font-size: 1.1em; color: #1d2327; font-weight: 600;"><?php esc_html_e( 'End-screen CTAs', 'jcp-core' ); ?></h2>
+                <p class="description" style="margin: 0 0 10px 0; font-size: 12px; color: #646970;"><?php esc_html_e( 'Clicks after the post-demo panel. Rate = % of sessions that reached the end screen.', 'jcp-core' ); ?></p>
+                <table class="widefat striped" style="width: 100%; margin-bottom: 16px;">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e( 'Button', 'jcp-core' ); ?></th>
+                            <th><?php esc_html_e( 'Clicks', 'jcp-core' ); ?></th>
+                            <th><?php esc_html_e( 'Rate', 'jcp-core' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ( ! empty( $post_demo_cta_rates ) ) : ?>
+                            <?php foreach ( $post_demo_cta_rates as $row ) : ?>
+                                <tr>
+                                    <td><?php echo esc_html( $row['label'] ); ?></td>
+                                    <td><?php echo (int) $row['count']; ?></td>
+                                    <td><?php echo esc_html( (string) $row['pct'] ); ?>%</td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else : ?>
+                            <tr><td colspan="3"><em><?php esc_html_e( 'No end-screen clicks yet.', 'jcp-core' ); ?></em></td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+                <h3 style="margin: 0 0 10px 0; font-size: 13px; color: #50575e;"><?php esc_html_e( 'Other CTA clicks', 'jcp-core' ); ?></h3>
                 <table class="widefat striped" style="width: 100%;">
                     <tbody>
                         <tr>
-                            <td>Early access</td>
-                            <td><?php echo (int) $stats['cta_counts']['early_access']; ?></td>
+                            <td><?php esc_html_e( 'View listing in directory', 'jcp-core' ); ?></td>
+                            <td><?php echo (int) ( $stats['cta_counts']['view_directory'] ?? 0 ); ?></td>
                         </tr>
                         <tr>
-                            <td>View listing in directory</td>
-                            <td><?php echo (int) $stats['cta_counts']['view_directory']; ?></td>
-                        </tr>
-                        <tr>
-                            <td>View main directory</td>
-                            <td><?php echo (int) $stats['cta_counts']['view_main_directory']; ?></td>
+                            <td><?php esc_html_e( 'View main directory', 'jcp-core' ); ?></td>
+                            <td><?php echo (int) ( $stats['cta_counts']['view_main_directory'] ?? 0 ); ?></td>
                         </tr>
                     </tbody>
                 </table>
@@ -225,7 +255,7 @@ function jcp_demo_analytics_render_page(): void {
         </div>
 
         <div id="jcp-demo-analytics-sessions-modal" style="display: none; position: fixed; z-index: 100001; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
-            <div style="background: #fff; margin: 40px auto; padding: 24px; max-width: 720px; max-height: 80vh; overflow: auto; border: 1px solid #c3c4c7; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+            <div style="background: #fff; margin: 40px auto; padding: 24px; max-width: 960px; max-height: 80vh; overflow: auto; border: 1px solid #c3c4c7; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
                 <p style="margin: 0 0 16px 0;"><strong id="jcp-demo-analytics-sessions-modal-title"><?php esc_html_e( 'Sessions', 'jcp-core' ); ?></strong></p>
                 <div id="jcp-demo-analytics-sessions-content">
                     <p><?php esc_html_e( 'Loading…', 'jcp-core' ); ?></p>
@@ -292,10 +322,14 @@ function jcp_demo_analytics_render_page(): void {
                             if (sec < 86400) return Math.floor(sec / 3600) + ' <?php echo esc_js( __( 'hours ago', 'jcp-core' ) ); ?>';
                             return Math.floor(sec / 86400) + ' <?php echo esc_js( __( 'days ago', 'jcp-core' ) ); ?>';
                         }
-                        var html = '<table class="widefat striped"><thead><tr><th><?php echo esc_js( __( 'Session', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Business name', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Business type', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Demo completed', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Converted', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Started', 'jcp-core' ) ); ?></th></tr></thead><tbody>';
+                        var html = '<table class="widefat striped"><thead><tr><th><?php echo esc_js( __( 'Lead', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Business', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Type', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'End-screen CTAs', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Completed', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Trial', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Started', 'jcp-core' ) ); ?></th></tr></thead><tbody>';
                         for (var i = 0; i < rows.length; i++) {
                             var r = rows[i];
-                            html += '<tr><td>' + escapeHtml(shortHash(r.session_id)) + '</td><td>' + escapeHtml(r.business_name || '—') + '</td><td>' + escapeHtml(r.business_type_display || '—') + '</td><td>' + (r.demo_completed ? '<?php echo esc_js( __( 'Yes', 'jcp-core' ) ); ?>' : '<?php echo esc_js( __( 'No', 'jcp-core' ) ); ?>') + '</td><td>' + (r.demo_converted ? '<?php echo esc_js( __( 'Yes', 'jcp-core' ) ); ?>' : '<?php echo esc_js( __( 'No', 'jcp-core' ) ); ?>') + '</td><td>' + escapeHtml(relativeTime(r.demo_started_at)) + '</td></tr>';
+                            var lead = r.contact_name || '';
+                            if (r.contact_email) lead = lead ? (lead + ' · ' + r.contact_email) : r.contact_email;
+                            if (!lead) lead = '—';
+                            var ctas = (r.post_demo_ctas_display && r.post_demo_ctas_display.length) ? r.post_demo_ctas_display.join(', ') : '—';
+                            html += '<tr><td>' + escapeHtml(lead) + '</td><td>' + escapeHtml(r.business_name || '—') + '</td><td>' + escapeHtml(r.business_type_display || '—') + '</td><td>' + escapeHtml(ctas) + '</td><td>' + (r.demo_completed ? '<?php echo esc_js( __( 'Yes', 'jcp-core' ) ); ?>' : '<?php echo esc_js( __( 'No', 'jcp-core' ) ); ?>') + '</td><td>' + (r.demo_converted ? '<?php echo esc_js( __( 'Yes', 'jcp-core' ) ); ?>' : '<?php echo esc_js( __( 'No', 'jcp-core' ) ); ?>') + '</td><td>' + escapeHtml(relativeTime(r.demo_started_at)) + '</td></tr>';
                         }
                         html += '</tbody></table>';
                         sessionsContent.innerHTML = html;
@@ -345,7 +379,7 @@ function jcp_demo_analytics_ajax_sessions(): void {
     if ( $filter !== 'all' && $filter !== 'converted' ) {
         $filter = 'all';
     }
-    $sessions = jcp_demo_analytics_get_sessions( $filter, 25 );
+    $sessions = jcp_demo_analytics_get_sessions( $filter, 50 );
     wp_send_json_success( $sessions );
 }
 

@@ -16,13 +16,10 @@ $icon_tag = esc_url( jcp_core_icon( 'tag' ) );
 $icon_rocket = esc_url( jcp_core_icon( 'rocket' ) );
 $icon_send = esc_url( jcp_core_icon( 'send' ) );
 $icon_star = esc_url( jcp_core_icon( 'star' ) );
-$icon_repeat = esc_url( jcp_core_icon( 'repeat' ) );
-$icon_calendar = esc_url( jcp_core_icon( 'calendar-check' ) );
-$icon_clipboard = esc_url( jcp_core_icon( 'clipboard-check' ) );
-$icon_eye = esc_url( jcp_core_icon( 'eye' ) );
-$icon_zap = esc_url( jcp_core_icon( 'zap' ) );
+$icon_qr = esc_url( jcp_core_icon( 'qr-code' ) );
 $icon_play = esc_url( jcp_core_icon( 'play' ) );
 $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
+$icon_plug = esc_url( jcp_core_icon( 'plug' ) );
 ?>
 <section class="survey-deck" id="surveyDeck">
   <button type="button" class="deck-skip deck-skip--header" data-action="launch" id="deckSkipHeader" hidden>Skip to demo</button>
@@ -32,7 +29,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
         <span class="deck-progress-bar" id="deckProgressBar"></span>
       </div>
       <div class="deck-progress-meta">
-        <span id="deckProgressText">1 / 8</span>
+        <span id="deckProgressText">1 / 5</span>
         <button class="deck-skip" data-action="launch">Skip to demo →</button>
       </div>
     </div>
@@ -80,10 +77,10 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
         </div>
       </article>
 
-      <article class="deck-slide deck-slide--cards">
-        <h2>One photo is all your team needs.</h2>
+      <article class="deck-slide deck-slide--cards deck-slide--channels">
+        <h2>One photo publishes everywhere.</h2>
         <p class="deck-lead">
-          Snap a quick photo. JobCapturePro writes the story, tags the job, and publishes proof everywhere customers look.
+          Snap a quick photo. JobCapturePro writes the story, tags the job, and updates your website, Google Business Profile, social, and directory — with no extra admin.
         </p>
         <div class="deck-flow deck-flow--stack" aria-label="What happens from one photo">
           <div class="deck-flow-card">
@@ -114,17 +111,46 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
               <img src="<?php echo esc_url( $icon_rocket ); ?>" alt="" />
             </span>
             <div class="deck-flow-body">
-              <div class="deck-flow-title">Publishing happens instantly</div>
-              <div class="deck-flow-sub">Proof shows up across channels with no extra steps.</div>
+              <div class="deck-flow-title">Proof goes live across channels</div>
+              <div class="deck-flow-sub">Website, Google, social, and directory update automatically.</div>
             </div>
           </div>
         </div>
+        <div class="deck-tiles" aria-label="Channels">
+          <div class="deck-tile">
+            <span class="tile-icon">
+              <img src="<?php echo $icon_layout; ?>" alt="" width="24" height="24">
+            </span>
+            <span>Website</span>
+          </div>
+          <div class="deck-tile">
+            <span class="tile-icon">
+              <img src="<?php echo $icon_map; ?>" alt="" width="24" height="24">
+            </span>
+            <span>Google</span>
+          </div>
+          <div class="deck-tile">
+            <span class="tile-icon">
+              <img src="<?php echo $icon_social; ?>" alt="" width="24" height="24">
+            </span>
+            <span>Social</span>
+          </div>
+          <div class="deck-tile">
+            <span class="tile-icon">
+              <img src="<?php echo $icon_dir; ?>" alt="" width="24" height="24">
+            </span>
+            <span>Directory</span>
+          </div>
+        </div>
+        <p class="deck-integrations">
+          Already on Housecall Pro, Jobber, ServiceTitan, or CompanyCam? We integrate with the tools your crews already use.
+        </p>
       </article>
 
       <article class="deck-slide deck-slide--cards">
-        <h2>Reviews arrive at the right time.</h2>
+        <h2>Ask for reviews while it still matters.</h2>
         <p class="deck-lead">
-          When the job wraps up, reviews go out automatically while customers are happiest, so you build reputation without awkward follow ups.
+          After the job, your crew shows a QR code so the customer can leave a review on the spot — while they are happiest and still standing there.
         </p>
         <div class="deck-flow deck-flow--stack" aria-label="Review outcomes">
           <div class="deck-flow-card">
@@ -134,18 +160,18 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
             </span>
             <div class="deck-flow-body">
               <div class="deck-flow-title">Higher response rate</div>
-              <div class="deck-flow-sub">Requests land while the experience is fresh.</div>
+              <div class="deck-flow-sub">Ask in person while the experience is fresh.</div>
             </div>
           </div>
 
           <div class="deck-flow-card">
             <span class="deck-flow-icon" aria-hidden="true">
               <span class="deck-flow-step" aria-hidden="true">2</span>
-              <img src="<?php echo esc_url( $icon_repeat ); ?>" alt="" />
+              <img src="<?php echo esc_url( $icon_qr ); ?>" alt="" />
             </span>
             <div class="deck-flow-body">
-              <div class="deck-flow-title">No manual follow up</div>
-              <div class="deck-flow-sub">Automated reminders keep it consistent.</div>
+              <div class="deck-flow-title">QR handoff on site</div>
+              <div class="deck-flow-sub">Takes seconds before your tech leaves the job.</div>
             </div>
           </div>
 
@@ -162,7 +188,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
         </div>
       </article>
 
-      <article class="deck-slide">
+      <article class="deck-slide deck-slide--rank">
         <h2>Rank higher in your local market.</h2>
         <p class="deck-lead">
           Verified activity boosts your presence across maps and search results.
@@ -217,125 +243,10 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
         </div>
       </article>
 
-      <article class="deck-slide deck-slide--channels">
-        <h2>Show proof across every channel.</h2>
-        <p class="deck-lead">
-          Each check-in updates your website, directory, Google Business profile, and social content.
-        </p>
-        <div class="deck-tiles">
-          <div class="deck-tile">
-            <span class="tile-icon">
-              <img src="<?php echo $icon_layout; ?>" alt="" width="24" height="24">
-            </span>
-            <span>Website</span>
-          </div>
-          <div class="deck-tile">
-            <span class="tile-icon">
-              <img src="<?php echo $icon_map; ?>" alt="" width="24" height="24">
-            </span>
-            <span>Google</span>
-          </div>
-          <div class="deck-tile">
-            <span class="tile-icon">
-              <img src="<?php echo $icon_social; ?>" alt="" width="24" height="24">
-            </span>
-            <span>Social</span>
-          </div>
-          <div class="deck-tile">
-            <span class="tile-icon">
-              <img src="<?php echo $icon_dir; ?>" alt="" width="24" height="24">
-            </span>
-            <span>Directory</span>
-          </div>
-        </div>
-      </article>
-
-      <article class="deck-slide deck-slide--cards">
-        <h2>Everything stays consistent.</h2>
-        <p class="deck-lead">
-          Your crew keeps working. JobCapturePro keeps your presence updated so your brand looks sharp without extra admin.
-        </p>
-        <div class="deck-flow deck-flow--stack" aria-label="Consistency benefits">
-          <div class="deck-flow-card">
-            <span class="deck-flow-icon" aria-hidden="true">
-              <span class="deck-flow-step" aria-hidden="true">1</span>
-              <img src="<?php echo esc_url( $icon_repeat ); ?>" alt="" />
-            </span>
-            <div class="deck-flow-body">
-              <div class="deck-flow-title">No manual posting</div>
-              <div class="deck-flow-sub">Proof publishes in the background while you run jobs.</div>
-            </div>
-          </div>
-
-          <div class="deck-flow-card">
-            <span class="deck-flow-icon" aria-hidden="true">
-              <span class="deck-flow-step" aria-hidden="true">2</span>
-              <img src="<?php echo esc_url( $icon_calendar ); ?>" alt="" />
-            </span>
-            <div class="deck-flow-body">
-              <div class="deck-flow-title">No chasing photos</div>
-              <div class="deck-flow-sub">One quick check-in is enough. Your team stays moving.</div>
-            </div>
-          </div>
-
-          <div class="deck-flow-card">
-            <span class="deck-flow-icon" aria-hidden="true">
-              <span class="deck-flow-step" aria-hidden="true">3</span>
-              <img src="<?php echo esc_url( $icon_clipboard ); ?>" alt="" />
-            </span>
-            <div class="deck-flow-body">
-              <div class="deck-flow-title">No admin headaches</div>
-              <div class="deck-flow-sub">A consistent cadence of proof makes your brand look active.</div>
-            </div>
-          </div>
-        </div>
-      </article>
-
-      <article class="deck-slide deck-slide--cards">
-        <h2>Prospects see proof instantly.</h2>
-        <p class="deck-lead">
-          Your work shows up where customers decide: search, maps, your site, and the directory, so you stand out before they call.
-        </p>
-        <div class="deck-flow deck-flow--stack" aria-label="Prospect outcomes">
-          <div class="deck-flow-card">
-            <span class="deck-flow-icon" aria-hidden="true">
-              <span class="deck-flow-step" aria-hidden="true">1</span>
-              <img src="<?php echo esc_url( $icon_eye ); ?>" alt="" />
-            </span>
-            <div class="deck-flow-body">
-              <div class="deck-flow-title">Higher trust</div>
-              <div class="deck-flow-sub">Real jobs + real proof makes you feel safer to hire.</div>
-            </div>
-          </div>
-
-          <div class="deck-flow-card">
-            <span class="deck-flow-icon" aria-hidden="true">
-              <span class="deck-flow-step" aria-hidden="true">2</span>
-              <img src="<?php echo esc_url( $icon_zap ); ?>" alt="" />
-            </span>
-            <div class="deck-flow-body">
-              <div class="deck-flow-title">Faster decisions</div>
-              <div class="deck-flow-sub">Customers see the difference quickly and stop shopping around.</div>
-            </div>
-          </div>
-
-          <div class="deck-flow-card">
-            <span class="deck-flow-icon" aria-hidden="true">
-              <span class="deck-flow-step" aria-hidden="true">3</span>
-              <img src="<?php echo esc_url( $icon_phone ); ?>" alt="" />
-            </span>
-            <div class="deck-flow-body">
-              <div class="deck-flow-title">More booked jobs</div>
-              <div class="deck-flow-sub">More calls go to the contractor who looks proven and active.</div>
-            </div>
-          </div>
-        </div>
-      </article>
-
       <article class="deck-slide deck-slide--cards">
         <h2 id="deckPersonalTitle">Ready? See one job publish everywhere.</h2>
         <p class="deck-lead" id="deckPersonalLead">
-          See the live workflow end to end: one job turning into proof that builds rankings, trust, and calls.
+          Walk through the live workflow end to end — one job turning into proof, rankings, and more calls.
         </p>
         <div class="deck-flow deck-flow--stack" aria-label="What you'll see next">
           <div class="deck-flow-card">
@@ -345,7 +256,7 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
             </span>
             <div class="deck-flow-body">
               <div class="deck-flow-title">Live job → automated proof</div>
-              <div class="deck-flow-sub">Capture the job once and generate publish-ready proof instantly.</div>
+              <div class="deck-flow-sub">Capture once and generate publish-ready proof instantly.</div>
             </div>
           </div>
 
@@ -356,18 +267,18 @@ $icon_globe = esc_url( jcp_core_icon( 'globe' ) );
             </span>
             <div class="deck-flow-body">
               <div class="deck-flow-title">Proof → higher rankings</div>
-              <div class="deck-flow-sub">More verified activity strengthens visibility across maps and search.</div>
+              <div class="deck-flow-sub">Verified activity strengthens visibility across maps and search.</div>
             </div>
           </div>
 
           <div class="deck-flow-card">
             <span class="deck-flow-icon" aria-hidden="true">
               <span class="deck-flow-step" aria-hidden="true">3</span>
-              <img src="<?php echo esc_url( $icon_phone ); ?>" alt="" />
+              <img src="<?php echo esc_url( $icon_plug ); ?>" alt="" />
             </span>
             <div class="deck-flow-body">
-              <div class="deck-flow-title">Rankings → more calls</div>
-              <div class="deck-flow-sub">As you rise, you get chosen faster and the phone rings more.</div>
+              <div class="deck-flow-title">Works with your stack</div>
+              <div class="deck-flow-sub">Integrates with Housecall Pro, Jobber, ServiceTitan, CompanyCam, and more.</div>
             </div>
           </div>
         </div>

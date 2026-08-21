@@ -143,7 +143,7 @@
               <div class="jcp-hero-copy hero-copy">
                 <h1 class="jcp-hero-title">Automatically turn every completed job into <span class="jcp-hero-title-end">more <span class="jcp-hero-rotating-word" aria-live="polite">visibility</span></span></h1>
                 <p class="jcp-hero-subtitle">
-                  Your team already takes job photos. JobCapturePro automatically turns them into Google updates, website content, social media posts, and review requests so your work keeps marketing itself.
+                  Your team already takes job photos. JobCapturePro turns them into Google updates, website content, and social posts — and your crew can ask for a review on site with a QR code.
                 </p>
                 <div class="jcp-actions directory-cta-row">
                   <div class="jcp-hero-primary-cta">
@@ -165,7 +165,7 @@
                       <img src="${icon('map')}" class="meta-icon" alt="">
                       <strong>4 channels</strong>
                     </div>
-                    <span>shared on website + social</span>
+                    <span>website, Google, social + directory</span>
                   </div>
                   <div class="meta-item meta-stat-busywork">
                     <div class="meta-label">
@@ -300,7 +300,7 @@
                 <div class="step-number">4</div>
                 <div class="step-content">
                   <h4 class="step-title">Review</h4>
-                  <p class="step-description">Smart review requests go out at the right moment.</p>
+                  <p class="step-description">Crew shows a QR code so customers can review on the spot.</p>
                 </div>
               </div>
             </div>
@@ -326,10 +326,10 @@
                     </div>
                     <h3 class="demo-preview-title">See it in action</h3>
                     <p class="demo-preview-description">
-                      Watch how JobCapturePro turns a single job photo into verified proof across Google Maps, your website, directory listings, and review requests — all automatically.
+                      Watch how JobCapturePro turns a single job photo into verified proof across Google Maps, your website, and directory listings — then ask for a review on site with a QR code.
                     </p>
                     <p class="demo-preview-cue">
-                      You will see how one job becomes Google updates, website proof, directory presence, and review requests.
+                      You will see how one job becomes Google updates, website proof, directory presence, social posts, and an on-site review request.
                     </p>
                     <div class="demo-cta-wrapper">
                       <a href="/demo" class="btn btn-primary demo-cta-primary">
@@ -448,11 +448,11 @@
               </div>
               <div class="proof-flow-item">
                 <div class="factor-icon-wrapper">
-                  <img src="${icon('star')}" class="factor-icon" alt="">
+                  <img src="${icon('building-2')}" class="factor-icon" alt="">
                 </div>
                 <div class="proof-flow-content">
-                  <h4 class="proof-flow-label">Reviews</h4>
-                  <p class="proof-flow-copy">Auto review collection</p>
+                  <h4 class="proof-flow-label">Directory</h4>
+                  <p class="proof-flow-copy">Listed with verified job activity homeowners can trust</p>
                 </div>
               </div>
             </div>
@@ -533,10 +533,10 @@
                   <img src="${icon('star')}" class="factor-icon" alt="">
                 </div>
                 <h3 class="factor-title">More reviews</h3>
-                <p class="factor-description">Requests go out while the job is fresh and credible.</p>
+                <p class="factor-description">Crew shows a QR code on site while the customer is still happy.</p>
                 <div class="factor-stat">
                   <span class="stat-value">Reviews</span>
-                  <span class="stat-label">on autopilot</span>
+                  <span class="stat-label">on the spot</span>
                 </div>
               </div>
 
@@ -807,23 +807,23 @@
                 <summary>I already use CompanyCam or Housecall Pro. Do I need this?</summary>
                 <p>Yes — and that's exactly who JobCapturePro is built for.</p>
                 <p>Tools like CompanyCam and Housecall Pro are great at capturing job photos and managing operations. JobCapturePro sits on top of the tools you already use and turns that existing job activity into public, verified proof.</p>
-                <p>We automatically take real job photos, locations, and completion signals from your workflow and transform them into Google updates, website content, directory listings, and smart review requests — without changing how your crew works.</p>
+                <p>We take real job photos, locations, and completion signals from your workflow and turn them into Google updates, website content, and directory listings. Your crew then presents a QR code (or link) so the customer can leave a review before they leave.</p>
                 <p>You don't replace your current tools. You make the work you're already doing start driving visibility, trust, and new jobs.</p>
               </details>
 
               <details class="faq-item">
                 <summary>What exactly happens after we capture a job?</summary>
-                <p>One photo or a completed job triggers an AI check in that becomes publishable proof. It can update your website, keep your Google Business Profile active, publish social content, and send a review request based on your settings.</p>
+                <p>One photo or a completed job triggers an AI check in that becomes publishable proof. It can update your website, keep your Google Business Profile active, and publish social content. Your crew then shows a QR code or sends a link so the customer can leave a review on the spot.</p>
               </details>
 
               <details class="faq-item">
                 <summary>Where does proof get published?</summary>
-                <p>Your proof can appear on your website, your Google Business Profile, your social channels, inside your JobCapturePro public directory listing, and in review requests you send to customers.</p>
+                <p>Your proof publishes to four channels — website, Google Business Profile, social, and the JobCapturePro directory. Reviews are a fifth step: your crew presents a QR code (or sends a link) on site after the job.</p>
               </details>
 
               <details class="faq-item">
                 <summary>How do reviews work?</summary>
-                <p>You can request reviews right after jobs while the experience is fresh. Reviews can be triggered from the mobile app or automatically after job completion through CRM based automation. Follow ups can be enabled and stop once the customer clicks to leave a review.</p>
+                <p>After each job, your crew presents a QR code (or sends a review link) while the experience is fresh. That gets more reviews without relying on awkward office follow-ups days later.</p>
               </details>
 
               <details class="faq-item" id="faq-integrations-locations">

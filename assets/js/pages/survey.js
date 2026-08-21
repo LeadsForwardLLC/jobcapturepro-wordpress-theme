@@ -43,6 +43,7 @@
   const getValue = (id) => (document.getElementById(id)?.value || '').trim();
 
   const BUSINESS_TYPE_OTHER = 'other';
+  const REFERRAL_SOURCE_OTHER = 'Other';
 
   const syncNicheOtherField = () => {
     const wrap = document.getElementById('nicheOtherWrap');
@@ -53,6 +54,27 @@
       otherInput.required = isOther;
       if (!isOther) otherInput.value = '';
     }
+  };
+
+  const syncReferralSourceOtherField = () => {
+    const wrap = document.getElementById('referralSourceOtherWrap');
+    const otherInput = document.getElementById('referralSourceOther');
+    const isOther = getValue('referralSource') === REFERRAL_SOURCE_OTHER;
+    if (wrap) wrap.hidden = !isOther;
+    if (otherInput) {
+      otherInput.required = isOther;
+      if (!isOther) otherInput.value = '';
+    }
+  };
+
+  const getReferralSourceValue = () => {
+    const selected = getValue('referralSource');
+    if (!selected) return '';
+    if (selected === REFERRAL_SOURCE_OTHER) {
+      const detail = getValue('referralSourceOther');
+      return detail ? `${REFERRAL_SOURCE_OTHER}: ${detail}` : REFERRAL_SOURCE_OTHER;
+    }
+    return selected;
   };
 
   const getBusinessTypeValue = () => {
@@ -108,6 +130,8 @@
     firstName: getValue('firstName'),
     lastName: getValue('lastName'),
     email: getValue('email'),
+    referralSource: getValue('referralSource'),
+    referralSourceOther: getValue('referralSourceOther'),
     goals: Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || []).map((input) => input.value),
   });
 
@@ -130,6 +154,9 @@
     setField('firstName', form.firstName);
     setField('lastName', form.lastName);
     setField('email', form.email);
+    setField('referralSource', form.referralSource);
+    setField('referralSourceOther', form.referralSourceOther);
+    syncReferralSourceOtherField();
     if (goalsWrap && Array.isArray(form.goals)) {
       goalsWrap.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
         cb.checked = form.goals.indexOf(cb.value) !== -1;
@@ -291,16 +318,27 @@
   function surveyTrack(eventType, stepNumber, metadata) {
     const restEventUrl = (typeof window.JCP_DEMO_SURVEY !== 'undefined' && window.JCP_DEMO_SURVEY.rest_event_url) ? window.JCP_DEMO_SURVEY.rest_event_url : baseUrl + '/wp-json/jcp/v1/demo-event';
     try {
+      const body = {
+        session_id: getSurveySessionId(),
+        event_type: eventType,
+        step_number: stepNumber != null ? stepNumber : undefined,
+        metadata: metadata || undefined,
+        ...getAttributionPayload(),
+      };
+      const firstName = getValue('firstName');
+      const lastName = getValue('lastName');
+      const email = getValue('email');
+      const company = getValue('businessName');
+      if (firstName) body.first_name = firstName;
+      if (lastName) body.last_name = lastName;
+      if (email) body.email = email;
+      if (company) body.company = company;
+      const niche = getBusinessTypeValue();
+      if (niche) body.business_type = niche;
       fetch(restEventUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: getSurveySessionId(),
-          event_type: eventType,
-          step_number: stepNumber != null ? stepNumber : undefined,
-          metadata: metadata || undefined,
-          ...getAttributionPayload(),
-        })
+        body: JSON.stringify(body)
       }).catch(function() {});
     } catch (e) {}
   }
@@ -441,6 +479,8 @@
     const meta = { company: getValue('businessName'), business_type: getBusinessTypeValue() };
     const goals = Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || []).map((input) => input.value);
     if (goals.length) meta.demo_goals = goals;
+    const referral = getReferralSourceValue();
+    if (referral) meta.referral_source = referral;
     return meta;
   };
 
@@ -573,7 +613,8 @@
     if (deckSlidesWrap) deckSlidesWrap.scrollTop = 0;
 
     if (rankList) {
-      const isRankSlide = deckIndex === 3;
+      const rankSlideIndex = deckSlides.findIndex((el) => el.classList.contains('deck-slide--rank'));
+      const isRankSlide = rankSlideIndex >= 0 && deckIndex === rankSlideIndex;
       clearRankTimers();
       if (isRankSlide) {
         runRankSlideSequence();
@@ -582,7 +623,8 @@
       }
     }
 
-    const isChannelsSlide = deckIndex === 4;
+    const channelsSlideIndex = deckSlides.findIndex((el) => el.classList.contains('deck-slide--channels'));
+    const isChannelsSlide = channelsSlideIndex >= 0 && deckIndex === channelsSlideIndex;
     clearChannelTimers();
     if (isChannelsSlide) {
       runChannelsSequence();
@@ -641,6 +683,7 @@
     const lastName = getValue('lastName');
     const emailInput = document.getElementById('email');
     const email = getValue('email');
+    const referralSource = getValue('referralSource');
     if (!firstName || !lastName) {
       alert('Please enter your first and last name to continue.');
       return false;
@@ -648,6 +691,16 @@
     if (!email || !emailInput?.checkValidity()) {
       emailInput?.classList.add('is-error');
       emailInput?.focus();
+      return false;
+    }
+    if (!referralSource) {
+      alert('Please tell us how you heard about JobCapturePro.');
+      document.getElementById('referralSource')?.focus();
+      return false;
+    }
+    if (referralSource === REFERRAL_SOURCE_OTHER && !getValue('referralSourceOther')) {
+      alert('Please specify how you found JobCapturePro.');
+      document.getElementById('referralSourceOther')?.focus();
       return false;
     }
     return true;
@@ -664,7 +717,6 @@
     });
   };
 
-  // Save current survey data so Early Access form can prefill if user visits that page later.
   const saveSurveyPrefillForEarlyAccess = () => {
     const goals = Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || [])
       .map((input) => input.value);
@@ -675,6 +727,7 @@
       company: getValue('businessName'),
       business_type: getBusinessTypeValue(),
       demo_goals: goals,
+      referral_source: getReferralSourceValue(),
     };
     try {
       localStorage.setItem('jcp_early_access_prefill', JSON.stringify(prefill));
@@ -700,6 +753,7 @@
             company: getValue('businessName'),
             business_type: getBusinessTypeValue(),
             demo_goals: goals,
+            referral_source: getReferralSourceValue(),
             ...getAttributionPayload(),
           }),
         }),
@@ -729,6 +783,7 @@
     const email = getValue('email');
     const businessName = getValue('businessName');
     const niche = getBusinessTypeValue();
+    const referralSource = getReferralSourceValue();
     localStorage.setItem('demoUser', JSON.stringify({
       businessName,
       niche,
@@ -736,6 +791,7 @@
       firstName,
       lastName,
       email,
+      referralSource,
     }));
     saveSurveyPrefillForEarlyAccess();
     clearSurveyProgress();
@@ -753,6 +809,7 @@
             company: businessName,
             business_type: niche,
             demo_goals: goals,
+            referral_source: referralSource,
             ...getAttributionPayload(),
           }),
         }),
@@ -853,7 +910,7 @@
     scheduleSaveProgress();
   });
 
-  ['firstName', 'lastName', 'businessName', 'niche', 'nicheOther'].forEach((id) => {
+  ['firstName', 'lastName', 'businessName', 'niche', 'nicheOther', 'referralSource', 'referralSourceOther'].forEach((id) => {
     const el = document.getElementById(id);
     el?.addEventListener('input', () => {
       setHandoffStatus('');
@@ -866,6 +923,7 @@
   });
 
   document.getElementById('niche')?.addEventListener('change', syncNicheOtherField);
+  document.getElementById('referralSource')?.addEventListener('change', syncReferralSourceOtherField);
 
   goalsWrap?.addEventListener('change', () => {
     enforceGoalLimit();
@@ -925,6 +983,7 @@
     applyFormSnapshot(restored.form);
   } else {
     syncNicheOtherField();
+    syncReferralSourceOtherField();
   }
 
   surveyTrack('demo_started', null, getSurveyFormMetadata());

@@ -176,6 +176,9 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 		case 'proof_flow':
 			jcp_niche_render_proof_flow( $props );
 			break;
+		case 'testimonials':
+			jcp_niche_render_testimonials( $props );
+			break;
 		case 'demo_preview':
 			jcp_niche_render_demo_preview( $props, $page_key );
 			break;

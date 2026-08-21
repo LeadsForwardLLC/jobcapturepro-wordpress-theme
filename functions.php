@@ -17,9 +17,12 @@ require_once get_template_directory() . '/inc/onboarding.php';
 
 // Sitewide settings (banner, signup URL, nav CTAs)
 require_once get_template_directory() . '/inc/global-settings.php';
+require_once get_template_directory() . '/inc/retire-promo-copy.php';
 require_once get_template_directory() . '/inc/fluent-forms-bridge.php';
 require_once get_template_directory() . '/inc/code-embed.php';
 require_once get_template_directory() . '/inc/form-landing.php';
+require_once get_template_directory() . '/inc/pricing-plans.php';
+require_once get_template_directory() . '/inc/sales-tool/bootstrap.php';
 require_once get_template_directory() . '/inc/nav-mega-menu.php';
 
 // Load company data functions (description resolution, demo companies, save_post description generation)
@@ -54,6 +57,8 @@ require_once get_template_directory() . '/inc/page-blocks/schema.php';
 require_once get_template_directory() . '/inc/page-blocks/writer-import.php';
 require_once get_template_directory() . '/inc/page-blocks/industry-media.php';
 require_once get_template_directory() . '/inc/page-blocks/demo-migration.php';
+require_once get_template_directory() . '/inc/page-blocks/case-study-form-modal.php';
+require_once get_template_directory() . '/inc/page-blocks/testimonials-upgrade.php';
 require_once get_template_directory() . '/inc/page-blocks/doc-sections.php';
 require_once get_template_directory() . '/inc/niche-landing/cpt.php';
 require_once get_template_directory() . '/inc/niche-landing/schema.php';
@@ -164,3 +169,4 @@ function jcp_core_prototype_dequeue_conflicting_scripts(): void {
 	}
 }
 add_action( 'wp_enqueue_scripts', 'jcp_core_prototype_dequeue_conflicting_scripts', 9999 );
+

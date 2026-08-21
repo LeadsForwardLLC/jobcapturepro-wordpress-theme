@@ -22,12 +22,12 @@ function jcp_global_settings_defaults(): array {
 		'banner'  => [
 			'enabled'     => true,
 			'visibility'  => 'marketing',
-			'headline'    => 'Early Bird:',
-			'text'        => 'Get the Enterprise plan (normally $399/mo) for $125/mo.',
-			'code'        => 'EARLYBIRD',
-			'cta_label'   => 'Claim offer',
+			'headline'    => 'Free trial:',
+			'text'        => 'Start a free 14-day trial — no credit card required.',
+			'code'        => '',
+			'cta_label'   => 'Start free trial',
 			'cta_url'     => '',
-			'coupon'      => 'earlybird',
+			'coupon'      => '',
 			'utm_content' => 'sitewide_banner',
 		],
 		'signup'  => [
@@ -36,7 +36,7 @@ function jcp_global_settings_defaults(): array {
 			'step'       => '1',
 		],
 		'nav_cta' => [
-			'primary_label'   => 'Get Started',
+			'primary_label'   => 'Start free trial',
 			'primary_url'     => '',
 			'secondary_label' => 'Login',
 			'secondary_url'   => '',
@@ -284,7 +284,44 @@ function jcp_global_settings(): array {
 	if ( ! is_array( $stored ) ) {
 		$stored = [];
 	}
-	return jcp_global_settings_merge( jcp_global_settings_defaults(), $stored );
+	$settings = jcp_global_settings_merge( jcp_global_settings_defaults(), $stored );
+	return jcp_global_settings_scrub_legacy_promo_copy( $settings );
+}
+
+/**
+ * Strip retired promo banner wording (legacy Early Bird / founding-crew campaigns).
+ *
+ * @param array<string, mixed> $settings Merged settings.
+ * @return array<string, mixed>
+ */
+function jcp_global_settings_scrub_legacy_promo_copy( array $settings ): array {
+	$banner = is_array( $settings['banner'] ?? null ) ? $settings['banner'] : [];
+	$defaults = jcp_global_settings_defaults()['banner'];
+
+	$headline = (string) ( $banner['headline'] ?? '' );
+	$code     = (string) ( $banner['code'] ?? '' );
+	$coupon   = (string) ( $banner['coupon'] ?? '' );
+	$text     = (string) ( $banner['text'] ?? '' );
+
+	$is_early_bird_headline = (bool) preg_match( '/early\s*bird/i', $headline );
+	$is_early_bird_code     = (bool) preg_match( '/^earlybird$/i', trim( $code ) );
+	$is_early_bird_coupon   = (bool) preg_match( '/^earlybird$/i', trim( $coupon ) );
+	$is_founding_copy       = (bool) preg_match( '/founding\s+crew/i', $headline . ' ' . $text );
+
+	if ( $is_early_bird_headline || $is_founding_copy ) {
+		$banner['headline'] = (string) ( $defaults['headline'] ?? 'Free trial:' );
+		$banner['text']     = (string) ( $defaults['text'] ?? '' );
+		$banner['cta_label'] = (string) ( $defaults['cta_label'] ?? 'Start free trial' );
+	}
+	if ( $is_early_bird_code ) {
+		$banner['code'] = '';
+	}
+	if ( $is_early_bird_coupon ) {
+		$banner['coupon'] = '';
+	}
+
+	$settings['banner'] = $banner;
+	return $settings;
 }
 
 /**
@@ -409,7 +446,7 @@ function jcp_global_resolve_cta( string $label, string $url, string $utm_content
  */
 function jcp_global_resolve_nav_ctas( ?int $post_id = null ): array {
 	$global = jcp_global_settings()['nav_cta'] ?? [];
-	$primary_label   = (string) ( $global['primary_label'] ?? 'Get Started' );
+	$primary_label   = (string) ( $global['primary_label'] ?? 'Start free trial' );
 	$primary_url     = (string) ( $global['primary_url'] ?? '' );
 	$secondary_label = (string) ( $global['secondary_label'] ?? 'Login' );
 	$secondary_url   = (string) ( $global['secondary_url'] ?? '' );
@@ -441,6 +478,11 @@ function jcp_global_resolve_nav_ctas( ?int $post_id = null ): array {
 	if ( $is_legacy_demo ) {
 		$secondary_label = 'Login';
 		$secondary_url   = '';
+	}
+
+	// Migrate legacy Get Started primary CTA → Start free trial.
+	if ( preg_match( '/^get\s*started$/i', trim( $primary_label ) ) ) {
+		$primary_label = 'Start free trial';
 	}
 
 	return [

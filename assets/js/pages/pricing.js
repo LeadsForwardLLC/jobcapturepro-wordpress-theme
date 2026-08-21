@@ -31,58 +31,67 @@
     }
   })();
 
-  // Pricing data with monthly and yearly prices
-  // Features can be strings or { text: string, tooltip: string } for items with tooltips
-  const pricingData = {
+  // Pricing data — prefer shared PHP catalog (JCP_PRICING) so sales tool + pricing stay aligned.
+  const pricingDataFallback = {
     starter: {
       monthly: 99,
-      yearly: 79, // 20% discount
+      yearly: 79,
       name: 'Starter',
       description: 'Everything a single-location business needs to turn check-ins into reviews.',
       pill: 'Single-location',
       features: [
         '1 location included',
         { text: 'Unlimited check-in tracking', tooltip: 'Track unlimited jobs/check-ins for your included location.' },
-        { text: 'Automated review requests', tooltip: 'Automatically send review requests via SMS/email after a job is completed.' },
+        { text: 'On-site review requests', tooltip: 'After each job, your crew shows a QR code or sends a link so the customer can leave a review while the experience is fresh.' },
         { text: 'Team activity feed', tooltip: 'See check-ins and activity across your team in one place.' },
         'Email support'
       ]
     },
     scale: {
       monthly: 249,
-      yearly: 199, // 20% discount
+      yearly: 199,
       name: 'Scale',
       description: 'Built for multi-location brands ready to grow without adding overhead.',
       pill: 'Most popular',
       features: [
         'Everything in Starter',
-        { text: 'Multi-location support', tooltip: 'Manage multiple operating locations under one account.' },
-        { text: 'CRM integration', tooltip: 'Connect systems like Housecall Pro, Workiz, QuickBooks, and CompanyCam.' },
+        '1 location included',
+        { text: 'Multi-location support', tooltip: 'Add more operating locations under one account. Extra locations are $199/month each.' },
+        { text: 'CRM integration', tooltip: 'Connect systems like Housecall Pro, Jobber, ServiceTitan, and CompanyCam.' },
         'WordPress plugin',
         'Social Media posting',
         'Google Business Profile posting',
         { text: 'Advanced analytics', tooltip: 'Deeper reporting across check-ins, reviews, and performance by location.' },
         { text: 'Priority support', tooltip: 'Faster responses and escalation for time-sensitive issues.' },
-        'Add more locations any time'
+        'Add more locations any time (+$199/mo each)'
       ],
       featured: true
     },
     enterprise: {
       monthly: 399,
-      yearly: 319, // 20% discount
+      yearly: 319,
       name: 'Enterprise',
       description: 'AI-powered insights and a dedicated team behind every location.',
       pill: 'Enterprise',
       features: [
         'Everything in Scale',
+        '1 location included',
         { text: 'AI-powered insights', tooltip: 'Patterns and opportunities from your check-ins and reviews, surfaced by AI.' },
         { text: 'Custom integrations', tooltip: 'Custom API integrations and tailored workflows for complex stacks.' },
         { text: 'Dedicated account manager', tooltip: 'A single point of contact for rollout, strategy, and ongoing success.' },
         { text: 'SLA guarantee', tooltip: 'Priority handling with service-level commitments for support/uptime.' },
-        { text: 'Add locations and AI credits on demand', tooltip: 'Scale locations and AI usage as needed without replatforming.' }
+        { text: 'Add locations and AI credits on demand', tooltip: 'Add operating locations at $199/month each and scale AI usage as needed.' }
       ]
     }
   };
+  const pricingData =
+    window.JCP_PRICING && window.JCP_PRICING.plans && typeof window.JCP_PRICING.plans === 'object'
+      ? { ...pricingDataFallback, ...window.JCP_PRICING.plans }
+      : pricingDataFallback;
+  const extraLocationFee =
+    window.JCP_PRICING && Number(window.JCP_PRICING.extraLocationFee)
+      ? Number(window.JCP_PRICING.extraLocationFee)
+      : 199;
 
   // Escape HTML for tooltip content (safe for innerHTML)
   const escapeHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -119,12 +128,12 @@
     {
       id: 'faq-pricing-pricing',
       question: 'What is included in each plan?',
-      answer: 'All plans include core features like photo capture, proof generation, and basic publishing. Higher tiers add CRM integrations, automated reviews, social automation, and advanced reporting. See the comparison table above for details.'
+      answer: 'All plans include core features like photo capture, proof generation, basic publishing, and on-site QR review requests. Higher tiers add CRM integrations, social automation, and advanced reporting. See the comparison table above for details.'
     },
     {
       id: 'faq-pricing-trial',
       question: 'Is there a free trial?',
-      answer: 'We offer early access pricing for founding members. Contact us to learn more about current offers and see if you qualify for special pricing.'
+      answer: 'Yes. You can start a free 14-day trial with no credit card required. Explore the platform with your own jobs and cancel anytime before it converts.'
     },
     {
       id: 'faq-pricing-cancel',
@@ -186,8 +195,9 @@
           ${plan.features.map(renderFeature).join('')}
         </ul>
         <a class="btn ${plan.featured ? 'btn-primary' : 'btn-secondary'}" href="${escapeAttr(onboardingCtaHref)}">
-          ${hasPricing ? 'Get started' : 'Contact sales'}
+          ${hasPricing ? 'Start free 14-day trial' : 'Contact sales'}
         </a>
+        ${hasPricing ? '<p class="jcp-plan-cta-note">No credit card required</p>' : ''}
       </article>
     `;
   };
@@ -197,9 +207,20 @@
     if (!root) return;
 
     const pageTitle = (root.dataset.pageTitle || '').trim();
-    const pageSupporting = (root.dataset.pageSupporting || '').trim();
-    const heroTitle = pageTitle || 'Choose the plan that matches your growth';
-    const heroSubtitle = pageSupporting || 'Each tier aligns to business maturity and visibility goals. Get early bird pricing and unlock the benefits of turning real work into reviews, visibility, and trust that drives inbound demand.';
+    const pageSupportingRaw = (root.dataset.pageSupporting || '').trim();
+    const scrubRetiredPromo = (text) => {
+      if (!text) return text;
+      return text
+        .replace(/Get early bird pricing and unlock the benefits of turning real work into reviews, visibility, and trust that drives inbound demand\./gi,
+          'Start a free 14-day trial and turn real work into reviews, visibility, and trust that drives inbound demand.')
+        .replace(/Get early bird pricing/gi, 'Start a free 14-day trial')
+        .replace(/early bird pricing/gi, 'free 14-day trial pricing')
+        .replace(/early bird/gi, 'free trial')
+        .replace(/founding crew/gi, 'customers');
+    };
+    const pageSupporting = scrubRetiredPromo(pageSupportingRaw);
+    const heroTitle = scrubRetiredPromo(pageTitle) || 'Choose the plan that matches your growth';
+    const heroSubtitle = pageSupporting || 'Each tier aligns to business maturity and visibility goals. Start a free 14-day trial and turn real work into reviews, visibility, and trust that drives inbound demand.';
 
     // Load FAQ component if available
     const faqHTML = typeof window.renderFAQ === 'function' 
@@ -245,7 +266,7 @@
               <div class="jcp-pricing-extras__head">
                 <p class="jcp-pricing-notes-label">Add-ons</p>
                 <h3 class="jcp-addons__title">Extend your plan as you grow</h3>
-                <p class="jcp-addons__sub">Each plan includes <strong>one</strong> operating location. Add another location for <strong>$199/month</strong> when you’re ready.</p>
+                <p class="jcp-addons__sub">Each plan includes <strong>one</strong> operating location. Add another location for <strong>$${extraLocationFee}/month</strong> when you’re ready.</p>
               </div>
 
               <div class="jcp-addons__grid jcp-addons__grid--three">
@@ -271,7 +292,7 @@
                       <div class="jcp-addon-card__name">Additional Location</div>
                       <div class="jcp-addon-card__note">Available on Scale and Enterprise</div>
                       <div class="jcp-addon-card__price">
-                        <span class="jcp-addon-card__amount">$199</span><span class="jcp-addon-card__period">/mo</span>
+                        <span class="jcp-addon-card__amount">$${extraLocationFee}</span><span class="jcp-addon-card__period">/mo</span>
                       </div>
                     </div>
                   </div>
@@ -360,13 +381,13 @@
 
               <!-- Reviews -->
               <div class="jcp-compare-row jcp-compare-group">
-                <div>Manual review requests</div>
+                <div>On-site QR review requests</div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
               </div>
               <div class="jcp-compare-row">
-                <div>Automated review sequences</div>
+                <div>Review link option</div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
@@ -425,7 +446,7 @@
               </div>
             </div>
             <div class="jcp-actions jcp-compare-actions">
-              <a class="btn btn-primary" href="${escapeAttr(onboardingCtaHref)}">Get started</a>
+              <a class="btn btn-primary" href="${escapeAttr(onboardingCtaHref)}">Start free 14-day trial</a>
               <a class="btn btn-secondary" href="/demo">See the Demo</a>
             </div>
           </div>

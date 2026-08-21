@@ -207,78 +207,42 @@ body.jcp-inline-editing .jcp-niche-card-lead[data-placeholder]:empty::before {
   padding-top: var(--jcp-space-2xl);
 }
 
+/* Meta stats layout is global (sections.css). Niche only centers the strip + colors. */
 .jcp-core-mechanic-strip .directory-meta,
 .jcp-core-mechanic-embed .directory-meta,
-.jcp-niche .jcp-core-mechanic-meta {
-  display: flex;
-  gap: var(--jcp-space-3xl);
-  align-items: flex-start;
+.jcp-niche .jcp-core-mechanic-meta,
+.jcp-core-mechanic-strip .jcp-meta-stats,
+.jcp-core-mechanic-embed .jcp-meta-stats {
   justify-content: center;
-  margin: 0 auto;
+  margin-inline: auto;
   max-width: 56rem;
-  flex-wrap: nowrap;
 }
 
-.jcp-core-mechanic-strip .meta-item,
-.jcp-core-mechanic-embed .meta-item,
-.jcp-niche .jcp-core-mechanic-meta .meta-item {
-  flex: 1;
-  min-width: 0;
-  align-items: flex-start;
-  text-align: left;
-}
-
-.jcp-core-mechanic-strip .meta-label,
-.jcp-core-mechanic-embed .meta-label,
-.jcp-niche .jcp-core-mechanic-meta .meta-label {
-  align-items: center;
-  justify-content: flex-start;
-}
-
-.jcp-core-mechanic-strip .meta-label strong,
-.jcp-core-mechanic-embed .meta-label strong,
-.jcp-niche .jcp-core-mechanic-meta .meta-label strong {
-  font-size: clamp(16px, 1.8vw, 22px);
-  line-height: 1.25;
-  display: inline-block;
-  font-weight: var(--jcp-font-weight-extrabold);
-  letter-spacing: -0.02em;
-}
-
-.jcp-core-mechanic-strip .meta-stat-photo .meta-label strong,
-.jcp-core-mechanic-embed .meta-stat-photo .meta-label strong,
-.jcp-niche .meta-stat-photo .meta-label strong {
+.jcp-core-mechanic-strip .meta-stat-photo .meta-title,
+.jcp-core-mechanic-embed .meta-stat-photo .meta-title,
+.jcp-niche .meta-stat-photo .meta-title,
+.jcp-core-mechanic-strip .meta-stat-photo .meta-copy strong,
+.jcp-core-mechanic-embed .meta-stat-photo .meta-copy strong,
+.jcp-niche .meta-stat-photo .meta-copy strong {
   color: var(--jcp-color-primary) !important;
 }
 
-.jcp-core-mechanic-strip .meta-stat-channels .meta-label strong,
-.jcp-core-mechanic-embed .meta-stat-channels .meta-label strong,
-.jcp-niche .meta-stat-channels .meta-label strong {
+.jcp-core-mechanic-strip .meta-stat-channels .meta-title,
+.jcp-core-mechanic-embed .meta-stat-channels .meta-title,
+.jcp-niche .meta-stat-channels .meta-title,
+.jcp-core-mechanic-strip .meta-stat-channels .meta-copy strong,
+.jcp-core-mechanic-embed .meta-stat-channels .meta-copy strong,
+.jcp-niche .meta-stat-channels .meta-copy strong {
   color: var(--jcp-color-info) !important;
 }
 
-.jcp-core-mechanic-strip .meta-stat-busywork .meta-label strong,
-.jcp-core-mechanic-embed .meta-stat-busywork .meta-label strong,
-.jcp-niche .meta-stat-busywork .meta-label strong {
+.jcp-core-mechanic-strip .meta-stat-busywork .meta-title,
+.jcp-core-mechanic-embed .meta-stat-busywork .meta-title,
+.jcp-niche .meta-stat-busywork .meta-title,
+.jcp-core-mechanic-strip .meta-stat-busywork .meta-copy strong,
+.jcp-core-mechanic-embed .meta-stat-busywork .meta-copy strong,
+.jcp-niche .meta-stat-busywork .meta-copy strong {
   color: var(--jcp-color-success) !important;
-}
-
-.jcp-core-mechanic-strip .meta-label strong span,
-.jcp-core-mechanic-embed .meta-label strong span,
-.jcp-niche .jcp-core-mechanic-meta .meta-label strong span {
-  color: inherit;
-  font-size: inherit;
-  font-weight: inherit;
-  line-height: inherit;
-}
-
-@media (max-width: 640px) {
-  .jcp-core-mechanic-strip .directory-meta,
-  .jcp-core-mechanic-embed .directory-meta,
-  .jcp-niche .jcp-core-mechanic-meta {
-    flex-direction: column;
-    gap: var(--jcp-space-lg);
-  }
 }
 
 /* Condensed internal hero */

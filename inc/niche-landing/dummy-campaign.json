@@ -8,7 +8,7 @@
   "campaign_landing": true,
   "seo": {
     "title": "Limited Offer — Turn Completed Jobs Into Leads | JobCapturePro",
-    "meta_description": "Home service contractors: turn job photos into Google proof, website content, and reviews automatically. Claim your spot — limited availability for this campaign.",
+    "meta_description": "Home service contractors: turn job photos into Google proof, website content, and on-site review requests. Claim your spot — limited availability for this campaign.",
     "keywords": [
       "contractor marketing software",
       "home service marketing automation",
@@ -18,7 +18,7 @@
   },
   "hero": {
     "h1": "Turn every completed job into proof that books the next one",
-    "subheadline": "Your crews already finish real work and take photos. JobCapturePro publishes that proof to Google, your website, social, and review requests — without adding admin. Limited spots available for this campaign.",
+    "subheadline": "Your crews already finish real work and take photos. JobCapturePro publishes that proof to Google, your website, and social — and your crew can ask for a review on site with a QR code. Limited spots available for this campaign.",
     "cta_primary": { "label": "Claim your spot", "url": "#apply" },
     "cta_secondary": { "label": "Watch 2-min demo", "url": "/demo" },
     "trust_line": "No credit card · Fast setup · Built for field crews",
@@ -26,7 +26,7 @@
   },
   "core_mechanic": [
     { "value": "1", "label": "job photo", "detail": "Becomes multi-channel proof" },
-    { "value": "4", "label": "channels", "detail": "Google, site, social, directory" },
+    { "value": "4", "label": "channels", "detail": "website, Google, social + directory" },
     { "value": "0", "label": "extra steps", "detail": "Crew captures and moves on" }
   ],
   "problem": {
@@ -74,7 +74,7 @@
       {
         "title": "Publish everywhere that matters",
         "lines": [
-          "Google, website, directory, social, and review requests update from real jobs.",
+          "Google, website, directory, and social update from real jobs. Reviews start with an on-site QR handoff.",
           "Your completed work keeps selling while you run the next call."
         ]
       }
@@ -83,7 +83,7 @@
   "demo_preview": {
     "badge": "See it first",
     "headline": "Watch one job become full-funnel proof",
-    "body": "In two minutes you'll see how a single completed job turns into Google updates, website content, directory presence, and a review request — with no extra admin.",
+    "body": "In two minutes you'll see how a single completed job turns into Google updates, website content, directory presence, and an on-site QR review request.",
     "cue": "Best for owners who want to see the flow before they commit.",
     "cta_primary": { "label": "Launch interactive demo", "url": "/demo" },
     "cta_note": "No signup required",
@@ -96,7 +96,7 @@
     "headline": "Questions before you claim a spot",
     "items": [
       { "q": "Who is this campaign for?", "a": "Home service and contracting businesses that complete real jobs, take photos, and want more visibility without hiring a marketing team." },
-      { "q": "How much time does my crew need?", "a": "Minutes per job — capture photos like you already do. JobCapturePro handles the writing, publishing, and review requests." },
+      { "q": "How much time does my crew need?", "a": "Minutes per job — capture photos like you already do, then show a QR code for the review before you leave. JobCapturePro handles the writing and publishing." },
       { "q": "Do I need to replace my CRM or field app?", "a": "No. JobCapturePro works alongside the tools you use today." },
       { "q": "What does \"limited spots\" mean?", "a": "We onboard a small cohort at a time so every company gets proper setup and support. When this cohort fills, this offer closes." },
       { "q": "What happens after I apply?", "a": "We'll confirm details, get you live quickly, and you'll start publishing proof from real jobs within days — not months." }

@@ -47,6 +47,27 @@
           required
         />
       </div>
+      <div class="survey-field survey-field-full">
+        <label for="referralSource">How did you hear about us?</label>
+        <select id="referralSource" class="survey-input" required>
+          <?php
+          if ( function_exists( 'jcp_core_render_referral_source_select_options' ) ) {
+              jcp_core_render_referral_source_select_options( true );
+          }
+          ?>
+        </select>
+      </div>
+      <div class="survey-field survey-field-full" id="referralSourceOtherWrap" hidden>
+        <label for="referralSourceOther">Please specify</label>
+        <input
+          id="referralSourceOther"
+          type="text"
+          class="survey-input"
+          placeholder="Tell us how you found JobCapturePro"
+          maxlength="120"
+          autocomplete="off"
+        />
+      </div>
     </div>
   </form>
 

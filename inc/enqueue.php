@@ -40,11 +40,16 @@ function jcp_core_enqueue_assets(): void {
         return;
     }
 
+    // Sales Tool: assets enqueued by inc/sales-tool/enqueue.php (priority 5).
+    if ( ! empty( $pages['is_sales_tool'] ) ) {
+        return;
+    }
+
     // Always load navigation JS (skip on prototype - no header/footer)
     if ( ! $pages['is_prototype'] ) {
         jcp_core_enqueue_script( 'jcp-core-nav', 'js/core/jcp-nav.js' );
-        // Early bird banner dismiss behavior (no-op if banner not present).
-        jcp_core_enqueue_script( 'jcp-core-earlybird-banner', 'js/core/jcp-earlybird-banner.js', [ 'jcp-core-nav' ] );
+        // Site banner dismiss behavior (no-op if banner not present).
+        jcp_core_enqueue_script( 'jcp-core-site-banner', 'js/core/jcp-site-banner.js', [ 'jcp-core-nav' ] );
     }
 
     // UI Library page (internal documentation - shows all components)
@@ -91,8 +96,10 @@ function jcp_core_enqueue_assets(): void {
         $uses_blocks = $front_id > 0 && get_post_meta( $front_id, jcp_page_content_meta_key(), true );
         if ( $uses_blocks ) {
             jcp_core_enqueue_script( 'jcp-core-home-interactions', 'js/pages/home-interactions.js' );
+            jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [ 'jcp-core-home-interactions' ] );
         } else {
             jcp_core_enqueue_script( 'jcp-core-home', 'js/pages/home.js' );
+            jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [ 'jcp-core-home' ] );
             $render_deps[] = 'jcp-core-home';
             $home_ctas = [
                 'primary_text'   => 'View the live demo',
@@ -109,6 +116,9 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-pricing', 'css/pages/pricing.css', [ 'jcp-core-sections' ] );
         jcp_core_enqueue_script( 'jcp-shared-faq', 'js/features/faq.js' );
         jcp_core_enqueue_script( 'jcp-core-pricing', 'js/pages/pricing.js', [ 'jcp-shared-faq' ] );
+        if ( function_exists( 'jcp_pricing_localize_payload' ) ) {
+            wp_localize_script( 'jcp-core-pricing', 'JCP_PRICING', jcp_pricing_localize_payload() );
+        }
         $render_deps[] = 'jcp-core-pricing';
     }
 

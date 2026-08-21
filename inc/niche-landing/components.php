@@ -21,55 +21,65 @@ function jcp_component_chevron_svg( int $size = 16 ): void {
 }
 
 /**
- * Homepage hero meta stats row (1 photo / 4 channels / 0 busywork).
+ * Shared meta-stat row (homepage hero, core mechanic, UI library).
  *
- * @param array<int, array<string, string>> $items Stats.
- * @param string                            $path  JSON path prefix for editor.
+ * Layout:
+ *   [icon]  1 photo
+ *           Becomes proof on every channel
+ *
+ * @param array<int, array<string, mixed>> $items               Stats.
+ * @param string                           $path                JSON path prefix ('' = static).
+ * @param string                           $extra_class         Extra classes on the row wrapper.
+ * @param bool                             $collection_controls Show add/remove controls for editors.
  */
-function jcp_component_home_meta_stats( array $items, string $path = 'hero.meta_stats' ): void {
-	if ( empty( $items ) ) {
+function jcp_component_home_meta_stats( array $items, string $path = 'hero.meta_stats', string $extra_class = '', bool $collection_controls = false ): void {
+	if ( empty( $items ) && ! $collection_controls ) {
 		return;
 	}
+	$row_class = trim( 'directory-meta jcp-meta-stats ' . $extra_class );
 	?>
-	<div class="directory-meta"<?php jcp_niche_array_attr( $path ); ?>>
+	<div class="<?php echo esc_attr( $row_class ); ?>"<?php if ( $path !== '' ) { jcp_niche_array_attr( $path ); } ?>>
 		<?php foreach ( $items as $i => $item ) : ?>
 			<?php
 			if ( ! is_array( $item ) ) {
 				continue;
 			}
-			$icon      = ! empty( $item['icon'] ) ? (string) $item['icon'] : 'check';
-			$label     = (string) ( $item['label'] ?? '' );
-			$detail    = (string) ( $item['detail'] ?? '' );
-			$css_class = (string) ( $item['css_class'] ?? '' );
-			$icon_path = $path . '.' . $i . '.icon';
+			$icon       = ! empty( $item['icon'] ) ? (string) $item['icon'] : 'check';
+			$label      = (string) ( $item['label'] ?? '' );
+			$detail     = (string) ( $item['detail'] ?? '' );
+			$css_class  = (string) ( $item['css_class'] ?? '' );
+			$value      = trim( (string) ( $item['value'] ?? '' ) );
+			$word       = trim( (string) ( $item['word'] ?? '' ) );
+			$icon_path  = $path !== '' ? $path . '.' . $i . '.icon' : '';
+			$item_class = trim( 'meta-item jcp-collection-item ' . $css_class );
 			?>
-			<div class="meta-item jcp-collection-item<?php echo $css_class !== '' ? ' ' . esc_attr( $css_class ) : ''; ?>"<?php jcp_niche_array_item_attr( (int) $i ); ?>>
-				<div class="meta-label">
-					<span class="factor-icon-wrapper jcp-hero-meta-icon" data-jcp-icon-path="<?php echo esc_attr( $icon_path ); ?>" title="<?php esc_attr_e( 'Click to change icon', 'jcp-core' ); ?>" role="button" tabindex="0">
-						<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="meta-icon" alt="" width="20" height="20" />
-					</span>
-					<strong<?php jcp_niche_editable_attr( $path . '.' . $i . '.label' ); ?>><?php echo esc_html( $label ); ?></strong>
+			<div class="<?php echo esc_attr( $item_class ); ?>"<?php if ( $path !== '' ) { jcp_niche_array_item_attr( (int) $i ); } ?>>
+				<span class="factor-icon-wrapper jcp-hero-meta-icon"<?php if ( $icon_path !== '' ) { ?> data-jcp-icon-path="<?php echo esc_attr( $icon_path ); ?>" title="<?php esc_attr_e( 'Click to change icon', 'jcp-core' ); ?>" role="button" tabindex="0"<?php } ?>>
+					<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="meta-icon" alt="" width="20" height="20" />
+				</span>
+				<div class="meta-copy">
+					<strong class="meta-title">
+						<?php if ( $path !== '' && ( $value !== '' || $word !== '' ) ) : ?>
+							<span<?php jcp_niche_editable_attr( $path . '.' . $i . '.value' ); ?>><?php echo esc_html( $value ); ?></span><?php if ( $word !== '' ) : ?><span<?php jcp_niche_editable_attr( $path . '.' . $i . '.label' ); ?>><?php echo esc_html( ' ' . $word ); ?></span><?php endif; ?>
+						<?php elseif ( $path !== '' ) : ?>
+							<span<?php jcp_niche_editable_attr( $path . '.' . $i . '.label' ); ?>><?php echo esc_html( $label ); ?></span>
+						<?php else : ?>
+							<?php echo esc_html( $label ); ?>
+						<?php endif; ?>
+					</strong>
+					<?php if ( $detail !== '' || $path !== '' ) : ?>
+						<span class="meta-detail"<?php if ( $path !== '' ) { jcp_niche_editable_attr( $path . '.' . $i . '.detail' ); } ?>><?php echo esc_html( $detail ); ?></span>
+					<?php endif; ?>
 				</div>
-				<?php if ( $detail !== '' ) : ?>
-					<span<?php jcp_niche_editable_attr( $path . '.' . $i . '.detail' ); ?>><?php echo esc_html( $detail ); ?></span>
-				<?php endif; ?>
+				<?php if ( $collection_controls && $path !== '' && function_exists( 'jcp_niche_collection_remove_btn' ) ) { jcp_niche_collection_remove_btn(); } ?>
 			</div>
 		<?php endforeach; ?>
+		<?php if ( $collection_controls && $path !== '' && function_exists( 'jcp_niche_collection_add_btn' ) ) { jcp_niche_collection_add_btn( __( '+ Add stat', 'jcp-core' ) ); } ?>
 	</div>
 	<?php
 }
 
-/**
- * Homepage / industry hero phone mockup with animated cards.
- *
- * @param string                                                    $demo_url    Demo link.
- * @param string                                                    $photo_url   Phone screen photo.
- * @param string                                                    $photo_alt   Photo alt text.
- * @param bool                                                      $wrap_visual Wrap in hero-visual shell.
- * @param array<int, array{title?:string,subtitle?:string}>|null    $cards       Optional status cards (industry-specific).
- * @param bool                                                      $lock_photo  When true, photo is driven by featured image (industry).
- * @param string                                                    $cta_label   Floating CTA label on the phone.
- */
+
 function jcp_component_hero_home_visual( string $demo_url = '', string $photo_url = '', string $photo_alt = '', bool $wrap_visual = true, ?array $cards = null, bool $lock_photo = false, string $cta_label = '' ): void {
 	$demo_url  = $demo_url !== '' ? $demo_url : home_url( '/demo/' );
 	$photo     = $photo_url !== '' ? $photo_url : jcp_media_default_phone_image();

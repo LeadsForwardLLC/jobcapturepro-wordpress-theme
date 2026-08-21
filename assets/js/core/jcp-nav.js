@@ -379,7 +379,7 @@
       isOnboardingOutbound = host.indexOf('jobcapturepro.com') !== -1 && path.indexOf('/onboarding') === 0;
     }
     if (!ctaName && !isTargetHref && !isReferralOutbound && !isOnboardingOutbound) return;
-    ctaName = ctaName || (isReferralOutbound ? 'Join Referral Program' : isOnboardingOutbound ? 'Start free trial' : (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80) || 'CTA');
+    ctaName = ctaName || (isReferralOutbound ? 'Join Referral Program' : isOnboardingOutbound ? 'Start free 14-day trial' : (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80) || 'CTA');
     var pathname = (window.location.pathname || '/').replace(/\/$/, '') || '/';
     var ctaLocation = el.getAttribute('data-cta-location') || (el.closest('header') || el.closest('#jcpGlobalHeader') ? 'header' : el.closest('footer') ? 'footer' : pathname === '/' || pathname === '/home' ? 'homepage' : pathname === '/referral-program' ? 'referral_program' : 'page');
     try {

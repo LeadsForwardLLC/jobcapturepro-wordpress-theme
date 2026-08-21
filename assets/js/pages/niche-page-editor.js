@@ -26,6 +26,7 @@
     share: '.jcp-niche-share',
     media_text: '.jcp-block-media-text, .jcp-media-text, .demo-preview-section',
     proof_flow: '.jcp-block-proof-flow, #real-job-proof',
+    testimonials: '.jcp-block-testimonials, #testimonials',
     demo_preview: '.jcp-block-demo-preview, #demo-preview',
     directory_preview: '.jcp-block-directory-preview, .directory-preview',
     conversion: '.jcp-block-conversion, .conversion-section',
@@ -67,7 +68,7 @@
     problem: { label: 'Fix this with JobCapturePro', url: '/demo' },
     benefits: { label: 'See it in the demo', url: '/demo' },
     differentiation: { label: 'Get started', url: '/demo' },
-    who_its_for: { label: 'Start free trial', url: '/demo' },
+    who_its_for: { label: 'Start free 14-day trial', url: '/demo' },
     faq: { label: 'Still have questions? Book a demo', url: '/demo' },
   };
 
@@ -94,7 +95,7 @@
   const HEADING_TAG_BLOCKS = new Set([
     'hero', 'benefits', 'what_it_is', 'problem', 'check_ins', 'who_its_for',
     'how_it_works', 'differentiation', 'faq', 'final_cta', 'conversion',
-    'proof_flow', 'directory_preview', 'media_text', 'demo_preview',
+    'proof_flow', 'testimonials', 'directory_preview', 'media_text', 'demo_preview',
     'commission', 'partners', 'share',
   ]);
 
@@ -235,6 +236,11 @@
       { key: 'show_callout', label: 'Callout box', selector: '.real-job-proof-callout', defaultOn: true },
       { key: 'show_link', label: 'Bottom link', selector: '.timeline-cta', defaultOn: true },
     ],
+    testimonials: [
+      { key: 'show_eyebrow', label: 'Eyebrow', selector: '.jcp-testimonials-eyebrow', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+    ],
     directory_preview: [
       { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
@@ -289,20 +295,35 @@
     differentiation: { headline: 'Section headline', body: '', bullets: [] },
     who_its_for: { headline: "Who it's for", audiences: [] },
     faq: { headline: 'Frequently asked questions', items: [] },
-    final_cta: { headline: 'Ready to get started?', subheadline: '', cta_primary: { label: 'Start free trial', url: '' }, cta_secondary: { label: 'See how it works', url: '/demo' } },
+    final_cta: { headline: 'Ready to get started?', subheadline: '', cta_primary: { label: 'Start free 14-day trial', url: '' }, cta_secondary: { label: 'See how it works', url: '/demo' } },
     form_embed: { headline: 'Apply for a spot', subheadline: '', shortcode: '', display: 'inline', show_headline: true, show_subheadline: true },
     code_embed: { headline: 'Book a time', subheadline: '', embed_code: '', show_headline: true, show_subheadline: false },
-    cta_band: { cta_primary: { label: 'Get started', url: '' }, band_key: 'cta_band_1' },
+    cta_band: { cta_primary: { label: 'Start free 14-day trial', url: '' }, band_key: 'cta_band_1' },
     breadcrumb: {},
     core_mechanic: [
       { value: '1', label: 'photo', detail: 'Proof created instantly' },
-      { value: '4', label: 'channels', detail: 'Google, website, social, directory' },
+      { value: '4', label: 'channels', detail: 'website, Google, social + directory' },
       { value: '0', label: 'busywork', detail: 'Nothing new for your crew' },
     ],
     commission: {},
     partners: {},
     share: {},
     proof_flow: {},
+    testimonials: {
+      eyebrow: 'Customer stories',
+      headline: 'Trusted by contractors who already take the photos',
+      subheadline: 'Real operators and agencies using JobCapturePro to turn completed jobs into visibility, content, and reviews.',
+      featured_key: 'peter-bonk',
+      autoplay: true,
+      autoplay_ms: 6000,
+      show_stars: true,
+      show_roles: true,
+      show_eyebrow: true,
+      show_headline: true,
+      show_subheadline: true,
+      section_id: 'testimonials',
+      reviews: [],
+    },
     demo_preview: {
       badge: 'Live Demo',
       headline: 'See it in action',
@@ -415,7 +436,7 @@
     <div class="jcp-editor-modal__panel jcp-niche-link-popover" role="dialog" aria-labelledby="jcpCtaLinkModalTitle">
       <strong id="jcpCtaLinkModalTitle">Edit button</strong>
       <label for="jcpNicheLinkLabel">Button text</label>
-      <input type="text" id="jcpNicheLinkLabel" placeholder="Start free trial" />
+      <input type="text" id="jcpNicheLinkLabel" placeholder="Start free 14-day trial" />
       <label for="jcpNicheLinkUrl">URL</label>
       <input type="text" id="jcpNicheLinkUrl" placeholder="/demo or https://..." />
       <div class="jcp-niche-link-popover-actions">
@@ -1602,6 +1623,21 @@
       return;
     }
 
+    if (key === 'show_eyebrow' && block.type === 'testimonials') {
+      const container = root.querySelector('.jcp-container') || root;
+      const el = document.createElement('p');
+      el.className = 'jcp-testimonials-eyebrow demo-badge';
+      el.setAttribute('data-jcp-path', `${lk}.eyebrow`);
+      el.textContent = String(getPath(flatContent, `${lk}.eyebrow`) || '');
+      const header = container.querySelector('.rankings-header');
+      if (header) {
+        container.insertBefore(el, header);
+      } else {
+        container.insertBefore(el, container.firstChild);
+      }
+      return;
+    }
+
     if (key === 'show_closing') {
       const container = root.querySelector('.jcp-container') || root;
       const el = document.createElement('p');
@@ -1859,7 +1895,7 @@
     }
     const columnTypes = [
       'how_it_works', 'check_ins', 'problem', 'benefits', 'who_its_for', 'proof_flow',
-      'what_it_is', 'differentiation', 'faq', 'directory_preview',
+      'what_it_is', 'differentiation', 'faq', 'testimonials', 'directory_preview',
     ];
     const options = { align: true, width: true };
     if (columnTypes.includes(type)) options.columns = true;
@@ -1952,6 +1988,7 @@
 
       applySectionSurfaceToDom(block, root);
       syncBlockVisibilityToDom(block);
+      if (block.type === 'testimonials') syncTestimonialsToDom(block);
     });
 
     document.querySelectorAll('.jcp-niche-breadcrumb').forEach((el) => {
@@ -2013,7 +2050,149 @@
     recordChange();
   };
 
+  const testimonialsReviewKey = (review) => {
+    if (review && review.id) return String(review.id);
+    return String(review?.name || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  };
+
+  const getTestimonialsReviews = (block) => {
+    const lk = blockLegacyKey(block) || 'testimonials';
+    const fromProps = block.props?.reviews;
+    const fromFlat = getPath(flatContent, `${lk}.reviews`);
+    if (Array.isArray(fromProps) && fromProps.length) return fromProps;
+    if (Array.isArray(fromFlat) && fromFlat.length) return fromFlat;
+    return [];
+  };
+
+  const resolveTestimonialsFeatured = (reviews, featuredKey) => {
+    const key = String(featuredKey || '').trim();
+    if (key && reviews.length) {
+      const direct = reviews.find((review) => testimonialsReviewKey(review) === key);
+      if (direct) return direct;
+      const slug = key.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const bySlug = reviews.find((review) => testimonialsReviewKey(review) === slug);
+      if (bySlug) return bySlug;
+    }
+    return reviews[0] || null;
+  };
+
+  const testimonialsStarsHtml = (rating, showStars) => {
+    if (!showStars) return '';
+    const value = Math.max(0, Math.min(5, parseInt(rating || 5, 10) || 5));
+    if (value <= 0) return '';
+    return `<div class="jcp-testimonials-stars" aria-label="${value} out of 5 stars"><span aria-hidden="true">${'★'.repeat(value)}${'☆'.repeat(5 - value)}</span></div>`;
+  };
+
+  const testimonialsCardHtml = (review, showStars, showRoles) => {
+    const id = testimonialsReviewKey(review);
+    const name = String(review.name || '');
+    const role = showRoles && review.role
+      ? `<span class="jcp-testimonials-card-role">${String(review.role)}</span>`
+      : '';
+    return (
+      `<button type="button" class="jcp-testimonials-card" data-review-key="${id}" aria-label="Show review from ${name}" role="listitem">` +
+      `${testimonialsStarsHtml(review.rating, showStars)}` +
+      `<p class="jcp-testimonials-card-quote">${String(review.quote || '')}</p>` +
+      `<span class="jcp-testimonials-card-name">${name}</span>${role}</button>`
+    );
+  };
+
+  const syncTestimonialsFeaturedPanel = (featuredEl, review, showStars, showRoles) => {
+    if (!featuredEl || !review) return;
+    const role = showRoles && review.role
+      ? `<span class="jcp-testimonials-role">${String(review.role)}</span>`
+      : '';
+    featuredEl.innerHTML =
+      `${testimonialsStarsHtml(review.rating, showStars)}` +
+      `<blockquote class="jcp-testimonials-quote"><p>${String(review.quote || '')}</p></blockquote>` +
+      `<figcaption class="jcp-testimonials-cite"><cite class="jcp-testimonials-name">${String(review.name || '')}</cite>${role}</figcaption>`;
+  };
+
+  const syncTestimonialsToDom = (block) => {
+    const root = ensureBlockRoot(findBlockRootEl(block));
+    if (!root) return;
+    const lk = blockLegacyKey(block) || 'testimonials';
+    const merged = { ...(getPath(flatContent, lk) || {}), ...(block.props || {}) };
+    const reviews = getTestimonialsReviews(block);
+    const featured = resolveTestimonialsFeatured(reviews, merged.featured_key);
+    const showStars = coerceVisibilityBool(merged.show_stars, true);
+    const showRoles = coerceVisibilityBool(merged.show_roles, true);
+    const autoplay = coerceVisibilityBool(merged.autoplay, true);
+    const featuredId = featured ? testimonialsReviewKey(featured) : '';
+
+    root.setAttribute('data-autoplay', autoplay ? '1' : '0');
+    if (featuredId) root.setAttribute('data-featured-key', featuredId);
+
+    root.querySelectorAll('.jcp-testimonials-stars').forEach((el) => {
+      setElVisuallyHidden(el, !showStars);
+    });
+    root.querySelectorAll('.jcp-testimonials-role, .jcp-testimonials-card-role').forEach((el) => {
+      setElVisuallyHidden(el, !showRoles);
+    });
+
+    const featuredEl = root.querySelector('[data-jcp-testimonials-featured]');
+    if (featuredEl && featured) {
+      syncTestimonialsFeaturedPanel(featuredEl, featured, showStars, showRoles);
+    }
+
+    const track = root.querySelector('[data-jcp-testimonials-track]');
+    if (track && featuredId) {
+      const secondary = reviews.filter((review) => testimonialsReviewKey(review) !== featuredId);
+      track.innerHTML = secondary.map((review) => testimonialsCardHtml(review, showStars, showRoles)).join('');
+    }
+
+    if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+      window.JCP_REFRESH_INLINE_EDITABLE();
+    }
+  };
+
+  const setTestimonialsProp = (block, key, value) => {
+    const liveBlock = getLiveBlock(block);
+    liveBlock.props = liveBlock.props || {};
+    liveBlock.props[key] = value;
+    const lk = blockLegacyKey(liveBlock) || 'testimonials';
+    setPath(flatContent, `${lk}.${key}`, value);
+    syncTestimonialsToDom(liveBlock);
+    recordChange();
+  };
+
   const buildBlockContentFieldsHtml = (block) => {
+    if (block.type === 'testimonials') {
+      const lk = blockLegacyKey(block) || 'testimonials';
+      const merged = { ...(getPath(flatContent, lk) || {}), ...(block.props || {}) };
+      const reviews = Array.isArray(merged.reviews) ? merged.reviews : [];
+      const featuredKey = String(merged.featured_key || '').trim();
+      const showStars = coerceVisibilityBool(merged.show_stars, true);
+      const showRoles = coerceVisibilityBool(merged.show_roles, true);
+      const autoplay = coerceVisibilityBool(merged.autoplay, true);
+      const boolRow = (key, label, on) => {
+        let row = `<div class="jcp-layout-row"><span class="jcp-layout-row__label">${label}</span><div class="jcp-layout-btns" data-block-content-setting="${key}">`;
+        row += `<button type="button" class="jcp-layout-btn${on ? ' is-active' : ''}" data-value="1">On</button>`;
+        row += `<button type="button" class="jcp-layout-btn${!on ? ' is-active' : ''}" data-value="0">Off</button>`;
+        row += '</div></div>';
+        return row;
+      };
+      let html = '<div class="jcp-layout-row jcp-layout-row--stack"><span class="jcp-layout-row__label">Featured review</span>';
+      html += `<select class="jcp-structure-text-input" data-block-content-field="featured_key"${reviews.length ? '' : ' disabled'}>`;
+      if (!reviews.length) {
+        html += '<option value="">No reviews available</option>';
+      } else {
+        reviews.forEach((review) => {
+          const id = testimonialsReviewKey(review);
+          const name = String(review.name || id || 'Review').replace(/"/g, '&quot;');
+          const selected = id === featuredKey ? ' selected' : '';
+          html += `<option value="${String(id).replace(/"/g, '&quot;')}"${selected}>${name}</option>`;
+        });
+      }
+      html += '</select><p class="jcp-structure-field-hint">Choose which review is highlighted in the large quote panel.</p></div>';
+      html += boolRow('show_stars', 'Star ratings', showStars);
+      html += boolRow('show_roles', 'Reviewer roles', showRoles);
+      html += boolRow('autoplay', 'Autoplay slider', autoplay);
+      return html;
+    }
     if (block.type === 'form_embed') {
       const shortcode = block.props?.shortcode || flatContent?.form_embed?.shortcode || '';
       const display = (block.props?.display || flatContent?.form_embed?.display || 'inline') === 'modal' ? 'modal' : 'inline';
@@ -2810,6 +2989,13 @@
             liveBlock.props = liveBlock.props || {};
             const key = contentSetting.dataset.blockContentSetting;
             const value = btn.dataset.value;
+            if (liveBlock.type === 'testimonials' && ['show_stars', 'show_roles', 'autoplay'].includes(key)) {
+              setTestimonialsProp(liveBlock, key, value === '1');
+              contentSetting.querySelectorAll('.jcp-layout-btn').forEach((b) => {
+                b.classList.toggle('is-active', b.dataset.value === value);
+              });
+              return;
+            }
             liveBlock.props[key] = value;
             flatContent.form_embed = flatContent.form_embed || {};
             flatContent.form_embed[key] = value;
@@ -2849,6 +3035,9 @@
           flatContent[legacyKey][key] = value;
           const pageInput = document.querySelector(`[data-jcp-input-path="${legacyKey}.${key}"]`);
           if (pageInput && pageInput !== input) pageInput.value = value;
+          if (liveBlock.type === 'testimonials' && key === 'featured_key') {
+            syncTestimonialsToDom(liveBlock);
+          }
           recordChange();
         };
         input.addEventListener('click', (e) => e.stopPropagation());

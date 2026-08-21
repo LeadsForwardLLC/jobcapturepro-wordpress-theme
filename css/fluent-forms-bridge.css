@@ -74,13 +74,33 @@
   box-shadow: var(--jcp-shadow-2xl, 0 25px 50px rgba(0, 0, 0, 0.15));
 }
 
+/* True fullscreen takeover (case study / campaign apply) */
+.jcp-fluent-quote-modal--takeover {
+  align-items: stretch;
+  padding: 0;
+}
+
+.jcp-fluent-quote-modal--takeover .jcp-fluent-quote-modal__overlay {
+  display: none;
+}
+
+.jcp-fluent-quote-modal--takeover .jcp-fluent-quote-modal__dialog {
+  max-width: none;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
 @media (min-width: 768px) {
-  .jcp-fluent-quote-modal {
+  .jcp-fluent-quote-modal:not(.jcp-fluent-quote-modal--takeover) {
     align-items: center;
     padding: 1.5rem;
   }
 
-  .jcp-fluent-quote-modal__dialog {
+  .jcp-fluent-quote-modal:not(.jcp-fluent-quote-modal--takeover) .jcp-fluent-quote-modal__dialog {
     height: min(900px, calc(100vh - 3rem));
     max-height: calc(100vh - 3rem);
     border-radius: var(--jcp-ff-radius-lg, 16px);
@@ -137,6 +157,37 @@
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   padding: 1rem 1.25rem 2rem;
+}
+
+.jcp-fluent-quote-modal--takeover .jcp-fluent-quote-modal__header {
+  padding: 1rem 1.25rem 0.85rem;
+  padding-inline: max(1.25rem, env(safe-area-inset-left)) max(1.25rem, env(safe-area-inset-right));
+}
+
+.jcp-fluent-quote-modal--takeover .jcp-fluent-quote-modal__body {
+  padding: 1rem max(1.25rem, env(safe-area-inset-left)) calc(2rem + env(safe-area-inset-bottom, 0px)) max(1.25rem, env(safe-area-inset-right));
+}
+
+.jcp-fluent-quote-modal--takeover .jcp-fluent-quote-modal__body .fluentform,
+.jcp-fluent-quote-modal--takeover .jcp-fluent-quote-modal__body form.frm-fluent-form {
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.jcp-form-embed--modal-cta .jcp-form-embed__intro {
+  text-align: center;
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+.jcp-form-embed--modal-cta .jcp-form-embed__modal-actions {
+  margin: 1.25rem 0 0;
+}
+
+.jcp-form-embed--modal-cta .jcp-form-embed__shortcode-field {
+  margin-top: 1.5rem;
+  max-width: 40rem;
+  margin-inline: auto;
 }
 
 body.jcp-fluent-modal-open {
@@ -267,15 +318,16 @@ body.jcp-fluent-modal-open {
   margin-bottom: 1.15rem;
 }
 
-/* Standalone fields only — currency groups handled below */
-.jcp-fluent-bridge .ff-el-form-control,
-.jcp-fluent-bridge input[type="text"],
+/* Standalone fields only — currency groups handled below.
+   Never restyle Choices.js internals or the hidden <select> it manages. */
+.jcp-fluent-bridge .ff-el-form-control:not(.choices__input):not([data-choice]),
+.jcp-fluent-bridge input[type="text"]:not(.choices__input),
 .jcp-fluent-bridge input[type="email"],
 .jcp-fluent-bridge input[type="tel"],
 .jcp-fluent-bridge input[type="url"],
 .jcp-fluent-bridge input[type="number"],
 .jcp-fluent-bridge input[type="password"],
-.jcp-fluent-bridge select,
+.jcp-fluent-bridge select:not(.choices__input):not([data-choice]),
 .jcp-fluent-bridge textarea {
   min-height: 3rem;
   padding: 0.75rem 1rem !important;
@@ -290,13 +342,63 @@ body.jcp-fluent-modal-open {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.jcp-fluent-bridge .ff-el-input--content > .ff-el-form-control,
-.jcp-fluent-bridge .ff-el-input--content > input,
-.jcp-fluent-bridge .ff-el-input--content > select,
+.jcp-fluent-bridge .ff-el-input--content > .ff-el-form-control:not(.choices__input):not([data-choice]),
+.jcp-fluent-bridge .ff-el-input--content > input:not(.choices__input),
+.jcp-fluent-bridge .ff-el-input--content > select:not(.choices__input):not([data-choice]),
 .jcp-fluent-bridge .ff-el-input--content > textarea {
   width: 100% !important;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+/* Choices (Company Niche, etc.): leave plugin layout alone; keep dropdown above steps */
+.jcp-fluent-bridge .choices {
+  position: relative;
+  z-index: 2;
+}
+
+.jcp-fluent-bridge .choices.is-open {
+  z-index: 100050;
+  overflow: visible !important;
+}
+
+.jcp-fluent-bridge .choices__inner {
+  min-height: 3rem;
+  padding: 0.5rem 0.85rem !important;
+  border: 1.5px solid var(--jcp-ff-border, #e5e7eb) !important;
+  border-radius: var(--jcp-ff-radius, 12px) !important;
+  background: var(--jcp-ff-surface, #fff) !important;
+  color: var(--jcp-ff-text, #111827) !important;
+  font-size: var(--jcp-font-size-base, 16px) !important;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.jcp-fluent-bridge .choices.is-focused .choices__inner,
+.jcp-fluent-bridge .choices.is-open .choices__inner {
+  border-color: var(--jcp-ff-primary, #ff5036) !important;
+  box-shadow: 0 0 0 3px rgba(255, 80, 62, 0.22) !important;
+}
+
+.jcp-fluent-bridge .choices__list--dropdown,
+.jcp-fluent-bridge .choices__list[aria-expanded] {
+  z-index: 100051 !important;
+  border: 1.5px solid var(--jcp-ff-border, #e5e7eb) !important;
+  border-radius: var(--jcp-ff-radius, 12px) !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14) !important;
+}
+
+/*
+ * Fluent’s step shell uses overflow:hidden for transitions, which clips Choices
+ * dropdowns and makes required niche selects feel “broken” before Submit.
+ * Only lift overflow while a Choices menu is open.
+ */
+.jcp-fluent-bridge .ff-step-container:has(.choices.is-open),
+.jcp-fluent-bridge .fluentform-step.active:has(.choices.is-open),
+.jcp-fluent-bridge .ff-step.active:has(.choices.is-open),
+.jcp-fluent-bridge .ff-step.ff-active:has(.choices.is-open),
+.jcp-fluent-bridge .ff-step-body:has(.choices.is-open) {
+  overflow: visible !important;
 }
 
 .jcp-fluent-bridge textarea {
@@ -304,9 +406,9 @@ body.jcp-fluent-modal-open {
   resize: vertical;
 }
 
-.jcp-fluent-bridge .ff-el-form-control:focus,
-.jcp-fluent-bridge input:focus,
-.jcp-fluent-bridge select:focus,
+.jcp-fluent-bridge .ff-el-form-control:focus:not(.choices__input):not([data-choice]),
+.jcp-fluent-bridge input:focus:not(.choices__input),
+.jcp-fluent-bridge select:focus:not(.choices__input):not([data-choice]),
 .jcp-fluent-bridge textarea:focus {
   outline: none !important;
   border-color: var(--jcp-ff-primary, #ff5036) !important;
@@ -537,6 +639,41 @@ body.jcp-fluent-modal-open {
   margin-top: 0.35rem;
 }
 
+.jcp-fluent-bridge .ff-el-is-error {
+  border-radius: var(--jcp-ff-radius, 12px);
+}
+
+.jcp-fluent-bridge .ff-el-is-error > .ff-el-input--label label,
+.jcp-fluent-bridge .ff-el-is-error > .ff-el-input--label {
+  color: #b91c1c;
+}
+
+/* Sticky notice when Submit/Next fails — Fluent often hides errors on other steps */
+.jcp-ff-validation-notice {
+  display: none;
+  position: sticky;
+  top: 0.75rem;
+  z-index: 100020;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+  box-shadow: 0 8px 24px rgba(153, 27, 27, 0.12);
+}
+
+.jcp-ff-validation-notice.is-visible {
+  display: block;
+}
+
+body.jcp-form-landing .jcp-ff-validation-notice {
+  top: 4.25rem; /* below sticky logo/close bar */
+}
+
 .jcp-fluent-bridge .ff-errors-in-stack.is-active,
 .jcp-fluent-bridge .ff-errors-in-stack:not([style*="display: none"]) {
   margin: 1rem 0;
@@ -614,7 +751,7 @@ body.jcp-fluent-modal-open {
 
 .jcp-fluent-bridge .step-nav,
 .jcp-fluent-bridge .ff_step_nav_last,
-.jcp-fluent-bridge .ff-step-t-container {
+.jcp-fluent-bridge .ff-inner_submit_container {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -725,6 +862,45 @@ body.jcp-fluent-modal-open {
   .jcp-fluent-bridge .ff-step.ff_active .ff-inner_submit_container .ff_submit_btn_wrapper {
     margin: 0 !important;
     width: 100%;
+  }
+
+  /*
+   * Fallback: some Fluent forms leave Submit as a sibling of the empty
+   * .ff-inner_submit_container (not inside column-2). JS relocates it; until
+   * then, pin the orphan wrapper so Submit is still reachable on mobile.
+   */
+  .jcp-fluent-bridge .fluentform-step.active > .ff_submit_btn_wrapper,
+  .jcp-fluent-bridge .ff-step.active > .ff_submit_btn_wrapper,
+  .jcp-fluent-bridge .ff-step.ff-active > .ff_submit_btn_wrapper,
+  .jcp-fluent-bridge .ff-step.ff_active > .ff_submit_btn_wrapper {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100011;
+    margin: 0 !important;
+    padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    background: var(--jcp-ff-surface, #fff);
+    border-top: 1px solid var(--jcp-ff-border, #e5e7eb);
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+    box-sizing: border-box;
+  }
+
+  /* When both prev dock + orphan submit exist, stack submit above prev bar */
+  .jcp-fluent-bridge .fluentform-step.active:has(> .ff_submit_btn_wrapper) .ff-inner_submit_container,
+  .jcp-fluent-bridge .ff-step.active:has(> .ff_submit_btn_wrapper) .ff-inner_submit_container,
+  .jcp-fluent-bridge .ff-step.ff-active:has(> .ff_submit_btn_wrapper) .ff-inner_submit_container {
+    bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px));
+    box-shadow: none;
+    border-top: 0;
+    background: transparent;
+    padding-bottom: 0;
+  }
+
+  .jcp-fluent-bridge .fluentform-step.active:has(> .ff_submit_btn_wrapper),
+  .jcp-fluent-bridge .ff-step.active:has(> .ff_submit_btn_wrapper),
+  .jcp-fluent-bridge .ff-step.ff-active:has(> .ff_submit_btn_wrapper) {
+    padding-bottom: calc(8.5rem + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   .jcp-fluent-bridge .fluentform-step.active .step-nav .ff-btn,

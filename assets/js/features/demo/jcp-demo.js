@@ -356,7 +356,7 @@ function getDemoContactPayload() {
   }
 }
 
-function jcpDemoTrack(eventType, stepNumber, metadata) {
+function jcpDemoTrack(eventType, stepNumber, metadata, options) {
   const url = window.JCP_DEMO_EVENT && window.JCP_DEMO_EVENT.rest_url;
   if (!url) return;
   try {
@@ -367,10 +367,19 @@ function jcpDemoTrack(eventType, stepNumber, metadata) {
       metadata: metadata || undefined,
       ...getDemoContactPayload(),
     };
+    const payload = JSON.stringify(body);
+    const keepalive = Boolean(options && options.keepalive);
+    if (keepalive && typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+      try {
+        const blob = new Blob([payload], { type: 'application/json' });
+        if (navigator.sendBeacon(url, blob)) return;
+      } catch (e) {}
+    }
     fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: payload,
+      keepalive,
     }).catch(function() {});
   } catch (e) {}
 }
@@ -536,7 +545,7 @@ const DEMO_OUTCOME_ITEMS = [
   'Posted to social media',
   'Live on Google Business',
   'Added to JobCapturePro directory',
-  'Review request sent',
+  'Review request presented',
 ];
 
 const demoGuideContent = {
@@ -567,8 +576,8 @@ const demoGuideContent = {
   step5: {
     pill: 'Step 5',
     title: 'Request a review',
-    body: 'Review requests go out automatically. Tap Request Review to preview it.',
-    interactHint: 'Tap Request Review to preview the automatic send.'
+    body: 'Before leaving, your tech shows a QR code so the customer can leave a review on the spot. Tap Request Review to preview it.',
+    interactHint: 'Tap Request Review to preview the QR handoff.'
   },
   step6: {
     pill: 'Final step',
@@ -579,7 +588,7 @@ const demoGuideContent = {
   step6Dock: {
     pill: 'Final step',
     title: 'Ready to get started?',
-    body: 'Start free and turn every completed job into proof that drives more calls.',
+    body: 'Start a free 14-day trial — or apply for a one-on-one personalized demo if you want a walkthrough with our team.',
     interactHint: ''
   }
 };
@@ -1359,7 +1368,7 @@ function setTourStep(stepKey) {
 function getNextLabelForStep(stepKey) {
   if (stepKey === 'step4') return 'Publish →';
   if (stepKey === 'step5') return 'Send Review →';
-  if (stepKey === 'step6') return 'Get Started Free';
+  if (stepKey === 'step6') return 'Continue';
   return 'Next →';
 }
 
@@ -2697,7 +2706,7 @@ function buildOutcomesSlideHtml(index, ctx) {
               </div>
               <div class="outcomes-review-card__sent">
                 <img src="${assetBase}/shared/assets/icons/lucide/send.svg" class="lucide-icon lucide-icon-sm" alt="">
-                Review request sent automatically after the job
+                Review request presented with a QR code after the job
               </div>
             </div>
           </div>
@@ -2996,7 +3005,7 @@ function ensureOutcomesFooterButtons() {
     finish.id = 'demoOutcomesFinishCta';
     finish.className = 'btn btn-primary demo-outcomes-modal__finish';
     finish.dataset.outcomesAction = 'finish';
-    finish.textContent = 'Get Started Free';
+    finish.textContent = 'Continue';
     footer.appendChild(finish);
   }
 }
@@ -3214,8 +3223,8 @@ async function sendReviewRequest() {
     <div class="feed-card">
       <div class="feed-image"><img src="${demoPhotos[0]}" alt="Job" width="400" height="300" loading="lazy"></div>
       <div class="feed-content">
-        <h4>Review Request Sent</h4>
-        <p>SMS sent automatically</p>
+        <h4>Review Request Shown</h4>
+        <p>QR code presented on site</p>
       </div>
     </div>
   `);
@@ -3256,7 +3265,7 @@ async function sendReviewRequest() {
   // Update top CTA
   const headerCta = document.getElementById('btnNext');
   if (headerCta) {
-    headerCta.textContent = 'Get Started →';
+    headerCta.textContent = 'Start free trial →';
     headerCta.onclick = () => {
       window.location.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_header_complete'));
     };
@@ -3550,6 +3559,7 @@ function resetGuidedEditScreen() {
 }
 
 function restartGuidedDemo() {
+  // cta_clicked is fired from the Replay button handler before this runs.
   jcpDemoTrack('demo_replayed', null, { source: 'post_demo_panel' });
 
   state.isFinalStep = false;
@@ -4017,13 +4027,26 @@ function wirePostDemoPanel() {
   if (primaryCta) {
     primaryCta.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
     primaryCta.addEventListener('click', function() {
-      jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free' });
-      jcpDemoTrack('demo_converted');
-      // Matomo: Post Demo CTA Click (Early Access), once per session
+      jcpDemoTrack('cta_clicked', null, { cta: 'start_free_trial', source: 'demo_post_panel', label: 'Start free 14-day trial' }, { keepalive: true });
+      jcpDemoTrack('demo_converted', null, { cta: 'start_free_trial', source: 'demo_post_panel' }, { keepalive: true });
+      // Matomo: Post Demo CTA Click (trial), once per session
       try {
         if (typeof _paq !== 'undefined' && !sessionStorage.getItem('jcp_matomo_demo_cta_early_access')) {
-          _paq.push(['trackEvent', 'Demo', 'Post Demo CTA Click (Early Access)']);
+          _paq.push(['trackEvent', 'Demo', 'Post Demo CTA Click (Start Free Trial)']);
           sessionStorage.setItem('jcp_matomo_demo_cta_early_access', '1');
+        }
+      } catch (e) {}
+    });
+  }
+
+  const secondaryCta = document.querySelector('.post-demo-secondary-cta');
+  if (secondaryCta) {
+    secondaryCta.addEventListener('click', function() {
+      jcpDemoTrack('cta_clicked', null, { cta: 'personalized_demo', source: 'demo_post_panel', label: 'Apply for a personalized demo' }, { keepalive: true });
+      try {
+        if (typeof _paq !== 'undefined' && !sessionStorage.getItem('jcp_matomo_demo_cta_personalized')) {
+          _paq.push(['trackEvent', 'Demo', 'Post Demo CTA Click (Personalized Demo)']);
+          sessionStorage.setItem('jcp_matomo_demo_cta_personalized', '1');
         }
       } catch (e) {}
     });
@@ -4032,6 +4055,7 @@ function wirePostDemoPanel() {
   document
     .getElementById('btnReplayDemo')
     ?.addEventListener('click', () => {
+      jcpDemoTrack('cta_clicked', null, { cta: 'replay_demo', source: 'demo_post_panel', label: 'Replay demo' });
       restartGuidedDemo();
     });
 }
