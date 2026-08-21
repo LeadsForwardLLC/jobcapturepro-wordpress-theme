@@ -109,14 +109,14 @@ $icon = function( $name ) {
 								<img src="<?php echo $icon('map'); ?>" class="meta-icon" alt="">
 								<strong>4 channels</strong>
 							</div>
-							<span>website, Google, social + directory</span>
+							<span>web, maps, social</span>
 						</div>
 						<div class="meta-item">
 							<div class="meta-label">
 								<img src="<?php echo $icon('clock'); ?>" class="meta-icon" alt="">
 								<strong>0 busywork</strong>
 							</div>
-							<span>zero admin work</span>
+							<span>zero work for you</span>
 						</div>
 					</div>
 				</div>

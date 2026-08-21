@@ -276,11 +276,11 @@ CTA
 
 CORE MECHANIC
 1 photo
- Proof created instantly
+ proof everywhere
 4 channels
- website, Google, social + directory
+ web, maps, social
 0 busywork
- Nothing new for your crew
+ zero work for you
 
 MEDIA CORE
 Headline
@@ -800,11 +800,11 @@ SNIP,
 		'CORE MECHANIC' => <<<'SNIP'
 CORE MECHANIC
 1 photo
- Proof created instantly
+ proof everywhere
 4 channels
- website, Google, social + directory
+ web, maps, social
 0 busywork
- Nothing new for your crew
+ zero work for you
 SNIP,
 		'HOW IT WORKS' => <<<'SNIP'
 HOW IT WORKS

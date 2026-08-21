@@ -1,6 +1,7 @@
 <?php
 /**
- * Ensure home page documents include testimonials after proof_flow.
+ * Ensure home page documents include testimonials after how_it_works,
+ * and keep hero meta_stats copy balanced.
  *
  * @package JCP_Core
  */
@@ -10,7 +11,61 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Insert testimonials block on saved home documents when missing.
+ * Canonical balanced homepage hero meta_stats.
+ *
+ * @return array<int, array<string, string>>
+ */
+function jcp_page_home_balanced_meta_stats(): array {
+	return [
+		[
+			'icon'      => 'camera',
+			'label'     => '1 photo',
+			'detail'    => 'proof everywhere',
+			'css_class' => 'meta-stat-photo',
+		],
+		[
+			'icon'      => 'map',
+			'label'     => '4 channels',
+			'detail'    => 'web, maps, social',
+			'css_class' => 'meta-stat-channels',
+		],
+		[
+			'icon'      => 'clock',
+			'label'     => '0 busywork',
+			'detail'    => 'zero work for you',
+			'css_class' => 'meta-stat-busywork',
+		],
+	];
+}
+
+/**
+ * Whether a hero meta_stats row still uses known unbalanced copy.
+ *
+ * @param array<int, mixed> $stats Stats rows.
+ */
+function jcp_page_home_meta_stats_need_balance( array $stats ): bool {
+	$unbalanced_details = [
+		'shared on website, google, social + directory',
+		'website, google, social + directory',
+		'no extra work from you',
+		'zero admin work',
+	];
+
+	foreach ( $stats as $row ) {
+		if ( ! is_array( $row ) ) {
+			continue;
+		}
+		$detail = strtolower( trim( (string) ( $row['detail'] ?? '' ) ) );
+		if ( in_array( $detail, $unbalanced_details, true ) ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Insert/move testimonials after how_it_works and balance hero meta_stats on home.
  *
  * @param array<string, mixed> $content Block document.
  * @param int                  $post_id Post ID.
@@ -26,30 +81,49 @@ function jcp_page_upgrade_home_testimonials( array $content, int $post_id ): arr
 		return $content;
 	}
 
+	$testimonials = null;
+	$rest         = [];
 	foreach ( $blocks as $block ) {
 		if ( ( $block['type'] ?? '' ) === 'testimonials' ) {
-			return $content;
+			$testimonials = $block;
+			continue;
 		}
+		$rest[] = $block;
 	}
 
-	$new = [
-		'id'    => 'testimonials-' . wp_generate_password( 8, false ),
-		'type'  => 'testimonials',
-		'props' => jcp_page_default_block_props( 'testimonials' ),
-	];
+	if ( $testimonials === null ) {
+		$testimonials = [
+			'id'    => 'testimonials-' . wp_generate_password( 8, false ),
+			'type'  => 'testimonials',
+			'props' => jcp_page_default_block_props( 'testimonials' ),
+		];
+	}
 
 	$out      = [];
 	$inserted = false;
-	foreach ( $blocks as $block ) {
+	foreach ( $rest as $block ) {
 		$out[] = $block;
-		if ( ! $inserted && ( $block['type'] ?? '' ) === 'proof_flow' ) {
-			$out[]    = $new;
+		if ( ! $inserted && ( $block['type'] ?? '' ) === 'how_it_works' ) {
+			$out[]    = $testimonials;
 			$inserted = true;
 		}
 	}
 
 	if ( ! $inserted ) {
-		$out[] = $new;
+		$out[] = $testimonials;
+	}
+
+	foreach ( $out as $i => $block ) {
+		if ( ( $block['type'] ?? '' ) !== 'hero' ) {
+			continue;
+		}
+		$props = is_array( $block['props'] ?? null ) ? $block['props'] : [];
+		$stats = is_array( $props['meta_stats'] ?? null ) ? $props['meta_stats'] : [];
+		if ( empty( $stats ) || jcp_page_home_meta_stats_need_balance( $stats ) ) {
+			$props['meta_stats'] = jcp_page_home_balanced_meta_stats();
+			$out[ $i ]['props']  = $props;
+		}
+		break;
 	}
 
 	$content['blocks'] = $out;

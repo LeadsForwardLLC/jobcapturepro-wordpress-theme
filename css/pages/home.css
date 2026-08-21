@@ -44,7 +44,7 @@
   width: 100% !important;
   max-width: 100% !important;
   margin: 0 !important;
-  padding-top: var(--jcp-space-xl) !important;
+  padding-top: var(--jcp-space-6xl) !important;
   padding-bottom: var(--jcp-space-5xl) !important;
   background-color: #ffffff !important;
   border-bottom: none !important;
@@ -57,11 +57,11 @@
   overflow-y: visible !important;
 }
 
-/* Mobile: compact space above H1 (header offset lives on body) */
+/* Mobile: keep clear space above H1 (header offset lives on body) */
 @media (max-width: 768px) {
   .jcp-home .directory-hero,
   .jcp-home .jcp-hero {
-    padding-top: var(--jcp-space-md) !important;
+    padding-top: var(--jcp-space-2xl) !important;
     padding-bottom: var(--jcp-space-2xl) !important;
   }
 }

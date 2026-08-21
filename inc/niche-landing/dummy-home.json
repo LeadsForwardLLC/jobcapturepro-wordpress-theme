@@ -14,8 +14,8 @@
     "show_trust_line": true,
     "meta_stats": [
       { "icon": "camera", "label": "1 photo", "detail": "proof everywhere", "css_class": "meta-stat-photo" },
-      { "icon": "map", "label": "4 channels", "detail": "website, Google, social + directory", "css_class": "meta-stat-channels" },
-      { "icon": "clock", "label": "0 busywork", "detail": "no extra work from you", "css_class": "meta-stat-busywork" }
+      { "icon": "map", "label": "4 channels", "detail": "web, maps, social", "css_class": "meta-stat-channels" },
+      { "icon": "clock", "label": "0 busywork", "detail": "zero work for you", "css_class": "meta-stat-busywork" }
     ]
   },
   "how_it_works": {
