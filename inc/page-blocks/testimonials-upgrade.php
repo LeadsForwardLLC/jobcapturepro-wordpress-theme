@@ -44,24 +44,23 @@ function jcp_page_home_balanced_meta_stats(): array {
  * @param array<int, mixed> $stats Stats rows.
  */
 function jcp_page_home_meta_stats_need_balance( array $stats ): bool {
-	$outdated_details = [
-		'shared on website, google, social + directory',
-		'website, google, social + directory',
-		'no extra work from you',
-		'zero admin work',
-		'proof everywhere',
-		'web, maps, social',
-		'site, maps, social',
-		'zero work for you',
-		'no work from you',
-	];
+	$canonical = jcp_page_home_balanced_meta_stats();
+	if ( count( $stats ) !== count( $canonical ) ) {
+		return true;
+	}
 
-	foreach ( $stats as $row ) {
-		if ( ! is_array( $row ) ) {
-			continue;
-		}
+	foreach ( $canonical as $i => $want ) {
+		$row = is_array( $stats[ $i ] ?? null ) ? $stats[ $i ] : [];
+		$label  = strtolower( trim( (string) ( $row['label'] ?? '' ) ) );
 		$detail = strtolower( trim( (string) ( $row['detail'] ?? '' ) ) );
-		if ( $detail === '' || in_array( $detail, $outdated_details, true ) ) {
+		$want_label  = strtolower( (string) $want['label'] );
+		$want_detail = strtolower( (string) $want['detail'] );
+
+		// Standard homepage labels: always keep canonical details in sync.
+		if ( $label === $want_label && $detail !== $want_detail ) {
+			return true;
+		}
+		if ( $detail === '' ) {
 			return true;
 		}
 	}

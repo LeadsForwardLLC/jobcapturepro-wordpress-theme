@@ -96,27 +96,33 @@ $icon = function( $name ) {
 						<a class="btn btn-primary directory-cta directory-cta-secondary" href="/demo">Watch the Live Demo</a>
 						<a class="btn btn-secondary directory-cta" href="#how-it-works">Learn how it works</a>
 					</div>
-					<div class="directory-meta">
-						<div class="meta-item">
-							<div class="meta-label">
+					<div class="directory-meta jcp-meta-stats">
+						<div class="meta-item meta-stat-photo">
+							<span class="factor-icon-wrapper jcp-hero-meta-icon" aria-hidden="true">
 								<img src="<?php echo $icon('camera'); ?>" class="meta-icon" alt="">
-								<strong>1 photo</strong>
+							</span>
+							<div class="meta-copy">
+								<strong class="meta-title">1 photo</strong>
+								<span class="meta-detail">Becomes proof on every channel</span>
 							</div>
-							<span>Becomes proof on every channel</span>
 						</div>
-						<div class="meta-item">
-							<div class="meta-label">
+						<div class="meta-item meta-stat-channels">
+							<span class="factor-icon-wrapper jcp-hero-meta-icon" aria-hidden="true">
 								<img src="<?php echo $icon('map'); ?>" class="meta-icon" alt="">
-								<strong>4 channels</strong>
+							</span>
+							<div class="meta-copy">
+								<strong class="meta-title">4 channels</strong>
+								<span class="meta-detail">Website, Google, social & directory</span>
 							</div>
-							<span>Website, Google, social & directory</span>
 						</div>
-						<div class="meta-item">
-							<div class="meta-label">
+						<div class="meta-item meta-stat-busywork">
+							<span class="factor-icon-wrapper jcp-hero-meta-icon" aria-hidden="true">
 								<img src="<?php echo $icon('clock'); ?>" class="meta-icon" alt="">
-								<strong>0 busywork</strong>
+							</span>
+							<div class="meta-copy">
+								<strong class="meta-title">0 busywork</strong>
+								<span class="meta-detail">Your crew just takes the photo</span>
 							</div>
-							<span>Your crew just takes the photo</span>
 						</div>
 					</div>
 				</div>

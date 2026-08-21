@@ -175,33 +175,19 @@
   margin: 0;
 }
 
-/* Hero proof row: alignment + smaller stat text */
-.jcp-home .directory-meta {
-  align-items: flex-start;
-}
-.jcp-home .meta-item {
-  flex: 1;
-  min-width: 0;
-  align-items: flex-start;
-  text-align: left;
-}
-.jcp-home .meta-label {
-  align-items: center;
-  justify-content: flex-start;
-}
-.jcp-home .meta-label strong {
-  font-size: clamp(14px, 1.2vw, 17px) !important;
-  line-height: 1.25 !important;
-  letter-spacing: -0.01em;
-  display: inline-block;
-  white-space: nowrap;
-}
+/* Meta stats: global layout lives in sections.css — home only sets colors */
+.jcp-home .meta-stat-photo .meta-title,
+.jcp-home .meta-stat-photo .meta-copy strong,
 .jcp-home .meta-stat-photo .meta-label strong {
   color: var(--jcp-color-primary);
 }
+.jcp-home .meta-stat-channels .meta-title,
+.jcp-home .meta-stat-channels .meta-copy strong,
 .jcp-home .meta-stat-channels .meta-label strong {
   color: var(--jcp-color-info);
 }
+.jcp-home .meta-stat-busywork .meta-title,
+.jcp-home .meta-stat-busywork .meta-copy strong,
 .jcp-home .meta-stat-busywork .meta-label strong {
   color: var(--jcp-color-success);
 }
@@ -229,13 +215,14 @@
   margin-inline: auto;
 }
 
-.jcp-home .jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .meta-item {
-  align-items: center;
-  text-align: center;
+.jcp-home .jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .directory-meta,
+.jcp-home .jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .jcp-meta-stats {
+  justify-content: center;
 }
 
-.jcp-home .jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .meta-label {
-  justify-content: center;
+.jcp-home .jcp-hero-variant-home.jcp-hero--no-visual.jcp-layout-align-center .meta-item {
+  align-items: flex-start;
+  text-align: left;
 }
 
 /* ---------- Home hero: responsive ---------- */
@@ -268,15 +255,6 @@
   .jcp-niche .hero-copy {
     gap: var(--jcp-space-md);
   }
-
-  .jcp-home .directory-meta {
-    gap: var(--jcp-space-md);
-    margin-top: var(--jcp-space-sm);
-  }
-
-  .jcp-home .meta-label strong {
-    font-size: clamp(13px, 3.5vw, 16px) !important;
-  }
 }
 
 @media (max-width: 480px) {
@@ -291,17 +269,6 @@
 
   .jcp-home .jcp-hero-title-end {
     white-space: normal;
-  }
-
-  .jcp-home .directory-meta {
-    flex-direction: column;
-    gap: var(--jcp-space-md);
-  }
-
-  .jcp-home .meta-item {
-    flex-direction: row;
-    align-items: center;
-    gap: var(--jcp-space-sm);
   }
 }
 
