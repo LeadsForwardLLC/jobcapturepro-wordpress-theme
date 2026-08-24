@@ -132,6 +132,7 @@ function jcp_page_presets(): array {
 			'block_types' => [
 				'hero',
 				'core_mechanic',
+				'who_its_for',
 				'problem',
 				'benefits',
 				'how_it_works',

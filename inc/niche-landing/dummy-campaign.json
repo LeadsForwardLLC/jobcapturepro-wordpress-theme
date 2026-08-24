@@ -25,20 +25,60 @@
     "trust_line": "Free personalized demo · No credit card · About 2 minutes",
     "cta_microcopy": "Free personalized demo · No credit card · About 2 minutes",
     "show_visual": true,
-    "show_trust_line": true
+    "show_trust_line": true,
+    "media_type": "phone_mockup",
+    "phone_image_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
+    "phone_image_alt": "Technician photographing a completed HVAC job on site"
   },
   "core_mechanic": [
     { "value": "1", "label": "photo", "detail": "Becomes proof on every channel" },
     { "value": "4", "label": "channels", "detail": "Website, Google, social & directory" },
     { "value": "0", "label": "busywork", "detail": "Your crew just takes the photo" }
   ],
+  "who_its_for": {
+    "headline": "Built for the crews already doing the work",
+    "subheadline": "Real jobs. Real photos. Real people in the field — not a generic marketing dashboard.",
+    "variant": "guarantees",
+    "audiences": [
+      {
+        "title": "Field techs already take the photos",
+        "body": "One snap after the job is enough to start the proof workflow.",
+        "badge": "On the job",
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
+        "image_alt": "HVAC technician capturing a completed job photo",
+        "stat_number": "1",
+        "stat_label": "photo to start",
+        "faq_target": "faq"
+      },
+      {
+        "title": "Owners who want reviews without chasing",
+        "body": "Ask while you're still on site — then let the system handle the rest.",
+        "badge": "Owners",
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg",
+        "image_alt": "Home service business owner at a service van",
+        "stat_number": "On-site",
+        "stat_label": "review ask",
+        "faq_target": "faq"
+      },
+      {
+        "title": "Proof homeowners can actually see",
+        "body": "Finished work becomes website, Google, social, and directory content.",
+        "badge": "Proof",
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-job-proof.jpg",
+        "image_alt": "Completed residential service install as job proof",
+        "stat_number": "4+",
+        "stat_label": "places it shows up",
+        "faq_target": "faq"
+      }
+    ]
+  },
   "problem": {
     "headline": "The job gets finished. The marketing usually dies there.",
     "subheadline": "Photos sit in the camera roll. The website stays stale. Google stays quiet. The review never gets asked.",
     "pain_points": [
-      { "title": "Proof stays on phones", "body": "Homeowners never see the work you already finished in their neighborhood." },
-      { "title": "Google goes quiet", "body": "No fresh job activity means your profile looks inactive next to competitors." },
-      { "title": "Reviews slip away", "body": "The ask happens late — or never — while the next truck wins the five-star." }
+      { "title": "Proof stays on phones", "body": "Homeowners never see the work you already finished in their neighborhood.", "icon": "smartphone" },
+      { "title": "Google goes quiet", "body": "No fresh job activity means your profile looks inactive next to competitors.", "icon": "map-pin" },
+      { "title": "Reviews slip away", "body": "The ask happens late — or never — while the next truck wins the five-star.", "icon": "star" }
     ],
     "closing": "Without JCP: job finished → forgotten. With JCP: job finished → proof created → published → reused."
   },
@@ -46,10 +86,10 @@
     "headline": "One completed job. More than one marketing asset.",
     "subheadline": "The same photo can support the channels that actually move contractors.",
     "items": [
-      { "title": "Website proof", "body": "Real check-ins and job content homeowners can trust." },
-      { "title": "Google activity", "body": "Fresh updates that keep your Business Profile looking alive." },
-      { "title": "Review opportunities", "body": "Ask while the job is fresh — including on-site QR when you use it." },
-      { "title": "Social + directory", "body": "Shareable proof and a verified listing powered by real work." }
+      { "title": "Website proof", "body": "Real check-ins and job content homeowners can trust.", "icon": "globe" },
+      { "title": "Google activity", "body": "Fresh updates that keep your Business Profile looking alive.", "icon": "map" },
+      { "title": "Review opportunities", "body": "Ask while the job is fresh — including on-site QR when you use it.", "icon": "message-square-heart" },
+      { "title": "Social + directory", "body": "Shareable proof and a verified listing powered by real work.", "icon": "share-2" }
     ],
     "closing": "Capture once. Put the proof to work everywhere that matters."
   },
@@ -90,7 +130,10 @@
     "show_cta": true,
     "show_cta_note": true,
     "show_headline": true,
-    "show_body": true
+    "show_body": true,
+    "media_type": "image",
+    "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg",
+    "media_alt": "Crew reviewing a completed job photo together on site"
   },
   "testimonials": {
     "eyebrow": "From real operators",
@@ -104,7 +147,22 @@
     "show_eyebrow": true,
     "show_headline": true,
     "show_subheadline": true,
-    "section_id": "testimonials"
+    "section_id": "testimonials",
+    "faces_label": "Real crews. Real completed jobs.",
+    "faces": [
+      {
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-operator.jpg",
+        "image_alt": "Field technician on a job site"
+      },
+      {
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg",
+        "image_alt": "Home service business owner"
+      },
+      {
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg",
+        "image_alt": "Crew reviewing job photos together"
+      }
+    ]
   },
   "faq": {
     "headline": "Straight answers before you start the demo",
@@ -127,7 +185,7 @@
       },
       {
         "q": "What do I need for the demo?",
-        "a": "A trade and a work email are enough to personalize the experience. No credit card."
+        "a": "A trade, work email, and mobile number are enough to personalize the experience. No credit card."
       }
     ]
   },

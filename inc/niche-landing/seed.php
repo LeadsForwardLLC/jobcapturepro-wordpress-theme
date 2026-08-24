@@ -175,6 +175,17 @@ function jcp_niche_contractor_demo_document(): array {
 	if ( empty( $legacy ) ) {
 		return [];
 	}
+
+	$asset_base = trailingslashit( get_template_directory_uri() ) . 'assets/campaign';
+	$encoded    = wp_json_encode( $legacy );
+	if ( is_string( $encoded ) && $encoded !== '' ) {
+		$encoded = str_replace( '__CAMPAIGN_ASSET__', $asset_base, $encoded );
+		$decoded = json_decode( $encoded, true );
+		if ( is_array( $decoded ) ) {
+			$legacy = $decoded;
+		}
+	}
+
 	$doc = jcp_page_legacy_to_blocks( $legacy, 0 );
 	if ( function_exists( 'jcp_page_finalize_campaign_document' ) ) {
 		$doc = jcp_page_finalize_campaign_document( $doc );
@@ -260,12 +271,12 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v2 = Meta→demo campaign copy (refresh content once when theme deploys this version).
+	// v4 = faces strip on testimonials + compressed campaign photos.
 	$demo_ver = (string) get_option( 'jcp_contractor_demo_seed_version', '' );
-	if ( $demo_ver !== '2' || ! jcp_niche_contractor_demo_exists() ) {
-		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '2' );
+	if ( $demo_ver !== '4' || ! jcp_niche_contractor_demo_exists() ) {
+		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '4' );
 		if ( $created > 0 ) {
-			update_option( 'jcp_contractor_demo_seed_version', '2' );
+			update_option( 'jcp_contractor_demo_seed_version', '4' );
 			update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 		}
 	}
@@ -288,7 +299,7 @@ function jcp_niche_admin_seed_notice(): void {
 	update_option( 'jcp_niche_hvac_seeded', '1' );
 	update_option( 'jcp_niche_referral_seeded', '1' );
 	update_option( 'jcp_niche_contractor_demo_seeded', '1' );
-	update_option( 'jcp_contractor_demo_seed_version', '2' );
+	update_option( 'jcp_contractor_demo_seed_version', '3' );
 	wp_safe_redirect( admin_url( 'edit.php?post_type=jcp_niche_landing&jcp_seeded=1' ) );
 	exit;
 }

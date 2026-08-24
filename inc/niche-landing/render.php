@@ -1510,6 +1510,21 @@ function jcp_niche_render_testimonials( array $props ): void {
 	$show_roles  = ! array_key_exists( 'show_roles', $props ) || ! empty( $props['show_roles'] );
 	$eyebrow_vis = jcp_niche_field_visibility( $props, 'show_eyebrow', true );
 	$eyebrow     = trim( (string) ( $props['eyebrow'] ?? '' ) );
+	$faces       = [];
+	foreach ( (array) ( $props['faces'] ?? [] ) as $face ) {
+		if ( ! is_array( $face ) ) {
+			continue;
+		}
+		$url = trim( (string) ( $face['image_url'] ?? '' ) );
+		if ( $url === '' ) {
+			continue;
+		}
+		$faces[] = [
+			'url' => $url,
+			'alt' => (string) ( $face['image_alt'] ?? $face['alt'] ?? '' ),
+		];
+	}
+	$faces_label = trim( (string) ( $props['faces_label'] ?? '' ) );
 	$store_json  = wp_json_encode( $reviews );
 	?>
 	<section
@@ -1525,6 +1540,16 @@ function jcp_niche_render_testimonials( array $props ): void {
 				<p class="jcp-testimonials-eyebrow demo-badge"<?php jcp_niche_editable_attr( 'testimonials.eyebrow' ); ?>><?php echo esc_html( $eyebrow ); ?></p>
 			<?php endif; ?>
 			<?php jcp_niche_render_section_header( $props, 'testimonials' ); ?>
+			<?php if ( $faces !== [] ) : ?>
+				<div class="jcp-campaign-faces" aria-hidden="<?php echo $faces_label === '' ? 'true' : 'false'; ?>">
+					<?php foreach ( $faces as $face ) : ?>
+						<img src="<?php echo esc_url( $face['url'] ); ?>" alt="<?php echo esc_attr( $face['alt'] ); ?>" width="52" height="52" loading="lazy" decoding="async" />
+					<?php endforeach; ?>
+					<?php if ( $faces_label !== '' ) : ?>
+						<span class="jcp-campaign-faces__label"><?php echo esc_html( $faces_label ); ?></span>
+					<?php endif; ?>
+				</div>
+			<?php endif; ?>
 			<div class="jcp-testimonials">
 				<figure class="jcp-testimonials-featured" data-jcp-testimonials-featured>
 					<?php jcp_testimonials_render_stars( (int) ( $featured['rating'] ?? 5 ), $show_stars ); ?>
