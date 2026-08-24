@@ -3356,19 +3356,24 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   background: rgba(255, 80, 62, 0.06);
 }
 
-/* Campaign landing — homepage-like hero (phone visual + meta row), light funnel tweaks */
+/* ==========================================================================
+   Campaign landing (/contractor-demo) — paid Meta → demo conversion
+   Typography hierarchy (hard rule):
+     H1 >> subtitle >> primary CTA >> microcopy (sm) >> meta stats
+   ========================================================================== */
+
 .jcp-page-campaign.jcp-marketing {
-  --jcp-campaign-section-gap: clamp(2.5rem, 5vw, 4rem);
+  --jcp-campaign-section-gap: clamp(2.25rem, 4.5vw, 3.75rem);
 }
 
 .jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-grid {
   grid-template-columns: var(--jcp-hero-grid-columns);
   align-items: center;
   text-align: left;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
 }
 
 @media (max-width: 900px) {
-  /* Campaign hero must stack — previous rule forced 2 cols on phones */
   .jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-grid,
   .jcp-page-campaign .jcp-niche-hero .jcp-hero-grid,
   .jcp-niche .jcp-niche-hero .jcp-hero-grid {
@@ -3381,38 +3386,101 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   }
 }
 
+/* H1: two clean sentences, no orphan lines */
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-title,
 .jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-title {
-  /* Wide enough for two clean sentences — 18ch orphaned short lines */
-  max-width: 22em;
-  line-height: 1.12;
-  letter-spacing: -0.02em;
+  max-width: 18.5em;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
   text-wrap: balance;
   white-space: pre-line;
+  margin: 0;
 }
 
-.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-actions,
-.jcp-page-campaign.jcp-home .jcp-niche-trust-line,
-.jcp-page-campaign.jcp-home .directory-meta {
+/* Subtitle: supporting — clearly below title, never matching microcopy */
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-subtitle,
+.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-subtitle {
+  margin-top: 0.85rem !important;
+  max-width: 34rem !important;
+  font-size: clamp(1.05rem, 1.35vw, 1.2rem) !important;
+  line-height: 1.45 !important;
+  color: var(--jcp-color-text-secondary) !important;
+  font-weight: 450;
+}
+
+/* Single CTA — kill any leftover secondary in hero */
+.jcp-page-campaign .jcp-niche-hero .jcp-actions .btn-secondary,
+.jcp-page-campaign .jcp-niche-hero .directory-cta-row .btn-secondary,
+.jcp-page-campaign .jcp-niche-hero a.btn-secondary {
+  display: none !important;
+}
+
+.jcp-page-campaign .jcp-niche-hero .jcp-actions,
+.jcp-page-campaign .jcp-niche-hero .directory-cta-row {
+  margin-top: 1.35rem;
   justify-content: flex-start;
 }
 
-/* Campaign split hero: don't crush the 3 meta stats into unreadable wraps */
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  width: auto;
+  max-width: 100%;
+}
+
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta .btn-primary {
+  font-size: 1.0625rem;
+  padding: 0.9rem 1.65rem;
+  min-height: 3.15rem;
+  box-shadow: 0 8px 22px rgba(255, 80, 62, 0.28);
+}
+
+/* THE FIX: microcopy under CTA must be visibly smaller than subtitle */
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-cta-microcopy,
+.jcp-page-campaign .jcp-niche-hero .jcp-niche-trust-line,
+.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-cta-microcopy,
+.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-niche-trust-line,
+.jcp-page-campaign.jcp-home .jcp-hero .jcp-niche-trust-line,
+.jcp-page-campaign.jcp-home .jcp-hero p.jcp-niche-trust-line {
+  font-size: 0.8125rem !important; /* 13px */
+  line-height: 1.35 !important;
+  font-weight: 500 !important;
+  color: var(--jcp-color-text-muted, #64748b) !important;
+  margin: 0 !important;
+  max-width: 22rem !important;
+  letter-spacing: 0.01em;
+}
+
+/* Meta stats: stack in the narrow left column so copy never crushes */
 .jcp-page-campaign .jcp-niche-hero .directory-meta.jcp-meta-stats,
-.jcp-page-campaign .directory-meta.jcp-meta-stats {
-  flex-wrap: wrap;
-  gap: 0.85rem 1.25rem;
+.jcp-page-campaign .jcp-niche-hero .directory-meta,
+.jcp-page-campaign .jcp-niche-hero .jcp-meta-stats {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  width: 100%;
+  max-width: 26rem;
 }
 
-.jcp-page-campaign .jcp-niche-hero .jcp-meta-stats .meta-item {
-  flex: 1 1 11.5rem;
-  min-width: 10.5rem;
+.jcp-page-campaign .jcp-niche-hero .jcp-meta-stats .meta-item,
+.jcp-page-campaign .jcp-niche-hero .directory-meta .meta-item {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
 }
 
-.jcp-page-campaign .jcp-niche-hero .jcp-meta-stats .meta-detail {
+.jcp-page-campaign .jcp-niche-hero .jcp-meta-stats .meta-detail,
+.jcp-page-campaign .jcp-niche-hero .directory-meta .meta-detail {
   max-width: none;
+  white-space: normal;
 }
 
-/* Contractor connection — photo audiences */
+/* Photo audiences — contractor connection */
 .jcp-page-campaign .jcp-niche-audiences .guarantees-grid {
   gap: clamp(1rem, 2vw, 1.5rem);
 }
@@ -3467,6 +3535,12 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   font-weight: 600;
 }
 
+/* Mid + final CTAs: same single-path treatment */
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="how_it_works"] .btn-secondary,
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="final_cta"] .btn-secondary {
+  display: none !important;
+}
+
 .jcp-page-campaign .jcp-block-root[data-jcp-block-type="final_cta"] .jcp-section {
   background: linear-gradient(
     180deg,
@@ -3477,7 +3551,8 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   padding-block: clamp(2rem, 4vw, 3rem);
 }
 
-.jcp-page-campaign .jcp-block-root[data-jcp-block-type="final_cta"] .jcp-actions .jcp-btn-primary {
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="final_cta"] .jcp-actions .btn-primary,
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .jcp-actions .btn-primary {
   font-size: 1.0625rem;
   padding: 0.85rem 1.75rem;
 }
@@ -3490,6 +3565,21 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 .jcp-page-campaign .jcp-block-root[data-jcp-block-type="form_embed"] .jcp-form-embed__panel {
   max-width: 720px;
   margin-inline: auto;
+}
+
+/* Section rhythm: less “SaaS brochure”, more funnel */
+.jcp-page-campaign .jcp-block-root + .jcp-block-root {
+  margin-top: 0;
+}
+
+.jcp-page-campaign .rankings-header {
+  max-width: 40rem;
+  margin-inline: auto;
+}
+
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="problem"] .ranking-factor-card,
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="benefits"] .ranking-factor-card {
+  border-radius: 0.85rem;
 }
 
 /* Campaign / landing chrome — logo only + minimal legal footer */
