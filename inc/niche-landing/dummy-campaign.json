@@ -18,10 +18,11 @@
     ]
   },
   "hero": {
-    "h1": "Your crew already creates the marketing. JobCapturePro puts it to work.",
+    "h1": "Your crew already creates the marketing.\nJobCapturePro puts it to work.",
     "subheadline": "One job photo can become website content, Google activity, review opportunities, social proof, and directory presence — without adding another marketing task to your day.",
     "cta_primary": { "label": "See JobCapturePro On My Business", "url": "/demo/" },
-    "cta_secondary": { "label": "Watch how it works", "url": "#how-it-works" },
+    "cta_secondary": { "label": "", "url": "" },
+    "show_cta_secondary": false,
     "trust_line": "Free personalized demo · No credit card · About 2 minutes",
     "cta_microcopy": "Free personalized demo · No credit card · About 2 minutes",
     "show_visual": true,

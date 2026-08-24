@@ -3382,9 +3382,12 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 }
 
 .jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-title {
-  max-width: 18ch;
-  line-height: 1.08;
+  /* Wide enough for two clean sentences — 18ch orphaned short lines */
+  max-width: 22em;
+  line-height: 1.12;
   letter-spacing: -0.02em;
+  text-wrap: balance;
+  white-space: pre-line;
 }
 
 .jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-actions,
