@@ -452,7 +452,7 @@ const demoPhotos = [
 ];
 
 const descriptions = [
-  'Replaced an aging water heater and brought the system up to code. We installed a new high-efficiency unit, verified proper venting, and tested temperature + pressure relief for safe operation. Customer is back to consistent hot water with improved energy performance.',
+  'Water heater replacement at 1242 Mason Rd, Austin TX 78704. Installed a high-efficiency unit, verified venting, and tested T&P relief. Local, geotagged job proof ready for your website and Google — optimized for nearby search.',
   'Completed a full water heater swap-out: removed the failing tank, installed a new unit, reconnected lines, and confirmed there are no leaks. Verified ignition and heating cycle, set the thermostat, and cleaned up the work area before departure.',
   'Installed a new water heater and ensured everything is running safely and efficiently. Connections were tightened, valves were tested, and we confirmed stable hot-water delivery throughout the home.'
 ];
@@ -569,9 +569,9 @@ const demoGuideContent = {
   },
   step4: {
     pill: 'Step 4',
-    title: 'Publish everywhere',
-    body: 'One tap pushes this job to your website, Google, social, and directory.',
-    interactHint: 'Tap Publish Everywhere to continue.'
+    title: 'AI builds a local SEO post',
+    body: 'Every check-in — from JobCapturePro or your field software — becomes a geotagged, location-optimized website post built to rank. Read what AI wrote, then publish it everywhere.',
+    interactHint: 'Read the AI description, then tap Publish Everywhere.'
   },
   step5: {
     pill: 'Step 5',
@@ -2168,23 +2168,66 @@ function showEditScreen() {
   setScreen('edit-screen');
   setTourStep('step4');
 
-  // AUTO-SCROLL TO PUBLISH BUTTON (REAL SCROLLER)
-  setTimeout(() => {
-    const scroller = document.querySelector('#edit-screen .content-area');
-    const publishBtn = document.getElementById('btnSavePublish');
+  // Pace step 4: let people read the AI/local-SEO description before jumping to Publish.
+  runStep4SeoAppreciationBeat();
+}
 
-    if (!scroller || !publishBtn) return;
+/**
+ * Step 4 beat: hold on the AI description (SEO value) before scrolling to Publish.
+ */
+function runStep4SeoAppreciationBeat() {
+  const scroller = document.querySelector('#edit-screen .content-area');
+  const descField = document.getElementById('description-field');
+  const descBlock = descField?.closest('.description-block') || descField;
+  const locationInfo = document.querySelector('#edit-screen .location-info');
+  const publishBtn = document.getElementById('btnSavePublish');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const readMs = reduceMotion ? 400 : 2200;
+  const behavior = reduceMotion ? 'auto' : 'smooth';
 
-    scroller.scrollTo({
-      top: publishBtn.offsetTop - 60,
-      behavior: 'smooth'
-    });
+  // Keep spotlight/coach on the AI copy during the read beat.
+  const previousAnchor = tour.anchors.step4;
+  tour.anchors.step4 = '#description-field';
 
-    // RE-ANCHOR TOUR AFTER SCROLL
-    setTimeout(() => {
+  const scrollToEl = (el, offset = 28) => {
+    if (!scroller || !el) return;
+    const top = Math.max(0, el.offsetTop - offset);
+    scroller.scrollTo({ top, behavior });
+  };
+
+  // Start near location + AI description so geotag + copy are both visible.
+  scrollToEl(locationInfo || descBlock || descField, 16);
+  descField?.classList.add('is-demo-seo-spotlight');
+  document.querySelector('#edit-screen .location-card')?.classList.add('is-demo-seo-spotlight');
+
+  if (isGuidedDemoRun()) {
+    updateTourFloating();
+    if (document.body.classList.contains('is-mobile-mode')) {
+      requestAnimationFrame(() => {
+        if (descField) scrollGuidedControlIntoView(descField, 16);
+        positionMobileSpotlight();
+      });
+    }
+  }
+
+  window.clearTimeout(runStep4SeoAppreciationBeat._timer);
+  runStep4SeoAppreciationBeat._timer = window.setTimeout(() => {
+    descField?.classList.remove('is-demo-seo-spotlight');
+    document.querySelector('#edit-screen .location-card')?.classList.remove('is-demo-seo-spotlight');
+    tour.anchors.step4 = previousAnchor || '#btnSavePublish';
+
+    scrollToEl(publishBtn, 60);
+
+    if (isGuidedDemoRun()) {
       updateTourFloating();
-    }, 300);
-  }, 500);
+      if (document.body.classList.contains('is-mobile-mode') && publishBtn) {
+        requestAnimationFrame(() => {
+          scrollGuidedControlIntoView(publishBtn, 10);
+          positionMobileSpotlight();
+        });
+      }
+    }
+  }, readMs);
 }
 
 
@@ -3125,6 +3168,9 @@ function scrollGuidedControlIntoView(target, extraGap = 10) {
 function scrollGuidedStepTarget(stepKey) {
   if (!isGuidedDemoRun() || !document.body.classList.contains('is-mobile-mode')) return;
   if (!stepKey || stepKey === 'step6') return;
+
+  // Step 4 owns its own paced scroll (description → Publish).
+  if (stepKey === 'step4') return;
 
   const selector = tour.anchors[stepKey];
   const target = selector ? document.querySelector(selector) : null;

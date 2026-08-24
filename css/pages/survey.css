@@ -455,32 +455,43 @@
 }
 
 /* =========================================================
-   CRITICAL: deck must remain navigable (scroll + sticky CTA)
-   body.survey-only locks page scroll — deck slides must scroll
-   and actions must stay reachable on every viewport.
+   CRITICAL: deck navigable + centered composition
+   body.survey-only locks page scroll — slides scroll inside
+   the card; Next/Back stay pinned; content reads centered.
 ========================================================= */
 
 body.survey-only .survey-overlay {
-  align-items: stretch;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
+  padding: clamp(12px, 3vh, 32px) clamp(12px, 3vw, 28px);
 }
 
 body.survey-only .survey-card:has(.survey-deck.active) {
+  width: 100%;
+  max-width: min(560px, 100%);
+  height: auto;
   max-height: 100vh;
   max-height: 100dvh;
-  height: 100%;
-  max-width: min(720px, 100%);
   overflow: hidden;
-  padding-top: 28px;
-  padding-bottom: 0;
+  padding: 20px 22px 0;
   margin: 0 auto;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Brand already shown in chrome; hide during deck so content can center */
+body.survey-only .survey-card:has(.survey-deck.active) .survey-brand {
+  display: none;
 }
 
 .survey-deck.active {
   display: flex !important;
   flex-direction: column;
   min-height: 0;
+  flex: 1 1 auto;
   height: 100%;
   max-height: 100%;
 }
@@ -501,12 +512,28 @@ body.survey-only .survey-card:has(.survey-deck.active) {
 .survey-deck.active .deck-slides {
   flex: 1 1 auto;
   min-height: 0 !important;
+  display: flex;
+  flex-direction: column;
   overflow-x: hidden;
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding-bottom: 96px;
+  padding-bottom: 12px;
   touch-action: pan-y;
+}
+
+/* Vertically center short slides; tall slides still scroll */
+.survey-deck.active .deck-slide.is-active {
+  display: block;
+  width: 100%;
+  max-width: 34rem;
+  margin: auto auto 0;
+  padding-bottom: 8px;
+}
+
+.survey-deck.active .deck-slide--visual h2,
+.survey-deck.active .deck-slide--visual .deck-lead {
+  max-width: none;
 }
 
 .survey-deck.active .deck-actions {
@@ -519,6 +546,7 @@ body.survey-only .survey-card:has(.survey-deck.active) {
   gap: 10px;
   align-items: center;
   justify-content: stretch;
+  flex: 0 0 auto;
   margin: 0;
   padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #fff 28%, #fff 100%);
@@ -532,7 +560,6 @@ body.survey-only .survey-card:has(.survey-deck.active) {
   cursor: pointer;
 }
 
-/* Never hide Back while navigating the deck */
 .survey-deck.active .deck-actions .btn-control[data-action="prev"] {
   display: inline-flex !important;
 }
@@ -541,23 +568,17 @@ body.survey-only .survey-card:has(.survey-deck.active) {
   display: none !important;
 }
 
-/* Compact channels slide so Next stays on-screen */
 .deck-slide--channels .deck-publish__photo > img,
 .deck-slide--channels .deck-publish__photo img:first-child {
   aspect-ratio: 16 / 9;
-  max-height: 180px;
+  max-height: 168px;
   width: 100%;
   object-fit: cover;
 }
 
 .deck-slide--channels .deck-publish__preview img {
   aspect-ratio: 21 / 9;
-  max-height: 120px;
-}
-
-.deck-slide--channels .deck-integrations {
-  margin-top: 0.5rem;
-  margin-bottom: 0;
+  max-height: 110px;
 }
 
 .deck-slide--visual .deck-visual-hero {
@@ -573,6 +594,15 @@ body.survey-only .survey-card:has(.survey-deck.active) {
 @media (max-width: 900px) {
   body.survey-only .survey-overlay {
     padding: 0;
+    align-items: stretch;
+  }
+
+  body.survey-only .survey-card:has(.survey-deck.active) {
+    max-width: none;
+    height: 100%;
+    max-height: 100dvh;
+    border-radius: 0;
+    padding: max(52px, calc(env(safe-area-inset-top, 0px) + 44px)) 16px 0;
   }
 
   .survey-deck.active .deck-actions {
@@ -586,11 +616,39 @@ body.survey-only .survey-card:has(.survey-deck.active) {
   }
 
   .survey-deck.active .deck-slides {
-    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
   }
 
-  /* Override shared CSS that hides Back on mobile */
+  .survey-deck.active .deck-slide.is-active {
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+
   .deck-actions .btn-control[data-action="prev"] {
     display: inline-flex !important;
   }
+}
+
+@media (min-width: 901px) {
+  body.survey-only .survey-card:has(.survey-deck.active) {
+    border-radius: 20px;
+    box-shadow: 0 24px 64px rgba(15, 23, 42, 0.12);
+    border: 1px solid #e5e7eb;
+  }
+}
+
+
+/* Deck composition: center content column inside slides */
+.survey-deck.active .deck-slide.is-active .deck-visual-hero,
+.survey-deck.active .deck-slide.is-active .deck-pills,
+.survey-deck.active .deck-slide.is-active .deck-publish,
+.survey-deck.active .deck-slide.is-active .deck-review-stage,
+.survey-deck.active .deck-slide.is-active .deck-checklist {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.survey-deck.active .deck-slide.is-active h2,
+.survey-deck.active .deck-slide.is-active .deck-lead {
+  text-wrap: pretty;
 }
