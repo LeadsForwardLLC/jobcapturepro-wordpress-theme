@@ -131,6 +131,19 @@ function jcp_core_enqueue_assets(): void {
         if ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() ) {
             // Reuse homepage hero/visual treatment (phone mockup, meta row, demo preview).
             jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-sections', 'jcp-core-hero-live-demo' ] );
+            jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
+            jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [] );
+            // Lightweight paid LP view signal for GTM/Meta (maps to PaidLandingView).
+            wp_add_inline_script(
+                'jcp-core-attribution',
+                "(function(){try{window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'PaidLandingView',page_path:location.pathname});}catch(e){}})();",
+                'after'
+            );
+            wp_add_inline_script(
+                'jcp-core-attribution',
+                "document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[href*=\"/demo\"]'):null;if(!a)return;try{window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'DemoCTA',cta_label:(a.textContent||'').trim().slice(0,80),href:a.href});}catch(err){}});",
+                'after'
+            );
         }
     }
 

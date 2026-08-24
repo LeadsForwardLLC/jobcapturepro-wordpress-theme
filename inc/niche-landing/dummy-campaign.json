@@ -1,120 +1,141 @@
 {
   "preset": "campaign",
   "page_type": "marketing",
-  "niche_key": "campaign-landing",
-  "niche_label": "Campaign Landing",
+  "page_kind": "marketing",
+  "niche_key": "contractor-demo",
+  "niche_label": "Contractor Demo",
   "hide_breadcrumb": true,
   "hide_site_chrome": true,
   "campaign_landing": true,
   "seo": {
-    "title": "Limited Offer — Turn Completed Jobs Into Leads | JobCapturePro",
-    "meta_description": "Home service contractors: turn job photos into Google proof, website content, and on-site review requests. Claim your spot — limited availability for this campaign.",
+    "title": "See JobCapturePro On Your Business | Free Demo",
+    "meta_description": "Your crew already takes job photos. See how JobCapturePro turns them into website proof, Google activity, reviews, and social — in a free personalized demo.",
     "keywords": [
-      "contractor marketing software",
-      "home service marketing automation",
+      "contractor marketing demo",
       "job photo marketing",
-      "local SEO for contractors"
+      "Google Business Profile automation",
+      "home service reviews"
     ]
   },
   "hero": {
-    "h1": "Turn every completed job into proof that books the next one",
-    "subheadline": "Your crews already finish real work and take photos. JobCapturePro publishes that proof to Google, your website, and social — and your crew can ask for a review on site with a QR code. Limited spots available for this campaign.",
-    "cta_primary": { "label": "Claim your spot", "url": "#apply" },
-    "cta_secondary": { "label": "Watch 2-min demo", "url": "/demo" },
-    "trust_line": "No credit card · Fast setup · Built for field crews",
-    "show_visual": true
+    "h1": "Your crew already creates the marketing. JobCapturePro puts it to work.",
+    "subheadline": "One job photo can become website content, Google activity, review opportunities, social proof, and directory presence — without adding another marketing task to your day.",
+    "cta_primary": { "label": "See JobCapturePro On My Business", "url": "/demo/" },
+    "cta_secondary": { "label": "Watch how it works", "url": "#how-it-works" },
+    "trust_line": "Free personalized demo · No credit card · About 2 minutes",
+    "cta_microcopy": "Free personalized demo · No credit card · About 2 minutes",
+    "show_visual": true,
+    "show_trust_line": true
   },
   "core_mechanic": [
-    { "value": "1", "label": "job photo", "detail": "Becomes multi-channel proof" },
-    { "value": "4", "label": "channels", "detail": "website, Google, social + directory" },
-    { "value": "0", "label": "extra steps", "detail": "Crew captures and moves on" }
+    { "value": "1", "label": "photo", "detail": "Becomes proof on every channel" },
+    { "value": "4", "label": "channels", "detail": "Website, Google, social & directory" },
+    { "value": "0", "label": "busywork", "detail": "Your crew just takes the photo" }
   ],
   "problem": {
-    "headline": "Busy crews. Invisible marketing.",
-    "subheadline": "Most contractors lose momentum the moment the truck leaves the driveway — and cold traffic won't trust a quiet Google profile.",
+    "headline": "The job gets finished. The marketing usually dies there.",
+    "subheadline": "Photos sit in the camera roll. The website stays stale. Google stays quiet. The review never gets asked.",
     "pain_points": [
-      { "title": "Proof stays on phones", "body": "Homeowners never see the work you already did in their neighborhood" },
-      { "title": "Reviews slip through the cracks", "body": "Requests go out late — or not at all — while competitors stack five stars" },
-      { "title": "Marketing feels like a second job", "body": "Owners don't have time to post, write, and chase photos after every call" }
+      { "title": "Proof stays on phones", "body": "Homeowners never see the work you already finished in their neighborhood." },
+      { "title": "Google goes quiet", "body": "No fresh job activity means your profile looks inactive next to competitors." },
+      { "title": "Reviews slip away", "body": "The ask happens late — or never — while the next truck wins the five-star." }
     ],
-    "closing": "The work is real. The online story isn't — and that's costing you calls."
+    "closing": "Without JCP: job finished → forgotten. With JCP: job finished → proof created → published → reused."
   },
   "benefits": {
-    "headline": "What changes when jobs keep marketing for you",
-    "subheadline": "One system turns completed work into trust signals cold traffic actually believes.",
+    "headline": "One completed job. More than one marketing asset.",
+    "subheadline": "The same photo can support the channels that actually move contractors.",
     "items": [
-      { "title": "Show real work before they call", "body": "Publish check-ins from actual jobs so homeowners see proof, not claims" },
-      { "title": "Stay active on Google automatically", "body": "Fresh job activity signals you're busy, local, and worth calling" },
-      { "title": "Reviews while the job is fresh", "body": "Smart requests go out at the right moment — without office chasing" },
-      { "title": "More calls without more marketing hours", "body": "Visibility compounds while your team stays focused on the next job" }
+      { "title": "Website proof", "body": "Real check-ins and job content homeowners can trust." },
+      { "title": "Google activity", "body": "Fresh updates that keep your Business Profile looking alive." },
+      { "title": "Review opportunities", "body": "Ask while the job is fresh — including on-site QR when you use it." },
+      { "title": "Social + directory", "body": "Shareable proof and a verified listing powered by real work." }
     ],
-    "closing": "This is built for owners who want results from the work they're already doing."
+    "closing": "Capture once. Put the proof to work everywhere that matters."
   },
   "how_it_works": {
-    "headline": "How it works",
-    "subheadline": "Three steps from signup to published proof",
+    "headline": "How JobCapturePro works",
+    "subheadline": "Simple enough for the field. Strong enough for the office.",
     "numeric_steps": true,
     "show_cta_secondary": false,
-    "cta_primary": { "label": "Claim your spot", "url": "#apply" },
+    "cta_primary": { "label": "See JobCapturePro On My Business", "url": "/demo/" },
     "steps": [
       {
-        "title": "Claim your spot",
+        "title": "Capture",
         "lines": [
-          "Tell us about your company and service area.",
-          "We'll confirm fit and get you onboarded fast."
+          "Crew snaps a photo in the app, or a completed job flows in from a connected workflow."
         ]
       },
       {
-        "title": "Capture jobs like you already do",
+        "title": "Build the proof",
         "lines": [
-          "Crew snaps photos or completes the job in your existing flow.",
-          "JobCapturePro builds the check-in and proof automatically."
+          "JobCapturePro turns the job, photo, and location into usable check-in content."
         ]
       },
       {
-        "title": "Publish everywhere that matters",
+        "title": "Publish + follow up",
         "lines": [
-          "Google, website, directory, and social update from real jobs. Reviews start with an on-site QR handoff.",
-          "Your completed work keeps selling while you run the next call."
+          "Approved proof can update your website, Google, social, and directory — then trigger a review ask."
         ]
       }
     ]
   },
   "demo_preview": {
-    "badge": "See it first",
-    "headline": "Watch one job become full-funnel proof",
-    "body": "In two minutes you'll see how a single completed job turns into Google updates, website content, directory presence, and an on-site QR review request.",
-    "cue": "Best for owners who want to see the flow before they commit.",
-    "cta_primary": { "label": "Launch interactive demo", "url": "/demo" },
-    "cta_note": "No signup required",
+    "badge": "Personalized demo",
+    "headline": "See it on a business like yours",
+    "body": "Pick your trade, tell us what matters most, and watch one completed job become website, Google, social, and review proof.",
+    "cue": "Built for cold Meta traffic — no sales pitch required to start.",
+    "cta_primary": { "label": "See JobCapturePro On My Business", "url": "/demo/" },
+    "cta_note": "Free · No credit card · About 2 minutes",
     "show_cta": true,
     "show_cta_note": true,
     "show_headline": true,
     "show_body": true
   },
+  "testimonials": {
+    "eyebrow": "From real operators",
+    "headline": "Built with contractors, not around marketing theory.",
+    "subheadline": "Short notes from people already turning completed jobs into proof.",
+    "featured_key": "peter-bonk",
+    "autoplay": true,
+    "autoplay_ms": 6000,
+    "show_stars": true,
+    "show_roles": true,
+    "show_eyebrow": true,
+    "show_headline": true,
+    "show_subheadline": true,
+    "section_id": "testimonials"
+  },
   "faq": {
-    "headline": "Questions before you claim a spot",
+    "headline": "Straight answers before you start the demo",
     "items": [
-      { "q": "Who is this campaign for?", "a": "Home service and contracting businesses that complete real jobs, take photos, and want more visibility without hiring a marketing team." },
-      { "q": "How much time does my crew need?", "a": "Minutes per job — capture photos like you already do, then show a QR code for the review before you leave. JobCapturePro handles the writing and publishing." },
-      { "q": "Do I need to replace my CRM or field app?", "a": "No. JobCapturePro works alongside the tools you use today." },
-      { "q": "What does \"limited spots\" mean?", "a": "We onboard a small cohort at a time so every company gets proper setup and support. When this cohort fills, this offer closes." },
-      { "q": "What happens after I apply?", "a": "We'll confirm details, get you live quickly, and you'll start publishing proof from real jobs within days — not months." }
+      {
+        "q": "Do my technicians need to write marketing content?",
+        "a": "No. They capture the job like they already do. JobCapturePro builds the usable proof from the photo, job, and location data."
+      },
+      {
+        "q": "Does this replace my CRM?",
+        "a": "No. JobCapturePro is the proof and marketing layer. It can sit alongside the tools you already use."
+      },
+      {
+        "q": "Does JobCapturePro guarantee Google rankings?",
+        "a": "No. Rankings depend on many factors. JCP helps you publish consistent real-job proof that can support local visibility — it does not promise ranking outcomes."
+      },
+      {
+        "q": "Will this add work for my crew?",
+        "a": "The field workflow stays light: take the photo (and show a QR for reviews when you use that flow). The system handles the downstream content."
+      },
+      {
+        "q": "What do I need for the demo?",
+        "a": "A trade and a work email are enough to personalize the experience. No credit card."
+      }
     ]
   },
-  "form_embed": {
-    "headline": "Claim your spot",
-    "subheadline": "Takes about two minutes. We’ll follow up to confirm fit and get you onboarded.",
-    "shortcode": "",
-    "display": "inline",
-    "show_headline": true,
-    "show_subheadline": true
-  },
   "final_cta": {
-    "headline": "Ready to turn completed jobs into your best salesperson?",
-    "subheadline": "Claim your spot while this cohort is open.",
-    "cta_primary": { "label": "Claim your spot", "url": "#apply" },
-    "cta_note": "Limited availability · No credit card to start",
+    "headline": "Your next completed job could start working harder.",
+    "subheadline": "See what JobCapturePro would do with the work your team already finishes.",
+    "cta_primary": { "label": "See JobCapturePro On My Business", "url": "/demo/" },
+    "cta_note": "Free · No credit card · About 2 minutes",
     "cta_secondary": { "label": "", "url": "" }
   }
 }

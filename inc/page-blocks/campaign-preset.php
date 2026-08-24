@@ -211,3 +211,14 @@ function jcp_page_current_is_campaign_landing(): bool {
 	}
 	return jcp_page_is_campaign_landing( jcp_page_get_content( $post_id ) );
 }
+
+/**
+ * Paid campaign landings are Meta traffic destinations — keep them out of organic indexes.
+ */
+function jcp_page_campaign_noindex(): void {
+	if ( ! function_exists( 'jcp_page_current_is_campaign_landing' ) || ! jcp_page_current_is_campaign_landing() ) {
+		return;
+	}
+	echo '<meta name="robots" content="noindex, follow">' . "\n";
+}
+add_action( 'wp_head', 'jcp_page_campaign_noindex', 1 );

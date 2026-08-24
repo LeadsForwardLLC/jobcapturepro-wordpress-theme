@@ -166,6 +166,78 @@ function jcp_niche_referral_exists(): bool {
 }
 
 /**
+ * Build campaign block document from dummy-campaign.json.
+ *
+ * @return array<string, mixed>
+ */
+function jcp_niche_contractor_demo_document(): array {
+	$legacy = jcp_page_load_preset( 'campaign' );
+	if ( empty( $legacy ) ) {
+		return [];
+	}
+	$doc = jcp_page_legacy_to_blocks( $legacy, 0 );
+	if ( function_exists( 'jcp_page_finalize_campaign_document' ) ) {
+		$doc = jcp_page_finalize_campaign_document( $doc );
+	}
+	$doc['page_kind'] = 'marketing';
+	$doc['preset']    = 'campaign';
+	return $doc;
+}
+
+/**
+ * Create or refresh the Meta paid landing page at /contractor-demo/.
+ *
+ * @param bool $force_refresh When true, overwrite saved block content from the campaign preset.
+ * @return int Post ID or 0.
+ */
+function jcp_niche_seed_contractor_demo( bool $force_refresh = false ): int {
+	$existing = get_page_by_path( 'contractor-demo', OBJECT, 'page' );
+	$doc      = jcp_niche_contractor_demo_document();
+	if ( empty( $doc ) ) {
+		return 0;
+	}
+
+	if ( $existing instanceof WP_Post ) {
+		$id = (int) $existing->ID;
+		if ( get_page_template_slug( $id ) !== 'page-jcp-blocks.php' ) {
+			update_post_meta( $id, '_wp_page_template', 'page-jcp-blocks.php' );
+		}
+		$has_content = (string) get_post_meta( $id, jcp_page_content_meta_key(), true ) !== ''
+			|| (string) get_post_meta( $id, jcp_page_legacy_meta_key(), true ) !== '';
+		if ( $force_refresh || ! $has_content ) {
+			jcp_page_save_content( $id, $doc );
+		}
+		return $id;
+	}
+
+	$id = wp_insert_post(
+		[
+			'post_type'    => 'page',
+			'post_status'  => 'publish',
+			'post_name'    => 'contractor-demo',
+			'post_title'   => 'See JobCapturePro On Your Business',
+			'post_excerpt' => 'Free personalized demo for contractors — turn completed jobs into proof.',
+		],
+		true
+	);
+	if ( is_wp_error( $id ) || ! $id ) {
+		return 0;
+	}
+	$id = (int) $id;
+	update_post_meta( $id, '_wp_page_template', 'page-jcp-blocks.php' );
+	jcp_page_save_content( $id, $doc );
+	return $id;
+}
+
+/**
+ * Whether the contractor demo landing page exists.
+ */
+function jcp_niche_contractor_demo_exists(): bool {
+	$page = get_page_by_path( 'contractor-demo', OBJECT, 'page' );
+	return $page instanceof WP_Post;
+}
+
+/**
  * Run seed after theme deploy; re-run if flag set but post was removed.
  */
 function jcp_niche_maybe_seed(): void {
@@ -187,6 +259,16 @@ function jcp_niche_maybe_seed(): void {
 			update_option( 'jcp_niche_referral_seeded', '1' );
 		}
 	}
+
+	// v2 = Meta→demo campaign copy (refresh content once when theme deploys this version).
+	$demo_ver = (string) get_option( 'jcp_contractor_demo_seed_version', '' );
+	if ( $demo_ver !== '2' || ! jcp_niche_contractor_demo_exists() ) {
+		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '2' );
+		if ( $created > 0 ) {
+			update_option( 'jcp_contractor_demo_seed_version', '2' );
+			update_option( 'jcp_niche_contractor_demo_seeded', '1' );
+		}
+	}
 }
 add_action( 'init', 'jcp_niche_maybe_seed', 20 );
 
@@ -201,9 +283,12 @@ function jcp_niche_admin_seed_notice(): void {
 	jcp_niche_seed_plumbing();
 	jcp_niche_seed_hvac();
 	jcp_niche_seed_referral_program();
+	jcp_niche_seed_contractor_demo( true );
 	update_option( 'jcp_niche_plumbing_seeded', '1' );
 	update_option( 'jcp_niche_hvac_seeded', '1' );
 	update_option( 'jcp_niche_referral_seeded', '1' );
+	update_option( 'jcp_niche_contractor_demo_seeded', '1' );
+	update_option( 'jcp_contractor_demo_seed_version', '2' );
 	wp_safe_redirect( admin_url( 'edit.php?post_type=jcp_niche_landing&jcp_seeded=1' ) );
 	exit;
 }

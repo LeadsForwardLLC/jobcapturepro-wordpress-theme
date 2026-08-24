@@ -197,6 +197,9 @@ function jcp_page_default_content( int $post_id ): array {
 	if ( $slug === 'referral-program' || get_page_template_slug( $post_id ) === 'page-referral-program.php' ) {
 		return jcp_page_load_preset( 'referral-program' );
 	}
+	if ( $slug === 'contractor-demo' ) {
+		return jcp_page_load_preset( 'campaign' );
+	}
 	if ( get_page_template_slug( $post_id ) === 'page-home.php' || (int) get_option( 'page_on_front' ) === $post_id ) {
 		return jcp_page_load_preset( 'home' );
 	}
