@@ -1925,7 +1925,7 @@ function closeCreateActionSheet() {
 
 function handleCreateAction(action) {
   if (action === 'review' && isGuidedDemoRun() && tour.stepKey === 'step2') {
-    showDemoRestrictionTooltip($('create-action-review'), 'Send review request is not available in the demo');
+    showDemoRestrictionTooltip($('create-action-review'), 'Review requests unlock after you publish a job — that comes later in this demo');
     return;
   }
   closeCreateActionSheet();

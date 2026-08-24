@@ -8,9 +8,9 @@
 <section class="survey-step" data-step="2">
   <div class="survey-head">
     <div class="survey-eyebrow">Step 3</div>
-    <h2 class="survey-title">Last step: your details</h2>
+    <h2 class="survey-title">Where should we send your demo?</h2>
     <p class="survey-subtitle">
-      Enter your name and email, then we'll show you a short preview before your demo.
+      We’ll personalize the walkthrough to your business. Takes about a minute — then you see the demo.
     </p>
   </div>
 
@@ -23,6 +23,7 @@
           type="text"
           class="survey-input"
           placeholder="John"
+          autocomplete="given-name"
           required
         />
       </div>
@@ -33,11 +34,12 @@
           type="text"
           class="survey-input"
           placeholder="Smith"
+          autocomplete="family-name"
           required
         />
       </div>
       <div class="survey-field survey-field-full">
-        <label for="email">Email address</label>
+        <label for="email">Work email</label>
         <input
           id="email"
           type="email"
@@ -46,6 +48,19 @@
           autocomplete="email"
           required
         />
+      </div>
+      <div class="survey-field survey-field-full">
+        <label for="phone">Mobile phone</label>
+        <input
+          id="phone"
+          type="tel"
+          class="survey-input"
+          placeholder="(555) 555-5555"
+          autocomplete="tel"
+          inputmode="tel"
+          required
+        />
+        <p class="survey-field-hint">So we can follow up if you want help getting set up. No spam.</p>
       </div>
       <div class="survey-field survey-field-full">
         <label for="referralSource">How did you hear about us?</label>
@@ -72,7 +87,8 @@
   </form>
 
   <div class="survey-actions-row">
-    <button type="button" class="survey-btn" data-action="launch">Continue to preview</button>
-    <p class="survey-consent">By continuing you agree to receive the demo and relevant updates by email. Unsubscribe anytime.</p>
+    <button type="button" class="survey-btn" data-action="launch">Show my demo</button>
+    <p class="survey-consent">By continuing you agree to receive the demo and relevant updates by email or text. Unsubscribe anytime.</p>
   </div>
 </section>
+

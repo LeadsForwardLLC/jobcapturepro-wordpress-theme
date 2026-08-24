@@ -410,6 +410,13 @@ body.survey-only #jcp-app {
   line-height:1.4;
 }
 
+.survey-field-hint{
+  color:#6b7280;
+  font-size:12px;
+  margin:6px 0 0;
+  line-height:1.35;
+}
+
 
 /* Center */
 /* Card */

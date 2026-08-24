@@ -130,6 +130,7 @@
     firstName: getValue('firstName'),
     lastName: getValue('lastName'),
     email: getValue('email'),
+    phone: getValue('phone'),
     referralSource: getValue('referralSource'),
     referralSourceOther: getValue('referralSourceOther'),
     goals: Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || []).map((input) => input.value),
@@ -154,6 +155,7 @@
     setField('firstName', form.firstName);
     setField('lastName', form.lastName);
     setField('email', form.email);
+    setField('phone', form.phone);
     setField('referralSource', form.referralSource);
     setField('referralSourceOther', form.referralSourceOther);
     syncReferralSourceOtherField();
@@ -332,6 +334,8 @@
       if (firstName) body.first_name = firstName;
       if (lastName) body.last_name = lastName;
       if (email) body.email = email;
+      const phone = getValue('phone');
+      if (phone) body.phone = phone;
       if (company) body.company = company;
       const niche = getBusinessTypeValue();
       if (niche) body.business_type = niche;
@@ -420,12 +424,14 @@
       const firstNameEl = document.getElementById('firstName');
       const lastNameEl = document.getElementById('lastName');
       const emailEl = document.getElementById('email');
+      const phoneEl = document.getElementById('phone');
 
       if (businessNameEl && prefill.company != null) businessNameEl.value = prefill.company;
       if (prefill.business_type != null) setBusinessTypeFromStored(prefill.business_type);
       if (firstNameEl && prefill.first_name != null) firstNameEl.value = prefill.first_name;
       if (lastNameEl && prefill.last_name != null) lastNameEl.value = prefill.last_name;
       if (emailEl && prefill.email != null) emailEl.value = prefill.email;
+      if (phoneEl && prefill.phone != null) phoneEl.value = prefill.phone;
 
       // Early Access uses full labels as values; survey uses short values (calls, google, etc.).
       const eaToSurvey = {
@@ -683,6 +689,8 @@
     const lastName = getValue('lastName');
     const emailInput = document.getElementById('email');
     const email = getValue('email');
+    const phoneInput = document.getElementById('phone');
+    const phone = getValue('phone').replace(/\D/g, '');
     const referralSource = getValue('referralSource');
     if (!firstName || !lastName) {
       alert('Please enter your first and last name to continue.');
@@ -691,6 +699,12 @@
     if (!email || !emailInput?.checkValidity()) {
       emailInput?.classList.add('is-error');
       emailInput?.focus();
+      return false;
+    }
+    if (!phone || phone.length < 10) {
+      phoneInput?.classList.add('is-error');
+      phoneInput?.focus();
+      alert('Please enter a valid mobile phone number so we can follow up if you want help.');
       return false;
     }
     if (!referralSource) {
@@ -724,6 +738,7 @@
       first_name: getValue('firstName'),
       last_name: getValue('lastName'),
       email: getValue('email'),
+      phone: getValue('phone'),
       company: getValue('businessName'),
       business_type: getBusinessTypeValue(),
       demo_goals: goals,
@@ -750,6 +765,7 @@
             first_name: getValue('firstName'),
             last_name: getValue('lastName'),
             email: getValue('email'),
+            phone: getValue('phone'),
             company: getValue('businessName'),
             business_type: getBusinessTypeValue(),
             demo_goals: goals,
@@ -791,6 +807,7 @@
       firstName,
       lastName,
       email,
+      phone: getValue('phone'),
       referralSource,
     }));
     saveSurveyPrefillForEarlyAccess();
@@ -806,6 +823,7 @@
             first_name: firstName,
             last_name: lastName,
             email,
+            phone: getValue('phone'),
             company: businessName,
             business_type: niche,
             demo_goals: goals,
@@ -904,13 +922,17 @@
     });
   });
 
+  document.getElementById('phone')?.addEventListener('input', (e) => {
+    e.target.classList.remove('is-error');
+  });
+
   document.getElementById('email')?.addEventListener('input', (e) => {
     e.target.classList.remove('is-error');
     setHandoffStatus('');
     scheduleSaveProgress();
   });
 
-  ['firstName', 'lastName', 'businessName', 'niche', 'nicheOther', 'referralSource', 'referralSourceOther'].forEach((id) => {
+  ['firstName', 'lastName', 'phone', 'businessName', 'niche', 'nicheOther', 'referralSource', 'referralSourceOther'].forEach((id) => {
     const el = document.getElementById(id);
     el?.addEventListener('input', () => {
       setHandoffStatus('');
