@@ -453,3 +453,144 @@
     animation: none !important;
   }
 }
+
+/* =========================================================
+   CRITICAL: deck must remain navigable (scroll + sticky CTA)
+   body.survey-only locks page scroll — deck slides must scroll
+   and actions must stay reachable on every viewport.
+========================================================= */
+
+body.survey-only .survey-overlay {
+  align-items: stretch;
+  overflow: hidden;
+}
+
+body.survey-only .survey-card:has(.survey-deck.active) {
+  max-height: 100vh;
+  max-height: 100dvh;
+  height: 100%;
+  max-width: min(720px, 100%);
+  overflow: hidden;
+  padding-top: 28px;
+  padding-bottom: 0;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.survey-deck.active {
+  display: flex !important;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
+}
+
+.survey-deck.active .deck {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  height: 100%;
+  gap: 10px;
+}
+
+.survey-deck.active .deck-top {
+  flex: 0 0 auto;
+}
+
+.survey-deck.active .deck-slides {
+  flex: 1 1 auto;
+  min-height: 0 !important;
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: 96px;
+  touch-action: pan-y;
+}
+
+.survey-deck.active .deck-actions {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10050;
+  display: flex !important;
+  gap: 10px;
+  align-items: center;
+  justify-content: stretch;
+  margin: 0;
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #fff 28%, #fff 100%);
+  pointer-events: auto;
+}
+
+.survey-deck.active .deck-actions .btn-control {
+  flex: 1 1 0;
+  min-height: 48px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+/* Never hide Back while navigating the deck */
+.survey-deck.active .deck-actions .btn-control[data-action="prev"] {
+  display: inline-flex !important;
+}
+
+.survey-deck.active .deck-actions .btn-control[data-action="prev"].is-hidden {
+  display: none !important;
+}
+
+/* Compact channels slide so Next stays on-screen */
+.deck-slide--channels .deck-publish__photo > img,
+.deck-slide--channels .deck-publish__photo img:first-child {
+  aspect-ratio: 16 / 9;
+  max-height: 180px;
+  width: 100%;
+  object-fit: cover;
+}
+
+.deck-slide--channels .deck-publish__preview img {
+  aspect-ratio: 21 / 9;
+  max-height: 120px;
+}
+
+.deck-slide--channels .deck-integrations {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.deck-slide--visual .deck-visual-hero {
+  aspect-ratio: 16 / 9;
+  max-height: 200px;
+}
+
+.deck-slide--reviews .deck-review-stage__photo {
+  aspect-ratio: 16 / 10;
+  max-height: 200px;
+}
+
+@media (max-width: 900px) {
+  body.survey-only .survey-overlay {
+    padding: 0;
+  }
+
+  .survey-deck.active .deck-actions {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -10px 28px rgba(15, 23, 42, 0.08);
+    background: #fff;
+  }
+
+  .survey-deck.active .deck-slides {
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Override shared CSS that hides Back on mobile */
+  .deck-actions .btn-control[data-action="prev"] {
+    display: inline-flex !important;
+  }
+}

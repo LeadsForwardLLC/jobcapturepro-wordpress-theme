@@ -2670,8 +2670,21 @@ input::-webkit-contacts-auto-fill-button {
     order: 1;
   }
 
+  /* Back must stay available — tall slides previously trapped users with no scroll/nav */
   .deck-actions .btn-control[data-action="prev"] {
-    display: none;
+    display: inline-flex;
+    order: 0;
+    width: auto;
+    flex: 0 0 auto;
+    min-width: 110px;
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    color: #111827;
+  }
+
+  .deck-actions {
+    flex-direction: row;
+    gap: 10px;
   }
 
   .deck-actions .btn-control[data-action="next"] {

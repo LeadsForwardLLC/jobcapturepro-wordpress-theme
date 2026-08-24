@@ -78,9 +78,9 @@ $icon_check  = esc_url( jcp_core_icon( 'check' ) );
         <h2>One photo publishes everywhere.</h2>
         <p class="deck-lead">Tap a channel — watch one job photo become live proof.</p>
 
-        <div class="deck-publish" data-deck-publish>
+        <div class="deck-publish deck-publish--compact" data-deck-publish>
           <button type="button" class="deck-publish__photo is-active" data-publish-source aria-pressed="true">
-            <img src="<?php echo $img_capture; ?>" alt="Technician photographing a completed HVAC job" width="400" height="300" loading="lazy" />
+            <img src="<?php echo $img_capture; ?>" alt="Technician photographing a completed HVAC job" width="400" height="220" loading="lazy" />
             <span class="deck-publish__photo-label">
               <img src="<?php echo $icon_camera; ?>" alt="" width="14" height="14" />
               Job photo
@@ -110,13 +110,11 @@ $icon_check  = esc_url( jcp_core_icon( 'check' ) );
             </button>
           </div>
 
-          <div class="deck-publish__preview" data-publish-preview hidden>
-            <img src="<?php echo $img_proof; ?>" alt="Finished job as marketing proof" width="480" height="320" loading="lazy" />
+          <div class="deck-publish__preview deck-publish__preview--compact" data-publish-preview hidden>
+            <img src="<?php echo $img_proof; ?>" alt="Finished job as marketing proof" width="480" height="160" loading="lazy" />
             <p data-publish-preview-label>Live on your website</p>
           </div>
         </div>
-
-        <p class="deck-integrations">Works with Housecall Pro, Jobber, ServiceTitan, CompanyCam, and more.</p>
       </article>
 
       <article class="deck-slide deck-slide--visual deck-slide--reviews">

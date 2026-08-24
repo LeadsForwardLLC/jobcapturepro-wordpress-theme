@@ -641,8 +641,9 @@
     const isLast = deckIndex === total - 1;
     if (deckLaunchBtn) deckLaunchBtn.classList.toggle('is-hidden', !isLast);
     if (deckNextBtn) deckNextBtn.classList.toggle('is-hidden', isLast);
+    // Always keep Back available on deck (except slide 1) — mobile used to hide it and trap users.
     if (deckPrevBtn) {
-      deckPrevBtn.classList.toggle('is-hidden', isMobileSurvey() || deckIndex === 0);
+      deckPrevBtn.classList.toggle('is-hidden', deckIndex === 0);
     }
 
     if (deckSlidesWrap) deckSlidesWrap.scrollTop = 0;
