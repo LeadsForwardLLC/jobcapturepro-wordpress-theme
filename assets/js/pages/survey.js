@@ -531,11 +531,40 @@
     channelTimers = [];
   };
 
+  const CHANNEL_PREVIEW_LABELS = {
+    website: 'Live on your website',
+    google: 'Live on Google Business Profile',
+    social: 'Ready for social',
+    directory: 'Listed in your directory',
+  };
+
   const resetChannelTiles = () => {
     const slide = deckSlides.find((el) => el.classList.contains('deck-slide--channels'));
     if (!slide) return;
     slide.classList.remove('is-sequencing');
-    slide.querySelectorAll('.deck-tile').forEach((tile) => tile.classList.remove('is-visible'));
+    slide.querySelectorAll('.deck-tile').forEach((tile) => {
+      tile.classList.remove('is-visible', 'is-live');
+      tile.setAttribute('aria-pressed', 'false');
+      const status = tile.querySelector('.tile-status');
+      if (status) status.textContent = 'Publish';
+    });
+    const preview = slide.querySelector('[data-publish-preview]');
+    if (preview) preview.hidden = true;
+  };
+
+  const activateChannelTile = (tile, { revealPreview = true } = {}) => {
+    if (!tile) return;
+    const slide = tile.closest('.deck-slide--channels');
+    const channel = tile.getAttribute('data-channel') || 'website';
+    tile.classList.add('is-visible', 'is-live');
+    tile.setAttribute('aria-pressed', 'true');
+    const status = tile.querySelector('.tile-status');
+    if (status) status.textContent = 'Live';
+    if (!revealPreview || !slide) return;
+    const preview = slide.querySelector('[data-publish-preview]');
+    const label = slide.querySelector('[data-publish-preview-label]');
+    if (label) label.textContent = CHANNEL_PREVIEW_LABELS[channel] || CHANNEL_PREVIEW_LABELS.website;
+    if (preview) preview.hidden = false;
   };
 
   const runChannelsSequence = () => {
@@ -550,7 +579,7 @@
 
     tiles.forEach((tile, idx) => {
       channelTimers.push(setTimeout(() => {
-        tile.classList.add('is-visible');
+        activateChannelTile(tile, { revealPreview: idx === tiles.length - 1 });
       }, 180 + idx * 420));
     });
   };
@@ -649,12 +678,18 @@
     deckIndex = Math.min(Math.max(0, startIndex), Math.max(0, deckSlides.length - 1));
     setDeckUI();
 
-    // First slide: if they selected a business type, swap "job" for "[type] job"
+    // First slide: personalize with business type when available
     const titleEl = document.getElementById('deckSlide1Title');
     const label = getBusinessTypeLabel();
     if (titleEl && label) {
       titleEl.textContent = 'Every completed ' + label + ' job should help you win the next one.';
     }
+    const personalTitle = document.getElementById('deckPersonalTitle');
+    const business = getValue('businessName');
+    if (personalTitle && business) {
+      personalTitle.textContent = 'Ready, ' + business + '? See one job publish everywhere.';
+    }
+    hydrateRankName();
     updateDesktopHandoff();
     saveSurveyProgress();
   };
@@ -974,6 +1009,16 @@
     if (e.key === 'Escape') {
       closeSurvey();
     }
+  });
+
+  // Interactive channel tiles on deck slide 2
+  document.addEventListener('click', (e) => {
+    const tile = e.target.closest('.deck-slide--channels .deck-tile[data-channel]');
+    if (!tile) return;
+    const slide = tile.closest('.deck-slide--channels');
+    if (!slide || !slide.classList.contains('is-active')) return;
+    clearChannelTimers();
+    activateChannelTile(tile, { revealPreview: true });
   });
 
   enforceGoalLimit();

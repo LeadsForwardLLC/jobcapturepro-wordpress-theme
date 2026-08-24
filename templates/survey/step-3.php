@@ -8,10 +8,8 @@
 <section class="survey-step" data-step="2">
   <div class="survey-head">
     <div class="survey-eyebrow">Step 3</div>
-    <h2 class="survey-title">Where should we send your demo?</h2>
-    <p class="survey-subtitle">
-      We’ll personalize the walkthrough to your business. Takes about a minute — then you see the demo.
-    </p>
+    <h2 class="survey-title">Personalize your demo</h2>
+    <p class="survey-subtitle">Takes about a minute. Then you’ll see JobCapturePro on a business like yours.</p>
   </div>
 
   <form class="survey-form" autocomplete="off">
@@ -87,7 +85,7 @@
   </form>
 
   <div class="survey-actions-row">
-    <button type="button" class="survey-btn" data-action="launch">Show my demo</button>
+    <button type="button" class="survey-btn" data-action="launch">Continue to demo →</button>
     <p class="survey-consent">By continuing you agree to receive the demo and relevant updates by email or text. Unsubscribe anytime.</p>
   </div>
 </section>

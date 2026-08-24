@@ -8,8 +8,8 @@
 <section class="survey-step" data-step="1">
   <div class="survey-head">
     <div class="survey-eyebrow">Step 2</div>
-    <h2 class="survey-title">What should this demo prove?</h2>
-    <p class="survey-subtitle">Choose up to two priorities.</p>
+    <h2 class="survey-title">What matters most right now?</h2>
+    <p class="survey-subtitle">Pick up to two. We’ll focus the demo on those outcomes.</p>
   </div>
 
   <div class="survey-goals" id="surveyGoals">

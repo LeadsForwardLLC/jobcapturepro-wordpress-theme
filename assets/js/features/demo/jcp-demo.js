@@ -551,38 +551,38 @@ const DEMO_OUTCOME_ITEMS = [
 const demoGuideContent = {
   step1: {
     pill: 'Step 1',
-    title: 'Start the demo',
-    body: 'Tap Start Demo above. You will walk through the real workflow step by step.',
+    title: 'Start your personalized demo',
+    body: 'Tap Start Demo. You’ll walk through the exact field workflow your crew would use.',
     interactHint: 'Tap the highlighted Start Demo button.'
   },
   step2: {
     pill: 'Step 2',
-    title: 'Tap + to create a check-in',
-    body: 'This is what your tech does on each job. One quick check-in powers everything.',
+    title: 'Create a job check-in',
+    body: 'This is the moment on site. One check-in becomes proof, reviews, and published updates.',
     interactHint: 'Tap the + button, then choose New Check-in.'
   },
   step3: {
     pill: 'Step 3',
-    title: 'Add a photo, then submit',
-    body: 'Photos generate the job content. Add one photo, then tap Submit.',
+    title: 'Add the job photo',
+    body: 'The photo is the marketing. Add one shot of the completed work, then submit.',
     interactHint: 'Tap the camera, add a photo, then tap Submit.'
   },
   step4: {
     pill: 'Step 4',
-    title: 'Publish the job',
-    body: 'Tap Publish Everywhere to push this job to your website, Google, social media and directory.',
+    title: 'Publish everywhere',
+    body: 'One tap pushes this job to your website, Google, social, and directory.',
     interactHint: 'Tap Publish Everywhere to continue.'
   },
   step5: {
     pill: 'Step 5',
-    title: 'Request a review',
-    body: 'Before leaving, your tech shows a QR code so the customer can leave a review on the spot. Tap Request Review to preview it.',
+    title: 'Ask for the review on site',
+    body: 'Show the QR before you leave — while the customer is still happy.',
     interactHint: 'Tap Request Review to preview the QR handoff.'
   },
   step6: {
     pill: 'Final step',
-    title: 'See everything that published',
-    body: 'Swipe the dots to explore what happened automatically for this job.',
+    title: 'See what just published',
+    body: 'Here’s the payoff: website, Google, social, directory, and a review ask — from one job.',
     interactHint: ''
   },
   step6Dock: {
