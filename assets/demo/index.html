@@ -622,6 +622,20 @@
 <div class="mobile-spotlight" id="mobileSpotlight" aria-hidden="true"></div>
 <div class="guided-coach-backdrop" id="guidedCoachBackdrop" hidden></div>
 
+<!-- Persistent exit (only this control leaves the demo) -->
+<div class="mobile-demo-shell" id="mobileDemoShell" hidden>
+  <div class="mobile-demo-top">
+    <span class="mobile-demo-step" id="mobileDemoChromeLabel">Guided demo</span>
+    <div class="mobile-demo-top-actions">
+      <button type="button" class="mobile-demo-close" id="mobileDemoExit" aria-label="Exit demo">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
 <button type="button" class="mobile-guide-pill" id="mobileGuidePill" hidden>
   <span class="mobile-guide-pill-dot" aria-hidden="true"></span>
   <span id="mobileGuidePillText">Step 1</span>
@@ -634,7 +648,7 @@
       <button type="button" class="mobile-guide-minimize" id="mobileGuideMinimize" aria-label="Minimize guide">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14"/></svg>
       </button>
-      <button type="button" class="mobile-demo-close" id="mobileDemoClose" aria-label="Exit demo">
+      <button type="button" class="mobile-demo-close" id="mobileDemoClose" aria-label="Hide guide">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
           <path d="M18 6L6 18M6 6l12 12"/>
         </svg>

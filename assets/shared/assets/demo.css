@@ -3189,14 +3189,16 @@ body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #login-screen .logi
   content: none;
 }
 
-/* Spotlight ring on focal control */
+/* Spotlight ring on focal control — light dim so the phone stays explorable */
 .mobile-spotlight {
   position: fixed;
   z-index: 75;
   display: none;
   border-radius: 14px;
   border: 2px solid rgba(255, 80, 62, 0.95);
-  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.58);
+  box-shadow:
+    0 0 0 3px rgba(255, 255, 255, 0.92),
+    0 0 0 9999px rgba(15, 23, 42, 0.22);
   pointer-events: none;
   transition:
     top 0.35s cubic-bezier(0.2, 0.9, 0.2, 1),
@@ -4867,7 +4869,7 @@ body.jcp-guided-demo:not(.is-mobile-mode) .mobile-stepper-header {
 }
 
 body.jcp-desktop-guided .mobile-demo-shell {
-  display: none !important;
+  display: block;
 }
 
 body.jcp-desktop-guided .mobile-demo-top {
@@ -4876,6 +4878,7 @@ body.jcp-desktop-guided .mobile-demo-top {
   left: 0;
   right: 0;
   z-index: 90;
+  justify-content: flex-end;
   background: linear-gradient(to bottom, #f3f4f6 80%, rgba(243, 244, 246, 0));
   padding-bottom: 10px;
 }

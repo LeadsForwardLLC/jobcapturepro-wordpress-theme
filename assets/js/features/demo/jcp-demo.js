@@ -1130,10 +1130,15 @@ function toggleMobileGuideCollapse() {
 }
 
 function syncMobileGuideChrome() {
+  const shell = $('mobileDemoShell');
   if (!isGuidedDemoRun()) {
+    if (shell) shell.hidden = true;
     updateGuidedCoachBackdrop();
     return;
   }
+
+  // Keep exit chrome through step 6 / outcomes; post-demo CSS hides it.
+  if (shell) shell.hidden = false;
 
   const stepKey = tour.stepKey;
   const step = stepKey === 'step6' && !outcomesSlideshow.isOpen
@@ -1144,6 +1149,7 @@ function syncMobileGuideChrome() {
 
   if (stepNum) {
     safeText('mobileDemoStep', `Step ${stepNum} of ${total}`);
+    safeText('mobileDemoChromeLabel', `Step ${stepNum} of ${total}`);
     const fill = $('mobileStepProgressFill');
     if (fill) fill.style.width = `${(stepNum / total) * 100}%`;
   }
@@ -1158,6 +1164,33 @@ function syncMobileGuideChrome() {
   updateMobileLayoutMetrics();
   positionMobileSpotlight();
   updateGuidedCoachBackdrop();
+}
+
+function exitGuidedDemoToSurvey() {
+  markDemoIntakeComplete();
+  const returnUrl = sessionStorage.getItem('jcp_survey_return_url') || '/demo/';
+  window.location.href = returnUrl;
+}
+
+function isClickOutsideGuidedCoach(target) {
+  if (!(target instanceof Element)) return false;
+  const stepper = $('mobile-stepper');
+  if (stepper && stepper.contains(target)) return false;
+  if ($('mobileGuidePill')?.contains(target)) return false;
+  if ($('mobileDemoShell')?.contains(target)) return false;
+  if ($('demoOutcomesModal')?.contains(target)) return false;
+  if ($('post-demo-panel')?.contains(target)) return false;
+  if (document.getElementById('demoPublishOverlay')?.contains(target)) return false;
+  if (document.getElementById('review-modal')?.contains(target)) return false;
+
+  // Keep coach open when tapping the highlighted control for this step.
+  const selector = tour.anchors[tour.stepKey];
+  const spotlightTarget = selector ? document.querySelector(selector) : null;
+  if (spotlightTarget && (spotlightTarget === target || spotlightTarget.contains(target))) {
+    return false;
+  }
+
+  return true;
 }
 
 function updateMobileLayoutMetrics() {
@@ -3720,15 +3753,26 @@ function wireControls() {
     }
   });
 
-  $('mobileDemoClose')?.addEventListener('click', () => {
-    markDemoIntakeComplete();
-    const returnUrl = sessionStorage.getItem('jcp_survey_return_url') || '/demo/';
-    window.location.href = returnUrl;
-  });
+  // Tour box X / minimize: hide coach only. Full demo exit is top-right #mobileDemoExit.
+  $('mobileDemoClose')?.addEventListener('click', () => setMobileGuideCollapsed(true));
+  $('mobileDemoExit')?.addEventListener('click', () => exitGuidedDemoToSurvey());
 
   $('mobileGuideMinimize')?.addEventListener('click', () => toggleMobileGuideCollapse());
   $('mobileGuidePill')?.addEventListener('click', () => setMobileGuideCollapsed(false));
   $('guidedCoachBackdrop')?.addEventListener('click', () => setMobileGuideCollapsed(true));
+
+  // Click outside the tour card dismisses the coach (does not exit the demo).
+  document.addEventListener('pointerdown', (e) => {
+    if (!isGuidedDemoRun() || mobileGuideCollapsed || state.isFinalStep) return;
+    if (document.body.classList.contains('jcp-publish-modal-open')) return;
+    if (document.body.classList.contains('jcp-review-modal-open')) return;
+    if (document.body.classList.contains('jcp-post-demo-open')) return;
+    if (document.body.classList.contains('jcp-outcomes-modal-open')) return;
+    if (outcomesSlideshow.isOpen) return;
+    if (!isClickOutsideGuidedCoach(e.target)) return;
+    setMobileGuideCollapsed(true);
+  }, true);
+
   $('btnDemoReviewSend')?.addEventListener('click', () => confirmDemoReviewSend());
 
   $('btnStartDemo')?.addEventListener('click', () => {
