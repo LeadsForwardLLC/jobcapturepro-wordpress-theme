@@ -76,7 +76,7 @@ body.jcp-desktop-guided .demo-container {
   display: flex !important;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   grid-template-columns: none !important;
   width: 100%;
 }
@@ -86,6 +86,11 @@ body.jcp-desktop-guided .phone-wrapper {
   margin-left: auto !important;
   margin-right: auto !important;
   justify-self: center;
+}
+
+body.jcp-desktop-guided .iphone-frame {
+  transform: scale(0.9);
+  transform-origin: top center;
 }
 
 #description-field.is-demo-seo-spotlight,
@@ -101,5 +106,9 @@ body.jcp-desktop-guided .phone-wrapper {
   #description-field.is-demo-seo-spotlight,
   #edit-screen .location-card.is-demo-seo-spotlight {
     transition: none;
+  }
+
+  body.jcp-desktop-guided .iphone-frame {
+    transform: none;
   }
 }

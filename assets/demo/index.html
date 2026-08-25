@@ -119,8 +119,8 @@
                             <div class="upload-area">
                                 <div class="upload-hint">Take photos or upload images to generate your check-in</div>
                                 <div class="upload-buttons">
-                                    <button class="upload-btn" onclick="addPhotos()"><img src="../../shared/assets/icons/lucide/camera.svg" class="lucide-icon" alt=""></button>
-                                    <button class="upload-btn" onclick="addPhotos()"><img src="../../shared/assets/icons/lucide/image.svg" class="lucide-icon" alt=""></button>
+                                    <button type="button" class="upload-btn" id="uploadBtnCamera" data-action="add-photos" aria-label="Take photo"><img src="../../shared/assets/icons/lucide/camera.svg" class="lucide-icon" alt=""></button>
+                                    <button type="button" class="upload-btn" id="uploadBtnGallery" data-action="add-photos" aria-label="Upload photo"><img src="../../shared/assets/icons/lucide/image.svg" class="lucide-icon" alt=""></button>
                                 </div>
                             </div>
 
@@ -174,7 +174,7 @@
                                 <p class="description-header-label"><img src="../../shared/assets/icons/lucide/zap.svg" class="lucide-icon lucide-icon-sm" alt=""> AI-generated description</p>
                                 <button type="button" class="edit-action-link" id="btnRegenerateDescription" aria-label="Regenerate description"><img src="../../shared/assets/icons/lucide/refresh-cw.svg" class="lucide-icon lucide-icon-sm" alt=""> Regenerate</button>
                             </div>
-                            <textarea id="description-field">Replaced an aging water heater and brought the system up to code. We installed a new high-efficiency unit, verified proper venting, and tested temperature + pressure relief for safe operation. Customer is back to consistent hot water with improved energy performance.</textarea>
+                            <textarea id="description-field">Water heater replacement at 1242 Mason Rd, Austin TX 78704. Installed a high-efficiency unit, verified venting, and tested T&amp;P relief. Local, geotagged job proof ready for your website and Google — optimized for nearby search.</textarea>
                             <div class="auto-save-note"><img src="../../shared/assets/icons/lucide/check.svg" class="lucide-icon lucide-icon-xs" alt=""> Saved Automatically</div>
 
                             <div class="section-title">TAGS</div>

@@ -3207,6 +3207,8 @@ body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #login-screen .logi
 
 body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) .btn-primary#btnStartDemo,
 body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #fabNewCheckin,
+body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #uploadBtnCamera,
+body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #uploadBtnGallery,
 body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #submit-btn,
 body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #btnSavePublish,
 body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #btnRequestReview {
@@ -4438,8 +4440,8 @@ body.jcp-guided-demo .demo-container {
 }
 
 body.jcp-guided-demo:not(.is-mobile-mode) {
-  --jcp-mobile-top: 52px;
-  --jcp-mobile-bottom: 148px;
+  --jcp-mobile-top: 44px;
+  --jcp-mobile-bottom: 168px;
 }
 
 body.jcp-guided-demo:not(.is-mobile-mode) .demo-container {
@@ -4490,6 +4492,8 @@ body.jcp-guided-demo:not(.is-mobile-mode) .mobile-stepper.is-collapsed {
   border: 0;
   padding: 0;
   cursor: default;
+  /* Must not steal taps from the phone (camera/upload/publish). */
+  pointer-events: none;
 }
 
 .guided-coach-backdrop[hidden] {
@@ -4848,8 +4852,14 @@ body.jcp-desktop-guided.demo-run-only #jcp-app {
 
 body.jcp-desktop-guided .demo-container {
   min-height: calc(100vh - var(--jcp-mobile-top) - var(--jcp-mobile-bottom));
-  padding-top: var(--jcp-mobile-top);
-  align-content: center;
+  padding-top: calc(var(--jcp-mobile-top) + 8px);
+  align-content: start;
+  justify-content: flex-start;
+}
+
+body.jcp-desktop-guided .iphone-frame {
+  transform: scale(0.9);
+  transform-origin: top center;
 }
 
 body.jcp-guided-demo:not(.is-mobile-mode) .mobile-stepper-header {

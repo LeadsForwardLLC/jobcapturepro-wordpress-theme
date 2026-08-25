@@ -564,8 +564,8 @@ const demoGuideContent = {
   step3: {
     pill: 'Step 3',
     title: 'Add the job photo',
-    body: 'The photo is the marketing. Add one shot of the completed work, then submit.',
-    interactHint: 'Tap the camera, add a photo, then tap Submit.'
+    body: 'The photo is the marketing. Tap the camera to add one shot of the completed work, then submit.',
+    interactHint: 'Tap the camera, then tap Submit.'
   },
   step4: {
     pill: 'Step 4',
@@ -1224,7 +1224,7 @@ const tour = {
     anchors: {
       step1: '#btnStartDemo',
       step2: '#fabNewCheckin',
-      step3: '#submit-btn',
+      step3: '#uploadBtnCamera',
       step4: '#btnSavePublish',
       step5: '#btnRequestReview',
       step6: '#demoOutcomesModal',
@@ -1876,6 +1876,7 @@ function goToNew() {
     submit.disabled = true;
     submit.onclick = null;
   }
+  syncStep3GuidedAnchor();
   if (tour.stepKey === 'step2') {
     setTourStep('step3');
     applyFocalPoint();
@@ -2019,7 +2020,7 @@ function addPhotos() {
   photoDiv.className = 'photo-item';
   photoDiv.innerHTML = `
     <img src="${demoPhotos[idx]}" alt="Job photo" width="120" height="90">
-    <button class="photo-remove" type="button">×</button>
+    <button class="photo-remove" type="button" aria-label="Remove photo">×</button>
   `;
 
   // Remove handler (safe)
@@ -2027,6 +2028,7 @@ function addPhotos() {
     photoDiv.remove();
     state.photoCount = Math.max(0, state.photoCount - 1);
     updateSubmitButtonState();
+    syncStep3GuidedAnchor();
     syncAttentionAnimations();
   });
 
@@ -2034,7 +2036,18 @@ function addPhotos() {
   state.photoCount++;
 
   updateSubmitButtonState();
+  syncStep3GuidedAnchor();
   syncAttentionAnimations();
+}
+
+function syncStep3GuidedAnchor() {
+  if (!isGuidedDemoRun()) return;
+  tour.anchors.step3 = state.photoCount >= 1 ? '#submit-btn' : '#uploadBtnCamera';
+  if (tour.stepKey === 'step3') {
+    applyFocalPoint();
+    positionMobileSpotlight();
+    updateTourFloating();
+  }
 }
 
 function updateSubmitButtonState() {
@@ -2151,6 +2164,13 @@ function showEditScreen() {
         editGrid.appendChild(photoDiv);
       }
     }
+  }
+
+  // Guided demo: always land on the geotagged / local-SEO AI sample.
+  if (descriptionField && !isPrototype) {
+    descriptionField.value = descriptions[0];
+  } else if (descriptionField && !descriptionField.value.trim()) {
+    descriptionField.value = descriptions[0];
   }
 
   updateArchiveButtonUI();
@@ -2419,22 +2439,31 @@ async function runGuidedPublishSequence() {
     return;
   }
 
-  overlay.classList.add('active');
-  document.body.classList.add('jcp-publish-modal-open');
-  items.forEach((item) => item.classList.remove('is-done'));
+  const closeOverlay = () => {
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('jcp-publish-modal-open');
+  };
 
-  for (let i = 0; i < items.length; i++) {
-    await wait(580);
-    items[i].classList.add('is-done');
-    if (i === 1) {
-      await publishToSocial();
+  try {
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('jcp-publish-modal-open');
+    items.forEach((item) => item.classList.remove('is-done'));
+
+    for (let i = 0; i < items.length; i++) {
+      await wait(480);
+      items[i].classList.add('is-done');
+      if (i === 1) {
+        await publishToSocial();
+      }
     }
-  }
 
-  await wait(650);
-  overlay.classList.remove('active');
-  document.body.classList.remove('jcp-publish-modal-open');
-  jcpDemoTrack('demo_publish_completed', 4);
+    await wait(520);
+    jcpDemoTrack('demo_publish_completed', 4);
+  } finally {
+    closeOverlay();
+  }
 }
 
 async function publishToSocial() {
@@ -3726,6 +3755,15 @@ function wireControls() {
       e.preventDefault();
       $('fabNewCheckin')?.classList.remove('fab-attention', 'fab-glow');
       openCreateActionSheet();
+    });
+  });
+
+  // Prefer JS listeners over inline onclick so photo add works under guided chrome.
+  document.querySelectorAll('[data-action="add-photos"], .upload-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      addPhotos();
     });
   });
 
