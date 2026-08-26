@@ -570,8 +570,8 @@ const demoGuideContent = {
   step4: {
     pill: 'Step 4',
     title: 'AI builds a local SEO post',
-    body: 'Every check-in — from JobCapturePro or your field software — becomes a geotagged, location-optimized website post built to rank. Read what AI wrote, then publish it everywhere.',
-    interactHint: 'Read the AI description, then tap Publish Everywhere.'
+    body: 'Every check-in — from JobCapturePro or your field software — becomes a geotagged, location-optimized website post built to rank. Watch each piece of the post, then publish it everywhere.',
+    interactHint: 'Follow the highlight down the page, then tap Publish Everywhere.'
   },
   step5: {
     pill: 'Step 5',
@@ -1257,7 +1257,9 @@ function updateMobileStepperLabel() {
 
   if (hint) {
     const step = tour.stepKey ? demoGuideContent[tour.stepKey] : null;
-    const hintText = step?.interactHint || '';
+    const hintText = (tour.stepKey === 'step4' && tour.step4Hint)
+      ? tour.step4Hint
+      : (step?.interactHint || '');
     hint.textContent = hintText;
     hint.hidden = !hideNext || !hintText;
   }
@@ -1273,6 +1275,7 @@ const tour = {
 
   // This is the ONLY thing that should control what the tooltip says
   stepKey: 'step1',
+  step4Hint: '',
 
     anchors: {
       step1: '#btnStartDemo',
@@ -1355,6 +1358,10 @@ function setTourStep(stepKey) {
       tourEl.classList.toggle('final-step', state.isFinalStep);
     }
   tour.stepKey = stepKey;
+  if (stepKey !== 'step4') {
+    tour.step4Hint = '';
+    clearStep4SeoBeatTimers();
+  }
   if (stepKey) {
     document.body.dataset.tourStep = stepKey;
   } else {
@@ -2269,61 +2276,104 @@ function showEditScreen() {
 }
 
 /**
- * Step 4 beat: hold on the AI description (SEO value) before scrolling to Publish.
+ * Step 4 beat: slowly scroll + spotlight Location → Photos → Description → Tags → Publish.
  */
+function clearStep4SeoBeatTimers() {
+  window.clearTimeout(runStep4SeoAppreciationBeat._timer);
+  if (Array.isArray(runStep4SeoAppreciationBeat._timers)) {
+    runStep4SeoAppreciationBeat._timers.forEach((id) => window.clearTimeout(id));
+  }
+  runStep4SeoAppreciationBeat._timers = [];
+  document.querySelectorAll('.is-demo-seo-spotlight').forEach((el) => {
+    el.classList.remove('is-demo-seo-spotlight');
+  });
+}
+
 function runStep4SeoAppreciationBeat() {
+  clearStep4SeoBeatTimers();
+
   const scroller = document.querySelector('#edit-screen .content-area');
-  const descField = document.getElementById('description-field');
-  const descBlock = descField?.closest('.description-block') || descField;
-  const locationInfo = document.querySelector('#edit-screen .location-info');
   const publishBtn = document.getElementById('btnSavePublish');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const readMs = reduceMotion ? 400 : 2200;
+  const holdMs = reduceMotion ? 180 : 1350;
+  const settleMs = reduceMotion ? 40 : 380;
   const behavior = reduceMotion ? 'auto' : 'smooth';
 
-  // Keep spotlight/coach on the AI copy during the read beat.
-  const previousAnchor = tour.anchors.step4;
-  tour.anchors.step4 = '#description-field';
+  const sequence = [
+    { sel: '#edit-location-card', hint: 'Location is geotagged for local SEO.' },
+    { sel: '#edit-photos-block', hint: 'The job photo becomes proof on every channel.' },
+    { sel: '#edit-description-block', hint: 'AI wrote a local-SEO description from the job.' },
+    { sel: '#edit-tags-block', hint: 'Tags help organize and surface the work.' },
+    { sel: '#btnSavePublish', hint: 'Tap Publish Everywhere to push it live.' },
+  ];
 
-  const scrollToEl = (el, offset = 28) => {
+  const scrollToEl = (el, offset = 24) => {
     if (!scroller || !el) return;
-    const top = Math.max(0, el.offsetTop - offset);
+    // Prefer offset relative to scroller content.
+    let top = 0;
+    try {
+      const parentTop = scroller.getBoundingClientRect().top;
+      const elTop = el.getBoundingClientRect().top;
+      top = Math.max(0, scroller.scrollTop + (elTop - parentTop) - offset);
+    } catch (e) {
+      top = Math.max(0, (el.offsetTop || 0) - offset);
+    }
     scroller.scrollTo({ top, behavior });
   };
 
-  // Start near location + AI description so geotag + copy are both visible.
-  scrollToEl(locationInfo || descBlock || descField, 16);
-  descField?.classList.add('is-demo-seo-spotlight');
-  document.querySelector('#edit-screen .location-card')?.classList.add('is-demo-seo-spotlight');
+  const focusStep = (item) => {
+    if (tour.stepKey !== 'step4') return;
+    const el = document.querySelector(item.sel);
+    if (!el) return;
 
-  if (isGuidedDemoRun()) {
-    updateTourFloating();
-    if (document.body.classList.contains('is-mobile-mode')) {
-      requestAnimationFrame(() => {
-        if (descField) scrollGuidedControlIntoView(descField, 16);
-        positionMobileSpotlight();
-      });
+    document.querySelectorAll('.is-demo-seo-spotlight').forEach((n) => {
+      n.classList.remove('is-demo-seo-spotlight');
+    });
+    el.classList.add('is-demo-seo-spotlight');
+    tour.anchors.step4 = item.sel;
+
+    scrollToEl(el, item.sel === '#btnSavePublish' ? 48 : 20);
+
+    if (item.hint) {
+      tour.step4Hint = item.hint;
+      updateMobileStepperLabel();
+      syncMobileGuideChrome();
     }
-  }
-
-  window.clearTimeout(runStep4SeoAppreciationBeat._timer);
-  runStep4SeoAppreciationBeat._timer = window.setTimeout(() => {
-    descField?.classList.remove('is-demo-seo-spotlight');
-    document.querySelector('#edit-screen .location-card')?.classList.remove('is-demo-seo-spotlight');
-    tour.anchors.step4 = previousAnchor || '#btnSavePublish';
-
-    scrollToEl(publishBtn, 60);
 
     if (isGuidedDemoRun()) {
       updateTourFloating();
-      if (document.body.classList.contains('is-mobile-mode') && publishBtn) {
-        requestAnimationFrame(() => {
-          scrollGuidedControlIntoView(publishBtn, 10);
-          positionMobileSpotlight();
-        });
-      }
+      requestAnimationFrame(() => {
+        if (document.body.classList.contains('is-mobile-mode')) {
+          scrollGuidedControlIntoView(el, item.sel === '#btnSavePublish' ? 10 : 16);
+        }
+        positionMobileSpotlight();
+      });
+      setTimeout(() => positionMobileSpotlight(), settleMs);
     }
-  }, readMs);
+  };
+
+  let index = 0;
+  const advance = () => {
+    if (tour.stepKey !== 'step4') {
+      clearStep4SeoBeatTimers();
+      return;
+    }
+    if (index >= sequence.length) {
+      tour.anchors.step4 = '#btnSavePublish';
+      publishBtn?.classList.add('is-demo-seo-spotlight');
+      positionMobileSpotlight();
+      return;
+    }
+    const item = sequence[index++];
+    focusStep(item);
+    const t = window.setTimeout(advance, holdMs + settleMs);
+    runStep4SeoAppreciationBeat._timers.push(t);
+  };
+
+  // Small delay so edit-screen layout is ready after setScreen.
+  const start = window.setTimeout(advance, reduceMotion ? 60 : 200);
+  runStep4SeoAppreciationBeat._timers.push(start);
+  runStep4SeoAppreciationBeat._timer = start;
 }
 
 

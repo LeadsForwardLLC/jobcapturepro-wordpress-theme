@@ -152,7 +152,7 @@
                         <div class="content-area edit-content">
                             <div class="status-pill"><img src="../../shared/assets/icons/lucide/clock.svg" class="lucide-icon lucide-icon-sm" alt=""> Not Published</div>
                             <div class="section-title">LOCATION</div>
-                            <div class="location-card">
+                            <div class="location-card" id="edit-location-card">
                                 <div class="location-header">
                                     <div class="map-thumb">
                                         <img src="../../shared/assets/icons/lucide/map.svg" class="lucide-icon lucide-icon-lg" alt="">
@@ -165,10 +165,13 @@
                                 </div>
                             </div>
 
+                            <div id="edit-photos-block">
                             <div class="section-title">PHOTOS</div>
                             <div class="photo-grid" id="edit-photo-grid"></div>
                             <button type="button" class="edit-action-link" id="btnAddMedia"><img src="../../shared/assets/icons/lucide/plus.svg" class="lucide-icon lucide-icon-sm" alt=""> Add Media</button>
+                            </div>
 
+                            <div id="edit-description-block">
                             <div class="section-title">DESCRIPTION</div>
                             <div class="description-header">
                                 <p class="description-header-label"><img src="../../shared/assets/icons/lucide/zap.svg" class="lucide-icon lucide-icon-sm" alt=""> AI-generated description</p>
@@ -176,7 +179,9 @@
                             </div>
                             <textarea id="description-field">Water heater replacement at 1242 Mason Rd, Austin TX 78704. Installed a high-efficiency unit, verified venting, and tested T&amp;P relief. Local, geotagged job proof ready for your website and Google — optimized for nearby search.</textarea>
                             <div class="auto-save-note"><img src="../../shared/assets/icons/lucide/check.svg" class="lucide-icon lucide-icon-xs" alt=""> Saved Automatically</div>
+                            </div>
 
+                            <div id="edit-tags-block">
                             <div class="section-title">TAGS</div>
                             <div class="tag-pills-wrap" id="edit-tag-pills"></div>
                             <button type="button" class="location-switcher" id="tag-selector-trigger" aria-label="Select tags">
@@ -184,6 +189,7 @@
                                 <span class="location-switcher__label" id="tag-selector-label">Add tags…</span>
                                 <img src="../../shared/assets/icons/lucide/chevron-down.svg" class="location-switcher__chevron" alt="" aria-hidden="true">
                             </button>
+                            </div>
 
                             <div class="action-buttons action-buttons--normal" id="edit-screen-buttons-normal">
                                 <button class="btn btn-primary" id="btnSavePublish" onclick="saveCheckin()"><img src="../../shared/assets/icons/lucide/upload.svg" class="lucide-icon lucide-icon-sm" alt=""> Publish Everywhere</button>

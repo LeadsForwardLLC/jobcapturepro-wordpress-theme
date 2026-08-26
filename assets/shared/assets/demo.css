@@ -3219,7 +3219,29 @@ body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #btnRequestReview {
   z-index: 76;
 }
 
-/* When the create sheet is open, keep New Check-in above the dim ring */
+/* Guided step 4: highlight each edit section as we scroll */
+#edit-screen .is-demo-seo-spotlight {
+  position: relative;
+  z-index: 76;
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 2px rgba(255, 80, 62, 0.9),
+    0 0 0 6px rgba(255, 255, 255, 0.85);
+  transition: box-shadow 0.35s ease;
+}
+
+#edit-screen #btnSavePublish.is-demo-seo-spotlight {
+  border-radius: 12px;
+}
+
+body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #edit-location-card,
+body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #edit-photos-block,
+body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #edit-description-block,
+body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #edit-tags-block,
+body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #btnSavePublish {
+  position: relative;
+}
+
 #create-sheet-overlay.is-open #create-action-checkin {
   position: relative;
   z-index: 76;
