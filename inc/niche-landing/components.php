@@ -84,6 +84,11 @@ function jcp_component_hero_home_visual( string $demo_url = '', string $photo_ur
 	$demo_url  = $demo_url !== '' ? $demo_url : home_url( '/demo/' );
 	$photo     = $photo_url !== '' ? $photo_url : jcp_media_default_phone_image();
 	$cta_label = trim( $cta_label ) !== '' ? trim( $cta_label ) : __( 'Try the demo', 'jcp-core' );
+	// Label + chevron SVG — strip trailing arrows so we never render two.
+	$cta_label = trim( (string) preg_replace( '/[\s]*[→⟶»›]+[\s]*$/u', '', $cta_label ) );
+	if ( $cta_label === '' ) {
+		$cta_label = __( 'Try the demo', 'jcp-core' );
+	}
 	if ( ! is_array( $cards ) || $cards === [] ) {
 		$cards = function_exists( 'jcp_media_industry_phone_cards' )
 			? jcp_media_industry_phone_cards( '' )

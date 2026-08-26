@@ -146,6 +146,7 @@ function jcp_page_doc_legacy_key_map(): array {
 		'demo_preview'          => 'DEMO PREVIEW',
 		'proof_flow'            => 'PROOF FLOW',
 		'testimonials'          => 'TESTIMONIALS',
+		'authority'             => 'AUTHORITY',
 		'directory_preview'     => 'DIRECTORY PREVIEW',
 		'cta_band_1'            => 'CTA BAND',
 		'commission'            => 'COMMISSION',

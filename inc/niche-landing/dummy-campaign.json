@@ -36,7 +36,7 @@
     "media_type": "phone_mockup",
     "phone_image_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
     "phone_image_alt": "Technician photographing a completed HVAC job on site",
-    "phone_cta_label": "Start the demo →"
+    "phone_cta_label": "Start the demo"
   },
   "core_mechanic": [
     {
@@ -185,9 +185,39 @@
     "show_cta_note": true,
     "show_headline": true,
     "show_body": true,
-    "media_type": "image",
-    "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg",
-    "media_alt": "Crew reviewing a completed job photo together on site"
+    "show_badge": true,
+    "media_type": "phone_mockup",
+    "phone_mockup_style": "app_shell",
+    "media_position": "right",
+    "media_alt": "JobCapturePro app turning a completed job into published proof"
+  },
+  "authority": {
+    "eyebrow": "Built by LeadsForward",
+    "headline": "A decade growing contractors. Then we built the missing piece.",
+    "body": "LeadsForward has spent 10 years helping home-service companies fill their calendars. Across that work we generated 250,000+ leads that helped contractors book $150 million in revenue — and we kept seeing the same gap: finished jobs that never became marketing. JobCapturePro is how we closed it.",
+    "stats": [
+      {
+        "value": "10",
+        "label": "years",
+        "detail": "Helping contractors grow"
+      },
+      {
+        "value": "250k+",
+        "label": "leads",
+        "detail": "Generated for contractor clients"
+      },
+      {
+        "value": "$150M+",
+        "label": "revenue",
+        "detail": "Booked from those leads"
+      }
+    ],
+    "cta_primary": {
+      "label": "See JobCapturePro On My Business",
+      "url": "/demo/"
+    },
+    "cta_note": "Free · No credit card · About 2 minutes",
+    "section_id": "built-by-leadsforward"
   },
   "testimonials": {
     "eyebrow": "From real operators",

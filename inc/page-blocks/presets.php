@@ -137,6 +137,7 @@ function jcp_page_presets(): array {
 				'benefits',
 				'how_it_works',
 				'demo_preview',
+				'authority',
 				'testimonials',
 				'faq',
 				'final_cta',

@@ -3498,12 +3498,168 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   width: 100%;
 }
 
-.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .jcp-media-frame img,
-.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] img {
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .jcp-media-variant--image .jcp-media-frame img,
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .jcp-media-variant--image img {
   border-radius: 0.85rem;
   object-fit: cover;
   width: 100%;
   max-height: 420px;
+}
+
+/* Built by LeadsForward — authority band */
+.jcp-block-authority {
+  padding-block: clamp(2.5rem, 5vw, 4rem);
+}
+
+.jcp-authority-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  gap: clamp(1.75rem, 4vw, 3rem);
+  align-items: center;
+  padding: clamp(1.75rem, 4vw, 2.75rem);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(255, 80, 54, 0.14), transparent 55%),
+    linear-gradient(145deg, #111827 0%, #1f2937 55%, #0f172a 100%);
+  color: #f8fafc;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+  position: relative;
+}
+
+.jcp-authority-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.035'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.jcp-authority-copy,
+.jcp-authority-stats {
+  position: relative;
+  z-index: 1;
+}
+
+.jcp-authority-eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ffb4a6;
+}
+
+.jcp-authority-headline {
+  margin: 0 0 1rem;
+  font-size: clamp(1.5rem, 2.6vw, 2.15rem);
+  line-height: 1.15;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.jcp-authority-body {
+  margin: 0;
+  font-size: clamp(0.98rem, 1.4vw, 1.1rem);
+  line-height: 1.55;
+  color: rgba(248, 250, 252, 0.82);
+  max-width: 38rem;
+}
+
+.jcp-authority-cta {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.jcp-authority-cta .btn-primary {
+  background: #ff5036;
+  border-color: #ff5036;
+  color: #fff;
+  box-shadow: 0 10px 28px rgba(255, 80, 54, 0.35);
+}
+
+.jcp-authority-cta .btn-primary:hover,
+.jcp-authority-cta .btn-primary:focus-visible {
+  background: #e63e28;
+  border-color: #e63e28;
+  color: #fff;
+}
+
+.jcp-authority-cta-note {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: rgba(248, 250, 252, 0.62);
+}
+
+.jcp-authority-stats {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.jcp-authority-stat {
+  padding: 1rem 1.15rem;
+  border-radius: 0.9rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(6px);
+}
+
+.jcp-authority-stat-value {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.5rem;
+  font-size: clamp(1.65rem, 3vw, 2.1rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+.jcp-authority-stat-label {
+  font-size: 1rem;
+  font-weight: 650;
+  color: #ffb4a6;
+  letter-spacing: 0;
+}
+
+.jcp-authority-stat-detail {
+  margin: 0.45rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.35;
+  color: rgba(248, 250, 252, 0.68);
+}
+
+@media (max-width: 860px) {
+  .jcp-authority-panel {
+    grid-template-columns: 1fr;
+    gap: 1.35rem;
+  }
+
+  .jcp-authority-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .jcp-authority-cta {
+    width: 100%;
+  }
+
+  .jcp-authority-cta .btn-primary {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (min-width: 561px) and (max-width: 860px) {
+  .jcp-authority-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 /* Faces strip under testimonials header */

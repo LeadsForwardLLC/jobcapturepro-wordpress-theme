@@ -1478,6 +1478,92 @@ function jcp_testimonials_render_stars( int $rating, bool $show_stars ): void {
 }
 
 /**
+ * Authority / credibility band (e.g. Built by LeadsForward).
+ *
+ * @param array<string, mixed> $props     Block props.
+ * @param string               $niche_key Page key for CTA URLs.
+ */
+function jcp_niche_render_authority( array $props, string $niche_key = '' ): void {
+	$headline = trim( (string) ( $props['headline'] ?? '' ) );
+	if ( $headline === '' ) {
+		return;
+	}
+
+	$section_id  = ! empty( $props['section_id'] ) ? (string) $props['section_id'] : 'built-by-leadsforward';
+	$eyebrow    = trim( (string) ( $props['eyebrow'] ?? '' ) );
+	$body        = trim( (string) ( $props['body'] ?? '' ) );
+	$cta_note    = trim( (string) ( $props['cta_note'] ?? '' ) );
+	$primary     = jcp_niche_resolve_cta( $props['cta_primary'] ?? [], $niche_key );
+	$show_eyebrow = ! array_key_exists( 'show_eyebrow', $props ) || ! empty( $props['show_eyebrow'] );
+	$show_body    = ! array_key_exists( 'show_body', $props ) || ! empty( $props['show_body'] );
+	$show_stats   = ! array_key_exists( 'show_stats', $props ) || ! empty( $props['show_stats'] );
+	$show_cta     = ! array_key_exists( 'show_cta', $props ) || ! empty( $props['show_cta'] );
+	$stats        = [];
+	foreach ( (array) ( $props['stats'] ?? [] ) as $row ) {
+		if ( ! is_array( $row ) ) {
+			continue;
+		}
+		$value = trim( (string) ( $row['value'] ?? '' ) );
+		$label = trim( (string) ( $row['label'] ?? '' ) );
+		if ( $value === '' && $label === '' ) {
+			continue;
+		}
+		$stats[] = [
+			'value'  => $value,
+			'label'  => $label,
+			'detail' => trim( (string) ( $row['detail'] ?? '' ) ),
+		];
+	}
+	?>
+	<section class="jcp-section jcp-block-authority" id="<?php echo esc_attr( $section_id ); ?>">
+		<div class="jcp-container">
+			<div class="jcp-authority-panel">
+				<div class="jcp-authority-copy">
+					<?php if ( $show_eyebrow && $eyebrow !== '' ) : ?>
+						<p class="jcp-authority-eyebrow"<?php jcp_niche_editable_attr( 'authority.eyebrow' ); ?>><?php echo esc_html( $eyebrow ); ?></p>
+					<?php endif; ?>
+					<h2 class="jcp-authority-headline"<?php jcp_niche_editable_attr( 'authority.headline' ); ?>><?php echo esc_html( $headline ); ?></h2>
+					<?php if ( $show_body && $body !== '' ) : ?>
+						<p class="jcp-authority-body"<?php jcp_niche_editable_attr( 'authority.body' ); ?>><?php echo esc_html( $body ); ?></p>
+					<?php endif; ?>
+					<?php if ( $show_cta && $primary['label'] !== '' ) : ?>
+						<div class="jcp-authority-cta">
+							<a
+								href="<?php echo esc_url( $primary['url'] ); ?>"
+								class="btn btn-primary"
+								<?php jcp_niche_editable_link_paths( 'authority.cta_primary.label', 'authority.cta_primary.url' ); ?>
+								<?php jcp_niche_cta_tracking_attr( $primary['url'], 'authority_cta', $primary['label'] ); ?>
+							><?php echo esc_html( $primary['label'] ); ?></a>
+							<?php if ( $cta_note !== '' ) : ?>
+								<p class="jcp-authority-cta-note"<?php jcp_niche_editable_attr( 'authority.cta_note' ); ?>><?php echo esc_html( $cta_note ); ?></p>
+							<?php endif; ?>
+						</div>
+					<?php endif; ?>
+				</div>
+				<?php if ( $show_stats && $stats !== [] ) : ?>
+					<div class="jcp-authority-stats"<?php jcp_niche_array_attr( 'authority.stats' ); ?>>
+						<?php foreach ( $stats as $i => $stat ) : ?>
+							<div class="jcp-authority-stat">
+								<div class="jcp-authority-stat-value">
+									<span<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.value' ); ?>><?php echo esc_html( $stat['value'] ); ?></span>
+									<?php if ( $stat['label'] !== '' ) : ?>
+										<span class="jcp-authority-stat-label"<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.label' ); ?>><?php echo esc_html( $stat['label'] ); ?></span>
+									<?php endif; ?>
+								</div>
+								<?php if ( $stat['detail'] !== '' ) : ?>
+									<p class="jcp-authority-stat-detail"<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.detail' ); ?>><?php echo esc_html( $stat['detail'] ); ?></p>
+								<?php endif; ?>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				<?php endif; ?>
+			</div>
+		</div>
+	</section>
+	<?php
+}
+
+/**
  * Testimonials block — featured quote + secondary review strip.
  *
  * @param array<string, mixed> $props Block props.

@@ -55,9 +55,14 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 		}
 		if ( $type === 'demo_preview' ) {
 			$props = is_array( $block['props'] ?? null ) ? $block['props'] : [];
-			if ( empty( $props['media_type'] ) ) {
-				$props['media_type'] = 'phone_mockup';
-			}
+			// Campaign landers always show the animated app mockup on the right.
+			$props['media_type']         = 'phone_mockup';
+			$props['phone_mockup_style'] = ! empty( $props['phone_mockup_style'] )
+				? (string) $props['phone_mockup_style']
+				: 'app_shell';
+			$props['media_position']     = ! empty( $props['media_position'] )
+				? (string) $props['media_position']
+				: 'right';
 			$doc['blocks'][ $i ]['props'] = $props;
 		}
 		if ( $type === 'how_it_works' ) {
