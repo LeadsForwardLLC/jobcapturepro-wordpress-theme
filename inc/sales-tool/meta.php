@@ -364,11 +364,11 @@ function jcp_sales_tool_render_meta_box( WP_Post $post ): void {
 		</div>
 		<div>
 			<label for="jcp_st_cta_label"><?php esc_html_e( 'Primary CTA label override', 'jcp-core' ); ?></label>
-			<input type="text" name="jcp_st[cta_label]" id="jcp_st_cta_label" value="<?php echo esc_attr( $s['cta_label'] ); ?>" placeholder="<?php esc_attr_e( 'Defaults to Start free 14-day trial', 'jcp-core' ); ?>" />
+			<input type="text" name="jcp_st[cta_label]" id="jcp_st_cta_label" value="<?php echo esc_attr( $s['cta_label'] ); ?>" placeholder="<?php esc_attr_e( 'Defaults to Start for free', 'jcp-core' ); ?>" />
 		</div>
 		<div class="wide">
 			<label for="jcp_st_cta_url"><?php esc_html_e( 'Primary CTA URL override', 'jcp-core' ); ?></label>
-			<input type="url" name="jcp_st[cta_url]" id="jcp_st_cta_url" value="<?php echo esc_attr( $s['cta_url'] ); ?>" placeholder="<?php esc_attr_e( 'Defaults to onboarding trial URL', 'jcp-core' ); ?>" />
+			<input type="url" name="jcp_st[cta_url]" id="jcp_st_cta_url" value="<?php echo esc_attr( $s['cta_url'] ); ?>" placeholder="<?php esc_attr_e( 'Defaults to onboarding signup URL', 'jcp-core' ); ?>" />
 		</div>
 		<div>
 			<label for="jcp_st_sec_label"><?php esc_html_e( 'Secondary CTA label', 'jcp-core' ); ?></label>

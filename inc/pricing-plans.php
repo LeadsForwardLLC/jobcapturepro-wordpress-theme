@@ -190,7 +190,7 @@ function jcp_pricing_trial_cta( string $utm_content = 'sales_tool' ): array {
 		: home_url( '/' );
 
 	return [
-		'label' => __( 'Start free 14-day trial', 'jcp-core' ),
+		'label' => __( 'Start for free', 'jcp-core' ),
 		'url'   => $url,
 		'note'  => __( 'No credit card required', 'jcp-core' ),
 	];

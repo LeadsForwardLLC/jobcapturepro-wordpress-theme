@@ -16,9 +16,9 @@
   "hero": {
     "h1": "Turn emergency calls and plumbing repairs into more booked jobs",
     "subheadline": "Most plumbing companies stay busy but still struggle to stay visible online. JobCapturePro is plumber marketing automation software that turns real service calls, repairs, and completed jobs into proof homeowners can see before they call.",
-    "cta_primary": { "label": "Start free 14-day trial", "url": "" },
+    "cta_primary": { "label": "Start for free", "url": "" },
     "cta_secondary": { "label": "See how it works", "url": "#how-it-works" },
-    "trust_line": "No credit card · Free 14-day trial · Setup in under 10 minutes"
+    "trust_line": "No credit card · Start for free · Setup in under 10 minutes"
   },
   "what_it_is": {
     "headline": "Built for plumbing companies that are too busy to keep up with marketing",
@@ -226,7 +226,7 @@
   "final_cta": {
     "headline": "Every plumbing job should help bring in the next one",
     "subheadline": "Turn completed service calls and repairs into visible proof that keeps bringing in more homeowners",
-    "cta_primary": { "label": "Start free 14-day trial", "url": "" },
+    "cta_primary": { "label": "Start for free", "url": "" },
     "cta_note": "No credit card required",
     "cta_secondary": { "label": "See how it works", "url": "/demo" }
   }

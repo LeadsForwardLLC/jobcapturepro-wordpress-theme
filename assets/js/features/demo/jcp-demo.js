@@ -588,7 +588,7 @@ const demoGuideContent = {
   step6Dock: {
     pill: 'Final step',
     title: 'Ready to get started?',
-    body: 'Start a free 14-day trial — or apply for a one-on-one personalized demo if you want a walkthrough with our team.',
+    body: 'Start for free — or apply for a one-on-one personalized demo if you want a walkthrough with our team.',
     interactHint: ''
   }
 };
@@ -3466,7 +3466,7 @@ async function sendReviewRequest() {
   // Update top CTA
   const headerCta = document.getElementById('btnNext');
   if (headerCta) {
-    headerCta.textContent = 'Start free trial →';
+    headerCta.textContent = 'Start free →';
     headerCta.onclick = () => {
       window.location.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_header_complete'));
     };
@@ -4248,12 +4248,12 @@ function wirePostDemoPanel() {
   if (primaryCta) {
     primaryCta.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
     primaryCta.addEventListener('click', function() {
-      jcpDemoTrack('cta_clicked', null, { cta: 'start_free_trial', source: 'demo_post_panel', label: 'Start free 14-day trial' }, { keepalive: true });
+      jcpDemoTrack('cta_clicked', null, { cta: 'start_free_trial', source: 'demo_post_panel', label: 'Start for free' }, { keepalive: true });
       jcpDemoTrack('demo_converted', null, { cta: 'start_free_trial', source: 'demo_post_panel' }, { keepalive: true });
-      // Matomo: Post Demo CTA Click (trial), once per session
+      // Matomo: Post Demo CTA Click (Start free), once per session
       try {
         if (typeof _paq !== 'undefined' && !sessionStorage.getItem('jcp_matomo_demo_cta_early_access')) {
-          _paq.push(['trackEvent', 'Demo', 'Post Demo CTA Click (Start Free Trial)']);
+          _paq.push(['trackEvent', 'Demo', 'Post Demo CTA Click (Start Free)']);
           sessionStorage.setItem('jcp_matomo_demo_cta_early_access', '1');
         }
       } catch (e) {}

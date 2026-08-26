@@ -98,7 +98,7 @@ function jcp_sales_tool_integration_callouts( array $software ): array {
 function jcp_sales_tool_build_config( int $post_id = 0 ): array {
 	$settings = $post_id > 0 ? jcp_sales_tool_get_settings( $post_id ) : jcp_sales_tool_defaults();
 	$trial    = function_exists( 'jcp_pricing_trial_cta' ) ? jcp_pricing_trial_cta( 'sales_tool' ) : [
-		'label' => 'Start free 14-day trial',
+		'label' => 'Start for free',
 		'url'   => home_url( '/' ),
 		'note'  => 'No credit card required',
 	];

@@ -307,7 +307,7 @@ function jcp_page_default_block_props( string $type ): array {
 			'show_subheadline'    => true,
 			'cta_primary'         => [ 'label' => __( 'View the live demo', 'jcp-core' ), 'url' => '/demo' ],
 			'cta_secondary'       => [ 'label' => __( 'See how it works', 'jcp-core' ), 'url' => '#how-it-works' ],
-			'trust_line'          => __( 'No credit card · Free 14-day trial · Setup in under 10 minutes', 'jcp-core' ),
+			'trust_line'          => __( 'No credit card · Start for free · Setup in under 10 minutes', 'jcp-core' ),
 			'show_cta_primary'    => true,
 			'show_cta_secondary'  => true,
 			'show_trust_line'     => true,
@@ -445,7 +445,7 @@ function jcp_page_default_block_props( string $type ): array {
 		'final_cta' => [
 			'headline'         => __( 'Ready to get started?', 'jcp-core' ),
 			'subheadline'      => '',
-			'cta_primary'      => [ 'label' => __( 'Start free 14-day trial', 'jcp-core' ), 'url' => '' ],
+			'cta_primary'      => [ 'label' => __( 'Start for free', 'jcp-core' ), 'url' => '' ],
 			'cta_secondary'    => [ 'label' => __( 'See how it works', 'jcp-core' ), 'url' => '/demo' ],
 			'cta_note'         => __( 'No credit card required', 'jcp-core' ),
 			'show_subheadline' => true,
@@ -467,7 +467,7 @@ function jcp_page_default_block_props( string $type ): array {
 			'show_subheadline' => false,
 		],
 		'cta_band' => [
-			'cta_primary' => [ 'label' => __( 'Start free 14-day trial', 'jcp-core' ), 'url' => '' ],
+			'cta_primary' => [ 'label' => __( 'Start for free', 'jcp-core' ), 'url' => '' ],
 			'band_key'    => 'cta_band_1',
 		],
 		'proof_flow' => [

@@ -22,10 +22,10 @@ function jcp_global_settings_defaults(): array {
 		'banner'  => [
 			'enabled'     => true,
 			'visibility'  => 'marketing',
-			'headline'    => 'Free trial:',
-			'text'        => 'Start a free 14-day trial — no credit card required.',
+			'headline'    => 'Start free:',
+			'text'        => 'Start for free — no credit card required.',
 			'code'        => '',
-			'cta_label'   => 'Start free trial',
+			'cta_label'   => 'Start free',
 			'cta_url'     => '',
 			'coupon'      => '',
 			'utm_content' => 'sitewide_banner',
@@ -36,7 +36,7 @@ function jcp_global_settings_defaults(): array {
 			'step'       => '1',
 		],
 		'nav_cta' => [
-			'primary_label'   => 'Start free trial',
+			'primary_label'   => 'Start free',
 			'primary_url'     => '',
 			'secondary_label' => 'Login',
 			'secondary_url'   => '',
@@ -309,9 +309,9 @@ function jcp_global_settings_scrub_legacy_promo_copy( array $settings ): array {
 	$is_founding_copy       = (bool) preg_match( '/founding\s+crew/i', $headline . ' ' . $text );
 
 	if ( $is_early_bird_headline || $is_founding_copy ) {
-		$banner['headline'] = (string) ( $defaults['headline'] ?? 'Free trial:' );
+		$banner['headline'] = (string) ( $defaults['headline'] ?? 'Start free:' );
 		$banner['text']     = (string) ( $defaults['text'] ?? '' );
-		$banner['cta_label'] = (string) ( $defaults['cta_label'] ?? 'Start free trial' );
+		$banner['cta_label'] = (string) ( $defaults['cta_label'] ?? 'Start free' );
 	}
 	if ( $is_early_bird_code ) {
 		$banner['code'] = '';
@@ -320,8 +320,57 @@ function jcp_global_settings_scrub_legacy_promo_copy( array $settings ): array {
 		$banner['coupon'] = '';
 	}
 
-	$settings['banner'] = $banner;
+	// Migrate stored “trial” CTA / banner copy → Start free / Start for free.
+	$banner['headline']  = jcp_global_rewrite_trial_label( (string) ( $banner['headline'] ?? '' ), 'headline' );
+	$banner['text']      = jcp_global_rewrite_trial_label( (string) ( $banner['text'] ?? '' ), 'prose' );
+	$banner['cta_label'] = jcp_global_rewrite_trial_label( (string) ( $banner['cta_label'] ?? '' ), 'button' );
+
+	$nav = is_array( $settings['nav_cta'] ?? null ) ? $settings['nav_cta'] : [];
+	if ( isset( $nav['primary_label'] ) ) {
+		$nav['primary_label'] = jcp_global_rewrite_trial_label( (string) $nav['primary_label'], 'button' );
+	}
+	$settings['nav_cta'] = $nav;
+	$settings['banner']  = $banner;
 	return $settings;
+}
+
+/**
+ * Rewrite legacy trial CTA wording without inventing a new product offer.
+ *
+ * @param string $text Raw label or sentence.
+ * @param string $kind button|headline|prose.
+ */
+function jcp_global_rewrite_trial_label( string $text, string $kind = 'button' ): string {
+	$trimmed = trim( $text );
+	if ( $trimmed === '' || stripos( $trimmed, 'trial' ) === false ) {
+		return $text;
+	}
+
+	if ( $kind === 'button' ) {
+		if ( preg_match( '/^start\s+free(\s+14[-\s]?day)?\s+trial$/i', $trimmed ) ) {
+			return 'Start free';
+		}
+		if ( preg_match( '/^start\s+a\s+free(\s+14[-\s]?day)?\s+trial$/i', $trimmed ) ) {
+			return 'Start for free';
+		}
+	}
+
+	if ( $kind === 'headline' && preg_match( '/^free\s+trial:?$/i', $trimmed ) ) {
+		return 'Start free:';
+	}
+
+	$out = $text;
+	$out = preg_replace( '/\bStart a free 14[-\s]?day trial\b/i', 'Start for free', $out ) ?? $out;
+	$out = preg_replace( '/\bstart a free 14[-\s]?day trial\b/i', 'start for free', $out ) ?? $out;
+	$out = preg_replace( '/\bStart free 14[-\s]?day trial\b/i', 'Start for free', $out ) ?? $out;
+	$out = preg_replace( '/\bStart free trial\b/i', 'Start free', $out ) ?? $out;
+	$out = preg_replace( '/\bfree 14[-\s]?day trial\b/i', 'start for free', $out ) ?? $out;
+	$out = preg_replace( '/\bFree 14[-\s]?day trial\b/i', 'Start for free', $out ) ?? $out;
+	$out = preg_replace( '/\bthe free trial\b/i', 'starting for free', $out ) ?? $out;
+	$out = preg_replace( '/\ba free trial\b/i', 'start for free', $out ) ?? $out;
+	$out = preg_replace( '/\bFree trial:?\b/i', 'Start free:', $out ) ?? $out;
+	$out = preg_replace( '/\bfree trial\b/i', 'start for free', $out ) ?? $out;
+	return $out;
 }
 
 /**
@@ -446,7 +495,7 @@ function jcp_global_resolve_cta( string $label, string $url, string $utm_content
  */
 function jcp_global_resolve_nav_ctas( ?int $post_id = null ): array {
 	$global = jcp_global_settings()['nav_cta'] ?? [];
-	$primary_label   = (string) ( $global['primary_label'] ?? 'Start free trial' );
+	$primary_label   = (string) ( $global['primary_label'] ?? 'Start free' );
 	$primary_url     = (string) ( $global['primary_url'] ?? '' );
 	$secondary_label = (string) ( $global['secondary_label'] ?? 'Login' );
 	$secondary_url   = (string) ( $global['secondary_url'] ?? '' );
@@ -480,10 +529,11 @@ function jcp_global_resolve_nav_ctas( ?int $post_id = null ): array {
 		$secondary_url   = '';
 	}
 
-	// Migrate legacy Get Started primary CTA → Start free trial.
+	// Migrate legacy Get Started primary CTA → Start free.
 	if ( preg_match( '/^get\s*started$/i', trim( $primary_label ) ) ) {
-		$primary_label = 'Start free trial';
+		$primary_label = 'Start free';
 	}
+	$primary_label = jcp_global_rewrite_trial_label( $primary_label, 'button' );
 
 	return [
 		'primary'   => jcp_global_resolve_cta( $primary_label, $primary_url, 'nav_get_started' ),

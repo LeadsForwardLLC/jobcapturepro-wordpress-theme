@@ -663,7 +663,7 @@ function updateDots(index) {
 /* =========================================================
    DYNAMIC NAVIGATION
    Directory uses the same global nav CTAs as all other pages
-   (secondary = Online Demo, primary = Start free trial from Theme Settings).
+   (secondary = Online Demo, primary = Start free from Theme Settings).
 ========================================================= */
 
 function initDynamicNavigation() {

@@ -68,7 +68,7 @@
     problem: { label: 'Fix this with JobCapturePro', url: '/demo' },
     benefits: { label: 'See it in the demo', url: '/demo' },
     differentiation: { label: 'Get started', url: '/demo' },
-    who_its_for: { label: 'Start free 14-day trial', url: '/demo' },
+    who_its_for: { label: 'Start for free', url: '/demo' },
     faq: { label: 'Still have questions? Book a demo', url: '/demo' },
   };
 
@@ -295,10 +295,10 @@
     differentiation: { headline: 'Section headline', body: '', bullets: [] },
     who_its_for: { headline: "Who it's for", audiences: [] },
     faq: { headline: 'Frequently asked questions', items: [] },
-    final_cta: { headline: 'Ready to get started?', subheadline: '', cta_primary: { label: 'Start free 14-day trial', url: '' }, cta_secondary: { label: 'See how it works', url: '/demo' } },
+    final_cta: { headline: 'Ready to get started?', subheadline: '', cta_primary: { label: 'Start for free', url: '' }, cta_secondary: { label: 'See how it works', url: '/demo' } },
     form_embed: { headline: 'Apply for a spot', subheadline: '', shortcode: '', display: 'inline', show_headline: true, show_subheadline: true },
     code_embed: { headline: 'Book a time', subheadline: '', embed_code: '', show_headline: true, show_subheadline: false },
-    cta_band: { cta_primary: { label: 'Start free 14-day trial', url: '' }, band_key: 'cta_band_1' },
+    cta_band: { cta_primary: { label: 'Start for free', url: '' }, band_key: 'cta_band_1' },
     breadcrumb: {},
     core_mechanic: [
       { value: '1', label: 'photo', detail: 'Proof created instantly' },
@@ -436,7 +436,7 @@
     <div class="jcp-editor-modal__panel jcp-niche-link-popover" role="dialog" aria-labelledby="jcpCtaLinkModalTitle">
       <strong id="jcpCtaLinkModalTitle">Edit button</strong>
       <label for="jcpNicheLinkLabel">Button text</label>
-      <input type="text" id="jcpNicheLinkLabel" placeholder="Start free 14-day trial" />
+      <input type="text" id="jcpNicheLinkLabel" placeholder="Start for free" />
       <label for="jcpNicheLinkUrl">URL</label>
       <input type="text" id="jcpNicheLinkUrl" placeholder="/demo or https://..." />
       <div class="jcp-niche-link-popover-actions">

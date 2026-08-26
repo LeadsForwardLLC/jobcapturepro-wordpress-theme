@@ -47,7 +47,7 @@ $body_classes = ( $hide_site_chrome ? 'jcp-landing-chrome-hidden' : 'jcp-global-
     <?php
     $banner      = function_exists( 'jcp_global_settings' ) ? ( jcp_global_settings()['banner'] ?? [] ) : [];
     $banner_url  = function_exists( 'jcp_global_banner_cta_url' ) ? jcp_global_banner_cta_url( $banner ) : home_url( '/pricing' );
-    $headline    = (string) ( $banner['headline'] ?? 'Free trial:' );
+    $headline    = (string) ( $banner['headline'] ?? 'Start free:' );
     $message     = (string) ( $banner['text'] ?? '' );
     $code        = trim( (string) ( $banner['code'] ?? '' ) );
     $cta_label   = (string) ( $banner['cta_label'] ?? 'Claim offer' );

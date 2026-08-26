@@ -149,8 +149,8 @@
     },
     {
       id: 'faq-pricing-trial',
-      question: 'Is there a free trial?',
-      answer: 'Yes. You can start a free 14-day trial with no credit card required. Explore the platform with your own jobs and cancel anytime before it converts.'
+      question: 'Can I start for free?',
+      answer: 'Yes. You can start for free with no credit card required. Explore the platform with your own jobs and cancel anytime.'
     },
     {
       id: 'faq-pricing-cancel',
@@ -212,7 +212,7 @@
           ${plan.features.map(renderFeature).join('')}
         </ul>
         <a class="btn ${plan.featured ? 'btn-primary' : 'btn-secondary'}" href="${escapeAttr(onboardingCtaHref)}">
-          ${hasPricing ? 'Start free 14-day trial' : 'Contact sales'}
+          ${hasPricing ? 'Start for free' : 'Contact sales'}
         </a>
         ${hasPricing ? '<p class="jcp-plan-cta-note">No credit card required</p>' : ''}
       </article>
@@ -229,15 +229,15 @@
       if (!text) return text;
       return text
         .replace(/Get early bird pricing and unlock the benefits of turning real work into reviews, visibility, and trust that drives inbound demand\./gi,
-          'Start a free 14-day trial and turn real work into reviews, visibility, and trust that drives inbound demand.')
-        .replace(/Get early bird pricing/gi, 'Start a free 14-day trial')
-        .replace(/early bird pricing/gi, 'free 14-day trial pricing')
-        .replace(/early bird/gi, 'free trial')
+          'Start for free and turn real work into reviews, visibility, and trust that drives inbound demand.')
+        .replace(/Get early bird pricing/gi, 'Start for free')
+        .replace(/early bird pricing/gi, 'start-for-free pricing')
+        .replace(/early bird/gi, 'start for free')
         .replace(/founding crew/gi, 'customers');
     };
     const pageSupporting = scrubRetiredPromo(pageSupportingRaw);
     const heroTitle = scrubRetiredPromo(pageTitle) || 'Choose the plan that matches your growth';
-    const heroSubtitle = pageSupporting || 'Each tier aligns to business maturity and visibility goals. Start a free 14-day trial and turn real work into reviews, visibility, and trust that drives inbound demand.';
+    const heroSubtitle = pageSupporting || 'Each tier aligns to business maturity and visibility goals. Start for free and turn real work into reviews, visibility, and trust that drives inbound demand.';
 
     // Load FAQ component if available
     const faqHTML = typeof window.renderFAQ === 'function' 
@@ -481,7 +481,7 @@
               </div>
             </div>
             <div class="jcp-actions jcp-compare-actions">
-              <a class="btn btn-primary" href="${escapeAttr(onboardingCtaHref)}">Start free 14-day trial</a>
+              <a class="btn btn-primary" href="${escapeAttr(onboardingCtaHref)}">Start for free</a>
               <a class="btn btn-secondary" href="/demo">See the Demo</a>
             </div>
           </div>
