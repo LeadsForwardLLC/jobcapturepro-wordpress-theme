@@ -159,6 +159,23 @@ function jcp_page_presets(): array {
 				'final_cta',
 			],
 		],
+		'home_v2' => [
+			'label'       => __( 'Homepage v2 (sales-deck preview)', 'jcp-core' ),
+			'page_kind'   => 'home',
+			'description' => __( 'Sales-deck spine — preview at /home-preview/ before cutover', 'jcp-core' ),
+			'block_types' => [
+				'hero',
+				'problem',
+				'benefits',
+				'demo_preview',
+				'local_falcon_proof',
+				'how_it_works',
+				'who_its_for',
+				'testimonials',
+				'faq',
+				'final_cta',
+			],
+		],
 	];
 }
 

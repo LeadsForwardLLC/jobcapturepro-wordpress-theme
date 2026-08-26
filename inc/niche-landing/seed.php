@@ -249,6 +249,98 @@ function jcp_niche_contractor_demo_exists(): bool {
 }
 
 /**
+ * Build home_v2 preview document from dummy-home_v2.json.
+ *
+ * @return array<string, mixed>
+ */
+function jcp_niche_home_preview_document(): array {
+	$legacy = jcp_page_load_preset( 'home_v2' );
+	if ( empty( $legacy ) ) {
+		return [];
+	}
+
+	$campaign_base = trailingslashit( get_template_directory_uri() ) . 'assets/campaign';
+	$home_v2_base  = trailingslashit( get_template_directory_uri() ) . 'assets/home-v2';
+	$encoded       = wp_json_encode( $legacy );
+	if ( is_string( $encoded ) && $encoded !== '' ) {
+		$encoded = str_replace(
+			[ '__CAMPAIGN_ASSET__', '__HOME_V2_ASSET__' ],
+			[ $campaign_base, $home_v2_base ],
+			$encoded
+		);
+		$decoded = json_decode( $encoded, true );
+		if ( is_array( $decoded ) ) {
+			$legacy = $decoded;
+		}
+	}
+
+	$doc = jcp_page_legacy_to_blocks( $legacy, 0 );
+	$doc['page_kind'] = 'home';
+	$doc['preset']    = 'home_v2';
+	if ( ! isset( $doc['settings'] ) || ! is_array( $doc['settings'] ) ) {
+		$doc['settings'] = [];
+	}
+	$doc['settings']['hide_breadcrumb'] = true;
+	$doc['settings']['hide_site_chrome'] = false;
+	$doc['settings']['home_preview']     = true;
+	$doc['settings']['noindex']          = true;
+	return $doc;
+}
+
+/**
+ * Create or refresh the homepage redesign preview at /home-preview/.
+ *
+ * @param bool $force_refresh When true, overwrite saved block content from the home_v2 preset.
+ * @return int Post ID or 0.
+ */
+function jcp_niche_seed_home_preview( bool $force_refresh = false ): int {
+	$existing = get_page_by_path( 'home-preview', OBJECT, 'page' );
+	$doc      = jcp_niche_home_preview_document();
+	if ( empty( $doc ) ) {
+		return 0;
+	}
+
+	if ( $existing instanceof WP_Post ) {
+		$id = (int) $existing->ID;
+		if ( get_page_template_slug( $id ) !== 'page-jcp-blocks.php' ) {
+			update_post_meta( $id, '_wp_page_template', 'page-jcp-blocks.php' );
+		}
+		$has_content = (string) get_post_meta( $id, jcp_page_content_meta_key(), true ) !== ''
+			|| (string) get_post_meta( $id, jcp_page_legacy_meta_key(), true ) !== '';
+		if ( $force_refresh || ! $has_content ) {
+			jcp_page_save_content( $id, $doc );
+		}
+		return $id;
+	}
+
+	$id = wp_insert_post(
+		[
+			'post_type'    => 'page',
+			'post_status'  => 'publish',
+			'post_name'    => 'home-preview',
+			'post_title'   => 'Home Preview — Sales Deck Homepage',
+			'post_excerpt' => 'Preview of the sales-deck homepage redesign. Not indexed.',
+		],
+		true
+	);
+	if ( is_wp_error( $id ) || ! $id ) {
+		return 0;
+	}
+	$id = (int) $id;
+	update_post_meta( $id, '_wp_page_template', 'page-jcp-blocks.php' );
+	jcp_page_save_content( $id, $doc );
+	return $id;
+}
+
+/**
+ * Whether the home preview page exists.
+ */
+function jcp_niche_home_preview_exists(): bool {
+	$page = get_page_by_path( 'home-preview', OBJECT, 'page' );
+	return $page instanceof WP_Post;
+}
+
+/**
  * Run seed after theme deploy; re-run if flag set but post was removed.
  */
 function jcp_niche_maybe_seed(): void {
@@ -271,13 +363,23 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v9 = CRO reorder: visual job-flow → early demo → LF authority; softer claims.
+	// v9 = CRO reorder for contractor-demo.
 	$demo_ver = (string) get_option( 'jcp_contractor_demo_seed_version', '' );
 	if ( $demo_ver !== '9' || ! jcp_niche_contractor_demo_exists() ) {
 		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '9' );
 		if ( $created > 0 ) {
 			update_option( 'jcp_contractor_demo_seed_version', '9' );
 			update_option( 'jcp_niche_contractor_demo_seeded', '1' );
+		}
+	}
+
+	// v1 = sales-deck homepage preview at /home-preview/.
+	$home_preview_ver = (string) get_option( 'jcp_home_preview_seed_version', '' );
+	if ( $home_preview_ver !== '1' || ! jcp_niche_home_preview_exists() ) {
+		$created = jcp_niche_seed_home_preview( $home_preview_ver !== '1' );
+		if ( $created > 0 ) {
+			update_option( 'jcp_home_preview_seed_version', '1' );
+			update_option( 'jcp_niche_home_preview_seeded', '1' );
 		}
 	}
 }
@@ -295,11 +397,14 @@ function jcp_niche_admin_seed_notice(): void {
 	jcp_niche_seed_hvac();
 	jcp_niche_seed_referral_program();
 	jcp_niche_seed_contractor_demo( true );
+	jcp_niche_seed_home_preview( true );
 	update_option( 'jcp_niche_plumbing_seeded', '1' );
 	update_option( 'jcp_niche_hvac_seeded', '1' );
 	update_option( 'jcp_niche_referral_seeded', '1' );
 	update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 	update_option( 'jcp_contractor_demo_seed_version', '9' );
+	update_option( 'jcp_niche_home_preview_seeded', '1' );
+	update_option( 'jcp_home_preview_seed_version', '1' );
 	wp_safe_redirect( admin_url( 'edit.php?post_type=jcp_niche_landing&jcp_seeded=1' ) );
 	exit;
 }

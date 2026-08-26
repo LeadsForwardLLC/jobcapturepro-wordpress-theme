@@ -219,9 +219,28 @@ function jcp_page_current_is_campaign_landing(): bool {
 
 /**
  * Paid campaign landings are Meta traffic destinations — keep them out of organic indexes.
+ * Home preview pages are also noindexed until cutover.
  */
 function jcp_page_campaign_noindex(): void {
-	if ( ! function_exists( 'jcp_page_current_is_campaign_landing' ) || ! jcp_page_current_is_campaign_landing() ) {
+	if ( is_admin() || ! is_singular() || ! function_exists( 'jcp_page_get_content' ) ) {
+		return;
+	}
+	$post_id = (int) get_queried_object_id();
+	if ( $post_id <= 0 ) {
+		return;
+	}
+	$content = jcp_page_get_content( $post_id );
+	$noindex = false;
+	if ( function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ) ) {
+		$noindex = true;
+	}
+	if ( ! empty( $content['settings']['noindex'] ) || ! empty( $content['settings']['home_preview'] ) ) {
+		$noindex = true;
+	}
+	if ( is_page( 'home-preview' ) ) {
+		$noindex = true;
+	}
+	if ( ! $noindex ) {
 		return;
 	}
 	echo '<meta name="robots" content="noindex, follow">' . "\n";

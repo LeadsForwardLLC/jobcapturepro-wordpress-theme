@@ -30,6 +30,9 @@ function jcp_page_render( int $post_id ): void {
 	if ( function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ) ) {
 		$main_class .= ' jcp-page-campaign jcp-home';
 	}
+	if ( ( $content['preset'] ?? '' ) === 'home_v2' || ! empty( $content['settings']['home_preview'] ) ) {
+		$main_class .= ' jcp-page-home_v2 jcp-home-preview';
+	}
 
 	echo '<main class="' . esc_attr( $main_class ) . '" data-niche="' . esc_attr( $page_key ) . '" data-page-kind="' . esc_attr( $page_kind ) . '">';
 
@@ -181,6 +184,11 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 			break;
 		case 'authority':
 			jcp_niche_render_authority( $props, $page_key );
+			break;
+		case 'local_falcon_proof':
+			if ( function_exists( 'jcp_niche_render_local_falcon_proof' ) ) {
+				jcp_niche_render_local_falcon_proof( $props, $page_key );
+			}
 			break;
 		case 'demo_preview':
 			jcp_niche_render_demo_preview( $props, $page_key );

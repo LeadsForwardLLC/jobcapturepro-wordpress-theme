@@ -200,6 +200,9 @@ function jcp_page_default_content( int $post_id ): array {
 	if ( $slug === 'contractor-demo' ) {
 		return jcp_page_load_preset( 'campaign' );
 	}
+	if ( $slug === 'home-preview' ) {
+		return jcp_page_load_preset( 'home_v2' );
+	}
 	if ( get_page_template_slug( $post_id ) === 'page-home.php' || (int) get_option( 'page_on_front' ) === $post_id ) {
 		return jcp_page_load_preset( 'home' );
 	}

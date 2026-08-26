@@ -145,6 +145,20 @@ function jcp_core_enqueue_assets(): void {
                 'after'
             );
         }
+
+        // Sales-deck homepage preview (/home-preview/).
+        $is_home_preview = is_page( 'home-preview' );
+        if ( ! $is_home_preview && is_singular( 'page' ) && function_exists( 'jcp_page_get_content' ) ) {
+            $preview_content = jcp_page_get_content( (int) get_queried_object_id() );
+            $is_home_preview = ( ( $preview_content['preset'] ?? '' ) === 'home_v2' )
+                || ! empty( $preview_content['settings']['home_preview'] );
+        }
+        if ( $is_home_preview ) {
+            jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-sections', 'jcp-core-hero-live-demo' ] );
+            jcp_core_enqueue_style( 'jcp-core-home-v2', 'css/pages/home-v2.css', [ 'jcp-core-home', 'jcp-core-niche-landing' ] );
+            jcp_core_enqueue_script( 'jcp-core-home-v2', 'js/pages/home-v2.js', [], false, true );
+            jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [] );
+        }
     }
 
     $editor_post_id = jcp_core_get_page_editor_post_id();
