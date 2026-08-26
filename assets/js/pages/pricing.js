@@ -47,6 +47,7 @@
         { text: 'On-site review requests', tooltip: 'After each job, your crew shows a QR code or sends a link so the customer can leave a review while the experience is fresh.' },
         { text: 'Team activity feed', tooltip: 'See check-ins and activity across your team in one place.' },
         { text: 'Advanced analytics', tooltip: 'Reporting across check-ins, reviews, and performance.' },
+        { text: 'Free verified listing on the JCP Directory', tooltip: 'Every plan includes a free verified listing on the JobCapturePro Directory so customers can find and trust your business.' },
         'Email support'
       ]
     },
@@ -423,7 +424,7 @@
 
               <!-- Visibility -->
               <div class="jcp-compare-row jcp-compare-group">
-                <div>Directory listings</div>
+                <div>Free verified JCP Directory listing</div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>

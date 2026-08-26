@@ -46,6 +46,10 @@ function jcp_pricing_plans(): array {
 					'text'    => 'Advanced analytics',
 					'tooltip' => 'Reporting across check-ins, reviews, and performance.',
 				],
+				[
+					'text'    => 'Free verified listing on the JCP Directory',
+					'tooltip' => 'Every plan includes a free verified listing on the JobCapturePro Directory so customers can find and trust your business.',
+				],
 				'Email support',
 			],
 			'includes'                 => [
@@ -54,6 +58,7 @@ function jcp_pricing_plans(): array {
 				'On-site QR review requests',
 				'Geotagged, local-SEO website publishing',
 				'Advanced analytics',
+				'Free verified JCP Directory listing',
 				'Admin dashboard access',
 			],
 		],
