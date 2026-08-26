@@ -250,6 +250,15 @@
     window.ff_scroll_top_offset = stickyOffset();
   }
 
+  function firstErrorLabel(error) {
+    if (!error || !error.querySelector) {
+      return '';
+    }
+    var label = error.querySelector('.ff-el-input--label label, label');
+    var text = (label && label.textContent) || '';
+    return String(text).replace(/\*/g, '').trim().slice(0, 80);
+  }
+
   function showValidationNotice(form, message) {
     if (!form) {
       return;
@@ -258,20 +267,32 @@
     if (!host) {
       return;
     }
-    var notice = host.querySelector('.jcp-ff-validation-notice');
+    var notice = document.querySelector('.jcp-ff-validation-notice') || host.querySelector('.jcp-ff-validation-notice');
     if (!notice) {
       notice = document.createElement('div');
       notice.className = 'jcp-ff-validation-notice';
       notice.setAttribute('role', 'alert');
       notice.setAttribute('aria-live', 'assertive');
-      host.insertBefore(notice, host.firstChild);
+      // Prefer fixed banner under the form-landing header so Step 5 users always see it.
+      var landingMain = document.getElementById('jcp-form-landing-main');
+      if (landingMain) {
+        landingMain.insertBefore(notice, landingMain.firstChild);
+      } else {
+        host.insertBefore(notice, host.firstChild);
+      }
     }
     notice.textContent = message || 'Please complete the highlighted required fields, then try again.';
     notice.classList.add('is-visible');
     window.clearTimeout(notice._jcpHide);
     notice._jcpHide = window.setTimeout(function () {
       notice.classList.remove('is-visible');
-    }, 8000);
+    }, 12000);
+    // Bring the banner into view immediately (users are often scrolled to Submit).
+    try {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      window.scrollTo(0, 0);
+    }
   }
 
   function scrollToFirstError(scope) {
@@ -293,8 +314,12 @@
       showValidationNotice(form);
       return;
     }
+    var label = firstErrorLabel(error);
+    var msg = label
+      ? ('Please complete: “' + label + '”, then try Submit again.')
+      : 'Please complete the highlighted required fields, then try again.';
     revealErrorStep(error, form).then(function (target) {
-      showValidationNotice(form);
+      showValidationNotice(form, msg);
       if (!target || typeof target.scrollIntoView !== 'function') {
         return;
       }
@@ -317,6 +342,69 @@
         window.scrollTo({ top: Math.max(0, y - stickyOffset()), behavior: 'smooth' });
       }, 50);
     });
+  }
+
+  /**
+   * Submit can look dead when Fluent validates a hidden earlier step and never
+   * scrolls. Watchdog + explicit click hook guarantee visible feedback.
+   */
+  function bindSubmitWatchdog() {
+    document.addEventListener(
+      'click',
+      function (event) {
+        var btn = event.target && event.target.closest
+          ? event.target.closest('button.ff-btn-submit, .ff-btn-submit')
+          : null;
+        if (!btn) {
+          return;
+        }
+        var form = btn.closest('form.frm-fluent-form') || (btn.form || null);
+        if (!form) {
+          return;
+        }
+        // Keep Submit associated with the form even if DOM moves.
+        if (form.id && !btn.getAttribute('form')) {
+          btn.setAttribute('form', form.id);
+        }
+        window.clearTimeout(bindSubmitWatchdog._timer);
+        bindSubmitWatchdog._armed = true;
+        bindSubmitWatchdog._timer = window.setTimeout(function () {
+          if (!bindSubmitWatchdog._armed) {
+            return;
+          }
+          bindSubmitWatchdog._armed = false;
+          if (!document.body.contains(form)) {
+            return;
+          }
+          // Still on the same page with no success message → surface errors.
+          if (document.querySelector('.ff-message-success, .ff_success_msg')) {
+            return;
+          }
+          scrollToFirstError(form);
+        }, 900);
+      },
+      true
+    );
+    if (!window.jQuery) {
+      return;
+    }
+    window.jQuery(document)
+      .off('fluentform_submission_success.jcpWatch')
+      .on('fluentform_submission_success.jcpWatch', function () {
+        bindSubmitWatchdog._armed = false;
+        window.clearTimeout(bindSubmitWatchdog._timer);
+      });
+    window.jQuery(document)
+      .off(
+        'fluentform_submission_failed.jcpWatch fluentform_submitted_failed.jcpWatch fluentform_validation_failed.jcpWatch'
+      )
+      .on(
+        'fluentform_submission_failed.jcpWatch fluentform_submitted_failed.jcpWatch fluentform_validation_failed.jcpWatch',
+        function () {
+          bindSubmitWatchdog._armed = false;
+          window.clearTimeout(bindSubmitWatchdog._timer);
+        }
+      );
   }
 
   function bindFluentHelpers() {
@@ -373,14 +461,17 @@
     document.addEventListener('DOMContentLoaded', function () {
       syncFluentScrollOffset();
       bindFluentHelpers();
+      bindSubmitWatchdog();
       normalizeStepSubmitDock(document);
     });
   } else {
     syncFluentScrollOffset();
     bindFluentHelpers();
+    bindSubmitWatchdog();
     normalizeStepSubmitDock(document);
   }
   window.setTimeout(bindFluentHelpers, 500);
+  window.setTimeout(bindSubmitWatchdog, 500);
   window.setTimeout(function () {
     normalizeStepSubmitDock(document);
   }, 500);

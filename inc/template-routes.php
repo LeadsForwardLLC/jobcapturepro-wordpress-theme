@@ -237,6 +237,33 @@ function jcp_core_redirect_retired_routes(): void {
 add_action( 'template_redirect', 'jcp_core_redirect_retired_routes', 1 );
 
 /**
+ * Common mistaken assessment URL → live form.
+ * /personalized-demo/assessment/form 404s; the form lives at /assessment/.
+ *
+ * @return void
+ */
+function jcp_core_redirect_assessment_form_alias(): void {
+	if ( is_admin() ) {
+		return;
+	}
+
+	$path = trim( (string) parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH ), '/' );
+	if ( $path !== 'personalized-demo/assessment/form' ) {
+		return;
+	}
+
+	$target = home_url( '/personalized-demo/assessment/' );
+	$query  = (string) parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_QUERY );
+	if ( $query !== '' ) {
+		$target = $target . ( str_contains( $target, '?' ) ? '&' : '?' ) . $query;
+	}
+
+	wp_safe_redirect( $target, 301 );
+	exit;
+}
+add_action( 'template_redirect', 'jcp_core_redirect_assessment_form_alias', 1 );
+
+/**
  * Keep /demo/?mode=run on the demo route (avoid canonical redirect to unrelated permalinks).
  *
  * @param string|false $redirect_url  Canonical redirect URL.

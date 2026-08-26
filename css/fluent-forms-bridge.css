@@ -648,7 +648,7 @@ body.jcp-fluent-modal-open {
   color: #b91c1c;
 }
 
-/* Sticky notice when Submit/Next fails — Fluent often hides errors on other steps */
+/* Validation banner — Fluent often fails on earlier/hidden steps with no scroll */
 .jcp-ff-validation-notice {
   display: none;
   position: sticky;
@@ -670,8 +670,15 @@ body.jcp-fluent-modal-open {
   display: block;
 }
 
-body.jcp-form-landing .jcp-ff-validation-notice {
-  top: 4.25rem; /* below sticky logo/close bar */
+/* Form landing: fixed under the logo bar so Step 5 Submit failures are obvious */
+body.jcp-form-landing .jcp-ff-validation-notice.is-visible {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  top: calc(4.25rem + env(safe-area-inset-top, 0px));
+  width: min(800px, calc(100% - 2rem));
+  margin: 0;
+  box-shadow: 0 12px 32px rgba(153, 27, 27, 0.18);
 }
 
 .jcp-fluent-bridge .ff-errors-in-stack.is-active,
