@@ -132,12 +132,12 @@ function jcp_page_presets(): array {
 			'block_types' => [
 				'hero',
 				'core_mechanic',
+				'authority',
 				'who_its_for',
 				'problem',
 				'benefits',
 				'how_it_works',
 				'demo_preview',
-				'authority',
 				'testimonials',
 				'faq',
 				'final_cta',
