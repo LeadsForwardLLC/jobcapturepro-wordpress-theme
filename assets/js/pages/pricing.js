@@ -42,7 +42,7 @@
       allows_additional_locations: false,
       extra_location_fee: null,
       features: [
-        { text: '1 location only — cannot add more', tooltip: 'Starter is locked to a single operating location. Upgrade to Scale or Enterprise to add locations.' },
+        { text: '1 location included', tooltip: 'Starter includes one operating location and cannot add more. Upgrade to Scale or Enterprise to add locations.' },
         { text: 'Unlimited check-in tracking', tooltip: 'Track unlimited jobs/check-ins for your included location.' },
         { text: 'On-site review requests', tooltip: 'After each job, your crew shows a QR code or sends a link so the customer can leave a review while the experience is fresh.' },
         { text: 'Team activity feed', tooltip: 'See check-ins and activity across your team in one place.' },
@@ -60,7 +60,6 @@
       extra_location_fee: 150,
       features: [
         'Everything in Starter',
-        '1 location included',
         { text: 'Add locations anytime (+$150/mo each)', tooltip: 'Add more operating locations under one account at $150/month each.' },
         { text: '1 Local Falcon keyword tracked', tooltip: 'Track one keyword in Local Falcon to see your Google Maps ranking and coverage radius.' },
         { text: 'CRM integration', tooltip: 'Connect systems like Housecall Pro, Jobber, ServiceTitan, and CompanyCam.' },
@@ -81,7 +80,6 @@
       extra_location_fee: 100,
       features: [
         'Everything in Scale',
-        '1 location included',
         { text: 'Add locations anytime (+$100/mo each)', tooltip: 'Add more operating locations under one account at $100/month each.' },
         { text: 'Custom integrations', tooltip: 'Custom API integrations and tailored workflows for complex stacks.' },
         { text: 'Dedicated account manager', tooltip: 'A single point of contact for rollout, strategy, and ongoing success.' },
