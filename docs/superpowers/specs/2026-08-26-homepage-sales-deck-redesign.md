@@ -14,7 +14,7 @@ The live homepage (`jobcapturepro.com`) is competent SaaS: clean, clear, low-ris
 
 - Voice is polite feature marketing, not the sales deck’s story.
 - Demo and Maps proof arrive too late (or not at all).
-- Local Falcon / SoLV Acculevel proof exists only in the sales tool.
+- Local Falcon / SoLV (Acculevel) proof exists only in the sales tool.
 - Benefit icon grids and early testimonials spend scroll without belief.
 - Social proof is thin (new company) — the page currently leans on quotes instead of product theater.
 - Nav still framed around “trial” language in places; CTAs should say **Start free** / **Start for free**.
