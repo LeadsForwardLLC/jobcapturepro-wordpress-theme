@@ -425,12 +425,12 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v2 = sales-deck homepage preview at /home-preview/ (split hero, funnel order).
+	// v3 = sales-deck homepage preview at /home-preview/ (skip home testimonials upgrade reorder).
 	$home_preview_ver = (string) get_option( 'jcp_home_preview_seed_version', '' );
-	if ( $home_preview_ver !== '2' || ! jcp_niche_home_preview_exists() ) {
-		$created = jcp_niche_seed_home_preview( $home_preview_ver !== '2' );
+	if ( $home_preview_ver !== '3' || ! jcp_niche_home_preview_exists() ) {
+		$created = jcp_niche_seed_home_preview( $home_preview_ver !== '3' );
 		if ( $created > 0 ) {
-			update_option( 'jcp_home_preview_seed_version', '2' );
+			update_option( 'jcp_home_preview_seed_version', '3' );
 			update_option( 'jcp_niche_home_preview_seeded', '1' );
 		}
 	}
@@ -456,7 +456,7 @@ function jcp_niche_admin_seed_notice(): void {
 	update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 	update_option( 'jcp_contractor_demo_seed_version', '9' );
 	update_option( 'jcp_niche_home_preview_seeded', '1' );
-	update_option( 'jcp_home_preview_seed_version', '2' );
+	update_option( 'jcp_home_preview_seed_version', '3' );
 	wp_safe_redirect( admin_url( 'edit.php?post_type=jcp_niche_landing&jcp_seeded=1' ) );
 	exit;
 }

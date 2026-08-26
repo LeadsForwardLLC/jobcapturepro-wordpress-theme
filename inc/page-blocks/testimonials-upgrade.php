@@ -80,6 +80,11 @@ function jcp_page_upgrade_home_testimonials( array $content, int $post_id ): arr
 		return $content;
 	}
 
+	// Sales-deck preview (home_v2) owns its own funnel order + hero stats.
+	if ( ( $content['preset'] ?? '' ) === 'home_v2' || ! empty( $content['settings']['home_preview'] ) ) {
+		return $content;
+	}
+
 	$blocks = $content['blocks'] ?? [];
 	if ( ! is_array( $blocks ) ) {
 		return $content;
