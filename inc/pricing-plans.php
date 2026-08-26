@@ -27,8 +27,8 @@ function jcp_pricing_plans(): array {
 			'extra_location_fee'       => null,
 			'features'                 => [
 				[
-					'text'    => '1 location only — cannot add more',
-					'tooltip' => 'Starter is locked to a single operating location. Upgrade to Scale or Enterprise to add locations.',
+					'text'    => '1 location included',
+					'tooltip' => 'Starter includes one operating location and cannot add more. Upgrade to Scale or Enterprise to add locations.',
 				],
 				[
 					'text'    => 'Unlimited check-in tracking',
@@ -49,7 +49,7 @@ function jcp_pricing_plans(): array {
 				'Email support',
 			],
 			'includes'                 => [
-				'1 location only (no add-ons)',
+				'1 location included (cannot add more)',
 				'Technician-first mobile check-ins',
 				'On-site QR review requests',
 				'Geotagged, local-SEO website publishing',
@@ -69,7 +69,6 @@ function jcp_pricing_plans(): array {
 			'extra_location_fee'       => 150,
 			'features'                 => [
 				'Everything in Starter',
-				'1 location included',
 				[
 					'text'    => 'Add locations anytime (+$150/mo each)',
 					'tooltip' => 'Add more operating locations under one account at $150/month each.',
@@ -91,7 +90,7 @@ function jcp_pricing_plans(): array {
 				],
 			],
 			'includes'                 => [
-				'1 location included · add more at $150/mo',
+				'Add locations at $150/mo each',
 				'1 Local Falcon keyword (Maps ranking + radius)',
 				'CRM integrations (Housecall Pro, Jobber, ServiceTitan, CompanyCam, and more)',
 				'Geotagged images + local-SEO website content',
@@ -110,7 +109,6 @@ function jcp_pricing_plans(): array {
 			'extra_location_fee'       => 100,
 			'features'                 => [
 				'Everything in Scale',
-				'1 location included',
 				[
 					'text'    => 'Add locations anytime (+$100/mo each)',
 					'tooltip' => 'Add more operating locations under one account at $100/month each.',
@@ -129,7 +127,7 @@ function jcp_pricing_plans(): array {
 				],
 			],
 			'includes'                 => [
-				'1 location included · add more at $100/mo',
+				'Add locations at $100/mo each',
 				'Custom integrations and API access',
 				'Geotagged local-SEO publish across markets',
 				'Organization-wide reporting',
