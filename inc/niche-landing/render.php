@@ -741,6 +741,7 @@ function jcp_niche_render_problem( array $c ): void {
 	if ( empty( $p['headline'] ) ) {
 		return;
 	}
+	$variant    = sanitize_key( (string) ( $p['variant'] ?? '' ) );
 	$show_icons = jcp_niche_show_field( $p, 'show_icons', true );
 	$vis_class  = jcp_niche_section_visibility_classes(
 		$p,
@@ -752,14 +753,47 @@ function jcp_niche_render_problem( array $c ): void {
 	);
 	$closing    = jcp_niche_field_visibility( $p, 'show_closing', true );
 	$close_text = trim( (string) ( $p['closing'] ?? '' ) );
+	$pain_points = (array) ( $p['pain_points'] ?? [] );
+	$without     = is_array( $p['contrast_without'] ?? null ) ? $p['contrast_without'] : [];
+	$with        = is_array( $p['contrast_with'] ?? null ) ? $p['contrast_with'] : [];
+	$is_contrast = $variant === 'contrast' || ( $pain_points === [] && ( ! empty( $without['steps'] ) || ! empty( $with['steps'] ) ) );
 	?>
-	<section class="jcp-section rankings-section jcp-niche-problem<?php echo esc_attr( $vis_class ); ?>">
+	<section class="jcp-section rankings-section jcp-niche-problem<?php echo $is_contrast ? ' jcp-niche-problem--contrast' : ''; ?><?php echo esc_attr( $vis_class ); ?>">
 		<div class="jcp-container">
 			<?php jcp_niche_render_section_header( $p, 'problem' ); ?>
+			<?php if ( $is_contrast ) : ?>
+				<div class="jcp-problem-contrast"<?php jcp_niche_array_attr( 'problem.contrast' ); ?>>
+					<?php
+					foreach (
+						[
+							[ 'key' => 'without', 'data' => $without, 'mod' => 'without' ],
+							[ 'key' => 'with', 'data' => $with, 'mod' => 'with' ],
+						] as $side
+					) :
+						$side_data = is_array( $side['data'] ) ? $side['data'] : [];
+						$label     = trim( (string) ( $side_data['label'] ?? '' ) );
+						$steps     = array_values( array_filter( array_map( 'strval', (array) ( $side_data['steps'] ?? [] ) ) ) );
+						if ( $label === '' && $steps === [] ) {
+							continue;
+						}
+						?>
+						<div class="jcp-problem-contrast__side jcp-problem-contrast__side--<?php echo esc_attr( (string) $side['mod'] ); ?>">
+							<?php if ( $label !== '' ) : ?>
+								<p class="jcp-problem-contrast__label"<?php jcp_niche_editable_attr( 'problem.contrast_' . $side['key'] . '.label' ); ?>><?php echo esc_html( $label ); ?></p>
+							<?php endif; ?>
+							<ol class="jcp-problem-contrast__steps">
+								<?php foreach ( $steps as $si => $step ) : ?>
+									<li<?php jcp_niche_editable_attr( 'problem.contrast_' . $side['key'] . '.steps.' . $si ); ?>><?php echo esc_html( $step ); ?></li>
+								<?php endforeach; ?>
+							</ol>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			<?php else : ?>
 			<div class="ranking-factors-grid"<?php jcp_niche_array_attr( 'problem.pain_points' ); ?>>
 				<?php
 				$pain_icons = [ 'image-off', 'clock', 'map-pin', 'users' ];
-				foreach ( (array) ( $p['pain_points'] ?? [] ) as $pi => $pain ) :
+				foreach ( $pain_points as $pi => $pain ) :
 					if ( ! is_array( $pain ) ) {
 						continue;
 					}
@@ -788,6 +822,7 @@ function jcp_niche_render_problem( array $c ): void {
 				endforeach;
 				?>
 			</div>
+			<?php endif; ?>
 			<?php
 			if ( $closing['render'] && $close_text !== '' ) {
 				jcp_niche_render_section_closing( $close_text, 'problem.closing', $closing['attr'] );
@@ -809,6 +844,8 @@ function jcp_niche_render_benefits( array $c ): void {
 	if ( $headline === '' && empty( $items ) ) {
 		return;
 	}
+	$variant    = sanitize_key( (string) ( $b['variant'] ?? '' ) );
+	$is_job_flow = $variant === 'job_flow';
 	$section_id = ! empty( $b['section_id'] ) ? (string) $b['section_id'] : '';
 	$vis_class  = jcp_niche_section_visibility_classes(
 		$b,
@@ -825,8 +862,9 @@ function jcp_niche_render_benefits( array $c ): void {
 	$closing    = jcp_niche_field_visibility( $b, 'show_closing', true );
 	$sub_text   = trim( (string) ( $b['subheadline'] ?? '' ) );
 	$close_text = trim( (string) ( $b['closing'] ?? '' ) );
+	$flow_mods  = [ 'capture', 'website', 'google', 'reviews', 'social' ];
 	?>
-	<section class="jcp-section rankings-section jcp-niche-benefits<?php echo esc_attr( $vis_class ); ?>"<?php echo $section_id !== '' ? ' id="' . esc_attr( $section_id ) . '"' : ''; ?>>
+	<section class="jcp-section rankings-section jcp-niche-benefits<?php echo $is_job_flow ? ' jcp-niche-benefits--job-flow' : ''; ?><?php echo esc_attr( $vis_class ); ?>"<?php echo $section_id !== '' ? ' id="' . esc_attr( $section_id ) . '"' : ''; ?>>
 		<div class="jcp-container">
 			<?php if ( $hl['render'] || ( $sub['render'] && $sub_text !== '' ) ) : ?>
 			<div class="rankings-header">
@@ -843,6 +881,62 @@ function jcp_niche_render_benefits( array $c ): void {
 				<?php endif; ?>
 			</div>
 			<?php endif; ?>
+			<?php if ( $is_job_flow ) : ?>
+			<div class="jcp-job-flow"<?php jcp_niche_array_attr( 'benefits.items' ); ?>>
+				<?php foreach ( $items as $bi => $item ) : ?>
+					<?php
+					if ( ! is_array( $item ) ) {
+						continue;
+					}
+					$img   = trim( (string) ( $item['image_url'] ?? '' ) );
+					$alt   = trim( (string) ( $item['image_alt'] ?? $item['title'] ?? '' ) );
+					$label = trim( (string) ( $item['label'] ?? '' ) );
+					$title = trim( (string) ( $item['title'] ?? '' ) );
+					$body  = trim( (string) ( $item['body'] ?? '' ) );
+					$mod   = sanitize_key( (string) ( $item['chrome'] ?? ( $flow_mods[ $bi ] ?? 'capture' ) ) );
+					?>
+					<article class="jcp-job-flow__step jcp-job-flow__step--<?php echo esc_attr( $mod ); ?>">
+						<div class="jcp-job-flow__media" aria-hidden="<?php echo $img === '' ? 'true' : 'false'; ?>">
+							<?php if ( $label !== '' ) : ?>
+								<span class="jcp-job-flow__badge"<?php jcp_niche_editable_attr( 'benefits.items.' . $bi . '.label' ); ?>><?php echo esc_html( $label ); ?></span>
+							<?php endif; ?>
+							<?php if ( $img !== '' ) : ?>
+								<img src="<?php echo esc_url( $img ); ?>" alt="<?php echo esc_attr( $alt ); ?>" width="480" height="360" loading="<?php echo $bi === 0 ? 'eager' : 'lazy'; ?>" decoding="async"<?php jcp_niche_editable_attr( 'benefits.items.' . $bi . '.image_url' ); ?> />
+							<?php endif; ?>
+							<?php if ( $mod === 'website' ) : ?>
+								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--browser" aria-hidden="true">
+									<span></span><span></span><span></span>
+									<em>yoursite.com/jobs</em>
+								</div>
+							<?php elseif ( $mod === 'google' ) : ?>
+								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--gbp" aria-hidden="true">
+									<strong>Google Business Profile</strong>
+									<span>Update ready · Today</span>
+								</div>
+							<?php elseif ( $mod === 'reviews' ) : ?>
+								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--qr" aria-hidden="true">
+									<span class="jcp-job-flow__qr"></span>
+									<em>Scan to review</em>
+								</div>
+							<?php elseif ( $mod === 'social' ) : ?>
+								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--social" aria-hidden="true">
+									<strong>Post ready</strong>
+									<span>Social · Directory</span>
+								</div>
+							<?php endif; ?>
+						</div>
+						<div class="jcp-job-flow__copy">
+							<?php if ( $title !== '' ) : ?>
+								<h3 class="jcp-job-flow__title"<?php jcp_niche_editable_attr( 'benefits.items.' . $bi . '.title' ); ?>><?php echo esc_html( $title ); ?></h3>
+							<?php endif; ?>
+							<?php if ( $body !== '' ) : ?>
+								<p class="jcp-job-flow__body"<?php jcp_niche_editable_attr( 'benefits.items.' . $bi . '.body' ); ?>><?php echo esc_html( $body ); ?></p>
+							<?php endif; ?>
+						</div>
+					</article>
+				<?php endforeach; ?>
+			</div>
+			<?php else : ?>
 			<div class="ranking-factors-grid"<?php jcp_niche_array_attr( 'benefits.items' ); ?>>
 				<?php
 				$benefit_icons = [ 'badge-check', 'map-pin', 'message-square', 'star', 'building-2', 'phone' ];
@@ -876,6 +970,7 @@ function jcp_niche_render_benefits( array $c ): void {
 				endforeach;
 				?>
 			</div>
+			<?php endif; ?>
 			<?php
 			if ( $closing['render'] && $close_text !== '' ) {
 				echo '<p class="rankings-supporting jcp-niche-section-closing"' . $closing['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped

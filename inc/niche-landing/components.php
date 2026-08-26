@@ -95,7 +95,7 @@ function jcp_component_hero_home_visual( string $demo_url = '', string $photo_ur
 			: [
 				[ 'title' => __( 'New job captured', 'jcp-core' ), 'subtitle' => __( 'Photo uploaded', 'jcp-core' ) ],
 				[ 'title' => __( 'AI check-in complete', 'jcp-core' ), 'subtitle' => __( 'Verified proof ready', 'jcp-core' ) ],
-				[ 'title' => __( 'Published everywhere', 'jcp-core' ), 'subtitle' => __( 'Google Maps • Website • Social', 'jcp-core' ) ],
+				[ 'title' => __( 'Ready to publish', 'jcp-core' ), 'subtitle' => __( 'Website · Google · Social', 'jcp-core' ) ],
 			];
 	}
 	$card_icons = [

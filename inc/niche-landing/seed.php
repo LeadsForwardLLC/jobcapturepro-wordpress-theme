@@ -271,12 +271,12 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v8 = hero CTA/meta polish + LeadsForward moved above the fold funnel.
+	// v9 = CRO reorder: visual job-flow → early demo → LF authority; softer claims.
 	$demo_ver = (string) get_option( 'jcp_contractor_demo_seed_version', '' );
-	if ( $demo_ver !== '8' || ! jcp_niche_contractor_demo_exists() ) {
-		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '8' );
+	if ( $demo_ver !== '9' || ! jcp_niche_contractor_demo_exists() ) {
+		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '9' );
 		if ( $created > 0 ) {
-			update_option( 'jcp_contractor_demo_seed_version', '8' );
+			update_option( 'jcp_contractor_demo_seed_version', '9' );
 			update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 		}
 	}
@@ -299,7 +299,7 @@ function jcp_niche_admin_seed_notice(): void {
 	update_option( 'jcp_niche_hvac_seeded', '1' );
 	update_option( 'jcp_niche_referral_seeded', '1' );
 	update_option( 'jcp_niche_contractor_demo_seeded', '1' );
-	update_option( 'jcp_contractor_demo_seed_version', '8' );
+	update_option( 'jcp_contractor_demo_seed_version', '9' );
 	wp_safe_redirect( admin_url( 'edit.php?post_type=jcp_niche_landing&jcp_seeded=1' ) );
 	exit;
 }
