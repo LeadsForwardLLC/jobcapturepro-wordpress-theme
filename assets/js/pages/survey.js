@@ -787,11 +787,28 @@
     }
   };
 
+  // GTM → Meta Lead: fires once when step 3 validates and they click Continue to demo.
+  const pushDemoOptInDataLayer = () => {
+    try {
+      if (sessionStorage.getItem('jcp_datalayer_demo_opt_in')) return;
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'demo_opt_in',
+        lead_type: 'demo',
+        source: 'demo_survey',
+      });
+      sessionStorage.setItem('jcp_datalayer_demo_opt_in', '1');
+    } catch (err) {
+      // no-op
+    }
+  };
+
   // Submit opt-in when user clicks "Continue to preview" — sends full form to first webhook (Create Contact + tag demo-opt-in).
   const submitDemoOptIn = async () => {
     const goals = Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || [])
       .map((input) => input.value);
     const restUrl = (typeof window.JCP_DEMO_SURVEY !== 'undefined' && window.JCP_DEMO_SURVEY.rest_url) || `${baseUrl}/wp-json/jcp/v1/demo-survey-submit`;
+    pushDemoOptInDataLayer();
     try {
       await Promise.race([
         fetch(restUrl, {
