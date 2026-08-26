@@ -284,6 +284,58 @@ function jcp_niche_home_preview_document(): array {
 	$doc['settings']['hide_site_chrome'] = false;
 	$doc['settings']['home_preview']     = true;
 	$doc['settings']['noindex']          = true;
+
+	// Sales-deck hero: never use the homepage rotating-word variant.
+	$preset_order = [];
+	$preset_def   = function_exists( 'jcp_page_get_preset' ) ? jcp_page_get_preset( 'home_v2' ) : null;
+	if ( is_array( $preset_def ) ) {
+		foreach ( (array) ( $preset_def['block_types'] ?? [] ) as $entry ) {
+			$parsed = function_exists( 'jcp_page_parse_preset_block_entry' )
+				? jcp_page_parse_preset_block_entry( $entry )
+				: [ 'type' => is_string( $entry ) ? $entry : '' ];
+			if ( ( $parsed['type'] ?? '' ) !== '' ) {
+				$preset_order[] = (string) $parsed['type'];
+			}
+		}
+	}
+
+	$blocks_in = is_array( $doc['blocks'] ?? null ) ? $doc['blocks'] : [];
+	$by_type   = [];
+	foreach ( $blocks_in as $block ) {
+		if ( ! is_array( $block ) ) {
+			continue;
+		}
+		$type = (string) ( $block['type'] ?? '' );
+		if ( $type === 'hero' ) {
+			if ( ! isset( $block['layout'] ) || ! is_array( $block['layout'] ) ) {
+				$block['layout'] = [];
+			}
+			$block['layout']['hero_variant'] = 'split';
+			if ( isset( $block['props'] ) && is_array( $block['props'] ) ) {
+				unset( $block['props']['rotating_words'] );
+			}
+		}
+		if ( $type !== '' ) {
+			$by_type[ $type ] = $block;
+		}
+	}
+
+	if ( $preset_order ) {
+		$ordered = [];
+		foreach ( $preset_order as $type ) {
+			if ( isset( $by_type[ $type ] ) ) {
+				$ordered[] = $by_type[ $type ];
+				unset( $by_type[ $type ] );
+			}
+		}
+		foreach ( $by_type as $block ) {
+			$ordered[] = $block;
+		}
+		$doc['blocks'] = $ordered;
+	} else {
+		$doc['blocks'] = array_values( $by_type );
+	}
+
 	return $doc;
 }
 
@@ -373,12 +425,12 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v1 = sales-deck homepage preview at /home-preview/.
+	// v2 = sales-deck homepage preview at /home-preview/ (split hero, funnel order).
 	$home_preview_ver = (string) get_option( 'jcp_home_preview_seed_version', '' );
-	if ( $home_preview_ver !== '1' || ! jcp_niche_home_preview_exists() ) {
-		$created = jcp_niche_seed_home_preview( $home_preview_ver !== '1' );
+	if ( $home_preview_ver !== '2' || ! jcp_niche_home_preview_exists() ) {
+		$created = jcp_niche_seed_home_preview( $home_preview_ver !== '2' );
 		if ( $created > 0 ) {
-			update_option( 'jcp_home_preview_seed_version', '1' );
+			update_option( 'jcp_home_preview_seed_version', '2' );
 			update_option( 'jcp_niche_home_preview_seeded', '1' );
 		}
 	}
@@ -404,7 +456,7 @@ function jcp_niche_admin_seed_notice(): void {
 	update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 	update_option( 'jcp_contractor_demo_seed_version', '9' );
 	update_option( 'jcp_niche_home_preview_seeded', '1' );
-	update_option( 'jcp_home_preview_seed_version', '1' );
+	update_option( 'jcp_home_preview_seed_version', '2' );
 	wp_safe_redirect( admin_url( 'edit.php?post_type=jcp_niche_landing&jcp_seeded=1' ) );
 	exit;
 }

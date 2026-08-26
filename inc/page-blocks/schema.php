@@ -426,6 +426,10 @@ function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 			if ( ! empty( $props['rotating_words'] ) ) {
 				$block_layout['hero_variant'] = 'home';
 			}
+			// home_v2 sales-deck preview: fixed headline, no rotating suffix.
+			if ( $preset === 'home_v2' ) {
+				$block_layout['hero_variant'] = 'split';
+			}
 		} else {
 			$block_layout = jcp_block_default_layout( (string) $type, $page_kind );
 		}
