@@ -1082,11 +1082,25 @@ function hideMobileSpotlight() {
   if (ring) ring.style.display = 'none';
 }
 
+function isCreateSheetOpen() {
+  return Boolean($('create-sheet-overlay')?.classList.contains('is-open'));
+}
+
+/** Step 2: highlight + until the sheet opens, then New Check-in (never Cancel). */
+function syncStep2GuidedAnchor() {
+  const checkinVisible = isCreateSheetOpen() && $('create-action-checkin');
+  tour.anchors.step2 = checkinVisible ? '#create-action-checkin' : '#fabNewCheckin';
+}
+
 function positionMobileSpotlight() {
   const ring = $('mobileSpotlight');
   if (!ring || !isGuidedDemoRun() || mobileGuideCollapsed || tour.isHidden || state.guideDisabled || state.isFinalStep) {
     hideMobileSpotlight();
     return;
+  }
+
+  if (tour.stepKey === 'step2') {
+    syncStep2GuidedAnchor();
   }
 
   const selector = tour.anchors[tour.stepKey];
@@ -1098,6 +1112,12 @@ function positionMobileSpotlight() {
 
   const pad = 10;
   const r = target.getBoundingClientRect();
+  // Guard against zero-size / off-screen targets (common while sheets animate).
+  if (r.width < 8 || r.height < 8) {
+    hideMobileSpotlight();
+    return;
+  }
+
   ring.style.display = 'block';
   ring.style.top = `${Math.round(r.top - pad)}px`;
   ring.style.left = `${Math.round(r.left - pad)}px`;
@@ -1350,6 +1370,9 @@ function setTourStep(stepKey) {
   updateTourNextLabel(getNextLabelForStep(stepKey));
   updateMobileStepperLabel();
   syncCreateSheetDemoState();
+  if (stepKey === 'step2') {
+    syncStep2GuidedAnchor();
+  }
   // Disable back buttons during guided steps (prevents breaking the flow) — skip on prototype
   if (!isPrototype) {
     lockBackButtons(['step2','step3','step4','step5'].includes(stepKey));
@@ -1933,6 +1956,18 @@ function openCreateActionSheet() {
   overlay.classList.add('is-open');
   sheet.classList.add('is-open');
   overlay.setAttribute('aria-hidden', 'false');
+
+  if (tour.stepKey === 'step2') {
+    syncStep2GuidedAnchor();
+    const refreshSpotlight = () => {
+      syncStep2GuidedAnchor();
+      positionMobileSpotlight();
+      applyFocalPoint();
+    };
+    requestAnimationFrame(refreshSpotlight);
+    setTimeout(refreshSpotlight, 80);
+    setTimeout(refreshSpotlight, 220);
+  }
 }
 
 function syncCreateSheetDemoState() {
@@ -1955,6 +1990,14 @@ function closeCreateActionSheet() {
   sheet.classList.remove('is-open');
   overlay.setAttribute('aria-hidden', 'true');
   document.querySelectorAll('.fab').forEach((el) => el.classList.remove('is-sheet-open'));
+
+  if (tour.stepKey === 'step2') {
+    syncStep2GuidedAnchor();
+    requestAnimationFrame(() => {
+      positionMobileSpotlight();
+      applyFocalPoint();
+    });
+  }
 }
 
 function handleCreateAction(action) {

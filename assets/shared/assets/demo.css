@@ -3207,13 +3207,20 @@ body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #login-screen .logi
     height 0.35s cubic-bezier(0.2, 0.9, 0.2, 1);
 }
 
-body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) .btn-primary#btnStartDemo,
+body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #btnStartDemo,
 body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #fabNewCheckin,
+body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #create-action-checkin,
 body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #uploadBtnCamera,
 body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #uploadBtnGallery,
 body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #submit-btn,
 body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #btnSavePublish,
 body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #btnRequestReview {
+  position: relative;
+  z-index: 76;
+}
+
+/* When the create sheet is open, keep New Check-in above the dim ring */
+#create-sheet-overlay.is-open #create-action-checkin {
   position: relative;
   z-index: 76;
 }
