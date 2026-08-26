@@ -129,7 +129,12 @@ function jcp_sales_tool_build_config( int $post_id = 0 ): array {
 		'assetBase'   => $asset_base,
 		'pricingUrl'  => $pricing_url,
 		'scriptAdminUrl' => $script_admin_url,
-		'extraLocationFee' => function_exists( 'jcp_pricing_extra_location_fee' ) ? jcp_pricing_extra_location_fee() : 199,
+		'extraLocationFee' => function_exists( 'jcp_pricing_extra_location_fee' ) ? jcp_pricing_extra_location_fee( 'scale' ) : 150,
+		'extraLocationFees' => function_exists( 'jcp_pricing_extra_location_fees' ) ? jcp_pricing_extra_location_fees() : [
+			'starter'    => null,
+			'scale'      => 150,
+			'enterprise' => 100,
+		],
 		'plans'       => $plans,
 		'trial'       => $trial,
 		'presenter'   => [

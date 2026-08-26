@@ -17,14 +17,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 function jcp_pricing_plans(): array {
 	return [
 		'starter'    => [
-			'id'          => 'starter',
-			'monthly'     => 99,
-			'yearly'      => 79,
-			'name'        => 'Starter',
-			'description' => 'Everything a single-location business needs to turn check-ins into reviews.',
-			'pill'        => 'Single-location',
-			'features'    => [
-				'1 location included',
+			'id'                       => 'starter',
+			'monthly'                  => 99,
+			'yearly'                   => 79,
+			'name'                     => 'Starter',
+			'description'              => 'Everything a single-location business needs to turn check-ins into reviews.',
+			'pill'                     => '1 location only',
+			'allows_additional_locations' => false,
+			'extra_location_fee'       => null,
+			'features'                 => [
+				[
+					'text'    => '1 location only — cannot add more',
+					'tooltip' => 'Starter is locked to a single operating location. Upgrade to Scale or Enterprise to add locations.',
+				],
 				[
 					'text'    => 'Unlimited check-in tracking',
 					'tooltip' => 'Track unlimited jobs/check-ins for your included location.',
@@ -39,8 +44,8 @@ function jcp_pricing_plans(): array {
 				],
 				'Email support',
 			],
-			'includes'    => [
-				'1 location included',
+			'includes'                 => [
+				'1 location only (no add-ons)',
 				'Technician-first mobile check-ins',
 				'On-site QR review requests',
 				'Geotagged, local-SEO website publishing',
@@ -48,19 +53,25 @@ function jcp_pricing_plans(): array {
 			],
 		],
 		'scale'      => [
-			'id'          => 'scale',
-			'monthly'     => 249,
-			'yearly'      => 199,
-			'name'        => 'Scale',
-			'description' => 'Built for multi-location brands ready to grow without adding overhead.',
-			'pill'        => 'Most popular',
-			'featured'    => true,
-			'features'    => [
+			'id'                       => 'scale',
+			'monthly'                  => 249,
+			'yearly'                   => 199,
+			'name'                     => 'Scale',
+			'description'              => 'Built for multi-location brands ready to grow without adding overhead.',
+			'pill'                     => 'Most popular',
+			'featured'                 => true,
+			'allows_additional_locations' => true,
+			'extra_location_fee'       => 150,
+			'features'                 => [
 				'Everything in Starter',
 				'1 location included',
 				[
-					'text'    => 'Multi-location support',
-					'tooltip' => 'Add more operating locations under one account. Extra locations are $199/month each.',
+					'text'    => 'Add locations anytime (+$150/mo each)',
+					'tooltip' => 'Add more operating locations under one account at $150/month each.',
+				],
+				[
+					'text'    => '1 Local Falcon keyword tracked',
+					'tooltip' => 'Track one keyword in Local Falcon to see your Google Maps ranking and coverage radius.',
 				],
 				[
 					'text'    => 'CRM integration',
@@ -77,10 +88,10 @@ function jcp_pricing_plans(): array {
 					'text'    => 'Priority support',
 					'tooltip' => 'Faster responses and escalation for time-sensitive issues.',
 				],
-				'Add more locations any time (+$199/mo each)',
 			],
-			'includes'    => [
-				'1 location included · add more at $199/mo',
+			'includes'                 => [
+				'1 location included · add more at $150/mo',
+				'1 Local Falcon keyword (Maps ranking + radius)',
 				'CRM integrations (Housecall Pro, Jobber, ServiceTitan, CompanyCam, and more)',
 				'Geotagged images + local-SEO website content',
 				'Google Maps / Business Profile posting',
@@ -88,18 +99,20 @@ function jcp_pricing_plans(): array {
 			],
 		],
 		'enterprise' => [
-			'id'          => 'enterprise',
-			'monthly'     => 399,
-			'yearly'      => 319,
-			'name'        => 'Enterprise',
-			'description' => 'AI-powered insights and a dedicated team behind every location.',
-			'pill'        => 'Enterprise',
-			'features'    => [
+			'id'                       => 'enterprise',
+			'monthly'                  => 399,
+			'yearly'                   => 319,
+			'name'                     => 'Enterprise',
+			'description'              => 'Dedicated support and custom connectivity for multi-location teams.',
+			'pill'                     => 'Enterprise',
+			'allows_additional_locations' => true,
+			'extra_location_fee'       => 100,
+			'features'                 => [
 				'Everything in Scale',
 				'1 location included',
 				[
-					'text'    => 'AI-powered insights',
-					'tooltip' => 'Patterns and opportunities from your check-ins and reviews, surfaced by AI.',
+					'text'    => 'Add locations anytime (+$100/mo each)',
+					'tooltip' => 'Add more operating locations under one account at $100/month each.',
 				],
 				[
 					'text'    => 'Custom integrations',
@@ -113,13 +126,9 @@ function jcp_pricing_plans(): array {
 					'text'    => 'SLA guarantee',
 					'tooltip' => 'Priority handling with service-level commitments for support/uptime.',
 				],
-				[
-					'text'    => 'Add locations and AI credits on demand',
-					'tooltip' => 'Add operating locations at $199/month each and scale AI usage as needed.',
-				],
 			],
-			'includes'    => [
-				'1 location included · add more at $199/mo',
+			'includes'                 => [
+				'1 location included · add more at $100/mo',
 				'Custom integrations and API access',
 				'Geotagged local-SEO publish across markets',
 				'Organization-wide reporting',
@@ -130,10 +139,32 @@ function jcp_pricing_plans(): array {
 }
 
 /**
- * Extra location fee (monthly).
+ * Extra location fee for a plan (monthly), or null when not allowed.
+ *
+ * @param string $plan_id starter|scale|enterprise.
  */
-function jcp_pricing_extra_location_fee(): int {
-	return 199;
+function jcp_pricing_extra_location_fee( string $plan_id = 'scale' ): ?int {
+	$plans = jcp_pricing_plans();
+	$key   = sanitize_key( $plan_id );
+	if ( empty( $plans[ $key ] ) ) {
+		return null;
+	}
+	$fee = $plans[ $key ]['extra_location_fee'] ?? null;
+	return $fee === null || $fee === '' ? null : (int) $fee;
+}
+
+/**
+ * Map of plan id → extra location fee (null = not available).
+ *
+ * @return array<string, int|null>
+ */
+function jcp_pricing_extra_location_fees(): array {
+	$out = [];
+	foreach ( jcp_pricing_plans() as $id => $plan ) {
+		$fee = $plan['extra_location_fee'] ?? null;
+		$out[ (string) $id ] = ( $fee === null || $fee === '' ) ? null : (int) $fee;
+	}
+	return $out;
 }
 
 /**
@@ -168,9 +199,10 @@ function jcp_pricing_trial_cta( string $utm_content = 'sales_tool' ): array {
  */
 function jcp_pricing_localize_payload(): array {
 	return [
-		'plans'             => jcp_pricing_plans(),
-		'extraLocationFee'  => jcp_pricing_extra_location_fee(),
-		'pricingUrl'        => jcp_pricing_page_url(),
-		'trial'             => jcp_pricing_trial_cta( 'pricing' ),
+		'plans'              => jcp_pricing_plans(),
+		'extraLocationFee'   => jcp_pricing_extra_location_fee( 'scale' ), // legacy default (Scale).
+		'extraLocationFees'  => jcp_pricing_extra_location_fees(),
+		'pricingUrl'         => jcp_pricing_page_url(),
+		'trial'              => jcp_pricing_trial_cta( 'pricing' ),
 	];
 }

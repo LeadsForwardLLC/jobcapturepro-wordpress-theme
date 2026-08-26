@@ -161,7 +161,9 @@
     const starter = planFromId("starter");
     const scale = planFromId("scale");
     const enterprise = planFromId("enterprise");
-    const locFee = cfg.extraLocationFee || 199;
+    const fees = cfg.extraLocationFees || {};
+    const scaleFee = fees.scale != null ? Number(fees.scale) : (cfg.extraLocationFee || 150);
+    const enterpriseFee = fees.enterprise != null ? Number(fees.enterprise) : 100;
     const locs = Math.max(1, Number(state.locations) || 1);
     if (state.customIntegration || state.segment === "enterprise" || locs >= 8) {
       return {
@@ -170,7 +172,7 @@
         price: enterprise ? `$${enterprise.monthly}` : "$399",
         reason: "Custom connectivity or org-wide control — every location can publish geotagged, local-search-ready proof, with locations added as you grow.",
         includes: (enterprise && enterprise.includes) || [],
-        locationNote: locs > 1 ? `${locs} locations → 1 included + ${locs - 1} × $${locFee}/mo` : `1 location included · extras $${locFee}/mo`,
+        locationNote: locs > 1 ? `${locs} locations → 1 included + ${locs - 1} × $${enterpriseFee}/mo` : `1 location included · extras $${enterpriseFee}/mo`,
       };
     }
     if (state.automation || locs > 1 || state.priorities.some((x) => ["More reviews", "Consistent content", "Multi-location control", "Local visibility"].includes(x))) {
@@ -178,18 +180,18 @@
         id: "scale",
         name: (scale && scale.name) || "Scale",
         price: scale ? `$${scale.monthly}` : "$249",
-        reason: "They need the proof engine on every job — Maps visibility, geotagged website content, reviews, and social — with room to add locations at $" + locFee + "/mo each.",
+        reason: "They need the proof engine on every job — Maps visibility, geotagged website content, reviews, and social — with room to add locations at $" + scaleFee + "/mo each, plus 1 Local Falcon keyword.",
         includes: (scale && scale.includes) || [],
-        locationNote: locs > 1 ? `${locs} locations → 1 included + ${locs - 1} × $${locFee}/mo` : `1 location included · extras $${locFee}/mo`,
+        locationNote: locs > 1 ? `${locs} locations → 1 included + ${locs - 1} × $${scaleFee}/mo` : `1 location included · extras $${scaleFee}/mo`,
       };
     }
     return {
       id: "starter",
       name: (starter && starter.name) || "Starter",
       price: starter ? `$${starter.monthly}` : "$99",
-      reason: "A simple mobile-led workflow for one location: capture the job, publish local-search-ready proof, and ask for the review on site.",
+      reason: "A simple mobile-led workflow for one location: capture the job, publish local-search-ready proof, and ask for the review on site. Starter cannot add locations.",
       includes: (starter && starter.includes) || [],
-      locationNote: `1 location included`,
+      locationNote: `1 location only — cannot add more`,
     };
   }
 
@@ -588,11 +590,13 @@
         <a class="plan-cta" href="${esc(referralUrl)}" target="_blank" rel="noopener">Apply as a partner →</a>
       </aside>`;
     } else {
-      const locFee = cfg.extraLocationFee || 199;
+      const fees = cfg.extraLocationFees || {};
+      const scaleFee = fees.scale != null ? Number(fees.scale) : (cfg.extraLocationFee || 150);
+      const enterpriseFee = fees.enterprise != null ? Number(fees.enterprise) : 100;
       aside = `<aside class="recommendation">
         <span class="plan-kicker">Recommended fit</span><h3>${plan.name}</h3>${state.showPricing ? `<p class="price">${plan.price} <span>/ month</span></p>` : ""}<p class="plan-reason">${plan.reason}</p>
         <ul class="included">${(plan.includes || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
-        <p class="plan-note">${state.showPricing ? `${esc(plan.locationNote || `1 location included · extras $${locFee}/mo`)}. ` : ""}Every plan includes one location; add more on Scale/Enterprise at $${locFee}/mo each. Prices stay current on <a href="${esc(pricingLink)}" target="_blank" rel="noopener">our pricing page</a>.</p>
+        <p class="plan-note">${state.showPricing ? `${esc(plan.locationNote || `1 location included`)}. ` : ""}Starter is 1 location only. Scale adds locations at $${scaleFee}/mo; Enterprise at $${enterpriseFee}/mo. Prices stay current on <a href="${esc(pricingLink)}" target="_blank" rel="noopener">our pricing page</a>.</p>
         <a class="plan-cta" href="${esc(cta.primaryUrl || pricingLink)}" target="_blank" rel="noopener">${esc(cta.primaryLabel || "Start free 14-day trial")} →</a>
       </aside>`;
     }
@@ -611,7 +615,7 @@
       ? "Simple referral economics — 20% recurring for 12 months on paid accounts."
       : isPartner()
         ? "For agencies and consultants doing real selling: residual commission while the customer stays active."
-        : "We’ll recommend a plan based on locations and automation. Each plan includes 1 location; extras are $199/mo on Scale and Enterprise.";
+        : "We’ll recommend a plan based on locations and automation. Starter is 1 location only; Scale adds locations at $150/mo and includes 1 Local Falcon keyword; Enterprise adds locations at $100/mo.";
 
     return `<section class="chapter content-pad">
     ${chapterHeader(8, isAffiliate() || isPartner() ? "Earn with JCP" : "Plan", headline, sub + " " + lead)}
