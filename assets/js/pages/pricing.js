@@ -46,6 +46,7 @@
         { text: 'Unlimited check-in tracking', tooltip: 'Track unlimited jobs/check-ins for your included location.' },
         { text: 'On-site review requests', tooltip: 'After each job, your crew shows a QR code or sends a link so the customer can leave a review while the experience is fresh.' },
         { text: 'Team activity feed', tooltip: 'See check-ins and activity across your team in one place.' },
+        { text: 'Advanced analytics', tooltip: 'Reporting across check-ins, reviews, and performance.' },
         'Email support'
       ]
     },
@@ -66,7 +67,6 @@
         'WordPress plugin',
         'Social Media posting',
         'Google Business Profile posting',
-        { text: 'Advanced analytics', tooltip: 'Deeper reporting across check-ins, reviews, and performance by location.' },
         { text: 'Priority support', tooltip: 'Faster responses and escalation for time-sensitive issues.' }
       ],
       featured: true
@@ -463,8 +463,14 @@
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
               </div>
               <div class="jcp-compare-row">
+                <div>Advanced analytics</div>
+                <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
+                <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
+                <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
+              </div>
+              <div class="jcp-compare-row">
                 <div>Local reporting dashboards</div>
-                <div><img src="${icon('x')}" class="lucide-icon lucide-icon-xs" alt="Not available"></div>
+                <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
               </div>

@@ -42,6 +42,10 @@ function jcp_pricing_plans(): array {
 					'text'    => 'Team activity feed',
 					'tooltip' => 'See check-ins and activity across your team in one place.',
 				],
+				[
+					'text'    => 'Advanced analytics',
+					'tooltip' => 'Reporting across check-ins, reviews, and performance.',
+				],
 				'Email support',
 			],
 			'includes'                 => [
@@ -49,6 +53,7 @@ function jcp_pricing_plans(): array {
 				'Technician-first mobile check-ins',
 				'On-site QR review requests',
 				'Geotagged, local-SEO website publishing',
+				'Advanced analytics',
 				'Admin dashboard access',
 			],
 		],
@@ -80,10 +85,6 @@ function jcp_pricing_plans(): array {
 				'WordPress plugin',
 				'Social Media posting',
 				'Google Business Profile posting',
-				[
-					'text'    => 'Advanced analytics',
-					'tooltip' => 'Deeper reporting across check-ins, reviews, and performance by location.',
-				],
 				[
 					'text'    => 'Priority support',
 					'tooltip' => 'Faster responses and escalation for time-sensitive issues.',
