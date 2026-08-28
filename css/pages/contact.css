@@ -223,6 +223,8 @@
   background: var(--jcp-color-bg-primary);
   border: 1px solid var(--jcp-color-border);
   border-radius: var(--jcp-radius-lg);
+  text-align: left;
+  min-width: 0;
 }
 
 .jcp-contact-channel__label {
@@ -234,11 +236,16 @@
 }
 
 .jcp-contact-channel__value {
-  font-size: var(--jcp-font-size-lg);
+  font-size: 0.9375rem;
   font-weight: var(--jcp-font-weight-semibold);
+  line-height: 1.35;
   color: var(--jcp-color-text-primary);
   text-decoration: none;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: normal;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .jcp-contact-channel__value:hover,
@@ -249,6 +256,11 @@
 @media (max-width: 640px) {
   .jcp-contact-channels {
     grid-template-columns: 1fr;
+  }
+
+  .jcp-contact-channel__value {
+    white-space: normal;
+    overflow-wrap: anywhere;
   }
 }
 
