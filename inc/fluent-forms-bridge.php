@@ -115,7 +115,7 @@ function jcp_fluent_bridge_force_on_contact( bool $force ): bool {
 			return true;
 		}
 	}
-	return is_page_template( 'page-contact.php' ) || is_page( 'contact' );
+	return is_page_template( 'page-support.php' ) || is_page_template( 'page-contact.php' ) || is_page( 'support' ) || is_page( 'contact' );
 }
 add_filter( 'jcp_fluent_bridge_force_enqueue', 'jcp_fluent_bridge_force_on_contact' );
 

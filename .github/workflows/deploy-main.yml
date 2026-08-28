@@ -66,6 +66,11 @@ jobs:
               foreach (array(\"sg_cachepress_purge_cache\", \"sg_cachepress_purge_everything\") as \$fn) {
                 echo \$fn . \": \" . (function_exists(\$fn) ? \"yes\" : \"no\") . \"\\n\";
               }
+              if (function_exists(\"jcp_migrate_contact_page_to_support\")) {
+                delete_option(\"jcp_support_page_migrated\");
+                jcp_migrate_contact_page_to_support();
+                echo \"migrated contact→support\\n\";
+              }
               if (function_exists(\"jcp_niche_seed_home_preview\")) {
                 \$hid = jcp_niche_seed_home_preview(true);
                 update_option(\"jcp_home_preview_seed_version\", \"3\");
@@ -81,6 +86,12 @@ jobs:
                 home_url(\"/home-preview\"),
                 \"https://jobcapturepro.com/home-preview/\",
                 \"https://jobcapturepro.com/home-preview\",
+                home_url(\"/support/\"),
+                home_url(\"/support\"),
+                home_url(\"/contact/\"),
+                home_url(\"/contact\"),
+                \"https://jobcapturepro.com/support/\",
+                \"https://jobcapturepro.com/contact/\",
               );
               if (function_exists(\"sg_cachepress_purge_cache\")) {
                 foreach (\$urls as \$u) {
@@ -95,7 +106,7 @@ jobs:
               \$opt = \"siteground_optimizer_excluded_urls\";
               \$list = get_option(\$opt, array());
               if (!is_array(\$list)) { \$list = array(); }
-              foreach (array(\"/case-study/\", \"/case-study\", \"/home-preview/\", \"/home-preview\") as \$path) {
+              foreach (array(\"/case-study/\", \"/case-study\", \"/home-preview/\", \"/home-preview\", \"/support/\", \"/support\", \"/contact/\", \"/contact\") as \$path) {
                 if (!in_array(\$path, \$list, true)) { \$list[] = \$path; }
               }
               update_option(\$opt, \$list);

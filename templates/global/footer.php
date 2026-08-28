@@ -107,7 +107,7 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
         </div>
         <div class="jcp-footer-col">
           <h4>Company</h4>
-          <a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a>
+          <a href="<?php echo esc_url( home_url( '/support/' ) ); ?>">Support</a>
           <a href="<?php echo esc_url( $jcp_onboarding_url ); ?>"<?php
             if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
               jcp_niche_cta_tracking_attr( $jcp_onboarding_url, 'footer', 'Start free' );

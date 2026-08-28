@@ -41,7 +41,7 @@ $subtitle   = $supporting !== '' ? $supporting : $default_message;
         <?php endif; ?>
       </div>
       <div class="jcp-form-actions jcp-success-actions">
-        <a class="btn btn-primary" href="<?php echo esc_url( home_url( '/contact' ) ); ?>"><?php esc_html_e( 'Back to Support', 'jcp-core' ); ?></a>
+        <a class="btn btn-primary" href="<?php echo esc_url( home_url( '/support/' ) ); ?>"><?php esc_html_e( 'Back to Support', 'jcp-core' ); ?></a>
         <a class="btn btn-secondary" href="<?php echo esc_url( home_url( '/demo' ) ); ?>"><?php esc_html_e( 'See the Demo', 'jcp-core' ); ?></a>
       </div>
     </div>

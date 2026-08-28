@@ -320,10 +320,10 @@
         return;
       }
 
-      // Resources dropdown: show active when on Blog, Help Center, or Contact (not Directory)
+      // Resources dropdown: show active when on Blog, Help Center, or Support (not Directory)
       const isBlogPage = page === 'blog' || pathname === '/blog' || (document.body && document.body.classList.contains('blog'));
       const isHelpPage = page === 'help' || pathname === '/help';
-      const isContactPage = page === 'contact' || pathname === '/contact';
+      const isContactPage = page === 'support' || page === 'contact' || pathname === '/support' || pathname === '/support/' || pathname === '/contact' || pathname === '/contact/';
       const isReferralPage = page === 'referral-program' || pathname === '/referral-program';
       const isResourcesPage = isBlogPage || isHelpPage || isContactPage || isReferralPage;
       if (isResourcesPage) {

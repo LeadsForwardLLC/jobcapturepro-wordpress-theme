@@ -354,7 +354,8 @@ function jcp_core_fallback_template_routes(): void {
     $template_map = [
         'demo'              => 'page-demo.php',
         'pricing'           => 'page-pricing.php',
-        'contact'           => 'page-contact.php',
+        'support'           => 'page-support.php',
+        'contact'           => 'page-support.php',
         'contact-success'   => 'page-contact-success.php',
         'estimate'          => 'page-estimate.php',
         'ui-library'        => 'page-ui-library.php',
@@ -382,7 +383,8 @@ function jcp_core_fallback_template_routes(): void {
 
     $route_titles = [
         'pricing'         => __( 'Pricing', 'jcp-core' ),
-        'contact'         => __( 'Contact', 'jcp-core' ),
+        'support'         => __( 'Support', 'jcp-core' ),
+        'contact'         => __( 'Support', 'jcp-core' ),
         'contact-success' => __( 'Message sent', 'jcp-core' ),
         'estimate'        => __( 'Estimate', 'jcp-core' ),
         'ui-library'      => __( 'UI Library', 'jcp-core' ),

@@ -3713,7 +3713,7 @@
     if (lower.startsWith('/@') || lower.startsWith('/channel/') || lower.includes('/wp-admin')) return false;
     const segments = path.split('/').filter(Boolean);
     if (segments.length === 1 && /^@?[a-z0-9_-]{3,}$/i.test(segments[0])) {
-      const allowed = new Set(['demo', 'pricing', 'blog', 'contact', 'features', 'industries', 'resources', 'directory']);
+      const allowed = new Set(['demo', 'pricing', 'blog', 'contact', 'support', 'features', 'industries', 'resources', 'directory']);
       if (!allowed.has(segments[0].replace(/^@/, ''))) return false;
     }
     return true;

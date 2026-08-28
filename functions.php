@@ -93,6 +93,9 @@ require_once get_template_directory() . '/inc/rest-demo-survey.php';
 // Demo analytics: DB table + REST endpoint
 require_once get_template_directory() . '/inc/demo-analytics.php';
 
+// Migrate /contact → /support + 301
+require_once get_template_directory() . '/inc/support-page-migrate.php';
+
 // Page template dropdown filter (must load on REST too — block editor template list).
 require_once get_template_directory() . '/inc/admin-page-templates.php';
 

@@ -389,7 +389,8 @@ Root (WordPress REQUIRES these in root):
 ├── page-demo.php                # Demo survey (PHP) + demo app (?mode=run)
 ├── page-directory.php           # Directory (loads HTML template)
 ├── page-estimate.php            # Estimate (loads HTML template)
-├── page-contact.php             # Contact form
+├── page-support.php             # Support page (Fluent Form)
+├── page-contact.php             # Deprecated alias → page-support.php
 ├── page-help.php                # Help articles
 ├── page-jcp-blocks.php          # Generic block page template
 ├── page-referral-program.php    # Referral program block page
@@ -784,7 +785,7 @@ Located in `inc/template-routes.php`:
 | `/directory` | `page-directory.php` | HTML template (`assets/directory/index.html`) |
 | `/directory/[slug]` | `single-jcp_company.php` | HTML template (`assets/directory/profile.html`) |
 | `/estimate` | `page-estimate.php` | HTML template (`assets/estimate/index.html`) |
-| `/contact` | `page-contact.php` | PHP support page + Fluent Form `[fluentform id="1"]` |
+| `/support` | `page-support.php` | PHP support page + Fluent Form `[fluentform id="1"]` (`/contact` 301s here) |
 | `/industries/` | `archive-jcp_niche_landing.php` | PHP archive |
 | `/industries/[slug]` | `single-jcp_niche_landing.php` | PHP block render |
 | `/ui-library` | `page-ui-library.php` | PHP template |

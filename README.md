@@ -45,7 +45,7 @@ Push to `main` → GitHub Actions (`.github/workflows/deploy-main.yml`) → Site
 |------|---------------|
 | Early Access | `POST /wp-json/jcp/v1/early-access-submit` |
 | Demo Survey | `POST /wp-json/jcp/v1/demo-survey-submit`, `demo-viewed-submit` |
-| Contact | Fluent Forms `[fluentform id="1"]` on `/contact` (no theme REST endpoint) |
+| Support | Fluent Forms `[fluentform id="1"]` on `/support` (`/contact` redirects) |
 
 See DOCUMENTATION.md → Forms & GoHighLevel for payload keys and GHL workflow notes.
 

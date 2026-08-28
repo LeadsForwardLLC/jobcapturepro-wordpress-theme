@@ -118,10 +118,10 @@ function jcp_global_header_nav_defaults(): array {
 					'enabled'   => true,
 				],
 				[
-					'id'        => 'contact',
-					'label'     => 'Contact',
-					'url'       => '/contact',
-					'data_page' => 'contact',
+					'id'        => 'support',
+					'label'     => 'Support',
+					'url'       => '/support',
+					'data_page' => 'support',
 					'enabled'   => true,
 				],
 				[

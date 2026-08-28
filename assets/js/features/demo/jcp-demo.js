@@ -1235,7 +1235,7 @@ function getDemoSalesPhoneHref() {
     '';
   const digits = String(raw).replace(/[^\d+]/g, '');
   if (digits) return `tel:${digits}`;
-  return `${(baseUrl || '').replace(/\/$/, '')}/contact/`;
+  return `${(baseUrl || '').replace(/\/$/, '')}/support/`;
 }
 
 function updateMobileStepperLabel() {
