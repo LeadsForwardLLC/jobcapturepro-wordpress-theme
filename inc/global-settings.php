@@ -46,7 +46,8 @@ function jcp_global_settings_defaults(): array {
 			'overrides' => [],
 		],
 		'contact' => [
-			'support_email' => 'hello@jobcapturepro.com',
+			'support_email' => 'support@jobcapturepro.com',
+			'support_phone' => '(941) 941-9506',
 		],
 		'fluent_forms' => [
 			'enabled'            => true,
@@ -297,6 +298,15 @@ function jcp_global_settings(): array {
 function jcp_global_settings_scrub_legacy_promo_copy( array $settings ): array {
 	$banner = is_array( $settings['banner'] ?? null ) ? $settings['banner'] : [];
 	$defaults = jcp_global_settings_defaults()['banner'];
+
+	$contact = is_array( $settings['contact'] ?? null ) ? $settings['contact'] : [];
+	if ( ( $contact['support_email'] ?? '' ) === 'hello@jobcapturepro.com' ) {
+		$contact['support_email'] = 'support@jobcapturepro.com';
+	}
+	if ( trim( (string) ( $contact['support_phone'] ?? '' ) ) === '' ) {
+		$contact['support_phone'] = '(941) 941-9506';
+	}
+	$settings['contact'] = $contact;
 
 	$headline = (string) ( $banner['headline'] ?? '' );
 	$code     = (string) ( $banner['code'] ?? '' );

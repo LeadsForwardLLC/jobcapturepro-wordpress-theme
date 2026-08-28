@@ -345,7 +345,6 @@ assets/js/
     ├── home-interactions.js   # Homepage anchors/interactions (block homepage)
     ├── home.js                # Legacy homepage renderer (fallback only)
     ├── industries-archive.js  # /industries/ archive
-    ├── contact.js             # Contact form page
     ├── early-access-success.js
     └── wp-plugin-prototype.js
 ```
@@ -785,7 +784,7 @@ Located in `inc/template-routes.php`:
 | `/directory` | `page-directory.php` | HTML template (`assets/directory/index.html`) |
 | `/directory/[slug]` | `single-jcp_company.php` | HTML template (`assets/directory/profile.html`) |
 | `/estimate` | `page-estimate.php` | HTML template (`assets/estimate/index.html`) |
-| `/contact` | `page-contact.php` | PHP + `contact.js` |
+| `/contact` | `page-contact.php` | PHP support page + Fluent Form `[fluentform id="1"]` |
 | `/industries/` | `archive-jcp_niche_landing.php` | PHP archive |
 | `/industries/[slug]` | `single-jcp_niche_landing.php` | PHP block render |
 | `/ui-library` | `page-ui-library.php` | PHP template |

@@ -90,9 +90,6 @@ require_once get_template_directory() . '/inc/form-fields.php';
 // REST: Demo Survey form → GHL webhook
 require_once get_template_directory() . '/inc/rest-demo-survey.php';
 
-// REST: Contact form → GHL webhook
-require_once get_template_directory() . '/inc/rest-contact.php';
-
 // Demo analytics: DB table + REST endpoint
 require_once get_template_directory() . '/inc/demo-analytics.php';
 

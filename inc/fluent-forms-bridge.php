@@ -101,6 +101,25 @@ function jcp_fluent_bridge_should_enqueue(): bool {
 }
 
 /**
+ * Always load Fluent bridge assets on the Contact / Support page (form is theme-rendered).
+ *
+ * @param bool $force Current force flag.
+ */
+function jcp_fluent_bridge_force_on_contact( bool $force ): bool {
+	if ( $force ) {
+		return true;
+	}
+	if ( function_exists( 'jcp_core_get_page_detection' ) ) {
+		$pages = jcp_core_get_page_detection();
+		if ( ! empty( $pages['is_contact'] ) ) {
+			return true;
+		}
+	}
+	return is_page_template( 'page-contact.php' ) || is_page( 'contact' );
+}
+add_filter( 'jcp_fluent_bridge_force_enqueue', 'jcp_fluent_bridge_force_on_contact' );
+
+/**
  * Enqueue Fluent bridge CSS/JS when needed.
  */
 function jcp_fluent_bridge_enqueue_assets(): void {

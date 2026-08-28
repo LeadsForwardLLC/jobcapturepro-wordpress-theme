@@ -172,13 +172,9 @@ function jcp_core_enqueue_assets(): void {
     }
 
     if ( $pages['is_contact'] ) {
-        jcp_core_enqueue_style( 'jcp-core-contact', 'css/pages/contact.css', [ 'jcp-core-sections' ] );
-        jcp_core_enqueue_script( 'jcp-core-contact', 'js/pages/contact.js' );
-        $render_deps[] = 'jcp-core-contact';
-        wp_localize_script( 'jcp-core-contact', 'JCP_CONTACT_FORM', [
-            'rest_url'         => rest_url( 'jcp/v1/contact-submit' ),
-            'success_redirect' => home_url( '/contact-success/' ),
-        ] );
+        jcp_core_enqueue_style( 'jcp-core-sections', 'css/sections.css', [ 'jcp-core-components' ] );
+        jcp_core_enqueue_style( 'jcp-core-blog', 'css/pages/blog.css', [ 'jcp-core-sections' ] );
+        jcp_core_enqueue_style( 'jcp-core-contact', 'css/pages/contact.css', [ 'jcp-core-blog' ] );
     }
 
     if ( $pages['is_blog'] || $pages['is_single'] || $pages['is_page'] ) {
@@ -205,7 +201,7 @@ function jcp_core_enqueue_assets(): void {
         $front_id = (int) get_option( 'page_on_front' );
         $home_uses_blocks = $front_id > 0 && (bool) get_post_meta( $front_id, jcp_page_content_meta_key(), true );
     }
-    $needs_render = ( $pages['is_home'] && ! $home_uses_blocks ) || $pages['is_pricing'] || $pages['is_contact']
+    $needs_render = ( $pages['is_home'] && ! $home_uses_blocks ) || $pages['is_pricing']
         || $pages['is_prototype'] || $pages['is_demo'] || $pages['is_directory'] || $pages['is_company'] || $pages['is_estimate'];
     if ( $needs_render ) {
         jcp_core_enqueue_script( $render_handle, 'js/core/jcp-render.js', $render_deps );
