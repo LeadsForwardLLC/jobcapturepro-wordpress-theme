@@ -76,6 +76,9 @@ function jcp_page_is_content_page( ?int $post_id = null ): bool {
 		if ( jcp_page_uses_block_template( $id ) ) {
 			return true;
 		}
+		if ( function_exists( 'jcp_page_is_simple_editable' ) && jcp_page_is_simple_editable( $id ) ) {
+			return true;
+		}
 		if ( get_page_template_slug( $id ) === 'page-home.php' || (int) get_option( 'page_on_front' ) === $id ) {
 			return (bool) get_post_meta( $id, jcp_page_content_meta_key(), true );
 		}
@@ -205,6 +208,12 @@ function jcp_page_default_content( int $post_id ): array {
 	}
 	if ( get_page_template_slug( $post_id ) === 'page-home.php' || (int) get_option( 'page_on_front' ) === $post_id ) {
 		return jcp_page_load_preset( 'home' );
+	}
+	if ( function_exists( 'jcp_simple_editable_default_content' ) ) {
+		$simple = jcp_simple_editable_default_content( [], $post_id );
+		if ( ! empty( $simple ) ) {
+			return $simple;
+		}
 	}
 	return [];
 }

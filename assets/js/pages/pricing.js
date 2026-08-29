@@ -255,8 +255,8 @@
         <section class="jcp-section rankings-section">
           <div class="jcp-container">
             <div class="rankings-header">
-              <h1>${escapeHtml(heroTitle)}</h1>
-              <p class="rankings-subtitle">${escapeHtml(heroSubtitle)}</p>
+              <h1 data-jcp-path="hero.h1">${escapeHtml(heroTitle)}</h1>
+              <p class="rankings-subtitle" data-jcp-path="hero.subheadline">${escapeHtml(heroSubtitle)}</p>
             </div>
             
             <!-- Billing Toggle -->

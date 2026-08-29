@@ -282,6 +282,33 @@
   text-align: center;
 }
 
+.jcp-success-topic {
+  margin-bottom: var(--jcp-space-sm);
+}
+
+.jcp-success-immediate {
+  max-width: 36rem;
+  margin: var(--jcp-space-3xl) auto 0;
+  padding: var(--jcp-space-2xl);
+  text-align: center;
+  background: var(--jcp-color-bg-secondary, #f7f7f5);
+  border: 1px solid var(--jcp-color-border);
+  border-radius: var(--jcp-radius-xl);
+}
+
+.jcp-success-immediate__title {
+  margin: 0 0 var(--jcp-space-xl);
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  font-weight: var(--jcp-font-weight-semibold, 600);
+  color: var(--jcp-color-text-primary);
+  line-height: 1.4;
+}
+
+.jcp-success-channels {
+  margin: 0 auto;
+  max-width: 28rem;
+}
+
 .jcp-success-actions {
   display: flex;
   flex-wrap: wrap;

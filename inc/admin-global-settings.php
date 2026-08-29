@@ -313,6 +313,8 @@ function jcp_global_settings_render_page(): void {
 			<h2><?php esc_html_e( 'Fluent Forms bridge', 'jcp-core' ); ?></h2>
 			<p class="description">
 				<?php esc_html_e( 'Theme-owned styling for multi-step Fluent Forms. Leave Fluent Form → Custom CSS blank. Per-page shortcodes live in the Form embed block.', 'jcp-core' ); ?>
+				<br />
+				<?php esc_html_e( 'Support form (ID 1): the theme redirects successful submits to /contact-success/?topic=… You can also set Fluent Confirmation → Redirect to that URL as a backup.', 'jcp-core' ); ?>
 			</p>
 			<table class="form-table" role="presentation">
 				<tr>

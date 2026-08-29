@@ -4,35 +4,58 @@
  *
  * Support page: Help Center preview, Fluent Form, phone/email last resort.
  * Assign this template to the page with slug "support" (/support/).
+ * Hero copy is front-end editable via `_jcp_page_content`.
  *
  * @package JCP_Core
  */
 
 get_header();
 
+$post_id = get_queried_object_id();
+if ( $post_id <= 0 ) {
+	$page    = get_page_by_path( 'support', OBJECT, 'page' );
+	$post_id = $page instanceof WP_Post ? (int) $page->ID : 0;
+}
+
+$flat = ( $post_id > 0 && function_exists( 'jcp_page_get_content_flat' ) )
+	? jcp_page_get_content_flat( $post_id )
+	: [];
+$hero = is_array( $flat['hero'] ?? null ) ? $flat['hero'] : [];
+
 $defaults = [
 	'title'    => __( 'Support', 'jcp-core' ),
 	'subtitle' => __( 'Start with the Help Center — most answers are there. If you still need us, send a message and we’ll get back within one business day.', 'jcp-core' ),
+	'eyebrow'  => __( 'Support', 'jcp-core' ),
 ];
 
-$page_title   = '';
-$page_content = '';
-if ( have_posts() ) {
-	while ( have_posts() ) {
-		the_post();
-		$page_title   = get_the_title();
-		$page_content = trim( (string) get_post_field( 'post_content', get_the_ID() ) );
-		break;
-	}
-	rewind_posts();
+$title = trim( (string) ( $hero['h1'] ?? '' ) );
+if ( $title === '' ) {
+	$title = trim( (string) get_the_title( $post_id ) );
+}
+if ( $title === '' ) {
+	$title = $defaults['title'];
 }
 
-$title    = trim( (string) $page_title ) !== '' ? $page_title : $defaults['title'];
-// Prefer the support-oriented default; ignore leftover Contact page body copy.
-$raw_sub  = $page_content !== '' ? wp_strip_all_tags( $page_content ) : '';
-$subtitle = $raw_sub !== '' && stripos( $raw_sub, 'fill out the form below' ) === false
-	? $raw_sub
-	: $defaults['subtitle'];
+$subtitle = trim( (string) ( $hero['subheadline'] ?? '' ) );
+if ( $subtitle === '' ) {
+	$page_content = $post_id > 0 ? trim( (string) get_post_field( 'post_content', $post_id ) ) : '';
+	$raw_sub      = $page_content !== '' ? wp_strip_all_tags( $page_content ) : '';
+	$subtitle     = $raw_sub !== '' && stripos( $raw_sub, 'fill out the form below' ) === false
+		? $raw_sub
+		: $defaults['subtitle'];
+}
+
+$eyebrow = trim( (string) ( $hero['eyebrow'] ?? '' ) );
+if ( $eyebrow === '' ) {
+	$eyebrow = $defaults['eyebrow'];
+}
+
+$cta_primary   = is_array( $hero['cta_primary'] ?? null ) ? $hero['cta_primary'] : [];
+$cta_secondary = is_array( $hero['cta_secondary'] ?? null ) ? $hero['cta_secondary'] : [];
+$primary_label = trim( (string) ( $cta_primary['label'] ?? '' ) ) ?: __( 'Message support', 'jcp-core' );
+$primary_url   = trim( (string) ( $cta_primary['url'] ?? '' ) ) ?: '#contact-form';
+$secondary_label = trim( (string) ( $cta_secondary['label'] ?? '' ) ) ?: __( 'Browse Help Center', 'jcp-core' );
+$secondary_url   = trim( (string) ( $cta_secondary['url'] ?? '' ) ) ?: home_url( '/help/' );
 
 $contact = function_exists( 'jcp_global_settings' ) ? ( jcp_global_settings()['contact'] ?? [] ) : [];
 $email   = sanitize_email( (string) ( $contact['support_email'] ?? '' ) );
@@ -66,16 +89,16 @@ $help_query = new WP_Query(
 );
 $help_url = home_url( '/help/' );
 ?>
-<main class="jcp-marketing jcp-contact-page jcp-support-page">
+<main class="jcp-marketing jcp-contact-page jcp-support-page" data-jcp-support-thanks="<?php echo esc_url( home_url( '/contact-success/' ) ); ?>">
 	<section class="jcp-section rankings-section jcp-contact-hero">
 		<div class="jcp-container">
 			<div class="rankings-header">
-				<p class="jcp-contact-eyebrow"><?php esc_html_e( 'Support', 'jcp-core' ); ?></p>
-				<h1><?php echo esc_html( $title ); ?></h1>
-				<p class="rankings-subtitle"><?php echo esc_html( $subtitle ); ?></p>
+				<p class="jcp-contact-eyebrow"<?php if ( function_exists( 'jcp_niche_editable_attr' ) ) { jcp_niche_editable_attr( 'hero.eyebrow' ); } ?>><?php echo esc_html( $eyebrow ); ?></p>
+				<h1<?php if ( function_exists( 'jcp_niche_editable_attr' ) ) { jcp_niche_editable_attr( 'hero.h1' ); } ?>><?php echo esc_html( $title ); ?></h1>
+				<p class="rankings-subtitle"<?php if ( function_exists( 'jcp_niche_editable_attr' ) ) { jcp_niche_editable_attr( 'hero.subheadline' ); } ?>><?php echo esc_html( $subtitle ); ?></p>
 				<div class="jcp-contact-hero-actions">
-					<a class="btn btn-secondary" href="<?php echo esc_url( $help_url ); ?>"><?php esc_html_e( 'Browse Help Center', 'jcp-core' ); ?></a>
-					<a class="btn btn-primary" href="#contact-form"><?php esc_html_e( 'Message support', 'jcp-core' ); ?></a>
+					<a class="btn btn-secondary" href="<?php echo esc_url( $secondary_url ); ?>"<?php if ( function_exists( 'jcp_niche_editable_attr' ) ) { jcp_niche_editable_attr( 'hero.cta_secondary.label' ); } ?>><?php echo esc_html( $secondary_label ); ?></a>
+					<a class="btn btn-primary" href="<?php echo esc_url( $primary_url ); ?>"<?php if ( function_exists( 'jcp_niche_editable_attr' ) ) { jcp_niche_editable_attr( 'hero.cta_primary.label' ); } ?>><?php echo esc_html( $primary_label ); ?></a>
 				</div>
 			</div>
 		</div>
@@ -129,9 +152,7 @@ $help_url = home_url( '/help/' );
 			<div class="jcp-contact-last-resort__card">
 				<p class="jcp-contact-eyebrow"><?php esc_html_e( 'Last resort', 'jcp-core' ); ?></p>
 				<h2 id="jcp-contact-last-resort-heading"><?php esc_html_e( 'Prefer email or a call?', 'jcp-core' ); ?></h2>
-				<p class="jcp-contact-last-resort__copy">
-					<?php esc_html_e( 'If the form isn’t an option, reach us directly. Email is usually fastest; phone is available when you need a human voice.', 'jcp-core' ); ?>
-				</p>
+				<p class="jcp-contact-last-resort__copy"><?php esc_html_e( 'If the form isn’t an option, reach us directly. Email is usually fastest; phone is available when you need a human voice.', 'jcp-core' ); ?></p>
 				<ul class="jcp-contact-channels">
 					<li class="jcp-contact-channel">
 						<span class="jcp-contact-channel__label"><?php esc_html_e( 'Email', 'jcp-core' ); ?></span>

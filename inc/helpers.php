@@ -283,6 +283,12 @@ function jcp_core_get_page_editor_post_id(): int {
 	if ( $front_id > 0 && is_front_page() && jcp_page_is_content_page( $front_id ) ) {
 		return $front_id;
 	}
+	if ( function_exists( 'jcp_simple_editable_editor_post_id' ) ) {
+		$fallback = jcp_simple_editable_editor_post_id( 0 );
+		if ( $fallback > 0 && jcp_page_is_content_page( $fallback ) ) {
+			return $fallback;
+		}
+	}
 	return 0;
 }
 

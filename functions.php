@@ -54,6 +54,7 @@ require_once get_template_directory() . '/inc/page-blocks/presets.php';
 require_once get_template_directory() . '/inc/page-blocks/campaign-preset.php';
 require_once get_template_directory() . '/inc/page-blocks/writer-tools.php';
 require_once get_template_directory() . '/inc/page-blocks/schema.php';
+require_once get_template_directory() . '/inc/simple-editable-pages.php';
 require_once get_template_directory() . '/inc/page-blocks/writer-import.php';
 require_once get_template_directory() . '/inc/page-blocks/industry-media.php';
 require_once get_template_directory() . '/inc/page-blocks/demo-migration.php';

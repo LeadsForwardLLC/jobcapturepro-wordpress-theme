@@ -412,6 +412,52 @@
         bindSubmitWatchdog._armed = false;
         window.clearTimeout(bindSubmitWatchdog._timer);
       });
+
+    // Support form → thank-you page (topic-aware).
+    window.jQuery(document)
+      .off('fluentform_submission_success.jcpSupportThanks')
+      .on('fluentform_submission_success.jcpSupportThanks', function (event, response) {
+        var supportRoot = document.querySelector('.jcp-support-page');
+        if (!supportRoot) {
+          return;
+        }
+        var form = null;
+        if (response && response.form && response.form.length) {
+          form = response.form[0];
+        } else if (event && event.target && event.target.nodeType === 1) {
+          form = event.target.closest('form.frm-fluent-form') || event.target;
+        }
+        if (!form) {
+          form = supportRoot.querySelector('form.frm-fluent-form');
+        }
+        var topic = '';
+        if (form) {
+          var topicField =
+            form.querySelector('select[name="dropdown"]')
+            || form.querySelector('select[name="topic"]')
+            || form.querySelector('select[data-name="dropdown"]')
+            || form.querySelector('.ff-el-input--content select');
+          if (topicField && topicField.value) {
+            topic = String(topicField.value).trim();
+          }
+        }
+        var base = supportRoot.getAttribute('data-jcp-support-thanks') || '/contact-success/';
+        var url = base;
+        try {
+          var u = new URL(base, window.location.origin);
+          if (topic && topic !== '- Select -') {
+            u.searchParams.set('topic', topic);
+          }
+          url = u.pathname + u.search;
+        } catch (e) {
+          if (topic && topic !== '- Select -') {
+            url += (url.indexOf('?') >= 0 ? '&' : '?') + 'topic=' + encodeURIComponent(topic);
+          }
+        }
+        window.setTimeout(function () {
+          window.location.assign(url);
+        }, 250);
+      });
     window.jQuery(document)
       .off(
         'fluentform_submission_failed.jcpWatch fluentform_submitted_failed.jcpWatch fluentform_validation_failed.jcpWatch'
