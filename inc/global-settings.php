@@ -436,24 +436,28 @@ function jcp_global_should_show_banner( array $pages ): bool {
  */
 function jcp_global_banner_cta_url( array $banner ): string {
 	$url = trim( (string) ( $banner['cta_url'] ?? '' ) );
-	if ( $url !== '' ) {
-		if ( preg_match( '#^https?://#i', $url ) ) {
-			return esc_url( $url );
+	$label = trim( (string) ( $banner['cta_label'] ?? '' ) );
+	// Empty or demo leftovers for Start-free labels → app onboarding.
+	$path = (string) ( wp_parse_url( $url, PHP_URL_PATH ) ?? '' );
+	$is_demo = $url === '/demo' || rtrim( $path, '/' ) === '/demo';
+	if ( $url === '' || ( $is_demo && preg_match( '/start\s+(for\s+)?free|trial|sign\s*up|get\s*started|claim/i', $label ) ) ) {
+		$utm_content = (string) ( $banner['utm_content'] ?? 'sitewide_banner' );
+		$extra       = function_exists( 'jcp_core_onboarding_utm_defaults' )
+			? jcp_core_onboarding_utm_defaults( $utm_content )
+			: [ 'utm_content' => $utm_content ];
+		$coupon = trim( (string) ( $banner['coupon'] ?? '' ) );
+		if ( $coupon !== '' ) {
+			$extra['coupon'] = $coupon;
+			$extra['promo']  = $coupon;
 		}
-		return esc_url( home_url( $url ) );
+		return function_exists( 'jcp_core_onboarding_app_url' )
+			? jcp_core_onboarding_app_url( $extra )
+			: esc_url( 'https://app.jobcapturepro.com/onboarding' );
 	}
-	$utm_content = (string) ( $banner['utm_content'] ?? 'sitewide_banner' );
-	$extra       = function_exists( 'jcp_core_onboarding_utm_defaults' )
-		? jcp_core_onboarding_utm_defaults( $utm_content )
-		: [ 'utm_content' => $utm_content ];
-	$coupon = trim( (string) ( $banner['coupon'] ?? '' ) );
-	if ( $coupon !== '' ) {
-		$extra['coupon'] = $coupon;
-		$extra['promo']  = $coupon;
+	if ( preg_match( '#^https?://#i', $url ) ) {
+		return esc_url( $url );
 	}
-	return function_exists( 'jcp_core_onboarding_app_url' )
-		? jcp_core_onboarding_app_url( $extra )
-		: esc_url( home_url( '/pricing' ) );
+	return esc_url( home_url( $url ) );
 }
 
 /**
@@ -473,14 +477,23 @@ function jcp_global_resolve_cta( string $label, string $url, string $utm_content
 		? jcp_core_onboarding_utm_defaults( $utm_content )
 		: ( $utm_content !== '' ? [ 'utm_content' => $utm_content ] : [] );
 
+	$is_signup_label = $label !== '' && (bool) preg_match(
+		'/trial|sign\s*up|get\s*started|claim|start\s+for\s+free|start\s+free/i',
+		$label
+	);
+	$url_path = (string) ( wp_parse_url( $url, PHP_URL_PATH ) ?? '' );
+	if ( $is_signup_label && ( $url === '/demo' || rtrim( $url_path, '/' ) === '/demo' ) ) {
+		$url = '';
+	}
+
 	if ( $url === '' && $label !== '' && preg_match( '/\blog\s*in\b/i', $label ) ) {
 		$url = function_exists( 'jcp_core_app_login_url_raw' )
 			? jcp_core_app_login_url_raw( array_merge( $utm, $query_extra ) )
 			: 'https://app.jobcapturepro.com/login';
-	} elseif ( $url === '' && $label !== '' && preg_match( '/trial|sign\s*up|get\s*started|claim/i', $label ) ) {
+	} elseif ( $url === '' && $is_signup_label ) {
 		$url = function_exists( 'jcp_core_onboarding_app_url_raw' )
 			? jcp_core_onboarding_app_url_raw( array_merge( $utm, $query_extra ) )
-			: home_url( '/demo' );
+			: 'https://app.jobcapturepro.com/onboarding';
 	} elseif ( $url === '' ) {
 		$url = home_url( '/demo' );
 	} elseif ( preg_match( '#^https?://app\.jobcapturepro\.com/login/?$#i', $url ) ) {
@@ -544,6 +557,14 @@ function jcp_global_resolve_nav_ctas( ?int $post_id = null ): array {
 		$primary_label = 'Start free';
 	}
 	$primary_label = jcp_global_rewrite_trial_label( $primary_label, 'button' );
+
+	// “Start free” must never keep a leftover /demo URL from the label rename.
+	if ( preg_match( '/start\s+(for\s+)?free/i', $primary_label ) ) {
+		$primary_path = (string) ( wp_parse_url( $primary_url, PHP_URL_PATH ) ?? '' );
+		if ( $primary_url === '/demo' || rtrim( $primary_path, '/' ) === '/demo' ) {
+			$primary_url = '';
+		}
+	}
 
 	return [
 		'primary'   => jcp_global_resolve_cta( $primary_label, $primary_url, 'nav_get_started' ),
