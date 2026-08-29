@@ -587,8 +587,8 @@ const demoGuideContent = {
   },
   step6Dock: {
     pill: 'Final step',
-    title: 'Ready to get started?',
-    body: 'Start for free — or apply for a one-on-one personalized demo if you want a walkthrough with our team.',
+    title: 'Ready to get started free?',
+    body: 'Turn every finished job into website proof, Google activity, reviews, and more calls — start free today.',
     interactHint: ''
   }
 };
@@ -1193,6 +1193,7 @@ function syncMobileGuideChrome() {
   updateMobileLayoutMetrics();
   positionMobileSpotlight();
   updateGuidedCoachBackdrop();
+  syncDemoStartFreeCtas();
 }
 
 function exitGuidedDemoToSurvey() {
@@ -1447,7 +1448,7 @@ function setTourStep(stepKey) {
 function getNextLabelForStep(stepKey) {
   if (stepKey === 'step4') return 'Publish →';
   if (stepKey === 'step5') return 'Send Review →';
-  if (stepKey === 'step6') return 'Continue';
+  if (stepKey === 'step6') return 'Get started free';
   return 'Next →';
 }
 
@@ -2956,13 +2957,52 @@ function updateOutcomesSlideshowUi() {
 
   const isLast = index >= total - 1;
   const nextBtn = $('demoOutcomesNextCta');
-  const finishBtn = $('demoOutcomesFinishCta');
+  const startFree = $('demoOutcomesStartFreeCta') || $('demoOutcomesFinishCta');
   if (nextBtn) {
     nextBtn.hidden = isLast;
     nextBtn.disabled = isLast;
+    nextBtn.textContent = 'Next result';
   }
-  if (finishBtn) {
-    finishBtn.classList.toggle('demo-outcomes-modal__finish--solo', isLast);
+  if (startFree) {
+    startFree.classList.toggle('demo-outcomes-modal__finish--solo', isLast);
+    if (startFree.tagName === 'A') {
+      startFree.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
+      startFree.textContent = 'Get started free';
+    } else {
+      startFree.textContent = 'Get started free';
+      startFree.dataset.outcomesAction = 'start_free';
+    }
+  }
+  syncDemoStartFreeCtas();
+}
+
+function goToDemoStartFree(source) {
+  const utm = source || 'demo_handoff';
+  jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free', source: utm, label: 'Get started free' }, { keepalive: true });
+  jcpDemoTrack('demo_converted', null, { cta: 'get_started_free', source: utm }, { keepalive: true });
+  markDemoIntakeComplete();
+  window.location.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery(utm));
+}
+
+function syncDemoStartFreeCtas() {
+  const hrefChrome = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_chrome'));
+  const hrefOutcomes = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
+  const chrome = $('mobileDemoStartFree');
+  if (chrome) {
+    chrome.href = hrefChrome;
+    chrome.textContent = 'Get started free';
+  }
+  const outcomes = $('demoOutcomesStartFreeCta');
+  if (outcomes && outcomes.tagName === 'A') {
+    outcomes.href = hrefOutcomes;
+    outcomes.textContent = 'Get started free';
+  }
+  const post = document.querySelector('.post-demo-primary-cta');
+  if (post) {
+    post.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
+    if (!post.textContent.trim() || /start for free/i.test(post.textContent)) {
+      post.textContent = 'Get started free';
+    }
   }
 }
 
@@ -2971,6 +3011,10 @@ function handleOutcomesModalAction(action) {
     if (outcomesSlideshow.index < outcomesSlideshow.total - 1) {
       setOutcomesSlide(outcomesSlideshow.index + 1);
     }
+    return;
+  }
+  if (action === 'start_free') {
+    goToDemoStartFree('demo_outcomes');
     return;
   }
   if (action === 'finish') {
@@ -3005,10 +3049,12 @@ function onOutcomesModalClick(e) {
     handleOutcomesModalAction('next');
     return;
   }
-  if (e.target.closest('#demoOutcomesFinish, #demoOutcomesStartCta, #demoOutcomesPrimaryCta')) {
+  if (e.target.closest('#demoOutcomesFinish, #demoOutcomesStartCta, #demoOutcomesPrimaryCta, #demoOutcomesStartFreeCta, #demoOutcomesFinishCta')) {
     e.preventDefault();
     e.stopPropagation();
-    handleOutcomesModalAction('finish');
+    const el = e.target.closest('[data-outcomes-action]');
+    const action = el?.dataset?.outcomesAction || 'start_free';
+    handleOutcomesModalAction(action === 'finish' ? 'finish' : 'start_free');
   }
 }
 
@@ -3201,25 +3247,57 @@ function ensureOutcomesFooterButtons() {
     card.appendChild(footer);
   }
 
+  // Migrate legacy Continue button → Get started free link
+  const legacyFinish = $('demoOutcomesFinishCta');
+  if (legacyFinish && legacyFinish.tagName === 'BUTTON' && !$('demoOutcomesStartFreeCta')) {
+    const link = document.createElement('a');
+    link.id = 'demoOutcomesStartFreeCta';
+    link.className = 'btn btn-primary demo-outcomes-modal__finish';
+    link.dataset.outcomesAction = 'start_free';
+    link.textContent = 'Get started free';
+    link.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
+    legacyFinish.replaceWith(link);
+  }
+
   if (!$('demoOutcomesNextCta')) {
     const next = document.createElement('button');
     next.type = 'button';
     next.id = 'demoOutcomesNextCta';
     next.className = 'btn btn-secondary demo-outcomes-modal__next';
     next.dataset.outcomesAction = 'next';
-    next.textContent = 'Next';
-    footer.appendChild(next);
+    next.textContent = 'Next result';
+    footer.insertBefore(next, footer.firstChild);
+  } else {
+    $('demoOutcomesNextCta').textContent = 'Next result';
   }
 
-  if (!$('demoOutcomesFinishCta')) {
-    const finish = document.createElement('button');
-    finish.type = 'button';
-    finish.id = 'demoOutcomesFinishCta';
-    finish.className = 'btn btn-primary demo-outcomes-modal__finish';
-    finish.dataset.outcomesAction = 'finish';
-    finish.textContent = 'Continue';
-    footer.appendChild(finish);
+  if (!$('demoOutcomesStartFreeCta') && !$('demoOutcomesFinishCta')) {
+    const start = document.createElement('a');
+    start.id = 'demoOutcomesStartFreeCta';
+    start.className = 'btn btn-primary demo-outcomes-modal__finish';
+    start.dataset.outcomesAction = 'start_free';
+    start.textContent = 'Get started free';
+    start.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
+    footer.appendChild(start);
   }
+
+  if (!$('demoOutcomesMoreOptions')) {
+    let more = card.querySelector('.demo-outcomes-modal__more');
+    if (!more) {
+      more = document.createElement('p');
+      more.className = 'demo-outcomes-modal__more';
+      card.appendChild(more);
+    }
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'demoOutcomesMoreOptions';
+    btn.className = 'demo-outcomes-modal__more-btn';
+    btn.dataset.outcomesAction = 'finish';
+    btn.textContent = 'See plans & demos';
+    more.appendChild(btn);
+  }
+
+  syncDemoStartFreeCtas();
 }
 
 function wireOutcomesSlideshow() {
@@ -3492,9 +3570,9 @@ async function sendReviewRequest() {
   // Update top CTA
   const headerCta = document.getElementById('btnNext');
   if (headerCta) {
-    headerCta.textContent = 'Start free →';
+    headerCta.textContent = 'Get started free →';
     headerCta.onclick = () => {
-      window.location.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_header_complete'));
+      goToDemoStartFree('demo_header_complete');
     };
   }
 }
@@ -3860,7 +3938,7 @@ function wireControls() {
 
   $('btnMobileNext')?.addEventListener('click', () => {
     if (tour.stepKey === 'step6' && !outcomesSlideshow.isOpen) {
-      completeDemoConversion();
+      goToDemoStartFree('demo_step6_dock');
       return;
     }
     advanceDemo();
@@ -3870,6 +3948,11 @@ function wireControls() {
     if (tour.stepKey === 'step6' && !outcomesSlideshow.isOpen) {
       openOutcomesSlideshow();
     }
+  });
+
+  $('mobileDemoStartFree')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    goToDemoStartFree('demo_chrome');
   });
 
   // Tour box X / minimize: hide coach only. Full demo exit is top-right #mobileDemoExit.
@@ -4005,6 +4088,7 @@ function init() {
   wireControls();
   wirePostDemoPanel();
   wireOutcomesSlideshow();
+  syncDemoStartFreeCtas();
 
   // Apply demo mode restrictions if in demo mode (not on prototype)
   applyDemoRestrictions();
@@ -4283,8 +4367,8 @@ function wirePostDemoPanel() {
       // Refresh PII + UTMs on click so the handoff always matches the latest survey data.
       const handoffUrl = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
       primaryCta.href = handoffUrl;
-      jcpDemoTrack('cta_clicked', null, { cta: 'start_free_trial', source: 'demo_post_panel', label: 'Start for free' }, { keepalive: true });
-      jcpDemoTrack('demo_converted', null, { cta: 'start_free_trial', source: 'demo_post_panel' }, { keepalive: true });
+      jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free', source: 'demo_post_panel', label: 'Get started free' }, { keepalive: true });
+      jcpDemoTrack('demo_converted', null, { cta: 'get_started_free', source: 'demo_post_panel' }, { keepalive: true });
       // Matomo: Post Demo CTA Click (Start free), once per session
       try {
         if (typeof _paq !== 'undefined' && !sessionStorage.getItem('jcp_matomo_demo_cta_early_access')) {
