@@ -24,6 +24,10 @@
       icon: 'badge-check',
       title: 'New benefit',
       body: 'Description',
+      label: 'Step',
+      chrome: 'capture',
+      image_url: '',
+      image_alt: '',
       stat_value: 'Stat',
       stat_label: 'label',
     }),
@@ -79,6 +83,7 @@
     if (container.classList.contains('conversion-points')) return '+ Add point';
     if (container.classList.contains('jcp-core-mechanic-meta')) return '+ Add stat';
     if (container.classList.contains('directory-meta') && container.dataset.jcpArray === 'hero.meta_stats') return '+ Add stat';
+    if (container.classList.contains('jcp-job-flow')) return '+ Add step';
     if (container.classList.contains('ranking-factors-grid') || container.classList.contains('guarantees-grid')) return '+ Add card';
     return '+ Add item';
   };
@@ -160,6 +165,43 @@
       showBody: on('show_card_body', true),
       showStats: on('show_card_stats', true),
     };
+  };
+
+  const JOB_FLOW_CHROME = {
+    website: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--browser" aria-hidden="true"><span></span><span></span><span></span><em>yoursite.com/jobs</em></div>`,
+    google: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--gbp" aria-hidden="true"><strong>Google Business Profile</strong><span>Update ready · Today</span></div>`,
+    reviews: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--qr" aria-hidden="true"><span class="jcp-job-flow__qr"></span><em>Scan to review</em></div>`,
+    social: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--social" aria-hidden="true"><strong>Post ready</strong><span>Social · Directory</span></div>`,
+  };
+
+  const buildJobFlowStep = (basePath, index, data) => {
+    const path = `${basePath}.${index}`;
+    const mods = ['capture', 'website', 'google', 'reviews', 'social'];
+    const mod = String(data.chrome || mods[index] || 'capture').replace(/[^a-z0-9_-]/gi, '') || 'capture';
+    const img = String(data.image_url || '').trim();
+    const alt = String(data.image_alt || data.title || '').trim();
+    const label = String(data.label || '').trim();
+    const title = String(data.title || '').trim();
+    const body = String(data.body || '').trim();
+    const badge = label
+      ? `<span class="jcp-job-flow__badge" data-jcp-path="${path}.label">${esc(label)}</span>`
+      : '';
+    const image = img
+      ? `<img src="${esc(img)}" alt="${esc(alt)}" width="480" height="360" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async" class="jcp-editable-media-image" data-jcp-path="${path}.image_url" data-jcp-media-url-path="${path}.image_url" data-jcp-media-alt-path="${path}.image_alt" data-jcp-media-types="image" />`
+      : '';
+    const chrome = JOB_FLOW_CHROME[mod] || '';
+    return `
+      <article class="jcp-job-flow__step jcp-job-flow__step--${esc(mod)}" data-jcp-array-item="${index}">
+        <div class="jcp-job-flow__media" aria-hidden="${img ? 'false' : 'true'}">
+          ${badge}
+          ${image}
+          ${chrome}
+        </div>
+        <div class="jcp-job-flow__copy">
+          <h3 class="jcp-job-flow__title" data-jcp-path="${path}.title">${esc(title)}</h3>
+          <p class="jcp-job-flow__body" data-jcp-path="${path}.body">${esc(body)}</p>
+        </div>
+      </article>`;
   };
 
   const buildFactorCard = (basePath, index, data) => {
@@ -345,6 +387,9 @@
     if (basePath === 'how_it_works.steps') return buildTimelineStep(basePath, index, data);
     if (basePath === 'who_its_for.audiences' && container.classList.contains('guarantees-grid')) {
       return buildGuaranteeCard(basePath, index, data);
+    }
+    if (basePath === 'benefits.items' && container.classList.contains('jcp-job-flow')) {
+      return buildJobFlowStep(basePath, index, data);
     }
     if (basePath.endsWith('.items') || basePath.endsWith('.features') || basePath.endsWith('.pain_points') || basePath.endsWith('.audiences')) {
       return buildFactorCard(basePath, index, data);

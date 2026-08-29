@@ -77,6 +77,12 @@ jobs:
                 update_option(\"jcp_niche_home_preview_seeded\", \"1\");
                 echo \"reseeded home-preview id=\$hid\\n\";
               }
+              if (function_exists(\"jcp_niche_seed_contractor_demo\")) {
+                \$cid = jcp_niche_seed_contractor_demo(true);
+                update_option(\"jcp_contractor_demo_seed_version\", \"10\");
+                update_option(\"jcp_niche_contractor_demo_seeded\", \"1\");
+                echo \"reseeded contractor-demo id=\$cid\\n\";
+              }
               \$urls = array(
                 home_url(\"/case-study/\"),
                 home_url(\"/case-study\"),
@@ -86,6 +92,10 @@ jobs:
                 home_url(\"/home-preview\"),
                 \"https://jobcapturepro.com/home-preview/\",
                 \"https://jobcapturepro.com/home-preview\",
+                home_url(\"/contractor-demo/\"),
+                home_url(\"/contractor-demo\"),
+                \"https://jobcapturepro.com/contractor-demo/\",
+                \"https://jobcapturepro.com/contractor-demo\",
                 home_url(\"/support/\"),
                 home_url(\"/support\"),
                 home_url(\"/contact/\"),
@@ -106,7 +116,7 @@ jobs:
               \$opt = \"siteground_optimizer_excluded_urls\";
               \$list = get_option(\$opt, array());
               if (!is_array(\$list)) { \$list = array(); }
-              foreach (array(\"/case-study/\", \"/case-study\", \"/home-preview/\", \"/home-preview\", \"/support/\", \"/support\", \"/contact/\", \"/contact\") as \$path) {
+              foreach (array(\"/case-study/\", \"/case-study\", \"/home-preview/\", \"/home-preview\", \"/contractor-demo/\", \"/contractor-demo\", \"/support/\", \"/support\", \"/contact/\", \"/contact\") as \$path) {
                 if (!in_array(\$path, \$list, true)) { \$list[] = \$path; }
               }
               update_option(\$opt, \$list);

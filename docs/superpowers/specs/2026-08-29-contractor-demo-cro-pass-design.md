@@ -1,7 +1,7 @@
 # Contractor-demo CRO pass (`/contractor-demo/`)
 
 **Date:** 2026-08-29  
-**Status:** Approved in conversation; awaiting file review before implementation  
+**Status:** Implemented  
 **Scope:** Paid Meta landing at `/contractor-demo/` only (not live `/`, not `/home-preview/`)
 
 ## Goal

@@ -895,13 +895,13 @@ function jcp_niche_render_benefits( array $c ): void {
 					$body  = trim( (string) ( $item['body'] ?? '' ) );
 					$mod   = sanitize_key( (string) ( $item['chrome'] ?? ( $flow_mods[ $bi ] ?? 'capture' ) ) );
 					?>
-					<article class="jcp-job-flow__step jcp-job-flow__step--<?php echo esc_attr( $mod ); ?>">
+					<article class="jcp-job-flow__step jcp-job-flow__step--<?php echo esc_attr( $mod ); ?>" data-jcp-array-item="<?php echo esc_attr( (string) $bi ); ?>">
 						<div class="jcp-job-flow__media" aria-hidden="<?php echo $img === '' ? 'true' : 'false'; ?>">
 							<?php if ( $label !== '' ) : ?>
 								<span class="jcp-job-flow__badge"<?php jcp_niche_editable_attr( 'benefits.items.' . $bi . '.label' ); ?>><?php echo esc_html( $label ); ?></span>
 							<?php endif; ?>
 							<?php if ( $img !== '' ) : ?>
-								<img src="<?php echo esc_url( $img ); ?>" alt="<?php echo esc_attr( $alt ); ?>" width="480" height="360" loading="<?php echo $bi === 0 ? 'eager' : 'lazy'; ?>" decoding="async"<?php jcp_niche_editable_attr( 'benefits.items.' . $bi . '.image_url' ); ?> />
+								<img src="<?php echo esc_url( $img ); ?>" alt="<?php echo esc_attr( $alt ); ?>" width="480" height="360" loading="<?php echo $bi === 0 ? 'eager' : 'lazy'; ?>" decoding="async" class="jcp-editable-media-image" data-jcp-media-url-path="benefits.items.<?php echo esc_attr( (string) $bi ); ?>.image_url" data-jcp-media-alt-path="benefits.items.<?php echo esc_attr( (string) $bi ); ?>.image_alt" data-jcp-media-types="image"<?php jcp_niche_editable_attr( 'benefits.items.' . $bi . '.image_url' ); ?> />
 							<?php endif; ?>
 							<?php if ( $mod === 'website' ) : ?>
 								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--browser" aria-hidden="true">
@@ -1402,9 +1402,10 @@ function jcp_niche_render_demo_preview( array $props, string $niche_key = '', st
 		$path,
 		$niche_key,
 		[
-			'variant'    => 'card',
-			'section_id' => $section_id,
-			'root_class' => 'jcp-block-demo-preview',
+			'variant'         => 'card',
+			'section_id'      => $section_id,
+			'root_class'      => 'jcp-block-demo-preview',
+			'wrap_container'  => true,
 		]
 	);
 }

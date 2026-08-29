@@ -54,6 +54,16 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 			$doc['blocks'][ $i ]['props'] = $props;
 		}
 		if ( $type === 'demo_preview' ) {
+			$base = is_array( $block['layout'] ?? null )
+				? $block['layout']
+				: jcp_block_default_layout( 'demo_preview', 'marketing' );
+			$doc['blocks'][ $i ]['layout'] = array_merge(
+				$base,
+				[
+					'width' => 'contained',
+					'align' => 'left',
+				]
+			);
 			$props = is_array( $block['props'] ?? null ) ? $block['props'] : [];
 			// Campaign landers always show the animated app mockup on the right.
 			$props['media_type']         = 'phone_mockup';

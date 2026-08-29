@@ -3483,15 +3483,18 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   width: 36px;
   height: 36px;
   border-radius: 9px;
+  flex-shrink: 0;
 }
 
 .jcp-page-campaign .jcp-niche-hero .jcp-meta-stats .meta-title,
 .jcp-page-campaign .jcp-niche-hero .directory-meta .meta-title,
 .jcp-page-campaign .jcp-niche-hero .jcp-meta-stats .meta-copy strong,
-.jcp-page-campaign .jcp-niche-hero .directory-meta .meta-copy strong {
-  font-size: 0.9375rem;
-  line-height: 1.2;
-  white-space: nowrap;
+.jcp-page-campaign .jcp-niche-hero .directory-meta .meta-copy strong,
+.jcp-page-campaign .jcp-niche-hero .jcp-meta-stats .meta-label strong,
+.jcp-page-campaign .jcp-niche-hero .directory-meta .meta-label strong {
+  font-size: 0.875rem;
+  line-height: 1.25;
+  white-space: normal;
 }
 
 .jcp-page-campaign .jcp-niche-hero .jcp-meta-stats .meta-detail,
@@ -3499,7 +3502,7 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   max-width: none;
   white-space: normal;
   font-size: 0.75rem;
-  line-height: 1.3;
+  line-height: 1.35;
   color: var(--jcp-color-text-secondary, #64748b);
 }
 
@@ -3756,20 +3759,48 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 .jcp-page-campaign .jcp-block-root[data-jcp-block-type="final_cta"] .jcp-section {
   background: linear-gradient(
     180deg,
-    rgba(255, 80, 62, 0.06) 0%,
-    rgba(255, 80, 62, 0.02) 100%
+    rgba(255, 80, 62, 0.08) 0%,
+    rgba(255, 80, 62, 0.03) 100%
   );
+  border: 1px solid rgba(255, 80, 62, 0.18);
   border-radius: 1rem;
-  padding-block: clamp(2rem, 4vw, 3rem);
+  padding-block: clamp(2.25rem, 4.5vw, 3.5rem);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
 }
 
 .jcp-page-campaign .jcp-block-root[data-jcp-block-type="final_cta"] .jcp-actions .btn-primary,
-.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .jcp-actions .btn-primary {
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .jcp-actions .btn-primary,
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .demo-cta-primary {
   font-size: 1.0625rem;
   padding: 0.85rem 1.75rem;
 }
 
-.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .jcp-section {
+/* Demo preview: same container gutters as hero — never full-bleed left */
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] {
+  width: 100%;
+}
+
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .demo-preview-section {
+  margin-top: 0;
+  width: 100%;
+  max-width: none;
+}
+
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] > .demo-preview-section > .jcp-container {
+  max-width: var(--jcp-container-width);
+  margin-inline: auto;
+  padding-inline: var(--jcp-space-lg);
+}
+
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .demo-preview-card {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: 0;
+  box-sizing: border-box;
+}
+
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .jcp-section,
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .demo-preview-card {
   border: 1px solid var(--jcp-color-border);
   border-radius: 1rem;
 }
@@ -3782,6 +3813,14 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 /* Section rhythm: less “SaaS brochure”, more funnel */
 .jcp-page-campaign .jcp-block-root + .jcp-block-root {
   margin-top: 0;
+}
+
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="benefits"] .jcp-section,
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .demo-preview-section,
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="authority"] .jcp-section,
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="problem"] .jcp-section,
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="how_it_works"] .jcp-section {
+  padding-block: clamp(2rem, 4.5vw, 3.25rem);
 }
 
 .jcp-page-campaign .rankings-header {
@@ -3799,6 +3838,20 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   max-width: 36rem;
   text-align: center;
   margin-inline: auto;
+}
+
+/* Safety: never show icon twin under photo job-flow (editor regression guard) */
+.jcp-niche-benefits--job-flow .ranking-factor-card {
+  display: none !important;
+}
+
+.jcp-niche-benefits--job-flow .jcp-niche-section-closing {
+  margin-top: 1.5rem;
+  text-align: center;
+  max-width: 36rem;
+  margin-inline: auto;
+  font-weight: 600;
+  color: var(--jcp-color-text-secondary, #475569);
 }
 
 .jcp-job-flow {
@@ -4274,7 +4327,8 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   }
 
   .jcp-page-campaign .jcp-block-root[data-jcp-block-type="final_cta"] .jcp-section,
-  .jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .jcp-section {
+  .jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .jcp-section,
+  .jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .demo-preview-card {
     border-radius: 0.75rem;
     margin-inline: 0;
   }
