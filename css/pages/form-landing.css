@@ -182,10 +182,10 @@ body.jcp-form-landing .jcp-form-landing__embed.jcp-fluent-bridge {
   margin-inline: 0 !important;
 }
 
+/* Wrappers + the <form> only — never match ff-el-form-check / ff-el-form-control. */
 body.jcp-form-landing .jcp-form-landing__embed [class*="fluentform_wrapper_"],
 body.jcp-form-landing .jcp-form-landing__embed .fluentform,
-body.jcp-form-landing .jcp-form-landing__embed form.frm-fluent-form,
-body.jcp-form-landing .jcp-form-landing__embed [class*="ff-el-form-"] {
+body.jcp-form-landing .jcp-form-landing__embed form.frm-fluent-form {
   width: 100% !important;
   max-width: 100% !important;
   margin-left: 0 !important;

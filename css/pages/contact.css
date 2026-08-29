@@ -142,6 +142,7 @@
   background: var(--jcp-color-bg-primary);
   padding-top: var(--jcp-space-4xl) !important;
   padding-bottom: var(--jcp-space-4xl) !important;
+  scroll-margin-top: calc(var(--jcp-header-stack-height, var(--jcp-header-height, 72px)) + 12px);
 }
 
 .jcp-contact-page .jcp-form-wrapper {
@@ -160,6 +161,13 @@
 .jcp-contact-fluent .frm-fluent-form,
 .jcp-contact-fluent .fluentform {
   margin: 0;
+}
+
+/* Single-step support form: full-width primary submit. */
+.jcp-contact-fluent .ff_submit_btn_wrapper .ff-btn-submit,
+.jcp-contact-fluent button.ff-btn-submit {
+  width: 100% !important;
+  max-width: 100%;
 }
 
 .jcp-contact-fluent-missing {

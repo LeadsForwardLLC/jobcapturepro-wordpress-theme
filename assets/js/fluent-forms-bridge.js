@@ -242,7 +242,29 @@
     if (modalBody) {
       return modalBody;
     }
+    // Marketing pages often scroll .jcp-shell instead of the window.
+    var shell = document.querySelector('.jcp-shell');
+    if (shell && shell.scrollHeight > shell.clientHeight + 1) {
+      return shell;
+    }
     return null;
+  }
+
+  function scrollHostToTop(behavior) {
+    var shell = document.querySelector('.jcp-shell');
+    if (shell && shell.scrollHeight > shell.clientHeight + 1) {
+      try {
+        shell.scrollTo({ top: 0, behavior: behavior || 'smooth' });
+      } catch (e) {
+        shell.scrollTop = 0;
+      }
+      return;
+    }
+    try {
+      window.scrollTo({ top: 0, behavior: behavior || 'smooth' });
+    } catch (e2) {
+      window.scrollTo(0, 0);
+    }
   }
 
   /** Keep Fluent multi-step auto-scroll clear of the Form Landing sticky bar. */
@@ -288,11 +310,7 @@
       notice.classList.remove('is-visible');
     }, 12000);
     // Bring the banner into view immediately (users are often scrolled to Submit).
-    try {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (e) {
-      window.scrollTo(0, 0);
-    }
+    scrollHostToTop('smooth');
   }
 
   function scrollToFirstError(scope) {

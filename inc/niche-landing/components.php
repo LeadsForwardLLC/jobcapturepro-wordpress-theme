@@ -54,7 +54,7 @@ function jcp_component_home_meta_stats( array $items, string $path = 'hero.meta_
 			$item_class = trim( 'meta-item jcp-collection-item ' . $css_class );
 			?>
 			<div class="<?php echo esc_attr( $item_class ); ?>"<?php if ( $path !== '' ) { jcp_niche_array_item_attr( (int) $i ); } ?>>
-				<span class="factor-icon-wrapper jcp-hero-meta-icon"<?php if ( $icon_path !== '' ) { ?> data-jcp-icon-path="<?php echo esc_attr( $icon_path ); ?>" title="<?php esc_attr_e( 'Click to change icon', 'jcp-core' ); ?>" role="button" tabindex="0"<?php } ?>>
+				<span class="factor-icon-wrapper jcp-hero-meta-icon"<?php if ( $icon_path !== '' && function_exists( 'jcp_niche_user_can_inline_edit' ) && jcp_niche_user_can_inline_edit() ) { ?> data-jcp-icon-path="<?php echo esc_attr( $icon_path ); ?>" title="<?php esc_attr_e( 'Click to change icon', 'jcp-core' ); ?>" role="button" tabindex="0"<?php } ?>>
 					<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="meta-icon" alt="" width="20" height="20" />
 				</span>
 				<div class="meta-copy">

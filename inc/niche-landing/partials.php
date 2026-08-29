@@ -46,7 +46,7 @@ function jcp_niche_factor_card( string $title, string $icon, string $stat_value 
 	?>
 	<div class="ranking-factor-card"<?php if ( $array_index >= 0 ) { jcp_niche_array_item_attr( $array_index ); } ?>>
 		<?php if ( $show_icon ) : ?>
-		<div class="factor-icon-wrapper"<?php if ( $icon_path !== '' ) { echo ' data-jcp-icon-path="' . esc_attr( $icon_path ) . '" title="' . esc_attr__( 'Click to change icon', 'jcp-core' ) . '" role="button" tabindex="0"'; } ?>>
+		<div class="factor-icon-wrapper"<?php if ( $icon_path !== '' && function_exists( 'jcp_niche_user_can_inline_edit' ) && jcp_niche_user_can_inline_edit() ) { echo ' data-jcp-icon-path="' . esc_attr( $icon_path ) . '" title="' . esc_attr__( 'Click to change icon', 'jcp-core' ) . '" role="button" tabindex="0"'; } ?>>
 			<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="factor-icon" alt="" width="32" height="32" />
 		</div>
 		<?php endif; ?>

@@ -28,7 +28,11 @@ if ( have_posts() ) {
 }
 
 $title    = trim( (string) $page_title ) !== '' ? $page_title : $defaults['title'];
-$subtitle = $page_content !== '' ? wp_strip_all_tags( $page_content ) : $defaults['subtitle'];
+// Prefer the support-oriented default; ignore leftover Contact page body copy.
+$raw_sub  = $page_content !== '' ? wp_strip_all_tags( $page_content ) : '';
+$subtitle = $raw_sub !== '' && stripos( $raw_sub, 'fill out the form below' ) === false
+	? $raw_sub
+	: $defaults['subtitle'];
 
 $contact = function_exists( 'jcp_global_settings' ) ? ( jcp_global_settings()['contact'] ?? [] ) : [];
 $email   = sanitize_email( (string) ( $contact['support_email'] ?? '' ) );

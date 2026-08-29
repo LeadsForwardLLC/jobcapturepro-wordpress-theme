@@ -78,6 +78,8 @@
 .jcp-fluent-quote-modal--takeover {
   align-items: stretch;
   padding: 0;
+  /* Opaque root so page content never shows through while the dialog paints. */
+  background: var(--jcp-ff-surface, #fff);
 }
 
 .jcp-fluent-quote-modal--takeover .jcp-fluent-quote-modal__overlay {
@@ -92,6 +94,7 @@
   margin: 0;
   border-radius: 0;
   box-shadow: none;
+  background: var(--jcp-ff-surface, #fff);
 }
 
 @media (min-width: 768px) {
@@ -691,8 +694,9 @@ body.jcp-form-landing .jcp-ff-validation-notice.is-visible {
   color: #991b1b;
 }
 
-/* Buttons — match theme primary / ghost */
-.jcp-fluent-bridge .ff-btn,
+/* Buttons — match theme primary / ghost.
+   Exclude .ff_upload_btn (Fluent file picker also uses .ff-btn). */
+.jcp-fluent-bridge .ff-btn:not(.ff_upload_btn),
 .jcp-fluent-bridge .ff-btn-next,
 .jcp-fluent-bridge .ff-btn-prev,
 .jcp-fluent-bridge .ff-btn-submit,
@@ -726,6 +730,24 @@ body.jcp-form-landing .jcp-ff-validation-notice.is-visible {
   background: var(--jcp-ff-primary-dark, #e63e28) !important;
   border-color: var(--jcp-ff-primary-dark, #e63e28) !important;
   box-shadow: 0 4px 12px rgba(255, 80, 62, 0.3);
+}
+
+/* Keep Fluent’s native file-picker chrome (do not theme as primary CTA). */
+.jcp-fluent-bridge .ff_upload_btn.ff-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--jcp-size-button-md, 44px);
+  padding: 0.55rem 1rem;
+  border-radius: var(--jcp-ff-radius, 12px);
+  font-weight: var(--jcp-font-weight-semibold, 600);
+  font-size: var(--jcp-font-size-sm, 14px);
+  line-height: 1.2;
+  cursor: pointer;
+  background: #6f757e;
+  border: 0;
+  color: #fff;
+  box-shadow: none;
 }
 
 .jcp-fluent-bridge .ff-btn-prev {
