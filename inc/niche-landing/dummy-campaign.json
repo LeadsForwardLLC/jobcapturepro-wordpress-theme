@@ -230,6 +230,8 @@
     "headline": "Built around real contractor workflows",
     "subheadline": "Short notes from people already turning completed jobs into proof.",
     "featured_key": "brian-hardy",
+    "show_featured": false,
+    "per_view": 2,
     "autoplay": true,
     "autoplay_ms": 6000,
     "show_stars": true,

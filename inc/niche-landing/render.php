@@ -1798,7 +1798,7 @@ function jcp_niche_render_local_falcon_proof( array $props, string $niche_key = 
 }
 
 /**
- * Testimonials block — featured quote + secondary review strip.
+ * Testimonials block — featured quote + secondary strip, or slider-only.
  *
  * @param array<string, mixed> $props Block props.
  */
@@ -1807,24 +1807,34 @@ function jcp_niche_render_testimonials( array $props ): void {
 		return;
 	}
 
-	$reviews       = jcp_testimonials_normalize_reviews( $props );
-	$featured_key  = trim( (string) ( $props['featured_key'] ?? '' ) );
-	$featured      = jcp_testimonials_resolve_featured( $reviews, $featured_key );
-	if ( $featured === null ) {
+	$reviews = jcp_testimonials_normalize_reviews( $props );
+	if ( $reviews === [] ) {
 		return;
 	}
-	$featured_id   = jcp_testimonials_review_key( $featured );
-	$secondary     = [];
-	foreach ( $reviews as $review ) {
-		if ( jcp_testimonials_review_key( $review ) === $featured_id ) {
-			continue;
+
+	$show_featured = ! array_key_exists( 'show_featured', $props ) || ! empty( $props['show_featured'] );
+	$featured_key  = trim( (string) ( $props['featured_key'] ?? '' ) );
+	$featured      = $show_featured ? jcp_testimonials_resolve_featured( $reviews, $featured_key ) : null;
+	if ( $show_featured && $featured === null ) {
+		return;
+	}
+	$featured_id = $featured ? jcp_testimonials_review_key( $featured ) : '';
+	$slider_list = [];
+	if ( $show_featured && $featured ) {
+		foreach ( $reviews as $review ) {
+			if ( jcp_testimonials_review_key( $review ) === $featured_id ) {
+				continue;
+			}
+			$slider_list[] = $review;
 		}
-		$secondary[] = $review;
+	} else {
+		$slider_list = $reviews;
 	}
 
 	$section_id  = ! empty( $props['section_id'] ) ? (string) $props['section_id'] : 'testimonials';
 	$autoplay    = ! empty( $props['autoplay'] );
 	$autoplay_ms = isset( $props['autoplay_ms'] ) ? max( 1000, (int) $props['autoplay_ms'] ) : 6000;
+	$per_view    = isset( $props['per_view'] ) ? max( 1, (int) $props['per_view'] ) : ( $show_featured ? 1 : 2 );
 	$show_stars  = ! array_key_exists( 'show_stars', $props ) || ! empty( $props['show_stars'] );
 	$show_roles  = ! array_key_exists( 'show_roles', $props ) || ! empty( $props['show_roles'] );
 	$eyebrow_vis = jcp_niche_field_visibility( $props, 'show_eyebrow', true );
@@ -1845,14 +1855,20 @@ function jcp_niche_render_testimonials( array $props ): void {
 	}
 	$faces_label = trim( (string) ( $props['faces_label'] ?? '' ) );
 	$store_json  = wp_json_encode( $reviews );
+	$mode_class  = $show_featured ? '' : ' jcp-testimonials--slider-only';
 	?>
 	<section
-		class="jcp-section rankings-section jcp-block-testimonials"
+		class="jcp-section rankings-section jcp-block-testimonials<?php echo esc_attr( $mode_class ); ?>"
 		id="<?php echo esc_attr( $section_id ); ?>"
 		data-jcp-testimonials
 		data-autoplay="<?php echo esc_attr( $autoplay ? '1' : '0' ); ?>"
 		data-autoplay-ms="<?php echo esc_attr( (string) $autoplay_ms ); ?>"
+		data-per-view="<?php echo esc_attr( (string) $per_view ); ?>"
+		<?php if ( $show_featured ) : ?>
 		data-featured-key="<?php echo esc_attr( $featured_id ); ?>"
+		<?php else : ?>
+		data-slider-only="1"
+		<?php endif; ?>
 	>
 		<div class="jcp-container">
 			<?php if ( $eyebrow_vis['render'] && $eyebrow !== '' ) : ?>
@@ -1870,6 +1886,7 @@ function jcp_niche_render_testimonials( array $props ): void {
 				</div>
 			<?php endif; ?>
 			<div class="jcp-testimonials">
+				<?php if ( $show_featured && $featured ) : ?>
 				<figure class="jcp-testimonials-featured" data-jcp-testimonials-featured>
 					<?php jcp_testimonials_render_stars( (int) ( $featured['rating'] ?? 5 ), $show_stars ); ?>
 					<blockquote class="jcp-testimonials-quote">
@@ -1882,24 +1899,33 @@ function jcp_niche_render_testimonials( array $props ): void {
 						<?php endif; ?>
 					</figcaption>
 				</figure>
-				<?php if ( $secondary !== [] ) : ?>
+				<?php endif; ?>
+				<?php if ( $slider_list !== [] ) : ?>
 				<div class="jcp-testimonials-slider" data-jcp-testimonials-slider>
 					<button type="button" class="jcp-testimonials-nav jcp-testimonials-nav--prev" data-jcp-testimonials-prev aria-label="<?php esc_attr_e( 'Previous review', 'jcp-core' ); ?>">
 						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
 					</button>
 					<div class="jcp-testimonials-track" data-jcp-testimonials-track role="list">
-						<?php foreach ( $secondary as $review ) : ?>
+						<?php foreach ( $slider_list as $review ) : ?>
 							<?php
 							$card_key = jcp_testimonials_review_key( $review );
 							/* translators: %s: reviewer name. */
-							$card_label = sprintf( __( 'Show review from %s', 'jcp-core' ), (string) $review['name'] );
+							$card_label = sprintf( __( 'Review from %s', 'jcp-core' ), (string) $review['name'] );
+							$tag        = $show_featured ? 'button' : 'article';
 							?>
-							<button
+							<<?php echo $tag; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+								<?php if ( $show_featured ) : ?>
 								type="button"
 								class="jcp-testimonials-card"
 								data-review-key="<?php echo esc_attr( $card_key ); ?>"
 								aria-label="<?php echo esc_attr( $card_label ); ?>"
 								role="listitem"
+								<?php else : ?>
+								class="jcp-testimonials-card"
+								data-review-key="<?php echo esc_attr( $card_key ); ?>"
+								aria-label="<?php echo esc_attr( $card_label ); ?>"
+								role="listitem"
+								<?php endif; ?>
 							>
 								<?php jcp_testimonials_render_stars( (int) ( $review['rating'] ?? 5 ), $show_stars ); ?>
 								<p class="jcp-testimonials-card-quote"><?php echo esc_html( (string) $review['quote'] ); ?></p>
@@ -1907,7 +1933,7 @@ function jcp_niche_render_testimonials( array $props ): void {
 								<?php if ( $show_roles && ! empty( $review['role'] ) ) : ?>
 									<span class="jcp-testimonials-card-role"><?php echo esc_html( (string) $review['role'] ); ?></span>
 								<?php endif; ?>
-							</button>
+							</<?php echo $tag; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 						<?php endforeach; ?>
 					</div>
 					<button type="button" class="jcp-testimonials-nav jcp-testimonials-nav--next" data-jcp-testimonials-next aria-label="<?php esc_attr_e( 'Next review', 'jcp-core' ); ?>">

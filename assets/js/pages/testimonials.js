@@ -19,13 +19,21 @@
     );
   }
 
-  function card(r, showStars, showRoles) {
+  function card(r, showStars, showRoles, asButton) {
     var role = showRoles && r.role ? '<span class="jcp-testimonials-card-role">' + esc(r.role) + '</span>' : '';
-    return (
-      '<button type="button" class="jcp-testimonials-card" data-review-key="' + esc(key(r)) + '" aria-label="' +
-      esc('Show review from ' + r.name) + '" role="listitem">' + stars(r.rating || 5, showStars) +
+    var inner =
+      stars(r.rating || 5, showStars) +
       '<p class="jcp-testimonials-card-quote">' + esc(r.quote) + '</p>' +
-      '<span class="jcp-testimonials-card-name">' + esc(r.name) + '</span>' + role + '</button>'
+      '<span class="jcp-testimonials-card-name">' + esc(r.name) + '</span>' + role;
+    if (asButton) {
+      return (
+        '<button type="button" class="jcp-testimonials-card" data-review-key="' + esc(key(r)) + '" aria-label="' +
+        esc('Show review from ' + r.name) + '" role="listitem">' + inner + '</button>'
+      );
+    }
+    return (
+      '<article class="jcp-testimonials-card" data-review-key="' + esc(key(r)) + '" aria-label="' +
+      esc('Review from ' + r.name) + '" role="listitem">' + inner + '</article>'
     );
   }
 
@@ -51,16 +59,25 @@
 
     var slider = root.querySelector('[data-jcp-testimonials-slider]');
     var track = slider && slider.querySelector('[data-jcp-testimonials-track]');
-    var featuredEl = root.querySelector('[data-jcp-testimonials-featured]');
-    if (!slider || !track || !featuredEl) return;
+    if (!slider || !track) return;
 
+    var featuredEl = root.querySelector('[data-jcp-testimonials-featured]');
+    var sliderOnly = root.getAttribute('data-slider-only') === '1' || !featuredEl;
     var dotsEl = slider.querySelector('[data-jcp-testimonials-dots]');
     var prevBtn = slider.querySelector('[data-jcp-testimonials-prev]');
     var nextBtn = slider.querySelector('[data-jcp-testimonials-next]');
-    var showStars = !!featuredEl.querySelector('.jcp-testimonials-stars');
-    var showRoles = !!featuredEl.querySelector('.jcp-testimonials-role') || !!track.querySelector('.jcp-testimonials-card-role');
+    var showStars = !!(
+      (featuredEl && featuredEl.querySelector('.jcp-testimonials-stars')) ||
+      track.querySelector('.jcp-testimonials-stars')
+    );
+    var showRoles = !!(
+      (featuredEl && featuredEl.querySelector('.jcp-testimonials-role')) ||
+      track.querySelector('.jcp-testimonials-card-role')
+    );
     var autoplayOn = root.getAttribute('data-autoplay') === '1';
     var autoplayMs = Math.max(1000, parseInt(root.getAttribute('data-autoplay-ms') || '6000', 10));
+    var perView = Math.max(1, parseInt(root.getAttribute('data-per-view') || (sliderOnly ? '2' : '1'), 10));
+    if (window.matchMedia('(max-width: 700px)').matches) perView = 1;
     var index = 0;
     var paused = false;
     var timer = null;
@@ -70,6 +87,7 @@
     }
 
     function secondary() {
+      if (sliderOnly) return reviews.slice();
       var fk = featuredKey();
       return reviews.filter(function (r) { return key(r) !== fk; });
     }
@@ -78,14 +96,21 @@
       return Array.prototype.slice.call(track.querySelectorAll('.jcp-testimonials-card'));
     }
 
+    function pageCount() {
+      var n = cards().length;
+      if (n <= perView) return 1;
+      return Math.max(1, n - perView + 1);
+    }
+
     function behavior() {
       return reduced ? 'auto' : 'smooth';
     }
 
     function syncUi() {
       var list = cards();
+      var pages = pageCount();
       list.forEach(function (c, i) {
-        var active = i === index;
+        var active = i >= index && i < index + perView;
         c.classList.toggle('is-active', active);
         if (active) c.setAttribute('aria-current', 'true');
         else c.removeAttribute('aria-current');
@@ -98,7 +123,7 @@
           d.setAttribute('tabindex', sel ? '0' : '-1');
         });
       }
-      var one = list.length <= 1;
+      var one = pages <= 1;
       if (prevBtn) prevBtn.disabled = one;
       if (nextBtn) nextBtn.disabled = one;
     }
@@ -106,7 +131,8 @@
     function scrollToIndex(n) {
       var list = cards();
       if (!list.length) return;
-      index = ((n % list.length) + list.length) % list.length;
+      var max = Math.max(0, list.length - perView);
+      index = ((n % (max + 1)) + (max + 1)) % (max + 1);
       list[index].scrollIntoView({ behavior: behavior(), inline: 'start', block: 'nearest' });
       syncUi();
     }
@@ -128,13 +154,15 @@
     function renderDots(count) {
       if (!dotsEl) return;
       dotsEl.innerHTML = '';
-      for (var i = 0; i < count; i++) {
+      var pages = Math.max(1, count - perView + 1);
+      if (count <= perView) pages = 1;
+      for (var i = 0; i < pages; i++) {
         (function (j) {
           var dot = document.createElement('button');
           dot.type = 'button';
           dot.className = 'jcp-testimonials-dot';
           dot.setAttribute('role', 'tab');
-          dot.setAttribute('aria-label', 'Review ' + (j + 1));
+          dot.setAttribute('aria-label', 'Reviews page ' + (j + 1));
           dot.addEventListener('click', function () { scrollToIndex(j); restart(); });
           dotsEl.appendChild(dot);
         })(i);
@@ -142,10 +170,11 @@
     }
 
     function bindCards() {
+      if (sliderOnly) return;
       cards().forEach(function (c) {
         c.addEventListener('click', function () {
           var k = c.getAttribute('data-review-key');
-          if (!k || k === featuredKey()) return;
+          if (!k || k === featuredKey() || !featuredEl) return;
           var r = reviews.find(function (item) { return key(item) === k; });
           if (!r) return;
           root.setAttribute('data-featured-key', k);
@@ -158,7 +187,7 @@
 
     function rebuildTrack() {
       var list = secondary();
-      track.innerHTML = list.map(function (r) { return card(r, showStars, showRoles); }).join('');
+      track.innerHTML = list.map(function (r) { return card(r, showStars, showRoles, !sliderOnly); }).join('');
       renderDots(list.length);
       index = 0;
       track.scrollLeft = 0;
@@ -172,8 +201,10 @@
 
     function start() {
       stop();
-      if (!autoplayOn || reduced || paused || cards().length <= 1) return;
-      timer = setInterval(function () { if (!paused) scrollToIndex(index + 1); }, autoplayMs);
+      if (!autoplayOn || reduced || paused || pageCount() <= 1) return;
+      timer = setInterval(function () {
+        if (!paused) scrollToIndex(index + 1);
+      }, autoplayMs);
     }
 
     function restart() { stop(); start(); }
@@ -194,9 +225,14 @@
       if (!root.contains(e.relatedTarget)) { paused = false; start(); }
     });
 
-    renderDots(secondary().length);
-    bindCards();
-    syncUi();
+    if (sliderOnly) {
+      renderDots(cards().length);
+      syncUi();
+    } else {
+      renderDots(secondary().length);
+      bindCards();
+      syncUi();
+    }
     start();
   }
 

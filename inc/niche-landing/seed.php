@@ -415,12 +415,12 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v11 = cohesion pass: hero social proof, unboxed sections, testimonials headline.
+	// v12 = testimonials slider-only (2-up) + final CTA unbox.
 	$demo_ver = (string) get_option( 'jcp_contractor_demo_seed_version', '' );
-	if ( $demo_ver !== '11' || ! jcp_niche_contractor_demo_exists() ) {
-		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '11' );
+	if ( $demo_ver !== '12' || ! jcp_niche_contractor_demo_exists() ) {
+		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '12' );
 		if ( $created > 0 ) {
-			update_option( 'jcp_contractor_demo_seed_version', '11' );
+			update_option( 'jcp_contractor_demo_seed_version', '12' );
 			update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 		}
 	}
