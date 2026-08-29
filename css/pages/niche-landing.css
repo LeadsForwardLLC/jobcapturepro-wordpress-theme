@@ -3378,6 +3378,21 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   --jcp-campaign-section-gap: clamp(2.25rem, 4.5vw, 3.75rem);
 }
 
+/* Breathing room under logo bar — default home hero xl (32px) feels cramped on ad landers */
+.jcp-page-campaign.jcp-home .jcp-niche-hero.jcp-hero,
+.jcp-page-campaign .jcp-niche-hero.jcp-hero,
+.jcp-page-campaign .jcp-niche-hero {
+  padding-top: clamp(2.75rem, 4.5vw, 3.5rem) !important;
+}
+
+@media (max-width: 768px) {
+  .jcp-page-campaign.jcp-home .jcp-niche-hero.jcp-hero,
+  .jcp-page-campaign .jcp-niche-hero.jcp-hero,
+  .jcp-page-campaign .jcp-niche-hero {
+    padding-top: clamp(2rem, 6vw, 2.75rem) !important;
+  }
+}
+
 .jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-grid {
   grid-template-columns: var(--jcp-hero-grid-columns);
   align-items: center;
