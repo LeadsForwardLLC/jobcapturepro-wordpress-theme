@@ -78,6 +78,9 @@
     var autoplayMs = Math.max(1000, parseInt(root.getAttribute('data-autoplay-ms') || '6000', 10));
     var perView = Math.max(1, parseInt(root.getAttribute('data-per-view') || (sliderOnly ? '2' : '1'), 10));
     if (window.matchMedia('(max-width: 700px)').matches) perView = 1;
+
+    // Advance one "page" (perView cards) in slider-only mode.
+    var step = sliderOnly ? perView : 1;
     var index = 0;
     var paused = false;
     var timer = null;
@@ -96,14 +99,27 @@
       return Array.prototype.slice.call(track.querySelectorAll('.jcp-testimonials-card'));
     }
 
-    function pageCount() {
+    function maxIndex() {
       var n = cards().length;
-      if (n <= perView) return 1;
-      return Math.max(1, n - perView + 1);
+      return Math.max(0, n - perView);
     }
 
-    function behavior() {
-      return reduced ? 'auto' : 'smooth';
+    function pageCount() {
+      return maxIndex() + 1;
+    }
+
+    function scrollTrackTo(i) {
+      var list = cards();
+      if (!list.length) return;
+      var target = list[i];
+      if (!target) return;
+      // Use scrollLeft on the track — scrollIntoView scrolls the page and breaks the slider.
+      var left = target.offsetLeft - track.offsetLeft;
+      if (typeof track.scrollTo === 'function') {
+        track.scrollTo({ left: left, behavior: reduced ? 'auto' : 'smooth' });
+      } else {
+        track.scrollLeft = left;
+      }
     }
 
     function syncUi() {
@@ -117,23 +133,39 @@
       });
       if (dotsEl) {
         Array.prototype.forEach.call(dotsEl.querySelectorAll('button'), function (d, i) {
-          var sel = i === index;
+          var pageIndex = sliderOnly ? i * step : i;
+          var sel = pageIndex === index;
           d.classList.toggle('is-active', sel);
           d.setAttribute('aria-selected', sel ? 'true' : 'false');
           d.setAttribute('tabindex', sel ? '0' : '-1');
         });
       }
       var one = pages <= 1;
-      if (prevBtn) prevBtn.disabled = one;
-      if (nextBtn) nextBtn.disabled = one;
+      if (prevBtn) {
+        prevBtn.disabled = one;
+        prevBtn.setAttribute('aria-disabled', one ? 'true' : 'false');
+      }
+      if (nextBtn) {
+        nextBtn.disabled = one;
+        nextBtn.setAttribute('aria-disabled', one ? 'true' : 'false');
+      }
     }
 
-    function scrollToIndex(n) {
-      var list = cards();
-      if (!list.length) return;
-      var max = Math.max(0, list.length - perView);
+    function goTo(n) {
+      var max = maxIndex();
+      if (max <= 0) {
+        index = 0;
+        scrollTrackTo(0);
+        syncUi();
+        return;
+      }
       index = ((n % (max + 1)) + (max + 1)) % (max + 1);
-      list[index].scrollIntoView({ behavior: behavior(), inline: 'start', block: 'nearest' });
+      // Snap to step boundaries in slider-only mode.
+      if (sliderOnly && step > 1) {
+        index = Math.round(index / step) * step;
+        if (index > max) index = max;
+      }
+      scrollTrackTo(index);
       syncUi();
     }
 
@@ -144,18 +176,25 @@
       var nearest = 0;
       var min = Infinity;
       list.forEach(function (c, i) {
-        var d = Math.abs(c.offsetLeft - left);
-        if (d < min) { min = d; nearest = i; }
+        var d = Math.abs(c.offsetLeft - track.offsetLeft - left);
+        if (d < min) {
+          min = d;
+          nearest = i;
+        }
       });
       index = nearest;
       syncUi();
     }
 
-    function renderDots(count) {
+    function renderDots() {
       if (!dotsEl) return;
       dotsEl.innerHTML = '';
-      var pages = Math.max(1, count - perView + 1);
-      if (count <= perView) pages = 1;
+      var max = maxIndex();
+      var pages = max + 1;
+      if (sliderOnly && step > 1) {
+        pages = Math.ceil(cards().length / step);
+      }
+      if (cards().length <= perView) pages = 1;
       for (var i = 0; i < pages; i++) {
         (function (j) {
           var dot = document.createElement('button');
@@ -163,7 +202,11 @@
           dot.className = 'jcp-testimonials-dot';
           dot.setAttribute('role', 'tab');
           dot.setAttribute('aria-label', 'Reviews page ' + (j + 1));
-          dot.addEventListener('click', function () { scrollToIndex(j); restart(); });
+          dot.addEventListener('click', function (e) {
+            e.preventDefault();
+            goTo(sliderOnly ? j * step : j);
+            restart();
+          });
           dotsEl.appendChild(dot);
         })(i);
       }
@@ -188,51 +231,88 @@
     function rebuildTrack() {
       var list = secondary();
       track.innerHTML = list.map(function (r) { return card(r, showStars, showRoles, !sliderOnly); }).join('');
-      renderDots(list.length);
       index = 0;
       track.scrollLeft = 0;
+      renderDots();
       bindCards();
       syncUi();
     }
 
     function stop() {
-      if (timer) { clearInterval(timer); timer = null; }
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
     }
 
     function start() {
       stop();
       if (!autoplayOn || reduced || paused || pageCount() <= 1) return;
       timer = setInterval(function () {
-        if (!paused) scrollToIndex(index + 1);
+        if (!paused) goTo(index + step);
       }, autoplayMs);
     }
 
-    function restart() { stop(); start(); }
+    function restart() {
+      stop();
+      start();
+    }
 
-    if (prevBtn) prevBtn.addEventListener('click', function () { scrollToIndex(index - 1); restart(); });
-    if (nextBtn) nextBtn.addEventListener('click', function () { scrollToIndex(index + 1); restart(); });
+    if (prevBtn) {
+      prevBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        goTo(index - step);
+        restart();
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        goTo(index + step);
+        restart();
+      });
+    }
 
     var scrollTimer;
     track.addEventListener('scroll', function () {
       clearTimeout(scrollTimer);
       scrollTimer = setTimeout(syncFromScroll, 80);
-    });
+    }, { passive: true });
 
-    root.addEventListener('mouseenter', function () { paused = true; stop(); });
-    root.addEventListener('mouseleave', function () { paused = false; start(); });
-    root.addEventListener('focusin', function () { paused = true; stop(); });
+    root.addEventListener('mouseenter', function () {
+      paused = true;
+      stop();
+    });
+    root.addEventListener('mouseleave', function () {
+      paused = false;
+      start();
+    });
+    root.addEventListener('focusin', function () {
+      paused = true;
+      stop();
+    });
     root.addEventListener('focusout', function (e) {
-      if (!root.contains(e.relatedTarget)) { paused = false; start(); }
+      if (!root.contains(e.relatedTarget)) {
+        paused = false;
+        start();
+      }
     });
 
-    if (sliderOnly) {
-      renderDots(cards().length);
-      syncUi();
-    } else {
-      renderDots(secondary().length);
-      bindCards();
-      syncUi();
-    }
+    window.addEventListener('resize', function () {
+      var nextPer = Math.max(1, parseInt(root.getAttribute('data-per-view') || (sliderOnly ? '2' : '1'), 10));
+      if (window.matchMedia('(max-width: 700px)').matches) nextPer = 1;
+      if (nextPer !== perView) {
+        perView = nextPer;
+        step = sliderOnly ? perView : 1;
+        renderDots();
+        goTo(0);
+        restart();
+      }
+    });
+
+    renderDots();
+    if (!sliderOnly) bindCards();
+    syncUi();
     start();
   }
 

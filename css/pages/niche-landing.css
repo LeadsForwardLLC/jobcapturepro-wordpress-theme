@@ -4651,16 +4651,35 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
 
 .jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-slider {
   width: 100%;
+  align-items: stretch;
 }
 
 .jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-track {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
   gap: 1rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  min-width: 0;
+}
+
+.jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-track::-webkit-scrollbar {
+  display: none;
 }
 
 .jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-card {
-  flex: 0 0 calc((100% - 1rem) / 2);
-  max-width: calc((100% - 1rem) / 2);
+  flex: 0 0 calc((100% - 1rem) / 2) !important;
+  width: calc((100% - 1rem) / 2) !important;
+  max-width: calc((100% - 1rem) / 2) !important;
+  min-width: 0;
   scroll-snap-align: start;
+  scroll-snap-stop: always;
   text-align: left;
   cursor: default;
   pointer-events: auto;
@@ -4670,18 +4689,26 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   padding: 1.15rem 1.25rem;
   min-height: 100%;
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+  box-sizing: border-box;
+}
+
+.jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-nav:disabled {
+  opacity: 0.35;
+  cursor: default;
 }
 
 .jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-card-quote {
   font-size: 0.98rem;
   line-height: 1.5;
   margin: 0.65rem 0 0.85rem;
+  -webkit-line-clamp: 5;
 }
 
 @media (max-width: 700px) {
   .jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-card {
-    flex-basis: 100%;
-    max-width: 100%;
+    flex-basis: 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
 
