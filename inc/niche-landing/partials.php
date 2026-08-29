@@ -9,21 +9,6 @@
  */
 
 /**
- * Ranking factor card (homepage pattern).
- *
- * @param string               $title            Card title.
- * @param string               $icon             Lucide icon name.
- * @param string               $stat_value       Optional stat value.
- * @param string               $stat_label       Optional stat label.
- * @param callable(): void|null $body_cb          Optional inner HTML callback.
- * @param string               $title_path       JSON path for title.
- * @param string               $stat_value_path  JSON path for stat value.
- * @param string               $stat_label_path  JSON path for stat label.
- * @param int                  $array_index      Optional list index for add/remove UI (-1 = none).
- * @param string               $icon_path        JSON path for icon slug (e.g. benefits.items.0.icon).
- * @param bool                 $show_icon        Whether to render the icon wrapper.
- */
-/**
  * Ranking / benefit / audience factor card.
  *
  * @param string               $title           Title.
@@ -38,13 +23,25 @@
  * @param string               $icon_path       Editable icon path.
  * @param bool                 $show_icon       Whether to output the icon.
  * @param array<string, bool>  $pieces          show_title, show_body, show_stats.
+ * @param string               $url             Optional whole-card link URL.
+ * @param string               $url_path        Flat content path for the card URL (editor).
  */
-function jcp_niche_factor_card( string $title, string $icon, string $stat_value = '', string $stat_label = '', ?callable $body_cb = null, string $title_path = '', string $stat_value_path = '', string $stat_label_path = '', int $array_index = -1, string $icon_path = '', bool $show_icon = true, array $pieces = [] ): void {
+function jcp_niche_factor_card( string $title, string $icon, string $stat_value = '', string $stat_label = '', ?callable $body_cb = null, string $title_path = '', string $stat_value_path = '', string $stat_label_path = '', int $array_index = -1, string $icon_path = '', bool $show_icon = true, array $pieces = [], string $url = '', string $url_path = '' ): void {
 	$show_title = ! array_key_exists( 'show_title', $pieces ) || ! empty( $pieces['show_title'] );
 	$show_body  = ! array_key_exists( 'show_body', $pieces ) || ! empty( $pieces['show_body'] );
 	$show_stats = ! array_key_exists( 'show_stats', $pieces ) || ! empty( $pieces['show_stats'] );
+	$url        = trim( $url );
+	$linked     = $url !== '';
+	$classes    = 'ranking-factor-card' . ( $linked ? ' ranking-factor-card--linked' : '' );
 	?>
-	<div class="ranking-factor-card"<?php if ( $array_index >= 0 ) { jcp_niche_array_item_attr( $array_index ); } ?>>
+	<div class="<?php echo esc_attr( $classes ); ?>"<?php
+	if ( $array_index >= 0 ) {
+		jcp_niche_array_item_attr( $array_index );
+	}
+	if ( $url_path !== '' ) {
+		echo ' data-jcp-card-link-path="' . esc_attr( $url_path ) . '"';
+	}
+	?>>
 		<?php if ( $show_icon ) : ?>
 		<div class="factor-icon-wrapper"<?php if ( $icon_path !== '' && function_exists( 'jcp_niche_user_can_inline_edit' ) && jcp_niche_user_can_inline_edit() ) { echo ' data-jcp-icon-path="' . esc_attr( $icon_path ) . '" title="' . esc_attr__( 'Click to change icon', 'jcp-core' ) . '" role="button" tabindex="0"'; } ?>>
 			<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="factor-icon" alt="" width="32" height="32" />
@@ -63,6 +60,9 @@ function jcp_niche_factor_card( string $title, string $icon, string $stat_value 
 					<span class="stat-label"<?php if ( $stat_label_path !== '' ) { jcp_niche_editable_attr( $stat_label_path ); } ?>><?php echo esc_html( $stat_label ); ?></span>
 				<?php endif; ?>
 			</div>
+		<?php endif; ?>
+		<?php if ( $linked ) : ?>
+			<a class="ranking-factor-card__link" href="<?php echo esc_url( $url ); ?>" aria-label="<?php echo esc_attr( $title !== '' ? $title : __( 'Open', 'jcp-core' ) ); ?>" tabindex="-1"></a>
 		<?php endif; ?>
 	</div>
 	<?php

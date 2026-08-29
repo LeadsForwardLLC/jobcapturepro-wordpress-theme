@@ -469,6 +469,7 @@
 
       <div class="jcp-niche-link-popover-actions">
         <button type="button" class="btn btn-primary" id="jcpNicheTextLinkApply">Insert link</button>
+        <button type="button" class="btn btn-secondary" id="jcpNicheTextLinkClear" hidden>Remove link</button>
         <button type="button" class="btn btn-secondary" id="jcpNicheTextLinkCancel">Close</button>
       </div>
     </div>
@@ -507,6 +508,7 @@
   const adminLink = bar.querySelector('.jcp-niche-edit-link');
   const textLinkBtn = bar.querySelector('#jcpNicheTextLink');
   let activeLink = null;
+  let activeCardLink = null;
   let activeRichField = null;
   let activeBlockId = null;
 
@@ -547,6 +549,36 @@
   const closeTextLinkModal = () => {
     closeEditorModal(textLinkPopover);
     activeRichField = null;
+  };
+
+  const setActiveCardLink = (card) => {
+    document.querySelectorAll('.ranking-factor-card.is-card-link-target').forEach((el) => {
+      el.classList.remove('is-card-link-target');
+    });
+    activeCardLink = card || null;
+    if (activeCardLink) activeCardLink.classList.add('is-card-link-target');
+  };
+
+  const syncCardLinkDom = (card, url) => {
+    if (!card) return;
+    const href = String(url || '').trim();
+    let hit = card.querySelector(':scope > .ranking-factor-card__link');
+    if (href) {
+      card.classList.add('ranking-factor-card--linked');
+      if (!hit) {
+        hit = document.createElement('a');
+        hit.className = 'ranking-factor-card__link';
+        hit.tabIndex = -1;
+        card.appendChild(hit);
+      }
+      hit.setAttribute('href', href);
+      const titleEl = card.querySelector('.factor-title');
+      const label = (titleEl?.textContent || '').trim() || 'Open';
+      hit.setAttribute('aria-label', label);
+    } else {
+      card.classList.remove('ranking-factor-card--linked');
+      if (hit) hit.remove();
+    }
   };
 
   const ICON_CHOICES = [
@@ -2850,6 +2882,13 @@
       const val = getPath(flatContent, path);
       if (val !== undefined && val !== null) el.setAttribute('href', String(val));
     });
+    document.querySelectorAll('[data-jcp-card-link-path]').forEach((card) => {
+      const path = card.getAttribute('data-jcp-card-link-path');
+      if (!path) return;
+      const val = getPath(flatContent, path);
+      if (val === undefined || val === null) return;
+      syncCardLinkDom(card, String(val));
+    });
     ensureHrefEditControls();
   };
 
@@ -3384,6 +3423,12 @@
       if (!path) return;
       setPath(flatContent, path, el.getAttribute('href') || '');
     });
+    document.querySelectorAll('[data-jcp-card-link-path]').forEach((card) => {
+      const path = card.getAttribute('data-jcp-card-link-path');
+      if (!path) return;
+      const hit = card.querySelector(':scope > .ranking-factor-card__link');
+      setPath(flatContent, path, hit ? (hit.getAttribute('href') || '') : '');
+    });
     collectObjectArraysFromDom();
     collectStringArraysFromDom();
   };
@@ -3645,6 +3690,29 @@
     openCtaLinkModal(link, { focusLabel: false });
   });
 
+  document.addEventListener('click', (e) => {
+    if (!editing) return;
+    if (e.target.closest('.jcp-editor-modal, .jcp-niche-edit-bar, .jcp-block-structure, #jcpNicheTextLink')) return;
+    const card = e.target.closest('.ranking-factor-card[data-jcp-card-link-path]');
+    if (card) {
+      setActiveCardLink(card);
+      return;
+    }
+    if (!e.target.closest('.jcp-niche-text-link-popover')) {
+      setActiveCardLink(null);
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!editing) return;
+    const hit = e.target.closest('.ranking-factor-card__link');
+    if (!hit) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const card = hit.closest('.ranking-factor-card[data-jcp-card-link-path]');
+    if (card) setActiveCardLink(card);
+  }, true);
+
   document.addEventListener('dblclick', (e) => {
     if (!editing) return;
     const link = e.target.closest('[data-jcp-href-path]');
@@ -3687,8 +3755,14 @@
     const counts = new Map();
     document.querySelectorAll('[data-jcp-path] a[href]').forEach((a) => {
       if (a.hasAttribute('data-jcp-href-path')) return;
+      if (a.classList.contains('ranking-factor-card__link')) return;
       const raw = a.getAttribute('href');
       const href = normalizeInternalHref(raw);
+      if (!href) return;
+      counts.set(href, (counts.get(href) || 0) + 1);
+    });
+    document.querySelectorAll('.ranking-factor-card__link[href]').forEach((a) => {
+      const href = normalizeInternalHref(a.getAttribute('href'));
       if (!href) return;
       counts.set(href, (counts.get(href) || 0) + 1);
     });
@@ -3939,24 +4013,51 @@
   };
 
   const openTextLinkPopover = () => {
-    const { range, field } = getLinkContext();
+    const card = activeCardLink?.isConnected
+      ? activeCardLink
+      : document.querySelector('.ranking-factor-card.is-card-link-target[data-jcp-card-link-path]');
+    const cardMode = !!(card && card.getAttribute('data-jcp-card-link-path'));
+    if (cardMode) setActiveCardLink(card);
+
+    const { range, field } = cardMode ? { range: null, field: null } : getLinkContext();
     activeRichField = field || null;
     statusEl.textContent = '';
 
     const counts = getCurrentInternalLinkCounts();
-    const anchorText = range && !range.collapsed ? range.toString() : '';
+    const cardTitle = cardMode
+      ? ((card.querySelector('.factor-title')?.textContent || '').trim())
+      : '';
+    const anchorText = cardMode
+      ? cardTitle
+      : (range && !range.collapsed ? range.toString() : '');
     const { groups, flat, anchorTokens } = getSuggestedInternalPages(counts, anchorText);
 
     const hintEl = textLinkPopover.querySelector('#jcpNicheTextLinkHint');
     const seoEl = textLinkPopover.querySelector('#jcpNicheLinkSeo');
     const listEl = textLinkPopover.querySelector('#jcpNicheLinkSuggestions');
+    const applyBtn = textLinkPopover.querySelector('#jcpNicheTextLinkApply');
+    const clearBtn = textLinkPopover.querySelector('#jcpNicheTextLinkClear');
+    const titleEl = textLinkPopover.querySelector('#jcpTextLinkModalTitle');
+
+    if (titleEl) titleEl.textContent = cardMode ? 'Card link' : 'Internal link';
+    if (applyBtn) applyBtn.textContent = cardMode ? 'Apply link' : 'Insert link';
+    if (clearBtn) {
+      const existing = cardMode
+        ? String(getPath(flatContent, card.getAttribute('data-jcp-card-link-path')) || card.querySelector('.ranking-factor-card__link')?.getAttribute('href') || '').trim()
+        : '';
+      clearBtn.hidden = !(cardMode && existing);
+    }
 
     const totalLinks = [...counts.values()].reduce((a, b) => a + b, 0);
     const uniqueLinks = counts.size;
     const underlinked = flat.filter((item) => item.siteInlinks <= 1).length;
 
-    if (!field) {
-      hintEl.textContent = 'Click inside a text paragraph first.';
+    if (cardMode) {
+      hintEl.textContent = cardTitle
+        ? `Link the “${cardTitle.slice(0, 48)}${cardTitle.length > 48 ? '…' : ''}” card — pick a page or paste a URL.`
+        : 'Link this benefit card — pick a page or paste a URL.';
+    } else if (!field) {
+      hintEl.textContent = 'Click a benefit card or inside a text paragraph first.';
     } else if (anchorText) {
       hintEl.textContent = `Link “${anchorText.slice(0, 48)}${anchorText.length > 48 ? '…' : ''}” — pick a page or paste a URL.`;
     } else {
@@ -3975,7 +4076,9 @@
     } else if (anchorTokens.length) {
       seoGap.textContent = `Scored ${flat.length} pages against “${anchorTokens.slice(0, 4).join(', ')}”.`;
     } else {
-      seoGap.textContent = 'Select anchor text to rank suggestions by topical relevance.';
+      seoGap.textContent = cardMode
+        ? 'Suggestions ranked by card title. Paste any URL if needed.'
+        : 'Select anchor text to rank suggestions by topical relevance.';
     }
     seoEl.appendChild(seoGap);
 
@@ -4010,8 +4113,18 @@
 
     const urlInput = textLinkPopover.querySelector('#jcpNicheTextLinkUrl');
     if (urlInput) {
-      const topMatch = groups[0]?.items?.[0] || flat[0];
-      urlInput.value = topMatch?.href || '';
+      if (cardMode) {
+        const existing = String(
+          getPath(flatContent, card.getAttribute('data-jcp-card-link-path'))
+          || card.querySelector('.ranking-factor-card__link')?.getAttribute('href')
+          || ''
+        ).trim();
+        const topMatch = groups[0]?.items?.[0] || flat[0];
+        urlInput.value = existing || topMatch?.href || '';
+      } else {
+        const topMatch = groups[0]?.items?.[0] || flat[0];
+        urlInput.value = topMatch?.href || '';
+      }
     }
 
     openEditorModal(textLinkPopover, { focusSelector: '#jcpNicheTextLinkUrl' });
@@ -4029,10 +4142,26 @@
     const url = textLinkPopover.querySelector('#jcpNicheTextLinkUrl').value.trim();
     if (!url) return;
 
+    const card = activeCardLink?.isConnected
+      ? activeCardLink
+      : document.querySelector('.ranking-factor-card.is-card-link-target[data-jcp-card-link-path]');
+    if (card) {
+      const path = card.getAttribute('data-jcp-card-link-path');
+      if (!path) return;
+      setPath(flatContent, path, url);
+      syncCardLinkDom(card, url);
+      pendingLinkRange = null;
+      pendingLinkField = null;
+      closeTextLinkModal();
+      statusEl.textContent = '';
+      recordChange();
+      return;
+    }
+
     const { range, field } = getLinkContext();
     const rich = field || activeRichField;
     if (!rich) {
-      statusEl.textContent = 'Click inside a text paragraph first.';
+      statusEl.textContent = 'Click a benefit card or inside a text paragraph first.';
       return;
     }
 
@@ -4067,6 +4196,20 @@
 
     pendingLinkRange = null;
     pendingLinkField = null;
+    closeTextLinkModal();
+    statusEl.textContent = '';
+    recordChange();
+  });
+
+  textLinkPopover.querySelector('#jcpNicheTextLinkClear')?.addEventListener('click', () => {
+    const card = activeCardLink?.isConnected
+      ? activeCardLink
+      : document.querySelector('.ranking-factor-card.is-card-link-target[data-jcp-card-link-path]');
+    if (!card) return;
+    const path = card.getAttribute('data-jcp-card-link-path');
+    if (!path) return;
+    setPath(flatContent, path, '');
+    syncCardLinkDom(card, '');
     closeTextLinkModal();
     statusEl.textContent = '';
     recordChange();

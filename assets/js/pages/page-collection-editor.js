@@ -30,6 +30,7 @@
       image_alt: '',
       stat_value: 'Stat',
       stat_label: 'label',
+      url: '',
     }),
     'check_ins.features': () => ({ title: 'Feature', body: 'Description', icon: 'badge-check' }),
     'problem.pain_points': () => ({ title: 'Pain point', body: 'Description', icon: 'circle-alert' }),
@@ -231,12 +232,21 @@
           <span class="stat-label" data-jcp-path="${basePath}.${index}.stat_label">${esc(data.stat_label || '')}</span>
         </div>`
       : '';
+    const isBenefits = basePath === 'benefits.items';
+    const url = String(data.url || '').trim();
+    const linkPath = `${basePath}.${index}.url`;
+    const linkAttr = isBenefits ? ` data-jcp-card-link-path="${linkPath}"` : '';
+    const linkedClass = url ? ' ranking-factor-card--linked' : '';
+    const hit = (isBenefits && url)
+      ? `<a class="ranking-factor-card__link" href="${esc(url)}" aria-label="${esc(data.title || 'Open')}" tabindex="-1"></a>`
+      : '';
     return `
-      <div class="ranking-factor-card" data-jcp-array-item="${index}">
+      <div class="ranking-factor-card${linkedClass}" data-jcp-array-item="${index}"${linkAttr}>
         ${icon}
         ${title}
         ${body}
         ${stat}
+        ${hit}
       </div>`;
   };
 

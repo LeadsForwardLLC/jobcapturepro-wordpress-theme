@@ -971,7 +971,9 @@ function jcp_niche_render_benefits( array $c ): void {
 							'show_title' => jcp_niche_show_field( $b, 'show_card_titles', true ),
 							'show_body'  => jcp_niche_show_field( $b, 'show_card_body', true ),
 							'show_stats' => jcp_niche_show_field( $b, 'show_card_stats', true ),
-						]
+						],
+						(string) ( $item['url'] ?? '' ),
+						'benefits.items.' . $bi . '.url'
 					);
 				endforeach;
 				?>
