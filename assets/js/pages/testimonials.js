@@ -45,16 +45,28 @@
       '<figcaption class="jcp-testimonials-cite"><cite class="jcp-testimonials-name">' + esc(r.name) + '</cite>' + role + '</figcaption>';
   }
 
+  function parseStore(el) {
+    var raw = (el && el.textContent ? el.textContent : '').trim();
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw);
+    } catch (e1) {
+      // Legacy pages used esc_html() so textContent can still contain &quot;.
+      var ta = document.createElement('textarea');
+      ta.innerHTML = raw;
+      try {
+        return JSON.parse(ta.value);
+      } catch (e2) {
+        return null;
+      }
+    }
+  }
+
   function init(root) {
     var storeEl = root.querySelector('[data-jcp-testimonials-store]');
     if (!storeEl) return;
 
-    var reviews;
-    try {
-      reviews = JSON.parse(storeEl.textContent || '[]');
-    } catch (e) {
-      return;
-    }
+    var reviews = parseStore(storeEl);
     if (!Array.isArray(reviews) || !reviews.length) return;
 
     var slider = root.querySelector('[data-jcp-testimonials-slider]');
@@ -113,8 +125,11 @@
       if (!list.length) return;
       var target = list[i];
       if (!target) return;
-      // Use scrollLeft on the track — scrollIntoView scrolls the page and breaks the slider.
-      var left = target.offsetLeft - track.offsetLeft;
+      // Prefer getBoundingClientRect — offsetLeft breaks when offsetParents differ.
+      var left =
+        target.getBoundingClientRect().left -
+        track.getBoundingClientRect().left +
+        track.scrollLeft;
       if (typeof track.scrollTo === 'function') {
         track.scrollTo({ left: left, behavior: reduced ? 'auto' : 'smooth' });
       } else {
@@ -172,17 +187,21 @@
     function syncFromScroll() {
       var list = cards();
       if (!list.length) return;
-      var left = track.scrollLeft;
+      var trackLeft = track.getBoundingClientRect().left;
       var nearest = 0;
       var min = Infinity;
       list.forEach(function (c, i) {
-        var d = Math.abs(c.offsetLeft - track.offsetLeft - left);
+        var d = Math.abs(c.getBoundingClientRect().left - trackLeft);
         if (d < min) {
           min = d;
           nearest = i;
         }
       });
       index = nearest;
+      if (sliderOnly && step > 1) {
+        index = Math.round(index / step) * step;
+        if (index > maxIndex()) index = maxIndex();
+      }
       syncUi();
     }
 

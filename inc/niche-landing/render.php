@@ -1945,7 +1945,17 @@ function jcp_niche_render_testimonials( array $props ): void {
 			</div>
 		</div>
 		<?php if ( is_string( $store_json ) && $store_json !== '' ) : ?>
-			<script type="application/json" data-jcp-testimonials-store><?php echo esc_html( $store_json ); ?></script>
+			<?php
+			/*
+			 * Do not esc_html() here — it turns " into &quot; and JSON.parse(textContent) fails,
+			 * which leaves the slider uninitialized (nav clicks do nothing).
+			 * JSON_HEX_TAG / JSON_HEX_AMP keep </script> and & safe inside the script tag.
+			 */
+			$store_safe = wp_json_encode( $reviews, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+			?>
+			<?php if ( is_string( $store_safe ) && $store_safe !== '' ) : ?>
+			<script type="application/json" data-jcp-testimonials-store><?php echo $store_safe; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON_HEX_* encoded. ?></script>
+			<?php endif; ?>
 		<?php endif; ?>
 	</section>
 	<?php

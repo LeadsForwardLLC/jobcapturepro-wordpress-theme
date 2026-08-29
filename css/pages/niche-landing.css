@@ -4679,13 +4679,15 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   align-items: stretch;
   gap: 1rem;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   overscroll-behavior-x: contain;
   min-width: 0;
+  /* Room so card edges aren't flush; no drop-shadow (overflow-x clips shadows). */
+  padding-block: 0.15rem;
 }
 
 .jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-track::-webkit-scrollbar {
@@ -4707,7 +4709,7 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   border-radius: 0.9rem;
   padding: 1.15rem 1.25rem;
   min-height: 100%;
-  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+  box-shadow: none;
   box-sizing: border-box;
 }
 
@@ -4792,6 +4794,8 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
     border-radius: 0;
     background: transparent !important;
     box-shadow: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
   }
 
   .jcp-page-campaign .jcp-meta-stats {
