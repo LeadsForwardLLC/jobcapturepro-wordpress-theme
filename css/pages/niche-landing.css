@@ -3722,6 +3722,14 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 }
 
 /* Faces strip under testimonials header */
+.jcp-page-campaign .jcp-block-testimonials .jcp-testimonials-eyebrow {
+  display: flex;
+  width: fit-content;
+  margin-inline: auto;
+  margin-bottom: var(--jcp-space-lg, 1rem);
+  text-align: center;
+}
+
 .jcp-page-campaign .jcp-campaign-faces {
   display: flex;
   align-items: center;
