@@ -86,10 +86,22 @@
 
 .jcp-niche-hero--internal .directory-cta-row {
   margin-top: var(--jcp-space-sm);
+  align-items: flex-start;
 }
 
-.jcp-niche-hero--internal .jcp-niche-trust-line {
-  margin-top: var(--jcp-space-sm);
+.jcp-niche-hero--internal .jcp-hero-primary-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--jcp-space-xs);
+  max-width: 100%;
+}
+
+.jcp-niche-hero--internal .jcp-hero-primary-cta .jcp-niche-trust-line,
+.jcp-niche-hero--internal .jcp-hero-primary-cta .jcp-hero-cta-microcopy {
+  display: block;
+  margin: 0;
+  max-width: 22rem;
 }
 
 .jcp-niche-hero--internal .hero-visual-stack {

@@ -118,6 +118,7 @@
   display: flex;
   gap: var(--jcp-space-md);
   flex-wrap: wrap;
+  align-items: flex-start;
   margin-top: var(--jcp-space-md);
   margin-bottom: 0;
   padding-bottom: 0;
@@ -128,6 +129,35 @@
   padding: var(--jcp-space-md) var(--jcp-space-2xl);
   font-size: var(--jcp-font-size-base);
   font-weight: var(--jcp-font-weight-semibold);
+}
+
+/*
+ * Primary CTA + trust byline must stack (button, then byline).
+ * home.css alone is not enough — niche/internal pages do not load it.
+ */
+.jcp-hero-primary-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--jcp-space-xs);
+  max-width: 100%;
+}
+
+.jcp-hero-primary-cta .jcp-hero-cta-microcopy,
+.jcp-hero-primary-cta .jcp-niche-trust-line {
+  display: block;
+  margin: 0;
+  max-width: 22rem;
+  line-height: 1.4;
+  font-size: var(--jcp-font-size-sm);
+  color: var(--jcp-color-text-secondary);
+}
+
+.jcp-hero-cta-microcopy {
+  font-size: var(--jcp-font-size-sm);
+  color: var(--jcp-color-text-secondary);
+  line-height: 1.4;
+  margin: 0;
 }
 
 .jcp-hero-reassurance {
