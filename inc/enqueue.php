@@ -50,6 +50,22 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_script( 'jcp-core-nav', 'js/core/jcp-nav.js' );
         // Site banner dismiss behavior (no-op if banner not present).
         jcp_core_enqueue_script( 'jcp-core-site-banner', 'js/core/jcp-site-banner.js', [ 'jcp-core-nav' ] );
+        // After a demo, decorate Start free / onboarding links with name + email from localStorage.
+        jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-nav' ] );
+        if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {
+            $onb = [
+                'url'         => jcp_core_onboarding_app_url_raw(
+                    function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : []
+                ),
+                'sessionId'   => jcp_core_onboarding_hardcoded_session_id(),
+                'utmDefaults' => function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : [],
+            ];
+            wp_add_inline_script(
+                'jcp-core-onboarding-handoff',
+                'window.JCP_ONBOARDING = window.JCP_ONBOARDING || ' . wp_json_encode( $onb ) . ';',
+                'before'
+            );
+        }
     }
 
     // UI Library page (internal documentation - shows all components)
@@ -210,8 +226,7 @@ function jcp_core_enqueue_assets(): void {
         || $pages['is_prototype'] || $pages['is_demo'] || $pages['is_directory'] || $pages['is_company'] || $pages['is_estimate'];
     if ( $needs_render ) {
         jcp_core_enqueue_script( $render_handle, 'js/core/jcp-render.js', $render_deps );
-        // Decorate onboarding CTAs with demo form values (from localStorage) when present.
-        jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ $render_handle ] );
+        // Onboarding handoff (name/email from demo) is loaded sitewide with nav above.
         $globals = "window.JCP_ENV = 'live';\n";
         $globals .= "window.JCP_CONFIG = { env: 'live', baseUrl: '" . esc_url_raw( site_url() ) . "' };\n";
         $globals .= "window.JCP_ASSET_BASE = '" . esc_url_raw( get_stylesheet_directory_uri() . '/assets' ) . "';";
@@ -221,7 +236,9 @@ function jcp_core_enqueue_assets(): void {
         }
         if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {
             $onb = [
-                'url'         => jcp_core_onboarding_app_url_raw(),
+                'url'         => jcp_core_onboarding_app_url_raw(
+                    function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : []
+                ),
                 'sessionId'   => jcp_core_onboarding_hardcoded_session_id(),
                 'utmDefaults' => function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : [],
             ];

@@ -4136,6 +4136,12 @@ function showPostDemoPanel() {
   document.getElementById('post-demo-bubble')?.classList.add('is-hidden');
   setMobileGuideCollapsed(true);
 
+  // Rebuild Start free href at open time so survey email/name are included.
+  const primaryCta = document.querySelector('.post-demo-primary-cta');
+  if (primaryCta) {
+    primaryCta.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
+  }
+
   panel.classList.add('active');
   jcpDemoTrack('post_demo_modal_shown');
   // Matomo: Demo / Completed (once per session)
@@ -4247,7 +4253,10 @@ function wirePostDemoPanel() {
   const primaryCta = document.querySelector('.post-demo-primary-cta');
   if (primaryCta) {
     primaryCta.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
-    primaryCta.addEventListener('click', function() {
+    primaryCta.addEventListener('click', function(event) {
+      // Refresh PII + UTMs on click so the handoff always matches the latest survey data.
+      const handoffUrl = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
+      primaryCta.href = handoffUrl;
       jcpDemoTrack('cta_clicked', null, { cta: 'start_free_trial', source: 'demo_post_panel', label: 'Start for free' }, { keepalive: true });
       jcpDemoTrack('demo_converted', null, { cta: 'start_free_trial', source: 'demo_post_panel' }, { keepalive: true });
       // Matomo: Post Demo CTA Click (Start free), once per session
@@ -4257,6 +4266,8 @@ function wirePostDemoPanel() {
           sessionStorage.setItem('jcp_matomo_demo_cta_early_access', '1');
         }
       } catch (e) {}
+      event.preventDefault();
+      window.location.href = handoffUrl;
     });
   }
 

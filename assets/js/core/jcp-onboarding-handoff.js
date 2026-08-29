@@ -164,6 +164,22 @@
     });
   };
 
+  // Re-apply on click in case localStorage was written after initial decorate.
+  document.addEventListener(
+    'click',
+    (event) => {
+      const a = event.target && event.target.closest ? event.target.closest('a[href]') : null;
+      if (!a) return;
+      const href = a.getAttribute('href') || '';
+      if (!isOnboardingUrl(href)) return;
+      const extra = buildHandoffParams();
+      if (!extra) return;
+      const next = decorateHref(href, extra);
+      if (next && next !== href) a.setAttribute('href', next);
+    },
+    true
+  );
+
   // Templates can render after DOMContentLoaded; run a few times.
   const run = () => {
     decorateAll();
