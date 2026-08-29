@@ -149,6 +149,7 @@ function jcp_core_enqueue_assets(): void {
             jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-sections', 'jcp-core-hero-live-demo' ] );
             jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
             jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [] );
+            jcp_core_enqueue_script( 'jcp-core-campaign', 'js/pages/campaign.js', [], false, true );
             // Lightweight paid LP view signal for GTM/Meta (maps to PaidLandingView).
             wp_add_inline_script(
                 'jcp-core-attribution',

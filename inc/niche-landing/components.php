@@ -79,6 +79,56 @@ function jcp_component_home_meta_stats( array $items, string $path = 'hero.meta_
 	<?php
 }
 
+/**
+ * Hero social proof row: stars + face stack + rating label (campaign landers).
+ *
+ * @param array<string, mixed> $proof  { rating?: int, label?: string, faces?: list<{image_url,image_alt}> }.
+ * @param string               $path   Editable path prefix.
+ */
+function jcp_component_hero_social_proof( array $proof, string $path = 'hero.social_proof' ): void {
+	$faces = [];
+	foreach ( (array) ( $proof['faces'] ?? [] ) as $face ) {
+		if ( ! is_array( $face ) ) {
+			continue;
+		}
+		$url = trim( (string) ( $face['image_url'] ?? '' ) );
+		if ( $url === '' ) {
+			continue;
+		}
+		$faces[] = [
+			'url' => $url,
+			'alt' => (string) ( $face['image_alt'] ?? $face['alt'] ?? '' ),
+		];
+	}
+	$label  = trim( (string) ( $proof['label'] ?? '' ) );
+	$rating = (int) ( $proof['rating'] ?? 5 );
+	if ( $rating < 1 ) {
+		$rating = 5;
+	}
+	if ( $rating > 5 ) {
+		$rating = 5;
+	}
+	if ( $faces === [] && $label === '' ) {
+		return;
+	}
+	?>
+	<div class="jcp-hero-social-proof"<?php echo $path !== '' ? ' data-jcp-path-root="' . esc_attr( $path ) . '"' : ''; ?>>
+		<div class="jcp-hero-social-proof__stars" aria-label="<?php echo esc_attr( sprintf( /* translators: %d: star rating */ __( '%d out of 5 stars', 'jcp-core' ), $rating ) ); ?>">
+			<span aria-hidden="true"><?php echo esc_html( str_repeat( '★', $rating ) ); ?></span>
+		</div>
+		<?php if ( $faces !== [] ) : ?>
+		<div class="jcp-hero-social-proof__faces" aria-hidden="true">
+			<?php foreach ( $faces as $i => $face ) : ?>
+				<img src="<?php echo esc_url( $face['url'] ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async"<?php echo $path !== '' ? ' data-jcp-media-url-path="' . esc_attr( $path . '.faces.' . $i . '.image_url' ) . '"' : ''; ?> />
+			<?php endforeach; ?>
+		</div>
+		<?php endif; ?>
+		<?php if ( $label !== '' ) : ?>
+			<span class="jcp-hero-social-proof__label"<?php jcp_niche_editable_attr( $path . '.label' ); ?>><?php echo esc_html( $label ); ?></span>
+		<?php endif; ?>
+	</div>
+	<?php
+}
 
 function jcp_component_hero_home_visual( string $demo_url = '', string $photo_url = '', string $photo_alt = '', bool $wrap_visual = true, ?array $cards = null, bool $lock_photo = false, string $cta_label = '' ): void {
 	$demo_url  = $demo_url !== '' ? $demo_url : home_url( '/demo/' );

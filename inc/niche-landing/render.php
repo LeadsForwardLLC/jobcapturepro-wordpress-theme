@@ -348,6 +348,12 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 						<?php endif; ?>
 					</div>
 					<?php endif; ?>
+					<?php
+					$social_proof = is_array( $h['social_proof'] ?? null ) ? $h['social_proof'] : [];
+					if ( $social_proof !== [] && jcp_niche_show_field( $h, 'show_social_proof', true ) && function_exists( 'jcp_component_hero_social_proof' ) ) {
+						jcp_component_hero_social_proof( $social_proof, 'hero.social_proof' );
+					}
+					?>
 					<?php if ( ! empty( $h['meta_stats'] ) && jcp_niche_show_field( $h, 'show_meta_stats', true ) ) : ?>
 						<?php jcp_component_home_meta_stats( (array) $h['meta_stats'] ); ?>
 					<?php endif; ?>
@@ -783,7 +789,7 @@ function jcp_niche_render_problem( array $c ): void {
 							<?php endif; ?>
 							<ol class="jcp-problem-contrast__steps">
 								<?php foreach ( $steps as $si => $step ) : ?>
-									<li<?php jcp_niche_editable_attr( 'problem.contrast_' . $side['key'] . '.steps.' . $si ); ?>><?php echo esc_html( $step ); ?></li>
+									<li data-step="<?php echo esc_attr( (string) ( $si + 1 ) ); ?>"<?php jcp_niche_editable_attr( 'problem.contrast_' . $side['key'] . '.steps.' . $si ); ?>><?php echo esc_html( $step ); ?></li>
 								<?php endforeach; ?>
 							</ol>
 						</div>

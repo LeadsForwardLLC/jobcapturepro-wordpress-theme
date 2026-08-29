@@ -96,6 +96,42 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 			$base['columns']              = 2;
 			$doc['blocks'][ $i ]['layout'] = $base;
 		}
+		if ( $type === 'final_cta' ) {
+			$base = is_array( $block['layout'] ?? null )
+				? $block['layout']
+				: jcp_block_default_layout( 'final_cta', 'marketing' );
+			$doc['blocks'][ $i ]['layout'] = array_merge(
+				$base,
+				[
+					'width' => 'contained',
+					'align' => 'center',
+				]
+			);
+		}
+		if ( $type === 'authority' ) {
+			$base = is_array( $block['layout'] ?? null )
+				? $block['layout']
+				: jcp_block_default_layout( 'authority', 'marketing' );
+			$doc['blocks'][ $i ]['layout'] = array_merge(
+				$base,
+				[
+					'width' => 'contained',
+					'align' => 'left',
+				]
+			);
+		}
+		if ( $type === 'testimonials' ) {
+			$base = is_array( $block['layout'] ?? null )
+				? $block['layout']
+				: jcp_block_default_layout( 'testimonials', 'marketing' );
+			$doc['blocks'][ $i ]['layout'] = array_merge(
+				$base,
+				[
+					'width' => 'contained',
+					'align' => 'center',
+				]
+			);
+		}
 	}
 
 	return $doc;

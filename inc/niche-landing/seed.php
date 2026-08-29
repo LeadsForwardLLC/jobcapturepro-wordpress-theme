@@ -415,12 +415,12 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v10 = CRO pass: demo headline, contained demo_preview, job-flow editor fix.
+	// v11 = cohesion pass: hero social proof, unboxed sections, testimonials headline.
 	$demo_ver = (string) get_option( 'jcp_contractor_demo_seed_version', '' );
-	if ( $demo_ver !== '10' || ! jcp_niche_contractor_demo_exists() ) {
-		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '10' );
+	if ( $demo_ver !== '11' || ! jcp_niche_contractor_demo_exists() ) {
+		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '11' );
 		if ( $created > 0 ) {
-			update_option( 'jcp_contractor_demo_seed_version', '10' );
+			update_option( 'jcp_contractor_demo_seed_version', '11' );
 			update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 		}
 	}

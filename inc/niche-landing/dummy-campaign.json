@@ -36,7 +36,26 @@
     "media_type": "phone_mockup",
     "phone_image_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
     "phone_image_alt": "Technician photographing a completed HVAC job on site",
-    "phone_cta_label": "Start demo"
+    "phone_cta_label": "Start demo",
+    "show_social_proof": true,
+    "social_proof": {
+      "rating": 5,
+      "label": "Rated 5★ by contractors using JobCapturePro",
+      "faces": [
+        {
+          "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-operator.jpg",
+          "image_alt": "Field technician on a job site"
+        },
+        {
+          "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg",
+          "image_alt": "Home service business owner"
+        },
+        {
+          "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg",
+          "image_alt": "Crew reviewing job photos together"
+        }
+      ]
+    }
   },
   "core_mechanic": [
     {
@@ -208,7 +227,7 @@
   },
   "testimonials": {
     "eyebrow": "From real operators",
-    "headline": "Built around real contractor workflows — not marketing theory.",
+    "headline": "Built around real contractor workflows",
     "subheadline": "Short notes from people already turning completed jobs into proof.",
     "featured_key": "brian-hardy",
     "autoplay": true,
