@@ -340,6 +340,8 @@
 
 .jcp-home .jcp-block-testimonials .jcp-testimonials-eyebrow,
 .jcp-marketing .jcp-block-testimonials .jcp-testimonials-eyebrow {
+  display: flex;
+  width: fit-content;
   margin: 0 auto var(--jcp-space-lg);
 }
 
