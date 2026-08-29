@@ -1110,6 +1110,15 @@ function positionMobileSpotlight() {
     return;
   }
 
+  // If the focal control is clipped (common after Publish → Request Review), scroll first.
+  const visibleBottom = getGuidedVisibleBottom(
+    getDemoAppScrollParents()[0] || document.documentElement
+  );
+  const pre = target.getBoundingClientRect();
+  if (pre.bottom > visibleBottom - 8 || pre.height < 24) {
+    scrollGuidedControlIntoView(target, tour.stepKey === 'step5' ? 28 : 12);
+  }
+
   const pad = 10;
   const r = target.getBoundingClientRect();
   // Guard against zero-size / off-screen targets (common while sheets animate).
@@ -1391,6 +1400,13 @@ function setTourStep(stepKey) {
       const enabled = isPrototype || stepKey === 'step5';
       requestReviewBtn.disabled = !enabled;
       requestReviewBtn.classList.toggle('is-disabled', !enabled);
+    }
+
+    document.querySelectorAll('#edit-screen .is-demo-seo-spotlight').forEach((el) => {
+      el.classList.remove('is-demo-seo-spotlight');
+    });
+    if (stepKey === 'step5' && requestReviewBtn) {
+      requestReviewBtn.classList.add('is-demo-seo-spotlight');
     }
 
     const minimizeBtn = document.getElementById('tour-minimize');
@@ -2343,9 +2359,7 @@ function runStep4SeoAppreciationBeat() {
     if (isGuidedDemoRun()) {
       updateTourFloating();
       requestAnimationFrame(() => {
-        if (document.body.classList.contains('is-mobile-mode')) {
-          scrollGuidedControlIntoView(el, item.sel === '#btnSavePublish' ? 10 : 16);
-        }
+        scrollGuidedControlIntoView(el, item.sel === '#btnSavePublish' ? 10 : 16);
         positionMobileSpotlight();
       });
       setTimeout(() => positionMobileSpotlight(), settleMs);
@@ -3258,23 +3272,21 @@ function wireOutcomesSlideshow() {
 }
 
 function getDemoAppScrollParents() {
-  if (isGuidedDemoRun() && document.body.classList.contains('is-mobile-mode')) {
-    const activeApp = document.querySelector('.app-screen.active');
-    const contentArea = activeApp?.querySelector('.content-area');
-    const scrollableScreens = new Set([
-      'edit-screen',
-      'new-screen',
-      'request-review-screen',
-      'review-request-options-screen',
-    ]);
-    if (activeApp && scrollableScreens.has(activeApp.id) && contentArea) {
-      return [contentArea];
-    }
-    return [];
-  }
-  const screen = document.querySelector('.iphone-frame .screen');
   const activeApp = document.querySelector('.app-screen.active');
   const contentArea = activeApp?.querySelector('.content-area');
+  const scrollableScreens = new Set([
+    'edit-screen',
+    'new-screen',
+    'request-review-screen',
+    'review-request-options-screen',
+  ]);
+
+  // Guided phone UI (mobile fullscreen OR desktop phone shell): scroll the active content-area.
+  if (isGuidedDemoRun() && activeApp && scrollableScreens.has(activeApp.id) && contentArea) {
+    return [contentArea];
+  }
+
+  const screen = document.querySelector('.iphone-frame .screen');
   const parents = [];
   if (contentArea) parents.push(contentArea);
   if (screen) parents.push(screen);
@@ -3282,7 +3294,9 @@ function getDemoAppScrollParents() {
 }
 
 function resetGuidedMobileScroll() {
-  if (!isGuidedDemoRun() || !document.body.classList.contains('is-mobile-mode')) return;
+  if (!isGuidedDemoRun()) return;
+  // Only reset on true mobile layout — desktop keeps prior scroll (e.g. after Publish).
+  if (!document.body.classList.contains('is-mobile-mode')) return;
   const screen = document.querySelector('.iphone-frame .screen');
   if (screen) screen.scrollTop = 0;
   const contentArea = document.querySelector('.app-screen.active .content-area');
@@ -3301,17 +3315,24 @@ function getMobileStepperTop() {
   return stepper.getBoundingClientRect().top;
 }
 
+function getGuidedVisibleBottom(scrollParent) {
+  const parentRect = scrollParent.getBoundingClientRect();
+  const stepperTop = getMobileStepperTop();
+  const screen = document.querySelector('.iphone-frame .screen');
+  const screenBottom = screen ? screen.getBoundingClientRect().bottom : parentRect.bottom;
+  return Math.min(parentRect.bottom, stepperTop, screenBottom);
+}
+
 function scrollGuidedControlIntoView(target, extraGap = 10) {
-  if (!target || !isGuidedDemoRun() || !document.body.classList.contains('is-mobile-mode')) return;
+  if (!target || !isGuidedDemoRun()) return;
 
   const parents = getDemoAppScrollParents();
   if (!parents.length) return;
 
   const scrollParent = parents[0];
-  const stepperTop = getMobileStepperTop();
   const targetRect = target.getBoundingClientRect();
   const parentRect = scrollParent.getBoundingClientRect();
-  const maxVisibleBottom = Math.min(parentRect.bottom, stepperTop) - extraGap;
+  const maxVisibleBottom = getGuidedVisibleBottom(scrollParent) - extraGap;
 
   if (targetRect.bottom > maxVisibleBottom) {
     scrollParent.scrollTop += targetRect.bottom - maxVisibleBottom;
@@ -3321,7 +3342,7 @@ function scrollGuidedControlIntoView(target, extraGap = 10) {
 }
 
 function scrollGuidedStepTarget(stepKey) {
-  if (!isGuidedDemoRun() || !document.body.classList.contains('is-mobile-mode')) return;
+  if (!isGuidedDemoRun()) return;
   if (!stepKey || stepKey === 'step6') return;
 
   // Step 4 owns its own paced scroll (description → Publish).
@@ -3331,19 +3352,24 @@ function scrollGuidedStepTarget(stepKey) {
   const target = selector ? document.querySelector(selector) : null;
   if (!target) return;
 
+  const gap = stepKey === 'step5' ? 28 : 10;
   const run = () => {
-    scrollGuidedControlIntoView(target);
+    scrollGuidedControlIntoView(target, gap);
     positionMobileSpotlight();
   };
 
   updateMobileLayoutMetrics();
   requestAnimationFrame(run);
   setTimeout(run, 280);
+  // Desktop publish overlay / layout settle can lag — second pass for Request Review.
+  if (stepKey === 'step5') {
+    setTimeout(run, 560);
+  }
 }
 
 function scrollDemoTargetIntoView(target, extraGap = 12) {
   if (!target) return;
-  if (isGuidedDemoRun() && document.body.classList.contains('is-mobile-mode')) {
+  if (isGuidedDemoRun()) {
     scrollGuidedControlIntoView(target, extraGap);
     return;
   }

@@ -3090,6 +3090,20 @@ body.is-mobile-mode.jcp-guided-demo:not(.jcp-prototype-page) .edit-content {
   padding-bottom: 12px;
 }
 
+/* Step 5: leave room so Request Review can scroll fully into the phone viewport */
+body.jcp-guided-demo[data-tour-step="step5"] #edit-screen.active .content-area {
+  padding-bottom: 56px;
+}
+
+body.jcp-guided-demo[data-tour-step="step5"] #btnRequestReview.is-demo-seo-spotlight {
+  position: relative;
+  z-index: 76;
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 2px rgba(255, 80, 62, 0.9),
+    0 0 0 6px rgba(255, 255, 255, 0.85);
+}
+
 body.is-mobile-mode.jcp-guided-demo:not(.jcp-prototype-page) #home-screen.active {
   justify-content: flex-start;
 }
@@ -4949,6 +4963,19 @@ body.jcp-desktop-guided .mobile-guide-pill {
 
 body.jcp-desktop-guided .mobile-spotlight {
   z-index: 76;
+}
+
+/* Desktop phone shell: edit screen must scroll so Request Review is reachable */
+body.jcp-desktop-guided #edit-screen.active {
+  min-height: 0;
+  overflow: hidden;
+}
+
+body.jcp-desktop-guided #edit-screen.active .content-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 body.jcp-review-modal-open .mobile-stepper,
