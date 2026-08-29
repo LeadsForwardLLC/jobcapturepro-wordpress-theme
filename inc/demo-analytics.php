@@ -505,7 +505,7 @@ function jcp_demo_analytics_get_stats(): array {
     $post_demo_cta_rates = [];
     foreach (
         [
-            'start_free_trial'  => __( 'Start for free', 'jcp-core' ),
+            'start_free_trial'  => __( 'Start Free Trial', 'jcp-core' ),
             'personalized_demo' => __( 'Apply for a personalized demo', 'jcp-core' ),
             'replay_demo'       => __( 'Replay demo', 'jcp-core' ),
         ] as $key => $label
@@ -541,7 +541,7 @@ function jcp_demo_analytics_get_stats(): array {
         [ 'label' => 'Demo step 6', 'type' => 'demo_step_viewed', 'num' => 6 ],
         [ 'label' => 'Post-demo modal shown', 'type' => 'post_demo_modal_shown', 'num' => null ],
         [ 'label' => 'Demo replayed', 'type' => 'demo_replayed', 'num' => null ],
-        [ 'label' => 'Converted (Start free)', 'type' => 'demo_converted', 'num' => null ],
+        [ 'label' => 'Converted (Start Free Trial)', 'type' => 'demo_converted', 'num' => null ],
     ];
 
     $prev_count = $total_sessions;
@@ -861,7 +861,7 @@ function jcp_demo_analytics_get_sessions( string $filter = 'all', int $limit = 2
     }
 
     $cta_labels = [
-        'start_free_trial'  => __( 'Start for free', 'jcp-core' ),
+        'start_free_trial'  => __( 'Start Free Trial', 'jcp-core' ),
         'personalized_demo' => __( 'Personalized demo', 'jcp-core' ),
         'replay_demo'       => __( 'Replay demo', 'jcp-core' ),
         'view_directory'    => __( 'View directory listing', 'jcp-core' ),

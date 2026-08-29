@@ -252,7 +252,7 @@ function jcp_global_settings_render_page(): void {
 			</table>
 
 			<h2><?php esc_html_e( 'Signup / app URL', 'jcp-core' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'Used for “Start free”, “Start for free”, and empty CTA URLs across the site.', 'jcp-core' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Used for “Start Free Trial” and empty CTA URLs across the site.', 'jcp-core' ); ?></p>
 			<table class="form-table" role="presentation">
 				<tr>
 					<th scope="row"><label for="jcp_signup_base"><?php esc_html_e( 'Base URL', 'jcp-core' ); ?></label></th>

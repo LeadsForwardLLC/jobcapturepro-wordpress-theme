@@ -50,7 +50,7 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_script( 'jcp-core-nav', 'js/core/jcp-nav.js' );
         // Site banner dismiss behavior (no-op if banner not present).
         jcp_core_enqueue_script( 'jcp-core-site-banner', 'js/core/jcp-site-banner.js', [ 'jcp-core-nav' ] );
-        // After a demo, decorate Start free / onboarding links with name + email from localStorage.
+        // After a demo, decorate Start Free Trial / onboarding links with name + email from localStorage.
         jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-nav' ] );
         if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {
             $onb = [

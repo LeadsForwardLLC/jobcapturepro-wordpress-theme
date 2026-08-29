@@ -364,7 +364,7 @@ function jcp_sales_tool_render_meta_box( WP_Post $post ): void {
 		</div>
 		<div>
 			<label for="jcp_st_cta_label"><?php esc_html_e( 'Primary CTA label override', 'jcp-core' ); ?></label>
-			<input type="text" name="jcp_st[cta_label]" id="jcp_st_cta_label" value="<?php echo esc_attr( $s['cta_label'] ); ?>" placeholder="<?php esc_attr_e( 'Defaults to Start for free', 'jcp-core' ); ?>" />
+			<input type="text" name="jcp_st[cta_label]" id="jcp_st_cta_label" value="<?php echo esc_attr( $s['cta_label'] ); ?>" placeholder="<?php esc_attr_e( 'Defaults to Start Free Trial', 'jcp-core' ); ?>" />
 		</div>
 		<div class="wide">
 			<label for="jcp_st_cta_url"><?php esc_html_e( 'Primary CTA URL override', 'jcp-core' ); ?></label>

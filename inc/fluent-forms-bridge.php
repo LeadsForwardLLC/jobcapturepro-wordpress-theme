@@ -162,7 +162,7 @@ function jcp_fluent_bridge_render_global_modal(): void {
 	jcp_fluent_render_quote_modal(
 		[
 			'id'          => 'jcp-form-modal',
-			'headline'    => __( 'Get started', 'jcp-core' ),
+			'headline'    => __( 'Start Free Trial', 'jcp-core' ),
 			'subheadline' => '',
 			'shortcode'   => $shortcode,
 		]

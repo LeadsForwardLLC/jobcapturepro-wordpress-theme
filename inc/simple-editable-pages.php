@@ -178,7 +178,7 @@ function jcp_simple_editable_pricing_document( int $post_id ): array {
 				'type'  => 'hero',
 				'props' => [
 					'h1'          => $title,
-					'subheadline' => __( 'Each tier aligns to business maturity and visibility goals. Start for free and turn real work into reviews, visibility, and trust that drives inbound demand.', 'jcp-core' ),
+					'subheadline' => __( 'Each tier aligns to business maturity and visibility goals. Start Free Trial and turn real work into reviews, visibility, and trust that drives inbound demand.', 'jcp-core' ),
 					'show_visual' => false,
 				],
 			],

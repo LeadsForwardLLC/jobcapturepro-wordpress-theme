@@ -587,8 +587,8 @@ const demoGuideContent = {
   },
   step6Dock: {
     pill: 'Final step',
-    title: 'Ready to get started free?',
-    body: 'Turn every finished job into website proof, Google activity, reviews, and more calls — start free today.',
+    title: 'Ready to Start Free Trial?',
+    body: 'Turn every finished job into website proof, Google activity, reviews, and more calls — Start Free Trial today.',
     interactHint: ''
   }
 };
@@ -1448,7 +1448,7 @@ function setTourStep(stepKey) {
 function getNextLabelForStep(stepKey) {
   if (stepKey === 'step4') return 'Publish →';
   if (stepKey === 'step5') return 'Send Review →';
-  if (stepKey === 'step6') return 'Get started free';
+  if (stepKey === 'step6') return 'Start Free Trial';
   return 'Next →';
 }
 
@@ -2967,9 +2967,9 @@ function updateOutcomesSlideshowUi() {
     startFree.classList.toggle('demo-outcomes-modal__finish--solo', isLast);
     if (startFree.tagName === 'A') {
       startFree.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
-      startFree.textContent = 'Get started free';
+      startFree.textContent = 'Start Free Trial';
     } else {
-      startFree.textContent = 'Get started free';
+      startFree.textContent = 'Start Free Trial';
       startFree.dataset.outcomesAction = 'start_free';
     }
   }
@@ -2978,7 +2978,7 @@ function updateOutcomesSlideshowUi() {
 
 function goToDemoStartFree(source) {
   const utm = source || 'demo_handoff';
-  jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free', source: utm, label: 'Get started free' }, { keepalive: true });
+  jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free', source: utm, label: 'Start Free Trial' }, { keepalive: true });
   jcpDemoTrack('demo_converted', null, { cta: 'get_started_free', source: utm }, { keepalive: true });
   markDemoIntakeComplete();
   window.location.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery(utm));
@@ -2990,18 +2990,22 @@ function syncDemoStartFreeCtas() {
   const chrome = $('mobileDemoStartFree');
   if (chrome) {
     chrome.href = hrefChrome;
-    chrome.textContent = 'Get started free';
+    chrome.textContent = 'Start Free Trial';
   }
   const outcomes = $('demoOutcomesStartFreeCta');
   if (outcomes && outcomes.tagName === 'A') {
     outcomes.href = hrefOutcomes;
-    outcomes.textContent = 'Get started free';
+    outcomes.textContent = 'Start Free Trial';
   }
   const post = document.querySelector('.post-demo-primary-cta');
   if (post) {
     post.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
-    if (!post.textContent.trim() || /start for free/i.test(post.textContent)) {
-      post.textContent = 'Get started free';
+    const label = (post.textContent || '').trim();
+    if (
+      label === '' ||
+      /start\s+for\s+free|get\s+started\s+free|start\s+free(?!\s+trial)|start\s+free\s+trial/i.test(label)
+    ) {
+      post.textContent = 'Start Free Trial';
     }
   }
 }
@@ -3247,14 +3251,14 @@ function ensureOutcomesFooterButtons() {
     card.appendChild(footer);
   }
 
-  // Migrate legacy Continue button → Get started free link
+  // Migrate legacy Continue button → Start Free Trial link
   const legacyFinish = $('demoOutcomesFinishCta');
   if (legacyFinish && legacyFinish.tagName === 'BUTTON' && !$('demoOutcomesStartFreeCta')) {
     const link = document.createElement('a');
     link.id = 'demoOutcomesStartFreeCta';
     link.className = 'btn btn-primary demo-outcomes-modal__finish';
     link.dataset.outcomesAction = 'start_free';
-    link.textContent = 'Get started free';
+    link.textContent = 'Start Free Trial';
     link.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
     legacyFinish.replaceWith(link);
   }
@@ -3276,7 +3280,7 @@ function ensureOutcomesFooterButtons() {
     start.id = 'demoOutcomesStartFreeCta';
     start.className = 'btn btn-primary demo-outcomes-modal__finish';
     start.dataset.outcomesAction = 'start_free';
-    start.textContent = 'Get started free';
+    start.textContent = 'Start Free Trial';
     start.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
     footer.appendChild(start);
   }
@@ -3570,7 +3574,7 @@ async function sendReviewRequest() {
   // Update top CTA
   const headerCta = document.getElementById('btnNext');
   if (headerCta) {
-    headerCta.textContent = 'Get started free →';
+    headerCta.textContent = 'Start Free Trial →';
     headerCta.onclick = () => {
       goToDemoStartFree('demo_header_complete');
     };
@@ -4246,7 +4250,7 @@ function showPostDemoPanel() {
   document.getElementById('post-demo-bubble')?.classList.add('is-hidden');
   setMobileGuideCollapsed(true);
 
-  // Rebuild Start free href at open time so survey email/name are included.
+  // Rebuild Start Free Trial href at open time so survey email/name are included.
   const primaryCta = document.querySelector('.post-demo-primary-cta');
   if (primaryCta) {
     primaryCta.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
@@ -4367,12 +4371,12 @@ function wirePostDemoPanel() {
       // Refresh PII + UTMs on click so the handoff always matches the latest survey data.
       const handoffUrl = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
       primaryCta.href = handoffUrl;
-      jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free', source: 'demo_post_panel', label: 'Get started free' }, { keepalive: true });
+      jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free', source: 'demo_post_panel', label: 'Start Free Trial' }, { keepalive: true });
       jcpDemoTrack('demo_converted', null, { cta: 'get_started_free', source: 'demo_post_panel' }, { keepalive: true });
-      // Matomo: Post Demo CTA Click (Start free), once per session
+      // Matomo: Post Demo CTA Click (Start Free Trial), once per session
       try {
         if (typeof _paq !== 'undefined' && !sessionStorage.getItem('jcp_matomo_demo_cta_early_access')) {
-          _paq.push(['trackEvent', 'Demo', 'Post Demo CTA Click (Start Free)']);
+          _paq.push(['trackEvent', 'Demo', 'Post Demo CTA Click (Start Free Trial)']);
           sessionStorage.setItem('jcp_matomo_demo_cta_early_access', '1');
         }
       } catch (e) {}

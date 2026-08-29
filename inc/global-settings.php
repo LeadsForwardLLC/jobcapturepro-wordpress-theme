@@ -22,10 +22,10 @@ function jcp_global_settings_defaults(): array {
 		'banner'  => [
 			'enabled'     => true,
 			'visibility'  => 'marketing',
-			'headline'    => 'Start free:',
-			'text'        => 'Start for free — no credit card required.',
+			'headline'    => 'Start Free Trial:',
+			'text'        => 'Start Free Trial — no credit card required.',
 			'code'        => '',
-			'cta_label'   => 'Start free',
+			'cta_label'   => 'Start Free Trial',
 			'cta_url'     => '',
 			'coupon'      => '',
 			'utm_content' => 'sitewide_banner',
@@ -36,7 +36,7 @@ function jcp_global_settings_defaults(): array {
 			'step'       => '1',
 		],
 		'nav_cta' => [
-			'primary_label'   => 'Start free',
+			'primary_label'   => 'Start Free Trial',
 			'primary_url'     => '',
 			'secondary_label' => 'Login',
 			'secondary_url'   => '',
@@ -319,9 +319,9 @@ function jcp_global_settings_scrub_legacy_promo_copy( array $settings ): array {
 	$is_founding_copy       = (bool) preg_match( '/founding\s+crew/i', $headline . ' ' . $text );
 
 	if ( $is_early_bird_headline || $is_founding_copy ) {
-		$banner['headline'] = (string) ( $defaults['headline'] ?? 'Start free:' );
+		$banner['headline'] = (string) ( $defaults['headline'] ?? 'Start Free Trial:' );
 		$banner['text']     = (string) ( $defaults['text'] ?? '' );
-		$banner['cta_label'] = (string) ( $defaults['cta_label'] ?? 'Start free' );
+		$banner['cta_label'] = (string) ( $defaults['cta_label'] ?? 'Start Free Trial' );
 	}
 	if ( $is_early_bird_code ) {
 		$banner['code'] = '';
@@ -330,7 +330,7 @@ function jcp_global_settings_scrub_legacy_promo_copy( array $settings ): array {
 		$banner['coupon'] = '';
 	}
 
-	// Migrate stored “trial” CTA / banner copy → Start free / Start for free.
+	// Migrate stored trial / start-free CTA copy → Start Free Trial.
 	$banner['headline']  = jcp_global_rewrite_trial_label( (string) ( $banner['headline'] ?? '' ), 'headline' );
 	$banner['text']      = jcp_global_rewrite_trial_label( (string) ( $banner['text'] ?? '' ), 'prose' );
 	$banner['cta_label'] = jcp_global_rewrite_trial_label( (string) ( $banner['cta_label'] ?? '' ), 'button' );
@@ -345,41 +345,81 @@ function jcp_global_settings_scrub_legacy_promo_copy( array $settings ): array {
 }
 
 /**
- * Rewrite legacy trial CTA wording without inventing a new product offer.
+ * Canonicalize primary trial/signup CTA wording to “Start Free Trial”.
+ *
+ * Preserves demo CTAs (e.g. personalized demo) — only rewrites trial/signup variants.
  *
  * @param string $text Raw label or sentence.
  * @param string $kind button|headline|prose.
  */
 function jcp_global_rewrite_trial_label( string $text, string $kind = 'button' ): string {
 	$trimmed = trim( $text );
-	if ( $trimmed === '' || stripos( $trimmed, 'trial' ) === false ) {
+	if ( $trimmed === '' ) {
 		return $text;
 	}
 
-	if ( $kind === 'button' ) {
-		if ( preg_match( '/^start\s+free(\s+14[-\s]?day)?\s+trial$/i', $trimmed ) ) {
-			return 'Start free';
-		}
-		if ( preg_match( '/^start\s+a\s+free(\s+14[-\s]?day)?\s+trial$/i', $trimmed ) ) {
-			return 'Start for free';
-		}
+	// Skip demo-specific CTAs.
+	if ( preg_match( '/\b(personalized\s+demo|interactive\s+demo|live\s+demo|view\s+(the\s+)?demo|launch\s+(interactive\s+)?demo|see\s+.{0,40}demo|get\s+a\s+personalized\s+demo)\b/i', $trimmed ) ) {
+		return $text;
 	}
 
-	if ( $kind === 'headline' && preg_match( '/^free\s+trial:?$/i', $trimmed ) ) {
-		return 'Start free:';
+	$canonical_btn      = 'Start Free Trial';
+	$canonical_headline = 'Start Free Trial:';
+
+	if ( preg_match( '/^start\s+free\s+trial:?$/i', $trimmed ) ) {
+		return $kind === 'headline' ? $canonical_headline : $canonical_btn;
+	}
+
+	$exact = [
+		'/^get\s+started\s+free!?$/i',
+		'/^get\s+started!?$/i',
+		'/^start\s+for\s+free!?$/i',
+		'/^start\s+free!?$/i',
+		'/^start\s+a\s+free(\s+\d+[-\s]?day)?\s+trial!?$/i',
+		'/^start\s+free(\s+\d+[-\s]?day)?\s+trial!?$/i',
+		'/^sign\s+up\s+for\s+free!?$/i',
+		'/^sign\s+up\s+free!?$/i',
+		'/^claim\s+(your\s+)?free\s+trial!?$/i',
+		'/^free\s+trial:?$/i',
+	];
+
+	if ( $kind === 'button' || $kind === 'headline' ) {
+		foreach ( $exact as $pattern ) {
+			if ( preg_match( $pattern, $trimmed ) ) {
+				return $kind === 'headline' ? $canonical_headline : $canonical_btn;
+			}
+		}
+		if ( $kind === 'headline' && preg_match( '/^(start\s+free|start\s+for\s+free|get\s+started\s+free|free\s+trial):?$/i', $trimmed ) ) {
+			return $canonical_headline;
+		}
 	}
 
 	$out = $text;
-	$out = preg_replace( '/\bStart a free 14[-\s]?day trial\b/i', 'Start for free', $out ) ?? $out;
-	$out = preg_replace( '/\bstart a free 14[-\s]?day trial\b/i', 'start for free', $out ) ?? $out;
-	$out = preg_replace( '/\bStart free 14[-\s]?day trial\b/i', 'Start for free', $out ) ?? $out;
-	$out = preg_replace( '/\bStart free trial\b/i', 'Start free', $out ) ?? $out;
-	$out = preg_replace( '/\bfree 14[-\s]?day trial\b/i', 'start for free', $out ) ?? $out;
-	$out = preg_replace( '/\bFree 14[-\s]?day trial\b/i', 'Start for free', $out ) ?? $out;
-	$out = preg_replace( '/\bthe free trial\b/i', 'starting for free', $out ) ?? $out;
-	$out = preg_replace( '/\ba free trial\b/i', 'start for free', $out ) ?? $out;
-	$out = preg_replace( '/\bFree trial:?\b/i', 'Start free:', $out ) ?? $out;
-	$out = preg_replace( '/\bfree trial\b/i', 'start for free', $out ) ?? $out;
+	// Longer / more specific phrases first.
+	$replacements = [
+		[ '/\bGet\s+[Ss]tarted\s+[Ff]ree\b/', $canonical_btn ],
+		[ '/\bget\s+started\s+free\b/', $canonical_btn ],
+		[ '/\bStart\s+a\s+free(?:\s+\d+[-\s]?day)?\s+[Tt]rial\b/', $canonical_btn ],
+		[ '/\bstart\s+a\s+free(?:\s+\d+[-\s]?day)?\s+trial\b/', $canonical_btn ],
+		[ '/\bStart\s+[Ff]ree(?:\s+\d+[-\s]?day)?\s+[Tt]rial\b/', $canonical_btn ],
+		[ '/\bSign\s+[Uu]p\s+for\s+[Ff]ree\b/', $canonical_btn ],
+		[ '/\bsign\s+up\s+for\s+free\b/', $canonical_btn ],
+		[ '/\bStart\s+for\s+[Ff]ree\b/', $canonical_btn ],
+		[ '/\bstart\s+for\s+free\b/', $canonical_btn ],
+		[ '/\bStart\s+free\b(?!\s+[Tt]rial)/', $canonical_btn ],
+		[ '/\bstart\s+free\b(?!\s+trial)/', $canonical_btn ],
+		[ '/\bFree\s+14[-\s]?day\s+trial\b/i', $canonical_btn ],
+		[ '/\bfree\s+14[-\s]?day\s+trial\b/i', $canonical_btn ],
+		[ '/\bthe\s+free\s+trial\b/i', 'Start Free Trial' ],
+		[ '/\ba\s+free\s+trial\b/i', 'Start Free Trial' ],
+		[ '/\bFree\s+trial:?\b/', $canonical_headline ],
+		[ '/\bfree\s+trial\b/i', 'Start Free Trial' ],
+	];
+
+	foreach ( $replacements as [ $pattern, $replacement ] ) {
+		$out = preg_replace( $pattern, $replacement, $out ) ?? $out;
+	}
+
 	return $out;
 }
 
@@ -470,7 +510,7 @@ function jcp_global_banner_cta_url( array $banner ): string {
  * @return array{label: string, url: string}
  */
 function jcp_global_resolve_cta( string $label, string $url, string $utm_content = '', array $query_extra = [] ): array {
-	$label = trim( $label );
+	$label = jcp_global_rewrite_trial_label( trim( $label ), 'button' );
 	$url   = trim( $url );
 
 	$utm = $utm_content !== '' && function_exists( 'jcp_core_onboarding_utm_defaults' )
@@ -518,7 +558,7 @@ function jcp_global_resolve_cta( string $label, string $url, string $utm_content
  */
 function jcp_global_resolve_nav_ctas( ?int $post_id = null ): array {
 	$global = jcp_global_settings()['nav_cta'] ?? [];
-	$primary_label   = (string) ( $global['primary_label'] ?? 'Start free' );
+	$primary_label   = (string) ( $global['primary_label'] ?? 'Start Free Trial' );
 	$primary_url     = (string) ( $global['primary_url'] ?? '' );
 	$secondary_label = (string) ( $global['secondary_label'] ?? 'Login' );
 	$secondary_url   = (string) ( $global['secondary_url'] ?? '' );
@@ -552,14 +592,14 @@ function jcp_global_resolve_nav_ctas( ?int $post_id = null ): array {
 		$secondary_url   = '';
 	}
 
-	// Migrate legacy Get Started primary CTA → Start free.
-	if ( preg_match( '/^get\s*started$/i', trim( $primary_label ) ) ) {
-		$primary_label = 'Start free';
+	// Migrate legacy Get Started / Start Free Trial primary CTA → Start Free Trial.
+	if ( preg_match( '/^(get\s*started(\s+free)?|start\s+(for\s+)?free)$/i', trim( $primary_label ) ) ) {
+		$primary_label = 'Start Free Trial';
 	}
 	$primary_label = jcp_global_rewrite_trial_label( $primary_label, 'button' );
 
-	// “Start free” must never keep a leftover /demo URL from the label rename.
-	if ( preg_match( '/start\s+(for\s+)?free/i', $primary_label ) ) {
+	// Trial CTAs must never keep a leftover /demo URL from a prior label rename.
+	if ( preg_match( '/start\s+(for\s+)?free|start\s+free\s+trial|get\s+started/i', $primary_label ) ) {
 		$primary_path = (string) ( wp_parse_url( $primary_url, PHP_URL_PATH ) ?? '' );
 		if ( $primary_url === '/demo' || rtrim( $primary_path, '/' ) === '/demo' ) {
 			$primary_url = '';

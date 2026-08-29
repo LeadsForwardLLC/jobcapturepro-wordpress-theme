@@ -93,7 +93,7 @@ $dir_trust = $dir_url . '/#trust';
         ? jcp_global_resolve_nav_ctas( $nav_post_id > 0 ? $nav_post_id : null )
         : [
           'primary'   => [
-            'label' => 'Start free',
+            'label' => 'Start Free Trial',
             'url'   => function_exists( 'jcp_core_onboarding_app_url_raw' )
               ? jcp_core_onboarding_app_url_raw( function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults( 'nav_get_started' ) : [] )
               : home_url( '/demo' ),

@@ -16,10 +16,10 @@
     "h1": "Your crew already took the photo.\nIt’s just dying on their phone.",
     "subheadline": "One completed job can become Maps activity, website proof, social posts, directory presence, and an on-site review ask — without another marketing chore.",
     "cta_primary": { "label": "Launch interactive demo", "url": "/demo/" },
-    "cta_secondary": { "label": "Start free", "url": "" },
+    "cta_secondary": { "label": "Start Free Trial", "url": "" },
     "show_cta_secondary": true,
-    "trust_line": "No signup for the demo · About 2 minutes · Start free needs a work email",
-    "cta_microcopy": "No signup for the demo · About 2 minutes · Start free needs a work email",
+    "trust_line": "No signup for the demo · About 2 minutes · Start Free Trial needs a work email",
+    "cta_microcopy": "No signup for the demo · About 2 minutes · Start Free Trial needs a work email",
     "show_visual": true,
     "show_trust_line": true,
     "media_type": "phone_mockup",
@@ -102,7 +102,7 @@
     "headline": "See the whole workflow on a business like yours",
     "body": "Pick your trade and what you want JobCapturePro to help with. We’ll show one completed job turning into website, Google, social, directory, and review proof.",
     "cta_primary": { "label": "Launch interactive demo", "url": "/demo/" },
-    "cta_note": "No signup for the demo · About 2 minutes · Start free needs a work email",
+    "cta_note": "No signup for the demo · About 2 minutes · Start Free Trial needs a work email",
     "show_cta": true,
     "show_cta_note": true,
     "show_headline": true,
@@ -141,7 +141,7 @@
     ],
     "disclaimer": "This isn’t a ranking guarantee. It’s what consistent, real job proof can do to local Maps presence.",
     "cta_primary": { "label": "Launch interactive demo", "url": "/demo/" },
-    "cta_secondary": { "label": "Start free", "url": "" },
+    "cta_secondary": { "label": "Start Free Trial", "url": "" },
     "section_id": "maps-proof",
     "show_eyebrow": true,
     "show_headline": true,
@@ -235,7 +235,7 @@
     "headline": "Your next completed job could start working harder than your last ad.",
     "subheadline": "See what JobCapturePro would do with the work your team already finishes.",
     "cta_primary": { "label": "Launch interactive demo", "url": "/demo/" },
-    "cta_note": "Demo needs no card · Start free = work email · About 2 minutes",
-    "cta_secondary": { "label": "Start free", "url": "" }
+    "cta_note": "Demo needs no card · Start Free Trial = work email · About 2 minutes",
+    "cta_secondary": { "label": "Start Free Trial", "url": "" }
   }
 }

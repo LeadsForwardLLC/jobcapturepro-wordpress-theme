@@ -82,15 +82,15 @@ function jcp_demo_analytics_render_page(): void {
             <div class="jcp-demo-analytics-col" style="min-width: 0; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; padding: 18px; box-shadow: 0 1px 1px rgba(0,0,0,.04); align-self: start;">
                 <h2 style="margin: 0 0 14px 0; font-size: 1.1em; color: #1d2327; font-weight: 600;"><?php esc_html_e( 'Overall', 'jcp-core' ); ?></h2>
                 <div class="jcp-demo-conversion-box" style="margin-bottom: 16px; padding: 14px 16px; border: 1px solid #2271b1; border-radius: 4px; background: #f0f6fc;">
-                    <p style="margin: 0 0 6px 0; font-size: 11px; color: #50575e; text-transform: uppercase; letter-spacing: 0.02em;"><?php esc_html_e( 'Demo → Start free', 'jcp-core' ); ?></p>
+                    <p style="margin: 0 0 6px 0; font-size: 11px; color: #50575e; text-transform: uppercase; letter-spacing: 0.02em;"><?php esc_html_e( 'Demo → Start Free Trial', 'jcp-core' ); ?></p>
                     <?php if ( $total_sessions === 0 ) : ?>
                         <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1d2327;"><?php esc_html_e( 'No demo sessions yet.', 'jcp-core' ); ?></p>
                     <?php elseif ( $demo_conversions === 0 ) : ?>
-                        <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1d2327;"><?php esc_html_e( 'No Start free conversions recorded yet.', 'jcp-core' ); ?></p>
+                        <p style="margin: 0; font-size: 15px; font-weight: 600; color: #1d2327;"><?php esc_html_e( 'No Start Free Trial conversions recorded yet.', 'jcp-core' ); ?></p>
                     <?php else : ?>
                         <p style="margin: 0; font-size: 18px; font-weight: 700; color: #2271b1;"><button type="button" class="button-link" id="jcp-demo-analytics-sessions-converted" data-filter="converted" style="font-size: 18px; font-weight: 700; color: #2271b1;"><?php echo esc_html( sprintf( __( '%1$d of %2$d demos converted (%3$s%%)', 'jcp-core' ), $demo_conversions, $total_sessions, (string) $conversion_rate ) ); ?></button></p>
                         <?php if ( $post_demo_shown > 0 ) : ?>
-                        <p style="margin: 6px 0 0 0; font-size: 12px; color: #50575e;"><?php echo esc_html( sprintf( __( '%1$s%% of completed demos clicked Start free', 'jcp-core' ), (string) $post_demo_conversion_rate ) ); ?></p>
+                        <p style="margin: 6px 0 0 0; font-size: 12px; color: #50575e;"><?php echo esc_html( sprintf( __( '%1$s%% of completed demos clicked Start Free Trial', 'jcp-core' ), (string) $post_demo_conversion_rate ) ); ?></p>
                         <?php endif; ?>
                     <?php endif; ?>
                 </div>

@@ -22,7 +22,7 @@ $flat = ( $post_id > 0 && function_exists( 'jcp_page_get_content_flat' ) )
 $hero = is_array( $flat['hero'] ?? null ) ? $flat['hero'] : [];
 
 $default_title      = __( 'Choose the plan that matches your growth', 'jcp-core' );
-$default_supporting = __( 'Each tier aligns to business maturity and visibility goals. Start for free and turn real work into reviews, visibility, and trust that drives inbound demand.', 'jcp-core' );
+$default_supporting = __( 'Each tier aligns to business maturity and visibility goals. Start Free Trial and turn real work into reviews, visibility, and trust that drives inbound demand.', 'jcp-core' );
 
 $title = trim( (string) ( $hero['h1'] ?? '' ) );
 if ( $title === '' ) {

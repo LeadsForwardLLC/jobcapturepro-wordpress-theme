@@ -345,7 +345,7 @@ function jcp_niche_doc_parse_hero( array $lines ): array {
 		'h1'          => $fields['h1'] ?? '',
 		'subheadline' => $fields['subheadline'] ?? '',
 		'cta_primary' => [
-			'label' => $ctas[0] ?? 'Start for free',
+			'label' => $ctas[0] ?? 'Start Free Trial',
 			'url'   => '',
 		],
 		'cta_secondary' => [
@@ -1286,7 +1286,7 @@ function jcp_niche_doc_parse_final_cta( array $lines ): array {
 		'headline'         => $fields['headline'] ?? '',
 		'subheadline'      => $fields['subheadline'] ?? '',
 		'cta_primary'      => [
-			'label' => $ctas[0] ?? 'Start for free',
+			'label' => $ctas[0] ?? 'Start Free Trial',
 			'url'   => '',
 		],
 		'cta_secondary'    => [

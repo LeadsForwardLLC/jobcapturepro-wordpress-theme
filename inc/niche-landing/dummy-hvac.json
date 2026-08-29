@@ -18,9 +18,9 @@
   "hero": {
     "h1": "Turn every HVAC repair and install into more customers",
     "subheadline": "Most HVAC companies stay busy but still lose jobs online. JobCapturePro is HVAC marketing automation software that captures real proof from every job and publishes it across Google, your website, and the places customers already search.",
-    "cta_primary": { "label": "Start for free", "url": "" },
+    "cta_primary": { "label": "Start Free Trial", "url": "" },
     "cta_secondary": { "label": "See how it works", "url": "#how-it-works" },
-    "trust_line": "No credit card · Start for free · Setup in under 10 minutes"
+    "trust_line": "No credit card · Start Free Trial · Setup in under 10 minutes"
   },
   "what_it_is": {
     "headline": "Built for HVAC companies that want their work to show up online",
@@ -223,7 +223,7 @@
   "final_cta": {
     "headline": "Every job you complete should help win the next one",
     "subheadline": "Turn completed repairs and installs into proof that keeps bringing in more calls",
-    "cta_primary": { "label": "Start for free", "url": "" },
+    "cta_primary": { "label": "Start Free Trial", "url": "" },
     "cta_note": "No credit card required",
     "cta_secondary": { "label": "See how it works", "url": "/demo" }
   }
