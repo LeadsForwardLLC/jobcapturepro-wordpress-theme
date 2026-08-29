@@ -150,6 +150,7 @@ function jcp_page_presets(): array {
 				'how_it_works',
 				'testimonials',
 				'demo_preview',
+				'authority',
 				'proof_flow',
 				'benefits',
 				'who_its_for',

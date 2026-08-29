@@ -1603,6 +1603,72 @@ function jcp_testimonials_render_stars( int $rating, bool $show_stars ): void {
 }
 
 /**
+ * Parse a display stat (e.g. 10, 250k+, $150M+) into count-up attributes.
+ *
+ * @param string $raw Raw value string.
+ * @return array{display:string,to:?float,prefix:string,suffix:string,format:string,decimals:int}
+ */
+function jcp_niche_parse_count_value( string $raw ): array {
+	$display = trim( $raw );
+	$out     = [
+		'display'  => $display,
+		'to'       => null,
+		'prefix'   => '',
+		'suffix'   => '',
+		'format'   => 'plain',
+		'decimals' => 0,
+	];
+	if ( $display === '' ) {
+		return $out;
+	}
+	if ( ! preg_match( '/^(\$?)([\d,]+(?:\.\d+)?)([kKmMbB]?)(\+?)$/', $display, $m ) ) {
+		return $out;
+	}
+	$prefix = (string) $m[1];
+	$num    = str_replace( ',', '', (string) $m[2] );
+	$scale  = strtolower( (string) $m[3] );
+	$plus   = (string) $m[4];
+	$to     = (float) $num;
+	if ( ! is_finite( $to ) || $to < 0 ) {
+		return $out;
+	}
+	$decimals = ( strpos( $num, '.' ) !== false ) ? strlen( substr( strrchr( $num, '.' ), 1 ) ) : 0;
+	$out['to']       = $to;
+	$out['prefix']   = $prefix;
+	$out['suffix']   = $scale . $plus;
+	$out['decimals'] = $decimals;
+	$out['format']   = ( strpos( (string) $m[2], ',' ) !== false ) ? 'comma' : 'plain';
+	return $out;
+}
+
+/**
+ * Render one authority stat value (static or count-up).
+ *
+ * @param array{value:string,label:string,detail:string} $stat Stat row.
+ * @param int                                              $i    Index.
+ * @param bool                                             $animate Whether to animate.
+ */
+function jcp_niche_render_authority_stat_value( array $stat, int $i, bool $animate ): void {
+	$parsed = jcp_niche_parse_count_value( $stat['value'] );
+	$attrs  = '';
+	$class  = '';
+	if ( $animate && $parsed['to'] !== null ) {
+		$class = ' jcp-count-up';
+		$attrs = sprintf(
+			' data-count-to="%s" data-count-prefix="%s" data-count-suffix="%s" data-count-format="%s" data-count-decimals="%d" data-count-ms="1400"',
+			esc_attr( (string) $parsed['to'] ),
+			esc_attr( $parsed['prefix'] ),
+			esc_attr( $parsed['suffix'] ),
+			esc_attr( $parsed['format'] ),
+			(int) $parsed['decimals']
+		);
+	}
+	?>
+	<span class="<?php echo esc_attr( trim( $class ) ); ?>"<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_attr above. ?><?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.value' ); ?>><?php echo esc_html( $stat['value'] ); ?></span>
+	<?php
+}
+
+/**
  * Authority / credibility band (e.g. Built by LeadsForward).
  *
  * @param array<string, mixed> $props     Block props.
@@ -1614,15 +1680,20 @@ function jcp_niche_render_authority( array $props, string $niche_key = '' ): voi
 		return;
 	}
 
-	$section_id  = ! empty( $props['section_id'] ) ? (string) $props['section_id'] : 'built-by-leadsforward';
-	$eyebrow    = trim( (string) ( $props['eyebrow'] ?? '' ) );
-	$body        = trim( (string) ( $props['body'] ?? '' ) );
-	$cta_note    = trim( (string) ( $props['cta_note'] ?? '' ) );
-	$primary     = jcp_niche_resolve_cta( $props['cta_primary'] ?? [], $niche_key );
+	$section_id   = ! empty( $props['section_id'] ) ? (string) $props['section_id'] : 'built-by-leadsforward';
+	$eyebrow      = trim( (string) ( $props['eyebrow'] ?? '' ) );
+	$body         = trim( (string) ( $props['body'] ?? '' ) );
+	$cta_note     = trim( (string) ( $props['cta_note'] ?? '' ) );
+	$primary      = jcp_niche_resolve_cta( $props['cta_primary'] ?? [], $niche_key );
+	$variant      = sanitize_key( (string) ( $props['variant'] ?? 'panel' ) );
+	if ( $variant !== 'scoreboard' ) {
+		$variant = 'panel';
+	}
 	$show_eyebrow = ! array_key_exists( 'show_eyebrow', $props ) || ! empty( $props['show_eyebrow'] );
 	$show_body    = ! array_key_exists( 'show_body', $props ) || ! empty( $props['show_body'] );
 	$show_stats   = ! array_key_exists( 'show_stats', $props ) || ! empty( $props['show_stats'] );
 	$show_cta     = ! array_key_exists( 'show_cta', $props ) || ! empty( $props['show_cta'] );
+	$animate      = $variant === 'scoreboard';
 	$stats        = [];
 	foreach ( (array) ( $props['stats'] ?? [] ) as $row ) {
 		if ( ! is_array( $row ) ) {
@@ -1639,20 +1710,40 @@ function jcp_niche_render_authority( array $props, string $niche_key = '' ): voi
 			'detail' => trim( (string) ( $row['detail'] ?? '' ) ),
 		];
 	}
+	$section_class = 'jcp-section jcp-block-authority jcp-authority--' . $variant;
 	?>
-	<section class="jcp-section jcp-block-authority" id="<?php echo esc_attr( $section_id ); ?>">
+	<section class="<?php echo esc_attr( $section_class ); ?>" id="<?php echo esc_attr( $section_id ); ?>" data-jcp-authority-variant="<?php echo esc_attr( $variant ); ?>">
 		<div class="jcp-container">
-			<div class="jcp-authority-panel">
-				<div class="jcp-authority-copy">
-					<?php if ( $show_eyebrow && $eyebrow !== '' ) : ?>
-						<p class="jcp-authority-eyebrow"<?php jcp_niche_editable_attr( 'authority.eyebrow' ); ?>><?php echo esc_html( $eyebrow ); ?></p>
-					<?php endif; ?>
-					<h2 class="jcp-authority-headline"<?php jcp_niche_editable_attr( 'authority.headline' ); ?>><?php echo esc_html( $headline ); ?></h2>
-					<?php if ( $show_body && $body !== '' ) : ?>
-						<p class="jcp-authority-body"<?php jcp_niche_editable_attr( 'authority.body' ); ?>><?php echo esc_html( $body ); ?></p>
+			<?php if ( $variant === 'scoreboard' ) : ?>
+				<div class="jcp-authority-scoreboard">
+					<header class="jcp-authority-scoreboard__intro">
+						<?php if ( $show_eyebrow && $eyebrow !== '' ) : ?>
+							<p class="jcp-authority-eyebrow"<?php jcp_niche_editable_attr( 'authority.eyebrow' ); ?>><?php echo esc_html( $eyebrow ); ?></p>
+						<?php endif; ?>
+						<h2 class="jcp-authority-headline"<?php jcp_niche_editable_attr( 'authority.headline' ); ?>><?php echo esc_html( $headline ); ?></h2>
+						<?php if ( $show_body && $body !== '' ) : ?>
+							<p class="jcp-authority-body"<?php jcp_niche_editable_attr( 'authority.body' ); ?>><?php echo esc_html( $body ); ?></p>
+						<?php endif; ?>
+					</header>
+					<?php if ( $show_stats && $stats !== [] ) : ?>
+						<div class="jcp-authority-stats jcp-authority-scoreboard__stats"<?php jcp_niche_array_attr( 'authority.stats' ); ?>>
+							<?php foreach ( $stats as $i => $stat ) : ?>
+								<div class="jcp-authority-stat">
+									<div class="jcp-authority-stat-value">
+										<?php jcp_niche_render_authority_stat_value( $stat, $i, $animate ); ?>
+										<?php if ( $stat['label'] !== '' ) : ?>
+											<span class="jcp-authority-stat-label"<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.label' ); ?>><?php echo esc_html( $stat['label'] ); ?></span>
+										<?php endif; ?>
+									</div>
+									<?php if ( $stat['detail'] !== '' ) : ?>
+										<p class="jcp-authority-stat-detail"<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.detail' ); ?>><?php echo esc_html( $stat['detail'] ); ?></p>
+									<?php endif; ?>
+								</div>
+							<?php endforeach; ?>
+						</div>
 					<?php endif; ?>
 					<?php if ( $show_cta && $primary['label'] !== '' ) : ?>
-						<div class="jcp-authority-cta">
+						<div class="jcp-authority-cta jcp-authority-scoreboard__cta">
 							<a
 								href="<?php echo esc_url( $primary['url'] ); ?>"
 								class="btn btn-primary"
@@ -1665,24 +1756,49 @@ function jcp_niche_render_authority( array $props, string $niche_key = '' ): voi
 						</div>
 					<?php endif; ?>
 				</div>
-				<?php if ( $show_stats && $stats !== [] ) : ?>
-					<div class="jcp-authority-stats"<?php jcp_niche_array_attr( 'authority.stats' ); ?>>
-						<?php foreach ( $stats as $i => $stat ) : ?>
-							<div class="jcp-authority-stat">
-								<div class="jcp-authority-stat-value">
-									<span<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.value' ); ?>><?php echo esc_html( $stat['value'] ); ?></span>
-									<?php if ( $stat['label'] !== '' ) : ?>
-										<span class="jcp-authority-stat-label"<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.label' ); ?>><?php echo esc_html( $stat['label'] ); ?></span>
-									<?php endif; ?>
-								</div>
-								<?php if ( $stat['detail'] !== '' ) : ?>
-									<p class="jcp-authority-stat-detail"<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.detail' ); ?>><?php echo esc_html( $stat['detail'] ); ?></p>
+			<?php else : ?>
+				<div class="jcp-authority-panel">
+					<div class="jcp-authority-copy">
+						<?php if ( $show_eyebrow && $eyebrow !== '' ) : ?>
+							<p class="jcp-authority-eyebrow"<?php jcp_niche_editable_attr( 'authority.eyebrow' ); ?>><?php echo esc_html( $eyebrow ); ?></p>
+						<?php endif; ?>
+						<h2 class="jcp-authority-headline"<?php jcp_niche_editable_attr( 'authority.headline' ); ?>><?php echo esc_html( $headline ); ?></h2>
+						<?php if ( $show_body && $body !== '' ) : ?>
+							<p class="jcp-authority-body"<?php jcp_niche_editable_attr( 'authority.body' ); ?>><?php echo esc_html( $body ); ?></p>
+						<?php endif; ?>
+						<?php if ( $show_cta && $primary['label'] !== '' ) : ?>
+							<div class="jcp-authority-cta">
+								<a
+									href="<?php echo esc_url( $primary['url'] ); ?>"
+									class="btn btn-primary"
+									<?php jcp_niche_editable_link_paths( 'authority.cta_primary.label', 'authority.cta_primary.url' ); ?>
+									<?php jcp_niche_cta_tracking_attr( $primary['url'], 'authority_cta', $primary['label'] ); ?>
+								><?php echo esc_html( $primary['label'] ); ?></a>
+								<?php if ( $cta_note !== '' ) : ?>
+									<p class="jcp-authority-cta-note"<?php jcp_niche_editable_attr( 'authority.cta_note' ); ?>><?php echo esc_html( $cta_note ); ?></p>
 								<?php endif; ?>
 							</div>
-						<?php endforeach; ?>
+						<?php endif; ?>
 					</div>
-				<?php endif; ?>
-			</div>
+					<?php if ( $show_stats && $stats !== [] ) : ?>
+						<div class="jcp-authority-stats"<?php jcp_niche_array_attr( 'authority.stats' ); ?>>
+							<?php foreach ( $stats as $i => $stat ) : ?>
+								<div class="jcp-authority-stat">
+									<div class="jcp-authority-stat-value">
+										<?php jcp_niche_render_authority_stat_value( $stat, $i, false ); ?>
+										<?php if ( $stat['label'] !== '' ) : ?>
+											<span class="jcp-authority-stat-label"<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.label' ); ?>><?php echo esc_html( $stat['label'] ); ?></span>
+										<?php endif; ?>
+									</div>
+									<?php if ( $stat['detail'] !== '' ) : ?>
+										<p class="jcp-authority-stat-detail"<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.detail' ); ?>><?php echo esc_html( $stat['detail'] ); ?></p>
+									<?php endif; ?>
+								</div>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
+				</div>
+			<?php endif; ?>
 		</div>
 	</section>
 	<?php

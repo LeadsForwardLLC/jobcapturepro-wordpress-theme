@@ -71,15 +71,13 @@ jobs:
                 jcp_migrate_contact_page_to_support();
                 echo \"migrated contact→support\\n\";
               }
-              if (function_exists(\"jcp_niche_seed_home_preview\")) {
-                \$hid = jcp_niche_seed_home_preview(true);
-                update_option(\"jcp_home_preview_seed_version\", \"3\");
-                update_option(\"jcp_niche_home_preview_seeded\", \"1\");
-                echo \"reseeded home-preview id=\$hid\\n\";
+              if (function_exists(\"jcp_niche_retire_home_preview\")) {
+                \$hid = jcp_niche_retire_home_preview();
+                echo \"retired home-preview id=\$hid\\n\";
               }
               if (function_exists(\"jcp_niche_seed_contractor_demo\")) {
                 \$cid = jcp_niche_seed_contractor_demo(true);
-                update_option(\"jcp_contractor_demo_seed_version\", \"12\");
+                update_option(\"jcp_contractor_demo_seed_version\", \"13\");
                 update_option(\"jcp_niche_contractor_demo_seeded\", \"1\");
                 echo \"reseeded contractor-demo id=\$cid\\n\";
               }
@@ -88,10 +86,8 @@ jobs:
                 home_url(\"/case-study\"),
                 \"https://jobcapturepro.com/case-study/\",
                 \"https://jobcapturepro.com/case-study\",
-                home_url(\"/home-preview/\"),
-                home_url(\"/home-preview\"),
-                \"https://jobcapturepro.com/home-preview/\",
-                \"https://jobcapturepro.com/home-preview\",
+                home_url(\"/\"),
+                \"https://jobcapturepro.com/\",
                 home_url(\"/contractor-demo/\"),
                 home_url(\"/contractor-demo\"),
                 \"https://jobcapturepro.com/contractor-demo/\",
@@ -116,7 +112,7 @@ jobs:
               \$opt = \"siteground_optimizer_excluded_urls\";
               \$list = get_option(\$opt, array());
               if (!is_array(\$list)) { \$list = array(); }
-              foreach (array(\"/case-study/\", \"/case-study\", \"/home-preview/\", \"/home-preview\", \"/contractor-demo/\", \"/contractor-demo\", \"/support/\", \"/support\", \"/contact/\", \"/contact\") as \$path) {
+              foreach (array(\"/case-study/\", \"/case-study\", \"/contractor-demo/\", \"/contractor-demo\", \"/support/\", \"/support\", \"/contact/\", \"/contact\", \"/\") as \$path) {
                 if (!in_array(\$path, \$list, true)) { \$list[] = \$path; }
               }
               update_option(\$opt, \$list);

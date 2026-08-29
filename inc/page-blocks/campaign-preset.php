@@ -292,3 +292,15 @@ function jcp_page_campaign_noindex(): void {
 	echo '<meta name="robots" content="noindex, follow">' . "\n";
 }
 add_action( 'wp_head', 'jcp_page_campaign_noindex', 1 );
+
+/**
+ * Redirect retired /home-preview/ to the live homepage.
+ */
+function jcp_page_redirect_retired_home_preview(): void {
+	if ( is_admin() || ! is_page( 'home-preview' ) ) {
+		return;
+	}
+	wp_safe_redirect( home_url( '/' ), 301 );
+	exit;
+}
+add_action( 'template_redirect', 'jcp_page_redirect_retired_home_preview', 1 );

@@ -3748,6 +3748,116 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   }
 }
 
+/* Mega scoreboard — full-bleed dark band, giant count-ups */
+.jcp-block-root[data-jcp-block-type="authority"]:has(.jcp-authority--scoreboard),
+.jcp-home .jcp-block-root[data-jcp-block-type="authority"]:has(.jcp-authority--scoreboard),
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="authority"]:has(.jcp-authority--scoreboard) {
+  background:
+    radial-gradient(90% 120% at 50% -10%, rgba(255, 80, 54, 0.18), transparent 55%),
+    linear-gradient(180deg, #0b1220 0%, #111827 48%, #0f172a 100%);
+  color: #f8fafc;
+}
+
+.jcp-authority--scoreboard {
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.jcp-authority-scoreboard {
+  display: grid;
+  gap: clamp(1.75rem, 4vw, 2.75rem);
+  text-align: center;
+  max-width: 68rem;
+  margin-inline: auto;
+}
+
+.jcp-authority-scoreboard__intro {
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
+.jcp-authority--scoreboard .jcp-authority-eyebrow {
+  color: #ffb4a6;
+}
+
+.jcp-authority--scoreboard .jcp-authority-headline {
+  font-size: clamp(1.75rem, 3.4vw, 2.65rem);
+  line-height: 1.12;
+  margin-bottom: 0.85rem;
+}
+
+.jcp-authority--scoreboard .jcp-authority-body {
+  margin-inline: auto;
+  max-width: 36rem;
+  color: rgba(248, 250, 252, 0.78);
+}
+
+.jcp-authority-scoreboard__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(0.85rem, 2.5vw, 1.5rem);
+}
+
+.jcp-authority--scoreboard .jcp-authority-stat {
+  padding: clamp(1.15rem, 2.5vw, 1.65rem) clamp(0.85rem, 2vw, 1.25rem);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.jcp-authority--scoreboard .jcp-authority-stat-value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: clamp(2.35rem, 6vw, 3.75rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+
+.jcp-authority--scoreboard .jcp-count-up {
+  font-weight: 800;
+  line-height: 1;
+}
+
+.jcp-authority--scoreboard .jcp-authority-stat-label {
+  font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+  font-weight: 650;
+  color: #ffb4a6;
+  text-transform: lowercase;
+}
+
+.jcp-authority--scoreboard .jcp-authority-stat-detail {
+  margin-top: 0.65rem;
+  font-size: 0.9rem;
+  color: rgba(248, 250, 252, 0.65);
+}
+
+.jcp-authority-scoreboard__cta {
+  align-items: center;
+  margin-top: 0;
+}
+
+.jcp-authority-scoreboard__cta .btn-primary {
+  min-width: min(100%, 18rem);
+  justify-content: center;
+}
+
+@media (max-width: 720px) {
+  .jcp-authority-scoreboard__stats {
+    grid-template-columns: 1fr;
+  }
+
+  .jcp-authority--scoreboard .jcp-authority-stat-value {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: 0.4rem 0.55rem;
+    font-size: clamp(2.1rem, 10vw, 2.75rem);
+  }
+}
+
 /* Faces strip under testimonials header */
 .jcp-page-campaign .jcp-block-testimonials .jcp-testimonials-eyebrow {
   display: flex;

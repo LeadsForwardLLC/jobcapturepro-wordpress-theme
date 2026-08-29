@@ -144,9 +144,10 @@
     "media_alt": "JobCapturePro app turning a completed job into published proof"
   },
   "authority": {
+    "variant": "scoreboard",
     "eyebrow": "Built by LeadsForward",
     "headline": "A decade growing contractors. Then we built the missing piece.",
-    "body": "LeadsForward has spent 10 years helping home-service companies fill their calendars. Across that work we generated 250,000+ leads that helped contractors book $150 million in revenue — and we kept seeing the same gap: finished jobs that never became marketing. JobCapturePro is how we closed it.",
+    "body": "250,000+ leads. $150M+ booked. One gap we kept seeing: finished jobs that never became marketing. JobCapturePro closes it.",
     "stats": [
       {
         "value": "10",
@@ -169,7 +170,12 @@
       "url": "/demo/"
     },
     "cta_note": "Free personalized demo · Work email required · No credit card",
-    "section_id": "built-by-leadsforward"
+    "section_id": "built-by-leadsforward",
+    "show_eyebrow": true,
+    "show_headline": true,
+    "show_body": true,
+    "show_stats": true,
+    "show_cta": true
   },
   "problem": {
     "variant": "contrast",

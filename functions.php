@@ -60,6 +60,7 @@ require_once get_template_directory() . '/inc/page-blocks/industry-media.php';
 require_once get_template_directory() . '/inc/page-blocks/demo-migration.php';
 require_once get_template_directory() . '/inc/page-blocks/case-study-form-modal.php';
 require_once get_template_directory() . '/inc/page-blocks/testimonials-upgrade.php';
+require_once get_template_directory() . '/inc/page-blocks/authority-upgrade.php';
 require_once get_template_directory() . '/inc/page-blocks/doc-sections.php';
 require_once get_template_directory() . '/inc/niche-landing/cpt.php';
 require_once get_template_directory() . '/inc/niche-landing/schema.php';

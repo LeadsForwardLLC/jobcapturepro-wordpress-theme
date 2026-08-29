@@ -113,9 +113,11 @@ function jcp_core_enqueue_assets(): void {
         if ( $uses_blocks ) {
             jcp_core_enqueue_script( 'jcp-core-home-interactions', 'js/pages/home-interactions.js' );
             jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [ 'jcp-core-home-interactions' ] );
+            jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
         } else {
             jcp_core_enqueue_script( 'jcp-core-home', 'js/pages/home.js' );
             jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [ 'jcp-core-home' ] );
+            jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
             $render_deps[] = 'jcp-core-home';
             $home_ctas = [
                 'primary_text'   => 'View the live demo',
@@ -149,6 +151,7 @@ function jcp_core_enqueue_assets(): void {
             jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-sections', 'jcp-core-hero-live-demo' ] );
             jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
             jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [] );
+            jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
             jcp_core_enqueue_script( 'jcp-core-campaign', 'js/pages/campaign.js', [], false, true );
             // Lightweight paid LP view signal for GTM/Meta (maps to PaidLandingView).
             wp_add_inline_script(

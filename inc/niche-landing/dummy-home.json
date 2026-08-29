@@ -10,7 +10,7 @@
     "subheadline": "Your team already takes job photos. JobCapturePro turns them into Google updates, website content, and social posts — and your crew can ask for a review on site with a QR code.",
     "cta_primary": { "label": "View the live demo", "url": "/demo" },
     "cta_secondary": { "label": "Learn how it works", "url": "#how-it-works" },
-    "cta_microcopy": "No signup. Takes under 5 mins.",
+    "cta_microcopy": "No signup required · Takes about 2 minutes.",
     "show_trust_line": true,
     "meta_stats": [
       { "icon": "camera", "label": "1 photo", "detail": "Becomes proof on every channel", "css_class": "meta-stat-photo" },
@@ -43,6 +43,25 @@
     "show_cta_note": true,
     "show_headline": true,
     "show_body": true
+  },
+  "authority": {
+    "variant": "scoreboard",
+    "eyebrow": "Built by LeadsForward",
+    "headline": "A decade growing contractors. Then we built the missing piece.",
+    "body": "250,000+ leads. $150M+ booked. One gap we kept seeing: finished jobs that never became marketing. JobCapturePro closes it.",
+    "stats": [
+      { "value": "10", "label": "years", "detail": "Helping contractors grow" },
+      { "value": "250k+", "label": "leads", "detail": "Generated for contractor clients" },
+      { "value": "$150M+", "label": "revenue", "detail": "Booked from those leads" }
+    ],
+    "cta_primary": { "label": "View the live demo", "url": "/demo/" },
+    "cta_note": "No signup required · Takes about 2 minutes",
+    "section_id": "built-by-leadsforward",
+    "show_eyebrow": true,
+    "show_headline": true,
+    "show_body": true,
+    "show_stats": true,
+    "show_cta": true
   },
   "proof_flow": {
     "headline": "Real job proof, not marketing claims",

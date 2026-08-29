@@ -340,12 +340,44 @@ function jcp_niche_home_preview_document(): array {
 }
 
 /**
+ * Retire /home-preview/ — draft the page and stop reseed.
+ *
+ * @return int Post ID retired, or 0.
+ */
+function jcp_niche_retire_home_preview(): int {
+	$page = get_page_by_path( 'home-preview', OBJECT, 'page' );
+	if ( ! $page instanceof WP_Post ) {
+		update_option( 'jcp_home_preview_retired', '1' );
+		return 0;
+	}
+	$id = (int) $page->ID;
+	if ( $page->post_status !== 'trash' && $page->post_status !== 'draft' ) {
+		wp_update_post(
+			[
+				'ID'          => $id,
+				'post_status' => 'draft',
+			]
+		);
+	}
+	update_option( 'jcp_home_preview_retired', '1' );
+	update_option( 'jcp_home_preview_seed_version', 'retired' );
+	return $id;
+}
+
+/**
  * Create or refresh the homepage redesign preview at /home-preview/.
+ *
+ * @deprecated Preview route retired — prefer jcp_niche_retire_home_preview().
  *
  * @param bool $force_refresh When true, overwrite saved block content from the home_v2 preset.
  * @return int Post ID or 0.
  */
 function jcp_niche_seed_home_preview( bool $force_refresh = false ): int {
+	// Preview cutover complete — do not recreate /home-preview/.
+	if ( (string) get_option( 'jcp_home_preview_retired', '' ) === '1' && ! $force_refresh ) {
+		return 0;
+	}
+	// Force refresh from admin still allowed for recovery; deploy uses retire instead.
 	$existing = get_page_by_path( 'home-preview', OBJECT, 'page' );
 	$doc      = jcp_niche_home_preview_document();
 	if ( empty( $doc ) ) {
@@ -368,10 +400,10 @@ function jcp_niche_seed_home_preview( bool $force_refresh = false ): int {
 	$id = wp_insert_post(
 		[
 			'post_type'    => 'page',
-			'post_status'  => 'publish',
+			'post_status'  => 'draft',
 			'post_name'    => 'home-preview',
-			'post_title'   => 'Home Preview — Sales Deck Homepage',
-			'post_excerpt' => 'Preview of the sales-deck homepage redesign. Not indexed.',
+			'post_title'   => 'Home Preview — Sales Deck Homepage (retired)',
+			'post_excerpt' => 'Retired preview route. Live homepage owns the funnel.',
 		],
 		true
 	);
@@ -415,24 +447,19 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v12 = testimonials slider-only (2-up) + final CTA unbox.
+	// v13 = authority mega scoreboard (count-up) + aligned copy.
 	$demo_ver = (string) get_option( 'jcp_contractor_demo_seed_version', '' );
-	if ( $demo_ver !== '12' || ! jcp_niche_contractor_demo_exists() ) {
-		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '12' );
+	if ( $demo_ver !== '13' || ! jcp_niche_contractor_demo_exists() ) {
+		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '13' );
 		if ( $created > 0 ) {
-			update_option( 'jcp_contractor_demo_seed_version', '12' );
+			update_option( 'jcp_contractor_demo_seed_version', '13' );
 			update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 		}
 	}
 
-	// v3 = sales-deck homepage preview at /home-preview/ (skip home testimonials upgrade reorder).
-	$home_preview_ver = (string) get_option( 'jcp_home_preview_seed_version', '' );
-	if ( $home_preview_ver !== '3' || ! jcp_niche_home_preview_exists() ) {
-		$created = jcp_niche_seed_home_preview( $home_preview_ver !== '3' );
-		if ( $created > 0 ) {
-			update_option( 'jcp_home_preview_seed_version', '3' );
-			update_option( 'jcp_niche_home_preview_seeded', '1' );
-		}
+	// /home-preview/ retired — draft page, stop reseeding.
+	if ( (string) get_option( 'jcp_home_preview_retired', '' ) !== '1' ) {
+		jcp_niche_retire_home_preview();
 	}
 }
 add_action( 'init', 'jcp_niche_maybe_seed', 20 );
@@ -449,14 +476,12 @@ function jcp_niche_admin_seed_notice(): void {
 	jcp_niche_seed_hvac();
 	jcp_niche_seed_referral_program();
 	jcp_niche_seed_contractor_demo( true );
-	jcp_niche_seed_home_preview( true );
+	jcp_niche_retire_home_preview();
 	update_option( 'jcp_niche_plumbing_seeded', '1' );
 	update_option( 'jcp_niche_hvac_seeded', '1' );
 	update_option( 'jcp_niche_referral_seeded', '1' );
 	update_option( 'jcp_niche_contractor_demo_seeded', '1' );
-	update_option( 'jcp_contractor_demo_seed_version', '9' );
-	update_option( 'jcp_niche_home_preview_seeded', '1' );
-	update_option( 'jcp_home_preview_seed_version', '3' );
+	update_option( 'jcp_contractor_demo_seed_version', '13' );
 	wp_safe_redirect( admin_url( 'edit.php?post_type=jcp_niche_landing&jcp_seeded=1' ) );
 	exit;
 }
