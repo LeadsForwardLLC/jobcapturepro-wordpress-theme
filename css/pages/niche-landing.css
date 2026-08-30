@@ -3916,9 +3916,22 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   padding: 0.85rem 1.75rem;
 }
 
+
+/* Keep the rounded demo band visually separated from the next section */
+.jcp-page-home .jcp-block-root[data-jcp-block-type="demo_preview"],
+.jcp-home .jcp-block-root[data-jcp-block-type="demo_preview"] {
+  margin-block: clamp(2rem, 4.5vw, 3.5rem);
+}
+
+.jcp-page-home .jcp-block-root[data-jcp-block-type="demo_preview"] .demo-preview-section,
+.jcp-home .jcp-block-root[data-jcp-block-type="demo_preview"] .demo-preview-section {
+  margin-block: 0;
+}
+
 /* Demo preview: same container gutters as hero — never full-bleed left */
 .jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] {
   width: 100%;
+  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
 }
 
 .jcp-page-campaign .jcp-block-root[data-jcp-block-type="demo_preview"] .demo-preview-section {

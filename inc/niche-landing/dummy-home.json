@@ -51,7 +51,7 @@
     "body": "250,000+ leads. $150M+ booked. One gap we kept seeing: finished jobs that never became marketing. JobCapturePro closes it.",
     "stats": [
       { "value": "10", "label": "years", "detail": "Helping contractors grow" },
-      { "value": "250k+", "label": "leads", "detail": "Generated for contractor clients" },
+      { "value": "250K+", "label": "leads", "detail": "Generated for contractor clients" },
       { "value": "$150M+", "label": "revenue", "detail": "Booked from those leads" }
     ],
     "cta_primary": { "label": "View the live demo", "url": "/demo/" },

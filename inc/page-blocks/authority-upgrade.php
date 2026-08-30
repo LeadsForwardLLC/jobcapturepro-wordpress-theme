@@ -26,7 +26,7 @@ function jcp_page_authority_leadsforward_props(): array {
 				'detail' => __( 'Helping contractors grow', 'jcp-core' ),
 			],
 			[
-				'value'  => '250k+',
+				'value'  => '250K+',
 				'label'  => 'leads',
 				'detail' => __( 'Generated for contractor clients', 'jcp-core' ),
 			],

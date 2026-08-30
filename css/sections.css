@@ -1186,7 +1186,7 @@
    ============================================================ */
 
 .demo-preview-section {
-  margin-top: var(--jcp-space-6xl);
+  margin-block: var(--jcp-space-6xl);
   width: 100%;
 }
 

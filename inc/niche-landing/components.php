@@ -252,11 +252,11 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 	$demo_url  = $demo_url !== '' ? $demo_url : home_url( '/demo/' );
 	$photo_url = $photo_url !== '' ? $photo_url : ( function_exists( 'jcp_media_default_phone_image' ) ? jcp_media_default_phone_image() : '' );
 	$captions  = [
-		__( 'Crew taps + to start a check-in', 'jcp-core' ),
-		__( 'One job photo — captured on site', 'jcp-core' ),
-		__( 'AI builds local-SEO job proof', 'jcp-core' ),
-		__( 'Published to Google, website & social', 'jcp-core' ),
-		__( 'More visibility → more booked jobs', 'jcp-core' ),
+		__( '1. Tap + to start a check-in', 'jcp-core' ),
+		__( '2. Snap the finished job photo', 'jcp-core' ),
+		__( '3. AI writes local-SEO proof', 'jcp-core' ),
+		__( '4. Published everywhere automatically', 'jcp-core' ),
+		__( '5. More visibility → more booked jobs', 'jcp-core' ),
 	];
 	?>
 	<div class="jcp-story-phone" data-jcp-story-phone>
@@ -389,12 +389,12 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 											<span class="jcp-story-checkin-card__badge"><?php esc_html_e( 'Published', 'jcp-core' ); ?></span>
 										</div>
 									</div>
-									<div class="jcp-story-channels-row">
-										<span><?php esc_html_e( 'Website', 'jcp-core' ); ?></span>
-										<span><?php esc_html_e( 'Google', 'jcp-core' ); ?></span>
-										<span><?php esc_html_e( 'Social', 'jcp-core' ); ?></span>
-										<span><?php esc_html_e( 'Directory', 'jcp-core' ); ?></span>
-									</div>
+									<ul class="jcp-story-channels-list" aria-label="<?php esc_attr_e( 'Published channels', 'jcp-core' ); ?>">
+										<li><?php esc_html_e( 'Website', 'jcp-core' ); ?></li>
+										<li><?php esc_html_e( 'Google', 'jcp-core' ); ?></li>
+										<li><?php esc_html_e( 'Social', 'jcp-core' ); ?></li>
+										<li><?php esc_html_e( 'Directory', 'jcp-core' ); ?></li>
+									</ul>
 								</div>
 								<div class="demo-tab-bar">
 									<div class="demo-tab-item demo-tab-active">

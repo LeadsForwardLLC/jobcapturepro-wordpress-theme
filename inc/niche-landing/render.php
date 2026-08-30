@@ -1603,6 +1603,25 @@ function jcp_testimonials_render_stars( int $rating, bool $show_stars ): void {
 }
 
 /**
+ * Normalize abbreviated stat units for display (250k → 250K, $150m → $150M).
+ *
+ * @param string $raw Raw value.
+ */
+function jcp_niche_normalize_stat_value( string $raw ): string {
+	$raw = trim( $raw );
+	if ( $raw === '' ) {
+		return $raw;
+	}
+	return (string) preg_replace_callback(
+		'/(\$?[\d,]+(?:\.\d+)?)([kKmMbB])(\+?)/',
+		static function ( array $m ): string {
+			return $m[1] . strtoupper( $m[2] ) . $m[3];
+		},
+		$raw
+	);
+}
+
+/**
  * Parse a display stat (e.g. 10, 250k+, $150M+) into count-up attributes.
  *
  * @param string $raw Raw value string.
@@ -1627,6 +1646,7 @@ function jcp_niche_parse_count_value( string $raw ): array {
 	$prefix = (string) $m[1];
 	$num    = str_replace( ',', '', (string) $m[2] );
 	$scale  = strtolower( (string) $m[3] );
+	$scale_display = strtoupper( (string) $m[3] );
 	$plus   = (string) $m[4];
 	$to     = (float) $num;
 	if ( ! is_finite( $to ) || $to < 0 ) {
@@ -1635,7 +1655,7 @@ function jcp_niche_parse_count_value( string $raw ): array {
 	$decimals = ( strpos( $num, '.' ) !== false ) ? strlen( substr( strrchr( $num, '.' ), 1 ) ) : 0;
 	$out['to']       = $to;
 	$out['prefix']   = $prefix;
-	$out['suffix']   = $scale . $plus;
+	$out['suffix']   = $scale_display . $plus;
 	$out['decimals'] = $decimals;
 	$out['format']   = ( strpos( (string) $m[2], ',' ) !== false ) ? 'comma' : 'plain';
 	return $out;
@@ -1649,6 +1669,7 @@ function jcp_niche_parse_count_value( string $raw ): array {
  * @param bool                                             $animate Whether to animate.
  */
 function jcp_niche_render_authority_stat_value( array $stat, int $i, bool $animate ): void {
+	$stat['value'] = jcp_niche_normalize_stat_value( (string) ( $stat['value'] ?? '' ) );
 	$parsed = jcp_niche_parse_count_value( $stat['value'] );
 	$attrs  = '';
 	$class  = '';
@@ -1664,7 +1685,7 @@ function jcp_niche_render_authority_stat_value( array $stat, int $i, bool $anima
 		);
 	}
 	?>
-	<span class="<?php echo esc_attr( trim( $class ) ); ?>"<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_attr above. ?><?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.value' ); ?>><?php echo esc_html( $stat['value'] ); ?></span>
+	<span class="<?php echo esc_attr( trim( $class ) ); ?>"<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_attr above. ?><?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.value' ); ?>><?php echo esc_html( jcp_niche_normalize_stat_value( (string) ( $stat['value'] ?? '' ) ) ); ?></span>
 	<?php
 }
 
