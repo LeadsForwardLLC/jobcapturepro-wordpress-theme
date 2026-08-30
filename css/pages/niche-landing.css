@@ -3543,6 +3543,14 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 }
 
 /* Phone CTA: never wrap label + chevron */
+/* Mid-page photo+cards phone: no floating CTA badge over the mockup. */
+.demo-preview-section .hero-phone-cta,
+.demo-preview-section .phone-click-hint.hero-phone-cta,
+.jcp-block-root[data-jcp-block-type="demo_preview"] .hero-phone-cta,
+.jcp-block-root[data-jcp-block-type="demo_preview"] .phone-click-hint.hero-phone-cta {
+  display: none !important;
+}
+
 .jcp-page-campaign .hero-phone-cta,
 .jcp-page-campaign .phone-click-hint.hero-phone-cta {
   white-space: nowrap;
