@@ -835,10 +835,10 @@ The theme posts form submissions to **two separate** GoHighLevel inbound webhook
 | Form | Purpose | Webhook URL constant | File |
 |------|---------|----------------------|------|
 | **Early Access** | Lead signup → Early Access automation | `JCP_GHL_WEBHOOK_URL_DEFAULT` | `inc/rest-early-access.php` |
-| **Demo Survey** | Demo signup (opt-in + viewed-demo) → single workflow with Event branching | `JCP_GHL_DEMO_SURVEY_WEBHOOK_URL` | `inc/rest-demo-survey.php` |
+| **Demo Survey** | Demo gate unlock + viewed + in-demo milestones → single webhook with Event branching | `JCP_GHL_DEMO_SURVEY_WEBHOOK_URL` | `inc/rest-demo-survey.php` |
 
-- **Early Access:** REST route `POST /wp-json/jcp/v1/early-access-submit`. Payload: `application/x-www-form-urlencoded`, flat key-value. Keys: First Name, Email, Phone, Company, Trade, Message, Referral Source[].
-- **Demo Survey:** Two REST routes post to the **same** webhook. (1) `POST /wp-json/jcp/v1/demo-survey-submit` when user clicks "Continue to preview" — full form, Event= demo-opt-in, tags demo-completed, demo-interest. (2) `POST /wp-json/jcp/v1/demo-viewed-submit` when user clicks "Skip to demo" or "Launch the live demo" — Event= demo-viewed, tags viewed-demo. GHL workflow branches on Event (if/then).
+- **Early Access:** REST route `POST /wp-json/jcp/v1/early-access-submit`. Payload: `application/x-www-form-urlencoded`, flat key-value.
+- **Demo Survey:** Same webhook for all demo lead events. (1) `POST /wp-json/jcp/v1/demo-survey-submit` on gate unlock ("Unlock my demo") — Event=`demo-opt-in`, tags `demo-completed`, `demo-interest`. (2) `POST /wp-json/jcp/v1/demo-viewed-submit` when launching the live demo — Event=`demo-viewed`, tag **`demo-viewed`** (not `viewed-demo`). (3) Milestone forwards from `POST /wp-json/jcp/v1/demo-event` analytics (see Event table below). GHL workflows branch on **Event**.
 
 ### ACF (Advanced Custom Fields)
 
@@ -860,11 +860,11 @@ The theme posts form submissions to **two separate** GoHighLevel inbound webhook
 | Form | Page / trigger | Purpose |
 |------|----------------|---------|
 | **Early Access** | `/early-access` | Lead signup form. Collects contact info, business type, why interested, referral source. One submission per submit; payload goes to Early Access webhook only. |
-| **Demo Survey** | `/demo` (no `mode=run`) | Demo opt-in and viewed-demo tracking. Step 3 "Continue to preview" sends full form to Demo webhook (Event= demo-opt-in). "Skip to demo" / "Launch the live demo" sends minimal payload to same webhook (Event= demo-viewed). GHL branches on Event. |
+| **Demo Survey** | `/demo` (no `mode=run`) | Single-screen unlock gate. Required: business type + work email. Optional: business name, first name. On unlock → `demo-opt-in`; on launch into live demo → `demo-viewed`. Phone, referral source, and demo goals remain in the payload as empty/hidden for back-compat. |
 
 ### Data Flow
 
-1. **Frontend** → POST JSON to theme REST endpoint (e.g. `/wp-json/jcp/v1/early-access-submit` or `/wp-json/jcp/v1/demo-survey-submit`).
+1. **Frontend** → POST JSON to theme REST endpoint (e.g. `/wp-json/jcp/v1/early-access-submit` or `/wp-json/jcp/v1/demo-survey-submit`). Attribution from `assets/js/core/jcp-attribution.js` (first-touch UTMs + `fbclid` + landing page + referrer) is merged into demo payloads.
 2. **REST handler** → Validates required fields, builds `application/x-www-form-urlencoded` body (flat key-value; no nested objects).
 3. **Theme** → `wp_remote_post()` to the form’s GHL webhook URL.
 4. **GHL** → Workflow receives webhook; mapping (payload key → contact field / custom field) is done in GHL, not in the theme.
@@ -872,7 +872,7 @@ The theme posts form submissions to **two separate** GoHighLevel inbound webhook
 ### Field Naming Conventions (Single Source of Truth)
 
 - **Canonical definitions:** `inc/form-fields.php` defines REST param names and GHL payload keys. Demo Survey is the source of truth. Both Early Access and Demo Survey REST handlers use these constants when building webhook bodies so GHL receives consistent keys.
-- **REST request body (JSON):** Snake_case (e.g. `first_name`, `company`, `demo_goals`, `business_type`). Same concept uses the same param on both forms.
+- **REST request body (JSON):** Snake_case (e.g. `first_name`, `company`, `demo_goals`, `business_type`, `utm_term`, `fbclid`). Same concept uses the same param on both forms.
 - **GHL payload (form-urlencoded):** Keys come from `form-fields.php` (e.g. `JCP_GHL_KEY_FIRST_NAME` → "First Name", `JCP_GHL_KEY_USE_CASE` → "Use Case"). Both forms send the same key for the same concept (e.g. "Use Case" for why interested / demo goals, not "Message").
 
 ### Shared vs Form-Specific Fields
@@ -881,27 +881,68 @@ The theme posts form submissions to **two separate** GoHighLevel inbound webhook
 
 | Concept | Form label (Demo = source of truth) | REST param (both forms) | GHL key (both forms) | Value |
 |---------|--------------------------------------|-------------------------|----------------------|-------|
-| First name | First name | `first_name` | First Name | As entered |
-| Last name | Last name | `last_name` | Last Name | As entered |
-| Email | Email address | `email` | Email | As entered |
-| Phone | Phone | `phone` | Phone | As entered |
-| Business name / company | Business name | `company` | Company | As entered |
+| First name | First name | `first_name` | First Name | As entered (demo gate: optional; derived from email local-part if blank) |
+| Last name | Last name | `last_name` | Last Name | As entered (demo gate: hidden/empty) |
+| Email | Work email | `email` | Email | As entered |
+| Phone | Phone | `phone` | Phone | As entered (demo gate: hidden/empty) |
+| Business name / company | Business name | `company` | Company | As entered (demo gate: optional; defaults to "{Trade} Pro") |
 | Business type | Business type | `business_type` | Business Type | Display label (e.g. Plumbing, General Contractor) |
-| Why interested / demo goals | (context-specific label) | `demo_goals` (array) | Use Case | Comma-joined labels |
+| Why interested / demo goals | (context-specific label) | `demo_goals` (array) | Use Case | Comma-joined labels (demo gate: usually empty) |
 
 - **First name / Last name:** Both forms collect first name and last name in separate fields. REST params `first_name` and `last_name` map to GHL keys "First Name" and "Last Name".
-- **Labels/placeholders:** Demo Survey is the source of truth: "First name", "John"; "Last name", "Smith"; "Email address", "you@company.com"; "Business name", "Summit Plumbing"; "Business type", "Select your business type". Early Access uses the same labels and placeholders for these shared fields.
-- Both forms send **Business Type** as the display label and **Use Case** for the “why interested” / “what should this demo prove” checkboxes. GHL workflows map **Use Case** and **Business Type**.
+- Both forms send **Business Type** as the display label and **Use Case** for the “why interested” / “what should this demo prove” checkboxes when present. GHL workflows map **Use Case** and **Business Type**.
+
+**Attribution (Demo Survey + demo milestones; captured client-side, first-touch per tab):**
+
+| REST param | GHL key |
+|------------|---------|
+| `utm_source` | UTM Source |
+| `utm_medium` | UTM Medium |
+| `utm_campaign` | UTM Campaign |
+| `utm_content` | UTM Content |
+| `utm_term` | UTM Term |
+| `fbclid` | Facebook Click ID |
+| `landing_page` | Landing Page |
+| `referrer` | Referrer |
+
+**Demo Event + Tags (GHL if/then must use these exact Event strings):**
+
+| Trigger | GHL Event value | Tags[] |
+|---------|-----------------|--------|
+| Gate unlock (`demo-survey-submit`) | `demo-opt-in` | `demo-completed`, `demo-interest` |
+| Launch live demo (`demo-viewed-submit`) | `demo-viewed` | `demo-viewed` |
+| Demo run started | `demo-run-started` | `demo-run-started` |
+| Publish completed in demo | `demo-publish-seen` | `demo-publish-seen` |
+| Review request sent in demo | `demo-review-sent` | `demo-review-sent` |
+| Outcomes / results opened | `demo-outcomes-opened` | `demo-outcomes-opened` |
+| Post-demo modal shown | `demo-finished` | `demo-finished` |
+| Converted (Start Free Trial / get_started_free) | `demo-converted` | `demo-converted` |
+| CTA: view directory | `demo-cta-directory` | `demo-cta-directory` |
+| CTA: apply for personalized demo | `demo-cta-personalized` | `demo-cta-personalized` |
+
+**Tag note:** Theme sends tag `demo-viewed`. Older docs/workflows that expect `viewed-demo` must be updated in GHL.
+
+**WP-only analytics (not forwarded to GHL):** `demo_step_viewed`, `demo_outcomes_slide`, `demo_outcomes_completed`, `demo_replayed`, `demo_coach_minimized`, `cta_clicked` for `replay_demo` / `get_started_free` (the latter is covered by `demo_converted`).
 
 **Demo-only (exist only on Demo Survey; never sent by Early Access):**
 
 - `service_area` → Service Area  
 - `demo_goals` (array) → Use Case (comma-joined)  
-- Event, Tags (demo-completed, demo-interest, viewed-demo)
+- Event, Tags (see table above)
 
-**Early-Access-only (never sent by Demo Survey):**
+**Early-Access-only (never sent by Demo Survey as a primary field):**
 
-- `referral_source` → Referral Source[] (array)
+- `referral_source` → Referral Source[] (array). Demo gate keeps the field hidden/empty but still accepts it on the REST route for back-compat.
+
+### GHL setup checklist (map in the workflow, not the theme)
+
+1. Inbound webhook = Demo Survey URL (`JCP_GHL_DEMO_SURVEY_WEBHOOK_URL`).
+2. Branch on **Event** (exact strings in the table above).
+3. For `demo-opt-in`: Create/Update Contact; add tags `demo-completed`, `demo-interest`.
+4. For `demo-viewed` and milestones: Find Contact by **Email**; add the matching tag; do not require a new contact create if already present.
+5. Map contact fields: First Name, Last Name, Email, Phone, Company, Business Type, Use Case, Referral Source[].
+6. Map attribution custom fields: UTM Source/Medium/Campaign/Content/Term, Facebook Click ID, Landing Page, Referrer.
+7. If an existing workflow uses tag `viewed-demo`, change it to **`demo-viewed`** (or add both temporarily).
 
 **GHL workflow notes:** Early Access sends **Use Case** (same key as Demo Survey) for the “why interested” checkboxes—not "Message". Early Access sends **Business Type** (same key as Demo Survey). If your Early Access workflow previously mapped **Trade** or **Message**, update it to map **Business Type** and **Use Case** instead.
 

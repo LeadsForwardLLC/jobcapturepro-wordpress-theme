@@ -11,8 +11,9 @@
 
 /**
  * GHL webhook URL for Demo Survey (single workflow).
- * Fired for both: "Continue to preview" (Event=opt-in) and "Skip to demo" / "Launch the live demo" (Event=viewed-demo).
- * In GHL use an if/then: if Event = "demo-viewed" → Find Contact by Email → Add Tag "viewed-demo"; else (Event = "demo-opt-in") → Create Contact → Add tag (e.g. demo-opt-in).
+ * Fired for: gate unlock (Event=demo-opt-in) and launch into live demo (Event=demo-viewed),
+ * plus in-demo milestones (demo-run-started, demo-publish-seen, etc.).
+ * In GHL use if/then on Event. Tags for viewed are "demo-viewed" (not "viewed-demo").
  */
 define( 'JCP_GHL_DEMO_SURVEY_WEBHOOK_URL', 'https://services.leadconnectorhq.com/hooks/kMIwmFm9I7LJPEYo35qi/webhook-trigger/zYfSsYRsSdSdHlD5vqUv' );
 
@@ -157,6 +158,16 @@ function jcp_demo_ghl_attribution_rest_args(): array {
             'type'              => 'string',
             'sanitize_callback' => 'sanitize_text_field',
         ],
+        'utm_term'     => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'fbclid'       => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
         'landing_page' => [
             'required'          => false,
             'type'              => 'string',
@@ -229,6 +240,8 @@ function jcp_demo_ghl_normalize_contact_params( array $params ): array {
         'utm_medium'       => isset( $params['utm_medium'] ) ? trim( (string) $params['utm_medium'] ) : '',
         'utm_campaign'     => isset( $params['utm_campaign'] ) ? trim( (string) $params['utm_campaign'] ) : '',
         'utm_content'      => isset( $params['utm_content'] ) ? trim( (string) $params['utm_content'] ) : '',
+        'utm_term'         => isset( $params['utm_term'] ) ? trim( (string) $params['utm_term'] ) : '',
+        'fbclid'           => isset( $params['fbclid'] ) ? trim( (string) $params['fbclid'] ) : '',
         'landing_page'     => isset( $params['landing_page'] ) ? trim( (string) $params['landing_page'] ) : '',
         'referrer'         => isset( $params['referrer'] ) ? trim( (string) $params['referrer'] ) : '',
     ];
@@ -257,6 +270,8 @@ function jcp_demo_ghl_build_webhook_body( string $event, array $params, array $t
         JCP_GHL_KEY_UTM_MEDIUM    => $contact['utm_medium'],
         JCP_GHL_KEY_UTM_CAMPAIGN  => $contact['utm_campaign'],
         JCP_GHL_KEY_UTM_CONTENT   => $contact['utm_content'],
+        JCP_GHL_KEY_UTM_TERM      => $contact['utm_term'],
+        JCP_GHL_KEY_FBCLID        => $contact['fbclid'],
         JCP_GHL_KEY_LANDING_PAGE  => $contact['landing_page'],
         JCP_GHL_KEY_REFERRER      => $contact['referrer'],
     ];
@@ -427,6 +442,16 @@ function jcp_demo_ghl_milestone_mapping( string $event_type, $metadata ): ?array
                 'event' => 'demo-publish-seen',
                 'tags'  => [ 'demo-publish-seen' ],
             ];
+        case 'demo_review_sent':
+            return [
+                'event' => 'demo-review-sent',
+                'tags'  => [ 'demo-review-sent' ],
+            ];
+        case 'demo_outcomes_opened':
+            return [
+                'event' => 'demo-outcomes-opened',
+                'tags'  => [ 'demo-outcomes-opened' ],
+            ];
         case 'post_demo_modal_shown':
             return [
                 'event' => 'demo-finished',
@@ -439,13 +464,20 @@ function jcp_demo_ghl_milestone_mapping( string $event_type, $metadata ): ?array
             ];
         case 'cta_clicked':
             $cta = is_array( $metadata ) && isset( $metadata['cta'] ) ? (string) $metadata['cta'] : '';
-            if ( ! in_array( $cta, [ 'view_directory', 'view_main_directory' ], true ) ) {
-                return null;
+            if ( in_array( $cta, [ 'view_directory', 'view_main_directory' ], true ) ) {
+                return [
+                    'event' => 'demo-cta-directory',
+                    'tags'  => [ 'demo-cta-directory' ],
+                ];
             }
-            return [
-                'event' => 'demo-cta-directory',
-                'tags'  => [ 'demo-cta-directory' ],
-            ];
+            if ( $cta === 'personalized_demo' ) {
+                return [
+                    'event' => 'demo-cta-personalized',
+                    'tags'  => [ 'demo-cta-personalized' ],
+                ];
+            }
+            // get_started_free is covered by demo_converted (same click also fires that event).
+            return null;
         default:
             return null;
     }
@@ -463,12 +495,27 @@ function jcp_demo_ghl_milestone_is_first_for_session( string $session_id, string
     $table = $wpdb->prefix . JCP_DEMO_EVENTS_TABLE;
 
     if ( $event_type === 'cta_clicked' ) {
+        $cta = is_array( $metadata ) && isset( $metadata['cta'] ) ? (string) $metadata['cta'] : '';
+        if ( $cta === '' ) {
+            return false;
+        }
+        // Directory CTAs share one GHL milestone bucket.
+        if ( in_array( $cta, [ 'view_directory', 'view_main_directory' ], true ) ) {
+            $count = (int) $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT COUNT(*) FROM $table WHERE session_id = %s AND event_type = 'cta_clicked' AND (metadata LIKE %s OR metadata LIKE %s)",
+                    $session_id,
+                    '%"cta":"view_directory"%',
+                    '%"cta":"view_main_directory"%'
+                )
+            );
+            return $count === 1;
+        }
         $count = (int) $wpdb->get_var(
             $wpdb->prepare(
-                "SELECT COUNT(*) FROM $table WHERE session_id = %s AND event_type = 'cta_clicked' AND (metadata LIKE %s OR metadata LIKE %s)",
+                "SELECT COUNT(*) FROM $table WHERE session_id = %s AND event_type = 'cta_clicked' AND metadata LIKE %s",
                 $session_id,
-                '%"cta":"view_directory"%',
-                '%"cta":"view_main_directory"%'
+                '%"cta":"' . $wpdb->esc_like( $cta ) . '"%'
             )
         );
         return $count === 1;
@@ -557,7 +604,7 @@ function jcp_demo_ghl_maybe_forward_demo_milestone(
 }
 
 /**
- * Handle Demo Viewed POST: forward to same GHL webhook with Event=viewed-demo for if/then branching.
+ * Handle Demo Viewed POST: forward to same GHL webhook with Event=demo-viewed for if/then branching.
  *
  * @param \WP_REST_Request $request Request.
  * @return \WP_REST_Response

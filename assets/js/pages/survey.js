@@ -966,7 +966,7 @@
     }
   };
 
-  // Submit opt-in when user clicks "Continue to preview" — sends full form to first webhook (Create Contact + tag demo-opt-in).
+  // Submit opt-in on gate unlock — sends contact + attribution to Demo Survey webhook (Event=demo-opt-in).
   const submitDemoOptIn = async () => {
     const goals = Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || [])
       .map((input) => input.value);
@@ -996,7 +996,7 @@
     }
   };
 
-  // When user clicks "Skip to demo" or "Launch the live demo" — send to second webhook so GHL can add tag "viewed-demo".
+  // Launch live demo — send to same webhook with Event=demo-viewed (tag demo-viewed).
   const launchDemo = async () => {
     const goals = Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || [])
       .map((input) => input.value);
