@@ -105,6 +105,16 @@ function jcp_page_upgrade_home_authority( array $content, int $post_id ): array 
 	if ( trim( (string) ( $authority['props']['cta_note'] ?? '' ) ) === '' ) {
 		$authority['props']['cta_note'] = $canonical['cta_note'];
 	}
+	// Clear light section surfaces that bleach the dark authority band.
+	if ( ! isset( $authority['layout'] ) || ! is_array( $authority['layout'] ) ) {
+		$authority['layout'] = [];
+	}
+	$authority['layout']['section_surface'] = [
+		'preset'    => 'default',
+		'color'     => '#ffffff',
+		'opacity'   => 100,
+		'image_url' => '',
+	];
 
 	$out      = [];
 	$inserted = false;
@@ -194,7 +204,16 @@ function jcp_page_upgrade_campaign_authority( array $content, int $post_id ): ar
 			$props['cta_note'] = __( 'Free personalized demo · Work email required · No credit card', 'jcp-core' );
 		}
 		$blocks[ $i ]['props'] = $props;
-		$changed               = true;
+		if ( ! isset( $blocks[ $i ]['layout'] ) || ! is_array( $blocks[ $i ]['layout'] ) ) {
+			$blocks[ $i ]['layout'] = [];
+		}
+		$blocks[ $i ]['layout']['section_surface'] = [
+			'preset'    => 'default',
+			'color'     => '#ffffff',
+			'opacity'   => 100,
+			'image_url' => '',
+		];
+		$changed = true;
 		break;
 	}
 

@@ -90,7 +90,7 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 
 	$block_id = esc_attr( (string) ( $block['id'] ?? 'b-' . $type ) );
 	$layout   = jcp_block_resolve_layout( $block, (string) ( $ctx['page_kind'] ?? 'industry' ) );
-	$surface  = jcp_section_surface_block_attrs( $layout );
+	$surface  = jcp_section_surface_block_attrs( $layout, $type );
 	$classes  = trim( 'jcp-block-root ' . jcp_block_layout_classes( $layout, $type ) . ' ' . $surface['class'] );
 	$data_str = '';
 	foreach ( $surface['data'] as $key => $val ) {
