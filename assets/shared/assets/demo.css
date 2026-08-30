@@ -5057,15 +5057,22 @@ body.jcp-publish-modal-open .guided-coach-backdrop {
   transform: rotate(45deg);
 }
 
-/* Review send modal */
+/* Review send modal — app-like QR / review ask preview */
 .modal--review-demo {
-  max-width: 420px;
+  max-width: 400px;
   width: calc(100vw - 32px);
+  padding: 24px 20px 20px;
+  border-radius: 18px;
+}
+
+.modal--review-demo h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
 }
 
 .modal--review-demo .modal-sub {
   margin: 0 0 14px;
-  font-size: 14px;
+  font-size: 13px;
   color: #6b7280;
   line-height: 1.45;
 }
@@ -5074,7 +5081,7 @@ body.jcp-publish-modal-open .guided-coach-backdrop {
   display: flex;
   gap: 12px;
   align-items: center;
-  padding: 12px;
+  padding: 10px 12px;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
   margin-bottom: 12px;
@@ -5082,8 +5089,8 @@ body.jcp-publish-modal-open .guided-coach-backdrop {
 }
 
 .demo-review-job img {
-  width: 72px;
-  height: 72px;
+  width: 56px;
+  height: 56px;
   border-radius: 10px;
   object-fit: cover;
   flex-shrink: 0;
@@ -5092,24 +5099,123 @@ body.jcp-publish-modal-open .guided-coach-backdrop {
 .demo-review-job-copy {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
 }
 
 .demo-review-job-copy strong {
-  font-size: 15px;
+  font-size: 14px;
   color: #111827;
 }
 
 .demo-review-job-copy span {
-  font-size: 13px;
+  font-size: 12px;
   color: #6b7280;
+}
+
+.demo-review-customer-preview {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 10px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.demo-review-qr-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.demo-review-qr {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 80, 62, 0.1);
+  border: 1px solid rgba(255, 80, 62, 0.18);
+}
+
+.demo-review-qr .lucide-icon {
+  width: 26px;
+  height: 26px;
+  color: #ff503e;
+}
+
+.demo-review-qr-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.demo-review-qr-copy strong {
+  font-size: 14px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.demo-review-qr-copy span {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.demo-review-rate {
+  text-align: center;
+  padding: 10px 8px 12px;
+  margin-bottom: 12px;
+  border-radius: 12px;
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
+}
+
+.demo-review-rate-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.demo-review-ask-stars {
+  color: #f59e0b;
+  font-size: 22px;
+  letter-spacing: 3px;
+  line-height: 1;
+}
+
+.demo-review-message-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9ca3af;
+  margin-bottom: 6px;
+}
+
+.demo-review-message {
+  margin: 0;
+  min-height: 72px;
+  font-size: 13px;
+  line-height: 1.45;
+  resize: none;
 }
 
 .demo-review-auto-note {
   margin: 0 0 14px;
   font-size: 12px;
   color: #9ca3af;
+  line-height: 1.4;
+}
+
+.modal--review-demo .modal-actions {
+  margin-top: 0;
 }
 
 /* Review animations on home */

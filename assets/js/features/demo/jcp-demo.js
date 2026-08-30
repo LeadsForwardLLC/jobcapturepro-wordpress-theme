@@ -3080,15 +3080,17 @@ function populateDemoReviewModal() {
   const address = checkin?.address || '105 Walnut St';
   const location = checkin?.location || 'Austin, TX';
   const imgSrc = checkin?.image || demoPhotos[0];
+  const business = (demoUser.businessName || 'Your Business').trim() || 'Your Business';
 
   safeText('demoReviewTitle', title);
   safeText('demoReviewLocation', `${address}, ${location}`);
+  safeText('demoReviewBusiness', business);
   const photo = $('demoReviewPhoto');
   if (photo) photo.src = imgSrc;
 
   const message = $('demoReviewMessage');
   if (message) {
-    message.value = 'We loved working with you! If you have a moment to leave a review, it would mean a lot to us.';
+    message.value = `We loved working with you at ${business}! If you have a moment to leave a review, it would mean a lot to us.`;
   }
 }
 
@@ -3097,6 +3099,12 @@ function openDemoReviewModal() {
   $('review-modal')?.classList.add('active');
   document.body.classList.add('jcp-review-modal-open');
   setMobileGuideCollapsed(true);
+}
+
+function setDemoReviewSendButtonLabel(sendBtn, label) {
+  if (!sendBtn) return;
+  const iconSrc = `${assetBase}/shared/assets/icons/lucide/send.svg`;
+  sendBtn.innerHTML = `<img src="${iconSrc}" class="lucide-icon lucide-icon-sm" alt=""> ${label}`;
 }
 
 async function confirmDemoReviewSend() {
@@ -3114,7 +3122,7 @@ async function confirmDemoReviewSend() {
   }
   if (sendBtn) {
     sendBtn.disabled = false;
-    sendBtn.textContent = 'Send';
+    setDemoReviewSendButtonLabel(sendBtn, 'Send');
   }
 
   await completeGuidedReviewFlow();
