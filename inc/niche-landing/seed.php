@@ -447,12 +447,12 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v19 = story moments channel mocks + review flow cleanup.
+	// v20 = problem contrast cycle loop note.
 	$demo_ver = (string) get_option( 'jcp_contractor_demo_seed_version', '' );
-	if ( $demo_ver !== '19' || ! jcp_niche_contractor_demo_exists() ) {
-		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '19' );
+	if ( $demo_ver !== '20' || ! jcp_niche_contractor_demo_exists() ) {
+		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '20' );
 		if ( $created > 0 ) {
-			update_option( 'jcp_contractor_demo_seed_version', '19' );
+			update_option( 'jcp_contractor_demo_seed_version', '20' );
 			update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 		}
 	}

@@ -779,19 +779,44 @@ function jcp_niche_render_problem( array $c ): void {
 						$side_data = is_array( $side['data'] ) ? $side['data'] : [];
 						$label     = trim( (string) ( $side_data['label'] ?? '' ) );
 						$steps     = array_values( array_filter( array_map( 'strval', (array) ( $side_data['steps'] ?? [] ) ) ) );
+						$is_with   = (string) $side['mod'] === 'with';
+						$loop_note = trim( (string) ( $side_data['loop_note'] ?? '' ) );
+						if ( $is_with && $loop_note === '' ) {
+							$loop_note = __( 'Loops into the next job', 'jcp-core' );
+						}
 						if ( $label === '' && $steps === [] ) {
 							continue;
 						}
+						$step_count = count( $steps );
 						?>
-						<div class="jcp-problem-contrast__side jcp-problem-contrast__side--<?php echo esc_attr( (string) $side['mod'] ); ?>">
+						<div class="jcp-problem-contrast__side jcp-problem-contrast__side--<?php echo esc_attr( (string) $side['mod'] ); ?><?php echo $is_with ? ' jcp-problem-contrast__side--cycle' : ''; ?>">
 							<?php if ( $label !== '' ) : ?>
 								<p class="jcp-problem-contrast__label"<?php jcp_niche_editable_attr( 'problem.contrast_' . $side['key'] . '.label' ); ?>><?php echo esc_html( $label ); ?></p>
 							<?php endif; ?>
-							<ol class="jcp-problem-contrast__steps">
-								<?php foreach ( $steps as $si => $step ) : ?>
-									<li data-step="<?php echo esc_attr( (string) ( $si + 1 ) ); ?>"<?php jcp_niche_editable_attr( 'problem.contrast_' . $side['key'] . '.steps.' . $si ); ?>><?php echo esc_html( $step ); ?></li>
-								<?php endforeach; ?>
-							</ol>
+							<?php if ( $is_with ) : ?>
+								<div class="jcp-problem-contrast__cycle">
+									<span class="jcp-problem-contrast__loop-rail" aria-hidden="true"></span>
+									<ol class="jcp-problem-contrast__steps jcp-problem-contrast__steps--loop">
+										<?php foreach ( $steps as $si => $step ) : ?>
+											<li
+												class="<?php echo 0 === (int) $si ? 'is-loop-start' : ''; ?><?php echo (int) $si === $step_count - 1 ? ' is-loop-end' : ''; ?>"
+												data-step="<?php echo esc_attr( (string) ( $si + 1 ) ); ?>"
+												<?php jcp_niche_editable_attr( 'problem.contrast_' . $side['key'] . '.steps.' . $si ); ?>
+											><?php echo esc_html( $step ); ?></li>
+										<?php endforeach; ?>
+									</ol>
+									<p class="jcp-problem-contrast__loop-note"<?php jcp_niche_editable_attr( 'problem.contrast_with.loop_note' ); ?>>
+										<span class="jcp-problem-contrast__loop-arrow" aria-hidden="true">↻</span>
+										<?php echo esc_html( $loop_note ); ?>
+									</p>
+								</div>
+							<?php else : ?>
+								<ol class="jcp-problem-contrast__steps">
+									<?php foreach ( $steps as $si => $step ) : ?>
+										<li data-step="<?php echo esc_attr( (string) ( $si + 1 ) ); ?>"<?php jcp_niche_editable_attr( 'problem.contrast_' . $side['key'] . '.steps.' . $si ); ?>><?php echo esc_html( $step ); ?></li>
+									<?php endforeach; ?>
+								</ol>
+							<?php endif; ?>
 						</div>
 					<?php endforeach; ?>
 				</div>

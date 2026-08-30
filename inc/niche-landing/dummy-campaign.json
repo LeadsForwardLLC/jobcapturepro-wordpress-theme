@@ -191,7 +191,8 @@
         "Proof created",
         "Published + reused",
         "Helps sell the next job"
-      ]
+      ],
+      "loop_note": "Loops into the next job"
     },
     "section_id": "problem"
   },
