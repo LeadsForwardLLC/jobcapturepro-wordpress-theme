@@ -3946,14 +3946,15 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 
 .jcp-page-campaign .jcp-campaign-faces {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
   margin: 0 auto 1.25rem;
 }
 
 .jcp-page-campaign .jcp-campaign-faces__stars {
+  flex-shrink: 0;
+  margin-left: 0.65rem;
+  margin-right: 0.2rem;
   color: #f59e0b;
   font-size: 1.05rem;
   letter-spacing: 0.08em;
@@ -3963,8 +3964,8 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 .jcp-page-campaign .jcp-campaign-faces__row {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.65rem;
+  justify-content: flex-start;
+  gap: 0;
 }
 
 .jcp-page-campaign .jcp-campaign-faces img {
@@ -3981,10 +3982,12 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 }
 
 .jcp-page-campaign .jcp-campaign-faces__label {
-  margin-left: 0.35rem;
+  margin-left: 0;
   font-size: 0.875rem;
   color: var(--jcp-color-text-secondary);
   font-weight: 600;
+  line-height: 1.3;
+  text-align: left;
 }
 
 /* Mid + final CTAs: same single-path treatment */

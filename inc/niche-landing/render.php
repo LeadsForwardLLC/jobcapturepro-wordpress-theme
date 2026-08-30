@@ -2111,13 +2111,13 @@ function jcp_niche_render_testimonials( array $props ): void {
 			<?php jcp_niche_render_section_header( $props, 'testimonials' ); ?>
 			<?php if ( $faces !== [] ) : ?>
 				<div class="jcp-campaign-faces" aria-hidden="<?php echo $faces_label === '' ? 'true' : 'false'; ?>">
-					<div class="jcp-campaign-faces__stars" aria-label="<?php echo esc_attr( sprintf( /* translators: %d: star rating out of 5. */ __( '%d out of 5 stars', 'jcp-core' ), 5 ) ); ?>">
-						<span aria-hidden="true"><?php echo esc_html( str_repeat( '★', 5 ) ); ?></span>
-					</div>
 					<div class="jcp-campaign-faces__row">
 						<?php foreach ( $faces as $face ) : ?>
 							<img src="<?php echo esc_url( $face['url'] ); ?>" alt="<?php echo esc_attr( $face['alt'] ); ?>" width="52" height="52" loading="lazy" decoding="async" />
 						<?php endforeach; ?>
+						<div class="jcp-campaign-faces__stars" aria-label="<?php echo esc_attr( sprintf( /* translators: %d: star rating out of 5. */ __( '%d out of 5 stars', 'jcp-core' ), 5 ) ); ?>">
+							<span aria-hidden="true"><?php echo esc_html( str_repeat( '★', 5 ) ); ?></span>
+						</div>
 						<?php if ( $faces_label !== '' ) : ?>
 							<span class="jcp-campaign-faces__label"><?php echo esc_html( $faces_label ); ?></span>
 						<?php endif; ?>
