@@ -141,25 +141,26 @@
                             </button>
                         </div>
 
-                        <!-- Simulated iPhone camera (guided + prototype) -->
-                        <div class="demo-camera-overlay" id="demoCameraOverlay" hidden aria-hidden="true" role="dialog" aria-label="Camera">
+                        <!-- Simulated iPhone camera (guided + prototype) — niche job preview, no live webcam -->
+                        <div class="demo-camera-overlay" id="demoCameraOverlay" hidden aria-hidden="true" role="dialog" aria-label="Capture job photo">
                           <div class="demo-camera-chrome demo-camera-chrome--top">
                             <button type="button" class="demo-camera-cancel" id="demoCameraCancel">Cancel</button>
                             <span class="demo-camera-mode">PHOTO</span>
                             <span class="demo-camera-spacer" aria-hidden="true"></span>
                           </div>
                           <div class="demo-camera-viewfinder" id="demoCameraViewfinder">
-                            <video class="demo-camera-video" id="demoCameraVideo" playsinline muted autoplay></video>
-                            <img class="demo-camera-fallback" id="demoCameraFallback" alt="" hidden>
+                            <video class="demo-camera-video" id="demoCameraVideo" playsinline muted autoplay hidden></video>
+                            <img class="demo-camera-fallback" id="demoCameraFallback" alt="Job photo">
+                            <div class="demo-camera-job-badge" id="demoCameraJobBadge">Completed job</div>
                             <div class="demo-camera-reticle" aria-hidden="true"></div>
                             <div class="demo-camera-flash-burst" id="demoCameraFlash" aria-hidden="true"></div>
                           </div>
                           <div class="demo-camera-chrome demo-camera-chrome--bottom">
-                            <button type="button" class="demo-camera-shutter" id="demoCameraShutter" aria-label="Take photo">
+                            <button type="button" class="demo-camera-shutter" id="demoCameraShutter" aria-label="Capture job photo">
                               <span class="demo-camera-shutter__ring" aria-hidden="true"></span>
                               <span class="demo-camera-shutter__core" aria-hidden="true"></span>
                             </button>
-                            <p class="demo-camera-hint">Tap the shutter to capture the job photo</p>
+                            <p class="demo-camera-hint" id="demoCameraHint">Tap the shutter to capture the job photo</p>
                           </div>
                         </div>
                     </div>

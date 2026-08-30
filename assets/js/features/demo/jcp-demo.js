@@ -441,22 +441,262 @@ try {
   console.warn('Demo personalization fallback used');
 }
 
+try { refreshDemoAssetsForNiche(); } catch (e) {}
+
 
 /* ---------------------------
-   Demo Assets
+   Demo Assets (simulated job photos by niche — no live camera)
 ---------------------------- */
-const demoPhotos = [
-  'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=400&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=400&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=400&h=400&fit=crop'
-];
+const DEFAULT_JOB_LOCATION = '1242 Mason Rd, Austin TX 78704';
 
-const descriptions = [
-  'Water heater replacement at 1242 Mason Rd, Austin TX 78704. Installed a high-efficiency unit, verified venting, and tested T&P relief. Local, geotagged job proof ready for your website and Google — optimized for nearby search.',
-  'Completed a full water heater swap-out: removed the failing tank, installed a new unit, reconnected lines, and confirmed there are no leaks. Verified ignition and heating cycle, set the thermostat, and cleaned up the work area before departure.',
-  'Installed a new water heater and ensured everything is running safely and efficiently. Connections were tightened, valves were tested, and we confirmed stable hot-water delivery throughout the home.'
-];
+/** Unsplash job-scene URLs (no people / faces) keyed by niche family. */
+const NICHE_PHOTO_PACKS = {
+  plumbing: {
+    label: 'Plumbing job',
+    jobTitle: 'Water heater replacement',
+    photos: [
+      'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Water heater replacement at 1242 Mason Rd, Austin TX 78704. Installed a high-efficiency unit, verified venting, and tested T&P relief. Local, geotagged job proof ready for your website and Google.',
+      'Completed a full water heater swap-out: removed the failing tank, installed a new unit, reconnected lines, and confirmed there are no leaks.',
+      'Installed a new water heater and confirmed stable hot-water delivery throughout the home. Connections tightened, valves tested, work area cleaned.',
+    ],
+  },
+  hvac: {
+    label: 'HVAC job',
+    jobTitle: 'HVAC system install',
+    photos: [
+      'CAMPAIGN:jcp-campaign-job-proof.jpg',
+      'CAMPAIGN:jcp-campaign-hvac-capture.jpg',
+      'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'HVAC install at 1242 Mason Rd, Austin TX 78704. New outdoor unit set, lineset connected, and system commissioned for cooling. Geotagged job proof ready to publish.',
+      'Completed an HVAC changeout: set the condenser, verified refrigerant charge, and confirmed airflow through the home.',
+      'Finished HVAC service with before/after proof from the job site. System tested and left running clean.',
+    ],
+  },
+  electrical: {
+    label: 'Electrical job',
+    jobTitle: 'Panel upgrade',
+    photos: [
+      'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1558442074-3c19857bc1dc?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1473341302250-a0c3377630b0?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Electrical panel upgrade at 1242 Mason Rd, Austin TX 78704. New breaker layout, labeled circuits, and safety check completed.',
+      'Finished residential electrical work with clean terminations and tested outlets throughout the home.',
+      'Completed electrical service with geotagged job proof ready for website and Google.',
+    ],
+  },
+  roofing: {
+    label: 'Roofing job',
+    jobTitle: 'Roof replacement',
+    photos: [
+      'https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Roof replacement at 1242 Mason Rd, Austin TX 78704. Tear-off complete, new underlayment and shingles installed, flashing sealed.',
+      'Finished roofing work with clean ridges and validated drainage paths around the home.',
+      'Completed roofing service with geotagged proof ready to publish across your channels.',
+    ],
+  },
+  outdoor: {
+    label: 'Outdoor job',
+    jobTitle: 'Outdoor project',
+    photos: [
+      'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1598902108854-10e335adac99?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Outdoor project completed at 1242 Mason Rd, Austin TX 78704. Site cleaned, work documented, ready for homeowners nearby.',
+      'Finished outdoor service with clear before/after proof from the property.',
+      'Completed outdoor work with geotagged job proof ready for website and Google.',
+    ],
+  },
+  cleaning: {
+    label: 'Cleaning job',
+    jobTitle: 'Deep clean',
+    photos: [
+      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Deep clean completed at 1242 Mason Rd, Austin TX 78704. Surfaces detailed, floors finished, home left ready for the owner.',
+      'Finished cleaning service with clear job-site proof for your online presence.',
+      'Completed cleaning work with geotagged proof ready to publish.',
+    ],
+  },
+  remodeling: {
+    label: 'Remodel job',
+    jobTitle: 'Home remodel',
+    photos: [
+      'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Remodel work completed at 1242 Mason Rd, Austin TX 78704. Finished surfaces installed and site cleaned for handover.',
+      'Finished remodeling project with geotagged proof of the completed space.',
+      'Completed remodel service with publish-ready job documentation.',
+    ],
+  },
+  restoration: {
+    label: 'Restoration job',
+    jobTitle: 'Restoration work',
+    photos: [
+      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Restoration work completed at 1242 Mason Rd, Austin TX 78704. Affected areas treated, dried, and documented for the homeowner.',
+      'Finished restoration service with clear job-site proof.',
+      'Completed restoration with geotagged documentation ready to publish.',
+    ],
+  },
+  default: {
+    label: 'Job site',
+    jobTitle: 'Completed job',
+    photos: [
+      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Completed job at 1242 Mason Rd, Austin TX 78704. Work documented on site with geotagged proof ready for your website and Google.',
+      'Finished service with clear job-site photos ready to publish across connected channels.',
+      'Completed work with publish-ready proof from the field.',
+    ],
+  },
+};
 
+function normalizeDemoNicheKey(raw) {
+  const slug = String(raw || '')
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  if (!slug) return 'plumbing';
+
+  const aliases = {
+    'hvac-heating-cooling': 'hvac',
+    'heating-cooling': 'hvac',
+    'water-heaters': 'plumbing',
+    'water-treatment': 'plumbing',
+    'septic-sewer': 'plumbing',
+    'cleaning-services': 'cleaning',
+    'house-cleaning': 'cleaning',
+    'carpet-cleaning': 'cleaning',
+    'pressure-washing': 'cleaning',
+    'window-cleaning': 'cleaning',
+    'deck-builder': 'outdoor',
+    'decks-patios': 'outdoor',
+    landscaping: 'outdoor',
+    'lawn-care': 'outdoor',
+    'tree-service': 'outdoor',
+    fencing: 'outdoor',
+    'pool-service': 'outdoor',
+    'pool-construction': 'outdoor',
+    'junk-removal': 'cleaning',
+    'dumpster-rental': 'cleaning',
+    'general-contracting': 'remodeling',
+    remodeling: 'remodeling',
+    'kitchen-remodeling': 'remodeling',
+    'bathroom-remodeling': 'remodeling',
+    flooring: 'remodeling',
+    painting: 'remodeling',
+    'foundation-repair': 'restoration',
+    'basement-waterproofing': 'restoration',
+    'water-damage-restoration': 'restoration',
+    'mold-remediation': 'restoration',
+    'siding-exterior': 'roofing',
+    gutters: 'roofing',
+    'windows-doors': 'roofing',
+    'home-windows': 'roofing',
+    solar: 'electrical',
+    generators: 'electrical',
+  };
+
+  if (NICHE_PHOTO_PACKS[slug]) return slug;
+  if (aliases[slug]) return aliases[slug];
+  if (slug.includes('hvac') || slug.includes('heat') || slug.includes('cool')) return 'hvac';
+  if (slug.includes('plumb') || slug.includes('pipe') || slug.includes('drain')) return 'plumbing';
+  if (slug.includes('electr') || slug.includes('solar') || slug.includes('wire')) return 'electrical';
+  if (slug.includes('roof') || slug.includes('gutter') || slug.includes('siding')) return 'roofing';
+  if (slug.includes('clean') || slug.includes('wash') || slug.includes('junk')) return 'cleaning';
+  if (slug.includes('pool') || slug.includes('lawn') || slug.includes('tree') || slug.includes('land') || slug.includes('fence') || slug.includes('deck')) {
+    return 'outdoor';
+  }
+  if (slug.includes('remodel') || slug.includes('kitchen') || slug.includes('bath') || slug.includes('floor') || slug.includes('paint')) {
+    return 'remodeling';
+  }
+  if (slug.includes('restor') || slug.includes('mold') || slug.includes('foundation') || slug.includes('water-damage')) {
+    return 'restoration';
+  }
+  return 'default';
+}
+
+function resolveDemoPhotoUrl(src) {
+  const raw = String(src || '');
+  if (raw.startsWith('CAMPAIGN:') && assetBase) {
+    return `${assetBase}/campaign/${raw.slice('CAMPAIGN:'.length)}`;
+  }
+  if (raw.startsWith('CAMPAIGN:')) {
+    return 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1200&h=900&fit=crop&q=80';
+  }
+  return raw;
+}
+
+function getDemoPhotoPack() {
+  const key = normalizeDemoNicheKey(demoUser && demoUser.niche);
+  const pack = NICHE_PHOTO_PACKS[key] || NICHE_PHOTO_PACKS.default;
+  const nicheLabel = String(demoUser.niche || key)
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const biz = (demoUser && demoUser.businessName || '').trim();
+  const descriptions = pack.descriptions.map((text) => {
+    if (!biz || text.includes(biz)) return text;
+    return text.replace(DEFAULT_JOB_LOCATION, `${DEFAULT_JOB_LOCATION} (${biz})`);
+  });
+  return {
+    key,
+    nicheLabel,
+    label: pack.label,
+    jobTitle: pack.jobTitle,
+    photos: pack.photos.map(resolveDemoPhotoUrl),
+    descriptions,
+  };
+}
+
+let demoPhotos = NICHE_PHOTO_PACKS.plumbing.photos.slice();
+let descriptions = NICHE_PHOTO_PACKS.plumbing.descriptions.slice();
+
+function refreshDemoAssetsForNiche() {
+  const pack = getDemoPhotoPack();
+  demoPhotos = pack.photos;
+  descriptions = pack.descriptions;
+  const badge = typeof document !== 'undefined' ? document.getElementById('demoCameraJobBadge') : null;
+  if (badge) {
+    const biz = (demoUser.businessName || '').trim();
+    badge.textContent = biz
+      ? `${pack.jobTitle} · ${biz}`
+      : `${pack.jobTitle} · ${DEFAULT_JOB_LOCATION.split(',')[0]}`;
+  }
+  const hint = typeof document !== 'undefined' ? document.getElementById('demoCameraHint') : null;
+  if (hint) {
+    hint.textContent = `Tap the shutter to capture this ${pack.label.toLowerCase()}`;
+  }
+}
 /* ---------------------------
    State
 ---------------------------- */
@@ -564,8 +804,8 @@ const demoGuideContent = {
   step3: {
     pill: 'Step 3',
     title: 'Add the job photo',
-    body: 'The photo is the marketing. Open the camera, capture the completed work, then submit.',
-    interactHint: 'Tap the camera, take the shot, then tap Submit.'
+    body: 'The photo is the marketing. Open the camera and capture a simulated job-site photo for this niche, then submit.',
+    interactHint: 'Tap the camera, capture the job photo (simulated), then tap Submit.'
   },
   step4: {
     pill: 'Step 4',
@@ -2120,7 +2360,6 @@ function saveEditProfile() {
   goToProfile();
 }
 
-let demoCameraStream = null;
 let demoCameraBusy = false;
 
 const PROCESSING_TITLE_CYCLE = [
@@ -2184,19 +2423,6 @@ function addPhotos(photoSrc) {
   syncAttentionAnimations();
 }
 
-function stopDemoCameraStream() {
-  if (demoCameraStream) {
-    try {
-      demoCameraStream.getTracks().forEach((t) => t.stop());
-    } catch (e) {}
-    demoCameraStream = null;
-  }
-  const video = $('demoCameraVideo');
-  if (video) {
-    video.srcObject = null;
-  }
-}
-
 function closeDemoCamera() {
   const overlay = $('demoCameraOverlay');
   if (overlay) {
@@ -2204,7 +2430,6 @@ function closeDemoCamera() {
     overlay.setAttribute('aria-hidden', 'true');
   }
   document.body.classList.remove('jcp-camera-open');
-  stopDemoCameraStream();
   demoCameraBusy = false;
   if (tour.stepKey === 'step3' && !document.body.classList.contains('jcp-processing-open')) {
     syncStep3GuidedAnchor();
@@ -2226,62 +2451,45 @@ async function openDemoCamera() {
     setScreen('new-screen');
   }
 
+  refreshDemoAssetsForNiche();
+
   overlay.hidden = false;
   overlay.setAttribute('aria-hidden', 'false');
   document.body.classList.add('jcp-camera-open');
   hideMobileSpotlight();
 
+  // Simulated job camera only — never request webcam permission / getUserMedia.
+  if (video) {
+    try { video.srcObject = null; } catch (e) {}
+    video.pause?.();
+    video.removeAttribute('src');
+    video.style.display = 'none';
+    video.hidden = true;
+  }
   if (fallback) {
-    fallback.hidden = true;
-    fallback.removeAttribute('src');
-  }
-  if (video) video.style.display = 'block';
-
-  let usedLive = false;
-  if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
-    try {
-      stopDemoCameraStream();
-      demoCameraStream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-          facingMode: { ideal: 'environment' },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-      });
-      if (video) {
-        video.srcObject = demoCameraStream;
-        await video.play().catch(() => {});
-        usedLive = true;
-      }
-    } catch (e) {
-      usedLive = false;
-    }
-  }
-
-  if (!usedLive && fallback) {
-    if (video) video.style.display = 'none';
     fallback.hidden = false;
+    fallback.alt = getDemoPhotoPack().jobTitle || 'Job photo';
     fallback.src = demoPhotos[state.photoCount % demoPhotos.length];
   }
 
-  // Camera is its own full-screen beat — no tour ring over the shutter.
   hideMobileSpotlight();
 }
 
 function captureDemoCameraFrame() {
-  const video = $('demoCameraVideo');
-  if (video && video.srcObject && video.videoWidth > 0) {
+  const fallback = $('demoCameraFallback');
+  if (fallback && fallback.complete && fallback.naturalWidth > 0) {
     try {
       const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      canvas.width = fallback.naturalWidth;
+      canvas.height = fallback.naturalHeight;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(fallback, 0, 0);
         return canvas.toDataURL('image/jpeg', 0.88);
       }
-    } catch (e) {}
+    } catch (e) {
+      // Cross-origin Unsplash images taint the canvas — fall back to the URL.
+    }
   }
   return demoPhotos[state.photoCount % demoPhotos.length];
 }
@@ -4395,6 +4603,8 @@ function init() {
   loadCheckins();
   initializeWebsite();
   applyPersonalization();
+  // DOM + personalization ready: niche photo pack, camera badge, hint.
+  try { refreshDemoAssetsForNiche(); } catch (e) {}
 
   // Mobile mode
   applyMobileMode();
