@@ -564,8 +564,8 @@ const demoGuideContent = {
   step3: {
     pill: 'Step 3',
     title: 'Add the job photo',
-    body: 'The photo is the marketing. Tap the camera to add one shot of the completed work, then submit.',
-    interactHint: 'Tap the camera, then tap Submit.'
+    body: 'The photo is the marketing. Open the camera, capture the completed work, then submit.',
+    interactHint: 'Tap the camera, take the shot, then tap Submit.'
   },
   step4: {
     pill: 'Step 4',
@@ -1095,6 +1095,15 @@ function syncStep2GuidedAnchor() {
 function positionMobileSpotlight() {
   const ring = $('mobileSpotlight');
   if (!ring || !isGuidedDemoRun() || mobileGuideCollapsed || tour.isHidden || state.guideDisabled || state.isFinalStep) {
+    hideMobileSpotlight();
+    return;
+  }
+
+  // Loading / camera overlays are not interactive tour targets.
+  if (
+    document.body.classList.contains('jcp-processing-open') ||
+    document.body.classList.contains('jcp-camera-open')
+  ) {
     hideMobileSpotlight();
     return;
   }
@@ -2108,22 +2117,54 @@ function saveEditProfile() {
   goToProfile();
 }
 
-function addPhotos() {
+let demoCameraStream = null;
+let demoCameraBusy = false;
+
+const PROCESSING_TITLE_CYCLE = [
+  'Creating your check-in…',
+  'Optimizing for local SEO…',
+  'Writing Google-ready copy…',
+  'Geotagging the job site…',
+  'Getting you found nearby…',
+  'Prepping for Google Business…',
+];
+
+const PROCESSING_STEP_IDS = ['step1', 'step2', 'step3', 'step4'];
+let processingTitleTimer = null;
+
+function startProcessingTitleCycle() {
+  stopProcessingTitleCycle();
+  let i = 0;
+  setProcessingTitle(PROCESSING_TITLE_CYCLE[0]);
+  processingTitleTimer = window.setInterval(() => {
+    i = (i + 1) % PROCESSING_TITLE_CYCLE.length;
+    setProcessingTitle(PROCESSING_TITLE_CYCLE[i]);
+  }, 880);
+}
+
+function stopProcessingTitleCycle() {
+  if (processingTitleTimer) {
+    window.clearInterval(processingTitleTimer);
+    processingTitleTimer = null;
+  }
+}
+
+function addPhotos(photoSrc) {
   if (state.photoCount >= 3) return;
 
   const grid = $('photo-grid');
   if (!grid) return;
 
   const idx = state.photoCount;
+  const src = photoSrc || demoPhotos[idx % demoPhotos.length];
 
   const photoDiv = document.createElement('div');
   photoDiv.className = 'photo-item';
   photoDiv.innerHTML = `
-    <img src="${demoPhotos[idx]}" alt="Job photo" width="120" height="90">
+    <img src="${src}" alt="Job photo" width="120" height="90">
     <button class="photo-remove" type="button" aria-label="Remove photo">×</button>
   `;
 
-  // Remove handler (safe)
   photoDiv.querySelector('.photo-remove')?.addEventListener('click', () => {
     photoDiv.remove();
     state.photoCount = Math.max(0, state.photoCount - 1);
@@ -2140,10 +2181,138 @@ function addPhotos() {
   syncAttentionAnimations();
 }
 
+function stopDemoCameraStream() {
+  if (demoCameraStream) {
+    try {
+      demoCameraStream.getTracks().forEach((t) => t.stop());
+    } catch (e) {}
+    demoCameraStream = null;
+  }
+  const video = $('demoCameraVideo');
+  if (video) {
+    video.srcObject = null;
+  }
+}
+
+function closeDemoCamera() {
+  const overlay = $('demoCameraOverlay');
+  if (overlay) {
+    overlay.hidden = true;
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+  document.body.classList.remove('jcp-camera-open');
+  stopDemoCameraStream();
+  demoCameraBusy = false;
+  if (tour.stepKey === 'step3' && !document.body.classList.contains('jcp-processing-open')) {
+    syncStep3GuidedAnchor();
+    positionMobileSpotlight();
+  }
+}
+
+async function openDemoCamera() {
+  if (state.photoCount >= 3) return;
+  const overlay = $('demoCameraOverlay');
+  const video = $('demoCameraVideo');
+  const fallback = $('demoCameraFallback');
+  if (!overlay) {
+    addPhotos();
+    return;
+  }
+
+  if (state.currentScreen !== 'new-screen') {
+    setScreen('new-screen');
+  }
+
+  overlay.hidden = false;
+  overlay.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('jcp-camera-open');
+  hideMobileSpotlight();
+
+  if (fallback) {
+    fallback.hidden = true;
+    fallback.removeAttribute('src');
+  }
+  if (video) video.style.display = 'block';
+
+  let usedLive = false;
+  if (navigator.mediaDevices && typeof navigator.mediaDevices.getUserMedia === 'function') {
+    try {
+      stopDemoCameraStream();
+      demoCameraStream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
+        video: {
+          facingMode: { ideal: 'environment' },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+      });
+      if (video) {
+        video.srcObject = demoCameraStream;
+        await video.play().catch(() => {});
+        usedLive = true;
+      }
+    } catch (e) {
+      usedLive = false;
+    }
+  }
+
+  if (!usedLive && fallback) {
+    if (video) video.style.display = 'none';
+    fallback.hidden = false;
+    fallback.src = demoPhotos[state.photoCount % demoPhotos.length];
+  }
+
+  // Camera is its own full-screen beat — no tour ring over the shutter.
+  hideMobileSpotlight();
+}
+
+function captureDemoCameraFrame() {
+  const video = $('demoCameraVideo');
+  if (video && video.srcObject && video.videoWidth > 0) {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        return canvas.toDataURL('image/jpeg', 0.88);
+      }
+    } catch (e) {}
+  }
+  return demoPhotos[state.photoCount % demoPhotos.length];
+}
+
+async function shutterDemoCamera() {
+  if (demoCameraBusy) return;
+  demoCameraBusy = true;
+
+  const flash = $('demoCameraFlash');
+  flash?.classList.remove('is-on');
+  void flash?.offsetWidth;
+  flash?.classList.add('is-on');
+
+  await wait(160);
+  const src = captureDemoCameraFrame();
+  closeDemoCamera();
+  addPhotos(src);
+
+  if (isGuidedDemoRun() && tour.stepKey === 'step3') {
+    tour.anchors.step3 = '#submit-btn';
+    updateMobileStepperLabel();
+    positionMobileSpotlight();
+  }
+  demoCameraBusy = false;
+}
+
 function syncStep3GuidedAnchor() {
   if (!isGuidedDemoRun()) return;
+  if (document.body.classList.contains('jcp-camera-open')) {
+    hideMobileSpotlight();
+    return;
+  }
   tour.anchors.step3 = state.photoCount >= 1 ? '#submit-btn' : '#uploadBtnCamera';
-  if (tour.stepKey === 'step3') {
+  if (tour.stepKey === 'step3' && !document.body.classList.contains('jcp-processing-open')) {
     applyFocalPoint();
     positionMobileSpotlight();
     updateTourFloating();
@@ -2165,33 +2334,79 @@ function updateSubmitButtonState() {
   }
 }
 
+function setProcessingTitle(text) {
+  const title = $('processingTitle');
+  if (!title) return;
+  if (title.textContent === text) return;
+  title.classList.add('is-swap');
+  window.setTimeout(() => {
+    title.textContent = text;
+    // Force reflow so the enter animation feels continuous.
+    void title.offsetWidth;
+    title.classList.remove('is-swap');
+  }, 180);
+}
+
+function setProcessingSub(text) {
+  const sub = $('processingSub');
+  if (sub) sub.textContent = text;
+}
+
+function setProcessingStepActive(stepId) {
+  PROCESSING_STEP_IDS.forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    el.classList.toggle('is-active', id === stepId && !el.classList.contains('done'));
+  });
+}
+
 async function processPhotos() {
   const overlay = $('processing');
   if (!overlay) {
-    // Fallback
     showEditScreen();
     return;
   }
+
+  hideMobileSpotlight();
+  document.body.classList.add('jcp-processing-open');
+  closeDemoCamera();
+
+  resetProcessingSteps(PROCESSING_STEP_IDS);
+  setProcessingSub('Turning this job into proof customers can find.');
+  setProcessingStepActive('step1');
+  startProcessingTitleCycle();
 
   overlay.classList.add('active');
   if (isPrototype && typeof window.CustomEvent !== 'undefined') {
     window.dispatchEvent(new CustomEvent('jcp-prototype-screen-change', { detail: { screenId: 'checkin-creation-screen' } }));
   }
 
-  await wait(700);
-  markProcessingStepDone('step1');
+  const beats = [
+    { id: 'step1', sub: 'Reading what was completed on site.' },
+    { id: 'step2', sub: 'So the work shows up for nearby searches.' },
+    { id: 'step3', sub: 'Building contractor-friendly, local-search copy.' },
+    { id: 'step4', sub: 'Ready for website, Google, and social.' },
+  ];
 
-  await wait(700);
-  markProcessingStepDone('step2');
+  for (let i = 0; i < beats.length; i++) {
+    const beat = beats[i];
+    setProcessingStepActive(beat.id);
+    setProcessingSub(beat.sub);
+    await wait(i === 0 ? 780 : 820);
+    markProcessingStepDone(beat.id);
+    hideMobileSpotlight();
+  }
 
-  await wait(700);
-  markProcessingStepDone('step3');
+  stopProcessingTitleCycle();
+  setProcessingTitle('Check-in ready');
+  setProcessingSub('Opening your finished job proof…');
+  await wait(480);
 
-  await wait(350);
   overlay.classList.remove('active');
+  document.body.classList.remove('jcp-processing-open');
+  hideMobileSpotlight();
 
-  // Reset steps
-  setTimeout(() => resetProcessingSteps(['step1','step2','step3']), 400);
+  setTimeout(() => resetProcessingSteps(PROCESSING_STEP_IDS), 400);
 
   if (isPrototype) {
     const summary = descriptions[0] || 'Replaced water heater.';
@@ -2216,18 +2431,24 @@ function markProcessingStepDone(stepId) {
   const step = $(stepId);
   if (!step) return;
   step.classList.add('done');
+  step.classList.remove('is-active');
   const icon = step.querySelector('.step-icon');
   if (icon) icon.innerHTML = `<img src="${assetBase}/shared/assets/icons/lucide/check.svg" class="lucide-icon lucide-icon-sm" alt="">`;
 }
 
 function resetProcessingSteps(ids) {
-  ids.forEach(id => {
+  (ids || PROCESSING_STEP_IDS).forEach((id) => {
     const step = $(id);
     if (!step) return;
-    step.classList.remove('done');
+    step.classList.remove('done', 'is-active');
     const icon = step.querySelector('.step-icon');
     if (icon) icon.textContent = '';
+    const label = step.getAttribute('data-processing-label');
+    const span = step.querySelector('span');
+    if (label && span) span.textContent = label;
   });
+  setProcessingTitle(PROCESSING_TITLE_CYCLE[0]);
+  setProcessingSub('Turning this job into proof customers can find.');
 }
 
 function showEditScreen() {
@@ -3802,8 +4023,11 @@ function advanceDemo() {
       break;
 
     case 'step3':
-      if (state.photoCount === 0) addPhotos();
-      processPhotos();
+      if (state.photoCount === 0) {
+        openDemoCamera();
+      } else {
+        processPhotos();
+      }
       break;
 
     case 'step4':
@@ -4009,12 +4233,34 @@ function wireControls() {
   });
 
   // Prefer JS listeners over inline onclick so photo add works under guided chrome.
-  document.querySelectorAll('[data-action="add-photos"], .upload-btn').forEach((btn) => {
+  $('uploadBtnCamera')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openDemoCamera();
+  });
+  $('uploadBtnGallery')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addPhotos();
+  });
+  // Legacy/extra buttons with data-action still add a photo (gallery-style).
+  document.querySelectorAll('[data-action="add-photos"]').forEach((btn) => {
+    if (btn.id === 'uploadBtnCamera' || btn.id === 'uploadBtnGallery') return;
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       addPhotos();
     });
+  });
+
+  $('demoCameraCancel')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeDemoCamera();
+  });
+  $('demoCameraShutter')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    shutterDemoCamera();
   });
 
   $('tour-close')?.addEventListener('click', closeTour);
@@ -4452,6 +4698,9 @@ window.goBackFromReviewMethod = goBackFromReviewMethod;
 window.goBackToEdit = goBackToEdit;
 window.submitReviewRequestFromScreen = submitReviewRequestFromScreen;
 window.addPhotos = addPhotos;
+window.openDemoCamera = openDemoCamera;
+window.shutterDemoCamera = shutterDemoCamera;
+window.closeDemoCamera = closeDemoCamera;
 window.processPhotos = processPhotos;
 window.regenerateDescription = regenerateDescription;
 window.saveCheckin = saveCheckin;

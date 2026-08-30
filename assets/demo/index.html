@@ -7,7 +7,7 @@
     <title>JobCapturePro - Interactive Demo</title>
     
     <!-- Leaflet and styles loaded via WordPress enqueue (jcp-render.js strips these tags anyway) -->
-    <link rel="stylesheet" href="../../shared/assets/demo.css?v=20260118-23">
+    <link rel="stylesheet" href="../../shared/assets/demo.css?v=20260829-camera">
 </head>
 <body>
     <!-- Main Demo Container -->
@@ -139,6 +139,28 @@
                                 <div class="tab-icon"><img src="../../shared/assets/icons/lucide/user.svg" class="lucide-icon" alt=""></div>
                                 Profile
                             </button>
+                        </div>
+
+                        <!-- Simulated iPhone camera (guided + prototype) -->
+                        <div class="demo-camera-overlay" id="demoCameraOverlay" hidden aria-hidden="true" role="dialog" aria-label="Camera">
+                          <div class="demo-camera-chrome demo-camera-chrome--top">
+                            <button type="button" class="demo-camera-cancel" id="demoCameraCancel">Cancel</button>
+                            <span class="demo-camera-mode">PHOTO</span>
+                            <span class="demo-camera-spacer" aria-hidden="true"></span>
+                          </div>
+                          <div class="demo-camera-viewfinder" id="demoCameraViewfinder">
+                            <video class="demo-camera-video" id="demoCameraVideo" playsinline muted autoplay></video>
+                            <img class="demo-camera-fallback" id="demoCameraFallback" alt="" hidden>
+                            <div class="demo-camera-reticle" aria-hidden="true"></div>
+                            <div class="demo-camera-flash-burst" id="demoCameraFlash" aria-hidden="true"></div>
+                          </div>
+                          <div class="demo-camera-chrome demo-camera-chrome--bottom">
+                            <button type="button" class="demo-camera-shutter" id="demoCameraShutter" aria-label="Take photo">
+                              <span class="demo-camera-shutter__ring" aria-hidden="true"></span>
+                              <span class="demo-camera-shutter__core" aria-hidden="true"></span>
+                            </button>
+                            <p class="demo-camera-hint">Tap the shutter to capture the job photo</p>
+                          </div>
                         </div>
                     </div>
 
@@ -337,21 +359,26 @@
                     </div>
 
                     <!-- Processing Overlay -->
-                    <div class="processing-overlay" id="processing">
-                        <div class="spinner"></div>
-                        <div class="processing-title">Creating your check-in...</div>
+                    <div class="processing-overlay" id="processing" aria-live="polite">
+                        <div class="spinner" aria-hidden="true"></div>
+                        <div class="processing-title" id="processingTitle">Creating your check-in...</div>
+                        <p class="processing-sub" id="processingSub">Turning this job into proof customers can find.</p>
                         <div class="processing-steps">
-                            <div class="processing-step" id="step1">
+                            <div class="processing-step" id="step1" data-processing-label="Scanning the job photos…">
                                 <div class="step-icon"></div>
-                                <span>Analyzing photos...</span>
+                                <span>Scanning the job photos…</span>
                             </div>
-                            <div class="processing-step" id="step2">
+                            <div class="processing-step" id="step2" data-processing-label="Pinning it on the map…">
                                 <div class="step-icon"></div>
-                                <span>Detecting location...</span>
+                                <span>Pinning it on the map…</span>
                             </div>
-                            <div class="processing-step" id="step3">
+                            <div class="processing-step" id="step3" data-processing-label="Writing local-SEO copy…">
                                 <div class="step-icon"></div>
-                                <span>Generating description...</span>
+                                <span>Writing local-SEO copy…</span>
+                            </div>
+                            <div class="processing-step" id="step4" data-processing-label="Prepping Google & website…">
+                                <div class="step-icon"></div>
+                                <span>Prepping Google &amp; website…</span>
                             </div>
                         </div>
                     </div>
