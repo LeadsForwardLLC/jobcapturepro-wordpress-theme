@@ -331,15 +331,26 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 					<?php if ( $show_primary || $show_secondary ) : ?>
 					<div class="jcp-actions directory-cta-row">
 						<?php if ( $show_primary && $primary['label'] !== '' ) : ?>
+							<?php
+							$cta_microcopy   = trim( (string) ( $h['cta_microcopy'] ?? '' ) );
+							$trust_text      = $cta_microcopy !== '' ? $cta_microcopy : trim( (string) ( $h['trust_line'] ?? '' ) );
+							$trust_path      = $cta_microcopy !== '' ? 'hero.cta_microcopy' : 'hero.trust_line';
+							$microcopy_in_btn = $show_trust && $trust_text !== '' && (
+								! empty( $c['campaign_landing'] )
+								|| ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() )
+							);
+							?>
 							<div class="jcp-hero-primary-cta">
-								<a class="btn btn-primary" href="<?php echo esc_url( $primary['url'] ); ?>"<?php jcp_niche_editable_link_attr( 'hero.cta_primary' ); jcp_niche_cta_tracking_attr( $primary['url'], str_contains( $primary['url'], 'firstpromoter.com' ) ? 'referral_hero' : 'niche_hero', $primary['label'] ); ?>><?php jcp_niche_e( $primary['label'] ); ?></a>
-								<?php
-								$cta_microcopy = trim( (string) ( $h['cta_microcopy'] ?? '' ) );
-								$trust_text    = $cta_microcopy !== '' ? $cta_microcopy : trim( (string) ( $h['trust_line'] ?? '' ) );
-								$trust_path    = $cta_microcopy !== '' ? 'hero.cta_microcopy' : 'hero.trust_line';
-								if ( $show_trust && $trust_text !== '' ) :
-									?>
-									<span class="jcp-hero-cta-microcopy jcp-niche-trust-line"<?php jcp_niche_editable_attr( $trust_path ); ?>><?php jcp_niche_e( $trust_text ); ?></span>
+								<?php if ( $microcopy_in_btn ) : ?>
+									<a class="btn btn-primary jcp-hero-cta-stacked" href="<?php echo esc_url( $primary['url'] ); ?>" data-jcp-href-path="hero.cta_primary.url"<?php jcp_niche_cta_tracking_attr( $primary['url'], str_contains( $primary['url'], 'firstpromoter.com' ) ? 'referral_hero' : 'niche_hero', $primary['label'] ); ?>>
+										<span class="jcp-hero-cta-label"<?php jcp_niche_editable_attr( 'hero.cta_primary.label' ); ?>><?php jcp_niche_e( $primary['label'] ); ?></span>
+										<span class="jcp-hero-cta-microcopy jcp-niche-trust-line"<?php jcp_niche_editable_attr( $trust_path ); ?>><?php jcp_niche_e( $trust_text ); ?></span>
+									</a>
+								<?php else : ?>
+									<a class="btn btn-primary" href="<?php echo esc_url( $primary['url'] ); ?>"<?php jcp_niche_editable_link_attr( 'hero.cta_primary' ); jcp_niche_cta_tracking_attr( $primary['url'], str_contains( $primary['url'], 'firstpromoter.com' ) ? 'referral_hero' : 'niche_hero', $primary['label'] ); ?>><?php jcp_niche_e( $primary['label'] ); ?></a>
+									<?php if ( $show_trust && $trust_text !== '' ) : ?>
+										<span class="jcp-hero-cta-microcopy jcp-niche-trust-line"<?php jcp_niche_editable_attr( $trust_path ); ?>><?php jcp_niche_e( $trust_text ); ?></span>
+									<?php endif; ?>
 								<?php endif; ?>
 							</div>
 						<?php endif; ?>

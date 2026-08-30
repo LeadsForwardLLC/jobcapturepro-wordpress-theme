@@ -66,16 +66,16 @@
       "css_class": "meta-stat-photo"
     },
     {
-      "value": "4+",
+      "value": "5",
       "label": "channels",
-      "detail": "Website · Google · Social · Directory",
+      "detail": "Published online",
       "icon": "map",
       "css_class": "meta-stat-channels"
     },
     {
       "value": "More",
-      "label": "proof",
-      "detail": "From work you're already doing",
+      "label": "jobs",
+      "detail": "From finished work",
       "icon": "badge-check",
       "css_class": "meta-stat-proof"
     }

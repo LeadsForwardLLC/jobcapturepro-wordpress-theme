@@ -47,9 +47,12 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 			if ( empty( $props['media_type'] ) ) {
 				$props['media_type'] = 'phone_mockup';
 			}
-			// Mirror core_mechanic into hero meta_stats (homepage pattern) using existing labels only.
-			if ( empty( $props['meta_stats'] ) || ! is_array( $props['meta_stats'] ) ) {
-				$props['meta_stats'] = jcp_page_campaign_meta_stats_from_doc( $doc );
+			// Keep hero meta_stats in sync with core_mechanic (campaign proof strip).
+			$mirrored = jcp_page_campaign_meta_stats_from_doc( $doc );
+			if ( $mirrored !== [] ) {
+				$props['meta_stats'] = $mirrored;
+			} elseif ( empty( $props['meta_stats'] ) || ! is_array( $props['meta_stats'] ) ) {
+				$props['meta_stats'] = [];
 			}
 			$doc['blocks'][ $i ]['props'] = $props;
 		}

@@ -3476,7 +3476,7 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 0.4rem;
+  gap: 0;
   width: auto;
   max-width: 100%;
 }
@@ -3488,11 +3488,45 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   box-shadow: 0 8px 22px rgba(255, 80, 62, 0.28);
 }
 
-/* THE FIX: microcopy under CTA must be visibly smaller than subtitle */
-.jcp-page-campaign .jcp-niche-hero .jcp-hero-cta-microcopy,
-.jcp-page-campaign .jcp-niche-hero .jcp-niche-trust-line,
-.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-cta-microcopy,
-.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-niche-trust-line,
+/* Stacked CTA: label + trust microcopy inside the primary button */
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta .btn-primary.jcp-hero-cta-stacked {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  white-space: normal;
+  text-align: center;
+  line-height: 1.25;
+  padding: 0.75rem 1.5rem 0.7rem;
+  min-height: 0;
+}
+
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-cta-label {
+  display: block;
+  font-weight: inherit;
+  line-height: 1.25;
+}
+
+/* In-button microcopy: off-white for contrast under main CTA text */
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta .btn-primary .jcp-hero-cta-microcopy,
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta .btn-primary .jcp-niche-trust-line,
+.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-primary-cta .btn-primary .jcp-hero-cta-microcopy,
+.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-primary-cta .btn-primary .jcp-niche-trust-line {
+  font-size: 0.75rem !important; /* 12px */
+  line-height: 1.3 !important;
+  font-weight: 500 !important;
+  color: rgba(255, 255, 255, 0.82) !important;
+  margin: 0 !important;
+  max-width: none !important;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* Legacy: microcopy under CTA (non-stacked) must stay smaller than subtitle */
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta > .jcp-hero-cta-microcopy,
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta > .jcp-niche-trust-line,
+.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-primary-cta > .jcp-hero-cta-microcopy,
+.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-primary-cta > .jcp-niche-trust-line,
 .jcp-page-campaign.jcp-home .jcp-hero .jcp-niche-trust-line,
 .jcp-page-campaign.jcp-home .jcp-hero p.jcp-niche-trust-line {
   font-size: 0.8125rem !important; /* 13px */
@@ -3506,6 +3540,8 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 }
 
 @media (max-width: 420px) {
+  .jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta .btn-primary .jcp-hero-cta-microcopy,
+  .jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta .btn-primary .jcp-niche-trust-line,
   .jcp-page-campaign .jcp-niche-hero .jcp-hero-cta-microcopy,
   .jcp-page-campaign .jcp-niche-hero .jcp-niche-trust-line,
   .jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-cta-microcopy,
@@ -3549,14 +3585,17 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   flex-shrink: 0;
 }
 
+/* Match story-phone process captions (1.125rem / 700) */
 .jcp-page-campaign .jcp-niche-hero .jcp-meta-stats .meta-title,
 .jcp-page-campaign .jcp-niche-hero .directory-meta .meta-title,
 .jcp-page-campaign .jcp-niche-hero .jcp-meta-stats .meta-copy strong,
 .jcp-page-campaign .jcp-niche-hero .directory-meta .meta-copy strong,
 .jcp-page-campaign .jcp-niche-hero .jcp-meta-stats .meta-label strong,
 .jcp-page-campaign .jcp-niche-hero .directory-meta .meta-label strong {
-  font-size: 0.875rem;
+  font-size: 1.125rem;
+  font-weight: 700;
   line-height: 1.25;
+  letter-spacing: -0.015em;
   white-space: normal;
 }
 
@@ -4892,7 +4931,9 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   .jcp-page-campaign .jcp-niche-hero .directory-meta .meta-title,
   .jcp-page-campaign .jcp-niche-hero .jcp-meta-stats .meta-copy strong,
   .jcp-page-campaign .jcp-niche-hero .directory-meta .meta-copy strong {
-    font-size: 0.8125rem;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
   }
 
   .jcp-page-campaign .jcp-niche-hero .jcp-meta-stats .meta-detail,
@@ -5110,7 +5151,7 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.65rem 0.85rem;
-  margin-top: 1.15rem;
+  margin-top: 0.55rem;
   max-width: 28rem;
 }
 
