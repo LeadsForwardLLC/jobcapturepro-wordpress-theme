@@ -278,12 +278,9 @@
       const demoUser = getStoredDemoUser();
       if (!demoUser || typeof demoUser !== 'object') return false;
 
-      const hasBusiness = Boolean((demoUser.businessName || '').trim());
-      const hasIdentity = Boolean(
-        (demoUser.email || '').trim() ||
-        ((demoUser.firstName || '').trim() && (demoUser.lastName || '').trim())
-      );
-      if (!hasBusiness || !hasIdentity) return false;
+      const hasTrade = Boolean((demoUser.niche || demoUser.businessName || '').toString().trim());
+      const hasEmail = Boolean((demoUser.email || '').trim());
+      if (!hasTrade || !hasEmail) return false;
 
       const intakeDone = sessionStorage.getItem(INTAKE_COMPLETE_KEY) === '1';
       const hasSession = Boolean((sessionStorage.getItem(DEMO_SESSION_KEY) || '').trim());
@@ -358,7 +355,7 @@
   const updateDesktopHandoff = () => {
     if (!handoffEl) return;
     const deckActive = deckSection?.classList.contains('active');
-    const show = isMobileSurvey() && (currentIndex === 2 || deckActive);
+    const show = isMobileSurvey();
     handoffEl.hidden = !show;
     if (shareDemoBtn) {
       shareDemoBtn.hidden = typeof navigator.share !== 'function';
@@ -455,17 +452,17 @@
   };
 
   const updateProgress = () => {
-    const stepNum = currentIndex + 1;
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const total = Math.max(1, steps.length);
+    const stepNum = Math.min(currentIndex + 1, total);
     if (progressText) {
-      progressText.textContent = `Step ${stepNum} of 3`;
+      progressText.textContent = total === 1 ? 'Quick start' : `Step ${stepNum} of ${total}`;
     }
     if (stepIndicator) {
-      stepIndicator.textContent = `Step ${stepNum}/3`;
-      stepIndicator.hidden = !isMobile;
+      stepIndicator.textContent = total === 1 ? 'Quick start' : `Step ${stepNum}/${total}`;
+      stepIndicator.hidden = true; // single-screen gate — no step chrome
     }
     if (progressFill) {
-      progressFill.style.width = `${(stepNum / 3) * 100}%`;
+      progressFill.style.width = `${(stepNum / total) * 100}%`;
     }
     stepButtons.forEach((btn, idx) => {
       btn.classList.toggle('is-active', idx === currentIndex);
@@ -695,12 +692,32 @@
     saveSurveyProgress();
   };
 
-  const validateStep1 = () => {
-    const businessName = getValue('businessName');
+
+  const deriveFirstName = () => {
+    const named = getValue('firstName');
+    if (named) return named;
+    const email = getValue('email');
+    const local = (email.split('@')[0] || '').replace(/[._-]+/g, ' ').trim();
+    if (!local) return 'there';
+    return local.split(' ').filter(Boolean).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  };
+
+  const resolveBusinessName = () => {
+    const named = getValue('businessName');
+    if (named) return named;
+    const nicheLabel = getBusinessTypeLabel();
+    return nicheLabel ? (nicheLabel + ' Pro') : 'Your Business';
+  };
+
+  /** Single-screen gate: trade + work email required. */
+  const validateGate = () => {
     const nicheSelect = getValue('niche');
     const businessType = getBusinessTypeValue();
-    if (!businessName || !nicheSelect) {
-      alert('Please enter your business name and type to continue.');
+    const emailInput = document.getElementById('email');
+    const email = getValue('email');
+    if (!nicheSelect) {
+      alert('Please choose your business type to personalize the demo.');
+      document.getElementById('niche')?.focus();
       return false;
     }
     if (nicheSelect === BUSINESS_TYPE_OTHER && !businessType) {
@@ -708,53 +725,27 @@
       document.getElementById('nicheOther')?.focus();
       return false;
     }
-    return true;
-  };
-
-  const validateStep2 = () => {
-    const checked = goalsWrap ? goalsWrap.querySelectorAll('input[type="checkbox"]:checked') : [];
-    if (!checked.length) {
-      alert('Please choose at least one demo goal to continue.');
-      return false;
-    }
-    return true;
-  };
-
-  const validateStep3 = () => {
-    const firstName = getValue('firstName');
-    const lastName = getValue('lastName');
-    const emailInput = document.getElementById('email');
-    const email = getValue('email');
-    const phoneInput = document.getElementById('phone');
-    const phone = getValue('phone').replace(/\D/g, '');
-    const referralSource = getValue('referralSource');
-    if (!firstName || !lastName) {
-      alert('Please enter your first and last name to continue.');
-      return false;
-    }
     if (!email || !emailInput?.checkValidity()) {
       emailInput?.classList.add('is-error');
       emailInput?.focus();
+      alert('Please enter a valid work email to continue.');
       return false;
     }
-    if (!phone || phone.length < 10) {
-      phoneInput?.classList.add('is-error');
-      phoneInput?.focus();
-      alert('Please enter a valid mobile phone number so we can follow up if you want help.');
-      return false;
+    // Fill optional personalization defaults used by demo + CRM.
+    const businessEl = document.getElementById('businessName');
+    if (businessEl && !getValue('businessName')) {
+      businessEl.value = resolveBusinessName();
     }
-    if (!referralSource) {
-      alert('Please tell us how you heard about JobCapturePro.');
-      document.getElementById('referralSource')?.focus();
-      return false;
-    }
-    if (referralSource === REFERRAL_SOURCE_OTHER && !getValue('referralSourceOther')) {
-      alert('Please specify how you found JobCapturePro.');
-      document.getElementById('referralSourceOther')?.focus();
-      return false;
+    const firstEl = document.getElementById('firstName');
+    if (firstEl && !getValue('firstName')) {
+      firstEl.value = deriveFirstName();
     }
     return true;
   };
+
+  const validateStep1 = () => validateGate();
+  const validateStep2 = () => true;
+  const validateStep3 = () => validateGate();
 
   const enforceGoalLimit = () => {
     if (!goalsWrap) return;
@@ -923,10 +914,12 @@
     }
 
     if (action === 'launch' && !deckActive) {
-      if (!validateStep3()) return;
-      surveyTrack('form_step_completed', 3, getSurveyFormMetadata());
+      if (!validateGate()) return;
+      surveyTrack('form_step_completed', 1, getSurveyFormMetadata());
       saveSurveyPrefillForEarlyAccess();
-      if (deckSlides.length) {
+      const params = new URLSearchParams(window.location.search || '');
+      const forceDeck = params.get('deck') === '1';
+      if (forceDeck && deckSlides.length) {
         submitDemoOptIn().then(() => showDeck());
         return;
       }
@@ -1073,11 +1066,13 @@
 
   surveyTrack('demo_started', null, getSurveyFormMetadata());
 
-  if (restored && restored.phase === 'deck' && deckSlides.length) {
+  const paramsDeck = new URLSearchParams(window.location.search || '');
+  const allowDeckResume = paramsDeck.get('deck') === '1';
+  if (allowDeckResume && restored && restored.phase === 'deck' && deckSlides.length) {
     const deckStart = Number.isFinite(restored.deckIndex) ? restored.deckIndex : 0;
     showDeck(deckStart);
   } else if (restored && Number.isFinite(restored.currentIndex)) {
-    const stepStart = Math.min(Math.max(0, restored.currentIndex), steps.length - 1);
+    const stepStart = Math.min(Math.max(0, restored.currentIndex), Math.max(0, steps.length - 1));
     showStep(stepStart);
   } else {
     showStep(0);

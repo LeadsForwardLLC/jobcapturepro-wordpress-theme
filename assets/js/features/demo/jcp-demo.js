@@ -576,19 +576,19 @@ const demoGuideContent = {
   step5: {
     pill: 'Step 5',
     title: 'Ask for the review on site',
-    body: 'Show the QR before you leave — while the customer is still happy.',
+    body: 'Optional but powerful — show the QR before you leave while the customer is still happy.',
     interactHint: 'Tap Request Review to preview the QR handoff.'
   },
   step6: {
-    pill: 'Final step',
-    title: 'See what just published',
-    body: 'Here’s the payoff: website, Google, social, directory, and a review ask — from one job.',
+    pill: 'See the payoff',
+    title: 'One job. Published everywhere.',
+    body: 'Website, Google, social, directory, and a review ask — from a single check-in.',
     interactHint: ''
   },
   step6Dock: {
-    pill: 'Final step',
-    title: 'Ready to Start Free Trial?',
-    body: 'Turn every finished job into website proof, Google activity, reviews, and more calls — Start Free Trial today.',
+    pill: 'Ready?',
+    title: 'Start Free Trial',
+    body: 'Turn every finished job into proof, Google activity, reviews, and more calls.',
     interactHint: ''
   }
 };
@@ -4609,6 +4609,58 @@ function wirePostDemoPanel() {
   document
     .getElementById('post-demo-bubble')
     ?.addEventListener('click', showPostDemoPanel);
+
+  const phoneBtn = document.getElementById('postDemoPhoneBtn');
+  const phoneInput = document.getElementById('postDemoPhone');
+  const phoneStatus = document.getElementById('postDemoPhoneStatus');
+  if (phoneBtn && phoneInput) {
+    phoneBtn.addEventListener('click', function () {
+      const digits = String(phoneInput.value || '').replace(/\D/g, '');
+      if (digits.length < 10) {
+        phoneInput.focus();
+        if (phoneStatus) {
+          phoneStatus.hidden = false;
+          phoneStatus.textContent = 'Enter a valid mobile number.';
+        }
+        return;
+      }
+      try {
+        const raw = localStorage.getItem('demoUser');
+        const user = raw ? JSON.parse(raw) : {};
+        user.phone = phoneInput.value.trim();
+        localStorage.setItem('demoUser', JSON.stringify(user));
+      } catch (e) {}
+      jcpDemoTrack('cta_clicked', null, { cta: 'post_demo_phone', source: 'demo_post_panel' }, { keepalive: true });
+      // Best-effort CRM update with phone after the aha.
+      try {
+        const user = JSON.parse(localStorage.getItem('demoUser') || '{}');
+        const restUrl = (window.JCP_DEMO_SURVEY && window.JCP_DEMO_SURVEY.rest_url) || '/wp-json/jcp/v1/demo-survey-submit';
+        if (user.email) {
+          fetch(restUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              first_name: user.firstName || 'there',
+              last_name: user.lastName || '',
+              email: user.email,
+              phone: user.phone,
+              company: user.businessName || '',
+              business_type: user.niche || '',
+              demo_goals: Array.isArray(user.goals) ? user.goals : [],
+              referral_source: user.referralSource || '',
+            }),
+            keepalive: true,
+          }).catch(function () {});
+        }
+      } catch (e) {}
+      phoneBtn.disabled = true;
+      phoneBtn.textContent = 'Saved ✓';
+      if (phoneStatus) {
+        phoneStatus.hidden = false;
+        phoneStatus.textContent = 'Got it — we can text setup tips if you want them.';
+      }
+    });
+  }
 
   const primaryCta = document.querySelector('.post-demo-primary-cta');
   if (primaryCta) {

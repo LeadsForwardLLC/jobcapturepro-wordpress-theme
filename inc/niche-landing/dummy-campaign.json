@@ -29,8 +29,8 @@
       "url": ""
     },
     "show_cta_secondary": false,
-    "trust_line": "Pick your trade → see a personalized JCP workflow in about 2 minutes. Work email required. No credit card.",
-    "cta_microcopy": "Pick your trade → see a personalized JCP workflow in about 2 minutes. Work email required. No credit card.",
+    "trust_line": "Trade + work email → personalized demo in about 2 minutes. No credit card.",
+    "cta_microcopy": "Trade + work email → personalized demo in about 2 minutes. No credit card.",
     "show_visual": true,
     "show_trust_line": true,
     "media_type": "phone_mockup",
@@ -132,7 +132,7 @@
       "label": "See JobCapturePro On My Business",
       "url": "/demo/"
     },
-    "cta_note": "Free personalized demo · Work email required · No credit card · About 2 minutes",
+    "cta_note": "Trade + work email · Personalized demo · About 2 minutes · No credit card",
     "show_cta": true,
     "show_cta_note": true,
     "show_headline": true,
@@ -169,7 +169,7 @@
       "label": "See JobCapturePro On My Business",
       "url": "/demo/"
     },
-    "cta_note": "Free personalized demo · Work email required · No credit card",
+    "cta_note": "Trade + work email · About 2 minutes · No credit card",
     "section_id": "built-by-leadsforward",
     "show_eyebrow": true,
     "show_headline": true,
@@ -283,7 +283,7 @@
       },
       {
         "q": "What do I need for the demo?",
-        "a": "Pick your trade and a work email to personalize the experience. A mobile number helps us follow up if you want setup help — no credit card."
+        "a": "Pick your trade and a work email — that's it. Personalized demo in about 2 minutes. No credit card."
       }
     ]
   },
@@ -294,7 +294,7 @@
       "label": "See JobCapturePro On My Business",
       "url": "/demo/"
     },
-    "cta_note": "Pick your trade → personalized workflow in about 2 minutes. Work email required. No credit card.",
+    "cta_note": "Trade + work email → personalized demo in about 2 minutes. No credit card.",
     "cta_secondary": {
       "label": "",
       "url": ""

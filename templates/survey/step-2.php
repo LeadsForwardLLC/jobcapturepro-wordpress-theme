@@ -1,37 +1,7 @@
 <?php
 /**
- * Survey Step 2: Demo goals (checkboxes)
+ * Legacy goals step — retired from the public gate (kept for back-compat includes).
  *
  * @package JCP_Core
  */
-?>
-<section class="survey-step" data-step="1">
-  <div class="survey-head">
-    <div class="survey-eyebrow">Step 2</div>
-    <h2 class="survey-title">What matters most right now?</h2>
-    <p class="survey-subtitle">Pick up to two. We’ll focus the demo on those outcomes.</p>
-  </div>
-
-  <div class="survey-goals" id="surveyGoals">
-    <label class="survey-goal">
-      <input type="checkbox" value="calls">
-      <span>More inbound calls</span>
-    </label>
-    <label class="survey-goal">
-      <input type="checkbox" value="google">
-      <span>Better Google visibility</span>
-    </label>
-    <label class="survey-goal">
-      <input type="checkbox" value="reviews">
-      <span>More customer reviews</span>
-    </label>
-    <label class="survey-goal">
-      <input type="checkbox" value="busywork">
-      <span>Less marketing busywork</span>
-    </label>
-  </div>
-
-  <div class="survey-actions-row">
-    <button type="button" class="survey-btn" data-action="next">Continue</button>
-  </div>
-</section>
+// Intentionally empty: conversion gate is now a single screen (templates/survey/step-1.php).

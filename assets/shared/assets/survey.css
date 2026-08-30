@@ -2692,3 +2692,36 @@ input::-webkit-contacts-auto-fill-button {
   }
 }
 
+
+
+/* Single-screen demo gate */
+.survey-card--gate {
+  max-width: 560px;
+}
+.survey-gate-optional {
+  margin-top: 0.15rem;
+}
+.survey-optional {
+  font-weight: 500;
+  color: #64748b;
+  font-size: 0.85em;
+}
+.survey-required {
+  color: #ff503e;
+}
+.survey-consent {
+  margin: 0.75rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #64748b;
+  text-align: center;
+}
+.survey-proof--compact .survey-proof-list {
+  display: grid;
+  gap: 0.75rem;
+}
+@media (min-width: 720px) {
+  .survey-proof--compact .survey-proof-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

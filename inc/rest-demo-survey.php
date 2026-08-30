@@ -297,10 +297,16 @@ function jcp_core_demo_survey_submit_handler( \WP_REST_Request $request ): \WP_R
     $email      = $request->get_param( 'email' );
 
     if ( empty( trim( (string) $first_name ) ) || empty( trim( (string) $email ) ) ) {
-        return new \WP_REST_Response(
-            [ 'success' => false, 'message' => __( 'First name, last name, and email are required.', 'jcp-core' ) ],
-            400
-        );
+        if ( empty( trim( (string) $email ) ) ) {
+            return new \WP_REST_Response(
+                [ 'success' => false, 'message' => __( 'Work email is required.', 'jcp-core' ) ],
+                400
+            );
+        }
+        if ( empty( trim( (string) $first_name ) ) ) {
+            $local      = sanitize_text_field( (string) strstr( (string) $email, '@', true ) );
+            $first_name = $local !== '' ? $local : 'there';
+        }
     }
 
     $params = jcp_demo_ghl_merge_attribution_from_request(
@@ -561,11 +567,15 @@ function jcp_core_demo_viewed_submit_handler( \WP_REST_Request $request ): \WP_R
     $last_name  = trim( (string) $request->get_param( 'last_name' ) );
     $email      = trim( (string) $request->get_param( 'email' ) );
 
-    if ( $first_name === '' || $email === '' || ! is_email( $email ) ) {
+    if ( $email === '' || ! is_email( $email ) ) {
         return new \WP_REST_Response(
-            [ 'success' => false, 'message' => __( 'First name, last name, and email are required.', 'jcp-core' ) ],
+            [ 'success' => false, 'message' => __( 'Work email is required.', 'jcp-core' ) ],
             400
         );
+    }
+    if ( $first_name === '' ) {
+        $local      = sanitize_text_field( (string) strstr( $email, '@', true ) );
+        $first_name = $local !== '' ? $local : 'there';
     }
 
     $body_string = jcp_core_build_demo_viewed_ghl_body(

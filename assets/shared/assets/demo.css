@@ -5239,3 +5239,43 @@ body.jcp-review-modal-open .mobile-guide-pill {
   pointer-events: none;
 }
 
+
+
+/* Optional post-demo phone capture (progressive profiling) */
+.post-demo-phone-capture {
+  margin: 0 0 1.1rem;
+  text-align: left;
+}
+.post-demo-phone-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  color: #334155;
+  margin-bottom: 0.4rem;
+}
+.post-demo-phone-label span {
+  font-weight: 500;
+  color: #64748b;
+}
+.post-demo-phone-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+.post-demo-phone-input {
+  flex: 1;
+  min-width: 0;
+  border: 1px solid #dbe3ee;
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  font-size: 0.9375rem;
+}
+.post-demo-phone-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+.post-demo-phone-status {
+  margin: 0.4rem 0 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}

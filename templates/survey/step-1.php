@@ -1,12 +1,13 @@
 <?php
 /**
- * Survey Step 1: Business name + Business type
+ * Survey gate (single screen): trade + work email → launch demo.
+ * Business name + first name are optional personalization.
  *
  * @package JCP_Core
  */
-$demo_headline = 'See a live demo built for your business';
-$demo_subhead  = 'Just a few details so the demo reflects real jobs and real outcomes.';
-$demo_btn      = 'Next step';
+$demo_headline = 'See JobCapturePro on your business';
+$demo_subhead  = 'Your trade + work email. Personalized demo in about 2 minutes — no credit card.';
+$demo_btn      = 'See my demo →';
 ?>
 <section class="survey-step active" data-step="0">
   <div class="survey-head">
@@ -17,20 +18,9 @@ $demo_btn      = 'Next step';
     </p>
   </div>
 
-  <form class="survey-form" autocomplete="off">
+  <form class="survey-form survey-form--gate" autocomplete="on">
     <div class="survey-field">
-      <label for="businessName">Business name</label>
-      <input
-        id="businessName"
-        type="text"
-        class="survey-input"
-        placeholder="Summit Plumbing"
-        required
-      />
-    </div>
-
-    <div class="survey-field">
-      <label for="niche">Business type</label>
+      <label for="niche">Business type <span class="survey-required">*</span></label>
       <select id="niche" class="survey-input" required>
         <?php
         if ( function_exists( 'jcp_core_render_business_type_select_options' ) ) {
@@ -51,16 +41,57 @@ $demo_btn      = 'Next step';
         autocomplete="off"
       />
     </div>
+
+    <div class="survey-field">
+      <label for="email">Work email <span class="survey-required">*</span></label>
+      <input
+        id="email"
+        type="email"
+        class="survey-input"
+        placeholder="you@company.com"
+        autocomplete="email"
+        required
+      />
+    </div>
+
+    <div class="survey-grid-2 survey-gate-optional">
+      <div class="survey-field">
+        <label for="businessName">Business name <span class="survey-optional">(optional)</span></label>
+        <input
+          id="businessName"
+          type="text"
+          class="survey-input"
+          placeholder="Summit Plumbing"
+          autocomplete="organization"
+        />
+      </div>
+      <div class="survey-field">
+        <label for="firstName">First name <span class="survey-optional">(optional)</span></label>
+        <input
+          id="firstName"
+          type="text"
+          class="survey-input"
+          placeholder="Alex"
+          autocomplete="given-name"
+        />
+      </div>
+    </div>
+
+    <?php /* Kept in DOM (hidden) so existing JS / CRM payloads stay stable. */ ?>
+    <input type="hidden" id="lastName" value="" autocomplete="family-name" />
+    <input type="hidden" id="phone" value="" autocomplete="tel" />
+    <input type="hidden" id="referralSource" value="" />
+    <input type="hidden" id="referralSourceOther" value="" />
   </form>
 
   <div class="survey-actions-row">
-    <button type="button" class="survey-btn" data-action="next"><?php echo esc_html( $demo_btn ); ?></button>
+    <button type="button" class="survey-btn" data-action="launch"><?php echo esc_html( $demo_btn ); ?></button>
+    <p class="survey-consent">By continuing you agree to receive the demo and relevant updates by email. Unsubscribe anytime.</p>
   </div>
 
   <?php
   /**
-   * Demo step-1 proof quotes — kept short & even so the strip stays balanced.
-   * Names/roles match sales-deck reviews; copy is trimmed for this surface.
+   * Compact proof strip for the single-screen gate.
    *
    * @var list<array{name:string,role:string,quote:string}>
    */
@@ -68,26 +99,21 @@ $demo_btn      = 'Next step';
     [
       'name'  => 'Trent Ellison',
       'role'  => 'Home service operator',
-      'quote' => 'Easy to use and really smart. Turns completed jobs into useful online content — and the review side is amazing.',
+      'quote' => 'Turns completed jobs into useful online content — and the review side is amazing.',
     ],
     [
       'name'  => 'Brian Hardy',
       'role'  => 'Contractor',
-      'quote' => 'Awesome — it takes my work site pictures and turns them into a full marketing campaign automatically.',
-    ],
-    [
-      'name'  => 'Heriberto Eddie Roman',
-      'role'  => 'Business owner',
-      'quote' => 'JobCapturePro has been a game changer for my business — simple capture with real results online.',
+      'quote' => 'Takes my work site pictures and turns them into a full marketing campaign automatically.',
     ],
     [
       'name'  => 'Peter Bonk',
       'role'  => 'Marketing agency',
-      'quote' => 'One of the easiest wins for our HVAC client. Photos become GBP posts, website content, social, and reviews.',
+      'quote' => 'Photos become GBP posts, website content, social, and reviews — easiest win for our HVAC client.',
     ],
   ];
   ?>
-  <aside class="survey-proof" aria-label="<?php esc_attr_e( 'What customers say', 'jcp-core' ); ?>">
+  <aside class="survey-proof survey-proof--compact" aria-label="<?php esc_attr_e( 'What customers say', 'jcp-core' ); ?>">
     <div class="survey-proof-banner">
       <span class="survey-proof-stars" aria-hidden="true">★★★★★</span>
       <p class="survey-proof-banner-text">
