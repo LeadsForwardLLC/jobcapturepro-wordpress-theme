@@ -17,18 +17,23 @@
     var live = tile.getAttribute('data-live-label') || PREVIEW_LABELS[channel] || PREVIEW_LABELS.website;
 
     root.querySelectorAll('.jcp-story-publish__tile').forEach(function (el) {
-      el.classList.toggle('is-live', el === tile);
-      el.setAttribute('aria-pressed', el === tile ? 'true' : 'false');
-      var status = el.querySelector('.jcp-story-publish__tile-status');
-      if (status) {
-        status.textContent = el === tile ? 'Live' : 'Ready';
+      var selected = el === tile;
+      el.classList.toggle('is-live', selected);
+      el.setAttribute('aria-pressed', selected ? 'true' : 'false');
+      el.setAttribute('aria-selected', selected ? 'true' : 'false');
+      var action = el.querySelector('.jcp-story-publish__tile-action');
+      if (action) {
+        action.textContent = selected ? 'Showing' : 'Preview';
       }
     });
 
     var preview = root.querySelector('[data-publish-preview]');
     var label = root.querySelector('[data-publish-preview-label]');
     if (label) label.textContent = live;
-    if (preview) preview.hidden = false;
+    if (preview) {
+      preview.hidden = false;
+      preview.classList.add('is-active');
+    }
   }
 
   function runSequence(root) {
@@ -40,13 +45,16 @@
       activateTile(root, tiles[i]);
       i += 1;
       if (i < tiles.length) {
-        window.setTimeout(step, 420);
+        window.setTimeout(step, 520);
       }
     }
-    window.setTimeout(step, 280);
+    window.setTimeout(step, 180);
   }
 
   function bindPublish(root) {
+    // Always show an initial preview so the result panel is never empty.
+    activateTile(root, root.querySelector('.jcp-story-publish__tile'));
+
     root.addEventListener('click', function (e) {
       var tile = e.target.closest('.jcp-story-publish__tile');
       if (!tile || !root.contains(tile)) return;
@@ -54,7 +62,6 @@
     });
 
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      activateTile(root, root.querySelector('.jcp-story-publish__tile'));
       return;
     }
 
@@ -78,34 +85,10 @@
     io.observe(root);
   }
 
-  function bindReviews(card) {
-    if (!card || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      if (card) card.classList.add('is-visible');
-      return;
-    }
-    if (!('IntersectionObserver' in window)) {
-      card.classList.add('is-visible');
-      return;
-    }
-    var io = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add('is-visible');
-          io.unobserve(entry.target);
-        });
-      },
-      { threshold: 0.4 }
-    );
-    io.observe(card);
-  }
-
   function init() {
     document.querySelectorAll('[data-jcp-story-moments]').forEach(function (section) {
       var publish = section.querySelector('[data-jcp-story-publish]');
       if (publish) bindPublish(publish);
-      var reviewsCard = section.querySelector('.jcp-story-reviews__card');
-      if (reviewsCard) bindReviews(reviewsCard);
     });
   }
 

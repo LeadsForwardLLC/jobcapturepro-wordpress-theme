@@ -447,12 +447,12 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v16 = tighter paid funnel: reorder, drop demo_preview/how_it_works, claim cleanup.
+	// v17 = story moments balance + tap affordance.
 	$demo_ver = (string) get_option( 'jcp_contractor_demo_seed_version', '' );
-	if ( $demo_ver !== '16' || ! jcp_niche_contractor_demo_exists() ) {
-		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '16' );
+	if ( $demo_ver !== '17' || ! jcp_niche_contractor_demo_exists() ) {
+		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '17' );
 		if ( $created > 0 ) {
-			update_option( 'jcp_contractor_demo_seed_version', '16' );
+			update_option( 'jcp_contractor_demo_seed_version', '17' );
 			update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 		}
 	}
