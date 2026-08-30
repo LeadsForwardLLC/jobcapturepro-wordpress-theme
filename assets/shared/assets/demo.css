@@ -2928,18 +2928,50 @@ body .tour-float.final-step .tour-arrow {
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 4px;
+  gap: 3px;
+  white-space: normal;
+  line-height: 1.25;
 }
 
 .post-demo-primary-cta .post-demo-cta-main {
   display: block;
+  font-weight: inherit;
+  line-height: 1.25;
 }
 
 .post-demo-primary-cta .post-demo-cta-note {
-  font-size: 13px;
-  font-weight: 400;
-  color: rgba(255,255,255,0.9);
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.82);
   margin: 0;
+}
+
+.post-demo-trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: #6b7280;
+}
+
+.post-demo-trust-stars {
+  color: #f59e0b;
+  letter-spacing: 1px;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.post-demo-trust-copy {
+  color: #6b7280;
 }
 
 .post-demo-social-proof {
@@ -5347,19 +5379,29 @@ body.jcp-guided-demo #post-demo-panel.active .post-demo-x {
   max-width: 360px;
 }
 
+.post-demo-card--simple .post-demo-trust {
+  margin-bottom: 16px;
+}
+
 .post-demo-card--simple .post-demo-primary-cta {
   display: flex;
   flex-direction: column;
   width: 100%;
   justify-content: center;
   align-items: center;
-  min-height: 52px;
+  min-height: 0;
   font-size: 17px;
   font-weight: 700;
   text-decoration: none;
-  padding-top: 12px;
-  padding-bottom: 12px;
-  gap: 2px;
+  padding: 14px 18px 12px;
+  gap: 3px;
+  box-shadow: 0 8px 22px rgba(255, 80, 62, 0.28);
+}
+
+.post-demo-card--simple .post-demo-primary-cta .post-demo-cta-note {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .post-demo-card--simple .post-demo-secondary-cta {
@@ -5374,8 +5416,9 @@ body.jcp-guided-demo #post-demo-panel.active .post-demo-x {
 }
 
 .post-demo-secondary-note {
-  margin: 8px 0 16px;
-  font-size: 13px;
+  margin: 8px 0 18px;
+  font-size: 12px;
+  line-height: 1.4;
   color: #9ca3af;
 }
 
@@ -5385,11 +5428,11 @@ body.jcp-guided-demo #post-demo-panel.active .post-demo-x {
   justify-content: center;
   gap: 6px;
   margin: 0 auto;
-  padding: 0;
+  padding: 4px 0;
   border: none;
   background: none;
-  color: #6b7280;
-  font-size: 14px;
+  color: #9ca3af;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   text-decoration: none;
@@ -5397,13 +5440,13 @@ body.jcp-guided-demo #post-demo-panel.active .post-demo-x {
 }
 
 .post-demo-replay-link:hover {
-  color: #374151;
+  color: #6b7280;
 }
 
 .post-demo-replay-link .lucide-icon {
   width: 14px;
   height: 14px;
-  opacity: 0.85;
+  opacity: 0.75;
 }
 
 body.jcp-guided-demo #post-demo-panel.active {

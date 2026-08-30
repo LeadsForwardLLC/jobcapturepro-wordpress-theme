@@ -3492,12 +3492,91 @@ function syncDemoStartFreeCtas() {
   const post = document.querySelector('.post-demo-primary-cta');
   if (post) {
     post.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
-    const label = (post.textContent || '').trim();
+    ensurePostDemoPrimaryCtaStacked(post);
+  }
+}
+
+/** Keep stacked trial CTA children intact (never wipe with textContent). */
+function ensurePostDemoPrimaryCtaStacked(primaryCta) {
+  if (!primaryCta) return;
+  let main = primaryCta.querySelector('.post-demo-cta-main');
+  let note = primaryCta.querySelector('.post-demo-cta-note');
+  if (main && note) {
+    const label = (main.textContent || '').trim();
     if (
       label === '' ||
       /start\s+for\s+free|get\s+started\s+free|start\s+free(?!\s+trial)|start\s+free\s+trial/i.test(label)
     ) {
-      post.textContent = 'Start Free Trial';
+      main.textContent = 'Start Free Trial';
+    }
+    if (!(note.textContent || '').trim()) {
+      note.textContent = 'No credit card required';
+    }
+    return;
+  }
+  primaryCta.replaceChildren();
+  main = document.createElement('span');
+  main.className = 'post-demo-cta-main';
+  main.textContent = 'Start Free Trial';
+  note = document.createElement('span');
+  note.className = 'post-demo-cta-note';
+  note.textContent = 'No credit card required';
+  primaryCta.append(main, note);
+}
+
+/**
+ * Migrate stale cached post-demo markup (SMS capture, note under button, full-width Replay).
+ * Safe no-op when HTML is already current.
+ */
+function migratePostDemoPanelMarkup() {
+  const panel = document.getElementById('post-demo-panel');
+  if (!panel) return;
+
+  document.getElementById('postDemoPhoneCapture')?.remove();
+  panel.querySelectorAll(
+    '.post-demo-phone-capture, .post-demo-phone-label, .post-demo-phone-row, .post-demo-phone-input, .post-demo-phone-btn, .post-demo-phone-status, #postDemoPhone, #postDemoPhoneBtn, #postDemoPhoneStatus'
+  ).forEach((el) => el.remove());
+
+  panel.querySelectorAll('.post-demo-note').forEach((el) => {
+    if (!el.closest('.post-demo-primary-cta')) el.remove();
+  });
+
+  const card = panel.querySelector('.post-demo-card') || panel;
+  if (!card.querySelector('.post-demo-trust')) {
+    const trust = document.createElement('p');
+    trust.className = 'post-demo-trust';
+    trust.setAttribute('aria-label', 'Trusted by contractors');
+    trust.innerHTML =
+      '<span class="post-demo-trust-stars" aria-hidden="true">★★★★★</span>' +
+      '<span class="post-demo-trust-copy">Trusted by crews who already take the photos</span>';
+    const title = card.querySelector('.post-demo-simple-title');
+    if (title) {
+      title.before(trust);
+    } else {
+      card.prepend(trust);
+    }
+  }
+
+  const primaryCta = panel.querySelector('.post-demo-primary-cta');
+  ensurePostDemoPrimaryCtaStacked(primaryCta);
+
+  const replay = document.getElementById('btnReplayDemo');
+  if (replay) {
+    const needsRestyle =
+      replay.classList.contains('btn') ||
+      replay.classList.contains('btn-secondary') ||
+      !replay.classList.contains('post-demo-replay-link');
+    if (needsRestyle) {
+      replay.className = 'post-demo-replay-link';
+      replay.type = 'button';
+    }
+    if (!replay.querySelector('.lucide-icon')) {
+      const icon = document.createElement('img');
+      icon.src = `${assetBase}/shared/assets/icons/lucide/rotate-ccw.svg`;
+      icon.className = 'lucide-icon lucide-icon-sm';
+      icon.alt = '';
+      icon.setAttribute('aria-hidden', 'true');
+      replay.replaceChildren(icon, document.createTextNode(' Replay demo'));
     }
   }
 }
@@ -4847,10 +4926,13 @@ function showPostDemoPanel() {
   document.getElementById('post-demo-bubble')?.classList.add('is-hidden');
   setMobileGuideCollapsed(true);
 
+  migratePostDemoPanelMarkup();
+
   // Rebuild Start Free Trial href at open time so survey email/name are included.
   const primaryCta = document.querySelector('.post-demo-primary-cta');
   if (primaryCta) {
     primaryCta.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
+    ensurePostDemoPrimaryCtaStacked(primaryCta);
   }
 
   panel.classList.add('active');
@@ -4953,6 +5035,8 @@ function emailDemoLink() {
    Bind panel buttons
 ---------------------------------- */
 function wirePostDemoPanel() {
+  migratePostDemoPanelMarkup();
+
   document
     .getElementById('postDemoX')
     ?.addEventListener('click', hidePostDemoPanel);
@@ -4964,6 +5048,7 @@ function wirePostDemoPanel() {
   const primaryCta = document.querySelector('.post-demo-primary-cta');
   if (primaryCta) {
     primaryCta.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
+    ensurePostDemoPrimaryCtaStacked(primaryCta);
     primaryCta.addEventListener('click', function(event) {
       // Refresh PII + UTMs on click so the handoff always matches the latest survey data.
       const handoffUrl = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
