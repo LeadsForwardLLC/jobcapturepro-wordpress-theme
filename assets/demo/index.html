@@ -80,7 +80,7 @@
 
                             <div class="demo-outcomes" id="demoOutcomes" hidden>
                               <p class="demo-outcomes-eyebrow">Automations completed</p>
-                              <h3 class="demo-outcomes-title">This job ran on autopilot</h3>
+                              <h3 class="demo-outcomes-title">See what this check-in produced</h3>
                               <ul class="demo-outcomes-list demo-publish-list" id="demoOutcomesList" aria-live="polite"></ul>
                               <div class="demo-review-received demo-review-received--recap" id="demoReviewReceived" hidden>
                                 <img class="demo-review-received-photo" id="demoReviewReceivedPhoto" src="" alt="" width="56" height="56" loading="lazy">
@@ -717,18 +717,28 @@
     </button>
     <div class="demo-outcomes-modal__header">
       <p class="demo-outcomes-modal__eyebrow">Automations completed</p>
-      <h2 class="demo-outcomes-modal__title" id="demoOutcomesModalTitle">This job ran on autopilot</h2>
-      <p class="demo-outcomes-modal__subtitle" id="demoOutcomesSlideLabel">Live on your website</p>
+      <h2 class="demo-outcomes-modal__title" id="demoOutcomesModalTitle">See what this check-in produced</h2>
       <p class="demo-outcomes-modal__counter" id="demoOutcomesSlideCounter" aria-live="polite">1 of 5</p>
     </div>
-    <div class="demo-outcomes-modal__viewport" id="demoOutcomesViewport">
-      <div class="demo-outcomes-modal__track" id="demoOutcomesTrack"></div>
+    <div class="demo-outcomes-modal__stage">
+      <button type="button" class="demo-outcomes-modal__nav demo-outcomes-modal__nav--prev" id="demoOutcomesPrevBtn" data-outcomes-action="prev" aria-label="Previous result">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      <div class="demo-outcomes-modal__viewport" id="demoOutcomesViewport">
+        <div class="demo-outcomes-modal__track" id="demoOutcomesTrack"></div>
+      </div>
+      <button type="button" class="demo-outcomes-modal__nav demo-outcomes-modal__nav--next" id="demoOutcomesNextBtn" data-outcomes-action="next" aria-label="Next result">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </button>
     </div>
     <div class="demo-outcomes-modal__dots" id="demoOutcomesDots" role="tablist" aria-label="Outcome slides"></div>
     <div class="demo-outcomes-modal__footer">
-      <button type="button" class="btn btn-secondary demo-outcomes-modal__next" id="demoOutcomesNextCta" data-outcomes-action="next">Next result</button>
       <a
-        class="btn btn-primary demo-outcomes-modal__finish"
+        class="btn btn-primary demo-outcomes-modal__finish demo-outcomes-modal__finish--solo"
         id="demoOutcomesStartFreeCta"
         href="https://app.jobcapturepro.com/onboarding?sessionId=75ad8454-312e-4224-95b7-8f48f5cd0277&amp;step=1&amp;utm_source=jobcapturepro.com&amp;utm_medium=website&amp;utm_campaign=onboarding&amp;utm_content=demo_outcomes"
         data-outcomes-action="start_free"

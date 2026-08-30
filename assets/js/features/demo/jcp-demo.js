@@ -606,7 +606,10 @@ const outcomesSlideshow = {
   total: 5,
   isOpen: false,
   touchStartX: 0,
+  autoTimer: null,
 };
+
+const OUTCOMES_AUTO_ROTATE_MS = 2000;
 
 let outcomesConfettiFrame = null;
 
@@ -3014,11 +3017,14 @@ function buildOutcomesSlideHtml(index, ctx) {
   const reviewsCount = Number(ctx.reviewsCount) || 48;
   const rating = e(ctx.rating);
   const directoryUrl = e(ctx.directoryUrl);
+  const label = e(OUTCOMES_SLIDE_LABELS[index] || '');
+  const slideLabel = `<p class="demo-outcomes-slide__label">${label}</p>`;
 
   switch (index) {
     case 0:
       return `
         <article class="demo-outcomes-slide" data-slide="0">
+          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--website">
             <div class="outcomes-browser">
               <div class="outcomes-browser__bar">
@@ -3043,6 +3049,7 @@ function buildOutcomesSlideHtml(index, ctx) {
     case 1:
       return `
         <article class="demo-outcomes-slide" data-slide="1">
+          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--social">
             <div class="outcomes-social-card">
               <div class="outcomes-social-card__head">
@@ -3063,6 +3070,7 @@ function buildOutcomesSlideHtml(index, ctx) {
     case 2:
       return `
         <article class="demo-outcomes-slide" data-slide="2">
+          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--google">
             <div class="outcomes-gbp-card">
               <div class="outcomes-gbp-card__brand">
@@ -3080,6 +3088,7 @@ function buildOutcomesSlideHtml(index, ctx) {
     case 3:
       return `
         <article class="demo-outcomes-slide" data-slide="3">
+          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--directory">
             <div class="directory-card is-demo outcomes-directory-card" role="article">
               <span class="demo-flag">Demo Listing</span>
@@ -3127,6 +3136,7 @@ function buildOutcomesSlideHtml(index, ctx) {
     default:
       return `
         <article class="demo-outcomes-slide" data-slide="4">
+          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--review">
             <div class="outcomes-review-card">
               <div class="outcomes-review-card__stars" aria-hidden="true">★★★★★</div>
@@ -3174,18 +3184,10 @@ function updateOutcomesSlideshowUi() {
   });
 
   safeText('demoOutcomesSlideCounter', `${index + 1} of ${total}`);
-  safeText('demoOutcomesSlideLabel', OUTCOMES_SLIDE_LABELS[index] || '');
 
-  const isLast = index >= total - 1;
-  const nextBtn = $('demoOutcomesNextCta');
   const startFree = $('demoOutcomesStartFreeCta') || $('demoOutcomesFinishCta');
-  if (nextBtn) {
-    nextBtn.hidden = isLast;
-    nextBtn.disabled = isLast;
-    nextBtn.textContent = 'Next result';
-  }
   if (startFree) {
-    startFree.classList.toggle('demo-outcomes-modal__finish--solo', isLast);
+    startFree.classList.add('demo-outcomes-modal__finish--solo');
     if (startFree.tagName === 'A') {
       startFree.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
       startFree.textContent = 'Start Free Trial';
@@ -3233,9 +3235,11 @@ function syncDemoStartFreeCtas() {
 
 function handleOutcomesModalAction(action) {
   if (action === 'next') {
-    if (outcomesSlideshow.index < outcomesSlideshow.total - 1) {
-      setOutcomesSlide(outcomesSlideshow.index + 1);
-    }
+    stepOutcomesSlide(1);
+    return;
+  }
+  if (action === 'prev') {
+    stepOutcomesSlide(-1);
     return;
   }
   if (action === 'start_free') {
@@ -3267,10 +3271,13 @@ function onOutcomesModalClick(e) {
   }
 
   // Legacy markup (cached demo/index.html)
-  if (e.target.closest('#demoOutcomesNext, #demoOutcomesPrev')) {
+  if (e.target.closest('#demoOutcomesNext, #demoOutcomesPrev, #demoOutcomesNextCta')) {
     e.preventDefault();
     e.stopPropagation();
-    if (e.target.closest('#demoOutcomesPrev')) return;
+    if (e.target.closest('#demoOutcomesPrev')) {
+      handleOutcomesModalAction('prev');
+      return;
+    }
     handleOutcomesModalAction('next');
     return;
   }
@@ -3283,13 +3290,43 @@ function onOutcomesModalClick(e) {
   }
 }
 
-function setOutcomesSlide(index, { trackAnalytics = true } = {}) {
+function stepOutcomesSlide(delta, { trackAnalytics = true, restartAuto = true } = {}) {
+  const total = outcomesSlideshow.total;
+  const next = ((outcomesSlideshow.index + delta) % total + total) % total;
+  setOutcomesSlide(next, { trackAnalytics, restartAuto });
+}
+
+function setOutcomesSlide(index, { trackAnalytics = true, restartAuto = true } = {}) {
   const clamped = Math.min(Math.max(0, index), outcomesSlideshow.total - 1);
   outcomesSlideshow.index = clamped;
   updateOutcomesSlideshowUi();
   if (trackAnalytics && outcomesSlideshow.isOpen) {
     jcpDemoTrack('demo_outcomes_slide', clamped + 1);
   }
+  if (restartAuto && outcomesSlideshow.isOpen) {
+    startOutcomesAutoRotate();
+  }
+}
+
+function stopOutcomesAutoRotate() {
+  if (outcomesSlideshow.autoTimer) {
+    clearInterval(outcomesSlideshow.autoTimer);
+    outcomesSlideshow.autoTimer = null;
+  }
+}
+
+function startOutcomesAutoRotate() {
+  stopOutcomesAutoRotate();
+  if (!outcomesSlideshow.isOpen) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  outcomesSlideshow.autoTimer = setInterval(() => {
+    if (!outcomesSlideshow.isOpen) {
+      stopOutcomesAutoRotate();
+      return;
+    }
+    stepOutcomesSlide(1, { trackAnalytics: false, restartAuto: false });
+  }, OUTCOMES_AUTO_ROTATE_MS);
 }
 
 function stopOutcomesConfetti() {
@@ -3395,7 +3432,7 @@ function openOutcomesSlideshow() {
 
   renderOutcomesSlides();
   wireOutcomesSlideshow();
-  setOutcomesSlide(0, { trackAnalytics: false });
+  setOutcomesSlide(0, { trackAnalytics: false, restartAuto: true });
 
   modal.hidden = false;
   modal.setAttribute('aria-hidden', 'false');
@@ -3441,6 +3478,7 @@ function closeOutcomesSlideshow({ keepDock = true } = {}) {
   const modal = $('demoOutcomesModal');
   if (!modal || modal.hidden) return;
 
+  stopOutcomesAutoRotate();
   stopOutcomesConfetti();
   outcomesSlideshow.isOpen = false;
   modal.classList.remove('is-visible');
@@ -3465,6 +3503,16 @@ function ensureOutcomesFooterButtons() {
   const card = modal.querySelector('.demo-outcomes-modal__card');
   if (!card) return;
 
+  // Migrate / remove legacy header subtitle (label now lives on each slide)
+  const legacySubtitle = card.querySelector('.demo-outcomes-modal__subtitle');
+  if (legacySubtitle) legacySubtitle.remove();
+
+  // Title copy migration for cached markup
+  const titleEl = $('demoOutcomesModalTitle');
+  if (titleEl && /this job ran on autopilot/i.test(titleEl.textContent || '')) {
+    titleEl.textContent = 'See what this check-in produced';
+  }
+
   let footer = card.querySelector('.demo-outcomes-modal__footer');
   if (!footer) {
     footer = document.createElement('div');
@@ -3472,38 +3520,35 @@ function ensureOutcomesFooterButtons() {
     card.appendChild(footer);
   }
 
+  // Remove legacy “Next result” footer button
+  $('demoOutcomesNextCta')?.remove();
+  footer.querySelectorAll('.demo-outcomes-modal__next').forEach((el) => el.remove());
+
+  ensureOutcomesNavButtons(card);
+
   // Migrate legacy Continue button → Start Free Trial link
   const legacyFinish = $('demoOutcomesFinishCta');
   if (legacyFinish && legacyFinish.tagName === 'BUTTON' && !$('demoOutcomesStartFreeCta')) {
     const link = document.createElement('a');
     link.id = 'demoOutcomesStartFreeCta';
-    link.className = 'btn btn-primary demo-outcomes-modal__finish';
+    link.className = 'btn btn-primary demo-outcomes-modal__finish demo-outcomes-modal__finish--solo';
     link.dataset.outcomesAction = 'start_free';
     link.textContent = 'Start Free Trial';
     link.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
     legacyFinish.replaceWith(link);
   }
 
-  if (!$('demoOutcomesNextCta')) {
-    const next = document.createElement('button');
-    next.type = 'button';
-    next.id = 'demoOutcomesNextCta';
-    next.className = 'btn btn-secondary demo-outcomes-modal__next';
-    next.dataset.outcomesAction = 'next';
-    next.textContent = 'Next result';
-    footer.insertBefore(next, footer.firstChild);
-  } else {
-    $('demoOutcomesNextCta').textContent = 'Next result';
-  }
-
   if (!$('demoOutcomesStartFreeCta') && !$('demoOutcomesFinishCta')) {
     const start = document.createElement('a');
     start.id = 'demoOutcomesStartFreeCta';
-    start.className = 'btn btn-primary demo-outcomes-modal__finish';
+    start.className = 'btn btn-primary demo-outcomes-modal__finish demo-outcomes-modal__finish--solo';
     start.dataset.outcomesAction = 'start_free';
     start.textContent = 'Start Free Trial';
     start.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
     footer.appendChild(start);
+  } else {
+    const startFree = $('demoOutcomesStartFreeCta') || $('demoOutcomesFinishCta');
+    startFree?.classList.add('demo-outcomes-modal__finish--solo');
   }
 
   if (!$('demoOutcomesMoreOptions')) {
@@ -3523,6 +3568,41 @@ function ensureOutcomesFooterButtons() {
   }
 
   syncDemoStartFreeCtas();
+}
+
+function ensureOutcomesNavButtons(card) {
+  let stage = card.querySelector('.demo-outcomes-modal__stage');
+  const viewport = $('demoOutcomesViewport');
+  if (!viewport) return;
+
+  if (!stage) {
+    stage = document.createElement('div');
+    stage.className = 'demo-outcomes-modal__stage';
+    viewport.parentNode.insertBefore(stage, viewport);
+    stage.appendChild(viewport);
+  }
+
+  if (!$('demoOutcomesPrevBtn')) {
+    const prev = document.createElement('button');
+    prev.type = 'button';
+    prev.id = 'demoOutcomesPrevBtn';
+    prev.className = 'demo-outcomes-modal__nav demo-outcomes-modal__nav--prev';
+    prev.dataset.outcomesAction = 'prev';
+    prev.setAttribute('aria-label', 'Previous result');
+    prev.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>`;
+    stage.insertBefore(prev, viewport);
+  }
+
+  if (!$('demoOutcomesNextBtn')) {
+    const next = document.createElement('button');
+    next.type = 'button';
+    next.id = 'demoOutcomesNextBtn';
+    next.className = 'demo-outcomes-modal__nav demo-outcomes-modal__nav--next';
+    next.dataset.outcomesAction = 'next';
+    next.setAttribute('aria-label', 'Next result');
+    next.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>`;
+    stage.appendChild(next);
+  }
 }
 
 function wireOutcomesSlideshow() {
@@ -3560,16 +3640,16 @@ function wireOutcomesSlideshow() {
       viewport.addEventListener('touchend', (e) => {
         const delta = e.changedTouches[0].screenX - outcomesSlideshow.touchStartX;
         if (Math.abs(delta) < 40) return;
-        if (delta < 0) setOutcomesSlide(outcomesSlideshow.index + 1);
-        else setOutcomesSlide(outcomesSlideshow.index - 1);
+        if (delta < 0) stepOutcomesSlide(1);
+        else stepOutcomesSlide(-1);
       }, { passive: true });
     }
 
     document.addEventListener('keydown', (e) => {
       if (!outcomesSlideshow.isOpen) return;
       if (e.key === 'Escape') closeOutcomesSlideshow();
-      if (e.key === 'ArrowRight') setOutcomesSlide(outcomesSlideshow.index + 1);
-      if (e.key === 'ArrowLeft') setOutcomesSlide(outcomesSlideshow.index - 1);
+      if (e.key === 'ArrowRight') stepOutcomesSlide(1);
+      if (e.key === 'ArrowLeft') stepOutcomesSlide(-1);
     });
   }
 }
