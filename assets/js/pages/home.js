@@ -882,8 +882,8 @@
                   </div>
                 </div>
                 <div class="conversion-cta">
-                  <a href="/demo" class="btn btn-primary conversion-cta-btn">
-                    See how this works for your business
+                  <a href="/demo/" class="btn btn-primary conversion-cta-btn">
+                    See It for My Business →
                   </a>
                 </div>
               </div>
@@ -900,12 +900,12 @@
                     </div>
                     <div class="conversion-stats">
                       <div class="conversion-stat-item">
-                        <div class="conversion-stat-number">100%</div>
-                        <div class="conversion-stat-label">Automated</div>
+                        <div class="conversion-stat-number">Auto</div>
+                        <div class="conversion-stat-label">Workflow</div>
                       </div>
                       <div class="conversion-stat-item">
-                        <div class="conversion-stat-number">0</div>
-                        <div class="conversion-stat-label">Extra Work</div>
+                        <div class="conversion-stat-number">1</div>
+                        <div class="conversion-stat-label">Photo</div>
                       </div>
                     </div>
                   </div>
