@@ -3946,10 +3946,25 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 
 .jcp-page-campaign .jcp-campaign-faces {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin: 0 auto 1.25rem;
+}
+
+.jcp-page-campaign .jcp-campaign-faces__stars {
+  color: #f59e0b;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  line-height: 1;
+}
+
+.jcp-page-campaign .jcp-campaign-faces__row {
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.65rem;
-  margin: 0 auto 1.25rem;
 }
 
 .jcp-page-campaign .jcp-campaign-faces img {
@@ -4537,6 +4552,7 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 .jcp-page-campaign .jcp-block-root[data-jcp-block-type="testimonials"] .rankings-header {
   text-align: center;
   margin-inline: auto;
+  max-width: 40rem;
 }
 
 .jcp-page-campaign .jcp-campaign-faces {
@@ -4545,22 +4561,56 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   margin-bottom: 1.35rem;
 }
 
+/* Tight centered testimonials block (grid + featured). */
 .jcp-page-campaign .jcp-testimonials {
+  align-self: stretch;
   width: 100%;
-  max-width: 42rem;
+  max-width: 52rem;
   margin-inline: auto;
   text-align: left;
+  box-sizing: border-box;
+}
+
+/* True 2-column grid — wins over slider-only flex when both classes apply. */
+.jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials,
+.jcp-page-campaign .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials {
+  align-self: stretch;
+  width: 100%;
+  max-width: 52rem;
+  margin-inline: auto;
 }
 
 .jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-slider,
-.jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-track {
+.jcp-page-campaign .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials-slider {
+  display: block !important;
   width: 100%;
-  max-width: 42rem;
-  margin-inline: auto;
+  max-width: none;
+  margin-inline: 0;
 }
 
-.jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-track {
-  gap: 0.75rem;
+.jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-track,
+.jcp-page-campaign .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials-track {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  overflow: visible;
+  scroll-snap-type: none;
+  flex-wrap: unset;
+  padding-block: 0;
+}
+
+.jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-card,
+.jcp-page-campaign .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials-card {
+  flex: none !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0;
+  box-sizing: border-box;
+  scroll-snap-align: unset;
+  scroll-snap-stop: unset;
 }
 
 .jcp-page-campaign .jcp-testimonials-featured {
@@ -4571,6 +4621,13 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 
 .jcp-page-campaign .jcp-testimonials-quote p {
   font-size: clamp(17px, 1.8vw, 22px);
+}
+
+@media (max-width: 700px) {
+  .jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-track,
+  .jcp-page-campaign .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials-track {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 1100px) {
@@ -5127,23 +5184,24 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   box-shadow: 0 16px 48px rgba(255, 80, 62, 0.28);
 }
 
-/* Slider-only testimonials: 2 cards visible, no featured highlight */
+/* Slider-only testimonials: 2 cards visible, no featured highlight.
+   Do not apply horizontal flex when layout=grid (both classes can coexist). */
 .jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-featured {
   display: none !important;
 }
 
-.jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials {
+.jcp-page-campaign .jcp-testimonials--slider-only:not(.jcp-testimonials--grid) .jcp-testimonials {
   max-width: 100%;
   width: 100%;
   gap: 0;
 }
 
-.jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-slider {
+.jcp-page-campaign .jcp-testimonials--slider-only:not(.jcp-testimonials--grid) .jcp-testimonials-slider {
   width: 100%;
   align-items: stretch;
 }
 
-.jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-track {
+.jcp-page-campaign .jcp-testimonials--slider-only:not(.jcp-testimonials--grid) .jcp-testimonials-track {
   display: flex;
   flex-wrap: nowrap;
   align-items: stretch;
@@ -5160,11 +5218,11 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   padding-block: 0.15rem;
 }
 
-.jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-track::-webkit-scrollbar {
+.jcp-page-campaign .jcp-testimonials--slider-only:not(.jcp-testimonials--grid) .jcp-testimonials-track::-webkit-scrollbar {
   display: none;
 }
 
-.jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-card {
+.jcp-page-campaign .jcp-testimonials--slider-only:not(.jcp-testimonials--grid) .jcp-testimonials-card {
   flex: 0 0 calc((100% - 1rem) / 2) !important;
   width: calc((100% - 1rem) / 2) !important;
   max-width: calc((100% - 1rem) / 2) !important;
@@ -5196,7 +5254,7 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
 }
 
 @media (max-width: 700px) {
-  .jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-card {
+  .jcp-page-campaign .jcp-testimonials--slider-only:not(.jcp-testimonials--grid) .jcp-testimonials-card {
     flex-basis: 100% !important;
     width: 100% !important;
     max-width: 100% !important;
