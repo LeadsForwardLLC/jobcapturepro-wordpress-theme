@@ -495,6 +495,119 @@
   margin-top: auto;
 }
 
+.jcp-home .jcp-testimonials-card-person,
+.jcp-marketing .jcp-testimonials-card-person {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: auto;
+  width: 100%;
+}
+
+.jcp-home .jcp-testimonials-card-person-text,
+.jcp-marketing .jcp-testimonials-card-person-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.jcp-home .jcp-testimonials-card-person .jcp-testimonials-card-name,
+.jcp-marketing .jcp-testimonials-card-person .jcp-testimonials-card-name {
+  margin-top: 0;
+}
+
+.jcp-home .jcp-testimonials-avatar,
+.jcp-marketing .jcp-testimonials-avatar {
+  flex: 0 0 auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #ffe4e0 0%, #ffd0c8 100%);
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jcp-home .jcp-testimonials-avatar img,
+.jcp-marketing .jcp-testimonials-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  display: block;
+}
+
+.jcp-home .jcp-testimonials-avatar__initials,
+.jcp-marketing .jcp-testimonials-avatar__initials {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: #9f1239;
+  line-height: 1;
+}
+
+.jcp-home .jcp-testimonials-cite,
+.jcp-marketing .jcp-testimonials-cite {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.jcp-home .jcp-testimonials-cite-text,
+.jcp-marketing .jcp-testimonials-cite-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.jcp-home .jcp-testimonials--grid .jcp-testimonials-slider,
+.jcp-marketing .jcp-testimonials--grid .jcp-testimonials-slider {
+  display: block;
+}
+
+.jcp-home .jcp-testimonials--grid .jcp-testimonials-nav,
+.jcp-marketing .jcp-testimonials--grid .jcp-testimonials-nav,
+.jcp-home .jcp-testimonials--grid .jcp-testimonials-dots,
+.jcp-marketing .jcp-testimonials--grid .jcp-testimonials-dots {
+  display: none !important;
+}
+
+.jcp-home .jcp-testimonials--grid .jcp-testimonials-track,
+.jcp-marketing .jcp-testimonials--grid .jcp-testimonials-track {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  overflow: visible;
+  scroll-snap-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.jcp-home .jcp-testimonials--grid .jcp-testimonials-card,
+.jcp-marketing .jcp-testimonials--grid .jcp-testimonials-card {
+  flex: none;
+  width: auto;
+  min-width: 0;
+  min-height: 12.5rem;
+  cursor: default;
+}
+
+.jcp-home .jcp-testimonials--grid .jcp-testimonials-card-quote,
+.jcp-marketing .jcp-testimonials--grid .jcp-testimonials-card-quote {
+  -webkit-line-clamp: 5;
+}
+
+@media (max-width: 700px) {
+  .jcp-home .jcp-testimonials--grid .jcp-testimonials-track,
+  .jcp-marketing .jcp-testimonials--grid .jcp-testimonials-track {
+    grid-template-columns: 1fr;
+  }
+}
+
 .jcp-home .jcp-testimonials-card-role,
 .jcp-marketing .jcp-testimonials-card-role {
   font-size: var(--jcp-font-size-xs);

@@ -19,12 +19,33 @@
     );
   }
 
+  function initials(name) {
+    var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '?';
+    var first = parts[0].charAt(0).toUpperCase();
+    var last = parts.length > 1 ? parts[parts.length - 1].charAt(0).toUpperCase() : '';
+    return first + last;
+  }
+
+  function avatar(r) {
+    var url = String(r.avatar_url || r.image_url || '').trim();
+    var mark = url
+      ? '<img src="' + esc(url) + '" alt="" width="44" height="44" loading="lazy" decoding="async" />'
+      : '<span class="jcp-testimonials-avatar__initials">' + esc(r.initials || initials(r.name)) + '</span>';
+    return '<span class="jcp-testimonials-avatar" aria-hidden="true">' + mark + '</span>';
+  }
+
   function card(r, showStars, showRoles, asButton) {
     var role = showRoles && r.role ? '<span class="jcp-testimonials-card-role">' + esc(r.role) + '</span>' : '';
     var inner =
       stars(r.rating || 5, showStars) +
       '<p class="jcp-testimonials-card-quote">' + esc(r.quote) + '</p>' +
-      '<span class="jcp-testimonials-card-name">' + esc(r.name) + '</span>' + role;
+      '<div class="jcp-testimonials-card-person">' +
+      avatar(r) +
+      '<span class="jcp-testimonials-card-person-text">' +
+      '<span class="jcp-testimonials-card-name">' + esc(r.name) + '</span>' +
+      role +
+      '</span></div>';
     if (asButton) {
       return (
         '<button type="button" class="jcp-testimonials-card" data-review-key="' + esc(key(r)) + '" aria-label="' +
@@ -42,7 +63,10 @@
     el.innerHTML =
       stars(r.rating || 5, showStars) +
       '<blockquote class="jcp-testimonials-quote"><p>' + esc(r.quote) + '</p></blockquote>' +
-      '<figcaption class="jcp-testimonials-cite"><cite class="jcp-testimonials-name">' + esc(r.name) + '</cite>' + role + '</figcaption>';
+      '<figcaption class="jcp-testimonials-cite">' +
+      avatar(r) +
+      '<span class="jcp-testimonials-cite-text"><cite class="jcp-testimonials-name">' + esc(r.name) + '</cite>' + role + '</span>' +
+      '</figcaption>';
   }
 
   function parseStore(el) {
@@ -75,6 +99,7 @@
 
     var featuredEl = root.querySelector('[data-jcp-testimonials-featured]');
     var sliderOnly = root.getAttribute('data-slider-only') === '1' || !featuredEl;
+    var isGrid = root.getAttribute('data-layout') === 'grid' || root.classList.contains('jcp-testimonials--grid');
     var dotsEl = slider.querySelector('[data-jcp-testimonials-dots]');
     var prevBtn = slider.querySelector('[data-jcp-testimonials-prev]');
     var nextBtn = slider.querySelector('[data-jcp-testimonials-next]');
@@ -86,6 +111,18 @@
       (featuredEl && featuredEl.querySelector('.jcp-testimonials-role')) ||
       track.querySelector('.jcp-testimonials-card-role')
     );
+
+    // Grid layout shows every review at once — skip carousel chrome.
+    if (isGrid) {
+      track.innerHTML = secondary().map(function (r) {
+        return card(r, showStars, showRoles, !sliderOnly);
+      }).join('');
+      if (prevBtn) prevBtn.hidden = true;
+      if (nextBtn) nextBtn.hidden = true;
+      if (dotsEl) dotsEl.hidden = true;
+      return;
+    }
+
     var autoplayOn = root.getAttribute('data-autoplay') === '1';
     var autoplayMs = Math.max(1000, parseInt(root.getAttribute('data-autoplay-ms') || '6000', 10));
     var perView = Math.max(1, parseInt(root.getAttribute('data-per-view') || (sliderOnly ? '2' : '1'), 10));

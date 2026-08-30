@@ -1548,7 +1548,7 @@ function jcp_testimonials_resolve_featured( array $reviews, string $featured_key
  * Normalize reviews for testimonials block output.
  *
  * @param array<string, mixed> $props Block props.
- * @return list<array{id:string,name:string,role:string,quote:string,rating:int}>
+ * @return list<array{id:string,name:string,role:string,quote:string,rating:int,avatar_url:string,avatar_alt:string,initials:string}>
  */
 function jcp_testimonials_normalize_reviews( array $props ): array {
 	$raw = $props['reviews'] ?? null;
@@ -1576,15 +1576,64 @@ function jcp_testimonials_normalize_reviews( array $props ): array {
 		if ( $rating > 5 ) {
 			$rating = 5;
 		}
+		$avatar = trim( (string) ( $review['avatar_url'] ?? $review['image_url'] ?? $review['photo_url'] ?? '' ) );
+		$alt    = trim( (string) ( $review['avatar_alt'] ?? $review['image_alt'] ?? '' ) );
+		if ( $alt === '' ) {
+			/* translators: %s: reviewer name. */
+			$alt = sprintf( __( 'Photo of %s', 'jcp-core' ), $name );
+		}
 		$out[] = [
-			'id'     => $id,
-			'name'   => $name,
-			'role'   => trim( (string) ( $review['role'] ?? '' ) ),
-			'quote'  => $quote,
-			'rating' => $rating,
+			'id'         => $id,
+			'name'       => $name,
+			'role'       => trim( (string) ( $review['role'] ?? '' ) ),
+			'quote'      => $quote,
+			'rating'     => $rating,
+			'avatar_url' => $avatar,
+			'avatar_alt' => $alt,
+			'initials'   => jcp_testimonials_review_initials( $name ),
 		];
 	}
 	return $out;
+}
+
+/**
+ * Build 1–2 letter initials for a reviewer name.
+ */
+function jcp_testimonials_review_initials( string $name ): string {
+	$name = trim( preg_replace( '/\s+/', ' ', $name ) ?? '' );
+	if ( $name === '' ) {
+		return '';
+	}
+	$parts = preg_split( '/\s+/', $name ) ?: [];
+	$first = isset( $parts[0][0] ) ? strtoupper( $parts[0][0] ) : '';
+	$last  = count( $parts ) > 1 && isset( $parts[ count( $parts ) - 1 ][0] )
+		? strtoupper( $parts[ count( $parts ) - 1 ][0] )
+		: '';
+	return $first . $last;
+}
+
+/**
+ * Render avatar mark for a review card / featured cite.
+ *
+ * @param array<string, mixed> $review Normalized review.
+ */
+function jcp_testimonials_render_avatar( array $review ): void {
+	$url      = trim( (string) ( $review['avatar_url'] ?? '' ) );
+	$alt      = trim( (string) ( $review['avatar_alt'] ?? '' ) );
+	$initials = trim( (string) ( $review['initials'] ?? '' ) );
+	if ( $initials === '' ) {
+		$initials = jcp_testimonials_review_initials( (string) ( $review['name'] ?? '' ) );
+	}
+	?>
+	<span class="jcp-testimonials-avatar" aria-hidden="true">
+		<?php if ( $url !== '' ) : ?>
+			<img src="<?php echo esc_url( $url ); ?>" alt="" width="44" height="44" loading="lazy" decoding="async" />
+		<?php else : ?>
+			<span class="jcp-testimonials-avatar__initials"><?php echo esc_html( $initials !== '' ? $initials : '?' ); ?></span>
+		<?php endif; ?>
+	</span>
+	<?php
+	unset( $alt ); // Alt reserved for parent accessible name; decorative avatar.
 }
 
 /**
@@ -1980,6 +2029,10 @@ function jcp_niche_render_testimonials( array $props ): void {
 	$autoplay    = ! empty( $props['autoplay'] );
 	$autoplay_ms = isset( $props['autoplay_ms'] ) ? max( 1000, (int) $props['autoplay_ms'] ) : 6000;
 	$per_view    = isset( $props['per_view'] ) ? max( 1, (int) $props['per_view'] ) : ( $show_featured ? 1 : 2 );
+	$layout      = sanitize_key( (string) ( $props['layout'] ?? 'slider' ) );
+	if ( ! in_array( $layout, [ 'slider', 'grid' ], true ) ) {
+		$layout = 'slider';
+	}
 	$show_stars  = ! array_key_exists( 'show_stars', $props ) || ! empty( $props['show_stars'] );
 	$show_roles  = ! array_key_exists( 'show_roles', $props ) || ! empty( $props['show_roles'] );
 	$eyebrow_vis = jcp_niche_field_visibility( $props, 'show_eyebrow', true );
@@ -2001,12 +2054,16 @@ function jcp_niche_render_testimonials( array $props ): void {
 	$faces_label = trim( (string) ( $props['faces_label'] ?? '' ) );
 	$store_json  = wp_json_encode( $reviews );
 	$mode_class  = $show_featured ? '' : ' jcp-testimonials--slider-only';
+	if ( $layout === 'grid' ) {
+		$mode_class .= ' jcp-testimonials--grid';
+	}
 	?>
 	<section
 		class="jcp-section rankings-section jcp-block-testimonials<?php echo esc_attr( $mode_class ); ?>"
 		id="<?php echo esc_attr( $section_id ); ?>"
 		data-jcp-testimonials
-		data-autoplay="<?php echo esc_attr( $autoplay ? '1' : '0' ); ?>"
+		data-layout="<?php echo esc_attr( $layout ); ?>"
+		data-autoplay="<?php echo esc_attr( $autoplay && $layout !== 'grid' ? '1' : '0' ); ?>"
 		data-autoplay-ms="<?php echo esc_attr( (string) $autoplay_ms ); ?>"
 		data-per-view="<?php echo esc_attr( (string) $per_view ); ?>"
 		<?php if ( $show_featured ) : ?>
@@ -2038,10 +2095,13 @@ function jcp_niche_render_testimonials( array $props ): void {
 						<p><?php echo esc_html( (string) $featured['quote'] ); ?></p>
 					</blockquote>
 					<figcaption class="jcp-testimonials-cite">
-						<cite class="jcp-testimonials-name"><?php echo esc_html( (string) $featured['name'] ); ?></cite>
-						<?php if ( $show_roles && ! empty( $featured['role'] ) ) : ?>
-							<span class="jcp-testimonials-role"><?php echo esc_html( (string) $featured['role'] ); ?></span>
-						<?php endif; ?>
+						<?php jcp_testimonials_render_avatar( $featured ); ?>
+						<span class="jcp-testimonials-cite-text">
+							<cite class="jcp-testimonials-name"><?php echo esc_html( (string) $featured['name'] ); ?></cite>
+							<?php if ( $show_roles && ! empty( $featured['role'] ) ) : ?>
+								<span class="jcp-testimonials-role"><?php echo esc_html( (string) $featured['role'] ); ?></span>
+							<?php endif; ?>
+						</span>
 					</figcaption>
 				</figure>
 				<?php endif; ?>
@@ -2074,10 +2134,15 @@ function jcp_niche_render_testimonials( array $props ): void {
 							>
 								<?php jcp_testimonials_render_stars( (int) ( $review['rating'] ?? 5 ), $show_stars ); ?>
 								<p class="jcp-testimonials-card-quote"><?php echo esc_html( (string) $review['quote'] ); ?></p>
-								<span class="jcp-testimonials-card-name"><?php echo esc_html( (string) $review['name'] ); ?></span>
-								<?php if ( $show_roles && ! empty( $review['role'] ) ) : ?>
-									<span class="jcp-testimonials-card-role"><?php echo esc_html( (string) $review['role'] ); ?></span>
-								<?php endif; ?>
+								<div class="jcp-testimonials-card-person">
+									<?php jcp_testimonials_render_avatar( $review ); ?>
+									<span class="jcp-testimonials-card-person-text">
+										<span class="jcp-testimonials-card-name"><?php echo esc_html( (string) $review['name'] ); ?></span>
+										<?php if ( $show_roles && ! empty( $review['role'] ) ) : ?>
+											<span class="jcp-testimonials-card-role"><?php echo esc_html( (string) $review['role'] ); ?></span>
+										<?php endif; ?>
+									</span>
+								</div>
 							</<?php echo $tag; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 						<?php endforeach; ?>
 					</div>

@@ -228,7 +228,8 @@
     "subheadline": "Specific feedback from people using JobCapturePro to turn completed work into public proof.",
     "featured_key": "peter-bonk",
     "show_featured": false,
-    "per_view": 3,
+    "layout": "grid",
+    "per_view": 4,
     "autoplay": false,
     "autoplay_ms": 6000,
     "show_stars": true,
@@ -258,28 +259,36 @@
         "name": "Peter Bonk",
         "role": "Marketing agency",
         "quote": "One of the easiest marketing wins we've had for an HVAC client. Techs already take photos — now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.",
-        "rating": 5
+        "rating": 5,
+        "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg",
+        "avatar_alt": "Peter Bonk"
       },
       {
         "id": "brian-hardy",
         "name": "Brian Hardy",
         "role": "Contractor",
         "quote": "Awesome — it takes my work site pictures and turns them into a marketing campaign.",
-        "rating": 5
+        "rating": 5,
+        "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-operator.jpg",
+        "avatar_alt": "Brian Hardy"
       },
       {
         "id": "trent-ellison",
         "name": "Trent Ellison",
         "role": "Home service operator",
         "quote": "Easy to use and really smart. Makes it super simple to turn completed work into useful online content — and the review side is amazing.",
-        "rating": 5
+        "rating": 5,
+        "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg",
+        "avatar_alt": "Trent Ellison"
       },
       {
         "id": "heriberto-eddie-roman",
         "name": "Heriberto Eddie Roman",
         "role": "Business owner",
         "quote": "JobCapturePro has been a game changer for my business!",
-        "rating": 5
+        "rating": 5,
+        "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
+        "avatar_alt": "Heriberto Eddie Roman"
       }
     ]
   },
