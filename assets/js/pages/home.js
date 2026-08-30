@@ -814,7 +814,7 @@
 
               <details class="faq-item">
                 <summary>Where does proof get published?</summary>
-                <p>Your proof publishes to four channels — website, Google Business Profile, social, and the JobCapturePro directory. Reviews are a fifth step: your crew presents a QR code (or sends a link) on site after the job.</p>
+                <p>One completed job can support five places: website, Google Business Profile, social, the JobCapturePro directory, and an on-site review opportunity via QR or link.</p>
               </details>
 
               <details class="faq-item">

@@ -69,7 +69,7 @@ function jcp_niche_factor_card( string $title, string $icon, string $stat_value 
 }
 
 /**
- * Hero-style meta strip (1 photo / 4 channels pattern).
+ * Hero-style meta strip (1 photo / 5 channels pattern).
  *
  * @param array<int, array<string, string>> $items       Items with value, label, detail, icon keys.
  * @param string                            $path_prefix JSON path prefix (e.g. core_mechanic).
@@ -186,7 +186,7 @@ function jcp_niche_render_step_lines( array $lines, string $path_prefix ): void 
 }
 
 /**
- * Homepage-style core mechanic row (1 photo / 4 channels / 0 busywork).
+ * Homepage-style core mechanic row (1 photo / 5 places / More jobs).
  * Uses the shared meta-stats component so layout matches the homepage hero.
  *
  * @param array<int, array<string, string>> $items       Items.

@@ -103,7 +103,7 @@ $icon = function( $name ) {
 							</span>
 							<div class="meta-copy">
 								<strong class="meta-title">1 photo</strong>
-								<span class="meta-detail">Becomes proof on every channel</span>
+								<span class="meta-detail">Starts the workflow</span>
 							</div>
 						</div>
 						<div class="meta-item meta-stat-channels">
@@ -111,8 +111,8 @@ $icon = function( $name ) {
 								<img src="<?php echo $icon('map'); ?>" class="meta-icon" alt="">
 							</span>
 							<div class="meta-copy">
-								<strong class="meta-title">4 channels</strong>
-								<span class="meta-detail">Website, Google, social & directory</span>
+								<strong class="meta-title">5 places</strong>
+								<span class="meta-detail">Web · Google · Social · Directory · Reviews</span>
 							</div>
 						</div>
 						<div class="meta-item meta-stat-busywork">
@@ -120,8 +120,8 @@ $icon = function( $name ) {
 								<img src="<?php echo $icon('clock'); ?>" class="meta-icon" alt="">
 							</span>
 							<div class="meta-copy">
-								<strong class="meta-title">0 busywork</strong>
-								<span class="meta-detail">Your crew just takes the photo</span>
+								<strong class="meta-title">More jobs</strong>
+								<span class="meta-detail">From finished work</span>
 							</div>
 						</div>
 					</div>
@@ -430,7 +430,7 @@ $icon = function( $name ) {
 					</details>
 					<details class="faq-item">
 						<summary>Where does proof get published?</summary>
-						<p>Proof publishes to four channels — website, Google Business Profile, social, and the JobCapturePro directory. Reviews are a fifth step: your crew presents a QR code (or sends a link) on site after the job.</p>
+						<p>One completed job can support five places: website, Google Business Profile, social, the JobCapturePro directory, and an on-site review opportunity via QR or link.</p>
 					</details>
 					<details class="faq-item">
 						<summary>Is this real activity or staged content?</summary>

@@ -276,11 +276,11 @@ CTA
 
 CORE MECHANIC
 1 photo
- Becomes proof on every channel
-4 channels
- Website, Google, social & directory
-0 busywork
- Your crew just takes the photo
+ Starts the workflow
+5 places
+ Web · Google · Social · Directory · Reviews
+More jobs
+ From finished work
 
 MEDIA CORE
 Headline
@@ -298,7 +298,7 @@ HOW IT WORKS
 Headline
 [H2 — 6–12 words; include keyword in this or another H2 on the page]
 Subheadline
-Four steps. One app. Zero busywork for your crew
+Four steps. One app. Built around the jobs you already finish
 
 01 Capture
 [Step one line one]
@@ -800,11 +800,11 @@ SNIP,
 		'CORE MECHANIC' => <<<'SNIP'
 CORE MECHANIC
 1 photo
- Becomes proof on every channel
-4 channels
- Website, Google, social & directory
-0 busywork
- Your crew just takes the photo
+ Starts the workflow
+5 places
+ Web · Google · Social · Directory · Reviews
+More jobs
+ From finished work
 SNIP,
 		'HOW IT WORKS' => <<<'SNIP'
 HOW IT WORKS

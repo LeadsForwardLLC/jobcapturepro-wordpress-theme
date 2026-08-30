@@ -301,9 +301,9 @@
     cta_band: { cta_primary: { label: 'Start Free Trial', url: '' }, band_key: 'cta_band_1' },
     breadcrumb: {},
     core_mechanic: [
-      { value: '1', label: 'photo', detail: 'Proof created instantly' },
-      { value: '4', label: 'channels', detail: 'website, Google, social + directory' },
-      { value: '0', label: 'busywork', detail: 'Nothing new for your crew' },
+      { value: '1', label: 'photo', detail: 'Starts the workflow' },
+      { value: '5', label: 'channels', detail: 'Published online' },
+      { value: 'More', label: 'jobs', detail: 'From finished work' },
     ],
     commission: {},
     partners: {},

@@ -130,12 +130,12 @@ function jcp_page_maybe_migrate_pages(): void {
 		}
 	}
 
-	// v1 = homepage CRO pass (CTA hierarchy, claim-safe copy, channel consistency).
+	// v2 = hero meta strip aligned with contractor-demo (1 photo / 5 places / More jobs).
 	$home_ver = (string) get_option( 'jcp_home_seed_version', '' );
-	if ( $home_ver !== '1' ) {
+	if ( $home_ver !== '2' ) {
 		$id = jcp_page_seed_home( true );
 		if ( $id > 0 ) {
-			update_option( 'jcp_home_seed_version', '1' );
+			update_option( 'jcp_home_seed_version', '2' );
 		}
 	}
 }

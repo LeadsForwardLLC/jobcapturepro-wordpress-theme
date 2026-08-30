@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Canonical balanced homepage hero meta_stats.
+ * Aligned with dummy-home.json + contractor-demo (1 photo → 5 places → more jobs).
  *
  * @return array<int, array<string, string>>
  */
@@ -20,19 +21,19 @@ function jcp_page_home_balanced_meta_stats(): array {
 		[
 			'icon'      => 'camera',
 			'label'     => '1 photo',
-			'detail'    => 'Becomes proof on every channel',
+			'detail'    => 'Starts the workflow',
 			'css_class' => 'meta-stat-photo',
 		],
 		[
 			'icon'      => 'map',
-			'label'     => '4 channels',
-			'detail'    => 'Website, Google, social & directory',
+			'label'     => '5 places',
+			'detail'    => 'Web · Google · Social · Directory · Reviews',
 			'css_class' => 'meta-stat-channels',
 		],
 		[
 			'icon'      => 'clock',
-			'label'     => '0 busywork',
-			'detail'    => 'Your crew just takes the photo',
+			'label'     => 'More jobs',
+			'detail'    => 'From finished work',
 			'css_class' => 'meta-stat-busywork',
 		],
 	];
@@ -46,6 +47,26 @@ function jcp_page_home_balanced_meta_stats(): array {
 function jcp_page_home_meta_stats_need_balance( array $stats ): bool {
 	$canonical = jcp_page_home_balanced_meta_stats();
 	if ( count( $stats ) !== count( $canonical ) ) {
+		return true;
+	}
+
+	$blob = '';
+	foreach ( $stats as $row ) {
+		if ( ! is_array( $row ) ) {
+			return true;
+		}
+		$blob .= ' ' . strtolower( trim( (string) ( $row['label'] ?? '' ) ) );
+		$blob .= ' ' . strtolower( trim( (string) ( $row['detail'] ?? '' ) ) );
+	}
+
+	// Legacy claim-heavy / 4-channel framing — force upgrade to claim-safe 5-place strip.
+	if (
+		str_contains( $blob, '4 channels' )
+		|| str_contains( $blob, '0 busywork' )
+		|| str_contains( $blob, 'becomes proof on every channel' )
+		|| str_contains( $blob, 'your crew just takes the photo' )
+		|| str_contains( $blob, 'website, google, social & directory' )
+	) {
 		return true;
 	}
 

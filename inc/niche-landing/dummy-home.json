@@ -238,7 +238,7 @@
         ]
       },
       { "q": "What exactly happens after we capture a job?", "a": "One photo or a completed job triggers an AI check-in that becomes publishable proof. It can update your website, keep your Google Business Profile active, and publish social content. Your crew then shows a QR code or sends a link so the customer can leave a review on the spot." },
-      { "q": "Where does proof get published?", "a": "Proof can publish to your website, Google Business Profile, social, and the JobCapturePro public directory. Reviews are a separate opportunity: your crew presents a QR code (or sends a link) on site after the job." },
+      { "q": "Where does proof get published?", "a": "One completed job can support five places: website, Google Business Profile, social, the JobCapturePro directory, and an on-site review opportunity via QR or link." },
       { "q": "How do reviews work?", "a": "After each job, your crew presents a QR code (or sends a review link) while the experience is fresh. That creates more review opportunities without relying on awkward office follow-ups days later." },
       { "id": "faq-integrations-locations", "q": "Can we use JobCapturePro for multiple locations?", "a": "Yes. Each location can have its own Google Business Profile and connected social accounts, with organization level management for multi location teams." },
       { "q": "What is the JobCapturePro public directory and why does it matter?", "a": "Every member gets a public directory listing that is powered by real job activity and proof. Homeowners can see who is active and credible, and companies that post consistently earn stronger placement and more trust over time." }

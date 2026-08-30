@@ -25,7 +25,7 @@ function jcp_component_chevron_svg( int $size = 16 ): void {
  *
  * Layout:
  *   [icon]  1 photo
- *           Becomes proof on every channel
+ *           Starts the workflow
  *
  * @param array<int, array<string, mixed>> $items               Stats.
  * @param string                           $path                JSON path prefix ('' = static).

@@ -80,8 +80,8 @@ function jcp_sales_tool_call_script_chapters(): array {
 		[
 			'id'            => 'engine',
 			'label'         => '05 · How it works',
-			'goal'          => 'Show the mechanism: capture → optimize → distribute (4 channels) → convert (QR review).',
-			'say'           => 'One check-in starts it. We geotag images to the actual job location, build local SEO into the content, then publish to four channels — website, Google Maps / GBP, social, directory — and your tech shows a QR for the review before leaving. Website content is optimized for local search in a way most platforms simply don’t do.',
+			'goal'          => 'Show the mechanism: capture → optimize → distribute (5 channels) → convert (QR review).',
+			'say'           => 'One check-in starts it. We geotag images to the actual job location, build local SEO into the content, then publish across five places — website, Google Maps / GBP, social, directory, and a review ask — and your tech shows a QR for the review before leaving. Website content is optimized for local search in a way most platforms simply don’t do.',
 			'say_affiliate' => 'Same story you’ll repeat: one check-in, geotagged local-SEO website content, Maps/GBP, social, directory, then a QR review ask on site. That’s why it’s easy to recommend.',
 			'say_partner'   => 'Same delivery motion for clients: one check-in, geotagged local-SEO website content, Maps/GBP, social, directory, then a QR review ask on site — tied to job completion, not spare marketing time.',
 			'ask'           => 'Would your techs rather tap one check-in, or keep doing separate posts and follow-ups after the job?',

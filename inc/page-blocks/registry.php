@@ -51,7 +51,7 @@ function jcp_block_registry(): array {
 		'core_mechanic' => [
 			'type'         => 'core_mechanic',
 			'label'        => __( 'Stat row', 'jcp-core' ),
-			'description'  => __( 'Badge stats row (e.g. 1 photo · 4 channels · 0 busywork)', 'jcp-core' ),
+			'description'  => __( 'Badge stats row (e.g. 1 photo · 5 places · More jobs)', 'jcp-core' ),
 			'category'     => 'content',
 			'legacy_key'   => 'core_mechanic',
 			'doc_sections' => [ 'CORE MECHANIC' ],
@@ -589,17 +589,17 @@ function jcp_page_default_block_props( string $type ): array {
 			[
 				'value'  => '1',
 				'label'  => 'photo',
-				'detail' => __( 'Proof created instantly', 'jcp-core' ),
+				'detail' => __( 'Starts the workflow', 'jcp-core' ),
 			],
 			[
-				'value'  => '4',
+				'value'  => '5',
 				'label'  => 'channels',
-				'detail' => __( 'website, Google, social + directory', 'jcp-core' ),
+				'detail' => __( 'Published online', 'jcp-core' ),
 			],
 			[
-				'value'  => '0',
-				'label'  => 'busywork',
-				'detail' => __( 'Nothing new for your crew', 'jcp-core' ),
+				'value'  => 'More',
+				'label'  => 'jobs',
+				'detail' => __( 'From finished work', 'jcp-core' ),
 			],
 		],
 	];
