@@ -1,11 +1,20 @@
 /**
- * Story phone caption sync + pause when offscreen / reduced motion.
+ * Story phone: one active scene at a time + caption sync.
+ * CSS owns in-scene 18s motion; JS owns which scene is visible (no stacked fades).
  */
 (function () {
   'use strict';
 
   var LOOP_MS = 18000;
-  var CAPTION_AT = [0, 0.18, 0.34, 0.52, 0.74];
+  // Windows aligned with css/components/demo-app-phone.css keyframe beats.
+  var SCENES = [
+    { id: 'home', from: 0, to: 0.16 },
+    { id: 'camera', from: 0.16, to: 0.32 },
+    { id: 'process', from: 0.32, to: 0.5 },
+    { id: 'checkin', from: 0.5, to: 0.74 },
+    { id: 'outcome', from: 0.74, to: 0.92 },
+  ];
+  var CAPTION_AT = [0, 0.16, 0.32, 0.5, 0.74];
 
   function parseCaptions(el) {
     var raw = el.getAttribute('data-captions') || '[]';
@@ -23,7 +32,7 @@
     window.setTimeout(function () {
       el.textContent = text;
       el.classList.remove('is-swapping');
-    }, 180);
+    }, 160);
   }
 
   function captionIndex(progress) {
@@ -34,6 +43,25 @@
     return idx;
   }
 
+  function sceneIdFor(progress) {
+    for (var i = 0; i < SCENES.length; i++) {
+      if (progress >= SCENES[i].from && progress < SCENES[i].to) {
+        return SCENES[i].id;
+      }
+    }
+    return 'home';
+  }
+
+  function setActiveScene(root, id) {
+    if (root.getAttribute('data-active-scene') === id) return;
+    root.setAttribute('data-active-scene', id);
+    root.querySelectorAll('[data-story-scene]').forEach(function (scene) {
+      var on = scene.getAttribute('data-story-scene') === id;
+      scene.classList.toggle('is-active', on);
+      scene.setAttribute('aria-hidden', on ? 'false' : 'true');
+    });
+  }
+
   function initStoryPhone(root) {
     if (!root || root.getAttribute('data-jcp-story-ready') === '1') return;
     root.setAttribute('data-jcp-story-ready', '1');
@@ -41,30 +69,36 @@
     var caption = root.querySelector('[data-jcp-story-caption]');
     var captions = caption ? parseCaptions(caption) : [];
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var start = performance.now();
+    var start = 0;
+    var elapsed = 0;
     var raf = 0;
     var visible = true;
-    var lastIdx = -1;
+    var lastCaption = -1;
 
     function tick(now) {
-      if (!visible || reduce || captions.length === 0) {
+      if (!visible || reduce) {
         raf = 0;
         return;
       }
-      var progress = ((now - start) % LOOP_MS) / LOOP_MS;
-      var idx = captionIndex(progress);
-      if (idx !== lastIdx) {
-        lastIdx = idx;
-        setCaption(caption, captions[idx] || captions[0]);
+      elapsed = (now - start) % LOOP_MS;
+      var progress = elapsed / LOOP_MS;
+      setActiveScene(root, sceneIdFor(progress));
+
+      if (captions.length) {
+        var idx = captionIndex(progress);
+        if (idx !== lastCaption) {
+          lastCaption = idx;
+          setCaption(caption, captions[idx] || captions[0]);
+        }
       }
       raf = window.requestAnimationFrame(tick);
     }
 
     function play() {
       if (reduce || raf) return;
-      start = performance.now() - ((performance.now() - start) % LOOP_MS);
-      raf = window.requestAnimationFrame(tick);
+      start = performance.now() - elapsed;
       root.classList.remove('is-paused');
+      raf = window.requestAnimationFrame(tick);
     }
 
     function pause() {
@@ -72,14 +106,23 @@
         window.cancelAnimationFrame(raf);
         raf = 0;
       }
+      elapsed = (performance.now() - start) % LOOP_MS;
+      if (elapsed < 0) elapsed = 0;
       root.classList.add('is-paused');
     }
 
-    if (reduce && caption && captions.length) {
-      setCaption(caption, captions[Math.min(3, captions.length - 1)]);
+    if (reduce) {
+      setActiveScene(root, 'checkin');
+      if (caption && captions.length) {
+        setCaption(caption, captions[Math.min(3, captions.length - 1)]);
+      }
       root.classList.add('is-reduced');
       return;
     }
+
+    setActiveScene(root, 'home');
+    elapsed = 0;
+    start = performance.now();
 
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(

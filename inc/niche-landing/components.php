@@ -303,7 +303,7 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 
 						<div class="demo-app-screen jcp-story-stage" aria-hidden="true">
 							<!-- Scene: home / empty -->
-							<div class="jcp-story-scene jcp-story-scene--home" data-story-scene="home">
+							<div class="jcp-story-scene jcp-story-scene--home is-active" data-story-scene="home">
 								<div class="demo-app-header">
 									<p class="demo-app-header__title"><?php esc_html_e( 'Check-ins', 'jcp-core' ); ?></p>
 								</div>

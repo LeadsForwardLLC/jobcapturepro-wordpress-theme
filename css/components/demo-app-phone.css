@@ -60,6 +60,23 @@
   color: inherit;
 }
 
+
+.jcp-story-phone__device .phone-screen,
+.jcp-story-phone__device .phone-frame,
+.demo-preview-phone-mockup .phone-screen {
+  overflow: hidden !important;
+}
+
+.jcp-story-phone__device .phone-content,
+.jcp-story-phone .phone-content {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.jcp-story-stage {
+  z-index: 1;
+}
+
 .jcp-story-phone__device .phone-screen,
 .demo-preview-phone-mockup .phone-screen {
   aspect-ratio: 9 / 19.5;
@@ -168,6 +185,8 @@
   pointer-events: none;
   user-select: none;
   overflow: hidden;
+  isolation: isolate;
+  contain: paint;
 }
 
 .demo-app-header {
@@ -315,21 +334,33 @@
 .jcp-story-scene {
   position: absolute;
   inset: 0;
+  z-index: 0;
   display: flex;
   flex-direction: column;
   opacity: 0;
+  visibility: hidden;
   pointer-events: none;
-  animation-duration: 18s;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  animation-fill-mode: both;
+  overflow: hidden;
+  background: #fff;
+  /* Nested 18s motions keep running; only one scene paints at a time. */
 }
 
-.jcp-story-scene--home { animation-name: jcpStorySceneHome; }
-.jcp-story-scene--camera { animation-name: jcpStorySceneCamera; }
-.jcp-story-scene--process { animation-name: jcpStorySceneProcess; }
-.jcp-story-scene--checkin { animation-name: jcpStorySceneCheckin; }
-.jcp-story-scene--outcome { animation-name: jcpStorySceneOutcome; }
+.jcp-story-scene:not(.is-active) {
+  content-visibility: hidden;
+}
+
+.jcp-story-scene.is-active {
+  opacity: 1;
+  visibility: visible;
+  z-index: 5;
+  content-visibility: visible;
+}
+
+.jcp-story-scene--home { background: #fff; }
+.jcp-story-scene--camera { background: #000; }
+.jcp-story-scene--process { background: #fff; }
+.jcp-story-scene--checkin { background: #fff; }
+.jcp-story-scene--outcome { background: #0b1220; }
 
 .jcp-story-hint {
   animation: jcpStoryHintPulse 18s ease-in-out infinite;
@@ -715,35 +746,6 @@
   100% { opacity: 0.55; transform: scale(0.96); }
 }
 
-@keyframes jcpStorySceneHome {
-  0%, 14% { opacity: 1; }
-  18%, 100% { opacity: 0; }
-}
-
-@keyframes jcpStorySceneCamera {
-  0%, 16% { opacity: 0; }
-  20%, 30% { opacity: 1; }
-  34%, 100% { opacity: 0; }
-}
-
-@keyframes jcpStorySceneProcess {
-  0%, 32% { opacity: 0; }
-  36%, 48% { opacity: 1; }
-  52%, 100% { opacity: 0; }
-}
-
-@keyframes jcpStorySceneCheckin {
-  0%, 50% { opacity: 0; }
-  54%, 70% { opacity: 1; }
-  76%, 100% { opacity: 0; }
-}
-
-@keyframes jcpStorySceneOutcome {
-  0%, 72% { opacity: 0; }
-  76%, 90% { opacity: 1; }
-  96%, 100% { opacity: 0; }
-}
-
 @keyframes jcpStoryHintPulse {
   0%, 4% { opacity: 1; transform: scale(1); }
   8%, 12% { opacity: 1; transform: scale(1.04); box-shadow: 0 0 0 4px rgba(255, 80, 62, 0.12); }
@@ -955,8 +957,9 @@
     animation: none !important;
   }
 
-  .jcp-story-scene { opacity: 0; }
-  .jcp-story-scene--checkin { opacity: 1; }
+  .jcp-story-scene { opacity: 0; visibility: hidden; }
+  .jcp-story-scene.is-active,
+  .jcp-story-scene--checkin.is-active { opacity: 1; visibility: visible; }
   .jcp-story-checkin-card,
   .jcp-story-checkin-card__badge,
   .jcp-story-channels-list li {
