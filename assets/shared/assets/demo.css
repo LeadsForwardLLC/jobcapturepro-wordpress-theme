@@ -5242,18 +5242,17 @@ body.jcp-guided-demo #post-demo-panel.active .post-demo-x {
 
 .post-demo-card--simple .post-demo-primary-cta {
   display: flex;
+  flex-direction: column;
   width: 100%;
   justify-content: center;
+  align-items: center;
   min-height: 52px;
   font-size: 17px;
   font-weight: 700;
   text-decoration: none;
-}
-
-.post-demo-note {
-  margin: 10px 0 16px;
-  font-size: 14px;
-  color: #6b7280;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  gap: 2px;
 }
 
 .post-demo-card--simple .post-demo-secondary-cta {
@@ -5264,7 +5263,7 @@ body.jcp-guided-demo #post-demo-panel.active .post-demo-x {
   font-size: 15px;
   font-weight: 600;
   text-decoration: none;
-  margin-top: 0;
+  margin-top: 10px;
 }
 
 .post-demo-secondary-note {
@@ -5273,8 +5272,31 @@ body.jcp-guided-demo #post-demo-panel.active .post-demo-x {
   color: #9ca3af;
 }
 
-.post-demo-card--simple .post-demo-replay {
-  width: 100%;
+.post-demo-replay-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 0 auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.post-demo-replay-link:hover {
+  color: #374151;
+}
+
+.post-demo-replay-link .lucide-icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.85;
 }
 
 body.jcp-guided-demo #post-demo-panel.active {
@@ -5414,41 +5436,3 @@ body.jcp-review-modal-open .mobile-guide-pill {
 
 
 
-/* Optional post-demo phone capture (progressive profiling) */
-.post-demo-phone-capture {
-  margin: 0 0 1.1rem;
-  text-align: left;
-}
-.post-demo-phone-label {
-  display: block;
-  font-size: 0.8125rem;
-  font-weight: 650;
-  color: #334155;
-  margin-bottom: 0.4rem;
-}
-.post-demo-phone-label span {
-  font-weight: 500;
-  color: #64748b;
-}
-.post-demo-phone-row {
-  display: flex;
-  gap: 0.5rem;
-  align-items: stretch;
-}
-.post-demo-phone-input {
-  flex: 1;
-  min-width: 0;
-  border: 1px solid #dbe3ee;
-  border-radius: 0.65rem;
-  padding: 0.65rem 0.75rem;
-  font-size: 0.9375rem;
-}
-.post-demo-phone-btn {
-  flex: 0 0 auto;
-  white-space: nowrap;
-}
-.post-demo-phone-status {
-  margin: 0.4rem 0 0;
-  font-size: 0.75rem;
-  color: #64748b;
-}
