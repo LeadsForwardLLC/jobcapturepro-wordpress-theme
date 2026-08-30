@@ -126,10 +126,16 @@ function jcp_core_enqueue_assets(): void {
             jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
             $render_deps[] = 'jcp-core-home';
             $home_ctas = [
-                'primary_text'   => 'View the live demo',
-                'primary_url'    => '/demo',
-                'secondary_text' => 'Learn how it works',
-                'secondary_url'  => '#how-it-works',
+                'primary_text'   => 'See It for My Business →',
+                'primary_url'    => '/demo/',
+                'secondary_text' => 'Start Free 14-Day Trial',
+                'secondary_url'  => function_exists( 'jcp_core_onboarding_app_url_raw' )
+                    ? jcp_core_onboarding_app_url_raw(
+                        function_exists( 'jcp_core_onboarding_utm_defaults' )
+                            ? jcp_core_onboarding_utm_defaults( 'home_hero' )
+                            : []
+                    )
+                    : 'https://app.jobcapturepro.com/onboarding',
             ];
             wp_localize_script( 'jcp-core-home', 'JCP_HOME_HERO_CTAS', $home_ctas );
         }

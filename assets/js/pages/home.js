@@ -7,11 +7,13 @@
 
   const icon = (name) => `${assetBase()}/shared/assets/icons/lucide/${name}.svg`;
 
+  const TRIAL_URL = 'https://app.jobcapturepro.com/onboarding';
+
   const defaultCtas = {
     primaryText: 'See It for My Business →',
     primaryUrl: '/demo/',
     secondaryText: 'Start Free 14-Day Trial',
-    secondaryUrl: '',
+    secondaryUrl: TRIAL_URL,
   };
 
   const useDefault = (val, defaultVal) => (val != null && String(val).trim() !== '' ? String(val).trim() : defaultVal);
@@ -22,7 +24,7 @@
       primaryText: useDefault(c.primary_text, defaultCtas.primaryText),
       primaryUrl: useDefault(c.primary_url, defaultCtas.primaryUrl),
       secondaryText: useDefault(c.secondary_text, defaultCtas.secondaryText),
-      secondaryUrl: useDefault(c.secondary_url, defaultCtas.secondaryUrl),
+      secondaryUrl: useDefault(c.secondary_url, defaultCtas.secondaryUrl) || TRIAL_URL,
     };
   };
 
@@ -148,7 +150,7 @@
                 <div class="jcp-actions directory-cta-row">
                   <div class="jcp-hero-primary-cta">
                     <a class="btn btn-primary" href="${heroCtas.primaryUrl}">${heroCtas.primaryText}</a>
-                    <span class="jcp-hero-cta-microcopy jcp-niche-trust-line">No signup. Takes under 5 mins.</span>
+                    <span class="jcp-hero-cta-microcopy jcp-niche-trust-line">Interactive 2-minute demo · No signup required</span>
                   </div>
                   <a class="btn btn-secondary" href="${heroCtas.secondaryUrl}">${heroCtas.secondaryText}</a>
                 </div>
@@ -186,7 +188,7 @@
                     <span class="hero-line hero-line-4"></span>
                     <span class="hero-line hero-line-5"></span>
                   </div>
-                  <a href="/demo" class="demo-phone-mockup hero-phone-mockup">
+                  <a href="/demo/" class="demo-phone-mockup hero-phone-mockup">
                   <div class="phone-frame hero-phone-frame">
                     <div class="phone-screen">
                       <div class="phone-content">
@@ -299,8 +301,8 @@
               </div>
             </div>
             <div class="timeline-cta">
-              <a href="#demo-preview" class="timeline-cta-link">
-                See the demo version of this flow
+              <a href="/demo/" class="timeline-cta-link">
+                See It for My Business →
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M5 12h14M13 5l7 7-7 7"/>
                 </svg>
@@ -316,27 +318,27 @@
                         <circle cx="12" cy="12" r="10"/>
                         <polygon points="10 8 16 12 10 16 10 8"/>
                       </svg>
-                      <span>Live Demo</span>
+                      <span>Interactive demo</span>
                     </div>
-                    <h3 class="demo-preview-title">See it in action</h3>
+                    <h3 class="demo-preview-title">One job photo. Proof where homeowners look.</h3>
                     <p class="demo-preview-description">
-                      Watch how JobCapturePro turns a single job photo into verified proof across Google Maps, your website, and directory listings — then ask for a review on site with a QR code.
+                      See one completed job become website proof, Google activity, social content, directory visibility, and a review opportunity.
                     </p>
                     <p class="demo-preview-cue">
                       You will see how one job becomes Google updates, website proof, directory presence, social posts, and an on-site review request.
                     </p>
                     <div class="demo-cta-wrapper">
-                      <a href="/demo" class="btn btn-primary demo-cta-primary">
+                      <a href="/demo/" class="btn btn-primary demo-cta-primary">
                         <span>See It for My Business →</span>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                           <path d="M5 12h14M13 5l7 7-7 7"/>
                         </svg>
                       </a>
-                      <p class="demo-cta-note">No signup required • Takes 2 minutes</p>
+                      <p class="demo-cta-note">Interactive 2-minute demo · No signup required</p>
                     </div>
                   </div>
                   <div class="demo-preview-visual">
-                    <a href="/demo" class="demo-phone-mockup">
+                    <a href="/demo/" class="demo-phone-mockup">
                       <div class="phone-frame">
                         <div class="phone-screen demo-phone-screen">
                           <div class="phone-content demo-phone-content">
@@ -751,8 +753,8 @@
             </div>
             <p class="directory-preview-outro">Activity earns attention. Inactive listings fade.</p>
             <div class="directory-preview-cta">
-              <a href="/demo" class="btn btn-primary directory-demo-cta">
-                <span>See how your listing looks in the demo</span>
+              <a href="/demo/" class="btn btn-primary directory-demo-cta">
+                <span>See It for My Business →</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M5 12h14M13 5l7 7-7 7"/>
                 </svg>
@@ -843,7 +845,7 @@
                 <div class="rankings-header">
                   <h2>This works when the work is real</h2>
                   <p class="rankings-subtitle">
-                    JobCapturePro is built for contractors who already complete real jobs and move on to the next one. It turns finished work into quiet, ongoing visibility so the jobs you complete today continue to bring in calls later.
+                    Built for contractors who already finish jobs and move on. Past work keeps creating more reasons for the next customer to call.
                   </p>
                 </div>
                 <div class="conversion-points">
@@ -866,7 +868,7 @@
                       </svg>
                     </div>
                     <div class="conversion-point-text">
-                      <strong>You want more calls without adding admin or marketing tasks</strong>
+                      <strong>You want more visibility without adding marketing busywork</strong>
                     </div>
                   </div>
                   <div class="conversion-point">
@@ -877,7 +879,7 @@
                       </svg>
                     </div>
                     <div class="conversion-point-text">
-                      <strong>You want past work to keep generating future work</strong>
+                      <strong>You want finished work to keep supporting future demand</strong>
                     </div>
                   </div>
                 </div>
