@@ -1577,6 +1577,9 @@ function jcp_testimonials_normalize_reviews( array $props ): array {
 			$rating = 5;
 		}
 		$avatar = trim( (string) ( $review['avatar_url'] ?? $review['image_url'] ?? $review['photo_url'] ?? '' ) );
+		if ( $avatar !== '' && function_exists( 'set_url_scheme' ) ) {
+			$avatar = set_url_scheme( $avatar, 'https' );
+		}
 		$alt    = trim( (string) ( $review['avatar_alt'] ?? $review['image_alt'] ?? '' ) );
 		if ( $alt === '' ) {
 			/* translators: %s: reviewer name. */
