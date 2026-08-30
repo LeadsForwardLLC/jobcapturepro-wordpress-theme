@@ -246,12 +246,6 @@
                             </div>
                           </div>
                         </div>
-                        <div class="phone-click-hint hero-phone-cta">
-                          <span>Try the demo</span>
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12h14M13 5l7 7-7 7"/>
-                          </svg>
-                        </div>
                       </div>
                     </div>
                   </div>

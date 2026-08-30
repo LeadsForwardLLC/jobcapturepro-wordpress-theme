@@ -224,10 +224,6 @@ function jcp_component_hero_home_visual( string $demo_url = '', string $photo_ur
 								</div>
 								<?php endforeach; ?>
 							</div>
-							<div class="phone-click-hint hero-phone-cta">
-								<span><?php echo esc_html( $cta_label ); ?></span>
-								<?php jcp_component_chevron_svg( 20 ); ?>
-							</div>
 						</div>
 					</div>
 				</div>
