@@ -4437,10 +4437,11 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   position: relative;
 }
 
+/* Z-pattern reading order: 1 TL | 2 TR / 3 BL | 4 BR */
 .jcp-problem-contrast__ring li:nth-child(1) { grid-area: 1 / 1; }
 .jcp-problem-contrast__ring li:nth-child(2) { grid-area: 1 / 2; }
-.jcp-problem-contrast__ring li:nth-child(3) { grid-area: 2 / 2; }
-.jcp-problem-contrast__ring li:nth-child(4) { grid-area: 2 / 1; }
+.jcp-problem-contrast__ring li:nth-child(3) { grid-area: 2 / 1; }
+.jcp-problem-contrast__ring li:nth-child(4) { grid-area: 2 / 2; }
 
 .jcp-problem-contrast__ring li {
   position: relative;
