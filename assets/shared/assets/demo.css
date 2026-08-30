@@ -5144,6 +5144,7 @@ body.jcp-publish-modal-open .guided-coach-backdrop {
   width: 26px;
   height: 26px;
   color: #ff503e;
+  filter: brightness(0) saturate(100%) invert(43%) sepia(72%) saturate(4208%) hue-rotate(339deg) brightness(100%) contrast(102%);
 }
 
 .demo-review-qr-copy {
