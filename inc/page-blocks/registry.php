@@ -93,6 +93,15 @@ function jcp_block_registry(): array {
 			'doc_sections' => [ 'PROOF FLOW' ],
 			'page_kinds'   => [ 'home', 'marketing' ],
 		],
+		'story_moments' => [
+			'type'         => 'story_moments',
+			'label'        => __( 'Story moments', 'jcp-core' ),
+			'description'  => __( 'Interactive publish + review beats from the demo deck', 'jcp-core' ),
+			'category'     => 'content',
+			'legacy_key'   => 'story_moments',
+			'doc_sections' => [ 'STORY MOMENTS' ],
+			'page_kinds'   => [ 'marketing', 'home' ],
+		],
 		'testimonials' => [
 			'type'         => 'testimonials',
 			'label'        => __( 'Testimonials', 'jcp-core' ),
@@ -484,6 +493,11 @@ function jcp_page_default_block_props( string $type ): array {
 			'subheadline' => '',
 			'items'       => [],
 		],
+		'story_moments' => function_exists( 'jcp_niche_story_moments_defaults' )
+			? jcp_niche_story_moments_defaults()
+			: [
+				'headline' => __( 'One finished job. Proof everywhere.', 'jcp-core' ),
+			],
 		'testimonials' => [
 			'eyebrow'          => __( 'Customer stories', 'jcp-core' ),
 			'headline'         => __( 'Trusted by contractors who already take the photos', 'jcp-core' ),

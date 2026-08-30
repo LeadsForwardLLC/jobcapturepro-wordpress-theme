@@ -1,0 +1,333 @@
+/**
+ * Story moments — campaign LP interactive deck beats.
+ */
+
+.jcp-story-moments {
+  padding: clamp(2.5rem, 5vw, 4rem) 0;
+  background:
+    radial-gradient(120% 80% at 10% 0%, rgba(255, 80, 62, 0.06), transparent 55%),
+    linear-gradient(180deg, #f8fafc 0%, #fff 42%, #f8fafc 100%);
+}
+
+.jcp-story-moments__inner {
+  max-width: 68rem;
+  margin-inline: auto;
+}
+
+.jcp-story-moments__intro {
+  text-align: center;
+  max-width: 40rem;
+  margin: 0 auto clamp(1.75rem, 4vw, 2.5rem);
+}
+
+.jcp-story-moments__eyebrow {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ff503e;
+}
+
+.jcp-story-moments__headline {
+  margin: 0 0 0.65rem;
+  font-size: clamp(1.5rem, 3.2vw, 2.15rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+.jcp-story-moments__body {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.jcp-story-moments__grid {
+  display: grid;
+  gap: clamp(1.25rem, 3vw, 1.75rem);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 900px) {
+  .jcp-story-moments__grid {
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+  }
+}
+
+.jcp-story-moment {
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  padding: clamp(1.15rem, 2.5vw, 1.5rem);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+.jcp-story-moment__title {
+  margin: 0 0 0.4rem;
+  font-size: 1.2rem;
+  line-height: 1.25;
+  color: #0f172a;
+}
+
+.jcp-story-moment__lead {
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.jcp-story-publish__photo {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 0.85rem;
+  background: #e2e8f0;
+}
+
+.jcp-story-publish__photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.jcp-story-publish__photo-label {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.jcp-story-publish__photo-label img {
+  width: 14px;
+  height: 14px;
+  filter: brightness(0) invert(1);
+}
+
+.jcp-story-publish__tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.jcp-story-publish__tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.65rem 0.7rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.jcp-story-publish__tile:hover,
+.jcp-story-publish__tile:focus-visible {
+  border-color: rgba(255, 80, 62, 0.45);
+  outline: none;
+}
+
+.jcp-story-publish__tile.is-live {
+  border-color: rgba(16, 185, 129, 0.55);
+  background: #ecfdf5;
+  transform: translateY(-1px);
+}
+
+.jcp-story-publish__tile-icon img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.jcp-story-publish__tile-label {
+  font-size: 0.85rem;
+  font-weight: 750;
+  color: #0f172a;
+}
+
+.jcp-story-publish__tile-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.jcp-story-publish__tile.is-live .jcp-story-publish__tile-status {
+  color: #059669;
+}
+
+.jcp-story-publish__preview {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: #f0fdf4;
+}
+
+.jcp-story-publish__preview[hidden] {
+  display: none !important;
+}
+
+.jcp-story-publish__preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 1;
+  object-fit: cover;
+}
+
+.jcp-story-publish__preview p {
+  margin: 0;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #065f46;
+}
+
+.jcp-story-reviews {
+  position: relative;
+  margin-bottom: 0.85rem;
+}
+
+.jcp-story-reviews__photo {
+  border-radius: 14px;
+  overflow: hidden;
+  background: #e2e8f0;
+}
+
+.jcp-story-reviews__photo img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.jcp-story-reviews__card {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  max-width: 15rem;
+  margin-left: auto;
+  padding: 0.75rem 0.85rem;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.18);
+  opacity: 0;
+  transform: translateY(10px) scale(0.96);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.jcp-story-reviews__card.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.jcp-story-reviews__qr {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.jcp-story-reviews__qr img {
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) invert(1);
+}
+
+.jcp-story-reviews__stars {
+  color: #f59e0b;
+  letter-spacing: 0.08em;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.jcp-story-reviews__card p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: #334155;
+}
+
+.jcp-story-reviews__pills {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.jcp-story-reviews__pills li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.jcp-story-reviews__pills img {
+  width: 14px;
+  height: 14px;
+}
+
+.jcp-story-moments__cta {
+  margin-top: clamp(1.5rem, 3vw, 2rem);
+  text-align: center;
+}
+
+.jcp-story-moments__cta .btn-primary {
+  min-width: min(100%, 20rem);
+}
+
+.jcp-story-moments__cta-note {
+  margin: 0.65rem 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jcp-story-publish__tile,
+  .jcp-story-reviews__card {
+    transition: none;
+  }
+
+  .jcp-story-reviews__card {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.jcp-page-campaign .jcp-block-root[data-jcp-block-type="story_moments"] {
+  opacity: 1;
+  transform: none;
+}

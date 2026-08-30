@@ -316,6 +316,9 @@ function jcp_page_get_content( int $post_id ): array {
 	if ( function_exists( 'jcp_page_upgrade_campaign_authority' ) ) {
 		$upgraded = jcp_page_upgrade_campaign_authority( $upgraded, $post_id );
 	}
+	if ( function_exists( 'jcp_page_upgrade_campaign_story_moments' ) ) {
+		$upgraded = jcp_page_upgrade_campaign_story_moments( $upgraded, $post_id );
+	}
 	if ( function_exists( 'jcp_page_upgrade_start_free_trial_cta_labels' ) ) {
 		$upgraded = jcp_page_upgrade_start_free_trial_cta_labels( $upgraded, $post_id );
 	}

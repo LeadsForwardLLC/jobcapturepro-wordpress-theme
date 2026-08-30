@@ -179,6 +179,11 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 		case 'proof_flow':
 			jcp_niche_render_proof_flow( $props );
 			break;
+		case 'story_moments':
+			if ( function_exists( 'jcp_niche_render_story_moments' ) ) {
+				jcp_niche_render_story_moments( $props, $page_key );
+			}
+			break;
 		case 'testimonials':
 			jcp_niche_render_testimonials( $props );
 			break;

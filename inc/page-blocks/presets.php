@@ -133,6 +133,7 @@ function jcp_page_presets(): array {
 				'hero',
 				'core_mechanic',
 				'benefits',
+				'story_moments',
 				'demo_preview',
 				'authority',
 				'problem',

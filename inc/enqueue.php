@@ -155,10 +155,12 @@ function jcp_core_enqueue_assets(): void {
         if ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() ) {
             // Reuse homepage hero/visual treatment (phone mockup, meta row, demo preview).
             jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-sections', 'jcp-core-hero-live-demo' ] );
+            jcp_core_enqueue_style( 'jcp-core-story-moments', 'css/components/story-moments.css', [ 'jcp-core-niche-landing' ] );
             jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
             jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [] );
             jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
             jcp_core_enqueue_script( 'jcp-core-campaign', 'js/pages/campaign.js', [], false, true );
+            jcp_core_enqueue_script( 'jcp-core-story-moments', 'js/pages/story-moments.js', [], false, true );
             // Lightweight paid LP view signal for GTM/Meta (maps to PaidLandingView).
             wp_add_inline_script(
                 'jcp-core-attribution',
