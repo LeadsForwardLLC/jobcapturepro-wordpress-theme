@@ -213,11 +213,15 @@
 
 .jcp-story-moment__result {
   margin-top: auto;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid rgba(15, 23, 42, 0.08);
   background: #f8fafc;
-  min-height: 7.5rem;
+  min-height: 10rem;
 }
 
 .jcp-story-publish__preview {
@@ -229,13 +233,13 @@
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 3 / 1;
+  aspect-ratio: 5 / 1;
   object-fit: cover;
 }
 
 .jcp-story-publish__preview p {
   margin: 0;
-  padding: 0.6rem 0.75rem;
+  padding: 0.65rem 0.8rem;
   font-size: 0.8rem;
   font-weight: 750;
   color: #9f1239;
@@ -288,9 +292,11 @@
 }
 
 .jcp-story-reviews__card {
-  display: grid;
-  gap: 0.35rem;
-  padding: 0.85rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 1rem 1.05rem;
   background: #fff;
   border-color: rgba(15, 23, 42, 0.1);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
@@ -299,31 +305,31 @@
 .jcp-story-reviews__qr {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   width: fit-content;
-  padding: 0.25rem 0.5rem;
+  padding: 0.4rem 0.7rem;
   border-radius: 999px;
   background: #0f172a;
   color: #fff;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
 .jcp-story-reviews__qr img {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   filter: brightness(0) invert(1);
 }
 
 .jcp-story-reviews__stars {
   color: #f59e0b;
   letter-spacing: 0.08em;
-  font-size: 0.85rem;
+  font-size: 0.95rem;
 }
 
 .jcp-story-reviews__card p {
   margin: 0;
-  font-size: 0.88rem;
+  font-size: 0.92rem;
   line-height: 1.4;
   color: #334155;
 }
