@@ -14,7 +14,7 @@ $logo_url = esc_url( 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCa
     </svg>
   </button>
 
-  <p class="survey-step-indicator" id="surveyStepIndicator" aria-live="polite" hidden>Quick start</p>
+  <p class="survey-step-indicator" id="surveyStepIndicator" aria-live="polite" hidden></p>
 
   <div class="survey-card survey-card--gate">
     <div class="survey-brand">
@@ -28,14 +28,14 @@ $logo_url = esc_url( 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCa
     get_template_part( 'templates/survey/desktop-handoff' );
     ?>
 
-    <div class="survey-progress is-hidden" id="surveyProgress" hidden>
+    <div class="survey-progress is-hidden" id="surveyProgress" hidden aria-hidden="true">
       <div class="survey-progress-track" aria-hidden="true">
         <span class="survey-progress-fill" id="surveyProgressFill"></span>
       </div>
       <div class="survey-progress-row">
-        <span class="survey-progress-label" id="surveyProgressText">Quick start</span>
+        <span class="survey-progress-label" id="surveyProgressText"></span>
         <div class="survey-stepper" role="tablist" aria-label="<?php esc_attr_e( 'Survey steps', 'jcp-core' ); ?>">
-          <button class="stepper-step is-active" type="button" data-step="0">1</button>
+          <button class="stepper-step is-active" type="button" data-step="0" hidden aria-hidden="true">1</button>
         </div>
       </div>
     </div>

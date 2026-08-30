@@ -5,13 +5,21 @@
  *
  * @package JCP_Core
  */
-$demo_headline = 'See JobCapturePro on your business';
-$demo_subhead  = 'Your trade + work email. Personalized demo in about 2 minutes — no credit card.';
-$demo_btn      = 'See my demo →';
+$demo_headline = 'Unlock your personalized demo';
+$demo_subhead  = 'Your trade and work email. Ready in about 2 minutes — no credit card.';
+$demo_btn      = 'Unlock my demo →';
 ?>
 <section class="survey-step active" data-step="0">
   <div class="survey-head">
-    <div class="survey-eyebrow">Online Demo</div>
+    <div class="survey-eyebrow">
+      <span class="survey-eyebrow-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="11" width="14" height="10" rx="2"/>
+          <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+        </svg>
+      </span>
+      <span><?php esc_html_e( 'Personalized demo', 'jcp-core' ); ?></span>
+    </div>
     <h1 class="survey-title"><?php echo esc_html( $demo_headline ); ?></h1>
     <p class="survey-subtitle">
       <?php echo esc_html( $demo_subhead ); ?>

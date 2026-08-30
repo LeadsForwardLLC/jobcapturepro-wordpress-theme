@@ -451,15 +451,34 @@
     }
   };
 
+  const setProgressChromeVisible = (visible) => {
+    if (!progressWrap) return;
+    if (visible) {
+      progressWrap.classList.remove('is-hidden');
+      progressWrap.hidden = false;
+      progressWrap.setAttribute('aria-hidden', 'false');
+      return;
+    }
+    progressWrap.classList.add('is-hidden');
+    progressWrap.hidden = true;
+    progressWrap.setAttribute('aria-hidden', 'true');
+    if (stepIndicator) stepIndicator.hidden = true;
+  };
+
   const updateProgress = () => {
     const total = Math.max(1, steps.length);
     const stepNum = Math.min(currentIndex + 1, total);
+    // Single-screen gate: never show step chrome / numbered badge.
+    if (total <= 1) {
+      setProgressChromeVisible(false);
+      return;
+    }
     if (progressText) {
-      progressText.textContent = total === 1 ? 'Quick start' : `Step ${stepNum} of ${total}`;
+      progressText.textContent = `Step ${stepNum} of ${total}`;
     }
     if (stepIndicator) {
-      stepIndicator.textContent = total === 1 ? 'Quick start' : `Step ${stepNum}/${total}`;
-      stepIndicator.hidden = true; // single-screen gate — no step chrome
+      stepIndicator.textContent = `Step ${stepNum}/${total}`;
+      stepIndicator.hidden = true;
     }
     if (progressFill) {
       progressFill.style.width = `${(stepNum / total) * 100}%`;
@@ -495,7 +514,7 @@
       step.classList.toggle('active', idx === index);
     });
     deckSection?.classList.remove('active');
-    progressWrap?.classList.remove('is-hidden');
+    setProgressChromeVisible(steps.length > 1);
     if (deckSkipHeader) deckSkipHeader.hidden = true;
     currentIndex = index;
     updateProgress();
@@ -671,7 +690,7 @@
   const showDeck = (startIndex = 0) => {
     steps.forEach((step) => step.classList.remove('active'));
     deckSection?.classList.add('active');
-    progressWrap?.classList.add('is-hidden');
+    setProgressChromeVisible(false);
     if (deckSkipHeader) deckSkipHeader.hidden = !isMobileSurvey();
     deckIndex = Math.min(Math.max(0, startIndex), Math.max(0, deckSlides.length - 1));
     setDeckUI();

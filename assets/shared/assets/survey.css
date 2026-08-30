@@ -31,7 +31,7 @@ body.survey-only #jcp-app {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 24px;
+  padding: 48px 24px;
   z-index: 9999;
   animation: none !important;
 }
@@ -111,7 +111,7 @@ body.survey-only #jcp-app {
   display:flex;
   align-items:center;
   justify-content:flex-start;
-  margin-bottom:18px;
+  margin: 8px 0 22px;
   order: -2;
 }
 /* Head spacing */
@@ -425,7 +425,7 @@ body.survey-only #jcp-app {
   max-width: 640px;
   background: #ffffff;
   border-radius: 0;
-  padding: 40px 32px;
+  padding: 48px 32px 40px;
   box-shadow: none;
   border: none;
   position: relative;
@@ -447,8 +447,9 @@ body.survey-only #jcp-app {
   order: -1;
 }
 
-.survey-progress.is-hidden {
-  display: none;
+.survey-progress.is-hidden,
+.survey-progress[hidden] {
+  display: none !important;
 }
 
 .survey-progress-track {
@@ -519,7 +520,30 @@ body.survey-only #jcp-app {
 
 /* Typography */
 .survey-eyebrow {
-  display: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0 0 10px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.survey-eyebrow-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 0.4rem;
+  background: rgba(15, 23, 42, 0.05);
+  color: #475569;
+}
+
+.survey-eyebrow-icon svg {
+  display: block;
 }
 
 .survey-title {
@@ -1874,7 +1898,7 @@ input::-webkit-contacts-auto-fill-button {
 
 /* Brand header */
 .survey-brand {
-  margin-bottom: 18px;
+  margin: 8px 0 22px;
 }
 
 .survey-brand img {
@@ -2207,7 +2231,7 @@ input::-webkit-contacts-auto-fill-button {
     border-radius: 0;
     box-shadow: none;
     padding:
-      max(52px, calc(env(safe-area-inset-top, 0px) + 44px))
+      max(28px, calc(env(safe-area-inset-top, 0px) + 20px))
       max(16px, env(safe-area-inset-right, 0px))
       max(16px, calc(env(safe-area-inset-bottom, 0px) + 12px))
       max(16px, env(safe-area-inset-left, 0px));
@@ -2233,8 +2257,22 @@ input::-webkit-contacts-auto-fill-button {
     display: none;
   }
 
+  /* Gate keeps the logo; deck hides it (chrome uses step indicator). */
   .survey-brand {
     display: none;
+  }
+
+  .survey-card--gate:not(:has(.survey-deck.active)) .survey-brand {
+    display: flex;
+    align-items: center;
+    margin: 4px 0 20px;
+    padding-right: 64px; /* clear close button */
+    min-height: 40px;
+  }
+
+  .survey-card--gate:not(:has(.survey-deck.active)) .survey-brand img {
+    height: 32px;
+    width: auto;
   }
 
   .hide-mobile-survey,
@@ -2258,6 +2296,12 @@ input::-webkit-contacts-auto-fill-button {
   }
 
   .survey-step-indicator[hidden] {
+    display: none !important;
+  }
+
+  /* Gate: no step indicator chrome. */
+  .survey-card--gate:not(:has(.survey-deck.active)) ~ .survey-step-indicator,
+  .survey-overlay:has(.survey-card--gate:not(:has(.survey-deck.active))) .survey-step-indicator {
     display: none !important;
   }
 
@@ -2300,6 +2344,11 @@ input::-webkit-contacts-auto-fill-button {
     pointer-events: none;
   }
 
+  .survey-progress.is-hidden,
+  .survey-progress[hidden] {
+    display: none !important;
+  }
+
   .survey-progress-track {
     display: block;
     height: 3px;
@@ -2313,13 +2362,14 @@ input::-webkit-contacts-auto-fill-button {
   }
 
   .survey-eyebrow {
-    display: none;
+    display: inline-flex;
+    margin-bottom: 8px;
   }
 
   .survey-head {
     margin-bottom: 12px;
-    margin-top: 8px;
-    padding-right: 60px;
+    margin-top: 0;
+    padding-right: 0;
   }
 
   .survey-title {
@@ -2697,6 +2747,7 @@ input::-webkit-contacts-auto-fill-button {
 /* Single-screen demo gate */
 .survey-card--gate {
   max-width: 560px;
+  padding-top: 52px;
 }
 .survey-gate-optional {
   margin-top: 0.15rem;
@@ -2723,5 +2774,15 @@ input::-webkit-contacts-auto-fill-button {
 @media (min-width: 720px) {
   .survey-proof--compact .survey-proof-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 768px) {
+  .survey-card--gate {
+    padding-top: max(24px, calc(env(safe-area-inset-top, 0px) + 18px));
+  }
+  .survey-overlay:has(.survey-card--gate:not(:has(.survey-deck.active))) .survey-close {
+    top: max(16px, calc(env(safe-area-inset-top, 0px) + 12px));
+    width: 44px;
+    height: 44px;
   }
 }
