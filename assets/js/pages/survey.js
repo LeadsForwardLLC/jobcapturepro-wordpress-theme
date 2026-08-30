@@ -45,15 +45,159 @@
   const BUSINESS_TYPE_OTHER = 'other';
   const REFERRAL_SOURCE_OTHER = 'Other';
 
-  const syncNicheOtherField = () => {
-    const wrap = document.getElementById('nicheOtherWrap');
-    const otherInput = document.getElementById('nicheOther');
-    const isOther = getValue('niche') === BUSINESS_TYPE_OTHER;
-    if (wrap) wrap.hidden = !isOther;
-    if (otherInput) {
-      otherInput.required = isOther;
-      if (!isOther) otherInput.value = '';
+  const loadBusinessTypeOptions = () => {
+    const el = document.getElementById('jcpBusinessTypeOptions');
+    if (!el) return [];
+    try {
+      const parsed = JSON.parse(el.textContent || '[]');
+      return Array.isArray(parsed) ? parsed.filter((o) => o && o.value && o.label) : [];
+    } catch (e) {
+      return [];
     }
+  };
+
+  const businessTypeOptions = loadBusinessTypeOptions();
+  const nicheSearchEl = document.getElementById('nicheSearch');
+  const nicheHiddenEl = document.getElementById('niche');
+  const nicheOtherEl = document.getElementById('nicheOther');
+  const nicheListboxEl = document.getElementById('nicheListbox');
+  let nicheActiveIndex = -1;
+  let nicheListOpen = false;
+
+  const findBusinessTypeOption = (raw) => {
+    const q = String(raw || '').trim().toLowerCase();
+    if (!q) return null;
+    return businessTypeOptions.find(
+      (o) => String(o.value).toLowerCase() === q || String(o.label).toLowerCase() === q
+    ) || null;
+  };
+
+  const filterBusinessTypeOptions = (query) => {
+    const q = String(query || '').trim().toLowerCase();
+    if (!q) return businessTypeOptions.slice(0, 40);
+    const starts = [];
+    const contains = [];
+    businessTypeOptions.forEach((opt) => {
+      const label = String(opt.label || '').toLowerCase();
+      const value = String(opt.value || '').toLowerCase();
+      if (label.startsWith(q) || value.startsWith(q)) {
+        starts.push(opt);
+      } else if (label.includes(q) || value.includes(q)) {
+        contains.push(opt);
+      }
+    });
+    return starts.concat(contains).slice(0, 40);
+  };
+
+  const setNicheFields = (slug, otherText, displayText) => {
+    if (nicheHiddenEl) nicheHiddenEl.value = slug || '';
+    if (nicheOtherEl) nicheOtherEl.value = otherText || '';
+    if (nicheSearchEl && displayText != null) nicheSearchEl.value = displayText;
+  };
+
+  const closeNicheList = () => {
+    nicheListOpen = false;
+    nicheActiveIndex = -1;
+    if (nicheListboxEl) {
+      nicheListboxEl.hidden = true;
+      nicheListboxEl.innerHTML = '';
+    }
+    if (nicheSearchEl) {
+      nicheSearchEl.setAttribute('aria-expanded', 'false');
+      nicheSearchEl.removeAttribute('aria-activedescendant');
+    }
+  };
+
+  const updateNicheActiveOption = () => {
+    if (!nicheListboxEl) return;
+    const options = Array.from(nicheListboxEl.querySelectorAll('[role="option"]'));
+    options.forEach((opt, idx) => {
+      const active = idx === nicheActiveIndex;
+      opt.setAttribute('aria-selected', active ? 'true' : 'false');
+      opt.classList.toggle('is-active', active);
+      if (active) {
+        nicheSearchEl?.setAttribute('aria-activedescendant', opt.id);
+        opt.scrollIntoView({ block: 'nearest' });
+      }
+    });
+    if (nicheActiveIndex < 0) {
+      nicheSearchEl?.removeAttribute('aria-activedescendant');
+    }
+  };
+
+  const selectBusinessTypeOption = (opt) => {
+    if (!opt) return;
+    if (String(opt.value) === BUSINESS_TYPE_OTHER) {
+      setNicheFields(BUSINESS_TYPE_OTHER, '', '');
+      if (nicheSearchEl) {
+        nicheSearchEl.placeholder = 'Describe your trade…';
+        nicheSearchEl.focus();
+      }
+    } else {
+      setNicheFields(opt.value, '', opt.label);
+      if (nicheSearchEl) {
+        nicheSearchEl.placeholder = 'Start typing your trade…';
+      }
+    }
+    closeNicheList();
+    setHandoffStatus('');
+    scheduleSaveProgress();
+  };
+
+  const commitNicheFromSearch = () => {
+    const typed = nicheSearchEl ? nicheSearchEl.value.trim() : '';
+    if (!typed) {
+      setNicheFields('', '', typed);
+      return;
+    }
+    const match = findBusinessTypeOption(typed);
+    if (match && String(match.value) !== BUSINESS_TYPE_OTHER) {
+      setNicheFields(match.value, '', match.label);
+      return;
+    }
+    if (match && String(match.value) === BUSINESS_TYPE_OTHER) {
+      // Exact "Other" label/value without a custom description — prompt for detail.
+      setNicheFields(BUSINESS_TYPE_OTHER, '', '');
+      return;
+    }
+    setNicheFields(BUSINESS_TYPE_OTHER, typed, typed);
+  };
+
+  const openNicheList = (query) => {
+    if (!nicheListboxEl || !nicheSearchEl) return;
+    const matches = filterBusinessTypeOptions(query);
+    nicheListboxEl.innerHTML = '';
+    if (!matches.length) {
+      closeNicheList();
+      return;
+    }
+    matches.forEach((opt, idx) => {
+      const li = document.createElement('li');
+      li.id = `niche-option-${idx}`;
+      li.setAttribute('role', 'option');
+      li.setAttribute('aria-selected', 'false');
+      li.className = 'survey-combobox__option';
+      li.dataset.value = opt.value;
+      li.textContent = opt.label;
+      if (opt.group) {
+        li.dataset.group = opt.group;
+      }
+      li.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        selectBusinessTypeOption(opt);
+      });
+      nicheListboxEl.appendChild(li);
+    });
+    nicheListboxEl.hidden = false;
+    nicheListOpen = true;
+    nicheActiveIndex = 0;
+    nicheSearchEl.setAttribute('aria-expanded', 'true');
+    updateNicheActiveOption();
+  };
+
+  const syncNicheOtherField = () => {
+    // Combobox: custom text lives in #nicheSearch / #nicheOther; no secondary field.
+    commitNicheFromSearch();
   };
 
   const syncReferralSourceOtherField = () => {
@@ -78,6 +222,7 @@
   };
 
   const getBusinessTypeValue = () => {
+    commitNicheFromSearch();
     const selected = getValue('niche');
     if (selected === BUSINESS_TYPE_OTHER) {
       return getValue('nicheOther');
@@ -86,30 +231,31 @@
   };
 
   const getBusinessTypeLabel = () => {
-    const nicheSelect = document.getElementById('niche');
-    if (!nicheSelect || !nicheSelect.value) return '';
-    if (nicheSelect.value === BUSINESS_TYPE_OTHER) {
+    commitNicheFromSearch();
+    const selected = getValue('niche');
+    if (!selected) return '';
+    if (selected === BUSINESS_TYPE_OTHER) {
       return getValue('nicheOther');
     }
-    const option = nicheSelect.options[nicheSelect.selectedIndex];
-    return option ? option.text.trim() : '';
+    const match = businessTypeOptions.find((o) => o.value === selected);
+    return match ? String(match.label).trim() : getValue('nicheSearch');
   };
 
   const setBusinessTypeFromStored = (storedType) => {
-    const nicheEl = document.getElementById('niche');
-    const nicheOtherEl = document.getElementById('nicheOther');
-    if (!nicheEl || storedType == null) return;
+    if (storedType == null) return;
     const raw = String(storedType).trim();
     if (!raw) return;
-    const hasOption = Array.from(nicheEl.options).some((opt) => opt.value === raw);
-    if (hasOption) {
-      nicheEl.value = raw;
-      if (nicheOtherEl) nicheOtherEl.value = '';
-    } else {
-      nicheEl.value = BUSINESS_TYPE_OTHER;
-      if (nicheOtherEl) nicheOtherEl.value = raw;
+    const byValue = businessTypeOptions.find((o) => o.value === raw);
+    if (byValue && byValue.value !== BUSINESS_TYPE_OTHER) {
+      setNicheFields(byValue.value, '', byValue.label);
+      return;
     }
-    syncNicheOtherField();
+    const byLabel = findBusinessTypeOption(raw);
+    if (byLabel && byLabel.value !== BUSINESS_TYPE_OTHER) {
+      setNicheFields(byLabel.value, '', byLabel.label);
+      return;
+    }
+    setNicheFields(BUSINESS_TYPE_OTHER, raw, raw);
   };
 
   const getAttributionPayload = () => (
@@ -123,18 +269,21 @@
   const INTAKE_COMPLETE_KEY = 'jcp_demo_intake_complete';
   const DEMO_SESSION_KEY = 'jcp_demo_session_id';
 
-  const getFormSnapshot = () => ({
-    businessName: getValue('businessName'),
-    niche: getValue('niche'),
-    nicheOther: getValue('nicheOther'),
-    firstName: getValue('firstName'),
-    lastName: getValue('lastName'),
-    email: getValue('email'),
-    phone: getValue('phone'),
-    referralSource: getValue('referralSource'),
-    referralSourceOther: getValue('referralSourceOther'),
-    goals: Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || []).map((input) => input.value),
-  });
+  const getFormSnapshot = () => {
+    commitNicheFromSearch();
+    return {
+      businessName: getValue('businessName'),
+      niche: getValue('niche'),
+      nicheOther: getValue('nicheOther'),
+      firstName: getValue('firstName'),
+      lastName: getValue('lastName'),
+      email: getValue('email'),
+      phone: getValue('phone'),
+      referralSource: getValue('referralSource'),
+      referralSourceOther: getValue('referralSourceOther'),
+      goals: Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || []).map((input) => input.value),
+    };
+  };
 
   const applyFormSnapshot = (form) => {
     if (!form || typeof form !== 'object') return;
@@ -146,8 +295,8 @@
     };
     setField('businessName', form.businessName);
     if (form.niche === BUSINESS_TYPE_OTHER) {
-      setField('niche', BUSINESS_TYPE_OTHER);
-      setField('nicheOther', form.nicheOther);
+      const other = (form.nicheOther || '').trim();
+      setNicheFields(BUSINESS_TYPE_OTHER, other, other);
     } else if (form.niche) {
       setBusinessTypeFromStored(form.niche);
     }
@@ -730,20 +879,24 @@
 
   /** Single-screen gate: trade + work email required. */
   const validateGate = () => {
+    commitNicheFromSearch();
     const nicheSelect = getValue('niche');
     const businessType = getBusinessTypeValue();
     const emailInput = document.getElementById('email');
     const email = getValue('email');
-    if (!nicheSelect) {
-      alert('Please choose your business type to personalize the demo.');
-      document.getElementById('niche')?.focus();
+    if (!nicheSelect && !getValue('nicheSearch')) {
+      alert('Please choose or type your business type to personalize the demo.');
+      nicheSearchEl?.focus();
+      nicheSearchEl?.classList.add('is-error');
       return false;
     }
-    if (nicheSelect === BUSINESS_TYPE_OTHER && !businessType) {
+    if (!businessType || (nicheSelect === BUSINESS_TYPE_OTHER && !getValue('nicheOther'))) {
       alert('Please describe your business type to continue.');
-      document.getElementById('nicheOther')?.focus();
+      nicheSearchEl?.focus();
+      nicheSearchEl?.classList.add('is-error');
       return false;
     }
+    nicheSearchEl?.classList.remove('is-error');
     if (!email || !emailInput?.checkValidity()) {
       emailInput?.classList.add('is-error');
       emailInput?.focus();
@@ -997,7 +1150,7 @@
     scheduleSaveProgress();
   });
 
-  ['firstName', 'lastName', 'phone', 'businessName', 'niche', 'nicheOther', 'referralSource', 'referralSourceOther'].forEach((id) => {
+  ['firstName', 'lastName', 'phone', 'businessName', 'niche', 'nicheOther', 'nicheSearch', 'referralSource', 'referralSourceOther'].forEach((id) => {
     const el = document.getElementById(id);
     el?.addEventListener('input', () => {
       setHandoffStatus('');
@@ -1009,7 +1162,65 @@
     });
   });
 
-  document.getElementById('niche')?.addEventListener('change', syncNicheOtherField);
+  if (nicheSearchEl) {
+    nicheSearchEl.addEventListener('input', () => {
+      nicheSearchEl.classList.remove('is-error');
+      openNicheList(nicheSearchEl.value);
+    });
+    nicheSearchEl.addEventListener('focus', () => {
+      openNicheList(nicheSearchEl.value);
+    });
+    nicheSearchEl.addEventListener('blur', () => {
+      // Delay so option mousedown can select first.
+      window.setTimeout(() => {
+        commitNicheFromSearch();
+        closeNicheList();
+        scheduleSaveProgress();
+      }, 120);
+    });
+    nicheSearchEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (nicheListOpen) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeNicheList();
+        }
+        return;
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (!nicheListOpen) openNicheList(nicheSearchEl.value);
+        const count = nicheListboxEl?.querySelectorAll('[role="option"]').length || 0;
+        if (!count) return;
+        nicheActiveIndex = Math.min(count - 1, nicheActiveIndex + 1);
+        if (nicheActiveIndex < 0) nicheActiveIndex = 0;
+        updateNicheActiveOption();
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!nicheListOpen) return;
+        nicheActiveIndex = Math.max(0, nicheActiveIndex - 1);
+        updateNicheActiveOption();
+        return;
+      }
+      if (e.key === 'Enter') {
+        if (nicheListOpen && nicheActiveIndex >= 0 && nicheListboxEl) {
+          e.preventDefault();
+          const opts = Array.from(nicheListboxEl.querySelectorAll('[role="option"]'));
+          const active = opts[nicheActiveIndex];
+          if (active) {
+            const match = businessTypeOptions.find((o) => o.value === active.dataset.value);
+            if (match) selectBusinessTypeOption(match);
+          }
+        } else {
+          commitNicheFromSearch();
+          closeNicheList();
+        }
+      }
+    });
+  }
+
   document.getElementById('referralSource')?.addEventListener('change', syncReferralSourceOtherField);
 
   goalsWrap?.addEventListener('change', () => {
@@ -1037,6 +1248,10 @@
   closeBtn?.addEventListener('click', closeSurvey);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+      if (nicheListOpen) {
+        closeNicheList();
+        return;
+      }
       closeSurvey();
     }
   });

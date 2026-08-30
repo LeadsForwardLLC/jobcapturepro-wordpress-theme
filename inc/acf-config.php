@@ -322,6 +322,30 @@ function jcp_core_business_type_other_value(): string {
 }
 
 /**
+ * Flat list of business type options for selects and typeahead comboboxes.
+ *
+ * @return list<array{value:string,label:string,group:string}>
+ */
+function jcp_core_business_type_flat_options(): array {
+    $flat = [];
+    foreach ( jcp_core_early_access_default_business_type_options() as $group ) {
+        $group_label = isset( $group['label'] ) ? (string) $group['label'] : '';
+        $options     = isset( $group['options'] ) && is_array( $group['options'] ) ? $group['options'] : [];
+        foreach ( $options as $opt ) {
+            if ( empty( $opt['value'] ) || ! isset( $opt['label'] ) ) {
+                continue;
+            }
+            $flat[] = [
+                'value' => (string) $opt['value'],
+                'label' => (string) $opt['label'],
+                'group' => $group_label,
+            ];
+        }
+    }
+    return $flat;
+}
+
+/**
  * Echo <option> and <optgroup> markup for business type selects.
  *
  * @param bool $include_placeholder Whether to include the empty placeholder option.

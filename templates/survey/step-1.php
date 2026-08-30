@@ -27,27 +27,39 @@ $demo_btn      = 'Unlock my demo →';
   </div>
 
   <form class="survey-form survey-form--gate" autocomplete="on">
-    <div class="survey-field">
-      <label for="niche">Business type <span class="survey-required">*</span></label>
-      <select id="niche" class="survey-input" required>
-        <?php
-        if ( function_exists( 'jcp_core_render_business_type_select_options' ) ) {
-            jcp_core_render_business_type_select_options( true );
-        }
-        ?>
-      </select>
-    </div>
-
-    <div class="survey-field survey-field--niche-other" id="nicheOtherWrap" hidden>
-      <label for="nicheOther">Describe your business type</label>
-      <input
-        id="nicheOther"
-        type="text"
-        class="survey-input"
-        placeholder="e.g. Mobile detailing"
-        maxlength="120"
-        autocomplete="off"
-      />
+    <?php
+    $business_type_options = function_exists( 'jcp_core_business_type_flat_options' )
+      ? jcp_core_business_type_flat_options()
+      : [];
+    ?>
+    <div class="survey-field survey-combobox">
+      <label for="nicheSearch">Business type <span class="survey-required">*</span></label>
+      <div class="survey-combobox__control">
+        <input
+          id="nicheSearch"
+          type="text"
+          class="survey-input"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded="false"
+          aria-controls="nicheListbox"
+          aria-haspopup="listbox"
+          placeholder="<?php esc_attr_e( 'Start typing your trade…', 'jcp-core' ); ?>"
+          autocomplete="off"
+          maxlength="120"
+          required
+        />
+        <input type="hidden" id="niche" value="" />
+        <input type="hidden" id="nicheOther" value="" />
+        <ul
+          id="nicheListbox"
+          class="survey-combobox__list"
+          role="listbox"
+          hidden
+          aria-label="<?php esc_attr_e( 'Business type suggestions', 'jcp-core' ); ?>"
+        ></ul>
+      </div>
+      <script type="application/json" id="jcpBusinessTypeOptions"><?php echo wp_json_encode( $business_type_options ); ?></script>
     </div>
 
     <div class="survey-field">
