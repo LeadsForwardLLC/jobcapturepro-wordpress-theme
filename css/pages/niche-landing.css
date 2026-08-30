@@ -4140,6 +4140,29 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   object-fit: cover;
 }
 
+.jcp-job-flow__num {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  background: #ff503e;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 4px 12px rgba(255, 80, 62, 0.35);
+}
+
+.jcp-job-flow__step--website .jcp-job-flow__num {
+  top: 2.15rem;
+}
+
 .jcp-job-flow__badge {
   position: absolute;
   top: 0.65rem;

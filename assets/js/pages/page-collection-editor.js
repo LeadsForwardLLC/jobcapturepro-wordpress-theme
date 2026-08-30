@@ -191,9 +191,11 @@
       ? `<img src="${esc(img)}" alt="${esc(alt)}" width="480" height="360" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async" class="jcp-editable-media-image" data-jcp-path="${path}.image_url" data-jcp-media-url-path="${path}.image_url" data-jcp-media-alt-path="${path}.image_alt" data-jcp-media-types="image" />`
       : '';
     const chrome = JOB_FLOW_CHROME[mod] || '';
+    const num = `<span class="jcp-job-flow__num" aria-hidden="true">${index + 1}</span>`;
     return `
       <article class="jcp-job-flow__step jcp-job-flow__step--${esc(mod)}" data-jcp-array-item="${index}">
         <div class="jcp-job-flow__media" aria-hidden="${img ? 'false' : 'true'}">
+          ${num}
           ${badge}
           ${image}
           ${chrome}

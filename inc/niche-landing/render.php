@@ -900,9 +900,11 @@ function jcp_niche_render_benefits( array $c ): void {
 					$title = trim( (string) ( $item['title'] ?? '' ) );
 					$body  = trim( (string) ( $item['body'] ?? '' ) );
 					$mod   = sanitize_key( (string) ( $item['chrome'] ?? ( $flow_mods[ $bi ] ?? 'capture' ) ) );
+					$step  = (int) $bi + 1;
 					?>
-					<article class="jcp-job-flow__step jcp-job-flow__step--<?php echo esc_attr( $mod ); ?>" data-jcp-array-item="<?php echo esc_attr( (string) $bi ); ?>">
+					<article class="jcp-job-flow__step jcp-job-flow__step--<?php echo esc_attr( $mod ); ?>" data-jcp-array-item="<?php echo esc_attr( (string) $bi ); ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %d: step number */ __( 'Step %d', 'jcp-core' ), $step ) ); ?>">
 						<div class="jcp-job-flow__media" aria-hidden="<?php echo $img === '' ? 'true' : 'false'; ?>">
+							<span class="jcp-job-flow__num" aria-hidden="true"><?php echo esc_html( (string) $step ); ?></span>
 							<?php if ( $label !== '' ) : ?>
 								<span class="jcp-job-flow__badge"<?php jcp_niche_editable_attr( 'benefits.items.' . $bi . '.label' ); ?>><?php echo esc_html( $label ); ?></span>
 							<?php endif; ?>
