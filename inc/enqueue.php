@@ -109,7 +109,11 @@ function jcp_core_enqueue_assets(): void {
 
     // Page-specific assets
     if ( $pages['is_home'] ) {
-        jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-sections' ] );
+        // Homepage block pages reuse niche-landing section styles (authority, campaign
+        // surfaces, etc.). Must load for anonymous visitors — not only when the
+        // front-end editor is enqueued for logged-in editors.
+        jcp_core_enqueue_style( 'jcp-core-niche-landing', 'css/pages/niche-landing.css', [ 'jcp-core-sections', 'jcp-core-hero-live-demo' ] );
+        jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-sections', 'jcp-core-niche-landing' ] );
         $front_id = (int) get_option( 'page_on_front' );
         $uses_blocks = $front_id > 0 && get_post_meta( $front_id, jcp_page_content_meta_key(), true );
         if ( $uses_blocks ) {

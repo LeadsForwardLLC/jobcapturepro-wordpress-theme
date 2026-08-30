@@ -4939,10 +4939,32 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
+/* If Delay JS / blocked scripts never add .is-visible, still reveal content. */
+@keyframes jcpCampaignForceVisible {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.jcp-page-campaign .jcp-block-root:not([data-jcp-block-type="hero"]):not(.is-visible) {
+  animation: jcpCampaignForceVisible 0.45s ease 1.75s forwards;
+}
+
 .jcp-page-campaign .jcp-block-root.is-visible,
 .jcp-page-campaign .jcp-block-root[data-jcp-block-type="hero"] {
   opacity: 1;
   transform: none;
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jcp-page-campaign .jcp-block-root,
+  .jcp-page-campaign .jcp-niche-benefits--job-flow .jcp-job-flow__step {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
 }
 
 .jcp-page-campaign .jcp-niche-benefits--job-flow .jcp-job-flow__step {

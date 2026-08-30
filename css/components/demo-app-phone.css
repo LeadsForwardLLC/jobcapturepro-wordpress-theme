@@ -88,15 +88,21 @@
 /* ---- Orbiting channel chips ---- */
 
 .jcp-story-phone__orbit {
-  position: absolute;
+  position: absolute !important;
   inset: -8px -18px 40px;
   z-index: 3;
   pointer-events: none;
+  /* Never participate in flex flow if a parent forces display:flex */
+  flex: none;
+  width: auto;
+  height: auto;
 }
 
 .jcp-story-chip {
-  position: absolute;
-  display: inline-flex;
+  position: absolute !important;
+  display: inline-flex !important;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 6px;
   padding: 7px 11px;
