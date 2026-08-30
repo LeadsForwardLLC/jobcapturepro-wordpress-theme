@@ -227,7 +227,7 @@ function jcp_niche_seed_contractor_demo( bool $force_refresh = false ): int {
 			'post_status'  => 'publish',
 			'post_name'    => 'contractor-demo',
 			'post_title'   => 'See JobCapturePro On Your Business',
-			'post_excerpt' => 'Free personalized demo for contractors — turn completed jobs into proof.',
+			'post_excerpt' => 'Free personalized demo for contractors. Turn completed jobs into proof.',
 		],
 		true
 	);
@@ -447,12 +447,12 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v21 = sticky Start Demo bar + With JCP cycle + story-moments polish.
+	// v22 = dash-free campaign copy (story moments, hero, problem, testimonials).
 	$demo_ver = (string) get_option( 'jcp_contractor_demo_seed_version', '' );
-	if ( $demo_ver !== '21' || ! jcp_niche_contractor_demo_exists() ) {
-		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '21' );
+	if ( $demo_ver !== '22' || ! jcp_niche_contractor_demo_exists() ) {
+		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '22' );
 		if ( $created > 0 ) {
-			update_option( 'jcp_contractor_demo_seed_version', '21' );
+			update_option( 'jcp_contractor_demo_seed_version', '22' );
 			update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 		}
 	}
@@ -481,7 +481,7 @@ function jcp_niche_admin_seed_notice(): void {
 	update_option( 'jcp_niche_hvac_seeded', '1' );
 	update_option( 'jcp_niche_referral_seeded', '1' );
 	update_option( 'jcp_niche_contractor_demo_seeded', '1' );
-	update_option( 'jcp_contractor_demo_seed_version', '21' );
+	update_option( 'jcp_contractor_demo_seed_version', '22' );
 	wp_safe_redirect( admin_url( 'edit.php?post_type=jcp_niche_landing&jcp_seeded=1' ) );
 	exit;
 }

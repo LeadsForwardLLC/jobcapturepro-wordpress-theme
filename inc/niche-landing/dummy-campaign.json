@@ -9,7 +9,7 @@
   "campaign_landing": true,
   "seo": {
     "title": "See JobCapturePro On Your Business | Free Demo",
-    "meta_description": "Your crew already takes job photos. See how JobCapturePro turns them into website proof, Google activity, reviews, and social — in a free personalized demo.",
+    "meta_description": "Your crew already takes job photos. See how JobCapturePro turns them into website proof, Google activity, reviews, and social, in a free personalized demo.",
     "keywords": [
       "contractor marketing demo",
       "job photo marketing",
@@ -19,7 +19,7 @@
   },
   "hero": {
     "h1": "Every Finished Job Should Help Win the Next One.",
-    "subheadline": "JobCapturePro turns the photos your crew already takes into website proof, Google activity, social content and review opportunities — without adding another marketing task to your day.",
+    "subheadline": "JobCapturePro turns the photos your crew already takes into website proof, Google activity, social content and review opportunities, without adding another marketing task to your day.",
     "cta_primary": {
       "label": "See JobCapturePro On My Business",
       "url": "/demo/"
@@ -172,7 +172,7 @@
   "problem": {
     "variant": "contrast",
     "headline": "You Already Paid to Create the Proof. Then It Disappears.",
-    "subheadline": "The crew does the work. Someone takes the pictures. The customer is happy. Then the truck leaves — and most of that proof disappears into a camera roll, CRM or photo folder where your next customer may never see it.",
+    "subheadline": "The crew does the work. Someone takes the pictures. The customer is happy. Then the truck leaves, and most of that proof disappears into a camera roll, CRM or photo folder where your next customer may never see it.",
     "show_subheadline": true,
     "pain_points": [],
     "closing": "",
@@ -207,12 +207,12 @@
     "show_publish": true,
     "show_reviews": true,
     "publish_headline": "Turn finished work into public proof.",
-    "publish_body": "Tap a channel — see the same completed job show up where homeowners look.",
+    "publish_body": "Tap a channel. See the same completed job show up where homeowners look.",
     "publish_photo_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
     "publish_photo_alt": "Technician photographing a completed HVAC job",
     "publish_preview_url": "__CAMPAIGN_ASSET__/jcp-campaign-job-proof.jpg",
     "reviews_headline": "Ask while they’re still happy.",
-    "reviews_body": "Show the QR before you leave — while the experience is still fresh.",
+    "reviews_body": "Show the QR before you leave, while the experience is still fresh.",
     "reviews_photo_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg",
     "reviews_photo_alt": "Owner on site after a completed job",
     "reviews_quote": "“Tech was on time and cleaned up. 5 stars.”",
@@ -259,7 +259,7 @@
         "id": "peter-bonk",
         "name": "Peter Bonk",
         "role": "Marketing agency",
-        "quote": "One of the easiest marketing wins we've had for an HVAC client. Techs already take photos — now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.",
+        "quote": "One of the easiest marketing wins we've had for an HVAC client. Techs already take photos. Now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.",
         "rating": 5,
         "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg",
         "avatar_alt": "Peter Bonk"
@@ -268,7 +268,7 @@
         "id": "brian-hardy",
         "name": "Brian Hardy",
         "role": "Contractor",
-        "quote": "Awesome — it takes my work site pictures and turns them into a marketing campaign.",
+        "quote": "Awesome. It takes my work site pictures and turns them into a marketing campaign.",
         "rating": 5,
         "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-operator.jpg",
         "avatar_alt": "Brian Hardy"
@@ -277,7 +277,7 @@
         "id": "trent-ellison",
         "name": "Trent Ellison",
         "role": "Home service operator",
-        "quote": "Easy to use and really smart. Makes it super simple to turn completed work into useful online content — and the review side is amazing.",
+        "quote": "Easy to use and really smart. Makes it super simple to turn completed work into useful online content, and the review side is amazing.",
         "rating": 5,
         "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg",
         "avatar_alt": "Trent Ellison"

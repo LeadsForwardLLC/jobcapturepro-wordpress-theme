@@ -9,12 +9,12 @@
   "home_preview": true,
   "seo": {
     "title": "JobCapturePro Preview | One job in. Proof everywhere.",
-    "meta_description": "Your crew already takes the photos. See how JobCapturePro turns completed jobs into Maps, website, social, directory proof, and on-site review asks — then launch the interactive demo.",
+    "meta_description": "Your crew already takes the photos. See how JobCapturePro turns completed jobs into Maps, website, social, directory proof, and on-site review asks, then launch the interactive demo.",
     "keywords": ["contractor marketing", "job photo marketing", "Google Business Profile", "local SEO", "review QR"]
   },
   "hero": {
     "h1": "Your crew already took the photo.\nIt’s just dying on their phone.",
-    "subheadline": "One completed job can become Maps activity, website proof, social posts, directory presence, and an on-site review ask — without another marketing chore.",
+    "subheadline": "One completed job can become Maps activity, website proof, social posts, directory presence, and an on-site review ask, without another marketing chore.",
     "cta_primary": { "label": "Launch interactive demo", "url": "/demo/" },
     "cta_secondary": { "label": "Start Free Trial", "url": "" },
     "show_cta_secondary": true,
@@ -79,7 +79,7 @@
       },
       {
         "title": "Review ask",
-        "body": "Ask while the job is still fresh — including on-site QR.",
+        "body": "Ask while the job is still fresh, including on-site QR.",
         "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg",
         "image_alt": "Crew reviewing completed job photos on site",
         "label": "Reviews",
@@ -157,7 +157,7 @@
       { "title": "Capture", "lines": ["Crew snaps a photo in the app, or a completed job flows in from a connected workflow."] },
       { "title": "Optimize", "lines": ["JobCapturePro builds geotagged, local-ready check-in content from the job, photo, and location."] },
       { "title": "Distribute", "lines": ["Approved proof can update your website, Google, social, and directory."] },
-      { "title": "Convert", "lines": ["Ask for the review on site with a QR — while the job is still fresh. (Not “automatic reviews.”)"] }
+      { "title": "Convert", "lines": ["Ask for the review on site with a QR, while the job is still fresh. (Not “automatic reviews.”)"] }
     ]
   },
   "who_its_for": {
@@ -189,8 +189,8 @@
   },
   "testimonials": {
     "eyebrow": "From real operators",
-    "headline": "Built around real contractor workflows — not marketing theory.",
-    "subheadline": "We’re new. The product does the heavy lifting — quotes stay equal-weight, not oversized.",
+    "headline": "Built around real contractor workflows, not marketing theory.",
+    "subheadline": "We’re new. The product does the heavy lifting. Quotes stay equal-weight, not oversized.",
     "featured_key": "brian-hardy",
     "layout": "equal",
     "autoplay": true,
@@ -211,15 +211,15 @@
       },
       {
         "q": "We already have a CRM / CompanyCam. Do we need this?",
-        "a": "Keep them. Those tools manage the job. JobCapturePro publishes the proof they usually don’t — Maps, website, social, directory, and the on-site review ask."
+        "a": "Keep them. Those tools manage the job. JobCapturePro publishes the proof they usually don’t: Maps, website, social, directory, and the on-site review ask."
       },
       {
         "q": "Does this guarantee Google rankings?",
-        "a": "No. Rankings depend on many factors. JCP helps you publish consistent real-job proof that can support local visibility — it does not promise ranking outcomes."
+        "a": "No. Rankings depend on many factors. JCP helps you publish consistent real-job proof that can support local visibility. It does not promise ranking outcomes."
       },
       {
         "q": "Will techs actually use it?",
-        "a": "It’s a photo check-in — not another portal. The review ask is a QR they show before they leave."
+        "a": "It’s a photo check-in, not another portal. The review ask is a QR they show before they leave."
       },
       {
         "q": "What am I getting in the demo?",

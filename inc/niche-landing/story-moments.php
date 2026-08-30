@@ -28,12 +28,12 @@ function jcp_niche_story_moments_defaults(): array {
 		'show_publish'        => true,
 		'show_reviews'        => true,
 		'publish_headline'    => __( 'Turn finished work into public proof.', 'jcp-core' ),
-		'publish_body'        => __( 'Tap a channel — see the same completed job show up where homeowners look.', 'jcp-core' ),
+		'publish_body'        => __( 'Tap a channel. See the same completed job show up where homeowners look.', 'jcp-core' ),
 		'publish_photo_url'   => $campaign_uri . 'jcp-campaign-hvac-capture.jpg',
 		'publish_photo_alt'   => __( 'Technician photographing a completed HVAC job', 'jcp-core' ),
 		'publish_preview_url' => $campaign_uri . 'jcp-campaign-job-proof.jpg',
 		'reviews_headline'    => __( 'Ask while they’re still happy.', 'jcp-core' ),
-		'reviews_body'        => __( 'Show the QR before you leave — while the experience is still fresh.', 'jcp-core' ),
+		'reviews_body'        => __( 'Show the QR before you leave, while the experience is still fresh.', 'jcp-core' ),
 		'reviews_photo_url'   => $campaign_uri . 'jcp-campaign-face-owner.jpg',
 		'reviews_photo_alt'   => __( 'Owner on site after a completed job', 'jcp-core' ),
 		'reviews_quote'       => __( '“Tech was on time and cleaned up. 5 stars.”', 'jcp-core' ),
@@ -227,7 +227,7 @@ function jcp_niche_render_story_moments( array $props, string $page_key = '' ): 
 										<img class="jcp-sm-gbp__photo" src="<?php echo esc_url( $job_photo ); ?>" alt="" width="400" height="180" loading="lazy" decoding="async" />
 										<div class="jcp-sm-gbp__copy">
 											<strong><?php esc_html_e( 'Just finished another HVAC install in Austin', 'jcp-core' ); ?></strong>
-											<p><?php esc_html_e( 'Fresh job proof from today’s completed work — ready for homeowners nearby.', 'jcp-core' ); ?></p>
+											<p><?php esc_html_e( 'Fresh job proof from today’s completed work, ready for homeowners nearby.', 'jcp-core' ); ?></p>
 										</div>
 										<span class="jcp-sm-gbp__meta"><?php esc_html_e( 'Posted to Google · Today', 'jcp-core' ); ?></span>
 									</div>
@@ -250,7 +250,7 @@ function jcp_niche_render_story_moments( array $props, string $page_key = '' ): 
 												<span><?php esc_html_e( 'Just now · Austin, TX', 'jcp-core' ); ?></span>
 											</div>
 										</div>
-										<p class="jcp-sm-social__copy"><?php esc_html_e( 'Another job wrapped. New HVAC install done right — proof from the field.', 'jcp-core' ); ?></p>
+										<p class="jcp-sm-social__copy"><?php esc_html_e( 'Another job wrapped. New HVAC install done right. Proof from the field.', 'jcp-core' ); ?></p>
 										<img class="jcp-sm-social__photo" src="<?php echo esc_url( $job_photo ); ?>" alt="" width="400" height="200" loading="lazy" decoding="async" />
 										<div class="jcp-sm-social__reactions" aria-hidden="true">
 											<span><?php esc_html_e( 'Like', 'jcp-core' ); ?></span>

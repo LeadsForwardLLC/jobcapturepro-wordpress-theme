@@ -411,7 +411,7 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 									<div class="jcp-story-outcome__pulse" aria-hidden="true"></div>
 									<p class="jcp-story-outcome__eyebrow"><?php esc_html_e( 'What happens next', 'jcp-core' ); ?></p>
 									<p class="jcp-story-outcome__title"><?php esc_html_e( 'Customers find the work', 'jcp-core' ); ?></p>
-									<p class="jcp-story-outcome__sub"><?php esc_html_e( 'Fresh local job proof helps your business stay visible — and gives homeowners more reasons to call.', 'jcp-core' ); ?></p>
+									<p class="jcp-story-outcome__sub"><?php esc_html_e( 'Fresh local job proof helps your business stay visible, and gives homeowners more reasons to call.', 'jcp-core' ); ?></p>
 									<div class="jcp-story-outcome__lead">
 										<img src="<?php echo esc_url( jcp_core_icon( 'phone' ) ); ?>" alt="" width="18" height="18" />
 										<div>
