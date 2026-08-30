@@ -3500,8 +3500,20 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   font-weight: 500 !important;
   color: var(--jcp-color-text-muted, #64748b) !important;
   margin: 0 !important;
-  max-width: 22rem !important;
+  max-width: none !important;
   letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+@media (max-width: 420px) {
+  .jcp-page-campaign .jcp-niche-hero .jcp-hero-cta-microcopy,
+  .jcp-page-campaign .jcp-niche-hero .jcp-niche-trust-line,
+  .jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-cta-microcopy,
+  .jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-niche-trust-line,
+  .jcp-page-campaign.jcp-home .jcp-hero .jcp-niche-trust-line,
+  .jcp-page-campaign.jcp-home .jcp-hero p.jcp-niche-trust-line {
+    white-space: normal;
+  }
 }
 
 /* Meta stats: clean horizontal row under the CTA */
@@ -4392,80 +4404,124 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   background: #6ee7b7;
 }
 
+/* With JCP: compact 2×2 cycle (no rail, no dashed orphan note) */
 .jcp-problem-contrast__cycle {
   position: relative;
-  padding-right: 1.85rem;
+  padding: 0;
 }
 
-.jcp-problem-contrast__loop-rail {
+.jcp-problem-contrast__ring {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  position: relative;
+}
+
+.jcp-problem-contrast__ring li:nth-child(1) { grid-area: 1 / 1; }
+.jcp-problem-contrast__ring li:nth-child(2) { grid-area: 1 / 2; }
+.jcp-problem-contrast__ring li:nth-child(3) { grid-area: 2 / 2; }
+.jcp-problem-contrast__ring li:nth-child(4) { grid-area: 2 / 1; }
+
+.jcp-problem-contrast__ring li {
+  position: relative;
+  margin: 0;
+  min-height: 3.55rem;
+  padding: 0.7rem 0.65rem 0.7rem 2.3rem;
+  display: flex;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #a7f3d0;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.06);
+  font-size: 0.88rem;
+  font-weight: 650;
+  line-height: 1.3;
+  color: #0f172a;
+}
+
+.jcp-problem-contrast__ring li::before {
+  content: attr(data-step);
   position: absolute;
-  top: 0.75rem;
-  right: 0.15rem;
-  bottom: 2.65rem;
-  width: 1.05rem;
-  border: 2px solid #059669;
-  border-left: none;
-  border-radius: 0 0.85rem 0.85rem 0;
+  left: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 999px;
+  background: #059669;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.jcp-problem-contrast__ring li::after {
+  display: none;
+}
+
+.jcp-problem-contrast__ring::before {
+  content: "";
+  position: absolute;
+  inset: 18% 18%;
+  border: 2px solid rgba(5, 150, 105, 0.28);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.jcp-problem-contrast__ring::after {
+  content: "↻";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  width: 2.1rem;
+  height: 2.1rem;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  border-radius: 999px;
+  background: #059669;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 2.1rem;
+  text-align: center;
+  box-shadow: 0 0 0 5px #d1fae5, 0 8px 18px rgba(5, 150, 105, 0.25);
   pointer-events: none;
 }
 
-.jcp-problem-contrast__loop-rail::before {
-  content: "";
-  position: absolute;
-  top: -0.15rem;
-  left: -0.45rem;
-  width: 0;
-  height: 0;
-  border-top: 0.38rem solid transparent;
-  border-bottom: 0.38rem solid transparent;
-  border-right: 0.55rem solid #059669;
+.jcp-problem-contrast__ring li {
+  z-index: 1;
 }
 
-.jcp-problem-contrast__loop-rail::after {
-  content: "";
-  position: absolute;
-  bottom: -0.1rem;
-  left: -0.55rem;
-  width: 0.55rem;
-  height: 2px;
-  background: #059669;
-}
-
-.jcp-problem-contrast__steps--loop .is-loop-end {
+.jcp-problem-contrast__ring .is-loop-end {
   color: #047857;
-}
-
-.jcp-problem-contrast__steps--loop .is-loop-start::before {
-  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
 }
 
 .jcp-problem-contrast__loop-note {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  margin: 0.95rem 0 0;
-  padding: 0.55rem 0.7rem;
-  border-radius: 0.65rem;
-  background: rgba(5, 150, 105, 0.1);
-  border: 1px dashed rgba(5, 150, 105, 0.35);
+  justify-content: center;
+  gap: 0.35rem;
+  margin: 0.7rem 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #047857;
-  font-size: 0.82rem;
-  font-weight: 750;
-  line-height: 1.3;
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
 }
 
 .jcp-problem-contrast__loop-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 1.35rem;
-  height: 1.35rem;
-  border-radius: 999px;
-  background: #059669;
-  color: #fff;
-  font-size: 0.85rem;
-  line-height: 1;
+  display: none;
 }
 
 /* Campaign testimonials: contractor-led, less giant featured quote */
@@ -4489,7 +4545,20 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 
 .jcp-page-campaign .jcp-testimonials {
   width: 100%;
+  max-width: 42rem;
+  margin-inline: auto;
   text-align: left;
+}
+
+.jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-slider,
+.jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-track {
+  width: 100%;
+  max-width: 42rem;
+  margin-inline: auto;
+}
+
+.jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-track {
+  gap: 0.75rem;
 }
 
 .jcp-page-campaign .jcp-testimonials-featured {
@@ -4536,27 +4605,112 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   }
 }
 
-/* Campaign / landing chrome — logo only + minimal legal footer */
+/* Campaign / landing chrome — sticky logo + Start Demo on scroll */
 .jcp-landing-brandbar {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 64px;
-  padding: 0.85rem 1rem 1rem;
-  background: var(--jcp-color-bg-primary, #fff);
+  min-height: 56px;
+  padding: 0.55rem 1rem;
+  background: rgba(255, 255, 255, 0.96);
   border-bottom: 1px solid var(--jcp-color-border, #e5e7eb);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.jcp-landing-brandbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: var(--jcp-container-width, 72rem);
+  margin-inline: auto;
+  transition: justify-content 0.25s ease;
+}
+
+.jcp-landing-brandbar.is-compact .jcp-landing-brandbar__inner {
+  justify-content: space-between;
 }
 
 .jcp-landing-brandbar__link {
   display: inline-flex;
   align-items: center;
   line-height: 0;
+  flex-shrink: 0;
 }
 
 .jcp-landing-brandbar__logo {
   display: block;
-  height: 36px;
+  height: 34px;
   width: auto;
+  transition: height 0.25s ease;
+}
+
+.jcp-landing-brandbar.is-compact .jcp-landing-brandbar__logo {
+  height: 26px;
+}
+
+.jcp-landing-brandbar__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-height: 2.15rem;
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  background: #ff503e;
+  color: #fff !important;
+  font-size: 0.84rem;
+  font-weight: 750;
+  line-height: 1.2;
+  text-decoration: none;
+  opacity: 0;
+  transform: translateY(-4px) scale(0.96);
+  pointer-events: none;
+  box-shadow: 0 6px 16px rgba(255, 80, 62, 0.28);
+  transition: opacity 0.25s ease, transform 0.25s ease, background 0.2s ease;
+}
+
+.jcp-landing-brandbar.is-compact .jcp-landing-brandbar__cta {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.jcp-landing-brandbar__cta:hover,
+.jcp-landing-brandbar__cta:focus-visible {
+  background: #e64535;
+  outline: none;
+}
+
+@media (max-width: 520px) {
+  .jcp-landing-brandbar {
+    padding: 0.5rem 0.75rem;
+    min-height: 52px;
+  }
+
+  .jcp-landing-brandbar__logo {
+    height: 28px;
+  }
+
+  .jcp-landing-brandbar.is-compact .jcp-landing-brandbar__logo {
+    height: 22px;
+  }
+
+  .jcp-landing-brandbar__cta {
+    min-height: 2rem;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.78rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jcp-landing-brandbar__inner,
+  .jcp-landing-brandbar__logo,
+  .jcp-landing-brandbar__cta {
+    transition: none;
+  }
 }
 
 body.jcp-landing-chrome-hidden .jcp-footer--landing-minimal {

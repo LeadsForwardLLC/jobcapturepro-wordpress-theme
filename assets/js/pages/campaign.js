@@ -1,5 +1,5 @@
 /**
- * Campaign landing interactions — lightweight scroll reveal only.
+ * Campaign landing interactions — scroll reveal + sticky brand bar.
  * No heavy parallax; respects prefers-reduced-motion.
  */
 (function () {
@@ -46,6 +46,30 @@
     });
   }
 
+  function stickyBrandbar() {
+    var bar = document.querySelector('[data-jcp-landing-brandbar]');
+    if (!bar) return;
+
+    var threshold = 36;
+    var ticking = false;
+
+    function update() {
+      ticking = false;
+      var compact = window.scrollY > threshold;
+      if (bar.classList.contains('is-compact') === compact) return;
+      bar.classList.toggle('is-compact', compact);
+    }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(update);
+    }
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+  }
+
   function ready(fn) {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', fn);
@@ -54,5 +78,8 @@
     }
   }
 
-  ready(revealOnScroll);
+  ready(function () {
+    revealOnScroll();
+    stickyBrandbar();
+  });
 })();

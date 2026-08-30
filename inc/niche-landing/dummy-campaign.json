@@ -29,8 +29,8 @@
       "url": ""
     },
     "show_cta_secondary": false,
-    "trust_line": "Free personalized demo · About 2 minutes · No credit card",
-    "cta_microcopy": "Free personalized demo · About 2 minutes · No credit card",
+    "trust_line": "Free demo · ~2 min · No card",
+    "cta_microcopy": "Free demo · ~2 min · No card",
     "show_visual": true,
     "show_trust_line": true,
     "media_type": "phone_mockup",
@@ -131,7 +131,7 @@
       "label": "See JobCapturePro On My Business",
       "url": "/demo/"
     },
-    "cta_note": "Free personalized demo · About 2 minutes · No credit card",
+    "cta_note": "Free demo · ~2 min · No card",
     "show_cta": true,
     "section_id": "one-job-flow"
   },
@@ -161,7 +161,7 @@
       "label": "See JobCapturePro On My Business",
       "url": "/demo/"
     },
-    "cta_note": "Free personalized demo · About 2 minutes · No credit card",
+    "cta_note": "Free demo · ~2 min · No card",
     "section_id": "built-by-leadsforward",
     "show_eyebrow": true,
     "show_headline": true,
@@ -192,7 +192,7 @@
         "Published + reused",
         "Helps sell the next job"
       ],
-      "loop_note": "Loops into the next job"
+      "loop_note": "Feeds the next job"
     },
     "section_id": "problem"
   },
@@ -211,8 +211,8 @@
     "publish_photo_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
     "publish_photo_alt": "Technician photographing a completed HVAC job",
     "publish_preview_url": "__CAMPAIGN_ASSET__/jcp-campaign-job-proof.jpg",
-    "reviews_headline": "Ask for the review while the customer is still happy.",
-    "reviews_body": "Show the QR before you leave. The review request happens while the experience is still fresh.",
+    "reviews_headline": "Ask while they’re still happy.",
+    "reviews_body": "Show the QR before you leave — while the experience is still fresh.",
     "reviews_photo_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg",
     "reviews_photo_alt": "Owner on site after a completed job",
     "reviews_quote": "“Tech was on time and cleaned up. 5 stars.”",
@@ -220,7 +220,7 @@
       "label": "See JobCapturePro On My Business",
       "url": "/demo/"
     },
-    "cta_note": "Free personalized demo · About 2 minutes · No credit card",
+    "cta_note": "Free demo · ~2 min · No card",
     "show_cta": true
   },
   "testimonials": {
@@ -329,7 +329,7 @@
       "label": "See JobCapturePro On My Business",
       "url": "/demo/"
     },
-    "cta_note": "Free personalized demo · About 2 minutes · No credit card",
+    "cta_note": "Free demo · ~2 min · No card",
     "cta_footnote": "Like what you see? Try JobCapturePro free for 14 days.",
     "cta_secondary": {
       "label": "",

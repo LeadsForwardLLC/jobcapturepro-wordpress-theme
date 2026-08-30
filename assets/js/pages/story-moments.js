@@ -31,21 +31,6 @@
     showPanel(root, channel);
   }
 
-  function runSequence(root) {
-    var tiles = Array.prototype.slice.call(root.querySelectorAll('.jcp-story-publish__tile'));
-    if (!tiles.length) return;
-    var i = 0;
-    function step() {
-      if (i >= tiles.length) return;
-      activateTile(root, tiles[i]);
-      i += 1;
-      if (i < tiles.length) {
-        window.setTimeout(step, 700);
-      }
-    }
-    window.setTimeout(step, 220);
-  }
-
   function bindPublish(root) {
     activateTile(root, root.querySelector('.jcp-story-publish__tile.is-live') || root.querySelector('.jcp-story-publish__tile'));
 
@@ -77,29 +62,6 @@
       activateTile(root, tiles[next]);
       tiles[next].focus();
     });
-
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      return;
-    }
-
-    if (!('IntersectionObserver' in window)) {
-      runSequence(root);
-      return;
-    }
-
-    var started = false;
-    var io = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          if (!entry.isIntersecting || started) return;
-          started = true;
-          runSequence(root);
-          io.disconnect();
-        });
-      },
-      { threshold: 0.35 }
-    );
-    io.observe(root);
   }
 
   function init() {

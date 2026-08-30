@@ -782,7 +782,7 @@ function jcp_niche_render_problem( array $c ): void {
 						$is_with   = (string) $side['mod'] === 'with';
 						$loop_note = trim( (string) ( $side_data['loop_note'] ?? '' ) );
 						if ( $is_with && $loop_note === '' ) {
-							$loop_note = __( 'Loops into the next job', 'jcp-core' );
+							$loop_note = __( 'Feeds the next job', 'jcp-core' );
 						}
 						if ( $label === '' && $steps === [] ) {
 							continue;
@@ -795,8 +795,7 @@ function jcp_niche_render_problem( array $c ): void {
 							<?php endif; ?>
 							<?php if ( $is_with ) : ?>
 								<div class="jcp-problem-contrast__cycle">
-									<span class="jcp-problem-contrast__loop-rail" aria-hidden="true"></span>
-									<ol class="jcp-problem-contrast__steps jcp-problem-contrast__steps--loop">
+									<ol class="jcp-problem-contrast__ring">
 										<?php foreach ( $steps as $si => $step ) : ?>
 											<li
 												class="<?php echo 0 === (int) $si ? 'is-loop-start' : ''; ?><?php echo (int) $si === $step_count - 1 ? ' is-loop-end' : ''; ?>"

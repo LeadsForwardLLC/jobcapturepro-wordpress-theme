@@ -32,8 +32,8 @@ function jcp_niche_story_moments_defaults(): array {
 		'publish_photo_url'   => $campaign_uri . 'jcp-campaign-hvac-capture.jpg',
 		'publish_photo_alt'   => __( 'Technician photographing a completed HVAC job', 'jcp-core' ),
 		'publish_preview_url' => $campaign_uri . 'jcp-campaign-job-proof.jpg',
-		'reviews_headline'    => __( 'Ask for the review while the customer is still happy.', 'jcp-core' ),
-		'reviews_body'        => __( 'Show the QR before you leave. The review request happens while the experience is still fresh.', 'jcp-core' ),
+		'reviews_headline'    => __( 'Ask while they’re still happy.', 'jcp-core' ),
+		'reviews_body'        => __( 'Show the QR before you leave — while the experience is still fresh.', 'jcp-core' ),
 		'reviews_photo_url'   => $campaign_uri . 'jcp-campaign-face-owner.jpg',
 		'reviews_photo_alt'   => __( 'Owner on site after a completed job', 'jcp-core' ),
 		'reviews_quote'       => __( '“Tech was on time and cleaned up. 5 stars.”', 'jcp-core' ),
@@ -41,7 +41,7 @@ function jcp_niche_story_moments_defaults(): array {
 			'label' => __( 'See JobCapturePro On My Business', 'jcp-core' ),
 			'url'   => '/demo/',
 		],
-		'cta_note'            => __( 'Free personalized demo · About 2 minutes · No credit card', 'jcp-core' ),
+		'cta_note'            => __( 'Free demo · ~2 min · No card', 'jcp-core' ),
 		'show_cta'            => true,
 	];
 }
@@ -244,7 +244,7 @@ function jcp_niche_render_story_moments( array $props, string $page_key = '' ): 
 								>
 									<div class="jcp-sm-social">
 										<div class="jcp-sm-social__head">
-											<span class="jcp-sm-social__avatar" aria-hidden="true">Y</span>
+											<img class="jcp-sm-social__avatar" src="<?php echo esc_url( $src_photo ); ?>" alt="" width="34" height="34" loading="lazy" decoding="async" />
 											<div>
 												<strong><?php esc_html_e( 'Your Business', 'jcp-core' ); ?></strong>
 												<span><?php esc_html_e( 'Just now · Austin, TX', 'jcp-core' ); ?></span>
@@ -272,9 +272,8 @@ function jcp_niche_render_story_moments( array $props, string $page_key = '' ): 
 									<div class="jcp-sm-directory">
 										<p class="jcp-sm-directory__label"><?php esc_html_e( 'JobCapturePro Directory', 'jcp-core' ); ?></p>
 										<div class="jcp-sm-directory__card" role="article">
-											<span class="jcp-sm-directory__badge"><?php esc_html_e( 'Your business', 'jcp-core' ); ?></span>
 											<div class="jcp-sm-directory__head">
-												<span class="jcp-sm-directory__avatar" aria-hidden="true">YB</span>
+												<img class="jcp-sm-directory__avatar" src="<?php echo esc_url( $job_photo ); ?>" alt="" width="40" height="40" loading="lazy" decoding="async" />
 												<div>
 													<strong><?php esc_html_e( 'Your Business', 'jcp-core' ); ?></strong>
 													<span>

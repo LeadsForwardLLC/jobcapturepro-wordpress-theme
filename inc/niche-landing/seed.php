@@ -447,12 +447,12 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v20 = problem contrast cycle loop note.
+	// v21 = sticky Start Demo bar + With JCP cycle + story-moments polish.
 	$demo_ver = (string) get_option( 'jcp_contractor_demo_seed_version', '' );
-	if ( $demo_ver !== '20' || ! jcp_niche_contractor_demo_exists() ) {
-		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '20' );
+	if ( $demo_ver !== '21' || ! jcp_niche_contractor_demo_exists() ) {
+		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '21' );
 		if ( $created > 0 ) {
-			update_option( 'jcp_contractor_demo_seed_version', '20' );
+			update_option( 'jcp_contractor_demo_seed_version', '21' );
 			update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 		}
 	}
@@ -481,7 +481,7 @@ function jcp_niche_admin_seed_notice(): void {
 	update_option( 'jcp_niche_hvac_seeded', '1' );
 	update_option( 'jcp_niche_referral_seeded', '1' );
 	update_option( 'jcp_niche_contractor_demo_seeded', '1' );
-	update_option( 'jcp_contractor_demo_seed_version', '19' );
+	update_option( 'jcp_contractor_demo_seed_version', '21' );
 	wp_safe_redirect( admin_url( 'edit.php?post_type=jcp_niche_landing&jcp_seeded=1' ) );
 	exit;
 }
