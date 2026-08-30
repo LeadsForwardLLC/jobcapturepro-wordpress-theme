@@ -383,8 +383,8 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 								'height'  => '480',
 								'loading' => 'eager',
 							],
-							'phone_render'  => function () use ( $hero_demo, $phone_image, $phone_alt, $phone_cards, $phone_locked, $phone_cta ) {
-								jcp_component_hero_home_visual( $hero_demo, $phone_image, $phone_alt, true, $phone_cards, $phone_locked, $phone_cta );
+							'phone_render'  => function () use ( $hero_demo, $phone_image ) {
+								jcp_component_demo_app_phone( $hero_demo, $phone_image );
 							},
 						]
 					);
