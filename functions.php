@@ -65,6 +65,7 @@ require_once get_template_directory() . '/inc/page-blocks/case-study-form-modal.
 require_once get_template_directory() . '/inc/page-blocks/testimonials-upgrade.php';
 require_once get_template_directory() . '/inc/page-blocks/authority-upgrade.php';
 require_once get_template_directory() . '/inc/page-blocks/story-moments-upgrade.php';
+require_once get_template_directory() . '/inc/page-blocks/campaign-funnel-upgrade.php';
 require_once get_template_directory() . '/inc/page-blocks/start-free-trial-cta-upgrade.php';
 require_once get_template_directory() . '/inc/page-blocks/doc-sections.php';
 require_once get_template_directory() . '/inc/niche-landing/cpt.php';

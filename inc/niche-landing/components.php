@@ -250,9 +250,9 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 	$captions  = [
 		__( '1. Tap + to start a check-in', 'jcp-core' ),
 		__( '2. Snap the finished job photo', 'jcp-core' ),
-		__( '3. AI writes local-SEO proof', 'jcp-core' ),
-		__( '4. Published everywhere automatically', 'jcp-core' ),
-		__( '5. More visibility → more booked jobs', 'jcp-core' ),
+		__( '3. AI writes usable local proof', 'jcp-core' ),
+		__( '4. Ready to publish across connected channels', 'jcp-core' ),
+		__( '5. More visibility → more reasons to call', 'jcp-core' ),
 	];
 	?>
 	<div class="jcp-story-phone" data-jcp-story-phone>
@@ -320,7 +320,7 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 									</div>
 									<div class="demo-empty-state jcp-story-empty">
 										<p class="demo-empty-title"><?php esc_html_e( 'Start capturing proof', 'jcp-core' ); ?></p>
-										<p><?php esc_html_e( 'Take a photo → submit → published everywhere.', 'jcp-core' ); ?></p>
+										<p><?php esc_html_e( 'Take a photo → submit → ready to publish across connected channels.', 'jcp-core' ); ?></p>
 										<div class="demo-empty-hint jcp-story-hint"><span><?php esc_html_e( 'Tap', 'jcp-core' ); ?> <strong>+</strong> <?php esc_html_e( 'to create a check-in', 'jcp-core' ); ?></span></div>
 									</div>
 								</div>
@@ -359,12 +359,12 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 								<div class="jcp-story-process">
 									<div class="jcp-story-process__spinner" aria-hidden="true"></div>
 									<p class="jcp-story-process__title jcp-story-process__title--1"><?php esc_html_e( 'Creating your check-in…', 'jcp-core' ); ?></p>
-									<p class="jcp-story-process__title jcp-story-process__title--2"><?php esc_html_e( 'Optimizing for local SEO…', 'jcp-core' ); ?></p>
-									<p class="jcp-story-process__title jcp-story-process__title--3"><?php esc_html_e( 'Writing Google-ready copy…', 'jcp-core' ); ?></p>
+									<p class="jcp-story-process__title jcp-story-process__title--2"><?php esc_html_e( 'Building local job proof…', 'jcp-core' ); ?></p>
+									<p class="jcp-story-process__title jcp-story-process__title--3"><?php esc_html_e( 'Writing channel-ready copy…', 'jcp-core' ); ?></p>
 									<ul class="jcp-story-process__steps">
 										<li class="is-done"><?php esc_html_e( 'Scanning job photos', 'jcp-core' ); ?></li>
 										<li class="is-done"><?php esc_html_e( 'Pinning the job site', 'jcp-core' ); ?></li>
-										<li class="is-active"><?php esc_html_e( 'Building local-search copy', 'jcp-core' ); ?></li>
+										<li class="is-active"><?php esc_html_e( 'Building usable job copy', 'jcp-core' ); ?></li>
 									</ul>
 								</div>
 							</div>
@@ -411,7 +411,7 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 									<div class="jcp-story-outcome__pulse" aria-hidden="true"></div>
 									<p class="jcp-story-outcome__eyebrow"><?php esc_html_e( 'What happens next', 'jcp-core' ); ?></p>
 									<p class="jcp-story-outcome__title"><?php esc_html_e( 'Customers find the work', 'jcp-core' ); ?></p>
-									<p class="jcp-story-outcome__sub"><?php esc_html_e( 'Fresh job proof ranks nearby — and turns into calls.', 'jcp-core' ); ?></p>
+									<p class="jcp-story-outcome__sub"><?php esc_html_e( 'Fresh local job proof helps your business stay visible — and gives homeowners more reasons to call.', 'jcp-core' ); ?></p>
 									<div class="jcp-story-outcome__lead">
 										<img src="<?php echo esc_url( jcp_core_icon( 'phone' ) ); ?>" alt="" width="18" height="18" />
 										<div>

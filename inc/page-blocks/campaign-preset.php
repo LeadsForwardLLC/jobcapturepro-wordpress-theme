@@ -144,8 +144,8 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
  * @return array<int, array<string, string>>
  */
 function jcp_page_campaign_meta_stats_from_doc( array $doc ): array {
-	$icons  = [ 'camera', 'map', 'clock' ];
-	$classes = [ 'meta-stat-photo', 'meta-stat-channels', 'meta-stat-busywork' ];
+	$icons  = [ 'camera', 'map', 'badge-check' ];
+	$classes = [ 'meta-stat-photo', 'meta-stat-channels', 'meta-stat-proof' ];
 	$items  = [];
 
 	foreach ( (array) ( $doc['blocks'] ?? [] ) as $block ) {
@@ -292,6 +292,45 @@ function jcp_page_campaign_noindex(): void {
 	echo '<meta name="robots" content="noindex, follow">' . "\n";
 }
 add_action( 'wp_head', 'jcp_page_campaign_noindex', 1 );
+
+/**
+ * Force Rank Math (and similar) robots for campaign landings — avoid conflicting index,follow.
+ *
+ * @param array<string, string> $robots Robots directives.
+ * @return array<string, string>
+ */
+function jcp_page_campaign_rank_math_robots( $robots ) {
+	if ( ! function_exists( 'jcp_page_current_is_campaign_landing' ) || ! jcp_page_current_is_campaign_landing() ) {
+		return $robots;
+	}
+	if ( ! is_array( $robots ) ) {
+		$robots = [];
+	}
+	$robots['index']  = 'noindex';
+	$robots['follow'] = 'follow';
+	return $robots;
+}
+add_filter( 'rank_math/frontend/robots', 'jcp_page_campaign_rank_math_robots', 999 );
+
+/**
+ * WordPress core robots API fallback for campaign landings.
+ *
+ * @param array<string, mixed> $robots Robots directives.
+ * @return array<string, mixed>
+ */
+function jcp_page_campaign_wp_robots( $robots ) {
+	if ( ! function_exists( 'jcp_page_current_is_campaign_landing' ) || ! jcp_page_current_is_campaign_landing() ) {
+		return $robots;
+	}
+	if ( ! is_array( $robots ) ) {
+		$robots = [];
+	}
+	$robots['noindex'] = true;
+	$robots['follow']  = true;
+	unset( $robots['index'] );
+	return $robots;
+}
+add_filter( 'wp_robots', 'jcp_page_campaign_wp_robots', 999 );
 
 /**
  * Redirect retired /home-preview/ to the live homepage.

@@ -20,21 +20,21 @@ function jcp_niche_story_moments_defaults(): array {
 
 	return [
 		'section_id'          => 'see-how-it-works',
-		'eyebrow'             => __( 'See how it works', 'jcp-core' ),
-		'headline'            => __( 'One finished job. Proof everywhere.', 'jcp-core' ),
-		'body'                => __( 'These are the moments that win the next call — without another marketing task on your plate.', 'jcp-core' ),
+		'eyebrow'             => __( 'What the job can do next', 'jcp-core' ),
+		'headline'            => __( 'What Your Finished Jobs Can Start Doing For You', 'jcp-core' ),
+		'body'                => __( 'Turn work you\'ve already completed into proof homeowners can actually see.', 'jcp-core' ),
 		'show_eyebrow'        => true,
 		'show_headline'       => true,
 		'show_body'           => true,
 		'show_publish'        => true,
 		'show_reviews'        => true,
-		'publish_headline'    => __( 'One photo publishes everywhere.', 'jcp-core' ),
-		'publish_body'        => __( 'Tap a channel — watch one job photo become live proof.', 'jcp-core' ),
+		'publish_headline'    => __( 'Turn finished work into public proof.', 'jcp-core' ),
+		'publish_body'        => __( 'One completed job can support the channels homeowners check before they call.', 'jcp-core' ),
 		'publish_photo_url'   => $campaign_uri . 'jcp-campaign-hvac-capture.jpg',
 		'publish_photo_alt'   => __( 'Technician photographing a completed HVAC job', 'jcp-core' ),
 		'publish_preview_url' => $campaign_uri . 'jcp-campaign-job-proof.jpg',
-		'reviews_headline'    => __( 'Ask for reviews while it still matters.', 'jcp-core' ),
-		'reviews_body'        => __( 'On-site QR. Customer is still happy. Review lands before your truck leaves.', 'jcp-core' ),
+		'reviews_headline'    => __( 'Ask for the review while the customer is still happy.', 'jcp-core' ),
+		'reviews_body'        => __( 'Use the on-site review flow while the experience is still fresh — before the truck leaves and the moment is gone.', 'jcp-core' ),
 		'reviews_photo_url'   => $campaign_uri . 'jcp-campaign-face-owner.jpg',
 		'reviews_photo_alt'   => __( 'Owner on site after a completed job', 'jcp-core' ),
 		'reviews_quote'       => __( '“Tech was on time and cleaned up. 5 stars.”', 'jcp-core' ),
@@ -42,7 +42,7 @@ function jcp_niche_story_moments_defaults(): array {
 			'label' => __( 'See JobCapturePro On My Business', 'jcp-core' ),
 			'url'   => '/demo/',
 		],
-		'cta_note'            => __( 'Trade + work email · About 2 minutes · No credit card', 'jcp-core' ),
+		'cta_note'            => __( 'Free personalized demo · About 2 minutes · No credit card', 'jcp-core' ),
 		'show_cta'            => true,
 	];
 }
@@ -166,7 +166,7 @@ function jcp_niche_render_story_moments( array $props, string $page_key = '' ): 
 											<?php endif; ?>
 										</span>
 										<span class="jcp-story-publish__tile-label"><?php echo esc_html( $ch['label'] ); ?></span>
-										<span class="jcp-story-publish__tile-status"><?php esc_html_e( 'Publish', 'jcp-core' ); ?></span>
+										<span class="jcp-story-publish__tile-status"><?php esc_html_e( 'Ready', 'jcp-core' ); ?></span>
 									</button>
 								<?php endforeach; ?>
 							</div>
@@ -252,6 +252,9 @@ function jcp_niche_render_story_moments( array $props, string $page_key = '' ): 
 						<?php
 						if ( function_exists( 'jcp_niche_editable_link_paths' ) ) {
 							jcp_niche_editable_link_paths( $path . '.cta_primary.label', $path . '.cta_primary.url' );
+						}
+						if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+							jcp_niche_cta_tracking_attr( $cta_url, 'story_moments_cta', $cta_label );
 						}
 						?>
 					><?php echo esc_html( $cta_label ); ?></a>

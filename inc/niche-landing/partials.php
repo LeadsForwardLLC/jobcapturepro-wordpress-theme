@@ -392,7 +392,11 @@ function jcp_niche_render_section_optional_ctas( array $props, string $base_path
 		<?php if ( $show_primary ) : ?>
 		<div class="benefits-cta-slot jcp-section-cta-slot"<?php jcp_niche_optional_slot_attr( $base_path . '.cta_primary', 'cta', $primary_label ); ?>>
 			<?php if ( $has_primary ) : ?>
-				<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary"<?php jcp_niche_editable_link_attr( $base_path . '.cta_primary' ); ?>><?php echo esc_html( $primary['label'] ); ?></a>
+				<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary"<?php jcp_niche_editable_link_attr( $base_path . '.cta_primary' ); ?><?php
+				if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+					jcp_niche_cta_tracking_attr( $primary['url'], $base_path . '_cta', $primary['label'] );
+				}
+				?>><?php echo esc_html( $primary['label'] ); ?></a>
 			<?php endif; ?>
 		</div>
 		<?php endif; ?>
@@ -408,4 +412,10 @@ function jcp_niche_render_section_optional_ctas( array $props, string $base_path
 		<?php endif; ?>
 	</div>
 	<?php
+	$cta_note = trim( (string) ( $props['cta_note'] ?? '' ) );
+	if ( $cta_note !== '' && ( $show_primary || $show_secondary ) ) :
+		?>
+		<p class="cta-note jcp-section-cta-note"<?php jcp_niche_editable_attr( $base_path . '.cta_note' ); ?>><?php echo esc_html( $cta_note ); ?></p>
+		<?php
+	endif;
 }

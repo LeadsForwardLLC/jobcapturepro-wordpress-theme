@@ -1385,6 +1385,12 @@ function jcp_niche_render_final_cta( array $c, string $niche_key ): void {
 					<?php if ( $show_note ) : ?>
 						<p class="cta-note"<?php jcp_niche_editable_attr( 'final_cta.cta_note' ); ?>><?php echo esc_html( $note ); ?></p>
 					<?php endif; ?>
+					<?php
+					$footnote = trim( (string) ( $f['cta_footnote'] ?? '' ) );
+					if ( $footnote !== '' ) :
+						?>
+						<p class="cta-note cta-footnote"<?php jcp_niche_editable_attr( 'final_cta.cta_footnote' ); ?>><?php echo esc_html( $footnote ); ?></p>
+					<?php endif; ?>
 				</div>
 				<?php endif; ?>
 			</div>

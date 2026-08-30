@@ -21,7 +21,7 @@
       el.setAttribute('aria-pressed', el === tile ? 'true' : 'false');
       var status = el.querySelector('.jcp-story-publish__tile-status');
       if (status) {
-        status.textContent = el === tile ? 'Live' : 'Publish';
+        status.textContent = el === tile ? 'Live' : 'Ready';
       }
     });
 

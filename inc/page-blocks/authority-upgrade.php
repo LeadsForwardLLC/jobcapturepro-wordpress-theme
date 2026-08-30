@@ -17,8 +17,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 function jcp_page_authority_leadsforward_props(): array {
 	return [
 		'eyebrow'       => __( 'Built by LeadsForward', 'jcp-core' ),
-		'headline'      => __( 'A decade growing contractors. Then we built the missing piece.', 'jcp-core' ),
-		'body'          => __( '250,000+ leads. $150M+ booked. One gap we kept seeing: finished jobs that never became marketing. JobCapturePro closes it.', 'jcp-core' ),
+		'headline'      => __( 'A decade helping contractors grow. Then we built the missing piece.', 'jcp-core' ),
+		'body'          => __( 'We kept seeing the same problem: contractors completed great work every day, but almost none of that work became public marketing proof. JobCapturePro was built to close that gap.', 'jcp-core' ),
 		'stats'         => [
 			[
 				'value'  => '10',
@@ -37,10 +37,10 @@ function jcp_page_authority_leadsforward_props(): array {
 			],
 		],
 		'cta_primary'   => [
-			'label' => __( 'View the live demo', 'jcp-core' ),
+			'label' => __( 'See JobCapturePro On My Business', 'jcp-core' ),
 			'url'   => '/demo/',
 		],
-		'cta_note'      => __( 'No signup required · Takes about 2 minutes', 'jcp-core' ),
+		'cta_note'      => __( 'Free personalized demo · About 2 minutes · No credit card', 'jcp-core' ),
 		'section_id'    => 'built-by-leadsforward',
 		'show_eyebrow'  => true,
 		'show_headline' => true,
@@ -200,9 +200,7 @@ function jcp_page_upgrade_campaign_authority( array $content, int $post_id ): ar
 				'url'   => '/demo/',
 			];
 		}
-		if ( trim( (string) ( $props['cta_note'] ?? '' ) ) === '' ) {
-			$props['cta_note'] = __( 'Free personalized demo · Work email required · No credit card', 'jcp-core' );
-		}
+		$props['cta_note'] = __( 'Free personalized demo · About 2 minutes · No credit card', 'jcp-core' );
 		$blocks[ $i ]['props'] = $props;
 		if ( ! isset( $blocks[ $i ]['layout'] ) || ! is_array( $blocks[ $i ]['layout'] ) ) {
 			$blocks[ $i ]['layout'] = [];

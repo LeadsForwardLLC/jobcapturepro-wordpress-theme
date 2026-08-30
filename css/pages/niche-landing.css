@@ -3192,6 +3192,21 @@ body.jcp-inline-editing .jcp-split-col .jcp-col-drag-handle {
   justify-content: center;
 }
 
+.jcp-section-cta-note {
+  margin: 0.65rem auto 0;
+  max-width: 28rem;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--jcp-color-text-secondary, #4b5563);
+}
+
+.jcp-niche-final .cta-footnote {
+  margin-top: 0.35rem;
+  opacity: 0.92;
+  font-size: 0.85rem;
+}
+
 body.jcp-inline-editing .benefits-cta-row:not(:has(.benefits-cta-link)) .benefits-cta-slot.is-empty {
   display: none;
 }
