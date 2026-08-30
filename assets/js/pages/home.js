@@ -8,10 +8,10 @@
   const icon = (name) => `${assetBase()}/shared/assets/icons/lucide/${name}.svg`;
 
   const defaultCtas = {
-    primaryText: 'View the live demo',
-    primaryUrl: '/demo',
-    secondaryText: 'Learn how it works',
-    secondaryUrl: '#how-it-works',
+    primaryText: 'See It for My Business →',
+    primaryUrl: '/demo/',
+    secondaryText: 'Start Free 14-Day Trial',
+    secondaryUrl: '',
   };
 
   const useDefault = (val, defaultVal) => (val != null && String(val).trim() !== '' ? String(val).trim() : defaultVal);
@@ -158,21 +158,21 @@
                       <img src="${icon('camera')}" class="meta-icon" alt="">
                       <strong>1 photo</strong>
                     </div>
-                    <span>proof everywhere</span>
+                    <span>Starts the workflow</span>
                   </div>
                   <div class="meta-item meta-stat-channels">
                     <div class="meta-label">
                       <img src="${icon('map')}" class="meta-icon" alt="">
-                      <strong>4 channels</strong>
+                      <strong>5 places</strong>
                     </div>
-                    <span>website, Google, social + directory</span>
+                    <span>Web · Google · Social · Directory · Reviews</span>
                   </div>
                   <div class="meta-item meta-stat-busywork">
                     <div class="meta-label">
                       <img src="${icon('clock')}" class="meta-icon" alt="">
-                      <strong>0 busywork</strong>
+                      <strong>More jobs</strong>
                     </div>
-                    <span>no extra work from you</span>
+                    <span>From finished work</span>
                   </div>
                 </div>
               </div>
@@ -287,7 +287,7 @@
                 <div class="step-number">3</div>
                 <div class="step-content">
                   <h4 class="step-title">Publish</h4>
-                  <p class="step-description">Website, directory, GBP, and social update instantly.</p>
+                  <p class="step-description">Approved proof can update your website, Google, social, and directory.</p>
                 </div>
               </div>
               <div class="timeline-step">
@@ -327,7 +327,7 @@
                     </p>
                     <div class="demo-cta-wrapper">
                       <a href="/demo" class="btn btn-primary demo-cta-primary">
-                        <span>Launch Interactive Demo</span>
+                        <span>See It for My Business →</span>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                           <path d="M5 12h14M13 5l7 7-7 7"/>
                         </svg>
@@ -481,7 +481,7 @@
             <div class="rankings-header">
               <h2>Benefits that show up in the market</h2>
               <p class="rankings-subtitle">
-                JobCapturePro creates proof customers can see, rankings that improve, and demand that compounds.
+                JobCapturePro turns finished work into proof customers can see, supports local visibility, and creates more reasons to call.
               </p>
             </div>
 
@@ -503,10 +503,10 @@
                   <img src="${icon('map-pin')}" class="factor-icon" alt="">
                 </div>
                 <h3 class="factor-title">Local visibility</h3>
-                <p class="factor-description">Fresh job activity drives stronger map coverage and ranking.</p>
+                <p class="factor-description">Fresh job activity can support stronger map presence over time.</p>
                 <div class="factor-stat">
                   <span class="stat-value">Map</span>
-                  <span class="stat-label">coverage grows</span>
+                  <span class="stat-label">presence grows</span>
                 </div>
               </div>
 
@@ -526,7 +526,7 @@
                 <div class="factor-icon-wrapper">
                   <img src="${icon('star')}" class="factor-icon" alt="">
                 </div>
-                <h3 class="factor-title">More reviews</h3>
+                <h3 class="factor-title">Review opportunities</h3>
                 <p class="factor-description">Crew shows a QR code on site while the customer is still happy.</p>
                 <div class="factor-stat">
                   <span class="stat-value">Reviews</span>
@@ -539,10 +539,10 @@
                   <img src="${icon('building-2')}" class="factor-icon" alt="">
                 </div>
                 <h3 class="factor-title">Directory presence</h3>
-                <p class="factor-description">Get listed across our verified contractor directory instantly.</p>
+                <p class="factor-description">Get listed in the verified contractor directory as you publish real work.</p>
                 <div class="factor-stat">
                   <span class="stat-value">Directory</span>
-                  <span class="stat-label">auto-updated</span>
+                  <span class="stat-label">from real jobs</span>
                 </div>
               </div>
 
@@ -550,16 +550,16 @@
                 <div class="factor-icon-wrapper">
                   <img src="${icon('phone')}" class="factor-icon" alt="">
                 </div>
-                <h3 class="factor-title">More calls</h3>
-                <p class="factor-description">Visibility multiplies across search, maps, and directory channels.</p>
+                <h3 class="factor-title">More reasons to call</h3>
+                <p class="factor-description">Visibility across search, maps, and directory channels gives homeowners more proof to trust.</p>
                 <div class="factor-stat">
                   <span class="stat-value">Calls</span>
-                  <span class="stat-label">keep coming</span>
+                  <span class="stat-label">more reasons</span>
                 </div>
               </div>
             </div>
             <div class="benefits-cta-row">
-              <a href="/demo" class="btn btn-primary">See it in the demo</a>
+              <a href="/demo/" class="btn btn-primary">See It for My Business →</a>
               <a href="/pricing" class="benefits-cta-link">
                 View pricing
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -593,8 +593,8 @@
                   <strong>Contractors & Trades</strong>
                   <p>Turn every completed job into proof that wins the next one.</p>
                   <div class="guarantee-stat">
-                    <span class="stat-number">100%</span>
-                    <span class="stat-label">Automated</span>
+                    <span class="stat-number">Auto</span>
+                    <span class="stat-label">Publishing</span>
                   </div>
                 </div>
               </a>
@@ -607,10 +607,10 @@
                 </div>
                 <div class="guarantee-content">
                   <strong>Owners & Office Teams</strong>
-                  <p>Automate visibility without chasing photos or posts.</p>
+                  <p>Automate the marketing workflow without chasing photos or posts.</p>
                   <div class="guarantee-stat">
-                    <span class="stat-number">0</span>
-                    <span class="stat-label">Extra Work</span>
+                    <span class="stat-number">Less</span>
+                    <span class="stat-label">Busywork</span>
                   </div>
                 </div>
               </a>
@@ -623,7 +623,7 @@
                 </div>
                 <div class="guarantee-content">
                   <strong>Field Crews</strong>
-                  <p>Capture once and move on — no extra admin work.</p>
+                  <p>Capture once and move on. No extra admin work.</p>
                   <div class="guarantee-stat">
                     <span class="stat-number">1</span>
                     <span class="stat-label">Photo Needed</span>
@@ -922,12 +922,13 @@
           <div class="jcp-container">
             <div class="rankings-cta">
               <div class="cta-content">
-                <h3>See how your jobs turn into real demand</h3>
-                <p class="cta-paragraph">Preview how JobCapturePro would publish your work across Google, your website, reviews, and the public directory.</p>
+                <h3>See what one completed job can become</h3>
+                <p class="cta-paragraph">See JobCapturePro turn your real work into website proof, Google activity, social content, directory visibility, and review opportunities.</p>
               </div>
               <div class="cta-button-wrapper">
-                <a class="btn btn-primary rankings-cta-btn" href="/demo">See your business in the live demo</a>
-                <p class="cta-note">No signup required. Takes two minutes.</p>
+                <a class="btn btn-primary rankings-cta-btn" href="/demo/">See It for My Business →</a>
+                <p class="cta-note">Interactive 2-minute demo · No signup required</p>
+                <p class="cta-note cta-secondary-link"><a href="https://app.jobcapturepro.com/onboarding">Start Free 14-Day Trial</a></p>
               </div>
             </div>
           </div>

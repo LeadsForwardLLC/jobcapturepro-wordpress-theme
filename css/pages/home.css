@@ -113,6 +113,12 @@
   transition: opacity 0.35s ease;
 }
 
+/* Static emphasis (e.g. “automatically.”) — same brand treatment without rotator width */
+.jcp-home .jcp-hero-emphasis {
+  color: var(--jcp-color-primary);
+  font-weight: inherit;
+}
+
 /* Subtitle only — never blow up trust/microcopy <p> tags in the hero */
 .jcp-home .jcp-hero .jcp-hero-subtitle {
   font-size: var(--jcp-font-size-xl) !important;

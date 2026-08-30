@@ -3101,6 +3101,17 @@
   width: 100%;
 }
 
+.cta-secondary-link a {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: var(--jcp-font-weight-semibold, 600);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.cta-secondary-link a:hover {
+  color: #fff;
+}
+
 /* ============================================================
    RESPONSIVE
    ============================================================ */

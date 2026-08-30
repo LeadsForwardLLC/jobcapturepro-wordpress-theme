@@ -246,7 +246,7 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 		return;
 	}
 	$primary   = jcp_niche_resolve_cta( $h['cta_primary'] ?? [], $niche_key );
-	$secondary = jcp_niche_resolve_cta( $h['cta_secondary'] ?? [ 'label' => 'See how it works', 'url' => '#how-it-works' ], $niche_key );
+	$secondary = jcp_niche_resolve_cta( $h['cta_secondary'] ?? [ 'label' => 'Start Free 14-Day Trial', 'url' => '' ], $niche_key );
 	$variant   = (string) ( $c['_hero_variant'] ?? '' );
 	if ( ! in_array( $variant, jcp_block_hero_variants(), true ) ) {
 		$variant = ! isset( $h['show_visual'] ) || ! empty( $h['show_visual'] ) ? 'split' : 'centered';
@@ -321,6 +321,11 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 									<?php echo esc_html( (string) ( $h['rotating_words'][0] ?? 'visibility' ) ); ?>
 								</span>
 							</span>
+						</h1>
+					<?php elseif ( trim( (string) ( $h['h1_emphasis'] ?? '' ) ) !== '' ) : ?>
+						<h1 class="jcp-hero-title" data-jcp-heading-tag-path="hero.headline_tag">
+							<span<?php jcp_niche_editable_attr( 'hero.h1' ); ?>><?php jcp_niche_e( (string) ( $h['h1'] ?? '' ) ); ?></span>
+							<span class="jcp-hero-emphasis"<?php jcp_niche_editable_attr( 'hero.h1_emphasis' ); ?>><?php jcp_niche_e( (string) $h['h1_emphasis'] ); ?></span>
 						</h1>
 					<?php else : ?>
 					<h1 class="jcp-hero-title" data-jcp-heading-tag-path="hero.headline_tag"<?php jcp_niche_editable_attr( 'hero.h1' ); ?>><?php jcp_niche_e( (string) $h['h1'] ); ?></h1>
@@ -1394,14 +1399,16 @@ function jcp_niche_render_final_cta( array $c, string $niche_key ): void {
 	if ( empty( $f['headline'] ) ) {
 		return;
 	}
-	$primary = jcp_niche_resolve_cta( $f['cta_primary'] ?? [], $niche_key );
-	$note    = ! empty( $f['cta_note'] ) ? (string) $f['cta_note'] : __( 'No credit card required', 'jcp-core' );
-	$btn     = $primary['label'] !== '' ? $primary['label'] : __( 'See your business in the live demo', 'jcp-core' );
-	$url     = $primary['url'] !== '' ? $primary['url'] : home_url( '/demo/' );
-	$show_sub = jcp_niche_show_field( $f, 'show_subheadline', true );
+	$primary   = jcp_niche_resolve_cta( $f['cta_primary'] ?? [], $niche_key );
+	$secondary = jcp_niche_resolve_cta( $f['cta_secondary'] ?? [], $niche_key );
+	$note      = ! empty( $f['cta_note'] ) ? (string) $f['cta_note'] : __( 'No credit card required', 'jcp-core' );
+	$btn       = $primary['label'] !== '' ? $primary['label'] : __( 'See It for My Business →', 'jcp-core' );
+	$url       = $primary['url'] !== '' ? $primary['url'] : home_url( '/demo/' );
+	$show_sub  = jcp_niche_show_field( $f, 'show_subheadline', true );
 	$show_note = jcp_niche_show_field( $f, 'show_cta_note', true );
 	$show_headline = jcp_niche_show_field( $f, 'show_headline', true );
 	$show_cta = jcp_niche_show_field( $f, 'show_cta', true );
+	$show_secondary = $secondary['label'] !== '' && jcp_niche_show_field( $f, 'show_cta_secondary', true );
 	$heading_tag = jcp_niche_heading_tag_from_props( $f, 'h3', false );
 	?>
 	<section class="jcp-section rankings-section jcp-niche-final">
@@ -1424,6 +1431,11 @@ function jcp_niche_render_final_cta( array $c, string $niche_key ): void {
 					<a class="btn btn-primary rankings-cta-btn" href="<?php echo esc_url( $url ); ?>"<?php jcp_niche_editable_link_attr( 'final_cta.cta_primary' ); jcp_niche_cta_tracking_attr( $url, str_contains( $url, 'firstpromoter.com' ) ? 'referral_footer' : 'niche_footer', $btn ); ?>><?php echo esc_html( $btn ); ?></a>
 					<?php if ( $show_note ) : ?>
 						<p class="cta-note"<?php jcp_niche_editable_attr( 'final_cta.cta_note' ); ?>><?php echo esc_html( $note ); ?></p>
+					<?php endif; ?>
+					<?php if ( $show_secondary ) : ?>
+						<p class="cta-note cta-secondary-link">
+							<a href="<?php echo esc_url( $secondary['url'] ); ?>"<?php jcp_niche_editable_link_attr( 'final_cta.cta_secondary' ); jcp_niche_cta_tracking_attr( $secondary['url'], 'niche_footer_secondary', $secondary['label'] ); ?>><?php echo esc_html( $secondary['label'] ); ?></a>
+						</p>
 					<?php endif; ?>
 					<?php
 					$footnote = trim( (string) ( $f['cta_footnote'] ?? '' ) );

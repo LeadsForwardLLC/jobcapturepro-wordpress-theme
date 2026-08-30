@@ -359,7 +359,7 @@ function jcp_global_rewrite_trial_label( string $text, string $kind = 'button' )
 	}
 
 	// Skip demo-specific CTAs.
-	if ( preg_match( '/\b(personalized\s+demo|interactive\s+demo|live\s+demo|view\s+(the\s+)?demo|launch\s+(interactive\s+)?demo|see\s+.{0,40}demo|get\s+a\s+personalized\s+demo)\b/i', $trimmed ) ) {
+	if ( preg_match( '/\b(personalized\s+demo|interactive\s+demo|live\s+demo|view\s+(the\s+)?demo|launch\s+(interactive\s+)?demo|see\s+it\s+for\s+my\s+business|see\s+.{0,40}demo|get\s+a\s+personalized\s+demo)\b/i', $trimmed ) ) {
 		return $text;
 	}
 
