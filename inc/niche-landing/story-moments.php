@@ -1,7 +1,6 @@
 <?php
 /**
  * Story moments — interactive deck beats for campaign / marketing landings.
- * Port of the best pre-demo survey slides (publish channels + on-site reviews).
  *
  * @package JCP_Core
  */
@@ -29,12 +28,12 @@ function jcp_niche_story_moments_defaults(): array {
 		'show_publish'        => true,
 		'show_reviews'        => true,
 		'publish_headline'    => __( 'Turn finished work into public proof.', 'jcp-core' ),
-		'publish_body'        => __( 'Tap a channel to preview how one completed job can support the places homeowners check before they call.', 'jcp-core' ),
+		'publish_body'        => __( 'Tap a channel — see the same completed job show up where homeowners look.', 'jcp-core' ),
 		'publish_photo_url'   => $campaign_uri . 'jcp-campaign-hvac-capture.jpg',
 		'publish_photo_alt'   => __( 'Technician photographing a completed HVAC job', 'jcp-core' ),
 		'publish_preview_url' => $campaign_uri . 'jcp-campaign-job-proof.jpg',
 		'reviews_headline'    => __( 'Ask for the review while the customer is still happy.', 'jcp-core' ),
-		'reviews_body'        => __( 'Use the on-site review flow while the experience is still fresh — before the truck leaves and the moment is gone.', 'jcp-core' ),
+		'reviews_body'        => __( 'Show the QR before you leave. The review request happens while the experience is still fresh.', 'jcp-core' ),
 		'reviews_photo_url'   => $campaign_uri . 'jcp-campaign-face-owner.jpg',
 		'reviews_photo_alt'   => __( 'Owner on site after a completed job', 'jcp-core' ),
 		'reviews_quote'       => __( '“Tech was on time and cleaned up. 5 stars.”', 'jcp-core' ),
@@ -67,30 +66,30 @@ function jcp_niche_render_story_moments( array $props, string $page_key = '' ): 
 		return function_exists( 'jcp_core_icon' ) ? (string) jcp_core_icon( $name ) : '';
 	};
 
+	$job_photo = (string) $props['publish_preview_url'];
+	$src_photo = (string) $props['publish_photo_url'];
+	$face      = (string) $props['reviews_photo_url'];
+
 	$channels = [
 		[
 			'key'   => 'website',
 			'label' => __( 'Website', 'jcp-core' ),
-			'icon'  => 'layout-list',
-			'live'  => __( 'Live on your website', 'jcp-core' ),
+			'icon'  => 'globe',
 		],
 		[
 			'key'   => 'google',
 			'label' => __( 'Google', 'jcp-core' ),
 			'icon'  => 'map-pin',
-			'live'  => __( 'Live on Google Business Profile', 'jcp-core' ),
 		],
 		[
 			'key'   => 'social',
 			'label' => __( 'Social', 'jcp-core' ),
 			'icon'  => 'message-square',
-			'live'  => __( 'Ready for social', 'jcp-core' ),
 		],
 		[
 			'key'   => 'directory',
 			'label' => __( 'Directory', 'jcp-core' ),
 			'icon'  => 'map',
-			'live'  => __( 'Listed in your directory', 'jcp-core' ),
 		],
 	];
 
@@ -126,73 +125,185 @@ function jcp_niche_render_story_moments( array $props, string $page_key = '' ): 
 			<div class="jcp-story-moments__grid">
 				<?php if ( ! empty( $props['show_publish'] ) ) : ?>
 					<article class="jcp-story-moment jcp-story-moment--publish">
-						<h3 class="jcp-story-moment__title"<?php jcp_niche_editable_attr( $path . '.publish_headline' ); ?>>
-							<?php echo esc_html( (string) $props['publish_headline'] ); ?>
-						</h3>
-						<p class="jcp-story-moment__lead"<?php jcp_niche_editable_attr( $path . '.publish_body' ); ?>>
-							<?php echo esc_html( (string) $props['publish_body'] ); ?>
-						</p>
+						<header class="jcp-story-moment__header">
+							<p class="jcp-story-moment__kicker"><?php esc_html_e( 'Same job photo', 'jcp-core' ); ?></p>
+							<h3 class="jcp-story-moment__title"<?php jcp_niche_editable_attr( $path . '.publish_headline' ); ?>>
+								<?php echo esc_html( (string) $props['publish_headline'] ); ?>
+							</h3>
+							<p class="jcp-story-moment__lead"<?php jcp_niche_editable_attr( $path . '.publish_body' ); ?>>
+								<?php echo esc_html( (string) $props['publish_body'] ); ?>
+							</p>
+						</header>
 
 						<div class="jcp-story-publish" data-jcp-story-publish>
-							<div class="jcp-story-moment__media jcp-story-publish__photo">
+							<div class="jcp-story-publish__source">
 								<img
-									src="<?php echo esc_url( (string) $props['publish_photo_url'] ); ?>"
+									src="<?php echo esc_url( $src_photo ); ?>"
 									alt="<?php echo esc_attr( (string) $props['publish_photo_alt'] ); ?>"
-									width="480"
-									height="280"
+									width="72"
+									height="72"
 									loading="lazy"
 									decoding="async"
 								/>
-								<span class="jcp-story-publish__photo-label">
-									<?php if ( $icon( 'camera' ) ) : ?>
-										<img src="<?php echo esc_url( $icon( 'camera' ) ); ?>" alt="" width="14" height="14" />
-									<?php endif; ?>
-									<?php esc_html_e( 'Job photo', 'jcp-core' ); ?>
-								</span>
-							</div>
-
-							<div class="jcp-story-publish__controls">
-								<p class="jcp-story-publish__hint" id="jcp-story-publish-hint">
-									<?php esc_html_e( 'Tap a channel to preview', 'jcp-core' ); ?>
-								</p>
-								<div
-									class="jcp-story-publish__tiles"
-									role="tablist"
-									aria-label="<?php esc_attr_e( 'Preview channels', 'jcp-core' ); ?>"
-									aria-describedby="jcp-story-publish-hint"
-								>
-									<?php foreach ( $channels as $i => $ch ) : ?>
-										<button
-											type="button"
-											class="jcp-story-publish__tile<?php echo 0 === (int) $i ? ' is-live' : ''; ?>"
-											role="tab"
-											data-channel="<?php echo esc_attr( $ch['key'] ); ?>"
-											data-live-label="<?php echo esc_attr( $ch['live'] ); ?>"
-											aria-selected="<?php echo 0 === (int) $i ? 'true' : 'false'; ?>"
-											aria-pressed="<?php echo 0 === (int) $i ? 'true' : 'false'; ?>"
-										>
-											<span class="jcp-story-publish__tile-icon">
-												<?php if ( $icon( $ch['icon'] ) ) : ?>
-													<img src="<?php echo esc_url( $icon( $ch['icon'] ) ); ?>" alt="" width="18" height="18" />
-												<?php endif; ?>
-											</span>
-											<span class="jcp-story-publish__tile-label"><?php echo esc_html( $ch['label'] ); ?></span>
-											<span class="jcp-story-publish__tile-action"><?php echo 0 === (int) $i ? esc_html__( 'Showing', 'jcp-core' ) : esc_html__( 'Preview', 'jcp-core' ); ?></span>
-										</button>
-									<?php endforeach; ?>
+								<div>
+									<strong><?php esc_html_e( 'HVAC install · Austin, TX', 'jcp-core' ); ?></strong>
+									<span><?php esc_html_e( 'Captured on site · Ready for connected channels', 'jcp-core' ); ?></span>
 								</div>
 							</div>
 
-							<div class="jcp-story-moment__result jcp-story-publish__preview" data-publish-preview>
-								<img
-									src="<?php echo esc_url( (string) $props['publish_preview_url'] ); ?>"
-									alt="<?php esc_attr_e( 'Finished job as marketing proof', 'jcp-core' ); ?>"
-									width="480"
-									height="160"
-									loading="lazy"
-									decoding="async"
-								/>
-								<p data-publish-preview-label><?php esc_html_e( 'Live on your website', 'jcp-core' ); ?></p>
+							<div
+								class="jcp-story-publish__tiles"
+								role="tablist"
+								aria-label="<?php esc_attr_e( 'Preview channels', 'jcp-core' ); ?>"
+							>
+								<?php foreach ( $channels as $i => $ch ) : ?>
+									<button
+										type="button"
+										class="jcp-story-publish__tile<?php echo 0 === (int) $i ? ' is-live' : ''; ?>"
+										role="tab"
+										id="jcp-sm-tab-<?php echo esc_attr( $ch['key'] ); ?>"
+										data-channel="<?php echo esc_attr( $ch['key'] ); ?>"
+										aria-controls="jcp-sm-panel-<?php echo esc_attr( $ch['key'] ); ?>"
+										aria-selected="<?php echo 0 === (int) $i ? 'true' : 'false'; ?>"
+									>
+										<span class="jcp-story-publish__tile-icon">
+											<?php if ( $icon( $ch['icon'] ) ) : ?>
+												<img src="<?php echo esc_url( $icon( $ch['icon'] ) ); ?>" alt="" width="16" height="16" />
+											<?php endif; ?>
+										</span>
+										<span class="jcp-story-publish__tile-label"><?php echo esc_html( $ch['label'] ); ?></span>
+									</button>
+								<?php endforeach; ?>
+							</div>
+
+							<div class="jcp-story-publish__stage" data-publish-preview>
+								<!-- Website -->
+								<div
+									class="jcp-sm-panel is-active"
+									id="jcp-sm-panel-website"
+									data-channel-panel="website"
+									role="tabpanel"
+									aria-labelledby="jcp-sm-tab-website"
+								>
+									<div class="jcp-sm-browser">
+										<div class="jcp-sm-browser__bar" aria-hidden="true">
+											<span></span><span></span><span></span>
+											<div class="jcp-sm-browser__url">yourbusiness.com/recent-work</div>
+										</div>
+										<div class="jcp-sm-browser__body">
+											<p class="jcp-sm-browser__heading"><?php esc_html_e( 'Recent work', 'jcp-core' ); ?></p>
+											<div class="jcp-sm-job-card">
+												<img src="<?php echo esc_url( $job_photo ); ?>" alt="" width="120" height="90" loading="lazy" decoding="async" />
+												<div>
+													<strong><?php esc_html_e( 'Completed HVAC install', 'jcp-core' ); ?></strong>
+													<span><?php esc_html_e( '1242 Mason Rd · Austin, TX', 'jcp-core' ); ?></span>
+													<p><?php esc_html_e( 'New system install with before/after proof from the job site.', 'jcp-core' ); ?></p>
+													<em><?php esc_html_e( 'Published to your website', 'jcp-core' ); ?></em>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<!-- Google -->
+								<div
+									class="jcp-sm-panel"
+									id="jcp-sm-panel-google"
+									data-channel-panel="google"
+									role="tabpanel"
+									aria-labelledby="jcp-sm-tab-google"
+									hidden
+								>
+									<div class="jcp-sm-gbp">
+										<div class="jcp-sm-gbp__brand">
+											<?php if ( $icon( 'map-pin' ) ) : ?>
+												<img src="<?php echo esc_url( $icon( 'map-pin' ) ); ?>" alt="" width="16" height="16" />
+											<?php endif; ?>
+											<div>
+												<strong><?php esc_html_e( 'Google Business Profile', 'jcp-core' ); ?></strong>
+												<span><?php esc_html_e( 'Your Business · Update', 'jcp-core' ); ?></span>
+											</div>
+										</div>
+										<img class="jcp-sm-gbp__photo" src="<?php echo esc_url( $job_photo ); ?>" alt="" width="400" height="180" loading="lazy" decoding="async" />
+										<div class="jcp-sm-gbp__copy">
+											<strong><?php esc_html_e( 'Just finished another HVAC install in Austin', 'jcp-core' ); ?></strong>
+											<p><?php esc_html_e( 'Fresh job proof from today’s completed work — ready for homeowners nearby.', 'jcp-core' ); ?></p>
+										</div>
+										<span class="jcp-sm-gbp__meta"><?php esc_html_e( 'Posted to Google · Today', 'jcp-core' ); ?></span>
+									</div>
+								</div>
+
+								<!-- Social -->
+								<div
+									class="jcp-sm-panel"
+									id="jcp-sm-panel-social"
+									data-channel-panel="social"
+									role="tabpanel"
+									aria-labelledby="jcp-sm-tab-social"
+									hidden
+								>
+									<div class="jcp-sm-social">
+										<div class="jcp-sm-social__head">
+											<span class="jcp-sm-social__avatar" aria-hidden="true">Y</span>
+											<div>
+												<strong><?php esc_html_e( 'Your Business', 'jcp-core' ); ?></strong>
+												<span><?php esc_html_e( 'Just now · Austin, TX', 'jcp-core' ); ?></span>
+											</div>
+										</div>
+										<p class="jcp-sm-social__copy"><?php esc_html_e( 'Another job wrapped. New HVAC install done right — proof from the field.', 'jcp-core' ); ?></p>
+										<img class="jcp-sm-social__photo" src="<?php echo esc_url( $job_photo ); ?>" alt="" width="400" height="200" loading="lazy" decoding="async" />
+										<div class="jcp-sm-social__reactions" aria-hidden="true">
+											<span><?php esc_html_e( 'Like', 'jcp-core' ); ?></span>
+											<span><?php esc_html_e( 'Comment', 'jcp-core' ); ?></span>
+											<span><?php esc_html_e( 'Share', 'jcp-core' ); ?></span>
+										</div>
+									</div>
+								</div>
+
+								<!-- Directory -->
+								<div
+									class="jcp-sm-panel"
+									id="jcp-sm-panel-directory"
+									data-channel-panel="directory"
+									role="tabpanel"
+									aria-labelledby="jcp-sm-tab-directory"
+									hidden
+								>
+									<div class="jcp-sm-directory">
+										<p class="jcp-sm-directory__label"><?php esc_html_e( 'JobCapturePro Directory', 'jcp-core' ); ?></p>
+										<div class="jcp-sm-directory__card" role="article">
+											<span class="jcp-sm-directory__badge"><?php esc_html_e( 'Your business', 'jcp-core' ); ?></span>
+											<div class="jcp-sm-directory__head">
+												<span class="jcp-sm-directory__avatar" aria-hidden="true">YB</span>
+												<div>
+													<strong><?php esc_html_e( 'Your Business', 'jcp-core' ); ?></strong>
+													<span>
+														<?php if ( $icon( 'map-pin' ) ) : ?>
+															<img src="<?php echo esc_url( $icon( 'map-pin' ) ); ?>" alt="" width="12" height="12" />
+														<?php endif; ?>
+														<?php esc_html_e( 'Austin, TX', 'jcp-core' ); ?>
+													</span>
+												</div>
+											</div>
+											<div class="jcp-sm-directory__meta">
+												<span><?php esc_html_e( '12 verified jobs', 'jcp-core' ); ?></span>
+												<span aria-hidden="true">·</span>
+												<span><?php esc_html_e( 'Active today', 'jcp-core' ); ?></span>
+											</div>
+											<div class="jcp-sm-directory__proof">
+												<img src="<?php echo esc_url( $job_photo ); ?>" alt="" width="80" height="60" loading="lazy" decoding="async" />
+												<div>
+													<strong><?php esc_html_e( 'Latest: HVAC install', 'jcp-core' ); ?></strong>
+													<span><?php esc_html_e( 'Added from today’s completed job', 'jcp-core' ); ?></span>
+												</div>
+											</div>
+											<div class="jcp-sm-directory__rating" aria-hidden="true">
+												<span class="jcp-sm-directory__stars">★★★★★</span>
+												<span><?php esc_html_e( '5.0 from recent reviews', 'jcp-core' ); ?></span>
+											</div>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 					</article>
@@ -200,70 +311,51 @@ function jcp_niche_render_story_moments( array $props, string $page_key = '' ): 
 
 				<?php if ( ! empty( $props['show_reviews'] ) ) : ?>
 					<article class="jcp-story-moment jcp-story-moment--reviews">
-						<h3 class="jcp-story-moment__title"<?php jcp_niche_editable_attr( $path . '.reviews_headline' ); ?>>
-							<?php echo esc_html( (string) $props['reviews_headline'] ); ?>
-						</h3>
-						<p class="jcp-story-moment__lead"<?php jcp_niche_editable_attr( $path . '.reviews_body' ); ?>>
-							<?php echo esc_html( (string) $props['reviews_body'] ); ?>
-						</p>
+						<header class="jcp-story-moment__header">
+							<p class="jcp-story-moment__kicker"><?php esc_html_e( 'On-site review ask', 'jcp-core' ); ?></p>
+							<h3 class="jcp-story-moment__title"<?php jcp_niche_editable_attr( $path . '.reviews_headline' ); ?>>
+								<?php echo esc_html( (string) $props['reviews_headline'] ); ?>
+							</h3>
+							<p class="jcp-story-moment__lead"<?php jcp_niche_editable_attr( $path . '.reviews_body' ); ?>>
+								<?php echo esc_html( (string) $props['reviews_body'] ); ?>
+							</p>
+						</header>
 
 						<div class="jcp-story-reviews">
-							<div class="jcp-story-moment__media jcp-story-reviews__photo">
-								<img
-									src="<?php echo esc_url( (string) $props['reviews_photo_url'] ); ?>"
-									alt="<?php echo esc_attr( (string) $props['reviews_photo_alt'] ); ?>"
-									width="480"
-									height="280"
-									loading="lazy"
-									decoding="async"
-								/>
-								<span class="jcp-story-reviews__photo-label">
-									<?php if ( $icon( 'star' ) ) : ?>
-										<img src="<?php echo esc_url( $icon( 'star' ) ); ?>" alt="" width="14" height="14" />
-									<?php endif; ?>
-									<?php esc_html_e( 'Happy customer', 'jcp-core' ); ?>
-								</span>
-							</div>
-
-							<div class="jcp-story-reviews__controls">
-								<p class="jcp-story-reviews__hint"><?php esc_html_e( 'How the ask works on site', 'jcp-core' ); ?></p>
-								<ol class="jcp-story-reviews__pills" aria-label="<?php esc_attr_e( 'Review flow steps', 'jcp-core' ); ?>">
-									<li>
-										<span class="jcp-story-reviews__step">1</span>
-										<?php if ( $icon( 'send' ) ) : ?>
-											<img src="<?php echo esc_url( $icon( 'send' ) ); ?>" alt="" width="14" height="14" />
-										<?php endif; ?>
-										<span><?php esc_html_e( 'Ask in person', 'jcp-core' ); ?></span>
-									</li>
-									<li>
-										<span class="jcp-story-reviews__step">2</span>
-										<?php if ( $icon( 'qr-code' ) ) : ?>
-											<img src="<?php echo esc_url( $icon( 'qr-code' ) ); ?>" alt="" width="14" height="14" />
-										<?php endif; ?>
-										<span><?php esc_html_e( 'QR on site', 'jcp-core' ); ?></span>
-									</li>
-									<li>
-										<span class="jcp-story-reviews__step">3</span>
-										<?php if ( $icon( 'star' ) ) : ?>
-											<img src="<?php echo esc_url( $icon( 'star' ) ); ?>" alt="" width="14" height="14" />
-										<?php endif; ?>
-										<span><?php esc_html_e( 'Public proof', 'jcp-core' ); ?></span>
-									</li>
-								</ol>
-							</div>
-
-							<div class="jcp-story-moment__result jcp-story-reviews__card is-visible" data-jcp-story-reviews-card>
-								<div class="jcp-story-reviews__qr">
-									<?php if ( $icon( 'qr-code' ) ) : ?>
-										<img src="<?php echo esc_url( $icon( 'qr-code' ) ); ?>" alt="" width="40" height="40" />
-									<?php endif; ?>
-									<span><?php esc_html_e( 'Scan to review', 'jcp-core' ); ?></span>
+							<div class="jcp-story-reviews__scene">
+								<div class="jcp-story-reviews__photo">
+									<img
+										src="<?php echo esc_url( $face ); ?>"
+										alt="<?php echo esc_attr( (string) $props['reviews_photo_alt'] ); ?>"
+										width="480"
+										height="320"
+										loading="lazy"
+										decoding="async"
+									/>
 								</div>
-								<div class="jcp-story-reviews__stars" aria-hidden="true">★★★★★</div>
-								<p<?php jcp_niche_editable_attr( $path . '.reviews_quote' ); ?>>
-									<?php echo esc_html( (string) $props['reviews_quote'] ); ?>
-								</p>
+								<div class="jcp-story-reviews__ask" data-jcp-story-reviews-card>
+									<div class="jcp-story-reviews__qr-block" aria-hidden="true">
+										<?php if ( $icon( 'qr-code' ) ) : ?>
+											<img src="<?php echo esc_url( $icon( 'qr-code' ) ); ?>" alt="" width="56" height="56" />
+										<?php endif; ?>
+										<span><?php esc_html_e( 'Scan to review', 'jcp-core' ); ?></span>
+									</div>
+									<div class="jcp-story-reviews__result">
+										<div class="jcp-story-reviews__stars" aria-hidden="true">★★★★★</div>
+										<p<?php jcp_niche_editable_attr( $path . '.reviews_quote' ); ?>>
+											<?php echo esc_html( (string) $props['reviews_quote'] ); ?>
+										</p>
+									</div>
+								</div>
 							</div>
+
+							<p class="jcp-story-reviews__flow" aria-label="<?php esc_attr_e( 'Review flow', 'jcp-core' ); ?>">
+								<span><?php esc_html_e( 'Ask in person', 'jcp-core' ); ?></span>
+								<span class="jcp-story-reviews__flow-sep" aria-hidden="true">→</span>
+								<span><?php esc_html_e( 'Show the QR', 'jcp-core' ); ?></span>
+								<span class="jcp-story-reviews__flow-sep" aria-hidden="true">→</span>
+								<span><?php esc_html_e( 'Review goes live', 'jcp-core' ); ?></span>
+							</p>
 						</div>
 					</article>
 				<?php endif; ?>
