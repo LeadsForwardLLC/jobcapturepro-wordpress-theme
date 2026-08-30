@@ -3771,7 +3771,7 @@ function ensureOutcomesFooterButtons() {
   // Title copy migration for cached markup
   const titleEl = $('demoOutcomesModalTitle');
   if (titleEl && /this job ran on autopilot/i.test(titleEl.textContent || '')) {
-    titleEl.textContent = 'See what this check-in produced';
+    titleEl.textContent = 'See what this check-in produced, all from one job photo.';
   }
 
   let footer = card.querySelector('.demo-outcomes-modal__footer');
