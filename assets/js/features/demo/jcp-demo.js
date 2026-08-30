@@ -839,11 +839,12 @@ const OUTCOMES_SLIDE_LABELS = [
   'Live on Google Business',
   'Added to JobCapturePro directory',
   'New 5-star review received',
+  'New job request received',
 ];
 
 const outcomesSlideshow = {
   index: 0,
-  total: 5,
+  total: 6,
   isOpen: false,
   touchStartX: 0,
   autoTimer: null,
@@ -3175,6 +3176,24 @@ function getAvatarColor(initial) {
   return colors[code % colors.length];
 }
 
+function getDemoLeadServiceNeed(nicheLabel) {
+  const key = (typeof normalizeDemoNicheKey === 'function')
+    ? normalizeDemoNicheKey(nicheLabel)
+    : String(nicheLabel || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const needs = {
+    plumbing: 'Water heater not heating',
+    hvac: 'AC not cooling',
+    electrical: 'Panel upgrade quote',
+    roofing: 'Roof leak inspection',
+    outdoor: 'Yard project estimate',
+    cleaning: 'Deep clean request',
+    remodeling: 'Remodel quote request',
+    restoration: 'Water damage assessment',
+    default: 'Service request',
+  };
+  return needs[key] || needs.default;
+}
+
 function getOutcomesJobContext() {
   const checkin = getCurrentCheckinForReview();
   const businessName = demoUser.businessName || 'Your Business';
@@ -3204,6 +3223,8 @@ function getOutcomesJobContext() {
     reviewsCount: state.metrics?.reviews ?? 48,
     rating: '5.0',
     directoryUrl: getDemoDirectoryUrl(),
+    leadServiceNeed: getDemoLeadServiceNeed(nicheLabel),
+    leadCustomer: 'Sarah M.',
   };
 }
 
@@ -3341,7 +3362,7 @@ function buildOutcomesSlideHtml(index, ctx) {
             <a href="${directoryUrl}" target="_blank" rel="noopener noreferrer" class="outcomes-directory-view-link">View the directory</a>
           </div>
         </article>`;
-    default:
+    case 4:
       return `
         <article class="demo-outcomes-slide" data-slide="4">
           ${slideLabel}
@@ -3363,6 +3384,38 @@ function buildOutcomesSlideHtml(index, ctx) {
             </div>
           </div>
         </article>`;
+    case 5:
+    default: {
+      const leadNeed = e(ctx.leadServiceNeed || getDemoLeadServiceNeed(ctx.nicheLabel));
+      const leadCustomer = e(ctx.leadCustomer || 'Sarah M.');
+      return `
+        <article class="demo-outcomes-slide" data-slide="5">
+          ${slideLabel}
+          <div class="outcomes-preview outcomes-preview--lead">
+            <div class="outcomes-lead-card">
+              <div class="outcomes-lead-card__banner">
+                <img src="${assetBase}/shared/assets/icons/lucide/bell-ring.svg" class="lucide-icon lucide-icon-sm" alt="">
+                <span>New lead · Just now</span>
+              </div>
+              <div class="outcomes-lead-card__body">
+                <div class="outcomes-lead-card__icon" aria-hidden="true">
+                  <img src="${assetBase}/shared/assets/icons/lucide/briefcase.svg" class="lucide-icon lucide-icon-sm" alt="">
+                </div>
+                <div class="outcomes-lead-card__copy">
+                  <strong>New ${niche} job request</strong>
+                  <p>${leadCustomer} · ${leadNeed}</p>
+                  <small>${location}</small>
+                  <span class="outcomes-lead-card__source">Came from Google / your website / reviews</span>
+                </div>
+              </div>
+              <div class="outcomes-lead-card__meta">
+                <img src="${assetBase}/shared/assets/icons/lucide/trending-up.svg" class="lucide-icon lucide-icon-sm" alt="">
+                Visibility from this check-in helped bring the next job in.
+              </div>
+            </div>
+          </div>
+        </article>`;
+    }
   }
 }
 
