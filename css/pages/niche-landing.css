@@ -4171,10 +4171,6 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   box-shadow: 0 4px 12px rgba(255, 80, 62, 0.35);
 }
 
-.jcp-job-flow__step--website .jcp-job-flow__num {
-  top: 2.15rem;
-}
-
 .jcp-job-flow__badge {
   position: absolute;
   top: 0.65rem;
@@ -4196,16 +4192,19 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   pointer-events: none;
 }
 
+/* Website chrome: bottom overlay card (same language as Google/Social) so top corners stay free for badge + number */
 .jcp-job-flow__chrome--browser {
-  top: 0;
-  left: 0;
-  right: 0;
+  left: 0.55rem;
+  right: 0.55rem;
+  bottom: 0.55rem;
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.45rem 0.55rem;
-  background: rgba(15, 23, 42, 0.88);
-  color: #e2e8f0;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.94);
+  color: #0f172a;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
   font-size: 0.65rem;
 }
 
@@ -4213,6 +4212,7 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 50%;
+  flex-shrink: 0;
   background: #64748b;
 }
 
@@ -4221,9 +4221,11 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 .jcp-job-flow__chrome--browser span:nth-child(3) { background: #34d399; }
 
 .jcp-job-flow__chrome--browser em {
-  margin-left: 0.35rem;
+  margin-left: 0.2rem;
   font-style: normal;
-  opacity: 0.85;
+  font-weight: 700;
+  font-size: 0.72rem;
+  line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

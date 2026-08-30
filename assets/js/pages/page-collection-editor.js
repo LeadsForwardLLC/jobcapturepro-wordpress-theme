@@ -181,7 +181,8 @@
     const mod = String(data.chrome || mods[index] || 'capture').replace(/[^a-z0-9_-]/gi, '') || 'capture';
     const img = String(data.image_url || '').trim();
     const alt = String(data.image_alt || data.title || '').trim();
-    const label = String(data.label || '').trim();
+    let label = String(data.label || '').trim();
+    if (!label && mod === 'website') label = 'Website';
     const title = String(data.title || '').trim();
     const body = String(data.body || '').trim();
     const badge = label
