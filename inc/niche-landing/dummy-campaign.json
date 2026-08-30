@@ -318,7 +318,7 @@
       },
       {
         "q": "What happens after the demo?",
-        "a": "If JobCapturePro looks like a fit, you can try it free for 14 days."
+        "a": "If JobCapturePro looks like a fit, you can get started whenever you're ready."
       }
     ]
   },
@@ -330,7 +330,7 @@
       "url": "/demo/"
     },
     "cta_note": "Free demo · ~2 min · No card",
-    "cta_footnote": "Like what you see? Try JobCapturePro free for 14 days.",
+    "cta_footnote": "",
     "cta_secondary": {
       "label": "",
       "url": ""
