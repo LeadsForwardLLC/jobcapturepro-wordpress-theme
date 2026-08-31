@@ -100,6 +100,16 @@ function jcp_page_seed_home( bool $force_refresh = false ): int {
 		return 0;
 	}
 
+	$asset_base = trailingslashit( get_template_directory_uri() ) . 'assets/campaign';
+	$encoded    = wp_json_encode( $preset );
+	if ( is_string( $encoded ) && $encoded !== '' ) {
+		$encoded = str_replace( '__CAMPAIGN_ASSET__', $asset_base, $encoded );
+		$decoded = json_decode( $encoded, true );
+		if ( is_array( $decoded ) ) {
+			$preset = $decoded;
+		}
+	}
+
 	$existing = get_post_meta( $front_id, jcp_page_content_meta_key(), true );
 	if ( $existing && ! $force_refresh ) {
 		return $front_id;
@@ -130,12 +140,12 @@ function jcp_page_maybe_migrate_pages(): void {
 		}
 	}
 
-	// v2 = hero meta strip aligned with contractor-demo (1 photo / 5 places / More jobs).
+	// v3 = LP-style hero (rotating words + phone + 5 channels meta) + Acculevel case study + grid testimonials.
 	$home_ver = (string) get_option( 'jcp_home_seed_version', '' );
-	if ( $home_ver !== '2' ) {
+	if ( $home_ver !== '3' ) {
 		$id = jcp_page_seed_home( true );
 		if ( $id > 0 ) {
-			update_option( 'jcp_home_seed_version', '2' );
+			update_option( 'jcp_home_seed_version', '3' );
 		}
 	}
 }

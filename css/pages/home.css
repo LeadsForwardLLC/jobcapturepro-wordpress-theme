@@ -104,10 +104,10 @@
   white-space: nowrap;
 }
 
-/* Rotating last word in hero title (visibility / calls / customers / growth) – brand orange */
+/* Rotating last word in hero title (opportunities / visibility / reviews / calls / proof) – brand orange */
 .jcp-home .jcp-hero-rotating-word {
   display: inline-block;
-  min-width: 6.5em;
+  min-width: 8.5em;
   text-align: left;
   color: var(--jcp-color-primary);
   transition: opacity 0.35s ease;

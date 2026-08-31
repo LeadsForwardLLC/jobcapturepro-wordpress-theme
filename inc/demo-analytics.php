@@ -239,10 +239,11 @@ function jcp_demo_analytics_handle_event( \WP_REST_Request $request ) {
         $metadata,
         $meta_json,
         [
-            'email'      => $request->get_param( 'email' ),
-            'first_name' => $request->get_param( 'first_name' ),
-            'last_name'  => $request->get_param( 'last_name' ),
-            'company'    => $request->get_param( 'company' ),
+            'email'         => $request->get_param( 'email' ),
+            'first_name'    => $request->get_param( 'first_name' ),
+            'last_name'     => $request->get_param( 'last_name' ),
+            'company'       => $request->get_param( 'company' ),
+            'business_type' => $request->get_param( 'business_type' ),
         ]
     );
 
@@ -295,9 +296,11 @@ function jcp_demo_analytics_upsert_session_from_event( string $session_id, strin
     $contact_email = $contact_email !== '' ? substr( $contact_email, 0, 255 ) : null;
     $company_from_contact = isset( $contact['company'] ) ? trim( (string) $contact['company'] ) : '';
     $company_from_contact = $company_from_contact !== '' ? substr( sanitize_text_field( $company_from_contact ), 0, 255 ) : null;
+    $business_type_from_contact = isset( $contact['business_type'] ) ? trim( (string) $contact['business_type'] ) : '';
+    $business_type_from_contact = $business_type_from_contact !== '' ? substr( sanitize_text_field( $business_type_from_contact ), 0, 255 ) : null;
 
-    $apply_contact_updates = static function () use ( $wpdb, $stable, $session_id, $contact_name, $contact_email, $company_from_contact ): void {
-        if ( $contact_name === null && $contact_email === null && $company_from_contact === null ) {
+    $apply_contact_updates = static function () use ( $wpdb, $stable, $session_id, $contact_name, $contact_email, $company_from_contact, $business_type_from_contact ): void {
+        if ( $contact_name === null && $contact_email === null && $company_from_contact === null && $business_type_from_contact === null ) {
             return;
         }
         $existing = $wpdb->get_row( $wpdb->prepare( "SELECT session_id FROM $stable WHERE session_id = %s LIMIT 1", $session_id ), ARRAY_A );
@@ -318,6 +321,10 @@ function jcp_demo_analytics_upsert_session_from_event( string $session_id, strin
             $updates['contact_email'] = $contact_email;
             $formats[] = '%s';
         }
+        if ( $business_type_from_contact !== null ) {
+            $updates['business_type'] = $business_type_from_contact;
+            $formats[] = '%s';
+        }
         if ( ! empty( $updates ) ) {
             $wpdb->update( $stable, $updates, [ 'session_id' => $session_id ], $formats, [ '%s' ] );
         }
@@ -325,7 +332,7 @@ function jcp_demo_analytics_upsert_session_from_event( string $session_id, strin
 
     if ( in_array( $event_type, [ 'demo_started', 'demo_run_started' ], true ) ) {
         $business_name = $company_from_contact;
-        $business_type = null;
+        $business_type = $business_type_from_contact;
         if ( is_array( $metadata ) && ! empty( $metadata ) ) {
             $name = isset( $metadata['company'] ) ? $metadata['company'] : ( isset( $metadata['business_name'] ) ? $metadata['business_name'] : null );
             if ( is_string( $name ) && trim( $name ) !== '' ) {
@@ -362,7 +369,7 @@ function jcp_demo_analytics_upsert_session_from_event( string $session_id, strin
 
     if ( $event_type === 'form_step_completed' && is_array( $metadata ) && ! empty( $metadata ) ) {
         $business_name = null;
-        $business_type = null;
+        $business_type = $business_type_from_contact;
         $demo_goals_json = null;
         $name = isset( $metadata['company'] ) ? $metadata['company'] : ( isset( $metadata['business_name'] ) ? $metadata['business_name'] : null );
         if ( is_string( $name ) && trim( $name ) !== '' ) {
@@ -524,27 +531,27 @@ function jcp_demo_analytics_get_stats(): array {
 
     $steps = [];
     $step_defs = [
-        [ 'label' => 'Form step 1', 'type' => 'form_step_completed', 'num' => 1 ],
-        [ 'label' => 'Form step 2', 'type' => 'form_step_completed', 'num' => 2 ],
-        [ 'label' => 'Form step 3', 'type' => 'form_step_completed', 'num' => 3 ],
-        [ 'label' => 'Slideshow step 1', 'type' => 'slideshow_step_viewed', 'num' => 1 ],
-        [ 'label' => 'Slideshow step 2', 'type' => 'slideshow_step_viewed', 'num' => 2 ],
-        [ 'label' => 'Slideshow step 3', 'type' => 'slideshow_step_viewed', 'num' => 3 ],
-        [ 'label' => 'Slideshow step 4', 'type' => 'slideshow_step_viewed', 'num' => 4 ],
-        [ 'label' => 'Slideshow step 5', 'type' => 'slideshow_step_viewed', 'num' => 5 ],
-        [ 'label' => 'Slideshow skipped', 'type' => 'slideshow_skipped', 'num' => null ],
-        [ 'label' => 'Demo run started', 'type' => 'demo_run_started', 'num' => null ],
-        [ 'label' => 'Demo step 1', 'type' => 'demo_step_viewed', 'num' => 1 ],
-        [ 'label' => 'Demo step 2', 'type' => 'demo_step_viewed', 'num' => 2 ],
-        [ 'label' => 'Demo step 3', 'type' => 'demo_step_viewed', 'num' => 3 ],
-        [ 'label' => 'Demo step 4', 'type' => 'demo_step_viewed', 'num' => 4 ],
-        [ 'label' => 'Publish completed', 'type' => 'demo_publish_completed', 'num' => 4 ],
-        [ 'label' => 'Demo step 5', 'type' => 'demo_step_viewed', 'num' => 5 ],
-        [ 'label' => 'Review sent', 'type' => 'demo_review_sent', 'num' => 5 ],
-        [ 'label' => 'Demo step 6', 'type' => 'demo_step_viewed', 'num' => 6 ],
-        [ 'label' => 'Post-demo modal shown', 'type' => 'post_demo_modal_shown', 'num' => null ],
-        [ 'label' => 'Demo replayed', 'type' => 'demo_replayed', 'num' => null ],
-        [ 'label' => 'Converted (Start Free Trial)', 'type' => 'demo_converted', 'num' => null ],
+        [ 'label' => __( 'Gate · Form step 1 (contact)', 'jcp-core' ), 'type' => 'form_step_completed', 'num' => 1 ],
+        [ 'label' => __( 'Gate · Form step 2 (goals)', 'jcp-core' ), 'type' => 'form_step_completed', 'num' => 2 ],
+        [ 'label' => __( 'Gate · Form step 3 (company)', 'jcp-core' ), 'type' => 'form_step_completed', 'num' => 3 ],
+        [ 'label' => __( 'Slideshow · Step 1', 'jcp-core' ), 'type' => 'slideshow_step_viewed', 'num' => 1 ],
+        [ 'label' => __( 'Slideshow · Step 2', 'jcp-core' ), 'type' => 'slideshow_step_viewed', 'num' => 2 ],
+        [ 'label' => __( 'Slideshow · Step 3', 'jcp-core' ), 'type' => 'slideshow_step_viewed', 'num' => 3 ],
+        [ 'label' => __( 'Slideshow · Step 4', 'jcp-core' ), 'type' => 'slideshow_step_viewed', 'num' => 4 ],
+        [ 'label' => __( 'Slideshow · Step 5', 'jcp-core' ), 'type' => 'slideshow_step_viewed', 'num' => 5 ],
+        [ 'label' => __( 'Slideshow skipped', 'jcp-core' ), 'type' => 'slideshow_skipped', 'num' => null ],
+        [ 'label' => __( 'Demo run started', 'jcp-core' ), 'type' => 'demo_run_started', 'num' => null ],
+        [ 'label' => __( 'Demo · Step 1', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 1 ],
+        [ 'label' => __( 'Demo · Step 2', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 2 ],
+        [ 'label' => __( 'Demo · Step 3', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 3 ],
+        [ 'label' => __( 'Demo · Step 4', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 4 ],
+        [ 'label' => __( 'Publish completed', 'jcp-core' ), 'type' => 'demo_publish_completed', 'num' => 4 ],
+        [ 'label' => __( 'Demo · Step 5', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 5 ],
+        [ 'label' => __( 'Review sent', 'jcp-core' ), 'type' => 'demo_review_sent', 'num' => 5 ],
+        [ 'label' => __( 'Demo · Step 6', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 6 ],
+        [ 'label' => __( 'End screen shown', 'jcp-core' ), 'type' => 'post_demo_modal_shown', 'num' => null ],
+        [ 'label' => __( 'Demo replayed', 'jcp-core' ), 'type' => 'demo_replayed', 'num' => null ],
+        [ 'label' => __( 'Converted · Start Free Trial', 'jcp-core' ), 'type' => 'demo_converted', 'num' => null ],
     ];
 
     $prev_count = $total_sessions;
@@ -824,6 +831,7 @@ function jcp_demo_analytics_get_sessions( string $filter = 'all', int $limit = 2
     }, $rows ) ) );
 
     $cta_by_session = [];
+    $last_step_by_session = [];
     if ( ! empty( $session_ids ) ) {
         $placeholders = implode( ',', array_fill( 0, count( $session_ids ), '%s' ) );
         // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- placeholders built safely.
@@ -861,6 +869,34 @@ function jcp_demo_analytics_get_sessions( string $filter = 'all', int $limit = 2
                 }
             }
         }
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- placeholders built safely.
+        $last_sql = $wpdb->prepare(
+            "SELECT e.session_id, e.event_type, e.step_number
+             FROM $etable e
+             INNER JOIN (
+               SELECT session_id, MAX(id) AS max_id
+               FROM $etable
+               WHERE session_id IN ($placeholders)
+               GROUP BY session_id
+             ) latest ON latest.session_id = e.session_id AND latest.max_id = e.id",
+            ...$session_ids
+        );
+        $last_rows = $wpdb->get_results( $last_sql, ARRAY_A );
+        if ( is_array( $last_rows ) ) {
+            foreach ( $last_rows as $lrow ) {
+                $sid = (string) ( $lrow['session_id'] ?? '' );
+                if ( $sid === '' ) {
+                    continue;
+                }
+                $last_step_by_session[ $sid ] = jcp_demo_analytics_format_event_label(
+                    (string) ( $lrow['event_type'] ?? '' ),
+                    isset( $lrow['step_number'] ) && $lrow['step_number'] !== null && $lrow['step_number'] !== ''
+                        ? (int) $lrow['step_number']
+                        : null
+                );
+            }
+        }
     }
 
     $cta_labels = [
@@ -894,9 +930,126 @@ function jcp_demo_analytics_get_sessions( string $filter = 'all', int $limit = 2
             'conversion_at'         => isset( $row['conversion_at'] ) && trim( (string) $row['conversion_at'] ) !== '' ? (string) $row['conversion_at'] : null,
             'post_demo_ctas'        => $cta_keys,
             'post_demo_ctas_display'=> $cta_display,
+            'last_step'             => $last_step_by_session[ $sid ] ?? __( 'Started', 'jcp-core' ),
         ];
     }
     return $out;
+}
+
+/**
+ * Human-readable label for an analytics event + optional step number.
+ *
+ * @param string   $event_type  Event type.
+ * @param int|null $step_number Step number.
+ */
+function jcp_demo_analytics_format_event_label( string $event_type, ?int $step_number = null ): string {
+    $map = [
+        'demo_started'            => __( 'Demo started', 'jcp-core' ),
+        'form_step_completed'     => __( 'Gate form step', 'jcp-core' ),
+        'slideshow_step_viewed'   => __( 'Slideshow step', 'jcp-core' ),
+        'slideshow_skipped'       => __( 'Slideshow skipped', 'jcp-core' ),
+        'demo_run_started'        => __( 'Demo run started', 'jcp-core' ),
+        'demo_step_viewed'        => __( 'Demo step', 'jcp-core' ),
+        'demo_publish_completed'  => __( 'Publish completed', 'jcp-core' ),
+        'demo_review_sent'        => __( 'Review sent', 'jcp-core' ),
+        'demo_outcomes_opened'    => __( 'Outcomes opened', 'jcp-core' ),
+        'demo_outcomes_slide'     => __( 'Outcomes slide', 'jcp-core' ),
+        'demo_outcomes_completed' => __( 'Outcomes completed', 'jcp-core' ),
+        'demo_coach_minimized'    => __( 'Coach minimized', 'jcp-core' ),
+        'demo_replayed'           => __( 'Demo replayed', 'jcp-core' ),
+        'post_demo_modal_shown'   => __( 'End screen shown', 'jcp-core' ),
+        'cta_clicked'             => __( 'CTA clicked', 'jcp-core' ),
+        'demo_converted'          => __( 'Converted · Start Free Trial', 'jcp-core' ),
+    ];
+    $base = $map[ $event_type ] ?? $event_type;
+    if ( $step_number !== null && $step_number > 0 && in_array( $event_type, [ 'form_step_completed', 'slideshow_step_viewed', 'demo_step_viewed', 'demo_outcomes_slide' ], true ) ) {
+        return $base . ' ' . (string) $step_number;
+    }
+    return $base;
+}
+
+/**
+ * Session detail for admin: contact fields + chronological event timeline.
+ *
+ * @param string $session_id Session ID.
+ * @return array<string, mixed>|null
+ */
+function jcp_demo_analytics_get_session_detail( string $session_id ): ?array {
+    if ( ! current_user_can( 'manage_options' ) || $session_id === '' ) {
+        return null;
+    }
+    global $wpdb;
+    jcp_demo_analytics_maybe_create_sessions_table();
+    jcp_demo_analytics_maybe_create_table();
+    $stable = $wpdb->prefix . JCP_DEMO_SESSIONS_TABLE;
+    $etable = $wpdb->prefix . JCP_DEMO_EVENTS_TABLE;
+
+    $row = $wpdb->get_row(
+        $wpdb->prepare(
+            "SELECT session_id, business_name, business_type, contact_name, contact_email, demo_started_at, demo_completed, demo_converted, conversion_at
+             FROM $stable WHERE session_id = %s LIMIT 1",
+            $session_id
+        ),
+        ARRAY_A
+    );
+    if ( ! is_array( $row ) ) {
+        return null;
+    }
+
+    $events = $wpdb->get_results(
+        $wpdb->prepare(
+            "SELECT id, event_type, step_number, metadata, created_at
+             FROM $etable WHERE session_id = %s ORDER BY id ASC LIMIT 500",
+            $session_id
+        ),
+        ARRAY_A
+    );
+    if ( ! is_array( $events ) ) {
+        $events = [];
+    }
+
+    $timeline = [];
+    foreach ( $events as $event ) {
+        $etype = (string) ( $event['event_type'] ?? '' );
+        $step  = isset( $event['step_number'] ) && $event['step_number'] !== null && $event['step_number'] !== ''
+            ? (int) $event['step_number']
+            : null;
+        $meta  = isset( $event['metadata'] ) ? json_decode( (string) $event['metadata'], true ) : null;
+        $detail = '';
+        if ( is_array( $meta ) ) {
+            if ( ! empty( $meta['cta'] ) ) {
+                $detail = 'CTA: ' . sanitize_key( (string) $meta['cta'] );
+            } elseif ( ! empty( $meta['business_type'] ) ) {
+                $detail = jcp_demo_analytics_business_type_label( (string) $meta['business_type'] );
+            }
+        }
+        $timeline[] = [
+            'id'          => (int) ( $event['id'] ?? 0 ),
+            'event_type'  => $etype,
+            'step_number' => $step,
+            'label'       => jcp_demo_analytics_format_event_label( $etype, $step ),
+            'detail'      => $detail,
+            'created_at'  => isset( $event['created_at'] ) ? (string) $event['created_at'] : '',
+        ];
+    }
+
+    $bt = isset( $row['business_type'] ) && trim( (string) $row['business_type'] ) !== '' ? (string) $row['business_type'] : null;
+    $last = ! empty( $timeline ) ? $timeline[ count( $timeline ) - 1 ]['label'] : __( 'Started', 'jcp-core' );
+
+    return [
+        'session_id'            => (string) $row['session_id'],
+        'business_name'         => isset( $row['business_name'] ) && trim( (string) $row['business_name'] ) !== '' ? (string) $row['business_name'] : null,
+        'business_type'         => $bt,
+        'business_type_display' => $bt ? jcp_demo_analytics_business_type_label( $bt ) : null,
+        'contact_name'          => isset( $row['contact_name'] ) && trim( (string) $row['contact_name'] ) !== '' ? (string) $row['contact_name'] : null,
+        'contact_email'         => isset( $row['contact_email'] ) && trim( (string) $row['contact_email'] ) !== '' ? (string) $row['contact_email'] : null,
+        'demo_started_at'       => isset( $row['demo_started_at'] ) ? (string) $row['demo_started_at'] : '',
+        'demo_completed'        => ! empty( $row['demo_completed'] ),
+        'demo_converted'        => ! empty( $row['demo_converted'] ),
+        'conversion_at'         => isset( $row['conversion_at'] ) && trim( (string) $row['conversion_at'] ) !== '' ? (string) $row['conversion_at'] : null,
+        'last_step'             => $last,
+        'events'                => $timeline,
+    ];
 }
 
 /**

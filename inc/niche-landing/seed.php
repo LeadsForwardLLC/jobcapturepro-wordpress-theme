@@ -447,12 +447,12 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v25 = Acculevel Local Falcon–style local_rank_case_study after testimonials.
+	// v26 = Peter male avatar + sentence-case headlines + Title Case CTAs.
 	$demo_ver = (string) get_option( 'jcp_contractor_demo_seed_version', '' );
-	if ( $demo_ver !== '25' || ! jcp_niche_contractor_demo_exists() ) {
-		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '25' );
+	if ( $demo_ver !== '26' || ! jcp_niche_contractor_demo_exists() ) {
+		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '26' );
 		if ( $created > 0 ) {
-			update_option( 'jcp_contractor_demo_seed_version', '25' );
+			update_option( 'jcp_contractor_demo_seed_version', '26' );
 			update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 		}
 	}
@@ -481,7 +481,7 @@ function jcp_niche_admin_seed_notice(): void {
 	update_option( 'jcp_niche_hvac_seeded', '1' );
 	update_option( 'jcp_niche_referral_seeded', '1' );
 	update_option( 'jcp_niche_contractor_demo_seeded', '1' );
-	update_option( 'jcp_contractor_demo_seed_version', '25' );
+	update_option( 'jcp_contractor_demo_seed_version', '26' );
 	wp_safe_redirect( admin_url( 'edit.php?post_type=jcp_niche_landing&jcp_seeded=1' ) );
 	exit;
 }

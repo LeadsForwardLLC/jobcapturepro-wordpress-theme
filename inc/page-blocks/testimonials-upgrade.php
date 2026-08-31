@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Canonical balanced homepage hero meta_stats.
- * Aligned with dummy-home.json + contractor-demo (1 photo → 5 places → more jobs).
+ * Aligned with contractor-demo / campaign core_mechanic (1 photo → 5 channels → More jobs).
  *
  * @return array<int, array<string, string>>
  */
@@ -26,15 +26,15 @@ function jcp_page_home_balanced_meta_stats(): array {
 		],
 		[
 			'icon'      => 'map',
-			'label'     => '5 places',
-			'detail'    => 'Web · Google · Social · Directory · Reviews',
+			'label'     => '5 channels',
+			'detail'    => 'Published online',
 			'css_class' => 'meta-stat-channels',
 		],
 		[
-			'icon'      => 'clock',
+			'icon'      => 'badge-check',
 			'label'     => 'More jobs',
 			'detail'    => 'From finished work',
-			'css_class' => 'meta-stat-busywork',
+			'css_class' => 'meta-stat-proof',
 		],
 	];
 }
@@ -59,13 +59,15 @@ function jcp_page_home_meta_stats_need_balance( array $stats ): bool {
 		$blob .= ' ' . strtolower( trim( (string) ( $row['detail'] ?? '' ) ) );
 	}
 
-	// Legacy claim-heavy / 4-channel framing — force upgrade to claim-safe 5-place strip.
+	// Legacy claim-heavy / outdated framing — force upgrade to claim-safe LP meta strip.
 	if (
 		str_contains( $blob, '4 channels' )
+		|| str_contains( $blob, '5 places' )
 		|| str_contains( $blob, '0 busywork' )
 		|| str_contains( $blob, 'becomes proof on every channel' )
 		|| str_contains( $blob, 'your crew just takes the photo' )
 		|| str_contains( $blob, 'website, google, social & directory' )
+		|| str_contains( $blob, 'web · google · social · directory · reviews' )
 	) {
 		return true;
 	}

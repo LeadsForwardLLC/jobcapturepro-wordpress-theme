@@ -2355,7 +2355,8 @@ function jcp_niche_render_testimonials( array $props ): void {
 		return;
 	}
 
-	$show_featured = ! array_key_exists( 'show_featured', $props ) || ! empty( $props['show_featured'] );
+	// Default off so new pages match the landing-page grid (no featured highlight).
+	$show_featured = ! empty( $props['show_featured'] );
 	$featured_key  = trim( (string) ( $props['featured_key'] ?? '' ) );
 	$featured      = $show_featured ? jcp_testimonials_resolve_featured( $reviews, $featured_key ) : null;
 	if ( $show_featured && $featured === null ) {
@@ -2377,10 +2378,10 @@ function jcp_niche_render_testimonials( array $props ): void {
 	$section_id  = ! empty( $props['section_id'] ) ? (string) $props['section_id'] : 'testimonials';
 	$autoplay    = ! empty( $props['autoplay'] );
 	$autoplay_ms = isset( $props['autoplay_ms'] ) ? max( 1000, (int) $props['autoplay_ms'] ) : 6000;
-	$per_view    = isset( $props['per_view'] ) ? max( 1, (int) $props['per_view'] ) : ( $show_featured ? 1 : 2 );
-	$layout      = sanitize_key( (string) ( $props['layout'] ?? 'slider' ) );
+	$per_view    = isset( $props['per_view'] ) ? max( 1, (int) $props['per_view'] ) : ( $show_featured ? 1 : 4 );
+	$layout      = sanitize_key( (string) ( $props['layout'] ?? ( $show_featured ? 'slider' : 'grid' ) ) );
 	if ( ! in_array( $layout, [ 'slider', 'grid' ], true ) ) {
-		$layout = 'slider';
+		$layout = $show_featured ? 'slider' : 'grid';
 	}
 	$show_stars  = ! array_key_exists( 'show_stars', $props ) || ! empty( $props['show_stars'] );
 	$show_roles  = ! array_key_exists( 'show_roles', $props ) || ! empty( $props['show_roles'] );

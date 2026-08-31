@@ -18,7 +18,7 @@
     ]
   },
   "hero": {
-    "h1": "Every Finished Job Should Help Win the Next One.",
+    "h1": "Every finished job should help win the next one.",
     "subheadline": "JobCapturePro turns the photos your crew already takes into website proof, Google activity, social content and review opportunities, without adding another marketing task to your day.",
     "cta_primary": {
       "label": "See JobCapturePro On My Business",
@@ -36,7 +36,7 @@
     "media_type": "phone_mockup",
     "phone_image_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
     "phone_image_alt": "Technician photographing a completed HVAC job on site",
-    "phone_cta_label": "Start demo",
+    "phone_cta_label": "Start Demo",
     "show_social_proof": true,
     "social_proof": {
       "rating": 5,
@@ -82,7 +82,7 @@
   ],
   "benefits": {
     "variant": "job_flow",
-    "headline": "One Job Photo. Five Things Start Happening.",
+    "headline": "One job photo. Five things start happening.",
     "subheadline": "Your crew captures the finished job once. JobCapturePro turns it into usable proof across the channels that help homeowners choose who to call.",
     "items": [
       {
@@ -171,7 +171,7 @@
   },
   "problem": {
     "variant": "contrast",
-    "headline": "You Already Paid to Create the Proof. Then It Disappears.",
+    "headline": "You already paid to create the proof. Then it disappears.",
     "subheadline": "The crew does the work. Someone takes the pictures. The customer is happy. Then the truck leaves, and most of that proof disappears into a camera roll, CRM or photo folder where your next customer may never see it.",
     "show_subheadline": true,
     "pain_points": [],
@@ -199,7 +199,7 @@
   "story_moments": {
     "section_id": "see-how-it-works",
     "eyebrow": "What the job can do next",
-    "headline": "What Your Finished Jobs Can Start Doing For You",
+    "headline": "What your finished jobs can start doing for you",
     "body": "Turn work you've already completed into proof homeowners can actually see.",
     "show_eyebrow": true,
     "show_headline": true,
@@ -211,7 +211,7 @@
     "publish_photo_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
     "publish_photo_alt": "Technician photographing a completed HVAC job",
     "publish_preview_url": "__CAMPAIGN_ASSET__/jcp-campaign-job-proof.jpg",
-    "reviews_headline": "Ask while they’re still happy.",
+    "reviews_headline": "Ask while they're still happy.",
     "reviews_body": "Show the QR before you leave, while the experience is still fresh.",
     "reviews_photo_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg",
     "reviews_photo_alt": "Owner on site after a completed job",
@@ -225,7 +225,7 @@
   },
   "testimonials": {
     "eyebrow": "From real operators",
-    "headline": "Contractors Are Already Putting Their Finished Jobs to Work.",
+    "headline": "Contractors are already putting their finished jobs to work.",
     "subheadline": "Specific feedback from people using JobCapturePro to turn completed work into public proof.",
     "featured_key": "peter-bonk",
     "show_featured": false,
@@ -261,7 +261,7 @@
         "role": "Marketing agency",
         "quote": "One of the easiest marketing wins we've had for an HVAC client. Techs already take photos. Now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.",
         "rating": 5,
-        "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg",
+        "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-operator.jpg",
         "avatar_alt": "Peter Bonk"
       },
       {
@@ -270,7 +270,7 @@
         "role": "Contractor",
         "quote": "Awesome. It takes my work site pictures and turns them into a marketing campaign.",
         "rating": 5,
-        "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-operator.jpg",
+        "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
         "avatar_alt": "Brian Hardy"
       },
       {
@@ -298,10 +298,22 @@
     "headline": "From 0% SoLV to Map Pack dominance in ~90 days — two markets.",
     "body": "Acculevel is a 9-figure, multi-location foundation company that already ranked for much more. On these tracked keywords, JobCapturePro sat in the job → proof → visibility loop that helped lift Map Pack coverage — supporting visibility, not guaranteeing rankings.",
     "stats": [
-      { "value": "0% → up to 100%", "label": "SoLV" },
-      { "value": "20+ → ~#1–#2", "label": "ARP" },
-      { "value": "2", "label": "locations" },
-      { "value": "~12 weeks", "label": "mid-March → early June" }
+      {
+        "value": "0% → up to 100%",
+        "label": "SoLV"
+      },
+      {
+        "value": "20+ → ~#1–#2",
+        "label": "ARP"
+      },
+      {
+        "value": "2",
+        "label": "locations"
+      },
+      {
+        "value": "~12 weeks",
+        "label": "mid-March → early June"
+      }
     ],
     "locations": [
       {
@@ -385,7 +397,7 @@
     ],
     "footnote": "SoLV = Share of Local Voice (top-3 presence across the geo-grid). Results for Acculevel locations, March–June 2026, on tracked keywords only. Past performance is not a guarantee of future results.",
     "cta_secondary": {
-      "label": "See it for my business",
+      "label": "See It for My Business",
       "url": "/demo/"
     },
     "section_id": "case-study",
@@ -396,7 +408,7 @@
     "show_cta": true
   },
   "faq": {
-    "headline": "Quick Answers Before You See It On Your Business",
+    "headline": "Quick answers before you see it on your business",
     "items": [
       {
         "q": "Do I have to replace CompanyCam or my CRM?",
@@ -425,7 +437,7 @@
     ]
   },
   "final_cta": {
-    "headline": "You've Already Done the Hard Part.",
+    "headline": "You've already done the hard part.",
     "subheadline": "The job is finished. The proof already exists. Now put it to work.",
     "cta_primary": {
       "label": "See JobCapturePro On My Business",

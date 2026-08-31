@@ -5,32 +5,90 @@
   "page_label": "Home",
   "hide_breadcrumb": true,
   "hero": {
-    "h1": "Turn every completed job into more opportunities — ",
-    "h1_emphasis": "automatically.",
+    "h1": "Turn every completed job into ",
+    "rotating_words": [
+      "opportunities",
+      "visibility",
+      "reviews",
+      "calls",
+      "proof"
+    ],
     "subheadline": "Your crew already takes job photos. JobCapturePro turns them into Google updates, website proof, social posts, directory visibility, and review opportunities automatically.",
-    "cta_primary": { "label": "See It for My Business →", "url": "/demo/" },
-    "cta_secondary": { "label": "Start Free 14-Day Trial", "url": "" },
+    "cta_primary": {
+      "label": "See It for My Business →",
+      "url": "/demo/"
+    },
+    "cta_secondary": {
+      "label": "Start Free 14-Day Trial",
+      "url": ""
+    },
     "show_cta_secondary": true,
     "cta_microcopy": "Interactive 2-minute demo · No signup required",
     "show_trust_line": true,
+    "show_visual": true,
+    "media_type": "phone_mockup",
+    "phone_image_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
+    "phone_image_alt": "Technician photographing a completed HVAC job on site",
+    "phone_cta_label": "Start Demo",
     "meta_stats": [
-      { "icon": "camera", "label": "1 photo", "detail": "Starts the workflow", "css_class": "meta-stat-photo" },
-      { "icon": "map", "label": "5 places", "detail": "Web · Google · Social · Directory · Reviews", "css_class": "meta-stat-channels" },
-      { "icon": "clock", "label": "More jobs", "detail": "From finished work", "css_class": "meta-stat-busywork" }
+      {
+        "icon": "camera",
+        "label": "1 photo",
+        "detail": "Starts the workflow",
+        "css_class": "meta-stat-photo"
+      },
+      {
+        "icon": "map",
+        "label": "5 channels",
+        "detail": "Published online",
+        "css_class": "meta-stat-channels"
+      },
+      {
+        "icon": "badge-check",
+        "label": "More jobs",
+        "detail": "From finished work",
+        "css_class": "meta-stat-proof"
+      }
     ]
   },
   "how_it_works": {
     "headline": "How JobCapturePro works",
     "subheadline": "Capture once. Publish ready proof. Ask for the review while the customer is still on site.",
     "numeric_steps": true,
-    "cta_primary": { "label": "See It for My Business →", "url": "/demo/" },
-    "cta_secondary": { "label": "View pricing", "url": "/pricing" },
+    "cta_primary": {
+      "label": "See It for My Business →",
+      "url": "/demo/"
+    },
+    "cta_secondary": {
+      "label": "View pricing",
+      "url": "/pricing"
+    },
     "show_cta_secondary": false,
     "steps": [
-      { "title": "Capture", "lines": ["Crew snaps a photo or the job completes in your CRM."] },
-      { "title": "AI Check-In", "lines": ["JobCapturePro builds geotagged, channel-ready check-in content from the job."] },
-      { "title": "Publish", "lines": ["Approved proof can update your website, Google, social, and directory."] },
-      { "title": "Review", "lines": ["Crew shows a QR code so customers can review on the spot."] }
+      {
+        "title": "Capture",
+        "lines": [
+          "Crew snaps a photo or the job completes in your CRM."
+        ]
+      },
+      {
+        "title": "AI Check-In",
+        "lines": [
+          "JobCapturePro builds geotagged, channel-ready check-in content from the job."
+        ]
+      },
+      {
+        "title": "Publish",
+        "lines": [
+          "Approved proof can update your website, Google, social, and directory."
+        ]
+      },
+      {
+        "title": "Review",
+        "lines": [
+          "Crew shows a QR code so customers can review on the spot."
+        ]
+      }
     ]
   },
   "demo_preview": {
@@ -38,7 +96,10 @@
     "headline": "One job photo. Proof where homeowners look.",
     "body": "See one completed job become website proof, Google activity, social content, directory visibility, and a review opportunity.",
     "cue": "You will see how one job becomes Google updates, website proof, directory presence, social posts, and an on-site review request.",
-    "cta_primary": { "label": "See It for My Business →", "url": "/demo/" },
+    "cta_primary": {
+      "label": "See It for My Business →",
+      "url": "/demo/"
+    },
     "cta_note": "Interactive 2-minute demo · No signup required",
     "show_cta": true,
     "show_cta_note": true,
@@ -51,11 +112,26 @@
     "headline": "A decade growing contractors. Then we built the missing piece.",
     "body": "250,000+ leads. $150M+ booked. One gap we kept seeing: finished jobs that never became marketing. JobCapturePro closes it.",
     "stats": [
-      { "value": "10", "label": "years", "detail": "Helping contractors grow" },
-      { "value": "250K+", "label": "leads", "detail": "Generated for contractor clients" },
-      { "value": "$150M+", "label": "revenue", "detail": "Booked from those leads" }
+      {
+        "value": "10",
+        "label": "years",
+        "detail": "Helping contractors grow"
+      },
+      {
+        "value": "250K+",
+        "label": "leads",
+        "detail": "Generated for contractor clients"
+      },
+      {
+        "value": "$150M+",
+        "label": "revenue",
+        "detail": "Booked from those leads"
+      }
     ],
-    "cta_primary": { "label": "See It for My Business →", "url": "/demo/" },
+    "cta_primary": {
+      "label": "See It for My Business →",
+      "url": "/demo/"
+    },
     "cta_note": "Interactive 2-minute demo · No signup required",
     "section_id": "built-by-leadsforward",
     "show_eyebrow": true,
@@ -68,23 +144,42 @@
     "headline": "Real job proof, not marketing claims",
     "subheadline": "One completed job can support website, Google, social, and directory visibility, plus an on-site review opportunity.",
     "items": [
-      { "icon": "earth", "label": "Website", "copy": "Published as live job content homeowners can trust" },
-      { "icon": "map-pin", "label": "Google Business Profile", "copy": "Fresh job updates that keep your profile active" },
-      { "icon": "share-2", "label": "Social Media", "copy": "Shareable proof from work you already finished" },
-      { "icon": "building-2", "label": "Directory", "copy": "Verified listing powered by real job activity" }
+      {
+        "icon": "earth",
+        "label": "Website",
+        "copy": "Published as live job content homeowners can trust"
+      },
+      {
+        "icon": "map-pin",
+        "label": "Google Business Profile",
+        "copy": "Fresh job updates that keep your profile active"
+      },
+      {
+        "icon": "share-2",
+        "label": "Social Media",
+        "copy": "Shareable proof from work you already finished"
+      },
+      {
+        "icon": "building-2",
+        "label": "Directory",
+        "copy": "Verified listing powered by real job activity"
+      }
     ],
-    "callout_badge": "Verified Job Proof",
+    "callout_badge": "Verified job proof",
     "callout_title": "All JobCapturePro customers are added to the verified directory",
     "callout_text": "This isn't a demo or sample. Every listing represents a real business, real jobs, and real proof created by JobCapturePro.",
     "link_label": "Learn more about the JobCapturePro directory",
     "link_url": "#directory-preview"
   },
   "testimonials": {
-    "eyebrow": "Customer stories",
-    "headline": "Trusted by contractors who already take the photos",
-    "subheadline": "Real operators and agencies using JobCapturePro to turn completed jobs into visibility, content, and reviews.",
+    "eyebrow": "From real operators",
+    "headline": "Contractors are already putting their finished jobs to work.",
+    "subheadline": "Specific feedback from people using JobCapturePro to turn completed work into public proof.",
     "featured_key": "peter-bonk",
-    "autoplay": true,
+    "show_featured": false,
+    "layout": "grid",
+    "per_view": 4,
+    "autoplay": false,
     "autoplay_ms": 6000,
     "show_stars": true,
     "show_roles": true,
@@ -92,36 +187,173 @@
     "show_headline": true,
     "show_subheadline": true,
     "section_id": "testimonials",
+    "faces_label": "Real crews. Real completed jobs.",
+    "faces": [
+      {
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-operator.jpg",
+        "image_alt": "Field technician on a job site"
+      },
+      {
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg",
+        "image_alt": "Home service business owner"
+      },
+      {
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg",
+        "image_alt": "Crew reviewing job photos together"
+      }
+    ],
     "reviews": [
       {
-        "id": "trent-ellison",
-        "name": "Trent Ellison",
-        "role": "Home service operator",
-        "quote": "Easy to use and really smart. Makes it super simple to turn completed work into useful online content, and the review side is amazing.",
-        "rating": 5
+        "id": "peter-bonk",
+        "name": "Peter Bonk",
+        "role": "Marketing agency",
+        "quote": "One of the easiest marketing wins we've had for an HVAC client. Techs already take photos. Now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.",
+        "rating": 5,
+        "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-operator.jpg",
+        "avatar_alt": "Peter Bonk"
       },
       {
         "id": "brian-hardy",
         "name": "Brian Hardy",
         "role": "Contractor",
         "quote": "Awesome. It takes my work site pictures and turns them into a marketing campaign.",
-        "rating": 5
+        "rating": 5,
+        "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
+        "avatar_alt": "Brian Hardy"
+      },
+      {
+        "id": "trent-ellison",
+        "name": "Trent Ellison",
+        "role": "Home service operator",
+        "quote": "Easy to use and really smart. Makes it super simple to turn completed work into useful online content, and the review side is amazing.",
+        "rating": 5,
+        "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg",
+        "avatar_alt": "Trent Ellison"
       },
       {
         "id": "heriberto-eddie-roman",
         "name": "Heriberto Eddie Roman",
         "role": "Business owner",
         "quote": "JobCapturePro has been a game changer for my business!",
-        "rating": 5
-      },
-      {
-        "id": "peter-bonk",
-        "name": "Peter Bonk",
-        "role": "Marketing agency",
-        "quote": "One of the easiest marketing wins we've had for an HVAC client. Techs already take photos. Now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.",
-        "rating": 5
+        "rating": 5,
+        "avatar_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
+        "avatar_alt": "Heriberto Eddie Roman"
       }
     ]
+  },
+  "local_rank_case_study": {
+    "eyebrow": "Real Map Pack results",
+    "headline": "From 0% SoLV to Map Pack dominance in ~90 days — two markets.",
+    "body": "Acculevel is a 9-figure, multi-location foundation company that already ranked for much more. On these tracked keywords, JobCapturePro sat in the job → proof → visibility loop that helped lift Map Pack coverage — supporting visibility, not guaranteeing rankings.",
+    "stats": [
+      {
+        "value": "0% → up to 100%",
+        "label": "SoLV"
+      },
+      {
+        "value": "20+ → ~#1–#2",
+        "label": "ARP"
+      },
+      {
+        "value": "2",
+        "label": "locations"
+      },
+      {
+        "value": "~12 weeks",
+        "label": "mid-March → early June"
+      }
+    ],
+    "locations": [
+      {
+        "name": "Triadelphia, WV",
+        "address": "Acculevel, 300 Wharton Cir Ste 202, Triadelphia, WV 26059",
+        "meta": "7×7 · 6.0 mi · 49 points",
+        "scans": [
+          {
+            "keyword": "foundation repair",
+            "grid_label": "Geo-grid scan (7×7 · 6 mi)",
+            "before": {
+              "date": "3/11–3/16/2026",
+              "arp": "20+",
+              "solv": "0%",
+              "pattern": "before_blank"
+            },
+            "after": {
+              "date": "6/8/2026",
+              "arp": "2.02",
+              "solv": "89.80%",
+              "pattern": "after_fr_wv"
+            }
+          },
+          {
+            "keyword": "basement waterproofing",
+            "grid_label": "Geo-grid scan (7×7 · 6 mi)",
+            "before": {
+              "date": "3/11–3/16/2026",
+              "arp": "20+",
+              "solv": "0%",
+              "pattern": "before_blank"
+            },
+            "after": {
+              "date": "6/8/2026",
+              "arp": "1.18",
+              "solv": "100%",
+              "pattern": "after_bw_wv"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Monroe, MI",
+        "address": "Acculevel, 428 S Monroe St Ste 202, Monroe, MI 48161",
+        "meta": "7×7 · 6.0 mi · 49 points",
+        "scans": [
+          {
+            "keyword": "foundation repair",
+            "grid_label": "Geo-grid scan (7×7 · 6 mi)",
+            "before": {
+              "date": "3/11–3/16/2026",
+              "arp": "20+",
+              "solv": "0%",
+              "pattern": "before_blank"
+            },
+            "after": {
+              "date": "6/8/2026",
+              "arp": "2.20",
+              "solv": "83.67%",
+              "pattern": "after_fr_mi"
+            }
+          },
+          {
+            "keyword": "basement waterproofing",
+            "grid_label": "Geo-grid scan (7×7 · 6 mi)",
+            "before": {
+              "date": "3/11–3/16/2026",
+              "arp": "20+",
+              "solv": "0%",
+              "pattern": "before_blank"
+            },
+            "after": {
+              "date": "6/8/2026",
+              "arp": "1.59",
+              "solv": "95.92%",
+              "pattern": "after_bw_mi"
+            }
+          }
+        ]
+      }
+    ],
+    "footnote": "SoLV = Share of Local Voice (top-3 presence across the geo-grid). Results for Acculevel locations, March–June 2026, on tracked keywords only. Past performance is not a guarantee of future results.",
+    "cta_secondary": {
+      "label": "See It for My Business",
+      "url": "/demo/"
+    },
+    "section_id": "case-study",
+    "show_eyebrow": true,
+    "show_headline": true,
+    "show_body": true,
+    "show_stats": true,
+    "show_cta": true
   },
   "benefits": {
     "headline": "Benefits that show up in the market",
@@ -129,15 +361,57 @@
     "section_id": "features",
     "variant": "cta_row",
     "items": [
-      { "icon": "badge-check", "title": "Verified proof", "body": "Real check-ins replace claims with proof homeowners trust.", "stat_value": "Proof", "stat_label": "from real jobs" },
-      { "icon": "map-pin", "title": "Local visibility", "body": "Fresh job activity can support stronger map presence over time.", "stat_value": "Map", "stat_label": "presence grows" },
-      { "icon": "message-square", "title": "Consistent presence", "body": "Social and GBP stay active without manual posting.", "stat_value": "Always", "stat_label": "on brand" },
-      { "icon": "star", "title": "Review opportunities", "body": "Crew shows a QR code on site while the customer is still happy.", "stat_value": "Reviews", "stat_label": "on the spot" },
-      { "icon": "building-2", "title": "Directory presence", "body": "Get listed in the verified contractor directory as you publish real work.", "stat_value": "Directory", "stat_label": "from real jobs" },
-      { "icon": "phone", "title": "More reasons to call", "body": "Visibility across search, maps, and directory channels gives homeowners more proof to trust.", "stat_value": "Calls", "stat_label": "more reasons" }
+      {
+        "icon": "badge-check",
+        "title": "Verified proof",
+        "body": "Real check-ins replace claims with proof homeowners trust.",
+        "stat_value": "Proof",
+        "stat_label": "from real jobs"
+      },
+      {
+        "icon": "map-pin",
+        "title": "Local visibility",
+        "body": "Fresh job activity can support stronger map presence over time.",
+        "stat_value": "Map",
+        "stat_label": "presence grows"
+      },
+      {
+        "icon": "message-square",
+        "title": "Consistent presence",
+        "body": "Social and GBP stay active without manual posting.",
+        "stat_value": "Always",
+        "stat_label": "on brand"
+      },
+      {
+        "icon": "star",
+        "title": "Review opportunities",
+        "body": "Crew shows a QR code on site while the customer is still happy.",
+        "stat_value": "Reviews",
+        "stat_label": "on the spot"
+      },
+      {
+        "icon": "building-2",
+        "title": "Directory presence",
+        "body": "Get listed in the verified contractor directory as you publish real work.",
+        "stat_value": "Directory",
+        "stat_label": "from real jobs"
+      },
+      {
+        "icon": "phone",
+        "title": "More reasons to call",
+        "body": "Visibility across search, maps, and directory channels gives homeowners more proof to trust.",
+        "stat_value": "Calls",
+        "stat_label": "more reasons"
+      }
     ],
-    "cta_primary": { "label": "See It for My Business →", "url": "/demo/" },
-    "cta_secondary": { "label": "View pricing", "url": "/pricing" }
+    "cta_primary": {
+      "label": "See It for My Business →",
+      "url": "/demo/"
+    },
+    "cta_secondary": {
+      "label": "View pricing",
+      "url": "/pricing"
+    }
   },
   "who_its_for": {
     "headline": "Built for the way real contracting businesses actually work",
@@ -147,7 +421,7 @@
       {
         "title": "Contractors & Trades",
         "body": "Turn every completed job into proof that wins the next one.",
-        "badge": "For Contractors",
+        "badge": "For contractors",
         "image_url": "https://jobcapturepro.com/wp-content/uploads/2025/11/crew-768x768.jpg",
         "image_alt": "Construction crew working on a job site",
         "stat_number": "Auto",
@@ -157,7 +431,7 @@
       {
         "title": "Owners & Office Teams",
         "body": "Automate the marketing workflow without chasing photos or posts.",
-        "badge": "For Owners",
+        "badge": "For owners",
         "image_url": "https://jobcapturepro.com/wp-content/uploads/2025/11/confident-foreman-768x768.jpg",
         "image_alt": "Confident foreman on a construction site",
         "stat_number": "Less",
@@ -167,7 +441,7 @@
       {
         "title": "Field Crews",
         "body": "Capture once and move on. No extra admin work.",
-        "badge": "For Crews",
+        "badge": "For crews",
         "image_url": "https://jobcapturepro.com/wp-content/uploads/2025/11/owner-crew-768x768.jpg",
         "image_alt": "Business owner with field crew",
         "stat_number": "1",
@@ -216,17 +490,39 @@
       }
     ],
     "outro": "Activity earns attention. Inactive listings fade.",
-    "cta_primary": { "label": "See It for My Business →", "url": "/demo/" }
+    "cta_primary": {
+      "label": "See It for My Business →",
+      "url": "/demo/"
+    }
   },
   "faq": {
     "headline": "FAQ",
     "subheadline": "Clear answers for contractors evaluating the system.",
     "items": [
-      { "id": "faq-setup", "q": "What does setup look like?", "a": "Most companies are live within a few days. We connect your website, set up your locations, and turn on the channels you want so job activity can start publishing." },
-      { "id": "faq-connect", "q": "What do I need to connect?", "a": "JobCapturePro supports HouseCall Pro, CompanyCam, Workiz, and QuickBooks today. If you use a different system and it has an API, we can evaluate a custom integration for higher tier plans. You can also use the mobile app without any integrations." },
-      { "id": "faq-visibility-proof", "q": "Will this help with Google Maps visibility?", "a": "Consistent job activity can support local relevance signals and help keep your Google Business Profile fresh. It does not guarantee ranking outcomes." },
-      { "q": "Is this real activity or staged content?", "a": "It is real. Proof comes from your actual jobs and your actual photos. The system is designed to show authentic work activity, not generic marketing content." },
-      { "id": "faq-training-how", "q": "Do crews need to learn new tools?", "a": "No. Crews simply take a photo in the JobCapturePro app, or your jobs flow in through integrations. There is no new process to teach beyond the capture (and QR when you use reviews)." },
+      {
+        "id": "faq-setup",
+        "q": "What does setup look like?",
+        "a": "Most companies are live within a few days. We connect your website, set up your locations, and turn on the channels you want so job activity can start publishing."
+      },
+      {
+        "id": "faq-connect",
+        "q": "What do I need to connect?",
+        "a": "JobCapturePro supports HouseCall Pro, CompanyCam, Workiz, and QuickBooks today. If you use a different system and it has an API, we can evaluate a custom integration for higher tier plans. You can also use the mobile app without any integrations."
+      },
+      {
+        "id": "faq-visibility-proof",
+        "q": "Will this help with Google Maps visibility?",
+        "a": "Consistent job activity can support local relevance signals and help keep your Google Business Profile fresh. It does not guarantee ranking outcomes."
+      },
+      {
+        "q": "Is this real activity or staged content?",
+        "a": "It is real. Proof comes from your actual jobs and your actual photos. The system is designed to show authentic work activity, not generic marketing content."
+      },
+      {
+        "id": "faq-training-how",
+        "q": "Do crews need to learn new tools?",
+        "a": "No. Crews simply take a photo in the JobCapturePro app, or your jobs flow in through integrations. There is no new process to teach beyond the capture (and QR when you use reviews)."
+      },
       {
         "id": "faq-already-use-tools",
         "q": "I already use CompanyCam or Housecall Pro. Do I need this?",
@@ -237,11 +533,27 @@
           "You don't replace your current tools. You make the work you're already doing start driving visibility, trust, and new jobs."
         ]
       },
-      { "q": "What exactly happens after we capture a job?", "a": "One photo or a completed job triggers an AI check-in that becomes publishable proof. It can update your website, keep your Google Business Profile active, and publish social content. Your crew then shows a QR code or sends a link so the customer can leave a review on the spot." },
-      { "q": "Where does proof get published?", "a": "One completed job can support five places: website, Google Business Profile, social, the JobCapturePro directory, and an on-site review opportunity via QR or link." },
-      { "q": "How do reviews work?", "a": "After each job, your crew presents a QR code (or sends a review link) while the experience is fresh. That creates more review opportunities without relying on awkward office follow-ups days later." },
-      { "id": "faq-integrations-locations", "q": "Can we use JobCapturePro for multiple locations?", "a": "Yes. Each location can have its own Google Business Profile and connected social accounts, with organization level management for multi location teams." },
-      { "q": "What is the JobCapturePro public directory and why does it matter?", "a": "Every member gets a public directory listing that is powered by real job activity and proof. Homeowners can see who is active and credible, and companies that post consistently earn stronger placement and more trust over time." }
+      {
+        "q": "What exactly happens after we capture a job?",
+        "a": "One photo or a completed job triggers an AI check-in that becomes publishable proof. It can update your website, keep your Google Business Profile active, and publish social content. Your crew then shows a QR code or sends a link so the customer can leave a review on the spot."
+      },
+      {
+        "q": "Where does proof get published?",
+        "a": "One completed job can support five places: website, Google Business Profile, social, the JobCapturePro directory, and an on-site review opportunity via QR or link."
+      },
+      {
+        "q": "How do reviews work?",
+        "a": "After each job, your crew presents a QR code (or sends a review link) while the experience is fresh. That creates more review opportunities without relying on awkward office follow-ups days later."
+      },
+      {
+        "id": "faq-integrations-locations",
+        "q": "Can we use JobCapturePro for multiple locations?",
+        "a": "Yes. Each location can have its own Google Business Profile and connected social accounts, with organization level management for multi location teams."
+      },
+      {
+        "q": "What is the JobCapturePro public directory and why does it matter?",
+        "a": "Every member gets a public directory listing that is powered by real job activity and proof. Homeowners can see who is active and credible, and companies that post consistently earn stronger placement and more trust over time."
+      }
     ]
   },
   "conversion": {
@@ -252,22 +564,37 @@
       "You want more visibility without adding marketing busywork",
       "You want finished work to keep supporting future demand"
     ],
-    "cta_primary": { "label": "See It for My Business →", "url": "/demo/" },
+    "cta_primary": {
+      "label": "See It for My Business →",
+      "url": "/demo/"
+    },
     "image_url": "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=600&fit=crop&q=80",
     "image_alt": "Contractors at work on a construction site",
     "media_type": "image",
     "media_position": "right",
-    "image_badge": "Real Work",
+    "image_badge": "Real work",
     "stats": [
-      { "value": "Auto", "label": "Workflow" },
-      { "value": "1", "label": "Photo" }
+      {
+        "value": "Auto",
+        "label": "Workflow"
+      },
+      {
+        "value": "1",
+        "label": "Photo"
+      }
     ]
   },
   "final_cta": {
     "headline": "See what one completed job can become",
     "subheadline": "See JobCapturePro turn your real work into website proof, Google activity, social content, directory visibility, and review opportunities.",
-    "cta_primary": { "label": "See It for My Business →", "url": "/demo/" },
+    "cta_primary": {
+      "label": "See It for My Business →",
+      "url": "/demo/"
+    },
     "cta_note": "Interactive 2-minute demo · No signup required",
-    "cta_secondary": { "label": "Start Free 14-Day Trial", "url": "" }
+    "cta_secondary": {
+      "label": "Start Free 14-Day Trial",
+      "url": ""
+    }
   }
 }

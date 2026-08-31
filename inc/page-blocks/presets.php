@@ -149,6 +149,7 @@ function jcp_page_presets(): array {
 				'hero',
 				'how_it_works',
 				'testimonials',
+				'local_rank_case_study',
 				'demo_preview',
 				'authority',
 				'proof_flow',
