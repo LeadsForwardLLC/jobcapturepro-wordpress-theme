@@ -3459,11 +3459,10 @@ function updateOutcomesSlideshowUi() {
     startFree.classList.add('demo-outcomes-modal__finish--solo');
     if (startFree.tagName === 'A') {
       startFree.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
-      startFree.textContent = 'Start Free Trial';
     } else {
-      startFree.textContent = 'Start Free Trial';
       startFree.dataset.outcomesAction = 'start_free';
     }
+    ensureStackedStartFreeTrialCta(startFree);
   }
   syncDemoStartFreeCtas();
 }
@@ -3482,46 +3481,73 @@ function syncDemoStartFreeCtas() {
   const chrome = $('mobileDemoStartFree');
   if (chrome) {
     chrome.href = hrefChrome;
-    chrome.textContent = 'Start Free Trial';
+    ensureStackedStartFreeTrialCta(chrome);
   }
   const outcomes = $('demoOutcomesStartFreeCta');
   if (outcomes && outcomes.tagName === 'A') {
     outcomes.href = hrefOutcomes;
-    outcomes.textContent = 'Start Free Trial';
+    ensureStackedStartFreeTrialCta(outcomes);
+  }
+  const headerCta = $('btnNext');
+  if (headerCta) {
+    const stackedMain = headerCta.querySelector('.jcp-trial-cta-main, .post-demo-cta-main');
+    const label = ((stackedMain && stackedMain.textContent) || headerCta.textContent || '').replace(/\s+/g, ' ');
+    if (/start\s+free\s+trial/i.test(label)) {
+      ensureStackedStartFreeTrialCta(headerCta, { arrow: true });
+    }
   }
   const post = document.querySelector('.post-demo-primary-cta');
   if (post) {
     post.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
-    ensurePostDemoPrimaryCtaStacked(post);
+    ensureStackedStartFreeTrialCta(post);
   }
 }
 
-/** Keep stacked trial CTA children intact (never wipe with textContent). */
-function ensurePostDemoPrimaryCtaStacked(primaryCta) {
-  if (!primaryCta) return;
-  let main = primaryCta.querySelector('.post-demo-cta-main');
-  let note = primaryCta.querySelector('.post-demo-cta-note');
+/**
+ * Stack “Start Free Trial” + “No credit card required” inside a CTA.
+ * Never wipe with textContent once stacked — preserves the note line.
+ */
+function ensureStackedStartFreeTrialCta(el, opts = {}) {
+  if (!el) return;
+  const arrow = !!opts.arrow;
+  const mainLabel = arrow ? 'Start Free Trial →' : 'Start Free Trial';
+  const noteLabel = 'No credit card required';
+  el.classList.add('jcp-trial-cta-stacked');
+
+  let main =
+    el.querySelector('.jcp-trial-cta-main') ||
+    el.querySelector('.post-demo-cta-main');
+  let note =
+    el.querySelector('.jcp-trial-cta-note') ||
+    el.querySelector('.post-demo-cta-note');
+
   if (main && note) {
     const label = (main.textContent || '').trim();
     if (
       label === '' ||
       /start\s+for\s+free|get\s+started\s+free|start\s+free(?!\s+trial)|start\s+free\s+trial/i.test(label)
     ) {
-      main.textContent = 'Start Free Trial';
+      main.textContent = mainLabel;
     }
     if (!(note.textContent || '').trim()) {
-      note.textContent = 'No credit card required';
+      note.textContent = noteLabel;
     }
     return;
   }
-  primaryCta.replaceChildren();
+
+  el.replaceChildren();
   main = document.createElement('span');
-  main.className = 'post-demo-cta-main';
-  main.textContent = 'Start Free Trial';
+  main.className = 'jcp-trial-cta-main post-demo-cta-main';
+  main.textContent = mainLabel;
   note = document.createElement('span');
-  note.className = 'post-demo-cta-note';
-  note.textContent = 'No credit card required';
-  primaryCta.append(main, note);
+  note.className = 'jcp-trial-cta-note post-demo-cta-note';
+  note.textContent = noteLabel;
+  el.append(main, note);
+}
+
+/** @deprecated Use ensureStackedStartFreeTrialCta */
+function ensurePostDemoPrimaryCtaStacked(primaryCta) {
+  ensureStackedStartFreeTrialCta(primaryCta);
 }
 
 /**
@@ -3887,24 +3913,25 @@ function ensureOutcomesFooterButtons() {
   if (legacyFinish && legacyFinish.tagName === 'BUTTON' && !$('demoOutcomesStartFreeCta')) {
     const link = document.createElement('a');
     link.id = 'demoOutcomesStartFreeCta';
-    link.className = 'btn btn-primary demo-outcomes-modal__finish demo-outcomes-modal__finish--solo';
+    link.className = 'btn btn-primary demo-outcomes-modal__finish demo-outcomes-modal__finish--solo jcp-trial-cta-stacked';
     link.dataset.outcomesAction = 'start_free';
-    link.textContent = 'Start Free Trial';
     link.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
     legacyFinish.replaceWith(link);
+    ensureStackedStartFreeTrialCta(link);
   }
 
   if (!$('demoOutcomesStartFreeCta') && !$('demoOutcomesFinishCta')) {
     const start = document.createElement('a');
     start.id = 'demoOutcomesStartFreeCta';
-    start.className = 'btn btn-primary demo-outcomes-modal__finish demo-outcomes-modal__finish--solo';
+    start.className = 'btn btn-primary demo-outcomes-modal__finish demo-outcomes-modal__finish--solo jcp-trial-cta-stacked';
     start.dataset.outcomesAction = 'start_free';
-    start.textContent = 'Start Free Trial';
     start.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
     footer.appendChild(start);
+    ensureStackedStartFreeTrialCta(start);
   } else {
     const startFree = $('demoOutcomesStartFreeCta') || $('demoOutcomesFinishCta');
     startFree?.classList.add('demo-outcomes-modal__finish--solo');
+    ensureStackedStartFreeTrialCta(startFree);
   }
 
   if (!$('demoOutcomesMoreOptions')) {
@@ -4231,7 +4258,7 @@ async function sendReviewRequest() {
   // Update top CTA
   const headerCta = document.getElementById('btnNext');
   if (headerCta) {
-    headerCta.textContent = 'Start Free Trial →';
+    ensureStackedStartFreeTrialCta(headerCta, { arrow: true });
     headerCta.onclick = () => {
       goToDemoStartFree('demo_header_complete');
     };

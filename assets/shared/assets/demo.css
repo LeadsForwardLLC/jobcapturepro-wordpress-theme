@@ -3544,17 +3544,42 @@ body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #btnSavePublish {
 
 .mobile-demo-start-free {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   min-height: 40px;
-  padding: 0 14px;
+  padding: 7px 14px 6px;
   border-radius: 999px;
   font-size: 13px;
   font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
+  line-height: 1.15;
+  white-space: normal;
+  text-align: center;
   text-decoration: none;
   box-shadow: 0 6px 16px rgba(255, 80, 62, 0.28);
+}
+
+.mobile-demo-start-free.jcp-trial-cta-stacked {
+  min-height: 48px;
+  padding: 8px 16px 7px;
+}
+
+.mobile-demo-start-free .jcp-trial-cta-main,
+.mobile-demo-start-free .post-demo-cta-main {
+  display: block;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.mobile-demo-start-free .jcp-trial-cta-note,
+.mobile-demo-start-free .post-demo-cta-note {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .mobile-demo-start-free:hover,
@@ -4482,6 +4507,38 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   font-size: 16px;
   font-weight: 700;
   border-radius: 12px;
+}
+
+.demo-outcomes-modal__finish.jcp-trial-cta-stacked,
+.demo-outcomes-modal__finish--solo.jcp-trial-cta-stacked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 56px;
+  padding: 12px 18px 11px;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.demo-outcomes-modal__finish .jcp-trial-cta-main,
+.demo-outcomes-modal__finish .post-demo-cta-main {
+  display: block;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.demo-outcomes-modal__finish .jcp-trial-cta-note,
+.demo-outcomes-modal__finish .post-demo-cta-note {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.82);
 }
 
 .demo-outcomes-modal__finish--solo {
@@ -5527,9 +5584,14 @@ body.jcp-desktop-guided .mobile-demo-top-actions {
 }
 
 body.jcp-desktop-guided .mobile-demo-start-free {
-  min-height: 44px;
-  padding: 0 16px;
+  min-height: 52px;
+  padding: 8px 16px 7px;
   font-size: 14px;
+}
+
+body.jcp-desktop-guided .mobile-demo-start-free .jcp-trial-cta-note,
+body.jcp-desktop-guided .mobile-demo-start-free .post-demo-cta-note {
+  font-size: 11px;
 }
 
 body.jcp-desktop-guided .mobile-stepper {
