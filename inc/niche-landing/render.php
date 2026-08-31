@@ -1621,8 +1621,41 @@ function jcp_testimonials_resolve_featured( array $reviews, string $featured_key
 function jcp_testimonials_normalize_reviews( array $props ): array {
 	$raw = $props['reviews'] ?? null;
 	if ( ! is_array( $raw ) || $raw === [] ) {
-		$raw = function_exists( 'jcp_sales_tool_default_reviews' ) ? jcp_sales_tool_default_reviews() : [];
+		$raw = function_exists( 'jcp_page_canonical_testimonial_reviews' )
+			? jcp_page_canonical_testimonial_reviews()
+			: ( function_exists( 'jcp_sales_tool_default_reviews' ) ? jcp_sales_tool_default_reviews() : [] );
 	}
+
+	// Always backfill the four canonical reviews (home / campaign / sales must match).
+	if ( function_exists( 'jcp_page_canonical_testimonial_reviews' ) ) {
+		$canonical = jcp_page_canonical_testimonial_reviews();
+		if ( $canonical !== [] ) {
+			$by_id = [];
+			foreach ( $raw as $review ) {
+				if ( ! is_array( $review ) ) {
+					continue;
+				}
+				$id = trim( (string) ( $review['id'] ?? '' ) );
+				if ( $id === '' ) {
+					$id = sanitize_title( (string) ( $review['name'] ?? '' ) );
+				}
+				$quote = trim( (string) ( $review['quote'] ?? '' ) );
+				$name  = trim( (string) ( $review['name'] ?? '' ) );
+				// Incomplete rows do not block the canonical review.
+				if ( $id === '' || $name === '' || $quote === '' ) {
+					continue;
+				}
+				$by_id[ $id ] = $review;
+			}
+			$merged = [];
+			foreach ( $canonical as $want ) {
+				$id = (string) ( $want['id'] ?? '' );
+				$merged[] = ( $id !== '' && isset( $by_id[ $id ] ) ) ? $by_id[ $id ] : $want;
+			}
+			$raw = $merged;
+		}
+	}
+
 	$out = [];
 	foreach ( $raw as $review ) {
 		if ( ! is_array( $review ) ) {
@@ -1648,7 +1681,7 @@ function jcp_testimonials_normalize_reviews( array $props ): array {
 		if ( $avatar !== '' && function_exists( 'set_url_scheme' ) ) {
 			$avatar = set_url_scheme( $avatar, 'https' );
 		}
-		$alt    = trim( (string) ( $review['avatar_alt'] ?? $review['image_alt'] ?? '' ) );
+		$alt = trim( (string) ( $review['avatar_alt'] ?? $review['avatarAlt'] ?? $review['image_alt'] ?? '' ) );
 		if ( $alt === '' ) {
 			/* translators: %s: reviewer name. */
 			$alt = sprintf( __( 'Photo of %s', 'jcp-core' ), $name );

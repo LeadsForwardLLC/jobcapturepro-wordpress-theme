@@ -233,13 +233,22 @@ function jcp_page_ensure_canonical_testimonial_reviews( array $content, int $pos
 		foreach ( $canonical as $want ) {
 			$id = (string) ( $want['id'] ?? '' );
 			if ( $id !== '' && isset( $by_id[ $id ] ) && is_array( $by_id[ $id ] ) ) {
-				$existing = $by_id[ $id ];
+				$existing       = $by_id[ $id ];
+				$existing_name  = trim( (string) ( $existing['name'] ?? '' ) );
+				$existing_quote = trim( (string) ( $existing['quote'] ?? '' ) );
+				if ( $existing_name === '' || $existing_quote === '' ) {
+					$merged[] = $want;
+					$changed  = true;
+					continue;
+				}
 				// Prefer saved quote/name but restore missing avatar fields from canonical.
 				if ( empty( $existing['avatar_url'] ) && empty( $existing['avatar'] ) && ! empty( $want['avatar_url'] ) ) {
 					$existing['avatar_url'] = $want['avatar_url'];
+					$changed               = true;
 				}
-				if ( empty( $existing['avatar_alt'] ) && ! empty( $want['avatar_alt'] ) ) {
+				if ( empty( $existing['avatar_alt'] ) && empty( $existing['avatarAlt'] ) && ! empty( $want['avatar_alt'] ) ) {
 					$existing['avatar_alt'] = $want['avatar_alt'];
+					$changed               = true;
 				}
 				$merged[] = $existing;
 			} else {
@@ -248,21 +257,21 @@ function jcp_page_ensure_canonical_testimonial_reviews( array $content, int $pos
 			}
 		}
 
-		if ( count( $reviews ) !== count( $merged ) ) {
-			$changed = true;
-		}
+		$before_layout   = (string) ( $props['layout'] ?? '' );
+		$before_featured = ! empty( $props['show_featured'] );
+		$before_count    = count( $reviews );
 
 		$props['reviews']       = $merged;
 		$props['layout']        = 'grid';
 		$props['show_featured'] = false;
 		$props['per_view']      = max( 4, (int) ( $props['per_view'] ?? 4 ) );
-		$blocks[ $i ]['props']  = $props;
+		if ( $before_layout !== 'grid' || $before_featured || $before_count !== count( $merged ) ) {
+			$changed = true;
+		}
+		$blocks[ $i ]['props'] = $props;
 	}
 
 	if ( $changed ) {
-		$content['blocks'] = $blocks;
-	} else {
-		// Still persist layout/show_featured fixes even when review ids were complete.
 		$content['blocks'] = $blocks;
 	}
 	return $content;

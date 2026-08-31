@@ -5267,7 +5267,10 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
 
 /* Slider-only testimonials: 2 cards visible, no featured highlight.
    Do not apply horizontal flex when layout=grid (both classes can coexist). */
-.jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-featured {
+.jcp-page-campaign .jcp-testimonials--slider-only .jcp-testimonials-featured,
+.jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-featured,
+.jcp-home .jcp-testimonials--slider-only .jcp-testimonials-featured,
+.jcp-home .jcp-testimonials--grid .jcp-testimonials-featured {
   display: none !important;
 }
 

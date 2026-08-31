@@ -377,6 +377,14 @@
   margin: 0 auto;
 }
 
+/* Hide featured panel on grid/slider-only walls so all four cards stay in the grid. */
+.jcp-home .jcp-testimonials--slider-only .jcp-testimonials-featured,
+.jcp-marketing .jcp-testimonials--slider-only .jcp-testimonials-featured,
+.jcp-home .jcp-testimonials--grid .jcp-testimonials-featured,
+.jcp-marketing .jcp-testimonials--grid .jcp-testimonials-featured {
+  display: none !important;
+}
+
 /* Featured panel */
 .jcp-home .jcp-testimonials-featured,
 .jcp-marketing .jcp-testimonials-featured {

@@ -140,12 +140,18 @@ function jcp_page_maybe_migrate_pages(): void {
 		}
 	}
 
-	// v7 = Keep all four testimonials visible in grid (restore Peter Bonk).
+	// v8 = Force homepage testimonials grid to all 4 canonical reviews.
 	$home_ver = (string) get_option( 'jcp_home_seed_version', '' );
-	if ( $home_ver !== '7' ) {
+	if ( $home_ver !== '8' ) {
 		$id = jcp_page_seed_home( true );
 		if ( $id > 0 ) {
-			update_option( 'jcp_home_seed_version', '7' );
+			update_option( 'jcp_home_seed_version', '8' );
+		}
+		// Also patch in place if seed returned existing id without rewrite edge cases.
+		if ( $id > 0 && function_exists( 'jcp_page_get_content' ) && function_exists( 'jcp_page_ensure_canonical_testimonial_reviews' ) ) {
+			$doc = jcp_page_get_content( $id );
+			$doc = jcp_page_ensure_canonical_testimonial_reviews( $doc, $id );
+			jcp_page_save_content( $id, $doc );
 		}
 	}
 }
