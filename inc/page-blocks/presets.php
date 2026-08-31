@@ -137,6 +137,7 @@ function jcp_page_presets(): array {
 				'problem',
 				'story_moments',
 				'testimonials',
+				'local_rank_case_study',
 				'faq',
 				'final_cta',
 			],

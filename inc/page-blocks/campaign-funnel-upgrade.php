@@ -34,6 +34,7 @@ function jcp_page_upgrade_campaign_funnel_order( array $content, int $post_id ):
 		'problem',
 		'story_moments',
 		'testimonials',
+		'local_rank_case_study',
 		'faq',
 		'final_cta',
 	];

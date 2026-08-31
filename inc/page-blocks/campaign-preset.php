@@ -135,6 +135,18 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 				]
 			);
 		}
+		if ( $type === 'local_rank_case_study' ) {
+			$base = is_array( $block['layout'] ?? null )
+				? $block['layout']
+				: jcp_block_default_layout( 'local_rank_case_study', 'marketing' );
+			$doc['blocks'][ $i ]['layout'] = array_merge(
+				$base,
+				[
+					'width' => 'contained',
+					'align' => 'center',
+				]
+			);
+		}
 	}
 
 	return $doc;

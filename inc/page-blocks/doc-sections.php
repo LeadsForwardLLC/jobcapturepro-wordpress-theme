@@ -147,6 +147,7 @@ function jcp_page_doc_legacy_key_map(): array {
 		'proof_flow'            => 'PROOF FLOW',
 		'story_moments'         => 'STORY MOMENTS',
 		'testimonials'          => 'TESTIMONIALS',
+		'local_rank_case_study' => 'LOCAL RANK CASE STUDY',
 		'authority'             => 'AUTHORITY',
 		'directory_preview'     => 'DIRECTORY PREVIEW',
 		'cta_band_1'            => 'CTA BAND',

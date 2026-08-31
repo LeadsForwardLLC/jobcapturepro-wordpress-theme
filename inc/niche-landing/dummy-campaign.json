@@ -293,6 +293,108 @@
       }
     ]
   },
+  "local_rank_case_study": {
+    "eyebrow": "Real Map Pack results",
+    "headline": "From 0% SoLV to Map Pack dominance in ~90 days — two markets.",
+    "body": "Acculevel is a 9-figure, multi-location foundation company that already ranked for much more. On these tracked keywords, JobCapturePro sat in the job → proof → visibility loop that helped lift Map Pack coverage — supporting visibility, not guaranteeing rankings.",
+    "stats": [
+      { "value": "0% → up to 100%", "label": "SoLV" },
+      { "value": "20+ → ~#1–#2", "label": "ARP" },
+      { "value": "2", "label": "locations" },
+      { "value": "~12 weeks", "label": "mid-March → early June" }
+    ],
+    "locations": [
+      {
+        "name": "Triadelphia, WV",
+        "address": "Acculevel, 300 Wharton Cir Ste 202, Triadelphia, WV 26059",
+        "meta": "7×7 · 6.0 mi · 49 points",
+        "scans": [
+          {
+            "keyword": "foundation repair",
+            "grid_label": "Geo-grid scan (7×7 · 6 mi)",
+            "before": {
+              "date": "3/11–3/16/2026",
+              "arp": "20+",
+              "solv": "0%",
+              "pattern": "before_blank"
+            },
+            "after": {
+              "date": "6/8/2026",
+              "arp": "2.02",
+              "solv": "89.80%",
+              "pattern": "after_fr_wv"
+            }
+          },
+          {
+            "keyword": "basement waterproofing",
+            "grid_label": "Geo-grid scan (7×7 · 6 mi)",
+            "before": {
+              "date": "3/11–3/16/2026",
+              "arp": "20+",
+              "solv": "0%",
+              "pattern": "before_blank"
+            },
+            "after": {
+              "date": "6/8/2026",
+              "arp": "1.18",
+              "solv": "100%",
+              "pattern": "after_bw_wv"
+            }
+          }
+        ]
+      },
+      {
+        "name": "Monroe, MI",
+        "address": "Acculevel, 428 S Monroe St Ste 202, Monroe, MI 48161",
+        "meta": "7×7 · 6.0 mi · 49 points",
+        "scans": [
+          {
+            "keyword": "foundation repair",
+            "grid_label": "Geo-grid scan (7×7 · 6 mi)",
+            "before": {
+              "date": "3/11–3/16/2026",
+              "arp": "20+",
+              "solv": "0%",
+              "pattern": "before_blank"
+            },
+            "after": {
+              "date": "6/8/2026",
+              "arp": "2.20",
+              "solv": "83.67%",
+              "pattern": "after_fr_mi"
+            }
+          },
+          {
+            "keyword": "basement waterproofing",
+            "grid_label": "Geo-grid scan (7×7 · 6 mi)",
+            "before": {
+              "date": "3/11–3/16/2026",
+              "arp": "20+",
+              "solv": "0%",
+              "pattern": "before_blank"
+            },
+            "after": {
+              "date": "6/8/2026",
+              "arp": "1.59",
+              "solv": "95.92%",
+              "pattern": "after_bw_mi"
+            }
+          }
+        ]
+      }
+    ],
+    "footnote": "SoLV = Share of Local Voice (top-3 presence across the geo-grid). Results for Acculevel locations, March–June 2026, on tracked keywords only. Past performance is not a guarantee of future results.",
+    "cta_secondary": {
+      "label": "See it for my business",
+      "url": "/demo/"
+    },
+    "section_id": "case-study",
+    "show_eyebrow": true,
+    "show_headline": true,
+    "show_body": true,
+    "show_stats": true,
+    "show_cta": true
+  },
   "faq": {
     "headline": "Quick Answers Before You See It On Your Business",
     "items": [

@@ -2047,6 +2047,292 @@ function jcp_niche_render_local_falcon_proof( array $props, string $niche_key = 
 }
 
 /**
+ * Deterministic 7×7 geo-grid rank patterns (1–20+) for CSS heatmaps.
+ *
+ * @param string $pattern Pattern key.
+ * @return array<int, int> Exactly 49 ranks.
+ */
+function jcp_lf_case_grid_pattern( string $pattern ): array {
+	$patterns = [
+		// All out of pack / not ranking in tracked keywords.
+		'before_blank' => array_fill( 0, 49, 20 ),
+		// ~89.8% SoLV (~44/49 in top 3) — a few yellow edge cells.
+		'after_fr_wv'  => [
+			2, 1, 1, 2, 1, 3, 4,
+			1, 1, 2, 1, 2, 1, 3,
+			1, 2, 1, 1, 2, 1, 2,
+			2, 1, 1, 1, 1, 2, 5,
+			1, 1, 2, 1, 1, 3, 2,
+			3, 1, 1, 2, 1, 1, 6,
+			4, 3, 2, 1, 2, 3, 7,
+		],
+		// 100% SoLV — near-solid Map Pack green.
+		'after_bw_wv'  => [
+			1, 1, 2, 1, 1, 2, 1,
+			1, 2, 1, 1, 2, 1, 1,
+			2, 1, 1, 1, 1, 2, 1,
+			1, 1, 2, 1, 1, 1, 2,
+			1, 2, 1, 1, 2, 1, 1,
+			2, 1, 1, 2, 1, 1, 1,
+			1, 1, 2, 1, 1, 2, 1,
+		],
+		// ~83.7% SoLV (41/49 in top 3) — more yellow fringe.
+		'after_fr_mi'  => [
+			2, 1, 1, 3, 2, 4, 8,
+			1, 2, 1, 1, 2, 3, 5,
+			1, 1, 2, 1, 1, 2, 3,
+			3, 1, 1, 1, 2, 1, 6,
+			2, 1, 2, 1, 1, 3, 2,
+			5, 2, 1, 2, 1, 2, 7,
+			4, 3, 2, 1, 2, 3, 9,
+		],
+		// ~95.9% SoLV (47/49) — nearly solid green, two soft edges.
+		'after_bw_mi'  => [
+			1, 1, 2, 1, 1, 2, 3,
+			1, 2, 1, 1, 2, 1, 1,
+			2, 1, 1, 1, 1, 2, 1,
+			1, 1, 2, 1, 1, 1, 2,
+			1, 2, 1, 1, 2, 1, 1,
+			2, 1, 1, 2, 1, 1, 4,
+			1, 1, 2, 1, 1, 5, 1,
+		],
+	];
+
+	$grid = $patterns[ $pattern ] ?? $patterns['before_blank'];
+	if ( count( $grid ) !== 49 ) {
+		$grid = array_pad( array_slice( $grid, 0, 49 ), 49, 20 );
+	}
+	return array_map( 'intval', $grid );
+}
+
+/**
+ * Map a Local Falcon–style rank to a CSS color token class.
+ *
+ * @param int $rank Rank 1–20+.
+ */
+function jcp_lf_case_rank_class( int $rank ): string {
+	if ( $rank <= 3 ) {
+		return 'is-rank-top';
+	}
+	if ( $rank <= 10 ) {
+		return 'is-rank-mid';
+	}
+	if ( $rank <= 19 ) {
+		return 'is-rank-low';
+	}
+	return 'is-rank-out';
+}
+
+/**
+ * Render a 7×7 CSS geo-grid heatmap.
+ *
+ * @param array<int, int> $ranks 49 ranks.
+ * @param string          $label Accessible label.
+ */
+function jcp_lf_case_render_grid( array $ranks, string $label ): void {
+	?>
+	<div class="jcp-lf-grid" role="img" aria-label="<?php echo esc_attr( $label ); ?>">
+		<?php foreach ( $ranks as $rank ) : ?>
+			<span class="jcp-lf-grid__cell <?php echo esc_attr( jcp_lf_case_rank_class( (int) $rank ) ); ?>" title="<?php echo esc_attr( sprintf( /* translators: %d: map pack rank */ __( 'Rank %d', 'jcp-core' ), (int) $rank ) ); ?>"></span>
+		<?php endforeach; ?>
+	</div>
+	<?php
+}
+
+/**
+ * Acculevel-style Local Falcon case study — CSS heatmaps (campaign).
+ *
+ * @param array<string, mixed> $props     Block props.
+ * @param string               $niche_key Page key.
+ */
+function jcp_niche_render_local_rank_case_study( array $props, string $niche_key = '' ): void {
+	$headline = trim( (string) ( $props['headline'] ?? '' ) );
+	if ( $headline === '' ) {
+		return;
+	}
+
+	$section_id   = ! empty( $props['section_id'] ) ? (string) $props['section_id'] : 'case-study';
+	$eyebrow      = trim( (string) ( $props['eyebrow'] ?? '' ) );
+	$body         = trim( (string) ( $props['body'] ?? '' ) );
+	$footnote     = trim( (string) ( $props['footnote'] ?? '' ) );
+	$show_eyebrow = ! array_key_exists( 'show_eyebrow', $props ) || ! empty( $props['show_eyebrow'] );
+	$show_body    = ! array_key_exists( 'show_body', $props ) || ! empty( $props['show_body'] );
+	$show_stats   = ! array_key_exists( 'show_stats', $props ) || ! empty( $props['show_stats'] );
+	$show_cta     = ! empty( $props['show_cta'] );
+	$secondary    = function_exists( 'jcp_niche_resolve_cta' )
+		? jcp_niche_resolve_cta( $props['cta_secondary'] ?? [], $niche_key )
+		: [
+			'label' => trim( (string) ( ( $props['cta_secondary']['label'] ?? '' ) ) ),
+			'url'   => trim( (string) ( ( $props['cta_secondary']['url'] ?? '/demo/' ) ) ),
+		];
+
+	$stats = [];
+	foreach ( (array) ( $props['stats'] ?? [] ) as $row ) {
+		if ( ! is_array( $row ) ) {
+			continue;
+		}
+		$value = trim( (string) ( $row['value'] ?? '' ) );
+		$label = trim( (string) ( $row['label'] ?? '' ) );
+		if ( $value === '' && $label === '' ) {
+			continue;
+		}
+		$stats[] = [
+			'value' => $value,
+			'label' => $label,
+		];
+	}
+
+	$locations = [];
+	foreach ( (array) ( $props['locations'] ?? [] ) as $loc ) {
+		if ( ! is_array( $loc ) ) {
+			continue;
+		}
+		$name    = trim( (string) ( $loc['name'] ?? '' ) );
+		$address = trim( (string) ( $loc['address'] ?? '' ) );
+		if ( $name === '' && $address === '' ) {
+			continue;
+		}
+		$scans = [];
+		foreach ( (array) ( $loc['scans'] ?? [] ) as $scan ) {
+			if ( ! is_array( $scan ) ) {
+				continue;
+			}
+			$keyword = trim( (string) ( $scan['keyword'] ?? '' ) );
+			if ( $keyword === '' ) {
+				continue;
+			}
+			$before = is_array( $scan['before'] ?? null ) ? $scan['before'] : [];
+			$after  = is_array( $scan['after'] ?? null ) ? $scan['after'] : [];
+			$scans[] = [
+				'keyword'     => $keyword,
+				'before'      => [
+					'date'    => trim( (string) ( $before['date'] ?? '' ) ),
+					'arp'     => trim( (string) ( $before['arp'] ?? '' ) ),
+					'atrp'    => trim( (string) ( $before['atrp'] ?? '' ) ),
+					'solv'    => trim( (string) ( $before['solv'] ?? '' ) ),
+					'pattern' => trim( (string) ( $before['pattern'] ?? 'before_blank' ) ),
+				],
+				'after'       => [
+					'date'    => trim( (string) ( $after['date'] ?? '' ) ),
+					'arp'     => trim( (string) ( $after['arp'] ?? '' ) ),
+					'atrp'    => trim( (string) ( $after['atrp'] ?? '' ) ),
+					'solv'    => trim( (string) ( $after['solv'] ?? '' ) ),
+					'pattern' => trim( (string) ( $after['pattern'] ?? 'before_blank' ) ),
+				],
+				'grid_label'  => trim( (string) ( $scan['grid_label'] ?? __( 'Geo-grid scan (7×7 · 6 mi)', 'jcp-core' ) ) ),
+			];
+		}
+		$locations[] = [
+			'name'    => $name,
+			'address' => $address,
+			'meta'    => trim( (string) ( $loc['meta'] ?? '' ) ),
+			'scans'   => $scans,
+		];
+	}
+	?>
+	<section class="jcp-section jcp-block-lf-case" id="<?php echo esc_attr( $section_id ); ?>" data-jcp-reveal>
+		<div class="jcp-container">
+			<header class="jcp-lf-case__header">
+				<?php if ( $show_eyebrow && $eyebrow !== '' ) : ?>
+					<p class="jcp-lf-case__eyebrow demo-badge"<?php jcp_niche_editable_attr( 'local_rank_case_study.eyebrow' ); ?>><?php echo esc_html( $eyebrow ); ?></p>
+				<?php endif; ?>
+				<h2 class="jcp-lf-case__headline"<?php jcp_niche_editable_attr( 'local_rank_case_study.headline' ); ?>><?php echo esc_html( $headline ); ?></h2>
+				<?php if ( $show_body && $body !== '' ) : ?>
+					<p class="jcp-lf-case__body"<?php jcp_niche_editable_attr( 'local_rank_case_study.body' ); ?>><?php echo esc_html( $body ); ?></p>
+				<?php endif; ?>
+			</header>
+
+			<?php if ( $show_stats && $stats !== [] ) : ?>
+				<ul class="jcp-lf-case__stats" role="list">
+					<?php foreach ( $stats as $i => $stat ) : ?>
+						<li class="jcp-lf-case__stat">
+							<strong class="jcp-lf-case__stat-value"<?php jcp_niche_editable_attr( 'local_rank_case_study.stats.' . $i . '.value' ); ?>><?php echo esc_html( $stat['value'] ); ?></strong>
+							<span class="jcp-lf-case__stat-label"<?php jcp_niche_editable_attr( 'local_rank_case_study.stats.' . $i . '.label' ); ?>><?php echo esc_html( $stat['label'] ); ?></span>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif; ?>
+
+			<?php if ( $locations !== [] ) : ?>
+				<div class="jcp-lf-case__locations">
+					<?php foreach ( $locations as $li => $location ) : ?>
+						<article class="jcp-lf-case__location">
+							<header class="jcp-lf-case__location-head">
+								<?php if ( $location['name'] !== '' ) : ?>
+									<h3 class="jcp-lf-case__location-name"<?php jcp_niche_editable_attr( 'local_rank_case_study.locations.' . $li . '.name' ); ?>><?php echo esc_html( $location['name'] ); ?></h3>
+								<?php endif; ?>
+								<?php if ( $location['address'] !== '' ) : ?>
+									<p class="jcp-lf-case__location-address"<?php jcp_niche_editable_attr( 'local_rank_case_study.locations.' . $li . '.address' ); ?>><?php echo esc_html( $location['address'] ); ?></p>
+								<?php endif; ?>
+								<?php if ( $location['meta'] !== '' ) : ?>
+									<p class="jcp-lf-case__location-meta"<?php jcp_niche_editable_attr( 'local_rank_case_study.locations.' . $li . '.meta' ); ?>><?php echo esc_html( $location['meta'] ); ?></p>
+								<?php endif; ?>
+							</header>
+
+							<?php foreach ( $location['scans'] as $si => $scan ) : ?>
+								<div class="jcp-lf-case__scan">
+									<div class="jcp-lf-case__scan-chrome">
+										<span class="jcp-lf-case__keyword"<?php jcp_niche_editable_attr( 'local_rank_case_study.locations.' . $li . '.scans.' . $si . '.keyword' ); ?>><?php echo esc_html( $scan['keyword'] ); ?></span>
+										<span class="jcp-lf-case__scan-label"><?php echo esc_html( $scan['grid_label'] ); ?></span>
+									</div>
+									<div class="jcp-lf-case__compare">
+										<?php
+										foreach ( [ 'before', 'after' ] as $phase ) :
+											$side = $scan[ $phase ];
+											$ranks = jcp_lf_case_grid_pattern( (string) $side['pattern'] );
+											$aria  = sprintf(
+												/* translators: 1: before/after, 2: keyword, 3: ARP, 4: SoLV */
+												__( '%1$s scan for %2$s — ARP %3$s, SoLV %4$s', 'jcp-core' ),
+												$phase === 'before' ? __( 'Before', 'jcp-core' ) : __( 'After', 'jcp-core' ),
+												$scan['keyword'],
+												$side['arp'] !== '' ? $side['arp'] : '—',
+												$side['solv'] !== '' ? $side['solv'] : '—'
+											);
+											?>
+											<div class="jcp-lf-case__panel jcp-lf-case__panel--<?php echo esc_attr( $phase ); ?>">
+												<div class="jcp-lf-case__panel-head">
+													<span class="jcp-lf-case__phase"><?php echo esc_html( $phase === 'before' ? __( 'Before', 'jcp-core' ) : __( 'After', 'jcp-core' ) ); ?></span>
+													<?php if ( $side['date'] !== '' ) : ?>
+														<span class="jcp-lf-case__date"><?php echo esc_html( $side['date'] ); ?></span>
+													<?php endif; ?>
+												</div>
+												<?php jcp_lf_case_render_grid( $ranks, $aria ); ?>
+												<div class="jcp-lf-case__metrics">
+													<?php if ( $side['arp'] !== '' ) : ?>
+														<span class="jcp-lf-case__pill"><em><?php esc_html_e( 'ARP', 'jcp-core' ); ?></em> <strong><?php echo esc_html( $side['arp'] ); ?></strong></span>
+													<?php endif; ?>
+													<?php if ( $side['atrp'] !== '' ) : ?>
+														<span class="jcp-lf-case__pill"><em><?php esc_html_e( 'ATRP', 'jcp-core' ); ?></em> <strong><?php echo esc_html( $side['atrp'] ); ?></strong></span>
+													<?php endif; ?>
+													<?php if ( $side['solv'] !== '' ) : ?>
+														<span class="jcp-lf-case__pill jcp-lf-case__pill--solv"><em><?php esc_html_e( 'SoLV', 'jcp-core' ); ?></em> <strong><?php echo esc_html( $side['solv'] ); ?></strong></span>
+													<?php endif; ?>
+												</div>
+											</div>
+										<?php endforeach; ?>
+									</div>
+								</div>
+							<?php endforeach; ?>
+						</article>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( $footnote !== '' ) : ?>
+				<p class="jcp-lf-case__footnote"<?php jcp_niche_editable_attr( 'local_rank_case_study.footnote' ); ?>><?php echo esc_html( $footnote ); ?></p>
+			<?php endif; ?>
+
+			<?php if ( $show_cta && $secondary['label'] !== '' ) : ?>
+				<p class="jcp-lf-case__cta">
+					<a class="jcp-lf-case__cta-link" href="<?php echo esc_url( $secondary['url'] !== '' ? $secondary['url'] : home_url( '/demo/' ) ); ?>"<?php jcp_niche_editable_link_attr( 'local_rank_case_study.cta_secondary' ); ?>><?php echo esc_html( $secondary['label'] ); ?></a>
+				</p>
+			<?php endif; ?>
+		</div>
+	</section>
+	<?php
+}
+
+/**
  * Testimonials block — featured quote + secondary strip, or slider-only.
  *
  * @param array<string, mixed> $props Block props.

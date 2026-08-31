@@ -195,6 +195,11 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 				jcp_niche_render_local_falcon_proof( $props, $page_key );
 			}
 			break;
+		case 'local_rank_case_study':
+			if ( function_exists( 'jcp_niche_render_local_rank_case_study' ) ) {
+				jcp_niche_render_local_rank_case_study( $props, $page_key );
+			}
+			break;
 		case 'demo_preview':
 			jcp_niche_render_demo_preview( $props, $page_key );
 			break;
