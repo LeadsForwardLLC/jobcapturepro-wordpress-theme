@@ -77,6 +77,8 @@ function jcp_demo_analytics_render_page(): void {
         $post_demo_cta_rates = $stats['post_demo_cta_rates'] ?? [];
         $business_type_dist = $stats['business_type_distribution'] ?? [];
         $demo_goals_dist    = $stats['demo_goals_distribution'] ?? [];
+        $landing_page_dist  = $stats['landing_page_distribution'] ?? [];
+        $utm_source_dist    = $stats['utm_source_distribution'] ?? [];
         ?>
         <div class="jcp-demo-analytics-cols" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 20px;">
             <div class="jcp-demo-analytics-col" style="min-width: 0; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; padding: 18px; box-shadow: 0 1px 1px rgba(0,0,0,.04); align-self: start;">
@@ -217,6 +219,66 @@ function jcp_demo_analytics_render_page(): void {
             </div>
         </div>
 
+        <h2 style="margin-top: 32px;"><?php esc_html_e( 'Where they came from', 'jcp-core' ); ?></h2>
+        <p class="description"><?php esc_html_e( 'First-touch landing page and UTM source captured when the lead entered the site (before /demo). Older sessions may show Unknown until new traffic arrives.', 'jcp-core' ); ?></p>
+        <div class="jcp-demo-analytics-cols" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 12px;">
+            <div class="jcp-demo-analytics-col" style="min-width: 0; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; padding: 18px; box-shadow: 0 1px 1px rgba(0,0,0,.04); align-self: start;">
+                <h3 style="margin: 0 0 12px 0; font-size: 1em;"><?php esc_html_e( 'Landing page', 'jcp-core' ); ?></h3>
+                <?php if ( ! empty( $landing_page_dist ) ) : ?>
+                <table class="widefat striped">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e( 'Page', 'jcp-core' ); ?></th>
+                            <th><?php esc_html_e( 'Sessions', 'jcp-core' ); ?></th>
+                            <th><?php esc_html_e( '%', 'jcp-core' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ( $landing_page_dist as $row ) : ?>
+                            <tr>
+                                <td>
+                                    <?php echo esc_html( $row['label'] ); ?>
+                                    <?php if ( ! empty( $row['value'] ) ) : ?>
+                                        <br><code style="font-size:11px;color:#646970;"><?php echo esc_html( $row['value'] ); ?></code>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?php echo (int) $row['count']; ?></td>
+                                <td><?php echo esc_html( (string) $row['pct'] ); ?>%</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <?php else : ?>
+                <p><em><?php esc_html_e( 'No landing-page data yet.', 'jcp-core' ); ?></em></p>
+                <?php endif; ?>
+            </div>
+            <div class="jcp-demo-analytics-col" style="min-width: 0; background: #fff; border: 1px solid #c3c4c7; border-radius: 4px; padding: 18px; box-shadow: 0 1px 1px rgba(0,0,0,.04); align-self: start;">
+                <h3 style="margin: 0 0 12px 0; font-size: 1em;"><?php esc_html_e( 'UTM source', 'jcp-core' ); ?></h3>
+                <?php if ( ! empty( $utm_source_dist ) ) : ?>
+                <table class="widefat striped">
+                    <thead>
+                        <tr>
+                            <th><?php esc_html_e( 'Source', 'jcp-core' ); ?></th>
+                            <th><?php esc_html_e( 'Sessions', 'jcp-core' ); ?></th>
+                            <th><?php esc_html_e( '%', 'jcp-core' ); ?></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ( $utm_source_dist as $row ) : ?>
+                            <tr>
+                                <td><?php echo esc_html( $row['label'] ); ?></td>
+                                <td><?php echo (int) $row['count']; ?></td>
+                                <td><?php echo esc_html( (string) $row['pct'] ); ?>%</td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+                <?php else : ?>
+                <p><em><?php esc_html_e( 'No UTM source data yet.', 'jcp-core' ); ?></em></p>
+                <?php endif; ?>
+            </div>
+        </div>
+
         <h2 style="margin-top: 32px;"><?php esc_html_e( 'Funnel completion & drop-off', 'jcp-core' ); ?></h2>
         <p class="description"><?php esc_html_e( 'Drop-off % is measured from the previous step’s session count. High drop-off cells are highlighted.', 'jcp-core' ); ?></p>
         <table class="widefat striped">
@@ -248,7 +310,7 @@ function jcp_demo_analytics_render_page(): void {
         $recent_leads = jcp_demo_analytics_get_sessions( 'all', 50 );
         ?>
         <h2 style="margin-top: 32px;"><?php esc_html_e( 'Leads (recent sessions)', 'jcp-core' ); ?></h2>
-        <p class="description"><?php esc_html_e( 'Contact email, name, company, and niche for ops inspection. Click a row to open the event timeline.', 'jcp-core' ); ?></p>
+        <p class="description"><?php esc_html_e( 'Contact email, name, company, niche, and landing page for ops inspection. Click a row to open the event timeline.', 'jcp-core' ); ?></p>
         <?php if ( empty( $recent_leads ) ) : ?>
             <p><em><?php esc_html_e( 'No demo sessions recorded yet.', 'jcp-core' ); ?></em></p>
         <?php else : ?>
@@ -259,6 +321,7 @@ function jcp_demo_analytics_render_page(): void {
                     <th><?php esc_html_e( 'Name', 'jcp-core' ); ?></th>
                     <th><?php esc_html_e( 'Company', 'jcp-core' ); ?></th>
                     <th><?php esc_html_e( 'Niche', 'jcp-core' ); ?></th>
+                    <th><?php esc_html_e( 'Came from', 'jcp-core' ); ?></th>
                     <th><?php esc_html_e( 'Last step', 'jcp-core' ); ?></th>
                     <th><?php esc_html_e( 'Trial', 'jcp-core' ); ?></th>
                     <th><?php esc_html_e( 'Started', 'jcp-core' ); ?></th>
@@ -271,6 +334,12 @@ function jcp_demo_analytics_render_page(): void {
                         <td><?php echo esc_html( $lead['contact_name'] ?: '—' ); ?></td>
                         <td><?php echo esc_html( $lead['business_name'] ?: '—' ); ?></td>
                         <td><?php echo esc_html( $lead['business_type_display'] ?: '—' ); ?></td>
+                        <td>
+                            <?php echo esc_html( $lead['landing_page_display'] ?: __( 'Unknown', 'jcp-core' ) ); ?>
+                            <?php if ( ! empty( $lead['utm_source'] ) ) : ?>
+                                <br><span style="color:#646970;font-size:12px;"><?php echo esc_html( (string) $lead['utm_source'] ); ?></span>
+                            <?php endif; ?>
+                        </td>
                         <td><?php echo esc_html( $lead['last_step'] ?: '—' ); ?></td>
                         <td><?php echo ! empty( $lead['demo_converted'] ) ? esc_html__( 'Yes', 'jcp-core' ) : esc_html__( 'No', 'jcp-core' ); ?></td>
                         <td><?php echo esc_html( (string) ( $lead['demo_started_at'] ?? '' ) ); ?></td>
@@ -378,15 +447,18 @@ function jcp_demo_analytics_render_page(): void {
                             sessionsContent.innerHTML = '<p><?php echo esc_js( __( 'No demo sessions recorded yet.', 'jcp-core' ) ); ?></p>';
                             return;
                         }
-                        var html = '<table class="widefat striped"><thead><tr><th><?php echo esc_js( __( 'Email', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Name', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Company', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Niche', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Last step', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'End-screen CTAs', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Trial', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Started', 'jcp-core' ) ); ?></th></tr></thead><tbody>';
+                        var html = '<table class="widefat striped"><thead><tr><th><?php echo esc_js( __( 'Email', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Name', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Company', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Niche', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Came from', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Last step', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'End-screen CTAs', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Trial', 'jcp-core' ) ); ?></th><th><?php echo esc_js( __( 'Started', 'jcp-core' ) ); ?></th></tr></thead><tbody>';
                         for (var i = 0; i < rows.length; i++) {
                             var r = rows[i];
                             var ctas = (r.post_demo_ctas_display && r.post_demo_ctas_display.length) ? r.post_demo_ctas_display.join(', ') : '—';
+                            var cameFrom = escapeHtml(r.landing_page_display || '<?php echo esc_js( __( 'Unknown', 'jcp-core' ) ); ?>');
+                            if (r.utm_source) cameFrom += '<br><span style="color:#646970;font-size:12px;">' + escapeHtml(r.utm_source) + '</span>';
                             html += '<tr class="jcp-demo-analytics-lead-row" data-session-id="' + escapeHtml(r.session_id || '') + '" style="cursor:pointer;">' +
                                 '<td>' + escapeHtml(r.contact_email || '—') + '</td>' +
                                 '<td>' + escapeHtml(r.contact_name || '—') + '</td>' +
                                 '<td>' + escapeHtml(r.business_name || '—') + '</td>' +
                                 '<td>' + escapeHtml(r.business_type_display || '—') + '</td>' +
+                                '<td>' + cameFrom + '</td>' +
                                 '<td>' + escapeHtml(r.last_step || '—') + '</td>' +
                                 '<td>' + escapeHtml(ctas) + '</td>' +
                                 '<td>' + (r.demo_converted ? '<?php echo esc_js( __( 'Yes', 'jcp-core' ) ); ?>' : '<?php echo esc_js( __( 'No', 'jcp-core' ) ); ?>') + '</td>' +
@@ -431,6 +503,10 @@ function jcp_demo_analytics_render_page(): void {
                             '<tr><th><?php echo esc_js( __( 'Name', 'jcp-core' ) ); ?></th><td>' + escapeHtml(d.contact_name || '—') + '</td></tr>' +
                             '<tr><th><?php echo esc_js( __( 'Company', 'jcp-core' ) ); ?></th><td>' + escapeHtml(d.business_name || '—') + '</td></tr>' +
                             '<tr><th><?php echo esc_js( __( 'Niche', 'jcp-core' ) ); ?></th><td>' + escapeHtml(d.business_type_display || '—') + '</td></tr>' +
+                            '<tr><th><?php echo esc_js( __( 'Came from', 'jcp-core' ) ); ?></th><td>' + escapeHtml(d.landing_page_display || '<?php echo esc_js( __( 'Unknown', 'jcp-core' ) ); ?>') + (d.landing_page ? '<br><code style="font-size:11px;color:#646970;">' + escapeHtml(d.landing_page) + '</code>' : '') + '</td></tr>' +
+                            '<tr><th><?php echo esc_js( __( 'Referrer', 'jcp-core' ) ); ?></th><td>' + escapeHtml(d.referrer_display || d.referrer || '—') + '</td></tr>' +
+                            '<tr><th><?php echo esc_js( __( 'UTM source', 'jcp-core' ) ); ?></th><td>' + escapeHtml(d.utm_source || '—') + '</td></tr>' +
+                            '<tr><th><?php echo esc_js( __( 'UTM campaign', 'jcp-core' ) ); ?></th><td>' + escapeHtml(d.utm_campaign || '—') + '</td></tr>' +
                             '<tr><th><?php echo esc_js( __( 'Last step', 'jcp-core' ) ); ?></th><td>' + escapeHtml(d.last_step || '—') + '</td></tr>' +
                             '<tr><th><?php echo esc_js( __( 'Converted', 'jcp-core' ) ); ?></th><td>' + (d.demo_converted ? '<?php echo esc_js( __( 'Yes', 'jcp-core' ) ); ?>' : '<?php echo esc_js( __( 'No', 'jcp-core' ) ); ?>') + '</td></tr>' +
                             '</tbody></table>';
