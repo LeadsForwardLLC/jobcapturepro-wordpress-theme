@@ -447,12 +447,12 @@ function jcp_niche_maybe_seed(): void {
 		}
 	}
 
-	// v28 = Anonymous Maps case study + Local Falcon grids on real map underlays.
+	// v29 = Keep all four testimonials visible in grid (restore Peter Bonk).
 	$demo_ver = (string) get_option( 'jcp_contractor_demo_seed_version', '' );
-	if ( $demo_ver !== '28' || ! jcp_niche_contractor_demo_exists() ) {
-		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '28' );
+	if ( $demo_ver !== '29' || ! jcp_niche_contractor_demo_exists() ) {
+		$created = jcp_niche_seed_contractor_demo( $demo_ver !== '29' );
 		if ( $created > 0 ) {
-			update_option( 'jcp_contractor_demo_seed_version', '28' );
+			update_option( 'jcp_contractor_demo_seed_version', '29' );
 			update_option( 'jcp_niche_contractor_demo_seeded', '1' );
 		}
 	}
@@ -481,7 +481,7 @@ function jcp_niche_admin_seed_notice(): void {
 	update_option( 'jcp_niche_hvac_seeded', '1' );
 	update_option( 'jcp_niche_referral_seeded', '1' );
 	update_option( 'jcp_niche_contractor_demo_seeded', '1' );
-	update_option( 'jcp_contractor_demo_seed_version', '28' );
+	update_option( 'jcp_contractor_demo_seed_version', '29' );
 	wp_safe_redirect( admin_url( 'edit.php?post_type=jcp_niche_landing&jcp_seeded=1' ) );
 	exit;
 }

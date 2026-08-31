@@ -140,12 +140,12 @@ function jcp_page_maybe_migrate_pages(): void {
 		}
 	}
 
-	// v6 = Anonymous Maps case study + Local Falcon grids on real map underlays.
+	// v7 = Keep all four testimonials visible in grid (restore Peter Bonk).
 	$home_ver = (string) get_option( 'jcp_home_seed_version', '' );
-	if ( $home_ver !== '6' ) {
+	if ( $home_ver !== '7' ) {
 		$id = jcp_page_seed_home( true );
 		if ( $id > 0 ) {
-			update_option( 'jcp_home_seed_version', '6' );
+			update_option( 'jcp_home_seed_version', '7' );
 		}
 	}
 }

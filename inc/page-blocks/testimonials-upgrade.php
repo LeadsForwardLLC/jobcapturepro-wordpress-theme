@@ -161,3 +161,109 @@ function jcp_page_upgrade_home_testimonials( array $content, int $post_id ): arr
 	$content['blocks'] = $out;
 	return $content;
 }
+
+/**
+ * Canonical four reviews for homepage / campaign / sales surfaces.
+ *
+ * @return list<array<string, mixed>>
+ */
+function jcp_page_canonical_testimonial_reviews(): array {
+	if ( function_exists( 'jcp_sales_tool_default_reviews' ) ) {
+		$raw = jcp_sales_tool_default_reviews();
+		$out = [];
+		foreach ( $raw as $review ) {
+			if ( ! is_array( $review ) ) {
+				continue;
+			}
+			$out[] = [
+				'id'         => (string) ( $review['id'] ?? sanitize_title( (string) ( $review['name'] ?? '' ) ) ),
+				'name'       => (string) ( $review['name'] ?? '' ),
+				'role'       => (string) ( $review['role'] ?? '' ),
+				'quote'      => (string) ( $review['quote'] ?? '' ),
+				'rating'     => isset( $review['rating'] ) ? (int) $review['rating'] : 5,
+				'avatar_url' => (string) ( $review['avatar_url'] ?? $review['avatar'] ?? '' ),
+				'avatar_alt' => (string) ( $review['avatar_alt'] ?? $review['avatarAlt'] ?? $review['name'] ?? '' ),
+			];
+		}
+		return $out;
+	}
+	return [];
+}
+
+/**
+ * Ensure testimonials blocks keep all four canonical reviews in a grid.
+ *
+ * @param array<string, mixed> $content Block document.
+ * @param int                  $post_id Post ID.
+ * @return array<string, mixed>
+ */
+function jcp_page_ensure_canonical_testimonial_reviews( array $content, int $post_id = 0 ): array {
+	unset( $post_id );
+	$blocks = $content['blocks'] ?? null;
+	if ( ! is_array( $blocks ) ) {
+		return $content;
+	}
+	$canonical = jcp_page_canonical_testimonial_reviews();
+	if ( $canonical === [] ) {
+		return $content;
+	}
+
+	$changed = false;
+	foreach ( $blocks as $i => $block ) {
+		if ( ! is_array( $block ) || ( $block['type'] ?? '' ) !== 'testimonials' ) {
+			continue;
+		}
+		$props   = is_array( $block['props'] ?? null ) ? $block['props'] : [];
+		$reviews = is_array( $props['reviews'] ?? null ) ? $props['reviews'] : [];
+		$by_id   = [];
+		foreach ( $reviews as $review ) {
+			if ( ! is_array( $review ) ) {
+				continue;
+			}
+			$id = trim( (string) ( $review['id'] ?? '' ) );
+			if ( $id === '' ) {
+				$id = sanitize_title( (string) ( $review['name'] ?? '' ) );
+			}
+			if ( $id !== '' ) {
+				$by_id[ $id ] = $review;
+			}
+		}
+
+		$merged = [];
+		foreach ( $canonical as $want ) {
+			$id = (string) ( $want['id'] ?? '' );
+			if ( $id !== '' && isset( $by_id[ $id ] ) && is_array( $by_id[ $id ] ) ) {
+				$existing = $by_id[ $id ];
+				// Prefer saved quote/name but restore missing avatar fields from canonical.
+				if ( empty( $existing['avatar_url'] ) && empty( $existing['avatar'] ) && ! empty( $want['avatar_url'] ) ) {
+					$existing['avatar_url'] = $want['avatar_url'];
+				}
+				if ( empty( $existing['avatar_alt'] ) && ! empty( $want['avatar_alt'] ) ) {
+					$existing['avatar_alt'] = $want['avatar_alt'];
+				}
+				$merged[] = $existing;
+			} else {
+				$merged[] = $want;
+				$changed  = true;
+			}
+		}
+
+		if ( count( $reviews ) !== count( $merged ) ) {
+			$changed = true;
+		}
+
+		$props['reviews']       = $merged;
+		$props['layout']        = 'grid';
+		$props['show_featured'] = false;
+		$props['per_view']      = max( 4, (int) ( $props['per_view'] ?? 4 ) );
+		$blocks[ $i ]['props']  = $props;
+	}
+
+	if ( $changed ) {
+		$content['blocks'] = $blocks;
+	} else {
+		// Still persist layout/show_featured fixes even when review ids were complete.
+		$content['blocks'] = $blocks;
+	}
+	return $content;
+}

@@ -325,6 +325,9 @@ function jcp_page_get_content( int $post_id ): array {
 	if ( function_exists( 'jcp_page_upgrade_start_free_trial_cta_labels' ) ) {
 		$upgraded = jcp_page_upgrade_start_free_trial_cta_labels( $upgraded, $post_id );
 	}
+	if ( function_exists( 'jcp_page_ensure_canonical_testimonial_reviews' ) ) {
+		$upgraded = jcp_page_ensure_canonical_testimonial_reviews( $upgraded, $post_id );
+	}
 	if ( wp_json_encode( $upgraded ) !== wp_json_encode( $cleaned ) ) {
 		jcp_page_save_content( $post_id, $upgraded );
 		$cleaned = $upgraded;

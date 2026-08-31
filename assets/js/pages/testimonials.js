@@ -112,10 +112,10 @@
       track.querySelector('.jcp-testimonials-card-role')
     );
 
-    // Grid layout shows every review at once — skip carousel chrome.
+    // Grid layout shows every review at once — never hide the featured key.
     if (isGrid) {
-      track.innerHTML = secondary().map(function (r) {
-        return card(r, showStars, showRoles, !sliderOnly);
+      track.innerHTML = reviews.map(function (r) {
+        return card(r, showStars, showRoles, false);
       }).join('');
       if (prevBtn) prevBtn.hidden = true;
       if (nextBtn) nextBtn.hidden = true;
