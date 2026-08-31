@@ -34,7 +34,7 @@ function jcp_page_home_balanced_meta_stats(): array {
 			'icon'      => 'badge-check',
 			'label'     => 'More jobs',
 			'detail'    => 'From finished work',
-			'css_class' => 'meta-stat-proof',
+			'css_class' => 'meta-stat-busywork',
 		],
 	];
 }

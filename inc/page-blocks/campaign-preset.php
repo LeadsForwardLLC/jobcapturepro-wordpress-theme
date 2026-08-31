@@ -160,7 +160,7 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
  */
 function jcp_page_campaign_meta_stats_from_doc( array $doc ): array {
 	$icons  = [ 'camera', 'map', 'badge-check' ];
-	$classes = [ 'meta-stat-photo', 'meta-stat-channels', 'meta-stat-proof' ];
+	$classes = [ 'meta-stat-photo', 'meta-stat-channels', 'meta-stat-busywork' ];
 	$items  = [];
 
 	foreach ( (array) ( $doc['blocks'] ?? [] ) as $block ) {

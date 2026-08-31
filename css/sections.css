@@ -233,6 +233,23 @@
   background: var(--jcp-color-primary);
 }
 
+.meta-stat-photo .factor-icon-wrapper,
+.meta-stat-photo .jcp-hero-meta-icon {
+  background: var(--jcp-color-primary);
+}
+
+.meta-stat-channels .factor-icon-wrapper,
+.meta-stat-channels .jcp-hero-meta-icon {
+  background: var(--jcp-color-info);
+}
+
+.meta-stat-busywork .factor-icon-wrapper,
+.meta-stat-busywork .jcp-hero-meta-icon,
+.meta-stat-proof .factor-icon-wrapper,
+.meta-stat-proof .jcp-hero-meta-icon {
+  background: var(--jcp-color-success);
+}
+
 .directory-meta .factor-icon-wrapper .meta-icon,
 .directory-meta .factor-icon-wrapper .factor-icon,
 .directory-meta .jcp-hero-meta-icon .meta-icon,
@@ -290,7 +307,10 @@
 
 .meta-stat-busywork .meta-title,
 .meta-stat-busywork .meta-copy strong,
-.meta-stat-busywork .meta-label strong {
+.meta-stat-busywork .meta-label strong,
+.meta-stat-proof .meta-title,
+.meta-stat-proof .meta-copy strong,
+.meta-stat-proof .meta-label strong {
   color: var(--jcp-color-success);
 }
 

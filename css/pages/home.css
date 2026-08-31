@@ -193,8 +193,23 @@
 }
 .jcp-home .meta-stat-busywork .meta-title,
 .jcp-home .meta-stat-busywork .meta-copy strong,
-.jcp-home .meta-stat-busywork .meta-label strong {
+.jcp-home .meta-stat-busywork .meta-label strong,
+.jcp-home .meta-stat-proof .meta-title,
+.jcp-home .meta-stat-proof .meta-copy strong,
+.jcp-home .meta-stat-proof .meta-label strong {
   color: var(--jcp-color-success);
+}
+
+.jcp-home .meta-stat-channels .factor-icon-wrapper,
+.jcp-home .meta-stat-channels .jcp-hero-meta-icon {
+  background: var(--jcp-color-info);
+}
+
+.jcp-home .meta-stat-busywork .factor-icon-wrapper,
+.jcp-home .meta-stat-busywork .jcp-hero-meta-icon,
+.jcp-home .meta-stat-proof .factor-icon-wrapper,
+.jcp-home .meta-stat-proof .jcp-hero-meta-icon {
+  background: var(--jcp-color-success);
 }
 
 /* Hero grid: wider left column (copy), narrower right column (phone) */

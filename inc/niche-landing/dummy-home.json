@@ -47,7 +47,7 @@
         "icon": "badge-check",
         "label": "More jobs",
         "detail": "From finished work",
-        "css_class": "meta-stat-proof"
+        "css_class": "meta-stat-busywork"
       }
     ]
   },

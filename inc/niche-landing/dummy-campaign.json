@@ -77,7 +77,7 @@
       "label": "jobs",
       "detail": "From finished work",
       "icon": "badge-check",
-      "css_class": "meta-stat-proof"
+      "css_class": "meta-stat-busywork"
     }
   ],
   "benefits": {

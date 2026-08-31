@@ -140,12 +140,12 @@ function jcp_page_maybe_migrate_pages(): void {
 		}
 	}
 
-	// v4 = stacked hero CTA + rotator wrap + shared LP testimonials + green More jobs meta.
+	// v5 = More jobs meta uses success green (meta-stat-busywork).
 	$home_ver = (string) get_option( 'jcp_home_seed_version', '' );
-	if ( $home_ver !== '4' ) {
+	if ( $home_ver !== '5' ) {
 		$id = jcp_page_seed_home( true );
 		if ( $id > 0 ) {
-			update_option( 'jcp_home_seed_version', '4' );
+			update_option( 'jcp_home_seed_version', '5' );
 		}
 	}
 }
