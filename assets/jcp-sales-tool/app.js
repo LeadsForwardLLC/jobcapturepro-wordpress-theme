@@ -1,7 +1,7 @@
 (() => {
   const cfg = window.JCP_SALES_TOOL || {};
   const assetBase = (cfg.assetBase || "").replace(/\/$/, "");
-  const assetVer = "20260831a";
+  const assetVer = "20260831b";
   const img = (name) => `${assetBase}/assets/${name}?v=${assetVer}`;
   const plans = cfg.plans || {};
   const reviews = Array.isArray(cfg.reviews) ? cfg.reviews : [];
@@ -26,6 +26,7 @@
     { id: "diagnose", label: "Diagnose" },
     { id: "gap", label: "Proof gap" },
     { id: "engine", label: "How it works" },
+    { id: "demo", label: "Live demo" },
     { id: "proof", label: "Proof" },
     { id: "fit", label: "Right fit" },
     { id: "plan", label: "Plan" },
@@ -121,6 +122,64 @@
       }
       return chapter;
     });
+  }
+
+  function chapterNum(id) {
+    const idx = chapterList().findIndex((chapter) => chapter.id === id);
+    return idx >= 0 ? idx + 1 : 1;
+  }
+
+  function currentChapter() {
+    return chapterList()[state.chapter] || null;
+  }
+
+  /** Map free-text trade to a demo niche key the live demo understands. */
+  function nicheFromTrade(trade) {
+    const t = String(trade || "").toLowerCase();
+    if (/plumb|drain|water.?heat|pipe|sewer/.test(t)) return "plumbing";
+    if (/hvac|heat(?:ing)?|air.?cond|furnace|cool(?:ing)?/.test(t)) return "hvac";
+    if (/electr/.test(t)) return "electrical";
+    if (/roof/.test(t)) return "roofing";
+    if (/landscap|lawn|outdoor|tree/.test(t)) return "outdoor";
+    if (/clean|janitor|maid/.test(t)) return "cleaning";
+    if (/remodel|renovat|carpentr|build/.test(t)) return "remodel";
+    if (/restor|water.?dam|mold|fire.?dam/.test(t)) return "restoration";
+    return "";
+  }
+
+  function seedDemoUserForEmbed() {
+    const niche = nicheFromTrade(state.trade);
+    const company = String(state.prospectName || "").trim() || (isChannelPartner() ? "Sample Contractor" : "Your Business");
+    const rep = String(state.repName || "").trim();
+    const firstName = rep ? rep.split(/\s+/)[0] : "Alex";
+    const user = {
+      firstName,
+      lastName: "",
+      businessName: company,
+      niche: niche || "plumbing",
+      email: "",
+      goals: Array.isArray(state.priorities) ? state.priorities.slice(0, 3) : [],
+    };
+    try {
+      localStorage.setItem("demoUser", JSON.stringify(user));
+      sessionStorage.setItem("jcp_demo_intake_complete", "1");
+    } catch (e) {
+      // no-op
+    }
+    return user;
+  }
+
+  function buildDemoEmbedUrl() {
+    const user = seedDemoUserForEmbed();
+    const base = (cfg.demoRunUrl || siteUrl("/demo/")).split("?")[0];
+    const url = new URL(base, window.location.origin);
+    url.searchParams.set("mode", "run");
+    url.searchParams.set("embed", "1");
+    url.searchParams.set("source", "sales_deck");
+    if (user.firstName) url.searchParams.set("name", user.firstName);
+    if (user.businessName) url.searchParams.set("business", user.businessName);
+    if (user.niche) url.searchParams.set("niche", user.niche);
+    return url.toString();
   }
 
   function goTo(index) {
@@ -419,10 +478,33 @@
   function renderEngine() {
     const detail = engineSteps[selectedEngine];
     return `<section class="chapter content-pad">
-    ${chapterHeader(5, "How it works", "One job in. Proof everywhere.", isAffiliate() ? "Show contractors: completed work becomes Map Pack fuel, geotagged website content, reviews, and social — then you earn when they subscribe." : isPartner() ? "Show clients: completed work becomes Maps visibility, geotagged website content, reviews, and social — without a content team." : "JobCapturePro turns completed work into Maps visibility, geotagged website content, reviews, and social — proof that wins local Map Pack attention and AI answers.")}
+    ${chapterHeader(chapterNum("engine"), "How it works", "One job in. Proof everywhere.", isAffiliate() ? "Show contractors: completed work becomes Map Pack fuel, geotagged website content, reviews, and social — then you earn when they subscribe." : isPartner() ? "Show clients: completed work becomes Maps visibility, geotagged website content, reviews, and social — without a content team." : "JobCapturePro turns completed work into Maps visibility, geotagged website content, reviews, and social — proof that wins local Map Pack attention and AI answers.")}
     <div class="engine">
       <div class="engine-flow">${engineSteps.map((step, i) => `<button class="engine-step ${selectedEngine === i ? "active" : ""}" data-engine="${i}" type="button"><span class="step-no">0${i + 1}</span><h3>${step.title}</h3><p>${step.short}</p></button>`).join("")}</div>
       <div class="engine-detail"><strong>${detail.detail}</strong><ul>${detail.bullets.map((x) => `<li>${x}</li>`).join("")}</ul></div>
+    </div>
+  </section>`;
+  }
+
+  function renderDemo() {
+    const company = esc(displayName());
+    const trade = esc(state.trade || "Home services");
+    const intro = isAffiliate()
+      ? `Walk the live product as if you were showing a contractor named ${company}. Same guided demo prospects use — personalized from this deck.`
+      : isPartner()
+        ? `Walk the live product for a client like ${company}. Same guided demo they would run — seeded with this deck’s company and trade.`
+        : `This is the real JobCapturePro demo — seeded for ${company} (${trade}). No duplicate build: same product walk-through as /demo.`;
+    return `<section class="chapter demo-embed-chapter">
+    <div class="demo-embed-chrome">
+      ${chapterHeader(chapterNum("demo"), "Live product", "Try it with their job story.", intro)}
+      <div class="demo-embed-meta">
+        <span>Using <strong>${company}</strong> · ${trade}</span>
+        <button type="button" class="quiet-btn" id="reloadDemoEmbed">Reload with current company</button>
+        <a class="quiet-btn" id="openDemoTab" href="#" target="_blank" rel="noopener">Open in new tab</a>
+      </div>
+    </div>
+    <div class="demo-embed-shell">
+      <iframe class="demo-embed-frame" title="JobCapturePro live demo" src="about:blank" data-demo-embed="1"></iframe>
     </div>
   </section>`;
   }
@@ -561,7 +643,7 @@
 
     return `<section class="chapter content-pad">
     ${chapterHeader(
-      6,
+      chapterNum("proof"),
       "Customer proof",
       "Real jobs. Real Map Pack lift.",
       isAffiliate()
@@ -594,7 +676,7 @@
         ? "Pick the stage that sounds most like your typical client. Same workflow — different rollout story."
         : "Pick the stage that sounds most like your business. The workflow stays the same — the emphasis changes.";
     return `<section class="chapter content-pad">
-    ${chapterHeader(7, "Right fit", title, intro)}
+    ${chapterHeader(chapterNum("fit"), "Right fit", title, intro)}
     <div class="fit-layout">
       <div class="segment-tabs">${Object.entries(segments)
         .map(([key, item]) => `<button type="button" data-segment="${key}" class="segment-tab ${state.segment === key ? "active" : ""}"><strong>${item.label}</strong><span>${item.range}</span></button>`)
@@ -660,7 +742,7 @@
         : `We’ll recommend from live pricing: 1 location → Starter ($${planMonthly("starter", 99)}/mo); multi-location → Scale ($${planMonthly("scale", 249)}/mo + $${extraFee("scale", 150)}/mo per extra); large / custom → Enterprise.`;
 
     return `<section class="chapter content-pad">
-    ${chapterHeader(8, isAffiliate() || isPartner() ? "Earn with JCP" : "Plan", headline, sub + " " + lead)}
+    ${chapterHeader(chapterNum("plan"), isAffiliate() || isPartner() ? "Earn with JCP" : "Plan", headline, sub + " " + lead)}
     <div class="plan-layout">
       <div class="plan-controls ${isChannelPartner() ? "rep-only" : ""}">
         <div class="field"><span class="field-label">Company stage</span><div class="choice-row">${Object.entries(segments)
@@ -715,7 +797,7 @@
         ? "These are the questions agencies and consultants hear when pitching JobCapturePro to clients."
         : "These are the questions we hear most from contractors.";
     return `<section class="chapter content-pad">
-    ${chapterHeader(9, "Common questions", "Straight answers.", intro)}
+    ${chapterHeader(chapterNum("objections"), "Common questions", "Straight answers.", intro)}
     <div class="objection-layout">
       <div class="objection-list">${objections.map((x, i) => `<button type="button" data-objection="${i}" class="objection-btn ${selectedObjection === i ? "active" : ""}">${x.title}</button>`).join("")}</div>
       <div class="objection-response"><span class="eyebrow">Answer</span><h3>${item.title}</h3><p class="say-this">${item.answer}</p></div>
@@ -806,7 +888,7 @@
     }
 
     return `<section class="chapter content-pad">
-    ${chapterHeader(10, "Next steps", "A clear path forward.", isAffiliate() ? "Get your referral link and start sharing JobCapturePro with contractors who already take job photos." : isPartner() ? "Apply as a strategic partner, pilot one client workflow, then expand." : "One-page summary of this call — plus Start Free Trial when you’re ready.")}
+    ${chapterHeader(chapterNum("close"), "Next steps", "A clear path forward.", isAffiliate() ? "Get your referral link and start sharing JobCapturePro with contractors who already take job photos." : isPartner() ? "Apply as a strategic partner, pilot one client workflow, then expand." : "One-page summary of this call — plus Start Free Trial when you’re ready.")}
     <div class="close-layout">
       <div class="close-notes rep-only">
         <div class="field"><label for="nextStep">Agreed next step</label><textarea id="nextStep">${esc(state.nextStep || nextDefault)}</textarea></div>
@@ -1180,10 +1262,58 @@
     ).then(() => setTimeout(runPrint, 80));
   }
 
+  function mountDemoEmbed(forceReload = false) {
+    const frame = stage.querySelector("iframe[data-demo-embed]");
+    if (!frame) return;
+    const url = buildDemoEmbedUrl();
+    const openTab = $("#openDemoTab");
+    if (openTab) openTab.href = url;
+    if (forceReload || frame.getAttribute("src") === "about:blank" || frame.dataset.embedUrl !== url) {
+      frame.dataset.embedUrl = url;
+      frame.src = url;
+    }
+  }
+
   function render() {
     renderNav();
-    const renderers = [renderCover, renderProblem, renderDiagnose, renderGap, renderEngine, renderProof, renderFit, renderPlan, renderObjections, renderClose];
-    stage.innerHTML = renderers[state.chapter]();
+    const list = chapterList();
+    const ch = list[state.chapter];
+    const chapterId = ch ? ch.id : "";
+    const keepDemoFrame =
+      chapterId === "demo" &&
+      stage.dataset.chapterId === "demo" &&
+      stage.querySelector("iframe[data-demo-embed]");
+
+    if (!keepDemoFrame) {
+      const renderers = {
+        cover: renderCover,
+        problem: renderProblem,
+        diagnose: renderDiagnose,
+        gap: renderGap,
+        engine: renderEngine,
+        demo: renderDemo,
+        proof: renderProof,
+        fit: renderFit,
+        plan: renderPlan,
+        objections: renderObjections,
+        close: renderClose,
+      };
+      const renderer = renderers[chapterId] || renderCover;
+      stage.innerHTML = renderer();
+      stage.dataset.chapterId = chapterId;
+      if (chapterId === "demo") {
+        mountDemoEmbed(true);
+      }
+    } else {
+      // Stay on Live demo without remounting the iframe (preserves in-progress walkthrough).
+      const openTab = $("#openDemoTab");
+      if (openTab) openTab.href = buildDemoEmbedUrl();
+      const meta = stage.querySelector(".demo-embed-meta span");
+      if (meta) {
+        meta.innerHTML = `Using <strong>${esc(displayName())}</strong> · ${esc(state.trade || "Home services")}`;
+      }
+    }
+
     const prospectInput = $("#prospectName");
     if (prospectInput) {
       prospectInput.value = state.prospectName;
@@ -1196,7 +1326,6 @@
     const metaLabel = document.querySelector(".call-meta label");
     if (metaLabel) metaLabel.textContent = isPartner() ? "Partner" : isAffiliate() ? "Affiliate" : "Prospect";
     document.querySelectorAll("[data-mode]").forEach((button) => button.classList.toggle("active", button.dataset.mode === state.mode));
-    const list = chapterList();
     $("#progressLabel").textContent = `${String(state.chapter + 1).padStart(2, "0")} / ${String(list.length).padStart(2, "0")}`;
     $("#progressBar").style.width = `${((state.chapter + 1) / list.length) * 100}%`;
     $("#backBtn").disabled = state.chapter === 0;
@@ -1206,9 +1335,12 @@
     next.style.opacity = next.disabled ? ".35" : "1";
     next.querySelector("span").textContent = state.chapter === 0 ? "Continue" : state.chapter === list.length - 2 ? "See next steps" : "Next";
     document.body.classList.toggle("is-presenting", !!state.presenting);
+    document.body.classList.toggle("is-demo-chapter", chapterId === "demo");
     const presentBtn = $("#presentBtn");
     if (presentBtn) presentBtn.textContent = state.presenting ? "Exit present" : "Present";
-    bindChapterEvents();
+    if (!keepDemoFrame) {
+      bindChapterEvents();
+    }
   }
 
   function updateArray(name, value, checked) {
@@ -1219,7 +1351,9 @@
 
   function bindChapterEvents() {
     stage.querySelectorAll("[data-go]").forEach((el) => el.addEventListener("click", () => goTo(Number(el.dataset.go))));
-    if (state.chapter === 2) {
+    const id = (currentChapter() || {}).id || "";
+
+    if (id === "diagnose") {
       $("#jobsPerWeek").addEventListener("input", (e) => setState({ jobsPerWeek: e.target.value }, false));
       $("#locations").addEventListener("input", (e) => setState({ locations: e.target.value }, false));
       $("#crm").addEventListener("change", (e) => setState({ crm: e.target.value }, false));
@@ -1237,15 +1371,22 @@
       stage.querySelectorAll('input[name="channels"]').forEach((el) => el.addEventListener("change", (e) => updateArray("channels", e.target.value, e.target.checked)));
       stage.querySelectorAll('input[name="priorities"]').forEach((el) => el.addEventListener("change", (e) => updateArray("priorities", e.target.value, e.target.checked)));
     }
-    if (state.chapter === 4) stage.querySelectorAll("[data-engine]").forEach((el) => el.addEventListener("click", () => { selectedEngine = Number(el.dataset.engine); render(); }));
-    if (state.chapter === 5) {
+    if (id === "engine") {
+      stage.querySelectorAll("[data-engine]").forEach((el) => el.addEventListener("click", () => { selectedEngine = Number(el.dataset.engine); render(); }));
+    }
+    if (id === "demo") {
+      $("#reloadDemoEmbed")?.addEventListener("click", () => mountDemoEmbed(true));
+      const openTab = $("#openDemoTab");
+      if (openTab) openTab.href = buildDemoEmbedUrl();
+    }
+    if (id === "proof") {
       stage.querySelectorAll("[data-case-market]").forEach((el) => el.addEventListener("click", () => { selectedCaseMarket = el.dataset.caseMarket; render(); }));
       stage.querySelectorAll("[data-lightbox-src]").forEach((el) =>
         el.addEventListener("click", () => openLightbox(el.dataset.lightboxSrc, el.dataset.lightboxFallback || el.dataset.lightboxSrc))
       );
     }
-    if (state.chapter === 6) stage.querySelectorAll("[data-segment]").forEach((el) => el.addEventListener("click", () => setState({ segment: el.dataset.segment })));
-    if (state.chapter === 7) {
+    if (id === "fit") stage.querySelectorAll("[data-segment]").forEach((el) => el.addEventListener("click", () => setState({ segment: el.dataset.segment })));
+    if (id === "plan") {
       stage.querySelectorAll('input[name="planSegment"]').forEach((el) => el.addEventListener("change", (e) => setState({ segment: e.target.value })));
       $("#planLocations").addEventListener("change", (e) => setState({ locations: e.target.value }));
       const auto = stage.querySelector('input[name="automation"]');
@@ -1254,13 +1395,13 @@
       if (custom) custom.addEventListener("change", (e) => setState({ customIntegration: e.target.checked }));
       stage.querySelectorAll('input[name="planPriorities"]').forEach((el) => el.addEventListener("change", (e) => updateArray("priorities", e.target.value, e.target.checked)));
     }
-    if (state.chapter === 8) stage.querySelectorAll("[data-objection]").forEach((el) => el.addEventListener("click", () => { selectedObjection = Number(el.dataset.objection); render(); }));
-    if (state.chapter === 9) {
-      ["nextStep", "followUpDate", "salesNotes"].forEach((id) => {
-        const el = $("#" + id);
+    if (id === "objections") stage.querySelectorAll("[data-objection]").forEach((el) => el.addEventListener("click", () => { selectedObjection = Number(el.dataset.objection); render(); }));
+    if (id === "close") {
+      ["nextStep", "followUpDate", "salesNotes"].forEach((fieldId) => {
+        const el = $("#" + fieldId);
         if (!el) return;
         el.addEventListener("input", (e) => {
-          state[id] = e.target.value;
+          state[fieldId] = e.target.value;
           saveState();
           const nextEl = $("#recapNextStep");
           if (nextEl) nextEl.textContent = `${state.nextStep || defaultNextStep()}${state.followUpDate ? ` Target: ${state.followUpDate}.` : ""}`;
@@ -1393,8 +1534,16 @@
         }
         if (state.presenting) setState({ presenting: false });
       }
-      if (e.key === "ArrowRight" && !e.target.matches("input, textarea, select")) goTo(state.chapter + 1);
-      if (e.key === "ArrowLeft" && !e.target.matches("input, textarea, select")) goTo(state.chapter - 1);
+      if (e.key === "ArrowRight" && !e.target.matches("input, textarea, select") && (currentChapter() || {}).id !== "demo") goTo(state.chapter + 1);
+      if (e.key === "ArrowLeft" && !e.target.matches("input, textarea, select") && (currentChapter() || {}).id !== "demo") goTo(state.chapter - 1);
+    });
+    window.addEventListener("message", (e) => {
+      if (e.origin !== window.location.origin) return;
+      const data = e.data;
+      if (!data || data.type !== "jcp-demo-embed") return;
+      if (data.event === "post_demo_shown" || data.event === "outcomes_completed") {
+        showToast("Demo complete — hit Continue when you’re ready");
+      }
     });
   }
 

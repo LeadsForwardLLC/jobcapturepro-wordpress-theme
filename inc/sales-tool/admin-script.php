@@ -90,8 +90,20 @@ function jcp_sales_tool_call_script_chapters(): array {
 			'avoid'         => 'Don’t call reviews “automatic.” It’s an on-site handoff.',
 		],
 		[
+			'id'            => 'demo',
+			'label'         => '06 · Live demo',
+			'goal'          => 'Walk the real product inside the deck — personalized with this call’s company and trade. Do not rebuild a fake demo.',
+			'say'           => 'Let me show you the actual app with your business name. One check-in: photo → AI post → publish everywhere → on-site review ask. Same demo your team would run after signup.',
+			'say_affiliate' => 'This is the live demo you’ll send people to — I’ll walk it once so you can narrate it later. Watch how one job becomes Maps, website, social, directory, and a review ask.',
+			'say_partner'   => 'This is the live client demo. I’ll run it with a sample client name so you see the field workflow you can deliver without owning content production.',
+			'ask'           => 'Could your techs do that on site in under two minutes?',
+			'ask_affiliate' => 'Could you send someone this demo link after the call?',
+			'ask_partner'   => 'Could you put a pilot client through this same flow next week?',
+			'avoid'         => 'Don’t leave Present mode to open /demo in another tab unless they ask. Use Reload if you change the company name.',
+		],
+		[
 			'id'            => 'proof',
-			'label'         => '06 · Proof',
+			'label'         => '07 · Proof',
 			'goal'          => 'Social proof first. Acculevel only if Maps/SEO is the buying trigger.',
 			'say'           => 'Here’s what operators and agencies say after they turn job photos into a system. [Read 1–2 snippets.] If Maps matters, walk Acculevel: 9-figure multi-location foundation company; these are tracked keywords only. SoLV = Map Pack share across the grid; ARP = average rank (lower is better). Show Triadelphia / Monroe before→after: 20+/0% → ~#1–#2 / high SoLV in ~12 weeks. More Map Pack presence = more chances to get the call — not a ranking guarantee. Only quote lead % if verified in deck settings.',
 			'say_affiliate' => 'Here’s proof you can forward. [Read 1–2 snippets.] Acculevel tracked keywords: from 20+/0% SoLV to strong Map Pack coverage (up to 100% SoLV) in ~12 weeks across two markets. One line: SoLV = how often they’re in the Map Pack across the grid. More presence = more chances to be called.',
@@ -101,7 +113,7 @@ function jcp_sales_tool_call_script_chapters(): array {
 		],
 		[
 			'id'            => 'fit',
-			'label'         => '07 · Right fit',
+			'label'         => '08 · Right fit',
 			'goal'          => 'Match altitude: owner, growth, or multi-location — for them, who they refer, or who they serve.',
 			'say'           => 'Depending on stage, the story shifts. Owner-operators need simple capture and visibility. Growth teams need consistency across jobs. Multi-location needs control without losing local proof.',
 			'say_affiliate' => 'Match the pitch to who you refer. Owner-operators want simple Maps and website proof. Growth shops need CRM automation and reviews. Multi-location needs control across markets.',
@@ -113,7 +125,7 @@ function jcp_sales_tool_call_script_chapters(): array {
 		],
 		[
 			'id'            => 'plan',
-			'label'         => '08 · Plan / earn',
+			'label'         => '09 · Plan / earn',
 			'goal'          => 'Match the audience: contractor plan, affiliate economics, or partner residual.',
 			'say'           => 'Based on location count, here’s the recommended plan from live pricing. One location → Starter ($99/mo, 1 location only). Multi-location → Scale ($249/mo + $150/mo per extra location, includes 1 Local Falcon keyword). Large / custom integrations → Enterprise ($399/mo, extras $100/mo). Point to the live pricing page for current numbers.',
 			'say_affiliate' => 'Your motion is referral: 20% recurring commission for 12 months when someone you refer becomes a paid customer. Share your link, point them to Start Free Trial or try the demo, and let the product close.',
@@ -125,7 +137,7 @@ function jcp_sales_tool_call_script_chapters(): array {
 		],
 		[
 			'id'            => 'objections',
-			'label'         => '09 · Questions',
+			'label'         => '10 · Questions',
 			'goal'          => 'Answer calmly. Mechanism over debate. Use the mode-specific objection list on the deck.',
 			'say'           => 'These are the questions we hear most from contractors. Pick the one on their mind and answer with their workflow, not a feature dump.',
 			'say_affiliate' => 'These are the questions affiliates hear when recommending JobCapturePro. Keep answers short: referral economics, easy pitch, honest about rankings.',
@@ -135,7 +147,7 @@ function jcp_sales_tool_call_script_chapters(): array {
 		],
 		[
 			'id'            => 'close',
-			'label'         => '10 · Close',
+			'label'         => '11 · Close',
 			'goal'          => 'One concrete next step + leave-behind PDF with live call numbers.',
 			'say'           => 'Here’s what I’d recommend: Start Free Trial, connect one real job workflow, and we’ll confirm the rollout. I’ll download a one-pager with your numbers you can share with anyone who wasn’t on the call.',
 			'say_affiliate' => 'Next step: join the referral program and share your link with one contractor this week. I’ll download an affiliate leave-behind with the example shop numbers from this call.',

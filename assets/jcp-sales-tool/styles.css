@@ -1120,3 +1120,54 @@ body.is-presenting .plan-layout:has(.plan-controls.rep-only) .recommendation {
   .lf-keyword-metrics { grid-template-columns: 1fr; }
   .lf-keyword-arrow { transform: rotate(90deg); justify-self: start; }
 }
+
+/* Live demo chapter — embeds real /demo/?mode=run */
+.demo-embed-chapter {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100svh - var(--topbar) - var(--controls));
+  padding: 0;
+}
+.demo-embed-chrome {
+  padding: 18px clamp(20px, 4vw, 48px) 12px;
+  border-bottom: 1px solid var(--line);
+  background: var(--white);
+}
+.demo-embed-chrome .chapter-head {
+  margin-bottom: 10px;
+}
+.demo-embed-chrome .chapter-head h2 {
+  font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+}
+.demo-embed-chrome .chapter-head p {
+  max-width: 52rem;
+  margin-bottom: 0;
+}
+.demo-embed-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: center;
+  font: 500 13px/1.3 "DM Sans", sans-serif;
+  color: var(--muted);
+}
+.demo-embed-shell {
+  flex: 1;
+  min-height: 0;
+  background: #0b1220;
+  padding: 0;
+}
+.demo-embed-frame {
+  display: block;
+  width: 100%;
+  height: calc(100svh - var(--topbar) - var(--controls) - 148px);
+  min-height: 520px;
+  border: 0;
+  background: #0b1220;
+}
+body.is-presenting .demo-embed-frame {
+  height: calc(100svh - var(--controls) - 132px);
+}
+body.is-demo-chapter .chapter-stage {
+  min-height: calc(100svh - var(--topbar) - var(--controls));
+}

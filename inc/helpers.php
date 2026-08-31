@@ -116,7 +116,7 @@ function jcp_core_demo_run_url( array $args = [] ): string {
  * @return array<string, string>
  */
 function jcp_core_demo_run_query_args(): array {
-    $allowed = [ 'mode', 'name', 'first_name', 'last_name', 'business', 'company', 'niche', 'business_type', 'email', 'forceSurvey' ];
+    $allowed = [ 'mode', 'name', 'first_name', 'last_name', 'business', 'company', 'niche', 'business_type', 'email', 'forceSurvey', 'embed', 'source' ];
     $out     = [ 'mode' => 'run' ];
     foreach ( $allowed as $key ) {
         if ( ! isset( $_GET[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended

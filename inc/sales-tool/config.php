@@ -184,5 +184,6 @@ function jcp_sales_tool_build_config( int $post_id = 0 ): array {
 			'secondaryUrl'   => $sec_url !== '' ? $sec_url : home_url( '/demo/' ),
 		],
 		'storageKey'  => $post_id > 0 ? 'jcp-sales-call-' . $post_id : 'jcp-sales-call-live',
+		'demoRunUrl'  => function_exists( 'jcp_core_demo_run_url' ) ? jcp_core_demo_run_url( [ 'mode' => 'run' ] ) : home_url( '/demo/?mode=run' ),
 	];
 }

@@ -9,17 +9,21 @@
  */
 
 $demo_mode = isset( $_GET['mode'] ) && $_GET['mode'] === 'run'; // phpcs:ignore
+$demo_embed = $demo_mode && isset( $_GET['embed'] ) && (string) $_GET['embed'] === '1'; // phpcs:ignore
 
 if ( $demo_mode ) {
 	?><!DOCTYPE html>
-<html <?php language_attributes(); ?> class="jcp-demo-run-html">
+<html <?php language_attributes(); ?> class="jcp-demo-run-html<?php echo $demo_embed ? ' jcp-demo-embed-html' : ''; ?>">
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<?php if ( $demo_embed ) : ?>
+	<meta name="robots" content="noindex,nofollow">
+	<?php endif; ?>
 	<?php wp_head(); ?>
 </head>
-<body <?php body_class( 'jcp-demo-run demo-run-only' ); ?>>
-<div id="jcp-app" data-jcp-page="demo"></div>
+<body <?php body_class( $demo_embed ? 'jcp-demo-run demo-run-only jcp-demo-embed' : 'jcp-demo-run demo-run-only' ); ?>>
+<div id="jcp-app" data-jcp-page="demo"<?php echo $demo_embed ? ' data-jcp-embed="1"' : ''; ?>></div>
 <?php wp_footer(); ?>
 </body>
 </html>

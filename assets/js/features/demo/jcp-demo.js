@@ -3813,6 +3813,14 @@ function hideOutcomesCtaDock() {
 
 function completeDemoConversion() {
   jcpDemoTrack('demo_outcomes_completed', 6);
+  try {
+    if (window.parent && window.parent !== window) {
+      const params = new URLSearchParams(window.location.search || '');
+      if (params.get('embed') === '1') {
+        window.parent.postMessage({ type: 'jcp-demo-embed', event: 'outcomes_completed' }, window.location.origin);
+      }
+    }
+  } catch (e) {}
   if (outcomesSlideshow.isOpen) {
     closeOutcomesSlideshow({ keepDock: false });
   }
@@ -4937,6 +4945,14 @@ function showPostDemoPanel() {
 
   panel.classList.add('active');
   jcpDemoTrack('post_demo_modal_shown');
+  try {
+    if (window.parent && window.parent !== window) {
+      const params = new URLSearchParams(window.location.search || '');
+      if (params.get('embed') === '1') {
+        window.parent.postMessage({ type: 'jcp-demo-embed', event: 'post_demo_shown' }, window.location.origin);
+      }
+    }
+  } catch (e) {}
   // Matomo: Demo / Completed (once per session)
   try {
     if (typeof _paq !== 'undefined' && !sessionStorage.getItem('jcp_matomo_demo_completed')) {
