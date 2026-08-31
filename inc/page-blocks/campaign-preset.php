@@ -21,6 +21,7 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 	$doc['settings']['hide_breadcrumb']  = true;
 	$doc['settings']['campaign_landing'] = true;
 	$doc['settings']['hide_site_chrome'] = true;
+	$doc['settings']['noindex']          = true;
 
 	if ( empty( $doc['blocks'] ) || ! is_array( $doc['blocks'] ) ) {
 		return $doc;
