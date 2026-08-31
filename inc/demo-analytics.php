@@ -635,21 +635,22 @@ function jcp_demo_analytics_get_stats(): array {
 
     $steps = [];
     $step_defs = [
-        [ 'label' => __( 'Gate · Form step 1 (contact)', 'jcp-core' ), 'type' => 'form_step_completed', 'num' => 1 ],
-        [ 'label' => __( 'Gate · Form step 2 (goals)', 'jcp-core' ), 'type' => 'form_step_completed', 'num' => 2 ],
-        [ 'label' => __( 'Gate · Form step 3 (company)', 'jcp-core' ), 'type' => 'form_step_completed', 'num' => 3 ],
-        [ 'label' => __( 'Demo run started', 'jcp-core' ), 'type' => 'demo_run_started', 'num' => null ],
-        [ 'label' => __( 'Demo · Step 1', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 1 ],
-        [ 'label' => __( 'Demo · Step 2', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 2 ],
-        [ 'label' => __( 'Demo · Step 3', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 3 ],
-        [ 'label' => __( 'Demo · Step 4', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 4 ],
-        [ 'label' => __( 'Publish completed', 'jcp-core' ), 'type' => 'demo_publish_completed', 'num' => 4 ],
-        [ 'label' => __( 'Demo · Step 5', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 5 ],
-        [ 'label' => __( 'Review sent', 'jcp-core' ), 'type' => 'demo_review_sent', 'num' => 5 ],
-        [ 'label' => __( 'Demo · Step 6', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 6 ],
+        [ 'label' => __( 'Gate · Opened', 'jcp-core' ), 'type' => 'demo_started', 'num' => null ],
+        [ 'label' => __( 'Gate · Unlocked demo', 'jcp-core' ), 'type' => 'form_step_completed', 'num' => 1 ],
+        [ 'label' => __( 'Demo · Run started', 'jcp-core' ), 'type' => 'demo_run_started', 'num' => null ],
+        [ 'label' => __( 'Demo · 1 Start your personalized demo', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 1 ],
+        [ 'label' => __( 'Demo · 2 Create a job check-in', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 2 ],
+        [ 'label' => __( 'Demo · 3 Add the job photo', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 3 ],
+        [ 'label' => __( 'Demo · 4 AI builds a local SEO post', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 4 ],
+        [ 'label' => __( 'Demo · Published everywhere', 'jcp-core' ), 'type' => 'demo_publish_completed', 'num' => null ],
+        [ 'label' => __( 'Demo · 5 Ask for the review on site', 'jcp-core' ), 'type' => 'demo_step_viewed', 'num' => 5 ],
+        [ 'label' => __( 'Demo · Review request sent', 'jcp-core' ), 'type' => 'demo_review_sent', 'num' => null ],
+        [ 'label' => __( 'Demo · Outcomes opened (one job, everywhere)', 'jcp-core' ), 'type' => 'demo_outcomes_opened', 'num' => null ],
+        [ 'label' => __( 'Demo · Outcomes completed', 'jcp-core' ), 'type' => 'demo_outcomes_completed', 'num' => null ],
         [ 'label' => __( 'End screen shown', 'jcp-core' ), 'type' => 'post_demo_modal_shown', 'num' => null ],
-        [ 'label' => __( 'Demo replayed', 'jcp-core' ), 'type' => 'demo_replayed', 'num' => null ],
         [ 'label' => __( 'Converted · Start Free Trial', 'jcp-core' ), 'type' => 'demo_converted', 'num' => null ],
+        // Side action — not part of the linear drop-off chain.
+        [ 'label' => __( 'Demo replayed (side action)', 'jcp-core' ), 'type' => 'demo_replayed', 'num' => null, 'side' => true ],
     ];
 
     $prev_count = $total_sessions;
@@ -667,14 +668,20 @@ function jcp_demo_analytics_get_stats(): array {
             ) );
         }
         $pct = $total_sessions > 0 ? round( ( $count / $total_sessions ) * 100, 1 ) : 0;
-        $dropoff = $prev_count > 0 ? round( ( ( $prev_count - $count ) / $prev_count ) * 100, 1 ) : 0;
+        $is_side = ! empty( $def['side'] );
+        $dropoff = ( ! $is_side && $prev_count > 0 )
+            ? round( ( ( $prev_count - $count ) / $prev_count ) * 100, 1 )
+            : 0;
         $steps[] = [
-            'step'   => $def['label'],
-            'count'  => $count,
-            'pct'    => $pct,
+            'step'    => $def['label'],
+            'count'   => $count,
+            'pct'     => $pct,
             'dropoff' => $dropoff,
+            'side'    => $is_side,
         ];
-        $prev_count = $count;
+        if ( ! $is_side ) {
+            $prev_count = $count;
+        }
     }
 
     $completed = (int) $wpdb->get_var( "SELECT COUNT(DISTINCT session_id) FROM $table WHERE event_type = 'post_demo_modal_shown'" );
@@ -695,6 +702,9 @@ function jcp_demo_analytics_get_stats(): array {
         $max_dropoff = 0;
         $max_step   = null;
         foreach ( $steps as $row ) {
+            if ( ! empty( $row['side'] ) ) {
+                continue;
+            }
             if ( isset( $row['dropoff'] ) && (float) $row['dropoff'] > $max_dropoff ) {
                 $max_dropoff = (float) $row['dropoff'];
                 $max_step   = $row;
@@ -1199,18 +1209,45 @@ function jcp_demo_analytics_get_sessions( string $filter = 'all', int $limit = 2
  * @param int|null $step_number Step number.
  */
 function jcp_demo_analytics_format_event_label( string $event_type, ?int $step_number = null ): string {
+    $demo_step_titles = [
+        1 => __( 'Demo · 1 Start your personalized demo', 'jcp-core' ),
+        2 => __( 'Demo · 2 Create a job check-in', 'jcp-core' ),
+        3 => __( 'Demo · 3 Add the job photo', 'jcp-core' ),
+        4 => __( 'Demo · 4 AI builds a local SEO post', 'jcp-core' ),
+        5 => __( 'Demo · 5 Ask for the review on site', 'jcp-core' ),
+        6 => __( 'Demo · Outcomes (one job, everywhere)', 'jcp-core' ),
+    ];
+    $outcomes_slide_titles = [
+        1 => __( 'Outcomes · Live on your website', 'jcp-core' ),
+        2 => __( 'Outcomes · Posted to social media', 'jcp-core' ),
+        3 => __( 'Outcomes · Live on Google Business', 'jcp-core' ),
+        4 => __( 'Outcomes · Added to directory', 'jcp-core' ),
+        5 => __( 'Outcomes · New 5-star review received', 'jcp-core' ),
+        6 => __( 'Outcomes · New job request received', 'jcp-core' ),
+    ];
+
+    if ( $event_type === 'demo_step_viewed' && $step_number !== null && isset( $demo_step_titles[ $step_number ] ) ) {
+        return $demo_step_titles[ $step_number ];
+    }
+    if ( $event_type === 'demo_outcomes_slide' && $step_number !== null && isset( $outcomes_slide_titles[ $step_number ] ) ) {
+        return $outcomes_slide_titles[ $step_number ];
+    }
+    if ( $event_type === 'form_step_completed' ) {
+        return __( 'Gate · Unlocked demo', 'jcp-core' );
+    }
+
     $map = [
-        'demo_started'            => __( 'Demo started', 'jcp-core' ),
-        'form_step_completed'     => __( 'Gate form step', 'jcp-core' ),
-        'slideshow_step_viewed'   => __( 'Slideshow step', 'jcp-core' ),
-        'slideshow_skipped'       => __( 'Slideshow skipped', 'jcp-core' ),
-        'demo_run_started'        => __( 'Demo run started', 'jcp-core' ),
+        'demo_started'            => __( 'Gate · Opened', 'jcp-core' ),
+        'form_step_completed'     => __( 'Gate · Unlocked demo', 'jcp-core' ),
+        'slideshow_step_viewed'   => __( 'Legacy deck slide', 'jcp-core' ),
+        'slideshow_skipped'       => __( 'Legacy deck skipped', 'jcp-core' ),
+        'demo_run_started'        => __( 'Demo · Run started', 'jcp-core' ),
         'demo_step_viewed'        => __( 'Demo step', 'jcp-core' ),
-        'demo_publish_completed'  => __( 'Publish completed', 'jcp-core' ),
-        'demo_review_sent'        => __( 'Review sent', 'jcp-core' ),
-        'demo_outcomes_opened'    => __( 'Outcomes opened', 'jcp-core' ),
+        'demo_publish_completed'  => __( 'Demo · Published everywhere', 'jcp-core' ),
+        'demo_review_sent'        => __( 'Demo · Review request sent', 'jcp-core' ),
+        'demo_outcomes_opened'    => __( 'Demo · Outcomes opened', 'jcp-core' ),
         'demo_outcomes_slide'     => __( 'Outcomes slide', 'jcp-core' ),
-        'demo_outcomes_completed' => __( 'Outcomes completed', 'jcp-core' ),
+        'demo_outcomes_completed' => __( 'Demo · Outcomes completed', 'jcp-core' ),
         'demo_coach_minimized'    => __( 'Coach minimized', 'jcp-core' ),
         'demo_replayed'           => __( 'Demo replayed', 'jcp-core' ),
         'post_demo_modal_shown'   => __( 'End screen shown', 'jcp-core' ),
@@ -1218,7 +1255,7 @@ function jcp_demo_analytics_format_event_label( string $event_type, ?int $step_n
         'demo_converted'          => __( 'Converted · Start Free Trial', 'jcp-core' ),
     ];
     $base = $map[ $event_type ] ?? $event_type;
-    if ( $step_number !== null && $step_number > 0 && in_array( $event_type, [ 'form_step_completed', 'slideshow_step_viewed', 'demo_step_viewed', 'demo_outcomes_slide' ], true ) ) {
+    if ( $step_number !== null && $step_number > 0 && in_array( $event_type, [ 'slideshow_step_viewed', 'demo_outcomes_slide' ], true ) ) {
         return $base . ' ' . (string) $step_number;
     }
     return $base;

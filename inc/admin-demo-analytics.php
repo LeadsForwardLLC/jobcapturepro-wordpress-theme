@@ -280,7 +280,7 @@ function jcp_demo_analytics_render_page(): void {
         </div>
 
         <h2 style="margin-top: 32px;"><?php esc_html_e( 'Funnel completion & drop-off', 'jcp-core' ); ?></h2>
-        <p class="description"><?php esc_html_e( 'Drop-off % is measured from the previous step’s session count. High drop-off cells are highlighted.', 'jcp-core' ); ?></p>
+        <p class="description"><?php esc_html_e( 'Matches the live demo: single-screen gate → guided steps 1–5 → outcomes → end screen. Drop-off % is from the previous linear step (replay is a side action).', 'jcp-core' ); ?></p>
         <table class="widefat striped">
             <thead>
                 <tr>
@@ -294,13 +294,22 @@ function jcp_demo_analytics_render_page(): void {
                 <?php foreach ( $stats['funnel'] as $row ) : ?>
                     <?php
                     $drop = (float) ( $row['dropoff'] ?? 0 );
-                    $drop_style = $drop >= 25 ? 'color:#d63638;font-weight:700;' : ( $drop >= 10 ? 'color:#996800;font-weight:600;' : '' );
+                    $is_side = ! empty( $row['side'] );
+                    $drop_style = $is_side ? 'color:#646970;' : ( $drop >= 25 ? 'color:#d63638;font-weight:700;' : ( $drop >= 10 ? 'color:#996800;font-weight:600;' : '' ) );
                     ?>
-                    <tr>
+                    <tr<?php echo $is_side ? ' style="opacity:0.85;"' : ''; ?>>
                         <td><?php echo esc_html( $row['step'] ); ?></td>
                         <td><?php echo (int) $row['count']; ?></td>
                         <td><?php echo esc_html( (string) $row['pct'] ); ?>%</td>
-                        <td style="<?php echo esc_attr( $drop_style ); ?>"><?php echo esc_html( (string) $row['dropoff'] ); ?>%</td>
+                        <td style="<?php echo esc_attr( $drop_style ); ?>">
+                            <?php
+                            if ( $is_side ) {
+                                esc_html_e( 'n/a', 'jcp-core' );
+                            } else {
+                                echo esc_html( (string) $row['dropoff'] ) . '%';
+                            }
+                            ?>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
             </tbody>
