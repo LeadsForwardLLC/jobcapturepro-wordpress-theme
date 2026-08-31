@@ -99,8 +99,9 @@
   }
 }
 
-/* Keep "more" and rotating word on same line */
-.jcp-home .jcp-hero-title-end {
+/* Keep "into more {rotating word}" on the same line */
+.jcp-home .jcp-hero-title-end,
+.jcp-home .jcp-hero-more-rotator {
   white-space: nowrap;
 }
 
@@ -270,7 +271,8 @@
     font-size: clamp(28px, 9vw, 36px) !important;
   }
 
-  .jcp-home .jcp-hero-title-end {
+  .jcp-home .jcp-hero-title-end,
+  .jcp-home .jcp-hero-more-rotator {
     white-space: normal;
   }
 }

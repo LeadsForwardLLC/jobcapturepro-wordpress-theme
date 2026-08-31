@@ -143,14 +143,16 @@
           <div class="jcp-container">
             <div class="jcp-hero-grid">
               <div class="jcp-hero-copy hero-copy">
-                <h1 class="jcp-hero-title">Automatically turn every completed job into <span class="jcp-hero-title-end">more <span class="jcp-hero-rotating-word" aria-live="polite">visibility</span></span></h1>
+                <h1 class="jcp-hero-title">Turn every completed job <span class="jcp-hero-title-end jcp-hero-more-rotator">into more <span class="jcp-hero-rotating-word" aria-live="polite">visibility</span></span></h1>
                 <p class="jcp-hero-subtitle">
                   Your team already takes job photos. JobCapturePro turns them into Google updates, website content, and social posts — and your crew can ask for a review on site with a QR code.
                 </p>
                 <div class="jcp-actions directory-cta-row">
                   <div class="jcp-hero-primary-cta">
-                    <a class="btn btn-primary" href="${heroCtas.primaryUrl}">${heroCtas.primaryText}</a>
-                    <span class="jcp-hero-cta-microcopy jcp-niche-trust-line">Interactive 2-minute demo · No signup required</span>
+                    <a class="btn btn-primary jcp-hero-cta-stacked" href="${heroCtas.primaryUrl}">
+                      <span class="jcp-hero-cta-label">${heroCtas.primaryText}</span>
+                      <span class="jcp-hero-cta-microcopy jcp-niche-trust-line">Free demo · ~2 min · No card</span>
+                    </a>
                   </div>
                   <a class="btn btn-secondary" href="${heroCtas.secondaryUrl}">${heroCtas.secondaryText}</a>
                 </div>

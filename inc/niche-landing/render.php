@@ -313,10 +313,16 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 			<div class="jcp-hero-grid jcp-split-layout <?php echo esc_attr( jcp_media_position_class( $media['media_position'] ) ); ?>" data-jcp-split-path="hero" data-jcp-media-position-path="hero.media_position">
 				<div class="jcp-hero-copy hero-copy jcp-split-col jcp-split-col--copy" data-jcp-split-col="copy">
 					<?php if ( $is_home ) : ?>
+						<?php
+						/* Keep "into more {rotator}" as one wrap unit so "into" is never stranded alone. */
+						$h1_prefix = (string) ( $h['h1_prefix'] ?? $h['h1'] ?? '' );
+						$h1_prefix = preg_replace( '/\s+into\s*$/iu', '', $h1_prefix ) ?? $h1_prefix;
+						$h1_prefix = rtrim( $h1_prefix ) . ' ';
+						?>
 						<h1 class="jcp-hero-title" data-jcp-heading-tag-path="hero.headline_tag">
-							<span<?php jcp_niche_editable_attr( 'hero.h1_prefix' ); ?>><?php echo esc_html( (string) ( $h['h1_prefix'] ?? $h['h1'] ?? '' ) ); ?></span>
-							<span class="jcp-hero-title-end">
-								<?php esc_html_e( 'more', 'jcp-core' ); ?>
+							<span<?php jcp_niche_editable_attr( 'hero.h1_prefix' ); ?>><?php echo esc_html( $h1_prefix ); ?></span>
+							<span class="jcp-hero-title-end jcp-hero-more-rotator">
+								<?php echo esc_html( __( 'into', 'jcp-core' ) . ' ' . __( 'more', 'jcp-core' ) ); ?>
 								<span class="jcp-hero-rotating-word" aria-live="polite" data-words="<?php echo esc_attr( wp_json_encode( array_values( (array) $h['rotating_words'] ) ) ); ?>">
 									<?php echo esc_html( (string) ( $h['rotating_words'][0] ?? 'visibility' ) ); ?>
 								</span>
@@ -340,8 +346,10 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 							$cta_microcopy   = trim( (string) ( $h['cta_microcopy'] ?? '' ) );
 							$trust_text      = $cta_microcopy !== '' ? $cta_microcopy : trim( (string) ( $h['trust_line'] ?? '' ) );
 							$trust_path      = $cta_microcopy !== '' ? 'hero.cta_microcopy' : 'hero.trust_line';
+							/* Home + campaign: microcopy stacks inside the primary button (LP pattern). */
 							$microcopy_in_btn = $show_trust && $trust_text !== '' && (
-								! empty( $c['campaign_landing'] )
+								$is_home
+								|| ! empty( $c['campaign_landing'] )
 								|| ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() )
 							);
 							?>

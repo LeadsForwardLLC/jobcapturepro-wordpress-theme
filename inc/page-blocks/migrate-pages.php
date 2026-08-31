@@ -140,12 +140,12 @@ function jcp_page_maybe_migrate_pages(): void {
 		}
 	}
 
-	// v3 = LP-style hero (rotating words + phone + 5 channels meta) + Acculevel case study + grid testimonials.
+	// v4 = stacked hero CTA + rotator wrap + shared LP testimonials + green More jobs meta.
 	$home_ver = (string) get_option( 'jcp_home_seed_version', '' );
-	if ( $home_ver !== '3' ) {
+	if ( $home_ver !== '4' ) {
 		$id = jcp_page_seed_home( true );
 		if ( $id > 0 ) {
-			update_option( 'jcp_home_seed_version', '3' );
+			update_option( 'jcp_home_seed_version', '4' );
 		}
 	}
 }

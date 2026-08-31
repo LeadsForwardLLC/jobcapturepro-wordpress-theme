@@ -253,8 +253,41 @@ body.jcp-inline-editing .jcp-niche-card-lead[data-placeholder]:empty::before {
 .jcp-niche .meta-stat-busywork .meta-title,
 .jcp-core-mechanic-strip .meta-stat-busywork .meta-copy strong,
 .jcp-core-mechanic-embed .meta-stat-busywork .meta-copy strong,
-.jcp-niche .meta-stat-busywork .meta-copy strong {
+.jcp-niche .meta-stat-busywork .meta-copy strong,
+.jcp-core-mechanic-strip .meta-stat-proof .meta-title,
+.jcp-core-mechanic-embed .meta-stat-proof .meta-title,
+.jcp-niche .meta-stat-proof .meta-title,
+.jcp-core-mechanic-strip .meta-stat-proof .meta-copy strong,
+.jcp-core-mechanic-embed .meta-stat-proof .meta-copy strong,
+.jcp-niche .meta-stat-proof .meta-copy strong,
+.jcp-page-campaign .meta-stat-busywork .meta-title,
+.jcp-page-campaign .meta-stat-busywork .meta-copy strong,
+.jcp-page-campaign .meta-stat-busywork .meta-label strong,
+.jcp-page-campaign .meta-stat-proof .meta-title,
+.jcp-page-campaign .meta-stat-proof .meta-copy strong,
+.jcp-page-campaign .meta-stat-proof .meta-label strong {
   color: var(--jcp-color-success) !important;
+}
+
+.jcp-core-mechanic-strip .meta-stat-channels .factor-icon-wrapper,
+.jcp-core-mechanic-embed .meta-stat-channels .factor-icon-wrapper,
+.jcp-niche .meta-stat-channels .factor-icon-wrapper,
+.jcp-page-campaign .meta-stat-channels .factor-icon-wrapper,
+.jcp-page-campaign .meta-stat-channels .jcp-hero-meta-icon {
+  background: var(--jcp-color-info);
+}
+
+.jcp-core-mechanic-strip .meta-stat-busywork .factor-icon-wrapper,
+.jcp-core-mechanic-embed .meta-stat-busywork .factor-icon-wrapper,
+.jcp-niche .meta-stat-busywork .factor-icon-wrapper,
+.jcp-core-mechanic-strip .meta-stat-proof .factor-icon-wrapper,
+.jcp-core-mechanic-embed .meta-stat-proof .factor-icon-wrapper,
+.jcp-niche .meta-stat-proof .factor-icon-wrapper,
+.jcp-page-campaign .meta-stat-busywork .factor-icon-wrapper,
+.jcp-page-campaign .meta-stat-busywork .jcp-hero-meta-icon,
+.jcp-page-campaign .meta-stat-proof .factor-icon-wrapper,
+.jcp-page-campaign .meta-stat-proof .jcp-hero-meta-icon {
+  background: var(--jcp-color-success);
 }
 
 /* Condensed internal hero */
@@ -3472,7 +3505,8 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   justify-content: flex-start;
 }
 
-.jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta {
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta,
+.jcp-home .jcp-niche-hero .jcp-hero-primary-cta {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -3481,7 +3515,8 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   max-width: 100%;
 }
 
-.jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta .btn-primary {
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta .btn-primary,
+.jcp-home .jcp-niche-hero .jcp-hero-primary-cta .btn-primary {
   font-size: 1.0625rem;
   padding: 0.9rem 1.65rem;
   min-height: 3.15rem;
@@ -3489,7 +3524,8 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 }
 
 /* Stacked CTA: label + trust microcopy inside the primary button */
-.jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta .btn-primary.jcp-hero-cta-stacked {
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta .btn-primary.jcp-hero-cta-stacked,
+.jcp-home .jcp-niche-hero .jcp-hero-primary-cta .btn-primary.jcp-hero-cta-stacked {
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -3501,7 +3537,8 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   min-height: 0;
 }
 
-.jcp-page-campaign .jcp-niche-hero .jcp-hero-cta-label {
+.jcp-page-campaign .jcp-niche-hero .jcp-hero-cta-label,
+.jcp-home .jcp-niche-hero .jcp-hero-cta-label {
   display: block;
   font-weight: inherit;
   line-height: 1.25;
@@ -3511,7 +3548,9 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 .jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta .btn-primary .jcp-hero-cta-microcopy,
 .jcp-page-campaign .jcp-niche-hero .jcp-hero-primary-cta .btn-primary .jcp-niche-trust-line,
 .jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-primary-cta .btn-primary .jcp-hero-cta-microcopy,
-.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-primary-cta .btn-primary .jcp-niche-trust-line {
+.jcp-page-campaign.jcp-home .jcp-niche-hero .jcp-hero-primary-cta .btn-primary .jcp-niche-trust-line,
+.jcp-home .jcp-niche-hero .jcp-hero-primary-cta .btn-primary .jcp-hero-cta-microcopy,
+.jcp-home .jcp-niche-hero .jcp-hero-primary-cta .btn-primary .jcp-niche-trust-line {
   font-size: 0.75rem !important; /* 12px */
   line-height: 1.3 !important;
   font-weight: 500 !important;
@@ -4582,27 +4621,27 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 }
 
 /* Campaign testimonials: contractor-led, less giant featured quote */
-.jcp-page-campaign .jcp-block-root[data-jcp-block-type="testimonials"] .jcp-container {
+:is(.jcp-page-campaign, .jcp-home) .jcp-block-root[data-jcp-block-type="testimonials"] .jcp-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
 }
 
-.jcp-page-campaign .jcp-block-root[data-jcp-block-type="testimonials"] .rankings-header {
+:is(.jcp-page-campaign, .jcp-home) .jcp-block-root[data-jcp-block-type="testimonials"] .rankings-header {
   text-align: center;
   margin-inline: auto;
   max-width: 40rem;
 }
 
-.jcp-page-campaign .jcp-campaign-faces {
+:is(.jcp-page-campaign, .jcp-home) .jcp-campaign-faces {
   justify-content: center;
   margin-top: 0.35rem;
   margin-bottom: 1.35rem;
 }
 
 /* Tight centered testimonials block (grid + featured). */
-.jcp-page-campaign .jcp-testimonials {
+:is(.jcp-page-campaign, .jcp-home) .jcp-testimonials {
   align-self: stretch;
   width: 100%;
   max-width: 52rem;
@@ -4612,24 +4651,24 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
 }
 
 /* True 2-column grid — wins over slider-only flex when both classes apply. */
-.jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials,
-.jcp-page-campaign .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials {
+:is(.jcp-page-campaign, .jcp-home) .jcp-testimonials--grid .jcp-testimonials,
+:is(.jcp-page-campaign, .jcp-home) .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials {
   align-self: stretch;
   width: 100%;
   max-width: 52rem;
   margin-inline: auto;
 }
 
-.jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-slider,
-.jcp-page-campaign .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials-slider {
+:is(.jcp-page-campaign, .jcp-home) .jcp-testimonials--grid .jcp-testimonials-slider,
+:is(.jcp-page-campaign, .jcp-home) .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials-slider {
   display: block !important;
   width: 100%;
   max-width: none;
   margin-inline: 0;
 }
 
-.jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-track,
-.jcp-page-campaign .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials-track {
+:is(.jcp-page-campaign, .jcp-home) .jcp-testimonials--grid .jcp-testimonials-track,
+:is(.jcp-page-campaign, .jcp-home) .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials-track {
   display: grid !important;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
@@ -4642,8 +4681,8 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   padding-block: 0;
 }
 
-.jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-card,
-.jcp-page-campaign .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials-card {
+:is(.jcp-page-campaign, .jcp-home) .jcp-testimonials--grid .jcp-testimonials-card,
+:is(.jcp-page-campaign, .jcp-home) .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials-card {
   flex: none !important;
   width: 100% !important;
   max-width: none !important;
@@ -4653,19 +4692,19 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   scroll-snap-stop: unset;
 }
 
-.jcp-page-campaign .jcp-testimonials-featured {
+:is(.jcp-page-campaign, .jcp-home) .jcp-testimonials-featured {
   padding: var(--jcp-space-xl, 1.5rem) var(--jcp-space-2xl, 2rem);
   margin-inline: auto;
   max-width: 44rem;
 }
 
-.jcp-page-campaign .jcp-testimonials-quote p {
+:is(.jcp-page-campaign, .jcp-home) .jcp-testimonials-quote p {
   font-size: clamp(17px, 1.8vw, 22px);
 }
 
 @media (max-width: 700px) {
-  .jcp-page-campaign .jcp-testimonials--grid .jcp-testimonials-track,
-  .jcp-page-campaign .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials-track {
+  :is(.jcp-page-campaign, .jcp-home) .jcp-testimonials--grid .jcp-testimonials-track,
+  :is(.jcp-page-campaign, .jcp-home) .jcp-testimonials--grid.jcp-testimonials--slider-only .jcp-testimonials-track {
     grid-template-columns: 1fr;
   }
 }
