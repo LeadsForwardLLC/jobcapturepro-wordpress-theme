@@ -279,29 +279,35 @@ function jcp_page_current_is_campaign_landing(): bool {
 }
 
 /**
+ * Whether the current singular request should be noindexed (paid LPs / previews).
+ */
+function jcp_page_should_noindex_current(): bool {
+	if ( is_admin() || ! is_singular() ) {
+		return false;
+	}
+	if ( is_page( 'home-preview' ) || is_page( 'contractor-demo' ) ) {
+		return true;
+	}
+	if ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() ) {
+		return true;
+	}
+	$post_id = (int) get_queried_object_id();
+	if ( $post_id <= 0 || ! function_exists( 'jcp_page_get_content' ) ) {
+		return false;
+	}
+	$content = jcp_page_get_content( $post_id );
+	if ( function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ) ) {
+		return true;
+	}
+	return ! empty( $content['settings']['noindex'] ) || ! empty( $content['settings']['home_preview'] );
+}
+
+/**
  * Paid campaign landings are Meta traffic destinations — keep them out of organic indexes.
  * Home preview pages are also noindexed until cutover.
  */
 function jcp_page_campaign_noindex(): void {
-	if ( is_admin() || ! is_singular() || ! function_exists( 'jcp_page_get_content' ) ) {
-		return;
-	}
-	$post_id = (int) get_queried_object_id();
-	if ( $post_id <= 0 ) {
-		return;
-	}
-	$content = jcp_page_get_content( $post_id );
-	$noindex = false;
-	if ( function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ) ) {
-		$noindex = true;
-	}
-	if ( ! empty( $content['settings']['noindex'] ) || ! empty( $content['settings']['home_preview'] ) ) {
-		$noindex = true;
-	}
-	if ( is_page( 'home-preview' ) ) {
-		$noindex = true;
-	}
-	if ( ! $noindex ) {
+	if ( ! jcp_page_should_noindex_current() ) {
 		return;
 	}
 	echo '<meta name="robots" content="noindex, follow">' . "\n";
@@ -315,7 +321,7 @@ add_action( 'wp_head', 'jcp_page_campaign_noindex', 1 );
  * @return array<string, string>
  */
 function jcp_page_campaign_rank_math_robots( $robots ) {
-	if ( ! function_exists( 'jcp_page_current_is_campaign_landing' ) || ! jcp_page_current_is_campaign_landing() ) {
+	if ( ! jcp_page_should_noindex_current() ) {
 		return $robots;
 	}
 	if ( ! is_array( $robots ) ) {
@@ -334,7 +340,7 @@ add_filter( 'rank_math/frontend/robots', 'jcp_page_campaign_rank_math_robots', 9
  * @return array<string, mixed>
  */
 function jcp_page_campaign_wp_robots( $robots ) {
-	if ( ! function_exists( 'jcp_page_current_is_campaign_landing' ) || ! jcp_page_current_is_campaign_landing() ) {
+	if ( ! jcp_page_should_noindex_current() ) {
 		return $robots;
 	}
 	if ( ! is_array( $robots ) ) {
@@ -346,6 +352,67 @@ function jcp_page_campaign_wp_robots( $robots ) {
 	return $robots;
 }
 add_filter( 'wp_robots', 'jcp_page_campaign_wp_robots', 999 );
+
+/**
+ * Keep campaign / noindex pages out of the core XML sitemap.
+ *
+ * @param array             $entry Sitemap entry.
+ * @param \WP_Post          $post  Post object.
+ * @param string            $post_type Post type.
+ * @return array|false
+ */
+function jcp_page_campaign_exclude_from_wp_sitemap( $entry, $post, $post_type ) {
+	if ( $post_type !== 'page' || ! ( $post instanceof WP_Post ) || ! function_exists( 'jcp_page_get_content' ) ) {
+		return $entry;
+	}
+	if ( in_array( $post->post_name, [ 'contractor-demo', 'home-preview' ], true ) ) {
+		return false;
+	}
+	if ( function_exists( 'jcp_is_sales_tool_template' ) && jcp_is_sales_tool_template( $post ) ) {
+		return false;
+	}
+	$content = jcp_page_get_content( (int) $post->ID );
+	if ( function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ) ) {
+		return false;
+	}
+	if ( ! empty( $content['settings']['noindex'] ) || ! empty( $content['settings']['home_preview'] ) ) {
+		return false;
+	}
+	return $entry;
+}
+add_filter( 'wp_sitemaps_posts_entry', 'jcp_page_campaign_exclude_from_wp_sitemap', 10, 3 );
+
+/**
+ * Keep campaign / noindex pages out of Rank Math sitemaps.
+ *
+ * @param array|false $url    Sitemap URL data.
+ * @param string      $type   Object type.
+ * @param mixed       $object Object.
+ * @return array|false
+ */
+function jcp_page_campaign_exclude_from_rank_math_sitemap( $url, $type, $object ) {
+	if ( $type !== 'post' || ! ( $object instanceof WP_Post ) || $object->post_type !== 'page' ) {
+		return $url;
+	}
+	if ( in_array( $object->post_name, [ 'contractor-demo', 'home-preview' ], true ) ) {
+		return false;
+	}
+	if ( function_exists( 'jcp_is_sales_tool_template' ) && jcp_is_sales_tool_template( $object ) ) {
+		return false;
+	}
+	if ( ! function_exists( 'jcp_page_get_content' ) ) {
+		return $url;
+	}
+	$content = jcp_page_get_content( (int) $object->ID );
+	if ( function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ) ) {
+		return false;
+	}
+	if ( ! empty( $content['settings']['noindex'] ) || ! empty( $content['settings']['home_preview'] ) ) {
+		return false;
+	}
+	return $url;
+}
+add_filter( 'rank_math/sitemap/entry', 'jcp_page_campaign_exclude_from_rank_math_sitemap', 10, 3 );
 
 /**
  * Redirect retired /home-preview/ to the live homepage.

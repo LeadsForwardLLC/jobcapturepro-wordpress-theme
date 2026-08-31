@@ -13,6 +13,7 @@ require_once __DIR__ . '/cpt.php';
 require_once __DIR__ . '/meta.php';
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/enqueue.php';
+require_once __DIR__ . '/seo.php';
 if ( is_admin() ) {
 	require_once __DIR__ . '/admin-script.php';
 }

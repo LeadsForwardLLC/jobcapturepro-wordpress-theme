@@ -47,6 +47,8 @@ function jcp_sales_deck_register_cpt(): void {
 			'supports'            => [ 'title' ],
 			'capability_type'     => 'page',
 			'map_meta_cap'        => true,
+			// Public URLs for live calls, but never for organic search.
+			'show_in_nav_menus'   => false,
 		]
 	);
 }
