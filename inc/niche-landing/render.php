@@ -2140,23 +2140,30 @@ function jcp_lf_case_rank_class( int $rank ): string {
 }
 
 /**
- * Render a 7×7 CSS geo-grid heatmap.
+ * Render a 7×7 CSS geo-grid heatmap (optional real map underlay).
  *
- * @param array<int, int> $ranks 49 ranks.
- * @param string          $label Accessible label.
+ * @param array<int, int> $ranks   49 ranks.
+ * @param string          $label   Accessible label.
+ * @param string          $map_url Optional map background URL.
  */
-function jcp_lf_case_render_grid( array $ranks, string $label ): void {
+function jcp_lf_case_render_grid( array $ranks, string $label, string $map_url = '' ): void {
+	$mapped = $map_url !== '';
 	?>
-	<div class="jcp-lf-grid" role="img" aria-label="<?php echo esc_attr( $label ); ?>">
-		<?php foreach ( $ranks as $rank ) : ?>
-			<span class="jcp-lf-grid__cell <?php echo esc_attr( jcp_lf_case_rank_class( (int) $rank ) ); ?>" title="<?php echo esc_attr( sprintf( /* translators: %d: map pack rank */ __( 'Rank %d', 'jcp-core' ), (int) $rank ) ); ?>"></span>
-		<?php endforeach; ?>
+	<div class="jcp-lf-grid<?php echo $mapped ? ' jcp-lf-grid--mapped' : ''; ?>" role="img" aria-label="<?php echo esc_attr( $label ); ?>">
+		<?php if ( $mapped ) : ?>
+			<img class="jcp-lf-grid__map" src="<?php echo esc_url( $map_url ); ?>" alt="" width="640" height="640" loading="lazy" decoding="async" />
+		<?php endif; ?>
+		<div class="jcp-lf-grid__cells">
+			<?php foreach ( $ranks as $rank ) : ?>
+				<span class="jcp-lf-grid__cell <?php echo esc_attr( jcp_lf_case_rank_class( (int) $rank ) ); ?>" title="<?php echo esc_attr( sprintf( /* translators: %d: map pack rank */ __( 'Rank %d', 'jcp-core' ), (int) $rank ) ); ?>"></span>
+			<?php endforeach; ?>
+		</div>
 	</div>
 	<?php
 }
 
 /**
- * Acculevel-style Local Falcon case study — CSS heatmaps (campaign).
+ * Anonymous Local Falcon case study — CSS heatmaps on real map underlays.
  *
  * @param array<string, mixed> $props     Block props.
  * @param string               $niche_key Page key.
@@ -2242,6 +2249,7 @@ function jcp_niche_render_local_rank_case_study( array $props, string $niche_key
 			'name'    => $name,
 			'address' => $address,
 			'meta'    => trim( (string) ( $loc['meta'] ?? '' ) ),
+			'map_bg'  => trim( (string) ( $loc['map_bg'] ?? '' ) ),
 			'scans'   => $scans,
 		];
 	}
@@ -2312,7 +2320,7 @@ function jcp_niche_render_local_rank_case_study( array $props, string $niche_key
 														<span class="jcp-lf-case__date"><?php echo esc_html( $side['date'] ); ?></span>
 													<?php endif; ?>
 												</div>
-												<?php jcp_lf_case_render_grid( $ranks, $aria ); ?>
+												<?php jcp_lf_case_render_grid( $ranks, $aria, (string) ( $location['map_bg'] ?? '' ) ); ?>
 												<div class="jcp-lf-case__metrics">
 													<?php if ( $side['arp'] !== '' ) : ?>
 														<span class="jcp-lf-case__pill"><em><?php esc_html_e( 'ARP', 'jcp-core' ); ?></em> <strong><?php echo esc_html( $side['arp'] ); ?></strong></span>

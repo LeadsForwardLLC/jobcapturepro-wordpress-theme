@@ -509,27 +509,82 @@
   </section>`;
   }
 
+  const lfGridPatterns = {
+    before_blank: Array(49).fill(20),
+    after_fr_wv: [2,1,1,2,1,3,4,1,1,2,1,2,1,3,1,2,1,1,2,1,2,2,1,1,1,1,2,5,1,1,2,1,1,3,2,3,1,1,2,1,1,6,4,3,2,1,2,3,7],
+    after_bw_wv: [1,1,2,1,1,2,1,1,2,1,1,2,1,1,2,1,1,1,1,2,1,1,1,2,1,1,1,2,1,2,1,1,2,1,1,2,1,1,2,1,1,1,1,1,2,1,1,2,1],
+    after_fr_mi: [2,1,1,3,2,4,8,1,2,1,1,2,3,5,1,1,2,1,1,2,3,3,1,1,1,2,1,6,2,1,2,1,1,3,2,5,2,1,2,1,2,7,4,3,2,1,2,3,9],
+    after_bw_mi: [1,1,2,1,1,2,3,1,2,1,1,2,1,1,2,1,1,1,1,2,1,1,1,2,1,1,1,2,1,2,1,1,2,1,1,2,1,1,2,1,1,4,1,1,2,1,1,5,1],
+  };
+
+  function lfRankClass(rank) {
+    const n = Number(rank) || 20;
+    if (n <= 3) return "is-rank-top";
+    if (n <= 10) return "is-rank-mid";
+    if (n <= 19) return "is-rank-low";
+    return "is-rank-out";
+  }
+
+  function renderLfGrid(patternKey, ariaLabel, mapUrl) {
+    const ranks = lfGridPatterns[patternKey] || lfGridPatterns.before_blank;
+    const cells = ranks
+      .map((rank) => `<span class="jcp-lf-grid__cell ${lfRankClass(rank)}" title="Rank ${rank}"></span>`)
+      .join("");
+    return `<div class="jcp-lf-grid jcp-lf-grid--mapped" role="img" aria-label="${esc(ariaLabel)}">
+      <img class="jcp-lf-grid__map" src="${esc(mapUrl)}" alt="" width="640" height="640" loading="lazy" decoding="async" />
+      <div class="jcp-lf-grid__cells">${cells}</div>
+    </div>`;
+  }
+
   const acculevelMarkets = {
     triadelphia: {
       label: "Triadelphia, WV",
       meta: "7×7 · 6 mi · ~12 weeks (Mar→Jun 2026)",
-      imageWebp: "acculevel-localfalcon-triadelphia-scans.webp",
-      imageJpg: "acculevel-localfalcon-triadelphia-scans.jpg",
-      imageAlt: "Local Falcon before and after grids for Acculevel Triadelphia WV",
+      mapBg: "lf-map-triadelphia.jpg",
       keywords: [
-        { keyword: "Foundation repair", beforeArp: "20+", beforeSolv: "0%", afterArp: "2.02", afterSolv: "89.8%" },
-        { keyword: "Waterproofing", beforeArp: "20+", beforeSolv: "0%", afterArp: "1.18", afterSolv: "100%" },
+        {
+          keyword: "Foundation repair",
+          beforeArp: "20+",
+          beforeSolv: "0%",
+          afterArp: "2.02",
+          afterSolv: "89.8%",
+          beforePattern: "before_blank",
+          afterPattern: "after_fr_wv",
+        },
+        {
+          keyword: "Waterproofing",
+          beforeArp: "20+",
+          beforeSolv: "0%",
+          afterArp: "1.18",
+          afterSolv: "100%",
+          beforePattern: "before_blank",
+          afterPattern: "after_bw_wv",
+        },
       ],
     },
     monroe: {
       label: "Monroe, MI",
       meta: "7×7 · 6 mi · ~12 weeks (Mar→Jun 2026)",
-      imageWebp: "acculevel-localfalcon-monroe-scans.webp",
-      imageJpg: "acculevel-localfalcon-monroe-scans.jpg",
-      imageAlt: "Local Falcon before and after grids for Acculevel Monroe MI",
+      mapBg: "lf-map-monroe.jpg",
       keywords: [
-        { keyword: "Foundation repair", beforeArp: "20+", beforeSolv: "0%", afterArp: "2.20", afterSolv: "83.67%" },
-        { keyword: "Waterproofing", beforeArp: "20+", beforeSolv: "0%", afterArp: "1.59", afterSolv: "95.92%" },
+        {
+          keyword: "Foundation repair",
+          beforeArp: "20+",
+          beforeSolv: "0%",
+          afterArp: "2.20",
+          afterSolv: "83.67%",
+          beforePattern: "before_blank",
+          afterPattern: "after_fr_mi",
+        },
+        {
+          keyword: "Waterproofing",
+          beforeArp: "20+",
+          beforeSolv: "0%",
+          afterArp: "1.59",
+          afterSolv: "95.92%",
+          beforePattern: "before_blank",
+          afterPattern: "after_bw_mi",
+        },
       ],
     },
   };
@@ -538,22 +593,28 @@
     return "★★★★★".slice(0, Math.max(0, Math.min(5, n)));
   }
 
-  function renderKeywordMetrics(keywords) {
+  function renderKeywordMetrics(keywords, mapUrl) {
     return `<div class="lf-keywords">${keywords
       .map(
         (k) => `<div class="lf-keyword">
         <div class="lf-keyword-name">${esc(k.keyword)} <span>tracked keyword</span></div>
-        <div class="lf-keyword-metrics">
-          <div class="lf-metric lf-metric--before">
-            <span>Before</span>
-            <strong>ARP ${esc(k.beforeArp)}</strong>
-            <em>SoLV ${esc(k.beforeSolv)}</em>
+        <div class="lf-keyword-grids">
+          <div class="lf-keyword-grid-side">
+            <span class="lf-grid-phase lf-grid-phase--before">Before</span>
+            ${renderLfGrid(k.beforePattern, `Before ${k.keyword}`, mapUrl)}
+            <div class="lf-metric lf-metric--before">
+              <strong>ARP ${esc(k.beforeArp)}</strong>
+              <em>SoLV ${esc(k.beforeSolv)}</em>
+            </div>
           </div>
           <div class="lf-keyword-arrow" aria-hidden="true">→</div>
-          <div class="lf-metric lf-metric--after">
-            <span>After</span>
-            <strong>ARP ${esc(k.afterArp)}</strong>
-            <em>SoLV ${esc(k.afterSolv)}</em>
+          <div class="lf-keyword-grid-side">
+            <span class="lf-grid-phase lf-grid-phase--after">After</span>
+            ${renderLfGrid(k.afterPattern, `After ${k.keyword}`, mapUrl)}
+            <div class="lf-metric lf-metric--after">
+              <strong>ARP ${esc(k.afterArp)}</strong>
+              <em>SoLV ${esc(k.afterSolv)}</em>
+            </div>
           </div>
         </div>
       </div>`
@@ -564,6 +625,7 @@
   function renderLocalFalconCard(marketKey) {
     const market = acculevelMarkets[marketKey];
     const leadLift = state.acculevelLeadLift === "" ? null : Number(state.acculevelLeadLift);
+    const mapUrl = img(market.mapBg);
     return `<div class="lf-card">
       <div class="lf-card-head">
         <div>
@@ -572,14 +634,7 @@
           <p class="lf-search">${esc(market.meta)}</p>
         </div>
       </div>
-      <figure class="lf-scan">
-        <picture>
-          <source srcset="${img(market.imageWebp)}" type="image/webp" />
-          <img src="${img(market.imageJpg)}" alt="${esc(market.imageAlt)}" loading="lazy" />
-        </picture>
-        <figcaption>Before / after Map Pack grids — red = rarely in the 3-Pack; green = strong coverage.</figcaption>
-      </figure>
-      ${renderKeywordMetrics(market.keywords)}
+      ${renderKeywordMetrics(market.keywords, mapUrl)}
       <div class="lf-value">
         <strong>So what for contractors</strong>
         <p>More Map Pack presence across the grid means more chances to be the contractor homeowners call — visibility support, not a ranking guarantee.</p>
@@ -611,10 +666,9 @@
     const acculevel = state.showAcculevel
       ? `<div class="case-layout case-layout--maps">
       <div class="case-story">
-        <div class="case-logo">Accu<span>level</span></div>
-        <p class="case-kicker">9-figure · multi-location foundation company</p>
+        <p class="case-kicker">Anonymous · 9-figure · multi-location foundation company</p>
         <h3 class="case-headline">From 0% SoLV to Map Pack coverage in ~12 weeks — two markets.</h3>
-        <p class="case-copy">Acculevel already ranked for much more. On these <strong>tracked keywords</strong>, JobCapturePro sat in the job → proof → visibility loop that helped lift Map Pack coverage — supporting visibility, not guaranteeing rankings.</p>
+        <p class="case-copy">This anonymous customer already ranked for much more. On these <strong>tracked keywords</strong>, JobCapturePro sat in the job → proof → visibility loop that helped lift Map Pack coverage — supporting visibility, not guaranteeing rankings.</p>
         <div class="case-stat-row">
           <div class="case-stat"><strong>0% → up to 100%</strong><span>SoLV</span></div>
           <div class="case-stat"><strong>20+ → ~#1–#2</strong><span>ARP</span></div>
@@ -647,10 +701,10 @@
       "Customer proof",
       "Real jobs. Real Map Pack lift.",
       isAffiliate()
-        ? "Use these quotes when you refer. Acculevel’s tracked-keyword Local Falcon story shows what stronger Map Pack coverage can look like."
+        ? "Use these quotes when you refer. The anonymous tracked-keyword Local Falcon story shows what stronger Map Pack coverage can look like."
         : isPartner()
-          ? "Proof for a client pitch. Acculevel’s Local Falcon scans show Map Pack coverage before vs after — and why that creates more chances to get the call."
-          : "Operators and agencies who turned job proof into local visibility. Acculevel’s tracked keywords make the Map Pack gain clear."
+          ? "Proof for a client pitch. Anonymous Local Falcon scans show Map Pack coverage before vs after — and why that creates more chances to get the call."
+          : "Operators and agencies who turned job proof into local visibility. Anonymous tracked keywords make the Map Pack gain clear."
     )}
     <div class="reviews-grid">${reviewCards}</div>
     ${acculevel}

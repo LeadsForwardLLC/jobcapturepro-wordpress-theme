@@ -104,12 +104,12 @@ function jcp_sales_tool_call_script_chapters(): array {
 		[
 			'id'            => 'proof',
 			'label'         => '07 · Proof',
-			'goal'          => 'Social proof first. Acculevel only if Maps/SEO is the buying trigger.',
-			'say'           => 'Here’s what operators and agencies say after they turn job photos into a system. [Read 1–2 snippets.] If Maps matters, walk Acculevel: 9-figure multi-location foundation company; these are tracked keywords only. SoLV = Map Pack share across the grid; ARP = average rank (lower is better). Show Triadelphia / Monroe before→after: 20+/0% → ~#1–#2 / high SoLV in ~12 weeks. More Map Pack presence = more chances to get the call — not a ranking guarantee. Only quote lead % if verified in deck settings.',
-			'say_affiliate' => 'Here’s proof you can forward. [Read 1–2 snippets.] Acculevel tracked keywords: from 20+/0% SoLV to strong Map Pack coverage (up to 100% SoLV) in ~12 weeks across two markets. One line: SoLV = how often they’re in the Map Pack across the grid. More presence = more chances to be called.',
-			'say_partner'   => 'Here’s proof for a client pitch. [Read 1–2 snippets.] Acculevel Local Falcon before/after: tracked keywords only, two markets, ~12 weeks. SoLV = Map Pack share; ARP = average rank. Higher SoLV = more local discovery and calls — claim-safe, no ranking guarantees.',
+			'goal'          => 'Social proof first. Anonymous Maps case study only if Maps/SEO is the buying trigger.',
+			'say'           => 'Here’s what operators and agencies say after they turn job photos into a system. [Read 1–2 snippets.] If Maps matters, walk the anonymous case: 9-figure multi-location foundation company; these are tracked keywords only. SoLV = Map Pack share across the grid; ARP = average rank (lower is better). Show Triadelphia / Monroe before→after: 20+/0% → ~#1–#2 / high SoLV in ~12 weeks. More Map Pack presence = more chances to get the call — not a ranking guarantee. Only quote lead % if verified in deck settings.',
+			'say_affiliate' => 'Here’s proof you can forward. [Read 1–2 snippets.] Anonymous tracked keywords: from 20+/0% SoLV to strong Map Pack coverage (up to 100% SoLV) in ~12 weeks across two markets. One line: SoLV = how often they’re in the Map Pack across the grid. More presence = more chances to be called.',
+			'say_partner'   => 'Here’s proof for a client pitch. [Read 1–2 snippets.] Anonymous Local Falcon before/after: tracked keywords only, two markets, ~12 weeks. SoLV = Map Pack share; ARP = average rank. Higher SoLV = more local discovery and calls — claim-safe, no ranking guarantees.',
 			'ask'           => 'Which proof matters more in your market right now — reviews, Maps coverage that drives leads, or geotagged website content?',
-			'avoid'         => 'Don’t claim Acculevel lead lift unless the verified field is filled.',
+			'avoid'         => 'Don’t claim anonymous case lead lift unless the verified field is filled.',
 		],
 		[
 			'id'            => 'fit',
@@ -183,7 +183,7 @@ function jcp_sales_tool_call_script_objections(): array {
 			'mode'  => 'contractor',
 			'title' => 'Will this guarantee rankings?',
 			'say'   => 'No honest platform can. What we do is give you a steady supply of what today’s search — including AI answers — rewards: real jobs, geotagged proof, reviews, and local credibility.',
-			'proof' => 'If relevant, show Acculevel Maps visibility — explain SoLV briefly (3-Pack share across a Local Falcon grid), then show measured movement, not promises.',
+			'proof' => 'If relevant, show anonymous Maps visibility — explain SoLV briefly (3-Pack share across a Local Falcon grid), then show measured movement, not promises.',
 		],
 		[
 			'mode'  => 'affiliate',

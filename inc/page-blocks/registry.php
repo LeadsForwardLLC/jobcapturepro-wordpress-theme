@@ -132,7 +132,7 @@ function jcp_block_registry(): array {
 		'local_rank_case_study' => [
 			'type'         => 'local_rank_case_study',
 			'label'        => __( 'Local rank case study', 'jcp-core' ),
-			'description'  => __( 'Named Acculevel-style geo-grid before/after case study (CSS heatmaps)', 'jcp-core' ),
+			'description'  => __( 'Anonymous geo-grid before/after case study (CSS heatmaps on real maps)', 'jcp-core' ),
 			'category'     => 'content',
 			'legacy_key'   => 'local_rank_case_study',
 			'doc_sections' => [ 'LOCAL RANK CASE STUDY', 'CASE STUDY' ],

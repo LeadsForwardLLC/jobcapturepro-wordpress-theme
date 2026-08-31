@@ -140,12 +140,12 @@ function jcp_page_maybe_migrate_pages(): void {
 		}
 	}
 
-	// v5 = More jobs meta uses success green (meta-stat-busywork).
+	// v6 = Anonymous Maps case study + Local Falcon grids on real map underlays.
 	$home_ver = (string) get_option( 'jcp_home_seed_version', '' );
-	if ( $home_ver !== '5' ) {
+	if ( $home_ver !== '6' ) {
 		$id = jcp_page_seed_home( true );
 		if ( $id > 0 ) {
-			update_option( 'jcp_home_seed_version', '5' );
+			update_option( 'jcp_home_seed_version', '6' );
 		}
 	}
 }

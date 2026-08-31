@@ -98,7 +98,7 @@ if ( ! empty( $config['presenter']['logoUrl'] ) ) {
       </div>
     </div>
     <div class="settings-field">
-      <label for="settingLeadLift"><?php esc_html_e( 'Acculevel verified lead lift', 'jcp-core' ); ?></label>
+      <label for="settingLeadLift"><?php esc_html_e( 'Anonymous case verified lead lift', 'jcp-core' ); ?></label>
       <div class="suffix-input">
         <input id="settingLeadLift" type="number" min="0" step="0.1" placeholder="<?php esc_attr_e( 'Leave blank until verified', 'jcp-core' ); ?>" />
         <span>%</span>
@@ -113,7 +113,7 @@ if ( ! empty( $config['presenter']['logoUrl'] ) ) {
     <label class="setting-toggle">
       <input id="settingAcculevel" type="checkbox" />
       <span><i></i></span>
-      <strong><?php esc_html_e( 'Show Acculevel proof', 'jcp-core' ); ?></strong>
+      <strong><?php esc_html_e( 'Show anonymous Maps case study', 'jcp-core' ); ?></strong>
     </label>
     <div class="settings-field">
       <label for="settingAssessmentEmail"><?php esc_html_e( 'Load assessment (coming soon)', 'jcp-core' ); ?></label>
@@ -130,7 +130,7 @@ if ( ! empty( $config['presenter']['logoUrl'] ) ) {
   <button type="button" class="report-modal-backdrop" id="closeReportBackdrop" aria-label="<?php esc_attr_e( 'Close', 'jcp-core' ); ?>"></button>
   <div class="report-modal-panel">
     <button id="closeReport" type="button" aria-label="<?php esc_attr_e( 'Close', 'jcp-core' ); ?>">×</button>
-    <img id="reportImage" alt="<?php esc_attr_e( 'Acculevel LocalFalcon scans', 'jcp-core' ); ?>" />
+    <img id="reportImage" alt="<?php esc_attr_e( 'Anonymous Local Falcon scans', 'jcp-core' ); ?>" />
   </div>
 </div>
 

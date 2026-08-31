@@ -296,7 +296,7 @@
   "local_rank_case_study": {
     "eyebrow": "Real Map Pack results",
     "headline": "From 0% SoLV to Map Pack dominance in ~90 days — two markets.",
-    "body": "Acculevel is a 9-figure, multi-location foundation company that already ranked for much more. On these tracked keywords, JobCapturePro sat in the job → proof → visibility loop that helped lift Map Pack coverage — supporting visibility, not guaranteeing rankings.",
+    "body": "An anonymous 9-figure, multi-location foundation company that already ranked for much more. On these tracked keywords, JobCapturePro sat in the job → proof → visibility loop that helped lift Map Pack coverage — supporting visibility, not guaranteeing rankings.",
     "stats": [
       {
         "value": "0% → up to 100%",
@@ -318,8 +318,9 @@
     "locations": [
       {
         "name": "Triadelphia, WV",
-        "address": "Acculevel, 300 Wharton Cir Ste 202, Triadelphia, WV 26059",
+        "address": "Anonymous customer location · Triadelphia, WV",
         "meta": "7×7 · 6.0 mi · 49 points",
+        "map_bg": "__CAMPAIGN_ASSET__/lf-map-triadelphia.jpg",
         "scans": [
           {
             "keyword": "foundation repair",
@@ -357,8 +358,9 @@
       },
       {
         "name": "Monroe, MI",
-        "address": "Acculevel, 428 S Monroe St Ste 202, Monroe, MI 48161",
+        "address": "Anonymous customer location · Monroe, MI",
         "meta": "7×7 · 6.0 mi · 49 points",
+        "map_bg": "__CAMPAIGN_ASSET__/lf-map-monroe.jpg",
         "scans": [
           {
             "keyword": "foundation repair",
@@ -395,7 +397,7 @@
         ]
       }
     ],
-    "footnote": "SoLV = Share of Local Voice (top-3 presence across the geo-grid). Results for Acculevel locations, March–June 2026, on tracked keywords only. Past performance is not a guarantee of future results.",
+    "footnote": "SoLV = Share of Local Voice (top-3 presence across the geo-grid). Results for anonymous customer locations, March–June 2026, on tracked keywords only. Past performance is not a guarantee of future results.",
     "cta_secondary": {
       "label": "See It for My Business",
       "url": "/demo/"
