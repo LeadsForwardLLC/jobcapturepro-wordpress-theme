@@ -9,7 +9,8 @@ $config = function_exists( 'jcp_sales_tool_build_config' )
 	? jcp_sales_tool_build_config( (int) get_queried_object_id() )
 	: [];
 $asset  = trailingslashit( get_template_directory_uri() ) . 'assets/jcp-sales-tool/assets';
-$logo   = $asset . '/jcp-logo-dark.png';
+$jcp_logo = $asset . '/jcp-logo-dark.png';
+$logo   = $jcp_logo;
 if ( ! empty( $config['presenter']['logoUrl'] ) ) {
 	$logo = (string) $config['presenter']['logoUrl'];
 }
@@ -28,6 +29,9 @@ if ( ! empty( $config['presenter']['logoUrl'] ) ) {
 
   <main class="workspace">
     <header class="topbar">
+      <a class="present-brand" href="#" data-go="0" aria-label="JobCapturePro">
+        <img src="<?php echo esc_url( $jcp_logo ); ?>" alt="JobCapturePro" width="180" height="40" />
+      </a>
       <div class="call-meta">
         <label for="prospectName"><?php esc_html_e( 'Prospect', 'jcp-core' ); ?></label>
         <input id="prospectName" autocomplete="organization" placeholder="<?php esc_attr_e( 'Company name', 'jcp-core' ); ?>" />
