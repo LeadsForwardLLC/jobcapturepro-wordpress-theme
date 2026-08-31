@@ -12,37 +12,47 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Default customer review snippets for the proof chapter.
  *
- * @return list<array{id:string,name:string,role:string,quote:string,rating?:int}>
+ * @return list<array{id:string,name:string,role:string,quote:string,rating?:int,avatar?:string,avatarAlt?:string}>
  */
 function jcp_sales_tool_default_reviews(): array {
+	$campaign = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/';
+
 	return [
 		[
-			'id'     => 'trent-ellison',
-			'name'   => 'Trent Ellison',
-			'role'   => 'Home service operator',
-			'quote'  => 'Easy to use and really smart. Makes it super simple to turn completed work into useful online content — and the review side is amazing.',
-			'rating' => 5,
+			'id'        => 'peter-bonk',
+			'name'      => 'Peter Bonk',
+			'role'      => 'Marketing agency',
+			'quote'     => 'One of the easiest marketing wins we\'ve had for an HVAC client. Techs already take photos. Now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.',
+			'rating'    => 5,
+			'avatar'    => $campaign . 'jcp-campaign-face-operator.jpg',
+			'avatarAlt' => 'Peter Bonk',
 		],
 		[
-			'id'     => 'brian-hardy',
-			'name'   => 'Brian Hardy',
-			'role'   => 'Contractor',
-			'quote'  => 'Awesome — it takes my work site pictures and turns them into a marketing campaign.',
-			'rating' => 5,
+			'id'        => 'brian-hardy',
+			'name'      => 'Brian Hardy',
+			'role'      => 'Contractor',
+			'quote'     => 'Awesome. It takes my work site pictures and turns them into a marketing campaign.',
+			'rating'    => 5,
+			'avatar'    => $campaign . 'jcp-campaign-hvac-capture.jpg',
+			'avatarAlt' => 'Brian Hardy',
 		],
 		[
-			'id'     => 'heriberto-eddie-roman',
-			'name'   => 'Heriberto Eddie Roman',
-			'role'   => 'Business owner',
-			'quote'  => 'JobCapturePro has been a game changer for my business!',
-			'rating' => 5,
+			'id'        => 'trent-ellison',
+			'name'      => 'Trent Ellison',
+			'role'      => 'Home service operator',
+			'quote'     => 'Easy to use and really smart. Makes it super simple to turn completed work into useful online content, and the review side is amazing.',
+			'rating'    => 5,
+			'avatar'    => $campaign . 'jcp-campaign-crew-review.jpg',
+			'avatarAlt' => 'Trent Ellison',
 		],
 		[
-			'id'     => 'peter-bonk',
-			'name'   => 'Peter Bonk',
-			'role'   => 'Marketing agency',
-			'quote'  => 'One of the easiest marketing wins we\'ve had for an HVAC client. Techs already take photos — now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.',
-			'rating' => 5,
+			'id'        => 'heriberto-eddie-roman',
+			'name'      => 'Heriberto Eddie Roman',
+			'role'      => 'Business owner',
+			'quote'     => 'JobCapturePro has been a game changer for my business!',
+			'rating'    => 5,
+			'avatar'    => $campaign . 'jcp-campaign-hvac-capture.jpg',
+			'avatarAlt' => 'Heriberto Eddie Roman',
 		],
 	];
 }
@@ -170,8 +180,8 @@ function jcp_sales_tool_build_config( int $post_id = 0 ): array {
 			'primaryLabel'   => $cta_label !== '' ? $cta_label : (string) $trial['label'],
 			'primaryUrl'     => $cta_url !== '' ? $cta_url : (string) $trial['url'],
 			'primaryNote'    => (string) ( $trial['note'] ?? '' ),
-			'secondaryLabel' => $sec_label !== '' ? $sec_label : __( 'See live pricing', 'jcp-core' ),
-			'secondaryUrl'   => $sec_url !== '' ? $sec_url : $pricing_url,
+			'secondaryLabel' => $sec_label !== '' ? $sec_label : __( 'See It for My Business', 'jcp-core' ),
+			'secondaryUrl'   => $sec_url !== '' ? $sec_url : home_url( '/demo/' ),
 		],
 		'storageKey'  => $post_id > 0 ? 'jcp-sales-call-' . $post_id : 'jcp-sales-call-live',
 	];

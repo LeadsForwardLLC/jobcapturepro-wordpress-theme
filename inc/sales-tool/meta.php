@@ -372,11 +372,11 @@ function jcp_sales_tool_render_meta_box( WP_Post $post ): void {
 		</div>
 		<div>
 			<label for="jcp_st_sec_label"><?php esc_html_e( 'Secondary CTA label', 'jcp-core' ); ?></label>
-			<input type="text" name="jcp_st[secondary_cta_label]" id="jcp_st_sec_label" value="<?php echo esc_attr( $s['secondary_cta_label'] ); ?>" placeholder="<?php esc_attr_e( 'See live pricing', 'jcp-core' ); ?>" />
+			<input type="text" name="jcp_st[secondary_cta_label]" id="jcp_st_sec_label" value="<?php echo esc_attr( $s['secondary_cta_label'] ); ?>" placeholder="<?php esc_attr_e( 'See It for My Business', 'jcp-core' ); ?>" />
 		</div>
 		<div>
 			<label for="jcp_st_sec_url"><?php esc_html_e( 'Secondary CTA URL', 'jcp-core' ); ?></label>
-			<input type="url" name="jcp_st[secondary_cta_url]" id="jcp_st_sec_url" value="<?php echo esc_attr( $s['secondary_cta_url'] ); ?>" placeholder="<?php echo esc_attr( home_url( '/pricing/' ) ); ?>" />
+			<input type="url" name="jcp_st[secondary_cta_url]" id="jcp_st_sec_url" value="<?php echo esc_attr( $s['secondary_cta_url'] ); ?>" placeholder="<?php echo esc_attr( home_url( '/demo/' ) ); ?>" />
 		</div>
 	</div>
 	<?php
