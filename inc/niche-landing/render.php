@@ -954,10 +954,15 @@ function jcp_niche_render_benefits( array $c ): void {
 							<?php if ( $img !== '' ) : ?>
 								<img src="<?php echo esc_url( $img ); ?>" alt="<?php echo esc_attr( $alt ); ?>" width="480" height="360" loading="<?php echo $bi === 0 ? 'eager' : 'lazy'; ?>" decoding="async" class="jcp-editable-media-image" data-jcp-media-url-path="benefits.items.<?php echo esc_attr( (string) $bi ); ?>.image_url" data-jcp-media-alt-path="benefits.items.<?php echo esc_attr( (string) $bi ); ?>.image_alt" data-jcp-media-types="image"<?php jcp_niche_editable_attr( 'benefits.items.' . $bi . '.image_url' ); ?> />
 							<?php endif; ?>
-							<?php if ( $mod === 'website' ) : ?>
+							<?php if ( $mod === 'capture' ) : ?>
+								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--capture" aria-hidden="true">
+									<strong>Check-in ready</strong>
+									<span>Photo captured · Just now</span>
+								</div>
+							<?php elseif ( $mod === 'website' ) : ?>
 								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--browser" aria-hidden="true">
-									<span></span><span></span><span></span>
-									<em>yoursite.com/jobs</em>
+									<strong>Website jobs page</strong>
+									<span>yoursite.com/jobs</span>
 								</div>
 							<?php elseif ( $mod === 'google' ) : ?>
 								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--gbp" aria-hidden="true">
@@ -967,7 +972,10 @@ function jcp_niche_render_benefits( array $c ): void {
 							<?php elseif ( $mod === 'reviews' ) : ?>
 								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--qr" aria-hidden="true">
 									<span class="jcp-job-flow__qr"></span>
-									<em>Scan to review</em>
+									<span class="jcp-job-flow__chrome-text">
+										<strong>Scan to review</strong>
+										<span>Ask on site</span>
+									</span>
 								</div>
 							<?php elseif ( $mod === 'social' ) : ?>
 								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--social" aria-hidden="true">

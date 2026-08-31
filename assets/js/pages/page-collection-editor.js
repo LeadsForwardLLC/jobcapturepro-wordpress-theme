@@ -170,9 +170,10 @@
   };
 
   const JOB_FLOW_CHROME = {
-    website: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--browser" aria-hidden="true"><span></span><span></span><span></span><em>yoursite.com/jobs</em></div>`,
+    capture: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--capture" aria-hidden="true"><strong>Check-in ready</strong><span>Photo captured · Just now</span></div>`,
+    website: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--browser" aria-hidden="true"><strong>Website jobs page</strong><span>yoursite.com/jobs</span></div>`,
     google: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--gbp" aria-hidden="true"><strong>Google Business Profile</strong><span>Update ready · Today</span></div>`,
-    reviews: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--qr" aria-hidden="true"><span class="jcp-job-flow__qr"></span><em>Scan to review</em></div>`,
+    reviews: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--qr" aria-hidden="true"><span class="jcp-job-flow__qr"></span><span class="jcp-job-flow__chrome-text"><strong>Scan to review</strong><span>Ask on site</span></span></div>`,
     social: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--social" aria-hidden="true"><strong>Post ready</strong><span>Social · Directory</span></div>`,
   };
 

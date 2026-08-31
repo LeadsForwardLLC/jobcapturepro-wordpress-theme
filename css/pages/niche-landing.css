@@ -4249,47 +4249,12 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   pointer-events: none;
 }
 
-/* Website chrome: bottom overlay card (same language as Google/Social) so top corners stay free for badge + number */
-.jcp-job-flow__chrome--browser {
-  left: 0.55rem;
-  right: 0.55rem;
-  bottom: 0.55rem;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.55rem 0.65rem;
-  border-radius: 0.55rem;
-  background: rgba(255, 255, 255, 0.94);
-  color: #0f172a;
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
-  font-size: 0.65rem;
-}
-
-.jcp-job-flow__chrome--browser span {
-  width: 0.45rem;
-  height: 0.45rem;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: #64748b;
-}
-
-.jcp-job-flow__chrome--browser span:nth-child(1) { background: #f87171; }
-.jcp-job-flow__chrome--browser span:nth-child(2) { background: #fbbf24; }
-.jcp-job-flow__chrome--browser span:nth-child(3) { background: #34d399; }
-
-.jcp-job-flow__chrome--browser em {
-  margin-left: 0.2rem;
-  font-style: normal;
-  font-weight: 700;
-  font-size: 0.72rem;
-  line-height: 1.25;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
+/* Shared bottom status bar — Capture / Website / Google / Reviews / Social */
+.jcp-job-flow__chrome--capture,
+.jcp-job-flow__chrome--browser,
 .jcp-job-flow__chrome--gbp,
-.jcp-job-flow__chrome--social {
+.jcp-job-flow__chrome--social,
+.jcp-job-flow__chrome--qr {
   left: 0.55rem;
   right: 0.55rem;
   bottom: 0.55rem;
@@ -4301,54 +4266,86 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+  min-width: 0;
 }
 
+.jcp-job-flow__chrome--capture strong,
+.jcp-job-flow__chrome--browser strong,
 .jcp-job-flow__chrome--gbp strong,
-.jcp-job-flow__chrome--social strong {
+.jcp-job-flow__chrome--social strong,
+.jcp-job-flow__chrome--qr strong {
   font-size: 0.72rem;
   font-weight: 700;
   line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.jcp-job-flow__chrome--gbp span,
-.jcp-job-flow__chrome--social span {
+.jcp-job-flow__chrome--capture > span,
+.jcp-job-flow__chrome--browser > span,
+.jcp-job-flow__chrome--gbp > span,
+.jcp-job-flow__chrome--social > span,
+.jcp-job-flow__chrome-text > span {
   font-size: 0.65rem;
   color: #475569;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
+/* Reviews: same bar shell, row with compact CSS QR + text */
 .jcp-job-flow__chrome--qr {
-  right: 0.55rem;
-  bottom: 0.55rem;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.jcp-job-flow__chrome-text {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.55rem;
-  border-radius: 0.65rem;
-  background: rgba(255, 255, 255, 0.95);
-  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.18);
+  gap: 0.15rem;
+  min-width: 0;
 }
 
 .jcp-job-flow__qr {
-  width: 3.25rem;
-  height: 3.25rem;
-  border-radius: 0.35rem;
-  background:
-    linear-gradient(#0f172a 0 0) 0 0 / 35% 35%,
-    linear-gradient(#0f172a 0 0) 100% 0 / 35% 35%,
-    linear-gradient(#0f172a 0 0) 0 100% / 35% 35%,
-    linear-gradient(#0f172a 0 0) 100% 100% / 28% 28%,
-    linear-gradient(#0f172a 0 0) 40% 40% / 20% 20%,
-    #fff;
+  --qr: #0f172a;
+  width: 1.55rem;
+  height: 1.55rem;
+  flex-shrink: 0;
+  border-radius: 0.2rem;
+  background-color: #fff;
+  /* Crisp mini QR: three finder squares + center modules (CSS-only, no bitmap) */
+  background-image:
+    linear-gradient(var(--qr) 0 0),
+    linear-gradient(var(--qr) 0 0),
+    linear-gradient(var(--qr) 0 0),
+    linear-gradient(#fff 0 0),
+    linear-gradient(#fff 0 0),
+    linear-gradient(#fff 0 0),
+    linear-gradient(var(--qr) 0 0),
+    linear-gradient(var(--qr) 0 0),
+    linear-gradient(var(--qr) 0 0),
+    linear-gradient(var(--qr) 0 0),
+    linear-gradient(var(--qr) 0 0),
+    linear-gradient(var(--qr) 0 0),
+    linear-gradient(var(--qr) 0 0),
+    linear-gradient(var(--qr) 0 0),
+    linear-gradient(var(--qr) 0 0);
+  background-size:
+    38% 38%, 38% 38%, 38% 38%,
+    18% 18%, 18% 18%, 18% 18%,
+    10% 10%, 10% 10%, 10% 10%,
+    10% 10%, 10% 10%, 10% 10%,
+    10% 10%, 10% 10%, 10% 10%;
+  background-position:
+    0 0, 100% 0, 0 100%,
+    10% 10%, 72% 10%, 10% 72%,
+    48% 48%, 62% 48%, 48% 62%,
+    72% 62%, 62% 72%, 48% 86%,
+    86% 48%, 86% 72%, 72% 86%;
   background-repeat: no-repeat;
-  border: 1px solid #cbd5e1;
-}
-
-.jcp-job-flow__chrome--qr em {
-  font-style: normal;
-  font-size: 0.62rem;
-  font-weight: 600;
-  color: #0f172a;
+  box-shadow: inset 0 0 0 1px #e2e8f0;
 }
 
 .jcp-job-flow__title {
