@@ -80,7 +80,7 @@ function jcp_pricing_plans(): array {
 				],
 				[
 					'text'    => '1 Local Falcon keyword tracked',
-					'tooltip' => 'Track one keyword in Local Falcon to see your Google Maps ranking and coverage radius.',
+					'tooltip' => 'Local Falcon keyword tracking scans a search phrase across a geographic grid to show how often you appear in the Google Map Pack (Share of Local Voice) and your average rank—so you can measure local Maps visibility over time. Not a ranking guarantee.',
 				],
 				[
 					'text'    => 'CRM integration',
@@ -96,7 +96,7 @@ function jcp_pricing_plans(): array {
 			],
 			'includes'                 => [
 				'Add locations at $150/mo each',
-				'1 Local Falcon keyword (Maps ranking + radius)',
+				'1 Local Falcon keyword tracked',
 				'CRM integrations (Housecall Pro, Jobber, ServiceTitan, CompanyCam, and more)',
 				'Geotagged images + local-SEO website content',
 				'Google Maps / Business Profile posting',
@@ -119,6 +119,10 @@ function jcp_pricing_plans(): array {
 					'tooltip' => 'Add more operating locations under one account at $100/month each.',
 				],
 				[
+					'text'    => '3 Local Falcon keywords tracked',
+					'tooltip' => 'Local Falcon keyword tracking scans a search phrase across a geographic grid to show how often you appear in the Google Map Pack (Share of Local Voice) and your average rank—so you can measure local Maps visibility over time. Enterprise includes 3 tracked keywords. Not a ranking guarantee.',
+				],
+				[
 					'text'    => 'Custom integrations',
 					'tooltip' => 'Custom API integrations and tailored workflows for complex stacks.',
 				],
@@ -133,6 +137,7 @@ function jcp_pricing_plans(): array {
 			],
 			'includes'                 => [
 				'Add locations at $100/mo each',
+				'3 Local Falcon keywords tracked',
 				'Custom integrations and API access',
 				'Geotagged local-SEO publish across markets',
 				'Organization-wide reporting',

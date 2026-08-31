@@ -62,7 +62,7 @@
       features: [
         'Everything in Starter',
         { text: 'Add locations anytime (+$150/mo each)', tooltip: 'Add more operating locations under one account at $150/month each.' },
-        { text: '1 Local Falcon keyword tracked', tooltip: 'Track one keyword in Local Falcon to see your Google Maps ranking and coverage radius.' },
+        { text: '1 Local Falcon keyword tracked', tooltip: 'Local Falcon keyword tracking scans a search phrase across a geographic grid to show how often you appear in the Google Map Pack (Share of Local Voice) and your average rank—so you can measure local Maps visibility over time. Not a ranking guarantee.' },
         { text: 'CRM integration', tooltip: 'Connect systems like Housecall Pro, Jobber, ServiceTitan, and CompanyCam.' },
         'WordPress plugin',
         'Social Media posting',
@@ -82,6 +82,7 @@
       features: [
         'Everything in Scale',
         { text: 'Add locations anytime (+$100/mo each)', tooltip: 'Add more operating locations under one account at $100/month each.' },
+        { text: '3 Local Falcon keywords tracked', tooltip: 'Local Falcon keyword tracking scans a search phrase across a geographic grid to show how often you appear in the Google Map Pack (Share of Local Voice) and your average rank—so you can measure local Maps visibility over time. Enterprise includes 3 tracked keywords. Not a ranking guarantee.' },
         { text: 'Custom integrations', tooltip: 'Custom API integrations and tailored workflows for complex stacks.' },
         { text: 'Dedicated account manager', tooltip: 'A single point of contact for rollout, strategy, and ongoing success.' },
         { text: 'SLA guarantee', tooltip: 'Priority handling with service-level commitments for support/uptime.' }
@@ -140,7 +141,7 @@
     {
       id: 'faq-pricing-locations',
       question: 'Can we use JobCapturePro for multiple locations?',
-      answer: 'Starter is limited to one location and cannot add more. Scale lets you add locations at $150/month each and includes 1 Local Falcon keyword for Maps ranking and radius. Enterprise adds locations at $100/month each, with custom integrations and dedicated support.'
+      answer: 'Starter is limited to one location and cannot add more. Scale lets you add locations at $150/month each and includes 1 Local Falcon keyword tracked. Enterprise adds locations at $100/month each and includes 3 Local Falcon keywords tracked, plus custom integrations and dedicated support.'
     },
     {
       id: 'faq-pricing-pricing',
@@ -322,14 +323,14 @@
                       <img src="${icon('map-pin')}" alt="" width="18" height="18" />
                     </div>
                     <div class="jcp-addon-card__meta">
-                      <div class="jcp-addon-card__name">Local Falcon keyword</div>
-                      <div class="jcp-addon-card__note">Included on Scale+</div>
+                      <div class="jcp-addon-card__name">Local Falcon keyword tracking</div>
+                      <div class="jcp-addon-card__note">Scale 1 · Enterprise 3</div>
                       <div class="jcp-addon-card__price">
-                        <span class="jcp-addon-card__amount">1</span><span class="jcp-addon-card__period">keyword</span>
+                        <span class="jcp-addon-card__amount">1–3</span><span class="jcp-addon-card__period">keywords</span>
                       </div>
                     </div>
                   </div>
-                  <div class="jcp-addon-card__body">See your Google Maps ranking and coverage radius for one tracked keyword.</div>
+                  <div class="jcp-addon-card__body">Scans a search phrase across a map grid to show Map Pack coverage (Share of Local Voice) and average rank—so you can measure local Maps visibility over time.</div>
                 </article>
               </div>
             </section>
@@ -439,7 +440,7 @@
                 <div>Local Falcon keyword tracking</div>
                 <div><img src="${icon('x')}" class="lucide-icon lucide-icon-xs" alt="Not available"></div>
                 <div>1 keyword</div>
-                <div>1 keyword</div>
+                <div>3 keywords</div>
               </div>
               <div class="jcp-compare-row">
                 <div>Rank tracking (Maps ranking + radius)</div>

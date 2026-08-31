@@ -127,7 +127,7 @@ function jcp_sales_tool_call_script_chapters(): array {
 			'id'            => 'plan',
 			'label'         => '09 · Plan / earn',
 			'goal'          => 'Match the audience: contractor plan, affiliate economics, or partner residual.',
-			'say'           => 'Based on location count, here’s the recommended plan from live pricing. One location → Starter ($99/mo, 1 location only). Multi-location → Scale ($249/mo + $150/mo per extra location, includes 1 Local Falcon keyword). Large / custom integrations → Enterprise ($399/mo, extras $100/mo). Point to the live pricing page for current numbers.',
+			'say'           => 'Based on location count, here’s the recommended plan from live pricing. One location → Starter ($99/mo, 1 location only). Multi-location → Scale ($249/mo + $150/mo per extra location, includes 1 Local Falcon keyword tracked). Large / custom integrations → Enterprise ($399/mo, extras $100/mo, includes 3 Local Falcon keywords tracked). Local Falcon = grid scans that measure Map Pack coverage and average rank for a search phrase. Point to the live pricing page for current numbers.',
 			'say_affiliate' => 'Your motion is referral: 20% recurring commission for 12 months when someone you refer becomes a paid customer. Share your link, point them to Start Free Trial or try the demo, and let the product close.',
 			'say_partner'   => 'Your motion is sell-and-support: 15% recurring for as long as the customer stays an active paid account. That’s stronger than a 12-month affiliate cut when you’re doing the heavy lifting. Pilot one client, prove it, expand.',
 			'ask'           => 'Does this plan match how you want to run the next 90 days?',

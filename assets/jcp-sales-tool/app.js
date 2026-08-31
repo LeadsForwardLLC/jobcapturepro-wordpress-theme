@@ -244,7 +244,7 @@
         name: (enterprise && enterprise.name) || "Enterprise",
         price: `$${planMonthly("enterprise", 399)}`,
         reason:
-          "Large multi-location or custom connectivity — dedicated support, org-wide publishing, and locations at $" +
+          "Large multi-location or custom connectivity — dedicated support, org-wide publishing, 3 Local Falcon keywords tracked, and locations at $" +
           enterpriseFee +
           "/mo each from live pricing.",
         includes: (enterprise && enterprise.includes) || [],
@@ -263,7 +263,7 @@
         reason:
           "Multi-location teams need one proof engine across markets — Maps visibility, geotagged website content, reviews, and social — with extra locations at $" +
           scaleFee +
-          "/mo each, plus 1 Local Falcon keyword.",
+          "/mo each, plus 1 Local Falcon keyword tracked.",
         includes: (scale && scale.includes) || [],
         locationNote: `${locs} locations → 1 included + ${locs - 1} × $${scaleFee}/mo`,
       };
@@ -720,7 +720,7 @@
       aside = `<aside class="recommendation">
         <span class="plan-kicker">Recommended fit</span><h3>${plan.name}</h3>${state.showPricing ? `<p class="price">${plan.price} <span>/ month</span></p>` : ""}<p class="plan-reason">${plan.reason}</p>
         <ul class="included">${(plan.includes || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
-        <p class="plan-note">${state.showPricing ? `${esc(plan.locationNote || `1 location included`)}. ` : ""}Starter is 1 location only. Scale adds locations at $${scaleFee}/mo; Enterprise at $${enterpriseFee}/mo. Prices stay current on <a href="${esc(pricingLink)}" target="_blank" rel="noopener">our pricing page</a>.</p>
+        <p class="plan-note">${state.showPricing ? `${esc(plan.locationNote || `1 location included`)}. ` : ""}Starter is 1 location only. Scale adds locations at $${scaleFee}/mo (1 Local Falcon keyword); Enterprise at $${enterpriseFee}/mo (3 Local Falcon keywords). Prices stay current on <a href="${esc(pricingLink)}" target="_blank" rel="noopener">our pricing page</a>.</p>
         <a class="plan-cta" href="${esc(cta.primaryUrl || pricingLink)}" target="_blank" rel="noopener">${esc(cta.primaryLabel || "Start Free Trial")} →</a>
       </aside>`;
     }
@@ -739,7 +739,7 @@
       ? "Simple referral economics — 20% recurring for 12 months on paid accounts."
       : isPartner()
         ? "For agencies and consultants doing real selling: residual commission while the customer stays active."
-        : `We’ll recommend from live pricing: 1 location → Starter ($${planMonthly("starter", 99)}/mo); multi-location → Scale ($${planMonthly("scale", 249)}/mo + $${extraFee("scale", 150)}/mo per extra); large / custom → Enterprise.`;
+        : `We’ll recommend from live pricing: 1 location → Starter ($${planMonthly("starter", 99)}/mo); multi-location → Scale ($${planMonthly("scale", 249)}/mo + $${extraFee("scale", 150)}/mo per extra, 1 Local Falcon keyword); large / custom → Enterprise (3 Local Falcon keywords).`;
 
     return `<section class="chapter content-pad">
     ${chapterHeader(chapterNum("plan"), isAffiliate() || isPartner() ? "Earn with JCP" : "Plan", headline, sub + " " + lead)}
