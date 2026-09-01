@@ -2797,6 +2797,11 @@ input::-webkit-contacts-auto-fill-button {
   color: #64748b;
   font-size: 0.85em;
 }
+.survey-recommended {
+  font-weight: 600;
+  color: #0f766e;
+  font-size: 0.85em;
+}
 .survey-required {
   color: #ff503e;
 }

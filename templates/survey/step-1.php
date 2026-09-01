@@ -1,12 +1,12 @@
 <?php
 /**
  * Survey gate (single screen): trade + work email → launch demo.
- * Business name + first name are optional personalization.
+ * Phone is recommended (optional). Business name + first name are optional personalization.
  *
  * @package JCP_Core
  */
 $demo_headline = 'Unlock your personalized demo';
-$demo_subhead  = 'Your trade and work email. Ready in about 2 minutes — no credit card.';
+$demo_subhead  = 'Your trade and work email get you in — phone is recommended. Ready in about 2 minutes.';
 $demo_btn      = 'Unlock my demo →';
 ?>
 <section class="survey-step active" data-step="0">
@@ -74,6 +74,18 @@ $demo_btn      = 'Unlock my demo →';
       />
     </div>
 
+    <div class="survey-field">
+      <label for="phone">Phone <span class="survey-recommended">(recommended)</span></label>
+      <input
+        id="phone"
+        type="tel"
+        class="survey-input"
+        placeholder="(555) 555-5555"
+        autocomplete="tel"
+        inputmode="tel"
+      />
+    </div>
+
     <div class="survey-grid-2 survey-gate-optional">
       <div class="survey-field">
         <label for="businessName">Business name <span class="survey-optional">(optional)</span></label>
@@ -99,7 +111,6 @@ $demo_btn      = 'Unlock my demo →';
 
     <?php /* Kept in DOM (hidden) so existing JS / CRM payloads stay stable. */ ?>
     <input type="hidden" id="lastName" value="" autocomplete="family-name" />
-    <input type="hidden" id="phone" value="" autocomplete="tel" />
     <input type="hidden" id="referralSource" value="" />
     <input type="hidden" id="referralSourceOther" value="" />
   </form>
