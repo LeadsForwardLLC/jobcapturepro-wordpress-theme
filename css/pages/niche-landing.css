@@ -5670,7 +5670,7 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   white-space: nowrap;
 }
 
-:is(.jcp-page-campaign, .jcp-home) .jcp-lf-grid {
+:is(.jcp-page-campaign, .jcp-home) .jcp-maps-scan {
   position: relative;
   display: block;
   aspect-ratio: 1;
@@ -5684,7 +5684,7 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
 }
 
-:is(.jcp-page-campaign, .jcp-home) .jcp-lf-grid__map {
+:is(.jcp-page-campaign, .jcp-home) .jcp-maps-scan__map {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -5696,7 +5696,7 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   z-index: 0;
 }
 
-:is(.jcp-page-campaign, .jcp-home) .jcp-lf-grid__cells {
+:is(.jcp-page-campaign, .jcp-home) .jcp-maps-scan__cells {
   position: relative;
   z-index: 1;
   display: grid;
@@ -5710,13 +5710,13 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   place-items: center;
 }
 
-:is(.jcp-page-campaign, .jcp-home) .jcp-lf-grid:not(.jcp-lf-grid--mapped) .jcp-lf-grid__cells {
+:is(.jcp-page-campaign, .jcp-home) .jcp-maps-scan:not(.jcp-maps-scan--mapped) .jcp-maps-scan__cells {
   background: transparent;
   padding: 0;
   gap: 2.5px;
 }
 
-:is(.jcp-page-campaign, .jcp-home) .jcp-lf-grid__cell {
+:is(.jcp-page-campaign, .jcp-home) .jcp-maps-scan__pin {
   display: block;
   width: 58%;
   aspect-ratio: 1;
@@ -5726,19 +5726,19 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
     inset 0 0 0 1px rgba(255, 255, 255, 0.22);
 }
 
-:is(.jcp-page-campaign, .jcp-home) .jcp-lf-grid__cell.is-rank-top {
+:is(.jcp-page-campaign, .jcp-home) .jcp-maps-scan__pin.is-rank-top {
   background: radial-gradient(circle at 35% 30%, #4ade80, var(--jcp-lf-top) 55%, var(--jcp-lf-top-deep));
 }
 
-:is(.jcp-page-campaign, .jcp-home) .jcp-lf-grid__cell.is-rank-mid {
+:is(.jcp-page-campaign, .jcp-home) .jcp-maps-scan__pin.is-rank-mid {
   background: radial-gradient(circle at 35% 30%, #fcd34d, var(--jcp-lf-mid) 60%, #d97706);
 }
 
-:is(.jcp-page-campaign, .jcp-home) .jcp-lf-grid__cell.is-rank-low {
+:is(.jcp-page-campaign, .jcp-home) .jcp-maps-scan__pin.is-rank-low {
   background: radial-gradient(circle at 35% 30%, #fb923c, var(--jcp-lf-low) 60%, #c2410c);
 }
 
-:is(.jcp-page-campaign, .jcp-home) .jcp-lf-grid__cell.is-rank-out {
+:is(.jcp-page-campaign, .jcp-home) .jcp-maps-scan__pin.is-rank-out {
   background: radial-gradient(circle at 35% 30%, #f87171, var(--jcp-lf-out) 55%, var(--jcp-lf-out-deep));
 }
 
@@ -5815,7 +5815,7 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
     grid-template-columns: 1fr;
   }
 
-  :is(.jcp-page-campaign, .jcp-home) .jcp-lf-grid {
+  :is(.jcp-page-campaign, .jcp-home) .jcp-maps-scan {
     max-width: 240px;
   }
 

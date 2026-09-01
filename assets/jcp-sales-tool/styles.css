@@ -1072,7 +1072,7 @@ body.is-presenting .plan-layout:has(.plan-controls.rep-only) .recommendation {
 }
 .lf-grid-phase--before { color: #b91c1c; }
 .lf-grid-phase--after { color: #15803d; }
-.jcp-lf-grid {
+.jcp-maps-scan {
   position: relative;
   display: block;
   aspect-ratio: 1;
@@ -1085,7 +1085,7 @@ body.is-presenting .plan-layout:has(.plan-controls.rep-only) .recommendation {
   background: #e8eef5;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.1);
 }
-.jcp-lf-grid__map {
+.jcp-maps-scan__map {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -1095,7 +1095,7 @@ body.is-presenting .plan-layout:has(.plan-controls.rep-only) .recommendation {
   opacity: 1;
   z-index: 0;
 }
-.jcp-lf-grid__cells {
+.jcp-maps-scan__cells {
   position: relative;
   z-index: 1;
   display: grid;
@@ -1108,17 +1108,17 @@ body.is-presenting .plan-layout:has(.plan-controls.rep-only) .recommendation {
   background: transparent;
   place-items: center;
 }
-.jcp-lf-grid__cell {
+.jcp-maps-scan__pin {
   display: block;
   width: 58%;
   aspect-ratio: 1;
   border-radius: 50%;
   box-shadow: 0 1px 3px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.22);
 }
-.jcp-lf-grid__cell.is-rank-top { background: radial-gradient(circle at 35% 30%, #4ade80, #16a34a 55%, #15803d); }
-.jcp-lf-grid__cell.is-rank-mid { background: radial-gradient(circle at 35% 30%, #fcd34d, #f59e0b 60%, #d97706); }
-.jcp-lf-grid__cell.is-rank-low { background: radial-gradient(circle at 35% 30%, #fb923c, #ea580c 60%, #c2410c); }
-.jcp-lf-grid__cell.is-rank-out { background: radial-gradient(circle at 35% 30%, #f87171, #b91c1c 55%, #7f1d1d); }
+.jcp-maps-scan__pin.is-rank-top { background: radial-gradient(circle at 35% 30%, #4ade80, #16a34a 55%, #15803d); }
+.jcp-maps-scan__pin.is-rank-mid { background: radial-gradient(circle at 35% 30%, #fcd34d, #f59e0b 60%, #d97706); }
+.jcp-maps-scan__pin.is-rank-low { background: radial-gradient(circle at 35% 30%, #fb923c, #ea580c 60%, #c2410c); }
+.jcp-maps-scan__pin.is-rank-out { background: radial-gradient(circle at 35% 30%, #f87171, #b91c1c 55%, #7f1d1d); }
 .lf-keyword-metrics {
   display: grid;
   grid-template-columns: 1fr auto 1fr;

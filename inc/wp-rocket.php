@@ -94,7 +94,7 @@ add_filter( 'rocket_exclude_js', 'jcp_core_rocket_exclude_js' );
  * Bump $bust when critical front-end assets change and anonymous CSS must refresh.
  */
 function jcp_core_rocket_bust_stale_minify(): void {
-	$bust = '2026-08-30-campaign-polish-v21';
+	$bust = '2026-09-01-maps-scan-grid-v1';
 	if ( get_option( 'jcp_core_rocket_bust' ) === $bust ) {
 		return;
 	}

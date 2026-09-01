@@ -529,11 +529,11 @@
   function renderLfGrid(patternKey, ariaLabel, mapUrl) {
     const ranks = lfGridPatterns[patternKey] || lfGridPatterns.before_blank;
     const cells = ranks
-      .map((rank) => `<span class="jcp-lf-grid__cell ${lfRankClass(rank)}" title="Rank ${rank}"></span>`)
+      .map((rank) => `<span class="jcp-maps-scan__pin ${lfRankClass(rank)}" title="Rank ${rank}"></span>`)
       .join("");
-    return `<div class="jcp-lf-grid jcp-lf-grid--mapped" role="img" aria-label="${esc(ariaLabel)}">
-      <img class="jcp-lf-grid__map" src="${esc(mapUrl)}" alt="" width="640" height="640" loading="lazy" decoding="async" />
-      <div class="jcp-lf-grid__cells">${cells}</div>
+    return `<div class="jcp-maps-scan jcp-maps-scan--mapped" role="img" aria-label="${esc(ariaLabel)}">
+      <img class="jcp-maps-scan__map" src="${esc(mapUrl)}" alt="" width="640" height="640" loading="lazy" decoding="async" />
+      <div class="jcp-maps-scan__cells">${cells}</div>
     </div>`;
   }
 

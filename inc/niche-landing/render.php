@@ -2182,13 +2182,13 @@ function jcp_lf_case_rank_class( int $rank ): string {
 function jcp_lf_case_render_grid( array $ranks, string $label, string $map_url = '' ): void {
 	$mapped = $map_url !== '';
 	?>
-	<div class="jcp-lf-grid<?php echo $mapped ? ' jcp-lf-grid--mapped' : ''; ?>" role="img" aria-label="<?php echo esc_attr( $label ); ?>">
+	<div class="jcp-maps-scan<?php echo $mapped ? ' jcp-maps-scan--mapped' : ''; ?>" role="img" aria-label="<?php echo esc_attr( $label ); ?>">
 		<?php if ( $mapped ) : ?>
-			<img class="jcp-lf-grid__map" src="<?php echo esc_url( $map_url ); ?>" alt="" width="640" height="640" loading="lazy" decoding="async" />
+			<img class="jcp-maps-scan__map" src="<?php echo esc_url( $map_url ); ?>" alt="" width="640" height="640" loading="lazy" decoding="async" />
 		<?php endif; ?>
-		<div class="jcp-lf-grid__cells">
+		<div class="jcp-maps-scan__cells">
 			<?php foreach ( $ranks as $rank ) : ?>
-				<span class="jcp-lf-grid__cell <?php echo esc_attr( jcp_lf_case_rank_class( (int) $rank ) ); ?>" title="<?php echo esc_attr( sprintf( /* translators: %d: map pack rank */ __( 'Rank %d', 'jcp-core' ), (int) $rank ) ); ?>"></span>
+				<span class="jcp-maps-scan__pin <?php echo esc_attr( jcp_lf_case_rank_class( (int) $rank ) ); ?>" title="<?php echo esc_attr( sprintf( /* translators: %d: map pack rank */ __( 'Rank %d', 'jcp-core' ), (int) $rank ) ); ?>"></span>
 			<?php endforeach; ?>
 		</div>
 	</div>
