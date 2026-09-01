@@ -2260,22 +2260,20 @@ function jcp_niche_render_local_rank_case_study( array $props, string $niche_key
 			$before = is_array( $scan['before'] ?? null ) ? $scan['before'] : [];
 			$after  = is_array( $scan['after'] ?? null ) ? $scan['after'] : [];
 			$scans[] = [
-				'keyword'     => $keyword,
-				'before'      => [
+				'keyword'    => $keyword,
+				'before'     => [
 					'date'    => trim( (string) ( $before['date'] ?? '' ) ),
-					'arp'     => trim( (string) ( $before['arp'] ?? '' ) ),
-					'atrp'    => trim( (string) ( $before['atrp'] ?? '' ) ),
 					'solv'    => trim( (string) ( $before['solv'] ?? '' ) ),
+					'summary' => trim( (string) ( $before['summary'] ?? '' ) ),
 					'pattern' => trim( (string) ( $before['pattern'] ?? 'before_blank' ) ),
 				],
-				'after'       => [
+				'after'      => [
 					'date'    => trim( (string) ( $after['date'] ?? '' ) ),
-					'arp'     => trim( (string) ( $after['arp'] ?? '' ) ),
-					'atrp'    => trim( (string) ( $after['atrp'] ?? '' ) ),
 					'solv'    => trim( (string) ( $after['solv'] ?? '' ) ),
+					'summary' => trim( (string) ( $after['summary'] ?? '' ) ),
 					'pattern' => trim( (string) ( $after['pattern'] ?? 'before_blank' ) ),
 				],
-				'grid_label'  => trim( (string) ( $scan['grid_label'] ?? __( 'Geo-grid scan (7×7 · 6 mi)', 'jcp-core' ) ) ),
+				'grid_label' => trim( (string) ( $scan['grid_label'] ?? __( 'Google Maps coverage', 'jcp-core' ) ) ),
 			];
 		}
 		$locations[] = [
@@ -2335,14 +2333,19 @@ function jcp_niche_render_local_rank_case_study( array $props, string $niche_key
 									<div class="jcp-lf-case__compare">
 										<?php
 										foreach ( [ 'before', 'after' ] as $phase ) :
-											$side = $scan[ $phase ];
-											$ranks = jcp_lf_case_grid_pattern( (string) $side['pattern'] );
-											$aria  = sprintf(
-												/* translators: 1: before/after, 2: keyword, 3: ARP, 4: SoLV */
-												__( '%1$s scan for %2$s — ARP %3$s, SoLV %4$s', 'jcp-core' ),
+											$side    = $scan[ $phase ];
+											$ranks   = jcp_lf_case_grid_pattern( (string) $side['pattern'] );
+											$summary = $side['summary'] !== ''
+												? $side['summary']
+												: ( $phase === 'before'
+													? __( 'Not showing up', 'jcp-core' )
+													: __( 'Showing up across town', 'jcp-core' ) );
+											$aria = sprintf(
+												/* translators: 1: before/after, 2: keyword, 3: plain result, 4: map coverage % */
+												__( '%1$s for %2$s — %3$s (%4$s of the map)', 'jcp-core' ),
 												$phase === 'before' ? __( 'Before', 'jcp-core' ) : __( 'After', 'jcp-core' ),
 												$scan['keyword'],
-												$side['arp'] !== '' ? $side['arp'] : '—',
+												$summary,
 												$side['solv'] !== '' ? $side['solv'] : '—'
 											);
 											?>
@@ -2354,15 +2357,10 @@ function jcp_niche_render_local_rank_case_study( array $props, string $niche_key
 													<?php endif; ?>
 												</div>
 												<?php jcp_lf_case_render_grid( $ranks, $aria, (string) ( $location['map_bg'] ?? '' ) ); ?>
-												<div class="jcp-lf-case__metrics">
-													<?php if ( $side['arp'] !== '' ) : ?>
-														<span class="jcp-lf-case__pill"><em><?php esc_html_e( 'ARP', 'jcp-core' ); ?></em> <strong><?php echo esc_html( $side['arp'] ); ?></strong></span>
-													<?php endif; ?>
-													<?php if ( $side['atrp'] !== '' ) : ?>
-														<span class="jcp-lf-case__pill"><em><?php esc_html_e( 'ATRP', 'jcp-core' ); ?></em> <strong><?php echo esc_html( $side['atrp'] ); ?></strong></span>
-													<?php endif; ?>
+												<div class="jcp-lf-case__result">
+													<strong class="jcp-lf-case__result-summary"><?php echo esc_html( $summary ); ?></strong>
 													<?php if ( $side['solv'] !== '' ) : ?>
-														<span class="jcp-lf-case__pill jcp-lf-case__pill--solv"><em><?php esc_html_e( 'SoLV', 'jcp-core' ); ?></em> <strong><?php echo esc_html( $side['solv'] ); ?></strong></span>
+														<span class="jcp-lf-case__result-cover"><?php echo esc_html( sprintf( /* translators: %s: percentage of map covered */ __( '%s of the map', 'jcp-core' ), $side['solv'] ) ); ?></span>
 													<?php endif; ?>
 												</div>
 											</div>

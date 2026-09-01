@@ -294,63 +294,63 @@
     ]
   },
   "local_rank_case_study": {
-    "eyebrow": "Real Map Pack results",
-    "headline": "From 0% SoLV to Map Pack dominance in ~90 days — two markets.",
-    "body": "An anonymous 9-figure, multi-location foundation company that already ranked for much more. On these tracked keywords, JobCapturePro sat in the job → proof → visibility loop that helped lift Map Pack coverage — supporting visibility, not guaranteeing rankings.",
+    "eyebrow": "Real Google Maps results",
+    "headline": "Invisible on Google Maps → showing up first across town in ~90 days.",
+    "body": "A large multi-location foundation company used JobCapturePro to turn finished jobs into proof online. In two markets, customers searching these services started seeing them across the map — not a ranking guarantee, just what consistent job proof can do.",
     "stats": [
       {
         "value": "0% → up to 100%",
-        "label": "SoLV"
+        "label": "of the map covered"
       },
       {
-        "value": "20+ → ~#1–#2",
-        "label": "ARP"
+        "value": "Invisible → #1–#3",
+        "label": "on Google Maps"
       },
       {
-        "value": "2",
-        "label": "locations"
+        "value": "2 markets",
+        "label": "same playbook"
       },
       {
         "value": "~12 weeks",
-        "label": "mid-March → early June"
+        "label": "March → June"
       }
     ],
     "locations": [
       {
         "name": "Triadelphia, WV",
-        "address": "Anonymous customer location · Triadelphia, WV",
-        "meta": "7×7 · 6.0 mi · 49 points",
+        "address": "Real service area on Google Maps",
+        "meta": "Across town · ~6 mile area",
         "map_bg": "__CAMPAIGN_ASSET__/lf-map-triadelphia.jpg",
         "scans": [
           {
             "keyword": "foundation repair",
-            "grid_label": "Geo-grid scan (7×7 · 6 mi)",
+            "grid_label": "Google Maps coverage",
             "before": {
-              "date": "3/11–3/16/2026",
-              "arp": "20+",
+              "date": "March",
               "solv": "0%",
+              "summary": "Not showing up",
               "pattern": "before_blank"
             },
             "after": {
-              "date": "6/8/2026",
-              "arp": "2.02",
-              "solv": "89.80%",
+              "date": "June",
+              "solv": "90%",
+              "summary": "Showing up across town",
               "pattern": "after_fr_wv"
             }
           },
           {
             "keyword": "basement waterproofing",
-            "grid_label": "Geo-grid scan (7×7 · 6 mi)",
+            "grid_label": "Google Maps coverage",
             "before": {
-              "date": "3/11–3/16/2026",
-              "arp": "20+",
+              "date": "March",
               "solv": "0%",
+              "summary": "Not showing up",
               "pattern": "before_blank"
             },
             "after": {
-              "date": "6/8/2026",
-              "arp": "1.18",
+              "date": "June",
               "solv": "100%",
+              "summary": "Showing up #1–#3",
               "pattern": "after_bw_wv"
             }
           }
@@ -358,46 +358,46 @@
       },
       {
         "name": "Monroe, MI",
-        "address": "Anonymous customer location · Monroe, MI",
-        "meta": "7×7 · 6.0 mi · 49 points",
+        "address": "Real service area on Google Maps",
+        "meta": "Across town · ~6 mile area",
         "map_bg": "__CAMPAIGN_ASSET__/lf-map-monroe.jpg",
         "scans": [
           {
             "keyword": "foundation repair",
-            "grid_label": "Geo-grid scan (7×7 · 6 mi)",
+            "grid_label": "Google Maps coverage",
             "before": {
-              "date": "3/11–3/16/2026",
-              "arp": "20+",
+              "date": "March",
               "solv": "0%",
+              "summary": "Not showing up",
               "pattern": "before_blank"
             },
             "after": {
-              "date": "6/8/2026",
-              "arp": "2.20",
-              "solv": "83.67%",
+              "date": "June",
+              "solv": "84%",
+              "summary": "Showing up across town",
               "pattern": "after_fr_mi"
             }
           },
           {
             "keyword": "basement waterproofing",
-            "grid_label": "Geo-grid scan (7×7 · 6 mi)",
+            "grid_label": "Google Maps coverage",
             "before": {
-              "date": "3/11–3/16/2026",
-              "arp": "20+",
+              "date": "March",
               "solv": "0%",
+              "summary": "Not showing up",
               "pattern": "before_blank"
             },
             "after": {
-              "date": "6/8/2026",
-              "arp": "1.59",
-              "solv": "95.92%",
+              "date": "June",
+              "solv": "96%",
+              "summary": "Showing up #1–#3",
               "pattern": "after_bw_mi"
             }
           }
         ]
       }
     ],
-    "footnote": "SoLV = Share of Local Voice (top-3 presence across the geo-grid). Results for anonymous customer locations, March–June 2026, on tracked keywords only. Past performance is not a guarantee of future results.",
+    "footnote": "Each colored pin is a spot on the map where we checked if they showed up in Google’s local results. Green = near the top. Red = not showing. Past results don’t guarantee future rankings.",
     "cta_secondary": {
       "label": "See It for My Business",
       "url": "/demo/"

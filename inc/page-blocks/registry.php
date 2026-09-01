@@ -132,7 +132,7 @@ function jcp_block_registry(): array {
 		'local_rank_case_study' => [
 			'type'         => 'local_rank_case_study',
 			'label'        => __( 'Local rank case study', 'jcp-core' ),
-			'description'  => __( 'Anonymous geo-grid before/after case study (CSS heatmaps on real maps)', 'jcp-core' ),
+			'description'  => __( 'Simple Google Maps before/after coverage story', 'jcp-core' ),
 			'category'     => 'content',
 			'legacy_key'   => 'local_rank_case_study',
 			'doc_sections' => [ 'LOCAL RANK CASE STUDY', 'CASE STUDY' ],
@@ -570,8 +570,8 @@ function jcp_page_default_block_props( string $type ): array {
 			'show_cta'      => true,
 		],
 		'local_rank_case_study' => [
-			'eyebrow'       => __( 'Real Map Pack results', 'jcp-core' ),
-			'headline'      => __( 'From 0% SoLV to Map Pack dominance in ~90 days — two markets.', 'jcp-core' ),
+			'eyebrow'       => __( 'Real Google Maps results', 'jcp-core' ),
+			'headline'      => __( 'Invisible on Google Maps → showing up first across town in ~90 days.', 'jcp-core' ),
 			'body'          => '',
 			'stats'         => [],
 			'locations'     => [],

@@ -140,12 +140,12 @@ function jcp_page_maybe_migrate_pages(): void {
 		}
 	}
 
-	// v9 = Force homepage testimonials to always render all 4 cards (no featured peel).
+	// v10 = Plain-English Google Maps case study (no SoLV/ARP jargon).
 	$home_ver = (string) get_option( 'jcp_home_seed_version', '' );
-	if ( $home_ver !== '9' ) {
+	if ( $home_ver !== '10' ) {
 		$id = jcp_page_seed_home( true );
 		if ( $id > 0 ) {
-			update_option( 'jcp_home_seed_version', '9' );
+			update_option( 'jcp_home_seed_version', '10' );
 		}
 		if ( $id > 0 && function_exists( 'jcp_page_get_content' ) && function_exists( 'jcp_page_ensure_canonical_testimonial_reviews' ) ) {
 			$doc = jcp_page_get_content( $id );

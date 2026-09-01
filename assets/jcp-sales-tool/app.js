@@ -539,24 +539,24 @@
   const acculevelMarkets = {
     triadelphia: {
       label: "Triadelphia, WV",
-      meta: "7×7 · 6 mi · ~12 weeks (Mar→Jun 2026)",
+      meta: "Real Google Maps area · ~12 weeks (March → June)",
       mapBg: "lf-map-triadelphia.jpg",
       keywords: [
         {
           keyword: "Foundation repair",
-          beforeArp: "20+",
-          beforeSolv: "0%",
-          afterArp: "2.02",
-          afterSolv: "89.8%",
+          beforeCover: "0%",
+          afterCover: "90%",
+          beforeSummary: "Not showing up",
+          afterSummary: "Showing up across town",
           beforePattern: "before_blank",
           afterPattern: "after_fr_wv",
         },
         {
           keyword: "Waterproofing",
-          beforeArp: "20+",
-          beforeSolv: "0%",
-          afterArp: "1.18",
-          afterSolv: "100%",
+          beforeCover: "0%",
+          afterCover: "100%",
+          beforeSummary: "Not showing up",
+          afterSummary: "Showing up #1–#3",
           beforePattern: "before_blank",
           afterPattern: "after_bw_wv",
         },
@@ -564,24 +564,24 @@
     },
     monroe: {
       label: "Monroe, MI",
-      meta: "7×7 · 6 mi · ~12 weeks (Mar→Jun 2026)",
+      meta: "Real Google Maps area · ~12 weeks (March → June)",
       mapBg: "lf-map-monroe.jpg",
       keywords: [
         {
           keyword: "Foundation repair",
-          beforeArp: "20+",
-          beforeSolv: "0%",
-          afterArp: "2.20",
-          afterSolv: "83.67%",
+          beforeCover: "0%",
+          afterCover: "84%",
+          beforeSummary: "Not showing up",
+          afterSummary: "Showing up across town",
           beforePattern: "before_blank",
           afterPattern: "after_fr_mi",
         },
         {
           keyword: "Waterproofing",
-          beforeArp: "20+",
-          beforeSolv: "0%",
-          afterArp: "1.59",
-          afterSolv: "95.92%",
+          beforeCover: "0%",
+          afterCover: "96%",
+          beforeSummary: "Not showing up",
+          afterSummary: "Showing up #1–#3",
           beforePattern: "before_blank",
           afterPattern: "after_bw_mi",
         },
@@ -597,14 +597,14 @@
     return `<div class="lf-keywords">${keywords
       .map(
         (k) => `<div class="lf-keyword">
-        <div class="lf-keyword-name">${esc(k.keyword)} <span>tracked keyword</span></div>
+        <div class="lf-keyword-name">${esc(k.keyword)}</div>
         <div class="lf-keyword-grids">
           <div class="lf-keyword-grid-side">
             <span class="lf-grid-phase lf-grid-phase--before">Before</span>
             ${renderLfGrid(k.beforePattern, `Before ${k.keyword}`, mapUrl)}
             <div class="lf-metric lf-metric--before">
-              <strong>ARP ${esc(k.beforeArp)}</strong>
-              <em>SoLV ${esc(k.beforeSolv)}</em>
+              <strong>${esc(k.beforeSummary)}</strong>
+              <em>${esc(k.beforeCover)} of the map</em>
             </div>
           </div>
           <div class="lf-keyword-arrow" aria-hidden="true">→</div>
@@ -612,8 +612,8 @@
             <span class="lf-grid-phase lf-grid-phase--after">After</span>
             ${renderLfGrid(k.afterPattern, `After ${k.keyword}`, mapUrl)}
             <div class="lf-metric lf-metric--after">
-              <strong>ARP ${esc(k.afterArp)}</strong>
-              <em>SoLV ${esc(k.afterSolv)}</em>
+              <strong>${esc(k.afterSummary)}</strong>
+              <em>${esc(k.afterCover)} of the map</em>
             </div>
           </div>
         </div>
@@ -629,7 +629,7 @@
     return `<div class="lf-card">
       <div class="lf-card-head">
         <div>
-          <span class="lf-kicker">Local Falcon · tracked keywords</span>
+          <span class="lf-kicker">Google Maps · real service area</span>
           <h4>${esc(market.label)}</h4>
           <p class="lf-search">${esc(market.meta)}</p>
         </div>
@@ -637,7 +637,7 @@
       ${renderKeywordMetrics(market.keywords, mapUrl)}
       <div class="lf-value">
         <strong>So what for contractors</strong>
-        <p>More Map Pack presence across the grid means more chances to be the contractor homeowners call — visibility support, not a ranking guarantee.</p>
+        <p>When more of the map shows you near the top of Google, more homeowners can find you and call — visibility support, not a ranking guarantee.</p>
         ${leadLift === null ? "" : `<p class="lf-verified"><strong>Verified lead impact:</strong> +${leadLift}% leads during the measured period.</p>`}
       </div>
     </div>`;
@@ -666,23 +666,23 @@
     const acculevel = state.showAcculevel
       ? `<div class="case-layout case-layout--maps">
       <div class="case-story">
-        <p class="case-kicker">Anonymous · 9-figure · multi-location foundation company</p>
-        <h3 class="case-headline">From 0% SoLV to Map Pack coverage in ~12 weeks — two markets.</h3>
-        <p class="case-copy">This anonymous customer already ranked for much more. On these <strong>tracked keywords</strong>, JobCapturePro sat in the job → proof → visibility loop that helped lift Map Pack coverage — supporting visibility, not guaranteeing rankings.</p>
+        <p class="case-kicker">Anonymous · multi-location foundation company</p>
+        <h3 class="case-headline">Invisible on Google Maps → showing up first across town in ~90 days.</h3>
+        <p class="case-copy">They used JobCapturePro to turn finished jobs into proof online. In two markets, people searching these services started seeing them across the map — not a ranking guarantee, just what consistent job proof can do.</p>
         <div class="case-stat-row">
-          <div class="case-stat"><strong>0% → up to 100%</strong><span>SoLV</span></div>
-          <div class="case-stat"><strong>20+ → ~#1–#2</strong><span>ARP</span></div>
-          <div class="case-stat"><strong>2</strong><span>locations</span></div>
-          <div class="case-stat"><strong>~12 weeks</strong><span>Mar → Jun 2026</span></div>
+          <div class="case-stat"><strong>0% → up to 100%</strong><span>of the map covered</span></div>
+          <div class="case-stat"><strong>Invisible → #1–#3</strong><span>on Google Maps</span></div>
+          <div class="case-stat"><strong>2 markets</strong><span>same playbook</span></div>
+          <div class="case-stat"><strong>~12 weeks</strong><span>March → June</span></div>
         </div>
         <div class="lf-primer lf-primer--compact">
-          <div class="lf-primer-item"><span>SoLV</span><strong>Share of Local Voice</strong><p>How often they appear in Google’s Map Pack (top 3) across the geo-grid.</p></div>
-          <div class="lf-primer-item"><span>ARP</span><strong>Average rank position</strong><p>Average Maps rank across those grid points — lower is better.</p></div>
+          <div class="lf-primer-item"><span>Red</span><strong>Not showing up</strong><p>Homeowners searching nearby didn’t see them in Google’s local results.</p></div>
+          <div class="lf-primer-item"><span>Green</span><strong>Near the top</strong><p>They showed up in the places people search across town.</p></div>
         </div>
         <div class="case-proof-note">${
           leadLift === null
-            ? "Tracked-keyword results only. Past Map Pack lift is not a guarantee of future rankings or leads."
-            : `<strong>Verified lead impact:</strong> +${leadLift}% leads during the measured period. Tracked keywords only — not a ranking guarantee.`
+            ? "Past Google Maps results don’t guarantee future rankings or leads."
+            : `<strong>Verified lead impact:</strong> +${leadLift}% leads during the measured period. Past results don’t guarantee future rankings.`
         }</div>
       </div>
       <div class="case-visual">
@@ -690,7 +690,7 @@
           .map(([key, item]) => `<button class="case-tab ${selectedCaseMarket === key ? "active" : ""}" data-case-market="${key}" type="button">${item.label}</button>`)
           .join("")}</div>
         ${renderLocalFalconCard(selectedCaseMarket)}
-        <div class="lf-legend"><span>Source: Local Falcon · 7×7 · 6 mi grids</span><span>Triadelphia, WV · Monroe, MI</span></div>
+        <div class="lf-legend"><span>Real Google Maps areas</span><span>Triadelphia, WV · Monroe, MI</span></div>
       </div>
     </div>`
       : "";
@@ -699,12 +699,12 @@
     ${chapterHeader(
       chapterNum("proof"),
       "Customer proof",
-      "Real jobs. Real Map Pack lift.",
+      "Real jobs. Real Google Maps lift.",
       isAffiliate()
-        ? "Use these quotes when you refer. The anonymous tracked-keyword Local Falcon story shows what stronger Map Pack coverage can look like."
+        ? "Use these quotes when you refer. The before/after maps show how much more of town started seeing them on Google."
         : isPartner()
-          ? "Proof for a client pitch. Anonymous Local Falcon scans show Map Pack coverage before vs after — and why that creates more chances to get the call."
-          : "Operators and agencies who turned job proof into local visibility. Anonymous tracked keywords make the Map Pack gain clear."
+          ? "Proof for a client pitch. Simple before/after maps: invisible → showing up across town."
+          : "Operators who turned job proof into local visibility — so more homeowners could find them on Google Maps."
     )}
     <div class="reviews-grid">${reviewCards}</div>
     ${acculevel}
