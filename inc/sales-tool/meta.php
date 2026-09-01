@@ -356,7 +356,7 @@ function jcp_sales_tool_render_meta_box( WP_Post $post ): void {
 			<label><input type="checkbox" name="jcp_st[show_pricing]" value="1" <?php checked( $s['show_pricing'], 1 ); ?> /> <?php esc_html_e( 'Show retail pricing (from live pricing catalog)', 'jcp-core' ); ?></label>
 		</div>
 		<div>
-			<label><input type="checkbox" name="jcp_st[show_acculevel]" value="1" <?php checked( $s['show_acculevel'], 1 ); ?> /> <?php esc_html_e( 'Include anonymous Maps case study', 'jcp-core' ); ?></label>
+			<label><input type="checkbox" name="jcp_st[show_acculevel]" value="1" <?php checked( $s['show_acculevel'], 1 ); ?> /> <?php esc_html_e( 'Include Google Maps case study on Proof chapter', 'jcp-core' ); ?></label>
 		</div>
 		<div>
 			<label for="jcp_st_lead_lift"><?php esc_html_e( 'Anonymous case verified lead lift % (optional)', 'jcp-core' ); ?></label>
