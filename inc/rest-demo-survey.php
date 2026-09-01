@@ -132,7 +132,7 @@ function jcp_core_register_demo_survey_rest_routes(): void {
 add_action( 'rest_api_init', 'jcp_core_register_demo_survey_rest_routes' );
 
 /**
- * REST args for lead attribution fields (UTMs, landing page, referrer).
+ * REST args for lead attribution fields (UTMs, landing page, referrer, GHL contact id).
  *
  * @return array<string, array<string, mixed>>
  */
@@ -178,7 +178,29 @@ function jcp_demo_ghl_attribution_rest_args(): array {
             'type'              => 'string',
             'sanitize_callback' => 'esc_url_raw',
         ],
+        'contact_id'   => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'jcp_demo_ghl_sanitize_contact_id',
+        ],
     ];
+}
+
+/**
+ * Sanitize / validate a GoHighLevel contact id from the client.
+ * Invalid values become empty so webhook payloads omit contactId (legacy create/update path).
+ *
+ * @param mixed $value Raw value.
+ */
+function jcp_demo_ghl_sanitize_contact_id( $value ): string {
+    $id = trim( sanitize_text_field( (string) $value ) );
+    if ( $id === '' || strlen( $id ) < 8 || strlen( $id ) > 64 ) {
+        return '';
+    }
+    if ( ! preg_match( '/^[A-Za-z0-9_-]+$/', $id ) ) {
+        return '';
+    }
+    return $id;
 }
 
 /**
@@ -199,7 +221,7 @@ function jcp_demo_ghl_merge_attribution_from_request( array $params, \WP_REST_Re
  * Normalize demo contact fields for GHL webhook payloads.
  *
  * @param array<string, mixed> $params Request params.
- * @return array{first_name: string, last_name: string, email: string, phone: string, company: string, business_type: string, service_area: string, use_case: string, referral_source: string}
+ * @return array{first_name: string, last_name: string, email: string, phone: string, company: string, business_type: string, service_area: string, use_case: string, referral_source: string, utm_source: string, utm_medium: string, utm_campaign: string, utm_content: string, utm_term: string, fbclid: string, landing_page: string, referrer: string, contact_id: string}
  */
 function jcp_demo_ghl_normalize_contact_params( array $params ): array {
     $first_name    = isset( $params['first_name'] ) ? trim( (string) $params['first_name'] ) : '';
@@ -244,6 +266,9 @@ function jcp_demo_ghl_normalize_contact_params( array $params ): array {
         'fbclid'           => isset( $params['fbclid'] ) ? trim( (string) $params['fbclid'] ) : '',
         'landing_page'     => isset( $params['landing_page'] ) ? trim( (string) $params['landing_page'] ) : '',
         'referrer'         => isset( $params['referrer'] ) ? trim( (string) $params['referrer'] ) : '',
+        'contact_id'       => function_exists( 'jcp_demo_ghl_sanitize_contact_id' )
+            ? jcp_demo_ghl_sanitize_contact_id( $params['contact_id'] ?? '' )
+            : '',
     ];
 }
 
@@ -275,6 +300,12 @@ function jcp_demo_ghl_build_webhook_body( string $event, array $params, array $t
         JCP_GHL_KEY_LANDING_PAGE  => $contact['landing_page'],
         JCP_GHL_KEY_REFERRER      => $contact['referrer'],
     ];
+    // When present, GHL workflows should Find/Update this contact instead of creating a duplicate.
+    if ( $contact['contact_id'] !== '' && defined( 'JCP_GHL_KEY_CONTACT_ID' ) ) {
+        $scalar[ JCP_GHL_KEY_CONTACT_ID ] = $contact['contact_id'];
+        // Human-readable alias for easier inbound-webhook field mapping in GHL.
+        $scalar['Contact Id'] = $contact['contact_id'];
+    }
     $body = http_build_query( $scalar, '', '&', PHP_QUERY_RFC3986 );
     if ( $contact['referral_source'] !== '' ) {
         // Match Early Access: Referral Source[] for GHL multi-select custom fields.
