@@ -877,7 +877,7 @@
     return nicheLabel ? (nicheLabel + ' Pro') : 'Your Business';
   };
 
-  /** Single-screen gate: trade + work email required. */
+  /** Single-screen gate: trade + work email required; phone recommended but optional. */
   const validateGate = () => {
     commitNicheFromSearch();
     const nicheSelect = getValue('niche');
