@@ -126,11 +126,11 @@ if ( ! empty( $config['presenter']['logoUrl'] ) ) {
   </div>
 </aside>
 
-<div class="report-modal" id="reportModal" hidden role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'LocalFalcon scan enlarge', 'jcp-core' ); ?>">
+<div class="report-modal" id="reportModal" hidden role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Google Maps coverage enlarge', 'jcp-core' ); ?>">
   <button type="button" class="report-modal-backdrop" id="closeReportBackdrop" aria-label="<?php esc_attr_e( 'Close', 'jcp-core' ); ?>"></button>
   <div class="report-modal-panel">
     <button id="closeReport" type="button" aria-label="<?php esc_attr_e( 'Close', 'jcp-core' ); ?>">×</button>
-    <img id="reportImage" alt="<?php esc_attr_e( 'Anonymous Local Falcon scans', 'jcp-core' ); ?>" />
+    <img id="reportImage" alt="<?php esc_attr_e( 'Google Maps coverage before and after', 'jcp-core' ); ?>" />
   </div>
 </div>
 

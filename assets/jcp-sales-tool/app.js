@@ -1,12 +1,13 @@
 (() => {
   const cfg = window.JCP_SALES_TOOL || {};
   const assetBase = (cfg.assetBase || "").replace(/\/$/, "");
-  const assetVer = "20260831b";
+  const assetVer = "20260901a";
   const img = (name) => `${assetBase}/assets/${name}?v=${assetVer}`;
   const plans = cfg.plans || {};
   const reviews = Array.isArray(cfg.reviews) ? cfg.reviews : [];
   const cta = cfg.cta || {};
-  const storageKey = cfg.storageKey || "jcp-sales-call-live";
+  // Bump storage key so stale local call state (old Maps copy / hidden case) resets once.
+  const storageKey = (cfg.storageKey || "jcp-sales-call-live") + "-maps-v2";
 
   function planMonthly(id, fallback) {
     const plan = plans[id];
@@ -1505,7 +1506,8 @@
     $("#settingLocations").value = state.locations;
     $("#settingLeadLift").value = state.acculevelLeadLift;
     $("#settingPricing").checked = state.showPricing;
-    $("#settingAcculevel").checked = state.showAcculevel;
+    const acculevelToggle = $("#settingAcculevel");
+    if (acculevelToggle) acculevelToggle.checked = state.showAcculevel;
     $("#customizer").classList.add("open");
     $("#customizer").setAttribute("aria-hidden", "false");
     $("#drawerBackdrop").hidden = false;
@@ -1520,6 +1522,7 @@
   }
 
   function applyCustomizer() {
+    const acculevelToggle = $("#settingAcculevel");
     setState({
       prospectName: $("#settingProspect").value.trim(),
       repName: $("#settingRep").value.trim(),
@@ -1528,7 +1531,7 @@
       locations: Number($("#settingLocations").value) || state.locations,
       acculevelLeadLift: $("#settingLeadLift").value,
       showPricing: $("#settingPricing").checked,
-      showAcculevel: $("#settingAcculevel").checked,
+      showAcculevel: acculevelToggle ? acculevelToggle.checked : state.showAcculevel,
     });
     closeCustomizer();
     showToast("Presentation updated");
