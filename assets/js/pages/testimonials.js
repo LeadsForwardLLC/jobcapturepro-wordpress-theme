@@ -1,26 +1,72 @@
 (function () {
   'use strict';
 
-  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var FALLBACK_REVIEWS = [
+    {
+      id: 'peter-bonk',
+      name: 'Peter Bonk',
+      role: 'Marketing agency',
+      quote:
+        "One of the easiest marketing wins we've had for an HVAC client. Techs already take photos. Now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.",
+      rating: 5,
+    },
+    {
+      id: 'brian-hardy',
+      name: 'Brian Hardy',
+      role: 'Contractor',
+      quote: 'Awesome. It takes my work site pictures and turns them into a marketing campaign.',
+      rating: 5,
+    },
+    {
+      id: 'trent-ellison',
+      name: 'Trent Ellison',
+      role: 'Home service operator',
+      quote:
+        'Easy to use and really smart. Makes it super simple to turn completed work into useful online content, and the review side is amazing.',
+      rating: 5,
+    },
+    {
+      id: 'heriberto-eddie-roman',
+      name: 'Heriberto Eddie Roman',
+      role: 'Business owner',
+      quote: 'JobCapturePro has been a game changer for my business!',
+      rating: 5,
+    },
+  ];
 
   function esc(s) {
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 
   function key(r) {
-    return String(r.id || '');
+    return String((r && (r.id || r.name)) || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-');
   }
 
   function stars(rating, on) {
     if (!on || rating <= 0) return '';
     return (
-      '<div class="jcp-testimonials-stars" aria-label="' + esc(rating + ' out of 5 stars') + '">' +
-      '<span aria-hidden="true">' + '\u2605'.repeat(rating) + '\u2606'.repeat(Math.max(0, 5 - rating)) + '</span></div>'
+      '<div class="jcp-testimonials-stars" aria-label="' +
+      esc(rating + ' out of 5 stars') +
+      '">' +
+      '<span aria-hidden="true">' +
+      '\u2605'.repeat(rating) +
+      '\u2606'.repeat(Math.max(0, 5 - rating)) +
+      '</span></div>'
     );
   }
 
   function initials(name) {
-    var parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    var parts = String(name || '')
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
     if (!parts.length) return '?';
     var first = parts[0].charAt(0).toUpperCase();
     var last = parts.length > 1 ? parts[parts.length - 1].charAt(0).toUpperCase() : '';
@@ -28,45 +74,34 @@
   }
 
   function avatar(r) {
-    var url = String(r.avatar_url || r.image_url || '').trim();
+    var url = String(r.avatar_url || r.avatar || r.image_url || '').trim();
     var mark = url
       ? '<img src="' + esc(url) + '" alt="" width="44" height="44" loading="lazy" decoding="async" />'
       : '<span class="jcp-testimonials-avatar__initials">' + esc(r.initials || initials(r.name)) + '</span>';
     return '<span class="jcp-testimonials-avatar" aria-hidden="true">' + mark + '</span>';
   }
 
-  function card(r, showStars, showRoles, asButton) {
+  function card(r, showStars, showRoles) {
     var role = showRoles && r.role ? '<span class="jcp-testimonials-card-role">' + esc(r.role) + '</span>' : '';
-    var inner =
+    return (
+      '<article class="jcp-testimonials-card" data-review-key="' +
+      esc(key(r)) +
+      '" aria-label="' +
+      esc('Review from ' + r.name) +
+      '" role="listitem">' +
       stars(r.rating || 5, showStars) +
-      '<p class="jcp-testimonials-card-quote">' + esc(r.quote) + '</p>' +
+      '<p class="jcp-testimonials-card-quote">' +
+      esc(r.quote) +
+      '</p>' +
       '<div class="jcp-testimonials-card-person">' +
       avatar(r) +
       '<span class="jcp-testimonials-card-person-text">' +
-      '<span class="jcp-testimonials-card-name">' + esc(r.name) + '</span>' +
+      '<span class="jcp-testimonials-card-name">' +
+      esc(r.name) +
+      '</span>' +
       role +
-      '</span></div>';
-    if (asButton) {
-      return (
-        '<button type="button" class="jcp-testimonials-card" data-review-key="' + esc(key(r)) + '" aria-label="' +
-        esc('Show review from ' + r.name) + '" role="listitem">' + inner + '</button>'
-      );
-    }
-    return (
-      '<article class="jcp-testimonials-card" data-review-key="' + esc(key(r)) + '" aria-label="' +
-      esc('Review from ' + r.name) + '" role="listitem">' + inner + '</article>'
+      '</span></div></article>'
     );
-  }
-
-  function setFeatured(el, r, showStars, showRoles) {
-    var role = showRoles && r.role ? '<span class="jcp-testimonials-role">' + esc(r.role) + '</span>' : '';
-    el.innerHTML =
-      stars(r.rating || 5, showStars) +
-      '<blockquote class="jcp-testimonials-quote"><p>' + esc(r.quote) + '</p></blockquote>' +
-      '<figcaption class="jcp-testimonials-cite">' +
-      avatar(r) +
-      '<span class="jcp-testimonials-cite-text"><cite class="jcp-testimonials-name">' + esc(r.name) + '</cite>' + role + '</span>' +
-      '</figcaption>';
   }
 
   function parseStore(el) {
@@ -75,7 +110,6 @@
     try {
       return JSON.parse(raw);
     } catch (e1) {
-      // Legacy pages used esc_html() so textContent can still contain &quot;.
       var ta = document.createElement('textarea');
       ta.innerHTML = raw;
       try {
@@ -86,290 +120,81 @@
     }
   }
 
+  function mergeCanonical(reviews) {
+    var byId = {};
+    (Array.isArray(reviews) ? reviews : []).forEach(function (r) {
+      if (!r || typeof r !== 'object') return;
+      var id = key(r);
+      var name = String(r.name || '').trim();
+      var quote = String(r.quote || '').trim();
+      if (!id || !name || !quote) return;
+      byId[id] = r;
+    });
+    return FALLBACK_REVIEWS.map(function (want) {
+      var id = key(want);
+      var existing = byId[id];
+      if (!existing) return want;
+      return {
+        id: want.id,
+        name: existing.name || want.name,
+        role: existing.role || want.role,
+        quote: existing.quote || want.quote,
+        rating: existing.rating || want.rating,
+        avatar_url: existing.avatar_url || existing.avatar || want.avatar_url || '',
+        initials: existing.initials || initials(existing.name || want.name),
+      };
+    });
+  }
+
   function init(root) {
     var storeEl = root.querySelector('[data-jcp-testimonials-store]');
-    if (!storeEl) return;
-
-    var reviews = parseStore(storeEl);
-    if (!Array.isArray(reviews) || !reviews.length) return;
+    var parsed = storeEl ? parseStore(storeEl) : null;
+    var reviews = mergeCanonical(parsed);
 
     var slider = root.querySelector('[data-jcp-testimonials-slider]');
     var track = slider && slider.querySelector('[data-jcp-testimonials-track]');
     if (!slider || !track) return;
 
+    // Force grid wall classes/attrs so CSS + markup stay consistent.
+    root.classList.add('jcp-testimonials--grid', 'jcp-testimonials--slider-only');
+    root.setAttribute('data-layout', 'grid');
+    root.setAttribute('data-slider-only', '1');
+    root.removeAttribute('data-featured-key');
+
     var featuredEl = root.querySelector('[data-jcp-testimonials-featured]');
-    var sliderOnly = root.getAttribute('data-slider-only') === '1' || !featuredEl;
-    var isGrid = root.getAttribute('data-layout') === 'grid' || root.classList.contains('jcp-testimonials--grid');
+    if (featuredEl) featuredEl.hidden = true;
+
     var dotsEl = slider.querySelector('[data-jcp-testimonials-dots]');
     var prevBtn = slider.querySelector('[data-jcp-testimonials-prev]');
     var nextBtn = slider.querySelector('[data-jcp-testimonials-next]');
     var showStars = !!(
+      track.querySelector('.jcp-testimonials-stars') ||
       (featuredEl && featuredEl.querySelector('.jcp-testimonials-stars')) ||
-      track.querySelector('.jcp-testimonials-stars')
+      true
     );
     var showRoles = !!(
+      track.querySelector('.jcp-testimonials-card-role') ||
       (featuredEl && featuredEl.querySelector('.jcp-testimonials-role')) ||
-      track.querySelector('.jcp-testimonials-card-role')
+      true
     );
 
-    // Grid layout shows every review at once — never hide the featured key.
-    if (isGrid) {
-      track.innerHTML = reviews.map(function (r) {
-        return card(r, showStars, showRoles, false);
-      }).join('');
-      if (prevBtn) prevBtn.hidden = true;
-      if (nextBtn) nextBtn.hidden = true;
-      if (dotsEl) dotsEl.hidden = true;
-      return;
-    }
-
-    var autoplayOn = root.getAttribute('data-autoplay') === '1';
-    var autoplayMs = Math.max(1000, parseInt(root.getAttribute('data-autoplay-ms') || '6000', 10));
-    var perView = Math.max(1, parseInt(root.getAttribute('data-per-view') || (sliderOnly ? '2' : '1'), 10));
-    if (window.matchMedia('(max-width: 700px)').matches) perView = 1;
-
-    // Advance one "page" (perView cards) in slider-only mode.
-    var step = sliderOnly ? perView : 1;
-    var index = 0;
-    var paused = false;
-    var timer = null;
-
-    function featuredKey() {
-      return root.getAttribute('data-featured-key') || '';
-    }
-
-    function secondary() {
-      if (sliderOnly) return reviews.slice();
-      var fk = featuredKey();
-      return reviews.filter(function (r) { return key(r) !== fk; });
-    }
-
-    function cards() {
-      return Array.prototype.slice.call(track.querySelectorAll('.jcp-testimonials-card'));
-    }
-
-    function maxIndex() {
-      var n = cards().length;
-      return Math.max(0, n - perView);
-    }
-
-    function pageCount() {
-      return maxIndex() + 1;
-    }
-
-    function scrollTrackTo(i) {
-      var list = cards();
-      if (!list.length) return;
-      var target = list[i];
-      if (!target) return;
-      // Prefer getBoundingClientRect — offsetLeft breaks when offsetParents differ.
-      var left =
-        target.getBoundingClientRect().left -
-        track.getBoundingClientRect().left +
-        track.scrollLeft;
-      if (typeof track.scrollTo === 'function') {
-        track.scrollTo({ left: left, behavior: reduced ? 'auto' : 'smooth' });
-      } else {
-        track.scrollLeft = left;
-      }
-    }
-
-    function syncUi() {
-      var list = cards();
-      var pages = pageCount();
-      list.forEach(function (c, i) {
-        var active = i >= index && i < index + perView;
-        c.classList.toggle('is-active', active);
-        if (active) c.setAttribute('aria-current', 'true');
-        else c.removeAttribute('aria-current');
-      });
-      if (dotsEl) {
-        Array.prototype.forEach.call(dotsEl.querySelectorAll('button'), function (d, i) {
-          var pageIndex = sliderOnly ? i * step : i;
-          var sel = pageIndex === index;
-          d.classList.toggle('is-active', sel);
-          d.setAttribute('aria-selected', sel ? 'true' : 'false');
-          d.setAttribute('tabindex', sel ? '0' : '-1');
-        });
-      }
-      var one = pages <= 1;
-      if (prevBtn) {
-        prevBtn.disabled = one;
-        prevBtn.setAttribute('aria-disabled', one ? 'true' : 'false');
-      }
-      if (nextBtn) {
-        nextBtn.disabled = one;
-        nextBtn.setAttribute('aria-disabled', one ? 'true' : 'false');
-      }
-    }
-
-    function goTo(n) {
-      var max = maxIndex();
-      if (max <= 0) {
-        index = 0;
-        scrollTrackTo(0);
-        syncUi();
-        return;
-      }
-      index = ((n % (max + 1)) + (max + 1)) % (max + 1);
-      // Snap to step boundaries in slider-only mode.
-      if (sliderOnly && step > 1) {
-        index = Math.round(index / step) * step;
-        if (index > max) index = max;
-      }
-      scrollTrackTo(index);
-      syncUi();
-    }
-
-    function syncFromScroll() {
-      var list = cards();
-      if (!list.length) return;
-      var trackLeft = track.getBoundingClientRect().left;
-      var nearest = 0;
-      var min = Infinity;
-      list.forEach(function (c, i) {
-        var d = Math.abs(c.getBoundingClientRect().left - trackLeft);
-        if (d < min) {
-          min = d;
-          nearest = i;
-        }
-      });
-      index = nearest;
-      if (sliderOnly && step > 1) {
-        index = Math.round(index / step) * step;
-        if (index > maxIndex()) index = maxIndex();
-      }
-      syncUi();
-    }
-
-    function renderDots() {
-      if (!dotsEl) return;
-      dotsEl.innerHTML = '';
-      var max = maxIndex();
-      var pages = max + 1;
-      if (sliderOnly && step > 1) {
-        pages = Math.ceil(cards().length / step);
-      }
-      if (cards().length <= perView) pages = 1;
-      for (var i = 0; i < pages; i++) {
-        (function (j) {
-          var dot = document.createElement('button');
-          dot.type = 'button';
-          dot.className = 'jcp-testimonials-dot';
-          dot.setAttribute('role', 'tab');
-          dot.setAttribute('aria-label', 'Reviews page ' + (j + 1));
-          dot.addEventListener('click', function (e) {
-            e.preventDefault();
-            goTo(sliderOnly ? j * step : j);
-            restart();
-          });
-          dotsEl.appendChild(dot);
-        })(i);
-      }
-    }
-
-    function bindCards() {
-      if (sliderOnly) return;
-      cards().forEach(function (c) {
-        c.addEventListener('click', function () {
-          var k = c.getAttribute('data-review-key');
-          if (!k || k === featuredKey() || !featuredEl) return;
-          var r = reviews.find(function (item) { return key(item) === k; });
-          if (!r) return;
-          root.setAttribute('data-featured-key', k);
-          setFeatured(featuredEl, r, showStars, showRoles);
-          rebuildTrack();
-          restart();
-        });
-      });
-    }
-
-    function rebuildTrack() {
-      var list = secondary();
-      track.innerHTML = list.map(function (r) { return card(r, showStars, showRoles, !sliderOnly); }).join('');
-      index = 0;
-      track.scrollLeft = 0;
-      renderDots();
-      bindCards();
-      syncUi();
-    }
-
-    function stop() {
-      if (timer) {
-        clearInterval(timer);
-        timer = null;
-      }
-    }
-
-    function start() {
-      stop();
-      if (!autoplayOn || reduced || paused || pageCount() <= 1) return;
-      timer = setInterval(function () {
-        if (!paused) goTo(index + step);
-      }, autoplayMs);
-    }
-
-    function restart() {
-      stop();
-      start();
-    }
+    // Always paint all four reviews. Never filter a "featured" review out of the grid.
+    track.innerHTML = reviews.map(function (r) {
+      return card(r, showStars, showRoles);
+    }).join('');
 
     if (prevBtn) {
-      prevBtn.addEventListener('click', function (e) {
-        e.preventDefault();
-        goTo(index - step);
-        restart();
-      });
+      prevBtn.hidden = true;
+      prevBtn.setAttribute('aria-hidden', 'true');
     }
     if (nextBtn) {
-      nextBtn.addEventListener('click', function (e) {
-        e.preventDefault();
-        goTo(index + step);
-        restart();
-      });
+      nextBtn.hidden = true;
+      nextBtn.setAttribute('aria-hidden', 'true');
     }
-
-    var scrollTimer;
-    track.addEventListener('scroll', function () {
-      clearTimeout(scrollTimer);
-      scrollTimer = setTimeout(syncFromScroll, 80);
-    }, { passive: true });
-
-    root.addEventListener('mouseenter', function () {
-      paused = true;
-      stop();
-    });
-    root.addEventListener('mouseleave', function () {
-      paused = false;
-      start();
-    });
-    root.addEventListener('focusin', function () {
-      paused = true;
-      stop();
-    });
-    root.addEventListener('focusout', function (e) {
-      if (!root.contains(e.relatedTarget)) {
-        paused = false;
-        start();
-      }
-    });
-
-    window.addEventListener('resize', function () {
-      var nextPer = Math.max(1, parseInt(root.getAttribute('data-per-view') || (sliderOnly ? '2' : '1'), 10));
-      if (window.matchMedia('(max-width: 700px)').matches) nextPer = 1;
-      if (nextPer !== perView) {
-        perView = nextPer;
-        step = sliderOnly ? perView : 1;
-        renderDots();
-        goTo(0);
-        restart();
-      }
-    });
-
-    renderDots();
-    if (!sliderOnly) bindCards();
-    syncUi();
-    start();
+    if (dotsEl) {
+      dotsEl.hidden = true;
+      dotsEl.innerHTML = '';
+    }
   }
 
   function boot() {

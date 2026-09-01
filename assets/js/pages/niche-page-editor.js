@@ -2082,6 +2082,39 @@
     recordChange();
   };
 
+  const CANONICAL_TESTIMONIAL_REVIEWS = [
+    {
+      id: 'peter-bonk',
+      name: 'Peter Bonk',
+      role: 'Marketing agency',
+      quote:
+        "One of the easiest marketing wins we've had for an HVAC client. Techs already take photos. Now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.",
+      rating: 5,
+    },
+    {
+      id: 'brian-hardy',
+      name: 'Brian Hardy',
+      role: 'Contractor',
+      quote: 'Awesome. It takes my work site pictures and turns them into a marketing campaign.',
+      rating: 5,
+    },
+    {
+      id: 'trent-ellison',
+      name: 'Trent Ellison',
+      role: 'Home service operator',
+      quote:
+        'Easy to use and really smart. Makes it super simple to turn completed work into useful online content, and the review side is amazing.',
+      rating: 5,
+    },
+    {
+      id: 'heriberto-eddie-roman',
+      name: 'Heriberto Eddie Roman',
+      role: 'Business owner',
+      quote: 'JobCapturePro has been a game changer for my business!',
+      rating: 5,
+    },
+  ];
+
   const testimonialsReviewKey = (review) => {
     if (review && review.id) return String(review.id);
     return String(review?.name || '')
@@ -2090,13 +2123,37 @@
       .replace(/^-|-$/g, '');
   };
 
+  const mergeCanonicalTestimonials = (reviews) => {
+    const byId = {};
+    (Array.isArray(reviews) ? reviews : []).forEach((review) => {
+      const id = testimonialsReviewKey(review);
+      const name = String(review?.name || '').trim();
+      const quote = String(review?.quote || '').trim();
+      if (!id || !name || !quote) return;
+      byId[id] = review;
+    });
+    return CANONICAL_TESTIMONIAL_REVIEWS.map((want) => {
+      const existing = byId[want.id];
+      if (!existing) return { ...want };
+      return {
+        ...want,
+        ...existing,
+        id: want.id,
+        name: existing.name || want.name,
+        role: existing.role || want.role,
+        quote: existing.quote || want.quote,
+        rating: existing.rating || want.rating,
+      };
+    });
+  };
+
   const getTestimonialsReviews = (block) => {
     const lk = blockLegacyKey(block) || 'testimonials';
     const fromProps = block.props?.reviews;
     const fromFlat = getPath(flatContent, `${lk}.reviews`);
-    if (Array.isArray(fromProps) && fromProps.length) return fromProps;
-    if (Array.isArray(fromFlat) && fromFlat.length) return fromFlat;
-    return [];
+    if (Array.isArray(fromProps) && fromProps.length) return mergeCanonicalTestimonials(fromProps);
+    if (Array.isArray(fromFlat) && fromFlat.length) return mergeCanonicalTestimonials(fromFlat);
+    return mergeCanonicalTestimonials([]);
   };
 
   const resolveTestimonialsFeatured = (reviews, featuredKey) => {
@@ -2125,10 +2182,11 @@
       ? `<span class="jcp-testimonials-card-role">${String(review.role)}</span>`
       : '';
     return (
-      `<button type="button" class="jcp-testimonials-card" data-review-key="${id}" aria-label="Show review from ${name}" role="listitem">` +
+      `<article class="jcp-testimonials-card" data-review-key="${id}" aria-label="Review from ${name}" role="listitem">` +
       `${testimonialsStarsHtml(review.rating, showStars)}` +
       `<p class="jcp-testimonials-card-quote">${String(review.quote || '')}</p>` +
-      `<span class="jcp-testimonials-card-name">${name}</span>${role}</button>`
+      `<div class="jcp-testimonials-card-person"><span class="jcp-testimonials-card-person-text">` +
+      `<span class="jcp-testimonials-card-name">${name}</span>${role}</span></div></article>`
     );
   };
 
@@ -2149,14 +2207,21 @@
     const lk = blockLegacyKey(block) || 'testimonials';
     const merged = { ...(getPath(flatContent, lk) || {}), ...(block.props || {}) };
     const reviews = getTestimonialsReviews(block);
-    const featured = resolveTestimonialsFeatured(reviews, merged.featured_key);
     const showStars = coerceVisibilityBool(merged.show_stars, true);
     const showRoles = coerceVisibilityBool(merged.show_roles, true);
-    const autoplay = coerceVisibilityBool(merged.autoplay, true);
-    const featuredId = featured ? testimonialsReviewKey(featured) : '';
 
-    root.setAttribute('data-autoplay', autoplay ? '1' : '0');
-    if (featuredId) root.setAttribute('data-featured-key', featuredId);
+    // Public + editor walls are always a full 4-up grid. Never peel Peter into featured.
+    root.classList.add('jcp-testimonials--grid', 'jcp-testimonials--slider-only');
+    root.setAttribute('data-layout', 'grid');
+    root.setAttribute('data-slider-only', '1');
+    root.setAttribute('data-autoplay', '0');
+    root.removeAttribute('data-featured-key');
+    if (block.props) {
+      block.props.layout = 'grid';
+      block.props.show_featured = false;
+      block.props.reviews = reviews;
+      block.props.per_view = Math.max(4, parseInt(block.props.per_view || 4, 10) || 4);
+    }
 
     root.querySelectorAll('.jcp-testimonials-stars').forEach((el) => {
       setElVisuallyHidden(el, !showStars);
@@ -2166,14 +2231,24 @@
     });
 
     const featuredEl = root.querySelector('[data-jcp-testimonials-featured]');
-    if (featuredEl && featured) {
-      syncTestimonialsFeaturedPanel(featuredEl, featured, showStars, showRoles);
+    if (featuredEl) {
+      featuredEl.hidden = true;
+      featuredEl.style.display = 'none';
     }
 
     const track = root.querySelector('[data-jcp-testimonials-track]');
-    if (track && featuredId) {
-      const secondary = reviews.filter((review) => testimonialsReviewKey(review) !== featuredId);
-      track.innerHTML = secondary.map((review) => testimonialsCardHtml(review, showStars, showRoles)).join('');
+    if (track) {
+      track.innerHTML = reviews.map((review) => testimonialsCardHtml(review, showStars, showRoles)).join('');
+    }
+
+    const prevBtn = root.querySelector('[data-jcp-testimonials-prev]');
+    const nextBtn = root.querySelector('[data-jcp-testimonials-next]');
+    const dotsEl = root.querySelector('[data-jcp-testimonials-dots]');
+    if (prevBtn) prevBtn.hidden = true;
+    if (nextBtn) nextBtn.hidden = true;
+    if (dotsEl) {
+      dotsEl.hidden = true;
+      dotsEl.innerHTML = '';
     }
 
     if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {

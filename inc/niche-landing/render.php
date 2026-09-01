@@ -2404,38 +2404,17 @@ function jcp_niche_render_testimonials( array $props ): void {
 		return;
 	}
 
-	// Default off so new pages match the landing-page grid (no featured highlight).
-	$show_featured = ! empty( $props['show_featured'] );
-	$layout        = sanitize_key( (string) ( $props['layout'] ?? ( $show_featured ? 'slider' : 'grid' ) ) );
-	if ( ! in_array( $layout, [ 'slider', 'grid' ], true ) ) {
-		$layout = $show_featured ? 'slider' : 'grid';
-	}
-	// Grid layout is a full review wall — never pull one card out for a featured panel.
-	if ( $layout === 'grid' ) {
-		$show_featured = false;
-	}
-	$featured_key = trim( (string) ( $props['featured_key'] ?? '' ) );
-	$featured     = $show_featured ? jcp_testimonials_resolve_featured( $reviews, $featured_key ) : null;
-	if ( $show_featured && $featured === null ) {
-		return;
-	}
-	$featured_id = $featured ? jcp_testimonials_review_key( $featured ) : '';
-	$slider_list = [];
-	if ( $show_featured && $featured ) {
-		foreach ( $reviews as $review ) {
-			if ( jcp_testimonials_review_key( $review ) === $featured_id ) {
-				continue;
-			}
-			$slider_list[] = $review;
-		}
-	} else {
-		$slider_list = $reviews;
-	}
+	// Public walls are always a full 4-up grid. Never peel one review into a featured panel.
+	$show_featured = false;
+	$featured      = null;
+	$featured_id   = '';
+	$slider_list   = $reviews;
+	$layout        = 'grid';
 
 	$section_id  = ! empty( $props['section_id'] ) ? (string) $props['section_id'] : 'testimonials';
-	$autoplay    = ! empty( $props['autoplay'] );
+	$autoplay    = false;
 	$autoplay_ms = isset( $props['autoplay_ms'] ) ? max( 1000, (int) $props['autoplay_ms'] ) : 6000;
-	$per_view    = isset( $props['per_view'] ) ? max( 1, (int) $props['per_view'] ) : ( $show_featured ? 1 : 4 );
+	$per_view    = max( 4, isset( $props['per_view'] ) ? (int) $props['per_view'] : 4 );
 	$show_stars  = ! array_key_exists( 'show_stars', $props ) || ! empty( $props['show_stars'] );
 	$show_roles  = ! array_key_exists( 'show_roles', $props ) || ! empty( $props['show_roles'] );
 	$eyebrow_vis = jcp_niche_field_visibility( $props, 'show_eyebrow', true );
@@ -2456,24 +2435,17 @@ function jcp_niche_render_testimonials( array $props ): void {
 	}
 	$faces_label = trim( (string) ( $props['faces_label'] ?? '' ) );
 	$store_json  = wp_json_encode( $reviews );
-	$mode_class  = $show_featured ? '' : ' jcp-testimonials--slider-only';
-	if ( $layout === 'grid' ) {
-		$mode_class .= ' jcp-testimonials--grid';
-	}
+	$mode_class  = ' jcp-testimonials--slider-only jcp-testimonials--grid';
 	?>
 	<section
 		class="jcp-section rankings-section jcp-block-testimonials<?php echo esc_attr( $mode_class ); ?>"
 		id="<?php echo esc_attr( $section_id ); ?>"
 		data-jcp-testimonials
-		data-layout="<?php echo esc_attr( $layout ); ?>"
-		data-autoplay="<?php echo esc_attr( $autoplay && $layout !== 'grid' ? '1' : '0' ); ?>"
+		data-layout="grid"
+		data-autoplay="0"
 		data-autoplay-ms="<?php echo esc_attr( (string) $autoplay_ms ); ?>"
 		data-per-view="<?php echo esc_attr( (string) $per_view ); ?>"
-		<?php if ( $show_featured ) : ?>
-		data-featured-key="<?php echo esc_attr( $featured_id ); ?>"
-		<?php else : ?>
 		data-slider-only="1"
-		<?php endif; ?>
 	>
 		<div class="jcp-container">
 			<?php if ( $eyebrow_vis['render'] && $eyebrow !== '' ) : ?>
@@ -2524,21 +2496,12 @@ function jcp_niche_render_testimonials( array $props ): void {
 							$card_key = jcp_testimonials_review_key( $review );
 							/* translators: %s: reviewer name. */
 							$card_label = sprintf( __( 'Review from %s', 'jcp-core' ), (string) $review['name'] );
-							$tag        = $show_featured ? 'button' : 'article';
 							?>
-							<<?php echo $tag; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
-								<?php if ( $show_featured ) : ?>
-								type="button"
+							<article
 								class="jcp-testimonials-card"
 								data-review-key="<?php echo esc_attr( $card_key ); ?>"
 								aria-label="<?php echo esc_attr( $card_label ); ?>"
 								role="listitem"
-								<?php else : ?>
-								class="jcp-testimonials-card"
-								data-review-key="<?php echo esc_attr( $card_key ); ?>"
-								aria-label="<?php echo esc_attr( $card_label ); ?>"
-								role="listitem"
-								<?php endif; ?>
 							>
 								<?php jcp_testimonials_render_stars( (int) ( $review['rating'] ?? 5 ), $show_stars ); ?>
 								<p class="jcp-testimonials-card-quote"><?php echo esc_html( (string) $review['quote'] ); ?></p>
@@ -2551,7 +2514,7 @@ function jcp_niche_render_testimonials( array $props ): void {
 										<?php endif; ?>
 									</span>
 								</div>
-							</<?php echo $tag; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+							</article>
 						<?php endforeach; ?>
 					</div>
 					<button type="button" class="jcp-testimonials-nav jcp-testimonials-nav--next" data-jcp-testimonials-next aria-label="<?php esc_attr_e( 'Next review', 'jcp-core' ); ?>">
