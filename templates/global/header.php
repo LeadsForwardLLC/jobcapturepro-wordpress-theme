@@ -31,23 +31,34 @@ $body_classes = ( $hide_site_chrome ? 'jcp-landing-chrome-hidden' : 'jcp-global-
 <body <?php body_class( $body_classes ); ?>>
   <div class="jcp-header-stack" id="jcpHeaderStack">
   <?php if ( $hide_site_chrome ) : ?>
-    <header class="jcp-landing-brandbar" role="banner">
-      <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="jcp-landing-brandbar__link" aria-label="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>">
-        <img
-          src="https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png"
-          alt="JobCapturePro"
-          class="jcp-landing-brandbar__logo"
-          width="160"
-          height="36"
-        />
-      </a>
+    <?php
+    $landing_demo_url = function_exists( 'home_url' ) ? home_url( '/demo/' ) : '/demo/';
+    ?>
+    <header class="jcp-landing-brandbar" role="banner" data-jcp-landing-brandbar>
+      <div class="jcp-landing-brandbar__inner">
+        <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="jcp-landing-brandbar__link" aria-label="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>">
+          <img
+            src="https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png"
+            alt="JobCapturePro"
+            class="jcp-landing-brandbar__logo"
+            width="160"
+            height="36"
+          />
+        </a>
+        <a
+          class="jcp-landing-brandbar__cta"
+          href="<?php echo esc_url( $landing_demo_url ); ?>"
+          data-cta="Start Demo"
+          data-cta-location="landing_sticky_bar"
+        ><?php esc_html_e( 'Start Demo', 'jcp-core' ); ?></a>
+      </div>
     </header>
   <?php else : ?>
   <?php if ( $show_top_banner ) : ?>
     <?php
     $banner      = function_exists( 'jcp_global_settings' ) ? ( jcp_global_settings()['banner'] ?? [] ) : [];
     $banner_url  = function_exists( 'jcp_global_banner_cta_url' ) ? jcp_global_banner_cta_url( $banner ) : home_url( '/pricing' );
-    $headline    = (string) ( $banner['headline'] ?? 'Early Bird:' );
+    $headline    = (string) ( $banner['headline'] ?? 'Start Free Trial:' );
     $message     = (string) ( $banner['text'] ?? '' );
     $code        = trim( (string) ( $banner['code'] ?? '' ) );
     $cta_label   = (string) ( $banner['cta_label'] ?? 'Claim offer' );

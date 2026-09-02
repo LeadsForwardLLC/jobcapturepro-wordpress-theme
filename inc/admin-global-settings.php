@@ -74,6 +74,7 @@ function jcp_global_settings_handle_save(): void {
 		'header_nav' => jcp_global_sanitize_header_nav( $input['header_nav'] ?? [] ),
 		'contact' => [
 			'support_email' => sanitize_email( (string) ( $input['contact']['support_email'] ?? '' ) ),
+			'support_phone' => sanitize_text_field( (string) ( $input['contact']['support_phone'] ?? '' ) ),
 		],
 		'fluent_forms' => [
 			'enabled'            => ! empty( $input['fluent_forms']['enabled'] ),
@@ -251,7 +252,7 @@ function jcp_global_settings_render_page(): void {
 			</table>
 
 			<h2><?php esc_html_e( 'Signup / app URL', 'jcp-core' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'Used for “Start free trial”, “Get Started”, and empty CTA URLs across the site.', 'jcp-core' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Used for “Start Free Trial” and empty CTA URLs across the site.', 'jcp-core' ); ?></p>
 			<table class="form-table" role="presentation">
 				<tr>
 					<th scope="row"><label for="jcp_signup_base"><?php esc_html_e( 'Base URL', 'jcp-core' ); ?></label></th>
@@ -293,11 +294,16 @@ function jcp_global_settings_render_page(): void {
 				</tr>
 			</table>
 
-			<h2><?php esc_html_e( 'Contact', 'jcp-core' ); ?></h2>
+			<h2><?php esc_html_e( 'Support contact', 'jcp-core' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Shown on the Contact / Support page last-resort strip. The contact form itself is Fluent Forms ([fluentform id="1"]).', 'jcp-core' ); ?></p>
 			<table class="form-table" role="presentation">
 				<tr>
 					<th scope="row"><label for="jcp_support_email"><?php esc_html_e( 'Support email', 'jcp-core' ); ?></label></th>
-					<td><input type="email" class="regular-text" id="jcp_support_email" name="jcp_global[contact][support_email]" value="<?php echo esc_attr( (string) ( $contact['support_email'] ?? '' ) ); ?>" /></td>
+					<td><input type="email" class="regular-text" id="jcp_support_email" name="jcp_global[contact][support_email]" value="<?php echo esc_attr( (string) ( $contact['support_email'] ?? '' ) ); ?>" placeholder="support@jobcapturepro.com" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="jcp_support_phone"><?php esc_html_e( 'Support phone', 'jcp-core' ); ?></label></th>
+					<td><input type="text" class="regular-text" id="jcp_support_phone" name="jcp_global[contact][support_phone]" value="<?php echo esc_attr( (string) ( $contact['support_phone'] ?? '' ) ); ?>" placeholder="(941) 941-9506" /></td>
 				</tr>
 			</table>
 
@@ -307,6 +313,8 @@ function jcp_global_settings_render_page(): void {
 			<h2><?php esc_html_e( 'Fluent Forms bridge', 'jcp-core' ); ?></h2>
 			<p class="description">
 				<?php esc_html_e( 'Theme-owned styling for multi-step Fluent Forms. Leave Fluent Form → Custom CSS blank. Per-page shortcodes live in the Form embed block.', 'jcp-core' ); ?>
+				<br />
+				<?php esc_html_e( 'Support form (ID 1): the theme redirects successful submits to /contact-success/?topic=… You can also set Fluent Confirmation → Redirect to that URL as a backup.', 'jcp-core' ); ?>
 			</p>
 			<table class="form-table" role="presentation">
 				<tr>

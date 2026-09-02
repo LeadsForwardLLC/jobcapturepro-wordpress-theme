@@ -26,6 +26,7 @@
     share: '.jcp-niche-share',
     media_text: '.jcp-block-media-text, .jcp-media-text, .demo-preview-section',
     proof_flow: '.jcp-block-proof-flow, #real-job-proof',
+    testimonials: '.jcp-block-testimonials, #testimonials',
     demo_preview: '.jcp-block-demo-preview, #demo-preview',
     directory_preview: '.jcp-block-directory-preview, .directory-preview',
     conversion: '.jcp-block-conversion, .conversion-section',
@@ -66,8 +67,8 @@
     check_ins: { label: 'See it in action', url: '/demo' },
     problem: { label: 'Fix this with JobCapturePro', url: '/demo' },
     benefits: { label: 'See it in the demo', url: '/demo' },
-    differentiation: { label: 'Get started', url: '/demo' },
-    who_its_for: { label: 'Start free trial', url: '/demo' },
+    differentiation: { label: 'Start Free Trial', url: '/demo' },
+    who_its_for: { label: 'Start Free Trial', url: '/demo' },
     faq: { label: 'Still have questions? Book a demo', url: '/demo' },
   };
 
@@ -94,7 +95,7 @@
   const HEADING_TAG_BLOCKS = new Set([
     'hero', 'benefits', 'what_it_is', 'problem', 'check_ins', 'who_its_for',
     'how_it_works', 'differentiation', 'faq', 'final_cta', 'conversion',
-    'proof_flow', 'directory_preview', 'media_text', 'demo_preview',
+    'proof_flow', 'testimonials', 'directory_preview', 'media_text', 'demo_preview',
     'commission', 'partners', 'share',
   ]);
 
@@ -235,6 +236,11 @@
       { key: 'show_callout', label: 'Callout box', selector: '.real-job-proof-callout', defaultOn: true },
       { key: 'show_link', label: 'Bottom link', selector: '.timeline-cta', defaultOn: true },
     ],
+    testimonials: [
+      { key: 'show_eyebrow', label: 'Eyebrow', selector: '.jcp-testimonials-eyebrow', defaultOn: true },
+      { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
+      { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
+    ],
     directory_preview: [
       { key: 'show_headline', label: 'Headline', selector: SECTION_HEADLINE_SELECTOR, defaultOn: true },
       { key: 'show_subheadline', label: 'Subheadline', selector: '.rankings-subtitle', defaultOn: true },
@@ -289,20 +295,35 @@
     differentiation: { headline: 'Section headline', body: '', bullets: [] },
     who_its_for: { headline: "Who it's for", audiences: [] },
     faq: { headline: 'Frequently asked questions', items: [] },
-    final_cta: { headline: 'Ready to get started?', subheadline: '', cta_primary: { label: 'Start free trial', url: '' }, cta_secondary: { label: 'See how it works', url: '/demo' } },
+    final_cta: { headline: 'Ready to get started?', subheadline: '', cta_primary: { label: 'Start Free Trial', url: '' }, cta_secondary: { label: 'See how it works', url: '/demo' } },
     form_embed: { headline: 'Apply for a spot', subheadline: '', shortcode: '', display: 'inline', show_headline: true, show_subheadline: true },
     code_embed: { headline: 'Book a time', subheadline: '', embed_code: '', show_headline: true, show_subheadline: false },
-    cta_band: { cta_primary: { label: 'Get started', url: '' }, band_key: 'cta_band_1' },
+    cta_band: { cta_primary: { label: 'Start Free Trial', url: '' }, band_key: 'cta_band_1' },
     breadcrumb: {},
     core_mechanic: [
-      { value: '1', label: 'photo', detail: 'Proof created instantly' },
-      { value: '4', label: 'channels', detail: 'Google, website, social, directory' },
-      { value: '0', label: 'busywork', detail: 'Nothing new for your crew' },
+      { value: '1', label: 'photo', detail: 'Starts the workflow' },
+      { value: '5', label: 'channels', detail: 'Published online' },
+      { value: 'More', label: 'jobs', detail: 'From finished work' },
     ],
     commission: {},
     partners: {},
     share: {},
     proof_flow: {},
+    testimonials: {
+      eyebrow: 'Customer stories',
+      headline: 'Trusted by contractors who already take the photos',
+      subheadline: 'Real operators and agencies using JobCapturePro to turn completed jobs into visibility, content, and reviews.',
+      featured_key: 'peter-bonk',
+      autoplay: true,
+      autoplay_ms: 6000,
+      show_stars: true,
+      show_roles: true,
+      show_eyebrow: true,
+      show_headline: true,
+      show_subheadline: true,
+      section_id: 'testimonials',
+      reviews: [],
+    },
     demo_preview: {
       badge: 'Live Demo',
       headline: 'See it in action',
@@ -415,7 +436,7 @@
     <div class="jcp-editor-modal__panel jcp-niche-link-popover" role="dialog" aria-labelledby="jcpCtaLinkModalTitle">
       <strong id="jcpCtaLinkModalTitle">Edit button</strong>
       <label for="jcpNicheLinkLabel">Button text</label>
-      <input type="text" id="jcpNicheLinkLabel" placeholder="Start free trial" />
+      <input type="text" id="jcpNicheLinkLabel" placeholder="Start Free Trial" />
       <label for="jcpNicheLinkUrl">URL</label>
       <input type="text" id="jcpNicheLinkUrl" placeholder="/demo or https://..." />
       <div class="jcp-niche-link-popover-actions">
@@ -448,6 +469,7 @@
 
       <div class="jcp-niche-link-popover-actions">
         <button type="button" class="btn btn-primary" id="jcpNicheTextLinkApply">Insert link</button>
+        <button type="button" class="btn btn-secondary" id="jcpNicheTextLinkClear" hidden>Remove link</button>
         <button type="button" class="btn btn-secondary" id="jcpNicheTextLinkCancel">Close</button>
       </div>
     </div>
@@ -486,6 +508,7 @@
   const adminLink = bar.querySelector('.jcp-niche-edit-link');
   const textLinkBtn = bar.querySelector('#jcpNicheTextLink');
   let activeLink = null;
+  let activeCardLink = null;
   let activeRichField = null;
   let activeBlockId = null;
 
@@ -526,6 +549,36 @@
   const closeTextLinkModal = () => {
     closeEditorModal(textLinkPopover);
     activeRichField = null;
+  };
+
+  const setActiveCardLink = (card) => {
+    document.querySelectorAll('.ranking-factor-card.is-card-link-target').forEach((el) => {
+      el.classList.remove('is-card-link-target');
+    });
+    activeCardLink = card || null;
+    if (activeCardLink) activeCardLink.classList.add('is-card-link-target');
+  };
+
+  const syncCardLinkDom = (card, url) => {
+    if (!card) return;
+    const href = String(url || '').trim();
+    let hit = card.querySelector(':scope > .ranking-factor-card__link');
+    if (href) {
+      card.classList.add('ranking-factor-card--linked');
+      if (!hit) {
+        hit = document.createElement('a');
+        hit.className = 'ranking-factor-card__link';
+        hit.tabIndex = -1;
+        card.appendChild(hit);
+      }
+      hit.setAttribute('href', href);
+      const titleEl = card.querySelector('.factor-title');
+      const label = (titleEl?.textContent || '').trim() || 'Open';
+      hit.setAttribute('aria-label', label);
+    } else {
+      card.classList.remove('ranking-factor-card--linked');
+      if (hit) hit.remove();
+    }
   };
 
   const ICON_CHOICES = [
@@ -1602,6 +1655,21 @@
       return;
     }
 
+    if (key === 'show_eyebrow' && block.type === 'testimonials') {
+      const container = root.querySelector('.jcp-container') || root;
+      const el = document.createElement('p');
+      el.className = 'jcp-testimonials-eyebrow demo-badge';
+      el.setAttribute('data-jcp-path', `${lk}.eyebrow`);
+      el.textContent = String(getPath(flatContent, `${lk}.eyebrow`) || '');
+      const header = container.querySelector('.rankings-header');
+      if (header) {
+        container.insertBefore(el, header);
+      } else {
+        container.insertBefore(el, container.firstChild);
+      }
+      return;
+    }
+
     if (key === 'show_closing') {
       const container = root.querySelector('.jcp-container') || root;
       const el = document.createElement('p');
@@ -1859,7 +1927,7 @@
     }
     const columnTypes = [
       'how_it_works', 'check_ins', 'problem', 'benefits', 'who_its_for', 'proof_flow',
-      'what_it_is', 'differentiation', 'faq', 'directory_preview',
+      'what_it_is', 'differentiation', 'faq', 'testimonials', 'directory_preview',
     ];
     const options = { align: true, width: true };
     if (columnTypes.includes(type)) options.columns = true;
@@ -1952,6 +2020,7 @@
 
       applySectionSurfaceToDom(block, root);
       syncBlockVisibilityToDom(block);
+      if (block.type === 'testimonials') syncTestimonialsToDom(block);
     });
 
     document.querySelectorAll('.jcp-niche-breadcrumb').forEach((el) => {
@@ -2013,7 +2082,224 @@
     recordChange();
   };
 
+  const CANONICAL_TESTIMONIAL_REVIEWS = [
+    {
+      id: 'peter-bonk',
+      name: 'Peter Bonk',
+      role: 'Marketing agency',
+      quote:
+        "One of the easiest marketing wins we've had for an HVAC client. Techs already take photos. Now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.",
+      rating: 5,
+    },
+    {
+      id: 'brian-hardy',
+      name: 'Brian Hardy',
+      role: 'Contractor',
+      quote: 'Awesome. It takes my work site pictures and turns them into a marketing campaign.',
+      rating: 5,
+    },
+    {
+      id: 'trent-ellison',
+      name: 'Trent Ellison',
+      role: 'Home service operator',
+      quote:
+        'Easy to use and really smart. Makes it super simple to turn completed work into useful online content, and the review side is amazing.',
+      rating: 5,
+    },
+    {
+      id: 'heriberto-eddie-roman',
+      name: 'Heriberto Eddie Roman',
+      role: 'Business owner',
+      quote: 'JobCapturePro has been a game changer for my business!',
+      rating: 5,
+    },
+  ];
+
+  const testimonialsReviewKey = (review) => {
+    if (review && review.id) return String(review.id);
+    return String(review?.name || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  };
+
+  const mergeCanonicalTestimonials = (reviews) => {
+    const byId = {};
+    (Array.isArray(reviews) ? reviews : []).forEach((review) => {
+      const id = testimonialsReviewKey(review);
+      const name = String(review?.name || '').trim();
+      const quote = String(review?.quote || '').trim();
+      if (!id || !name || !quote) return;
+      byId[id] = review;
+    });
+    return CANONICAL_TESTIMONIAL_REVIEWS.map((want) => {
+      const existing = byId[want.id];
+      if (!existing) return { ...want };
+      return {
+        ...want,
+        ...existing,
+        id: want.id,
+        name: existing.name || want.name,
+        role: existing.role || want.role,
+        quote: existing.quote || want.quote,
+        rating: existing.rating || want.rating,
+      };
+    });
+  };
+
+  const getTestimonialsReviews = (block) => {
+    const lk = blockLegacyKey(block) || 'testimonials';
+    const fromProps = block.props?.reviews;
+    const fromFlat = getPath(flatContent, `${lk}.reviews`);
+    if (Array.isArray(fromProps) && fromProps.length) return mergeCanonicalTestimonials(fromProps);
+    if (Array.isArray(fromFlat) && fromFlat.length) return mergeCanonicalTestimonials(fromFlat);
+    return mergeCanonicalTestimonials([]);
+  };
+
+  const resolveTestimonialsFeatured = (reviews, featuredKey) => {
+    const key = String(featuredKey || '').trim();
+    if (key && reviews.length) {
+      const direct = reviews.find((review) => testimonialsReviewKey(review) === key);
+      if (direct) return direct;
+      const slug = key.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+      const bySlug = reviews.find((review) => testimonialsReviewKey(review) === slug);
+      if (bySlug) return bySlug;
+    }
+    return reviews[0] || null;
+  };
+
+  const testimonialsStarsHtml = (rating, showStars) => {
+    if (!showStars) return '';
+    const value = Math.max(0, Math.min(5, parseInt(rating || 5, 10) || 5));
+    if (value <= 0) return '';
+    return `<div class="jcp-testimonials-stars" aria-label="${value} out of 5 stars"><span aria-hidden="true">${'★'.repeat(value)}${'☆'.repeat(5 - value)}</span></div>`;
+  };
+
+  const testimonialsCardHtml = (review, showStars, showRoles) => {
+    const id = testimonialsReviewKey(review);
+    const name = String(review.name || '');
+    const role = showRoles && review.role
+      ? `<span class="jcp-testimonials-card-role">${String(review.role)}</span>`
+      : '';
+    return (
+      `<article class="jcp-testimonials-card" data-review-key="${id}" aria-label="Review from ${name}" role="listitem">` +
+      `${testimonialsStarsHtml(review.rating, showStars)}` +
+      `<p class="jcp-testimonials-card-quote">${String(review.quote || '')}</p>` +
+      `<div class="jcp-testimonials-card-person"><span class="jcp-testimonials-card-person-text">` +
+      `<span class="jcp-testimonials-card-name">${name}</span>${role}</span></div></article>`
+    );
+  };
+
+  const syncTestimonialsFeaturedPanel = (featuredEl, review, showStars, showRoles) => {
+    if (!featuredEl || !review) return;
+    const role = showRoles && review.role
+      ? `<span class="jcp-testimonials-role">${String(review.role)}</span>`
+      : '';
+    featuredEl.innerHTML =
+      `${testimonialsStarsHtml(review.rating, showStars)}` +
+      `<blockquote class="jcp-testimonials-quote"><p>${String(review.quote || '')}</p></blockquote>` +
+      `<figcaption class="jcp-testimonials-cite"><cite class="jcp-testimonials-name">${String(review.name || '')}</cite>${role}</figcaption>`;
+  };
+
+  const syncTestimonialsToDom = (block) => {
+    const root = ensureBlockRoot(findBlockRootEl(block));
+    if (!root) return;
+    const lk = blockLegacyKey(block) || 'testimonials';
+    const merged = { ...(getPath(flatContent, lk) || {}), ...(block.props || {}) };
+    const reviews = getTestimonialsReviews(block);
+    const showStars = coerceVisibilityBool(merged.show_stars, true);
+    const showRoles = coerceVisibilityBool(merged.show_roles, true);
+
+    // Public + editor walls are always a full 4-up grid. Never peel Peter into featured.
+    root.classList.add('jcp-testimonials--grid', 'jcp-testimonials--slider-only');
+    root.setAttribute('data-layout', 'grid');
+    root.setAttribute('data-slider-only', '1');
+    root.setAttribute('data-autoplay', '0');
+    root.removeAttribute('data-featured-key');
+    if (block.props) {
+      block.props.layout = 'grid';
+      block.props.show_featured = false;
+      block.props.reviews = reviews;
+      block.props.per_view = Math.max(4, parseInt(block.props.per_view || 4, 10) || 4);
+    }
+
+    root.querySelectorAll('.jcp-testimonials-stars').forEach((el) => {
+      setElVisuallyHidden(el, !showStars);
+    });
+    root.querySelectorAll('.jcp-testimonials-role, .jcp-testimonials-card-role').forEach((el) => {
+      setElVisuallyHidden(el, !showRoles);
+    });
+
+    const featuredEl = root.querySelector('[data-jcp-testimonials-featured]');
+    if (featuredEl) {
+      featuredEl.hidden = true;
+      featuredEl.style.display = 'none';
+    }
+
+    const track = root.querySelector('[data-jcp-testimonials-track]');
+    if (track) {
+      track.innerHTML = reviews.map((review) => testimonialsCardHtml(review, showStars, showRoles)).join('');
+    }
+
+    const prevBtn = root.querySelector('[data-jcp-testimonials-prev]');
+    const nextBtn = root.querySelector('[data-jcp-testimonials-next]');
+    const dotsEl = root.querySelector('[data-jcp-testimonials-dots]');
+    if (prevBtn) prevBtn.hidden = true;
+    if (nextBtn) nextBtn.hidden = true;
+    if (dotsEl) {
+      dotsEl.hidden = true;
+      dotsEl.innerHTML = '';
+    }
+
+    if (typeof window.JCP_REFRESH_INLINE_EDITABLE === 'function') {
+      window.JCP_REFRESH_INLINE_EDITABLE();
+    }
+  };
+
+  const setTestimonialsProp = (block, key, value) => {
+    const liveBlock = getLiveBlock(block);
+    liveBlock.props = liveBlock.props || {};
+    liveBlock.props[key] = value;
+    const lk = blockLegacyKey(liveBlock) || 'testimonials';
+    setPath(flatContent, `${lk}.${key}`, value);
+    syncTestimonialsToDom(liveBlock);
+    recordChange();
+  };
+
   const buildBlockContentFieldsHtml = (block) => {
+    if (block.type === 'testimonials') {
+      const lk = blockLegacyKey(block) || 'testimonials';
+      const merged = { ...(getPath(flatContent, lk) || {}), ...(block.props || {}) };
+      const reviews = Array.isArray(merged.reviews) ? merged.reviews : [];
+      const featuredKey = String(merged.featured_key || '').trim();
+      const showStars = coerceVisibilityBool(merged.show_stars, true);
+      const showRoles = coerceVisibilityBool(merged.show_roles, true);
+      const autoplay = coerceVisibilityBool(merged.autoplay, true);
+      const boolRow = (key, label, on) => {
+        let row = `<div class="jcp-layout-row"><span class="jcp-layout-row__label">${label}</span><div class="jcp-layout-btns" data-block-content-setting="${key}">`;
+        row += `<button type="button" class="jcp-layout-btn${on ? ' is-active' : ''}" data-value="1">On</button>`;
+        row += `<button type="button" class="jcp-layout-btn${!on ? ' is-active' : ''}" data-value="0">Off</button>`;
+        row += '</div></div>';
+        return row;
+      };
+      let html = '<div class="jcp-layout-row jcp-layout-row--stack"><span class="jcp-layout-row__label">Featured review</span>';
+      html += `<select class="jcp-structure-text-input" data-block-content-field="featured_key"${reviews.length ? '' : ' disabled'}>`;
+      if (!reviews.length) {
+        html += '<option value="">No reviews available</option>';
+      } else {
+        reviews.forEach((review) => {
+          const id = testimonialsReviewKey(review);
+          const name = String(review.name || id || 'Review').replace(/"/g, '&quot;');
+          const selected = id === featuredKey ? ' selected' : '';
+          html += `<option value="${String(id).replace(/"/g, '&quot;')}"${selected}>${name}</option>`;
+        });
+      }
+      html += '</select><p class="jcp-structure-field-hint">Choose which review is highlighted in the large quote panel.</p></div>';
+      html += boolRow('show_stars', 'Star ratings', showStars);
+      html += boolRow('show_roles', 'Reviewer roles', showRoles);
+      html += boolRow('autoplay', 'Autoplay slider', autoplay);
+      return html;
+    }
     if (block.type === 'form_embed') {
       const shortcode = block.props?.shortcode || flatContent?.form_embed?.shortcode || '';
       const display = (block.props?.display || flatContent?.form_embed?.display || 'inline') === 'modal' ? 'modal' : 'inline';
@@ -2671,6 +2957,13 @@
       const val = getPath(flatContent, path);
       if (val !== undefined && val !== null) el.setAttribute('href', String(val));
     });
+    document.querySelectorAll('[data-jcp-card-link-path]').forEach((card) => {
+      const path = card.getAttribute('data-jcp-card-link-path');
+      if (!path) return;
+      const val = getPath(flatContent, path);
+      if (val === undefined || val === null) return;
+      syncCardLinkDom(card, String(val));
+    });
     ensureHrefEditControls();
   };
 
@@ -2810,6 +3103,13 @@
             liveBlock.props = liveBlock.props || {};
             const key = contentSetting.dataset.blockContentSetting;
             const value = btn.dataset.value;
+            if (liveBlock.type === 'testimonials' && ['show_stars', 'show_roles', 'autoplay'].includes(key)) {
+              setTestimonialsProp(liveBlock, key, value === '1');
+              contentSetting.querySelectorAll('.jcp-layout-btn').forEach((b) => {
+                b.classList.toggle('is-active', b.dataset.value === value);
+              });
+              return;
+            }
             liveBlock.props[key] = value;
             flatContent.form_embed = flatContent.form_embed || {};
             flatContent.form_embed[key] = value;
@@ -2849,6 +3149,9 @@
           flatContent[legacyKey][key] = value;
           const pageInput = document.querySelector(`[data-jcp-input-path="${legacyKey}.${key}"]`);
           if (pageInput && pageInput !== input) pageInput.value = value;
+          if (liveBlock.type === 'testimonials' && key === 'featured_key') {
+            syncTestimonialsToDom(liveBlock);
+          }
           recordChange();
         };
         input.addEventListener('click', (e) => e.stopPropagation());
@@ -3195,6 +3498,12 @@
       if (!path) return;
       setPath(flatContent, path, el.getAttribute('href') || '');
     });
+    document.querySelectorAll('[data-jcp-card-link-path]').forEach((card) => {
+      const path = card.getAttribute('data-jcp-card-link-path');
+      if (!path) return;
+      const hit = card.querySelector(':scope > .ranking-factor-card__link');
+      setPath(flatContent, path, hit ? (hit.getAttribute('href') || '') : '');
+    });
     collectObjectArraysFromDom();
     collectStringArraysFromDom();
   };
@@ -3456,6 +3765,29 @@
     openCtaLinkModal(link, { focusLabel: false });
   });
 
+  document.addEventListener('click', (e) => {
+    if (!editing) return;
+    if (e.target.closest('.jcp-editor-modal, .jcp-niche-edit-bar, .jcp-block-structure, #jcpNicheTextLink')) return;
+    const card = e.target.closest('.ranking-factor-card[data-jcp-card-link-path]');
+    if (card) {
+      setActiveCardLink(card);
+      return;
+    }
+    if (!e.target.closest('.jcp-niche-text-link-popover')) {
+      setActiveCardLink(null);
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (!editing) return;
+    const hit = e.target.closest('.ranking-factor-card__link');
+    if (!hit) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const card = hit.closest('.ranking-factor-card[data-jcp-card-link-path]');
+    if (card) setActiveCardLink(card);
+  }, true);
+
   document.addEventListener('dblclick', (e) => {
     if (!editing) return;
     const link = e.target.closest('[data-jcp-href-path]');
@@ -3498,8 +3830,14 @@
     const counts = new Map();
     document.querySelectorAll('[data-jcp-path] a[href]').forEach((a) => {
       if (a.hasAttribute('data-jcp-href-path')) return;
+      if (a.classList.contains('ranking-factor-card__link')) return;
       const raw = a.getAttribute('href');
       const href = normalizeInternalHref(raw);
+      if (!href) return;
+      counts.set(href, (counts.get(href) || 0) + 1);
+    });
+    document.querySelectorAll('.ranking-factor-card__link[href]').forEach((a) => {
+      const href = normalizeInternalHref(a.getAttribute('href'));
       if (!href) return;
       counts.set(href, (counts.get(href) || 0) + 1);
     });
@@ -3524,7 +3862,7 @@
     if (lower.startsWith('/@') || lower.startsWith('/channel/') || lower.includes('/wp-admin')) return false;
     const segments = path.split('/').filter(Boolean);
     if (segments.length === 1 && /^@?[a-z0-9_-]{3,}$/i.test(segments[0])) {
-      const allowed = new Set(['demo', 'pricing', 'blog', 'contact', 'features', 'industries', 'resources', 'directory']);
+      const allowed = new Set(['demo', 'pricing', 'blog', 'contact', 'support', 'features', 'industries', 'resources', 'directory']);
       if (!allowed.has(segments[0].replace(/^@/, ''))) return false;
     }
     return true;
@@ -3750,24 +4088,51 @@
   };
 
   const openTextLinkPopover = () => {
-    const { range, field } = getLinkContext();
+    const card = activeCardLink?.isConnected
+      ? activeCardLink
+      : document.querySelector('.ranking-factor-card.is-card-link-target[data-jcp-card-link-path]');
+    const cardMode = !!(card && card.getAttribute('data-jcp-card-link-path'));
+    if (cardMode) setActiveCardLink(card);
+
+    const { range, field } = cardMode ? { range: null, field: null } : getLinkContext();
     activeRichField = field || null;
     statusEl.textContent = '';
 
     const counts = getCurrentInternalLinkCounts();
-    const anchorText = range && !range.collapsed ? range.toString() : '';
+    const cardTitle = cardMode
+      ? ((card.querySelector('.factor-title')?.textContent || '').trim())
+      : '';
+    const anchorText = cardMode
+      ? cardTitle
+      : (range && !range.collapsed ? range.toString() : '');
     const { groups, flat, anchorTokens } = getSuggestedInternalPages(counts, anchorText);
 
     const hintEl = textLinkPopover.querySelector('#jcpNicheTextLinkHint');
     const seoEl = textLinkPopover.querySelector('#jcpNicheLinkSeo');
     const listEl = textLinkPopover.querySelector('#jcpNicheLinkSuggestions');
+    const applyBtn = textLinkPopover.querySelector('#jcpNicheTextLinkApply');
+    const clearBtn = textLinkPopover.querySelector('#jcpNicheTextLinkClear');
+    const titleEl = textLinkPopover.querySelector('#jcpTextLinkModalTitle');
+
+    if (titleEl) titleEl.textContent = cardMode ? 'Card link' : 'Internal link';
+    if (applyBtn) applyBtn.textContent = cardMode ? 'Apply link' : 'Insert link';
+    if (clearBtn) {
+      const existing = cardMode
+        ? String(getPath(flatContent, card.getAttribute('data-jcp-card-link-path')) || card.querySelector('.ranking-factor-card__link')?.getAttribute('href') || '').trim()
+        : '';
+      clearBtn.hidden = !(cardMode && existing);
+    }
 
     const totalLinks = [...counts.values()].reduce((a, b) => a + b, 0);
     const uniqueLinks = counts.size;
     const underlinked = flat.filter((item) => item.siteInlinks <= 1).length;
 
-    if (!field) {
-      hintEl.textContent = 'Click inside a text paragraph first.';
+    if (cardMode) {
+      hintEl.textContent = cardTitle
+        ? `Link the “${cardTitle.slice(0, 48)}${cardTitle.length > 48 ? '…' : ''}” card — pick a page or paste a URL.`
+        : 'Link this benefit card — pick a page or paste a URL.';
+    } else if (!field) {
+      hintEl.textContent = 'Click a benefit card or inside a text paragraph first.';
     } else if (anchorText) {
       hintEl.textContent = `Link “${anchorText.slice(0, 48)}${anchorText.length > 48 ? '…' : ''}” — pick a page or paste a URL.`;
     } else {
@@ -3786,7 +4151,9 @@
     } else if (anchorTokens.length) {
       seoGap.textContent = `Scored ${flat.length} pages against “${anchorTokens.slice(0, 4).join(', ')}”.`;
     } else {
-      seoGap.textContent = 'Select anchor text to rank suggestions by topical relevance.';
+      seoGap.textContent = cardMode
+        ? 'Suggestions ranked by card title. Paste any URL if needed.'
+        : 'Select anchor text to rank suggestions by topical relevance.';
     }
     seoEl.appendChild(seoGap);
 
@@ -3821,8 +4188,18 @@
 
     const urlInput = textLinkPopover.querySelector('#jcpNicheTextLinkUrl');
     if (urlInput) {
-      const topMatch = groups[0]?.items?.[0] || flat[0];
-      urlInput.value = topMatch?.href || '';
+      if (cardMode) {
+        const existing = String(
+          getPath(flatContent, card.getAttribute('data-jcp-card-link-path'))
+          || card.querySelector('.ranking-factor-card__link')?.getAttribute('href')
+          || ''
+        ).trim();
+        const topMatch = groups[0]?.items?.[0] || flat[0];
+        urlInput.value = existing || topMatch?.href || '';
+      } else {
+        const topMatch = groups[0]?.items?.[0] || flat[0];
+        urlInput.value = topMatch?.href || '';
+      }
     }
 
     openEditorModal(textLinkPopover, { focusSelector: '#jcpNicheTextLinkUrl' });
@@ -3840,10 +4217,26 @@
     const url = textLinkPopover.querySelector('#jcpNicheTextLinkUrl').value.trim();
     if (!url) return;
 
+    const card = activeCardLink?.isConnected
+      ? activeCardLink
+      : document.querySelector('.ranking-factor-card.is-card-link-target[data-jcp-card-link-path]');
+    if (card) {
+      const path = card.getAttribute('data-jcp-card-link-path');
+      if (!path) return;
+      setPath(flatContent, path, url);
+      syncCardLinkDom(card, url);
+      pendingLinkRange = null;
+      pendingLinkField = null;
+      closeTextLinkModal();
+      statusEl.textContent = '';
+      recordChange();
+      return;
+    }
+
     const { range, field } = getLinkContext();
     const rich = field || activeRichField;
     if (!rich) {
-      statusEl.textContent = 'Click inside a text paragraph first.';
+      statusEl.textContent = 'Click a benefit card or inside a text paragraph first.';
       return;
     }
 
@@ -3878,6 +4271,20 @@
 
     pendingLinkRange = null;
     pendingLinkField = null;
+    closeTextLinkModal();
+    statusEl.textContent = '';
+    recordChange();
+  });
+
+  textLinkPopover.querySelector('#jcpNicheTextLinkClear')?.addEventListener('click', () => {
+    const card = activeCardLink?.isConnected
+      ? activeCardLink
+      : document.querySelector('.ranking-factor-card.is-card-link-target[data-jcp-card-link-path]');
+    if (!card) return;
+    const path = card.getAttribute('data-jcp-card-link-path');
+    if (!path) return;
+    setPath(flatContent, path, '');
+    syncCardLinkDom(card, '');
     closeTextLinkModal();
     statusEl.textContent = '';
     recordChange();

@@ -24,8 +24,13 @@
       icon: 'badge-check',
       title: 'New benefit',
       body: 'Description',
+      label: 'Step',
+      chrome: 'capture',
+      image_url: '',
+      image_alt: '',
       stat_value: 'Stat',
       stat_label: 'label',
+      url: '',
     }),
     'check_ins.features': () => ({ title: 'Feature', body: 'Description', icon: 'badge-check' }),
     'problem.pain_points': () => ({ title: 'Pain point', body: 'Description', icon: 'circle-alert' }),
@@ -79,30 +84,32 @@
     if (container.classList.contains('conversion-points')) return '+ Add point';
     if (container.classList.contains('jcp-core-mechanic-meta')) return '+ Add stat';
     if (container.classList.contains('directory-meta') && container.dataset.jcpArray === 'hero.meta_stats') return '+ Add stat';
+    if (container.classList.contains('jcp-job-flow')) return '+ Add step';
     if (container.classList.contains('ranking-factors-grid') || container.classList.contains('guarantees-grid')) return '+ Add card';
     return '+ Add item';
   };
 
   const OPTIONAL_DEFAULTS = {
-    'conversion.cta_primary': () => ({ label: 'Button label', url: '/demo' }),
+    'conversion.cta_primary': () => ({ label: 'See It for My Business →', url: '/demo/' }),
     'what_it_is.cta_primary': () => ({ label: 'Learn more', url: '/demo' }),
     'what_it_is.cta_secondary': () => ({ label: 'See how it works', url: '#how-it-works' }),
-    'how_it_works.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
+    'how_it_works.cta_primary': () => ({ label: 'See It for My Business →', url: '/demo/' }),
     'how_it_works.cta_secondary': () => ({ label: 'View pricing', url: '/pricing' }),
     'check_ins.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
     'problem.cta_primary': () => ({ label: 'Fix this with JobCapturePro', url: '/demo' }),
-    'benefits.cta_primary': () => ({ label: 'See it in the demo', url: '/demo' }),
+    'benefits.cta_primary': () => ({ label: 'See It for My Business →', url: '/demo/' }),
     'benefits.cta_secondary': () => ({ label: 'Learn more', url: '/pricing' }),
-    'differentiation.cta_primary': () => ({ label: 'Get started', url: '/demo' }),
-    'who_its_for.cta_primary': () => ({ label: 'Start free trial', url: '/demo' }),
+    'differentiation.cta_primary': () => ({ label: 'Start Free Trial', url: '/demo' }),
+    'who_its_for.cta_primary': () => ({ label: 'Start Free Trial', url: '/demo' }),
     'faq.cta_primary': () => ({ label: 'Still have questions? Book a demo', url: '/demo' }),
-    'hero.cta_primary': () => ({ label: 'View the live demo', url: '/demo' }),
-    'hero.cta_secondary': () => ({ label: 'Learn how it works', url: '#how-it-works' }),
-    'final_cta.cta_primary': () => ({ label: 'Get started', url: '/demo' }),
+    'hero.cta_primary': () => ({ label: 'See It for My Business →', url: '/demo/' }),
+    'hero.cta_secondary': () => ({ label: 'Start Free 14-Day Trial', url: '' }),
+    'final_cta.cta_primary': () => ({ label: 'See It for My Business →', url: '/demo/' }),
+    'final_cta.cta_secondary': () => ({ label: 'Start Free 14-Day Trial', url: '' }),
     'media_text.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
     'media_text_check_ins.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
     'media_text_problem.cta_primary': () => ({ label: 'See it in action', url: '/demo' }),
-    'demo_preview.cta_primary': () => ({ label: 'View the live demo', url: '/demo' }),
+    'demo_preview.cta_primary': () => ({ label: 'See It for My Business →', url: '/demo/' }),
   };
 
   const OPTIONAL_TEMPLATES = {
@@ -162,6 +169,47 @@
     };
   };
 
+  const JOB_FLOW_CHROME = {
+    capture: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--capture" aria-hidden="true"><strong>Check-in ready</strong><span>Photo captured · Just now</span></div>`,
+    website: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--browser" aria-hidden="true"><strong>Website jobs page</strong><span>yoursite.com/jobs</span></div>`,
+    google: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--gbp" aria-hidden="true"><strong>Google Business Profile</strong><span>Update ready · Today</span></div>`,
+    reviews: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--qr" aria-hidden="true"><span class="jcp-job-flow__qr"></span><span class="jcp-job-flow__chrome-text"><strong>Scan to review</strong><span>Ask on site</span></span></div>`,
+    social: `<div class="jcp-job-flow__chrome jcp-job-flow__chrome--social" aria-hidden="true"><strong>Post ready</strong><span>Social · Directory</span></div>`,
+  };
+
+  const buildJobFlowStep = (basePath, index, data) => {
+    const path = `${basePath}.${index}`;
+    const mods = ['capture', 'website', 'google', 'reviews', 'social'];
+    const mod = String(data.chrome || mods[index] || 'capture').replace(/[^a-z0-9_-]/gi, '') || 'capture';
+    const img = String(data.image_url || '').trim();
+    const alt = String(data.image_alt || data.title || '').trim();
+    let label = String(data.label || '').trim();
+    if (!label && mod === 'website') label = 'Website';
+    const title = String(data.title || '').trim();
+    const body = String(data.body || '').trim();
+    const badge = label
+      ? `<span class="jcp-job-flow__badge" data-jcp-path="${path}.label">${esc(label)}</span>`
+      : '';
+    const image = img
+      ? `<img src="${esc(img)}" alt="${esc(alt)}" width="480" height="360" loading="${index === 0 ? 'eager' : 'lazy'}" decoding="async" class="jcp-editable-media-image" data-jcp-path="${path}.image_url" data-jcp-media-url-path="${path}.image_url" data-jcp-media-alt-path="${path}.image_alt" data-jcp-media-types="image" />`
+      : '';
+    const chrome = JOB_FLOW_CHROME[mod] || '';
+    const num = `<span class="jcp-job-flow__num" aria-hidden="true">${index + 1}</span>`;
+    return `
+      <article class="jcp-job-flow__step jcp-job-flow__step--${esc(mod)}" data-jcp-array-item="${index}">
+        <div class="jcp-job-flow__media" aria-hidden="${img ? 'false' : 'true'}">
+          ${num}
+          ${badge}
+          ${image}
+          ${chrome}
+        </div>
+        <div class="jcp-job-flow__copy">
+          <h3 class="jcp-job-flow__title" data-jcp-path="${path}.title">${esc(title)}</h3>
+          <p class="jcp-job-flow__body" data-jcp-path="${path}.body">${esc(body)}</p>
+        </div>
+      </article>`;
+  };
+
   const buildFactorCard = (basePath, index, data) => {
     // While editing, always render card pieces so SHOW toggles can CSS-hide them
     // without destroying DOM (and so collectFromDom cannot wipe copy).
@@ -189,12 +237,21 @@
           <span class="stat-label" data-jcp-path="${basePath}.${index}.stat_label">${esc(data.stat_label || '')}</span>
         </div>`
       : '';
+    const isBenefits = basePath === 'benefits.items';
+    const url = String(data.url || '').trim();
+    const linkPath = `${basePath}.${index}.url`;
+    const linkAttr = isBenefits ? ` data-jcp-card-link-path="${linkPath}"` : '';
+    const linkedClass = url ? ' ranking-factor-card--linked' : '';
+    const hit = (isBenefits && url)
+      ? `<a class="ranking-factor-card__link" href="${esc(url)}" aria-label="${esc(data.title || 'Open')}" tabindex="-1"></a>`
+      : '';
     return `
-      <div class="ranking-factor-card" data-jcp-array-item="${index}">
+      <div class="ranking-factor-card${linkedClass}" data-jcp-array-item="${index}"${linkAttr}>
         ${icon}
         ${title}
         ${body}
         ${stat}
+        ${hit}
       </div>`;
   };
 
@@ -345,6 +402,9 @@
     if (basePath === 'how_it_works.steps') return buildTimelineStep(basePath, index, data);
     if (basePath === 'who_its_for.audiences' && container.classList.contains('guarantees-grid')) {
       return buildGuaranteeCard(basePath, index, data);
+    }
+    if (basePath === 'benefits.items' && container.classList.contains('jcp-job-flow')) {
+      return buildJobFlowStep(basePath, index, data);
     }
     if (basePath.endsWith('.items') || basePath.endsWith('.features') || basePath.endsWith('.pain_points') || basePath.endsWith('.audiences')) {
       return buildFactorCard(basePath, index, data);

@@ -66,3 +66,49 @@ body.demo-run-only #jcp-app {
     overscroll-behavior: none;
   }
 }
+
+/* =========================================================
+   Guided demo — center phone + SEO appreciation beat
+========================================================= */
+
+body.jcp-guided-demo .demo-container,
+body.jcp-desktop-guided .demo-container {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  grid-template-columns: none !important;
+  width: 100%;
+}
+
+body.jcp-guided-demo .phone-wrapper,
+body.jcp-desktop-guided .phone-wrapper {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  justify-self: center;
+}
+
+body.jcp-desktop-guided .iphone-frame {
+  transform: scale(0.9);
+  transform-origin: top center;
+}
+
+#description-field.is-demo-seo-spotlight,
+#edit-screen .location-card.is-demo-seo-spotlight {
+  outline: 2px solid rgba(255, 80, 62, 0.55);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(255, 80, 62, 0.12);
+  border-radius: 12px;
+  transition: outline-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #description-field.is-demo-seo-spotlight,
+  #edit-screen .location-card.is-demo-seo-spotlight {
+    transition: none;
+  }
+
+  body.jcp-desktop-guided .iphone-frame {
+    transform: none;
+  }
+}

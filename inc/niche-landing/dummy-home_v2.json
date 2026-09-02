@@ -1,0 +1,241 @@
+{
+  "preset": "home_v2",
+  "page_type": "home",
+  "page_kind": "home",
+  "niche_key": "home-preview",
+  "niche_label": "Home Preview",
+  "hide_breadcrumb": true,
+  "hide_site_chrome": false,
+  "home_preview": true,
+  "seo": {
+    "title": "JobCapturePro Preview | One job in. Proof everywhere.",
+    "meta_description": "Your crew already takes the photos. See how JobCapturePro turns completed jobs into Maps, website, social, directory proof, and on-site review asks, then launch the interactive demo.",
+    "keywords": ["contractor marketing", "job photo marketing", "Google Business Profile", "local SEO", "review QR"]
+  },
+  "hero": {
+    "h1": "Your crew already took the photo.\nIt’s just dying on their phone.",
+    "subheadline": "One completed job can become Maps activity, website proof, social posts, directory presence, and an on-site review ask, without another marketing chore.",
+    "cta_primary": { "label": "Launch interactive demo", "url": "/demo/" },
+    "cta_secondary": { "label": "Start Free Trial", "url": "" },
+    "show_cta_secondary": true,
+    "trust_line": "No signup for the demo · About 2 minutes · Start Free Trial needs a work email",
+    "cta_microcopy": "No signup for the demo · About 2 minutes · Start Free Trial needs a work email",
+    "show_visual": true,
+    "show_trust_line": true,
+    "media_type": "phone_mockup",
+    "phone_image_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
+    "phone_image_alt": "Technician photographing a completed HVAC job on site",
+    "phone_cta_label": "Launch demo",
+    "meta_stats": [
+      { "value": "1", "label": "job", "detail": "Starts the whole workflow" },
+      { "value": "5", "label": "surfaces", "detail": "Maps · web · social · directory · QR" },
+      { "value": "Minimal", "label": "crew effort", "detail": "Capture the job; JCP handles next" }
+    ]
+  },
+  "problem": {
+    "variant": "contrast",
+    "headline": "The job gets finished. The marketing usually dies in the camera roll.",
+    "subheadline": "Your techs aren’t lazy. Your photos just never got a job description.",
+    "pain_points": [],
+    "closing": "",
+    "contrast_without": {
+      "label": "Without JCP",
+      "steps": ["Job finished", "Photo sits on the phone", "Nothing happens"]
+    },
+    "contrast_with": {
+      "label": "With JCP",
+      "steps": ["Job finished", "Proof built", "Published + review ask"]
+    },
+    "section_id": "camera-roll"
+  },
+  "benefits": {
+    "variant": "job_flow",
+    "headline": "One completed job. Five places it should already be working.",
+    "subheadline": "Maps · website · social · directory · on-site review QR",
+    "items": [
+      {
+        "title": "Job captured",
+        "body": "Crew snaps the finished work on site.",
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg",
+        "image_alt": "Technician capturing a completed HVAC job",
+        "label": "Check-in",
+        "chrome": "capture"
+      },
+      {
+        "title": "Maps / GBP",
+        "body": "Fresh activity that keeps your profile looking alive.",
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-job-proof.jpg",
+        "image_alt": "Completed job ready as a Google Business Profile update",
+        "label": "Google",
+        "chrome": "google"
+      },
+      {
+        "title": "Website proof",
+        "body": "Geotagged job content homeowners can trust.",
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-job-proof.jpg",
+        "image_alt": "Completed residential service job as website proof",
+        "label": "Website",
+        "chrome": "website"
+      },
+      {
+        "title": "Review ask",
+        "body": "Ask while the job is still fresh, including on-site QR.",
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg",
+        "image_alt": "Crew reviewing completed job photos on site",
+        "label": "Reviews",
+        "chrome": "reviews"
+      },
+      {
+        "title": "Social + directory",
+        "body": "Shareable proof and a verified listing powered by real work.",
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg",
+        "image_alt": "Home service business owner representing directory and social proof",
+        "label": "Social",
+        "chrome": "social"
+      }
+    ],
+    "closing": "Your CRM keeps the job file. We put the proof where customers look.",
+    "section_id": "five-surfaces"
+  },
+  "demo_preview": {
+    "badge": "Interactive demo",
+    "headline": "See the whole workflow on a business like yours",
+    "body": "Pick your trade and what you want JobCapturePro to help with. We’ll show one completed job turning into website, Google, social, directory, and review proof.",
+    "cta_primary": { "label": "Launch interactive demo", "url": "/demo/" },
+    "cta_note": "No signup for the demo · About 2 minutes · Start Free Trial needs a work email",
+    "show_cta": true,
+    "show_cta_note": true,
+    "show_headline": true,
+    "show_body": true,
+    "show_badge": true,
+    "media_type": "phone_mockup",
+    "phone_mockup_style": "app_shell",
+    "media_position": "right",
+    "media_alt": "JobCapturePro app turning a completed job into published proof"
+  },
+  "local_falcon_proof": {
+    "eyebrow": "Maps proof · anonymized case",
+    "headline": "Same crews. Same jobs. Wildly different Maps footprint.",
+    "subheadline": "Basement waterproofing company · 111 locations · Local Falcon Share of Local Voice = how often they show in the Google 3-Pack across the grid.",
+    "markets": [
+      {
+        "market": "Triadelphia, WV",
+        "keyword": "basement waterproofing",
+        "before_solv": "0%",
+        "after_solv": "100%",
+        "before_label": "Before",
+        "after_label": "After",
+        "image_url": "__HOME_V2_ASSET__/lf-triadelphia-scans.webp",
+        "image_alt": "Local Falcon before and after grid for Triadelphia WV basement waterproofing"
+      },
+      {
+        "market": "Monroe, MI",
+        "keyword": "basement waterproofing",
+        "before_solv": "0%",
+        "after_solv": "~96%",
+        "before_label": "Before",
+        "after_label": "After",
+        "image_url": "__HOME_V2_ASSET__/lf-monroe-scans.webp",
+        "image_alt": "Local Falcon before and after grid for Monroe MI basement waterproofing"
+      }
+    ],
+    "disclaimer": "This isn’t a ranking guarantee. It’s what consistent, real job proof can do to local Maps presence.",
+    "cta_primary": { "label": "Launch interactive demo", "url": "/demo/" },
+    "cta_secondary": { "label": "Start Free Trial", "url": "" },
+    "section_id": "maps-proof",
+    "show_eyebrow": true,
+    "show_headline": true,
+    "show_cta": true
+  },
+  "how_it_works": {
+    "headline": "How JobCapturePro works",
+    "subheadline": "Simple enough for the field. Strong enough for the office.",
+    "numeric_steps": true,
+    "show_cta_secondary": false,
+    "cta_primary": { "label": "Launch interactive demo", "url": "/demo/" },
+    "steps": [
+      { "title": "Capture", "lines": ["Crew snaps a photo in the app, or a completed job flows in from a connected workflow."] },
+      { "title": "Optimize", "lines": ["JobCapturePro builds geotagged, local-ready check-in content from the job, photo, and location."] },
+      { "title": "Distribute", "lines": ["Approved proof can update your website, Google, social, and directory."] },
+      { "title": "Convert", "lines": ["Ask for the review on site with a QR, while the job is still fresh. (Not “automatic reviews.”)"] }
+    ]
+  },
+  "who_its_for": {
+    "headline": "Built for how contracting businesses actually run",
+    "subheadline": "Owners who want Maps and proof. Offices that hate chasing content. Crews who just want to finish the job.",
+    "audiences": [
+      {
+        "title": "Owners",
+        "body": "You already paid for the work. Stop letting the proof rot in a camera roll.",
+        "icon": "briefcase"
+      },
+      {
+        "title": "Office / ops",
+        "body": "Automate visibility without hunting photos or writing posts.",
+        "icon": "building-2"
+      },
+      {
+        "title": "Field crews",
+        "body": "Capture once. Show a QR when it matters. Move on.",
+        "icon": "hard-hat"
+      }
+    ],
+    "agency_band": {
+      "headline": "Agencies: stop selling retainers for posts your clients never send you.",
+      "body": "JobCapturePro turns their crews’ existing photos into client-ready Maps, web, social, and review proof you can run at scale.",
+      "cta_label": "Launch the demo",
+      "cta_url": "/demo/"
+    }
+  },
+  "testimonials": {
+    "eyebrow": "From real operators",
+    "headline": "Built around real contractor workflows, not marketing theory.",
+    "subheadline": "We’re new. The product does the heavy lifting. Quotes stay equal-weight, not oversized.",
+    "featured_key": "brian-hardy",
+    "layout": "equal",
+    "autoplay": true,
+    "autoplay_ms": 6000,
+    "show_stars": true,
+    "show_roles": true,
+    "show_eyebrow": true,
+    "show_headline": true,
+    "show_subheadline": true,
+    "section_id": "testimonials"
+  },
+  "faq": {
+    "headline": "Straight answers before the demo",
+    "items": [
+      {
+        "q": "What does my crew actually have to do?",
+        "a": "Capture the job (and show a QR for reviews when you use that flow). JobCapturePro handles the downstream proof."
+      },
+      {
+        "q": "We already have a CRM / CompanyCam. Do we need this?",
+        "a": "Keep them. Those tools manage the job. JobCapturePro publishes the proof they usually don’t: Maps, website, social, directory, and the on-site review ask."
+      },
+      {
+        "q": "Does this guarantee Google rankings?",
+        "a": "No. Rankings depend on many factors. JCP helps you publish consistent real-job proof that can support local visibility. It does not promise ranking outcomes."
+      },
+      {
+        "q": "Will techs actually use it?",
+        "a": "It’s a photo check-in, not another portal. The review ask is a QR they show before they leave."
+      },
+      {
+        "q": "What am I getting in the demo?",
+        "a": "Pick your trade and what you care about most. You’ll see a personalized JobCapturePro workflow in about 2 minutes. No credit card for the demo."
+      },
+      {
+        "q": "Can agencies run this for clients?",
+        "a": "Yes. Same machine, client-ready proof from work their crews already finish. Start with the demo, then talk partner access if you want to productize it."
+      }
+    ]
+  },
+  "final_cta": {
+    "headline": "Your next completed job could start working harder than your last ad.",
+    "subheadline": "See what JobCapturePro would do with the work your team already finishes.",
+    "cta_primary": { "label": "Launch interactive demo", "url": "/demo/" },
+    "cta_note": "Demo needs no card · Start Free Trial = work email · About 2 minutes",
+    "cta_secondary": { "label": "Start Free Trial", "url": "" }
+  }
+}

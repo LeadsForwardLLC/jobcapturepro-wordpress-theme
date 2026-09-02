@@ -74,6 +74,56 @@ function jcp_page_migrate_home_to_blocks(): int {
 }
 
 /**
+ * Force-refresh homepage content from dummy-home.json when seed version changes.
+ *
+ * @param bool $force_refresh When true, overwrite saved block content from the home preset.
+ * @return int Post ID or 0.
+ */
+function jcp_page_seed_home( bool $force_refresh = false ): int {
+	$front_id = (int) get_option( 'page_on_front' );
+	if ( $front_id <= 0 ) {
+		$pages = get_pages(
+			[
+				'meta_key'   => '_wp_page_template',
+				'meta_value' => 'page-home.php',
+				'number'     => 1,
+			]
+		);
+		$front_id = ! empty( $pages[0] ) ? (int) $pages[0]->ID : 0;
+	}
+	if ( $front_id <= 0 ) {
+		return 0;
+	}
+
+	$preset = jcp_page_load_preset( 'home' );
+	if ( empty( $preset ) ) {
+		return 0;
+	}
+
+	$asset_base = trailingslashit( get_template_directory_uri() ) . 'assets/campaign';
+	$encoded    = wp_json_encode( $preset );
+	if ( is_string( $encoded ) && $encoded !== '' ) {
+		$encoded = str_replace( '__CAMPAIGN_ASSET__', $asset_base, $encoded );
+		$decoded = json_decode( $encoded, true );
+		if ( is_array( $decoded ) ) {
+			$preset = $decoded;
+		}
+	}
+
+	$existing = get_post_meta( $front_id, jcp_page_content_meta_key(), true );
+	if ( $existing && ! $force_refresh ) {
+		return $front_id;
+	}
+
+	$content = jcp_page_normalize_content( $preset, $front_id );
+	$content['page_kind'] = 'home';
+	jcp_page_save_content( $front_id, $content );
+	update_post_meta( $front_id, '_wp_page_template', 'page-home.php' );
+
+	return $front_id;
+}
+
+/**
  * Run page migrations once per environment after deploy.
  */
 function jcp_page_maybe_migrate_pages(): void {
@@ -87,6 +137,20 @@ function jcp_page_maybe_migrate_pages(): void {
 		$id = jcp_page_migrate_home_to_blocks();
 		if ( $id > 0 ) {
 			update_option( 'jcp_migrated_home_blocks_v1', '1' );
+		}
+	}
+
+	// v11 = Plain-English Google Maps case study on homepage (force sync).
+	$home_ver = (string) get_option( 'jcp_home_seed_version', '' );
+	if ( $home_ver !== '11' ) {
+		$id = jcp_page_seed_home( true );
+		if ( $id > 0 ) {
+			update_option( 'jcp_home_seed_version', '11' );
+		}
+		if ( $id > 0 && function_exists( 'jcp_page_get_content' ) && function_exists( 'jcp_page_ensure_canonical_testimonial_reviews' ) ) {
+			$doc = jcp_page_get_content( $id );
+			$doc = jcp_page_ensure_canonical_testimonial_reviews( $doc, $id );
+			jcp_page_save_content( $id, $doc );
 		}
 	}
 }

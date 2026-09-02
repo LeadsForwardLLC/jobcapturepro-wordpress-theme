@@ -1,132 +1,721 @@
 /* =========================================================
-   Survey Page Overrides
-   Base survey styles load via jcp-core-survey-shared (enqueue.php) so
-   filemtime cache-busting applies. Slide 1 deck styles are duplicated here
-   for the same reason — @import URLs are cached without ?ver= on CDN.
+   Survey overrides — visual deck + form conversion polish
 ========================================================= */
 
-/* Slide card system (Slides 1–3, 6–8). Slide 4/5 are custom layouts. */
-
-:is(.deck-slide--intro, .deck-slide--cards) h2 {
-  line-height: 1.06;
+.survey-deck .deck-slide.deck-slide--visual.is-active {
+  animation: deckVisualIn 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
 }
 
-:is(.deck-slide--intro, .deck-slide--cards) .deck-lead {
-  max-width: 54ch;
-}
-
-:is(.deck-slide--intro, .deck-slide--cards) .deck-flow {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  margin-top: 22px;
-  width: 100%;
-  max-width: 100%;
-  margin-left: 0;
-  margin-right: 0;
-  align-items: stretch;
-}
-
-:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card {
-  transform: translateY(0);
-  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
-  opacity: 1;
-}
-
-.deck-slide.is-active:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card {
-  animation: deckCardIn 520ms cubic-bezier(0.2, 0.95, 0.2, 1) both;
-}
-.deck-slide.is-active:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card:nth-child(1) { animation-delay: 40ms; }
-.deck-slide.is-active:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card:nth-child(2) { animation-delay: 120ms; }
-.deck-slide.is-active:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card:nth-child(3) { animation-delay: 200ms; }
-
-@keyframes deckCardIn {
-  from { opacity: 0; transform: translateY(10px); }
+@keyframes deckVisualIn {
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card {
-  position: relative;
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  gap: 12px;
-  align-items: start;
-  width: 100%;
-  padding: 12px 14px;
-  border-radius: 14px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  box-shadow: none;
-  transform: none;
-  transition: border-color 0.15s ease;
-}
-:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card:hover {
-  transform: none;
-  border-color: #e5e7eb;
-  box-shadow: none;
+.survey-deck .deck-slide--visual h2 {
+  margin: 0.85rem 0 0.4rem;
+  font-size: clamp(1.35rem, 4.2vw, 1.75rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+  max-width: 24ch;
 }
 
-:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-icon {
-  position: relative;
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  display: grid;
-  place-items: center;
-  background: rgba(255, 80, 62, 0.1);
-  border: 1px solid rgba(255, 80, 62, 0.16);
-  box-shadow: none;
+.survey-deck .deck-slide--visual .deck-lead {
+  margin: 0 0 1rem;
+  font-size: 0.98rem;
+  line-height: 1.45;
+  color: #475569;
+  font-weight: 600;
+  max-width: 40ch;
 }
-:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-icon img {
-  width: 18px;
-  height: 18px;
+
+/* Hero */
+.deck-visual-hero {
+  position: relative;
+  border-radius: 1rem;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  background: #0f172a;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.16);
+}
+
+.deck-visual-hero > img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
-:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-step {
+.deck-visual-hero__fade {
   position: absolute;
-  top: -7px;
-  right: -7px;
-  width: 18px;
-  height: 18px;
+  inset: auto 0 0 0;
+  height: 42%;
+  background: linear-gradient(180deg, transparent, rgba(15, 23, 42, 0.55));
+  pointer-events: none;
+}
+
+.deck-visual-hero__chip {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
   border-radius: 999px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #0f172a;
+  font-size: 0.75rem;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+}
+
+.deck-visual-hero__chip img {
+  width: 14px;
+  height: 14px;
+}
+
+/* Pills */
+.deck-pills {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.deck-pills--tight {
+  margin-top: 0.85rem;
+}
+
+.deck-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.deck-pill__icon {
   display: grid;
   place-items: center;
-  font-size: 11px;
-  font-weight: 950;
-  color: #7c2d12;
-  background: #ffffff;
-  border: 1px solid rgba(255, 80, 62, 0.22);
-  box-shadow: none;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: rgba(255, 80, 62, 0.12);
 }
 
-:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-title {
-  font-size: 16px;
-  font-weight: 950;
+.deck-pill__icon img {
+  width: 12px;
+  height: 12px;
+}
+
+/* Publish interactive */
+.deck-publish {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.deck-publish__photo {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 1rem;
+  overflow: hidden;
+  cursor: pointer;
+  background: #0f172a;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.14);
+}
+
+.deck-publish__photo.is-active,
+.deck-publish__photo:focus-visible {
+  border-color: #ff503e;
+  outline: none;
+}
+
+.deck-publish__photo > img {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  display: block;
+}
+
+.deck-publish__photo-label {
+  position: absolute;
+  left: 0.65rem;
+  bottom: 0.65rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.3rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.deck-publish__photo-label img {
+  width: 12px;
+  height: 12px;
+  filter: invert(1);
+  aspect-ratio: auto;
+}
+
+.deck-slide--channels .deck-tiles {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  margin: 0 !important;
+}
+
+.deck-slide--channels .deck-tile {
+  display: grid !important;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 0.55rem;
+  row-gap: 0.1rem;
+  align-items: center;
+  padding: 0.7rem 0.75rem !important;
+  border-radius: 0.85rem !important;
+  border: 1px solid #e2e8f0 !important;
+  background: #fff !important;
+  cursor: pointer;
+  text-align: left;
+  min-height: 0 !important;
+  opacity: 0.4;
+  transform: translateY(8px);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.25s ease, opacity 0.25s ease, background 0.2s ease;
+}
+
+.deck-slide--channels.is-sequencing .deck-tile.is-visible,
+.deck-slide--channels .deck-tile.is-live,
+.deck-slide--channels .deck-tile:focus-visible {
+  opacity: 1;
+  transform: translateY(0);
+  border-color: rgba(255, 80, 62, 0.45) !important;
+  box-shadow: 0 8px 20px rgba(255, 80, 62, 0.12);
+  outline: none;
+}
+
+.deck-slide--channels .deck-tile.is-live {
+  background: linear-gradient(180deg, #fff 0%, #fff7f5 100%) !important;
+}
+
+.deck-slide--channels .deck-tile .tile-icon {
+  grid-row: 1 / span 2;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: 0.65rem;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 80, 62, 0.1);
+}
+
+.deck-slide--channels .deck-tile .tile-icon img {
+  width: 18px;
+  height: 18px;
+}
+
+.deck-slide--channels .deck-tile .tile-label {
+  font-size: 0.875rem;
+  font-weight: 850;
   color: #0f172a;
-  letter-spacing: -0.01em;
-  margin-top: 2px;
-}
-:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-sub {
-  margin-top: 4px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #475569;
-  font-weight: 700;
 }
 
-@media (max-width: 920px) {
+.deck-slide--channels .deck-tile .tile-status {
+  font-size: 0.7rem;
+  font-weight: 750;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.deck-slide--channels .deck-tile.is-live .tile-status {
+  color: #16a34a;
+}
+
+.deck-publish__preview {
+  border-radius: 0.9rem;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  animation: deckVisualIn 360ms ease both;
+}
+
+.deck-publish__preview[hidden] {
+  display: none !important;
+}
+
+.deck-publish__preview img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+}
+
+.deck-publish__preview p {
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.deck-integrations {
+  margin: 0.75rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #64748b;
+  font-weight: 600;
+}
+
+/* Reviews */
+.deck-review-stage {
+  position: relative;
+  margin-top: 0.25rem;
+}
+
+.deck-review-stage__photo {
+  border-radius: 1rem;
+  overflow: hidden;
+  aspect-ratio: 16 / 11;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.14);
+}
+
+.deck-review-stage__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.deck-review-card {
+  position: absolute;
+  right: 0.65rem;
+  bottom: 0.65rem;
+  width: min(58%, 220px);
+  padding: 0.75rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
+  animation: deckVisualIn 500ms 120ms ease both;
+}
+
+.deck-review-card__qr {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.deck-review-card__qr img {
+  width: 28px;
+  height: 28px;
+  padding: 0.25rem;
+  border-radius: 0.4rem;
+  background: rgba(255, 80, 62, 0.1);
+}
+
+.deck-review-card__stars {
+  display: flex;
+  gap: 0.15rem;
+  margin-bottom: 0.35rem;
+}
+
+.deck-review-card__stars img {
+  width: 14px;
+  height: 14px;
+  filter: invert(48%) sepia(79%) saturate(2476%) hue-rotate(346deg) brightness(101%) contrast(101%);
+}
+
+.deck-review-card p {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: #334155;
+  font-weight: 650;
+}
+
+/* Launch */
+.deck-launch-faces {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.deck-launch-faces img {
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14);
+}
+
+.deck-launch-faces img + img {
+  margin-left: -0.75rem;
+}
+
+.deck-checklist {
+  list-style: none;
+  margin: 0.25rem 0 0.85rem;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.deck-checklist li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.85rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  font-size: 0.9rem;
+  font-weight: 750;
+  color: #0f172a;
+}
+
+.deck-checklist__icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.12);
+}
+
+.deck-checklist__icon img {
+  width: 14px;
+  height: 14px;
+}
+
+.deck-launch-hint {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 650;
+  color: #64748b;
+}
+
+.survey-deck .deck-slide--rank h2 {
+  max-width: none;
+}
+
+/* Form conversion */
+.survey-goal:has(input:checked) {
+  border-color: rgba(255, 80, 62, 0.45);
+  box-shadow: 0 6px 18px rgba(255, 80, 62, 0.1);
+}
+
+.survey-consent {
+  font-size: 0.75rem !important;
+  line-height: 1.4 !important;
+  color: #64748b !important;
+}
+
+@media (max-width: 640px) {
+  .survey-deck .deck-slide--visual h2 {
+    max-width: none;
+    font-size: 1.35rem;
+  }
+
+  .deck-review-card {
+    width: min(70%, 200px);
+    padding: 0.6rem;
+  }
+
+  .deck-visual-hero {
+    aspect-ratio: 16 / 11;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .deck-slide.is-active:is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card {
+  .survey-deck .deck-slide.deck-slide--visual.is-active,
+  .deck-publish__preview,
+  .deck-review-card {
     animation: none !important;
   }
-  :is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card {
-    transition: none !important;
+}
+
+/* =========================================================
+   CRITICAL: deck navigable + centered composition
+   body.survey-only locks page scroll — slides scroll inside
+   the card; Next/Back stay pinned; content reads centered.
+========================================================= */
+
+body.survey-only .survey-overlay {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: clamp(12px, 3vh, 32px) clamp(12px, 3vw, 28px);
+}
+
+/*
+ * DEMO GATE SCROLL (critical conversion surface)
+ * Use a single fixed overlay as the ONLY scrollport. Document/html scroll is
+ * unreliable here: body was a non-scrolling overflow:auto trap (wheel died),
+ * and dual html+body scrollports + overscroll-behavior:contain blocked chaining.
+ */
+html.survey-gate-scroll,
+body.survey-only.survey-gate-scroll {
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+body.survey-only.survey-gate-scroll .survey-overlay {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100dvh !important;
+  max-height: 100vh !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  padding:
+    max(20px, env(safe-area-inset-top, 0px))
+    clamp(12px, 3vw, 28px)
+    max(28px, env(safe-area-inset-bottom, 0px)) !important;
+  box-sizing: border-box;
+}
+
+body.survey-only.survey-gate-scroll .survey-card--gate {
+  width: 100%;
+  max-width: min(560px, 100%);
+  margin: 0 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  flex: 0 0 auto;
+}
+
+/* Short windows: keep the 5-star banner, hide tall quote tiles */
+@media (max-height: 820px) {
+  body.survey-only.survey-gate-scroll .survey-proof--compact .survey-proof-list {
+    display: none !important;
   }
-  :is(.deck-slide--intro, .deck-slide--cards) .deck-flow-card:hover {
-    transform: none !important;
+
+  body.survey-only.survey-gate-scroll .survey-proof-banner {
+    margin-bottom: 0;
   }
+}
+
+body.survey-only .survey-card:has(.survey-deck.active) {
+  width: 100%;
+  max-width: min(560px, 100%);
+  height: auto;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
+  padding: 20px 22px 0;
+  margin: 0 auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Brand already shown in chrome; hide during deck so content can center */
+body.survey-only .survey-card:has(.survey-deck.active) .survey-brand {
+  display: none;
+}
+
+.survey-deck.active {
+  display: flex !important;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  height: 100%;
+  max-height: 100%;
+}
+
+.survey-deck.active .deck {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  height: 100%;
+  gap: 10px;
+}
+
+.survey-deck.active .deck-top {
+  flex: 0 0 auto;
+}
+
+.survey-deck.active .deck-slides {
+  flex: 1 1 auto;
+  min-height: 0 !important;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: 12px;
+  touch-action: pan-y;
+}
+
+/* Vertically center short slides; tall slides still scroll */
+.survey-deck.active .deck-slide.is-active {
+  display: block;
+  width: 100%;
+  max-width: 34rem;
+  margin: auto auto 0;
+  padding-bottom: 8px;
+}
+
+.survey-deck.active .deck-slide--visual h2,
+.survey-deck.active .deck-slide--visual .deck-lead {
+  max-width: none;
+}
+
+.survey-deck.active .deck-actions {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10050;
+  display: flex !important;
+  gap: 10px;
+  align-items: center;
+  justify-content: stretch;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 0px));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #fff 28%, #fff 100%);
+  pointer-events: auto;
+}
+
+.survey-deck.active .deck-actions .btn-control {
+  flex: 1 1 0;
+  min-height: 48px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.survey-deck.active .deck-actions .btn-control[data-action="prev"] {
+  display: inline-flex !important;
+}
+
+.survey-deck.active .deck-actions .btn-control[data-action="prev"].is-hidden {
+  display: none !important;
+}
+
+.deck-slide--channels .deck-publish__photo > img,
+.deck-slide--channels .deck-publish__photo img:first-child {
+  aspect-ratio: 16 / 9;
+  max-height: 168px;
+  width: 100%;
+  object-fit: cover;
+}
+
+.deck-slide--channels .deck-publish__preview img {
+  aspect-ratio: 21 / 9;
+  max-height: 110px;
+}
+
+.deck-slide--visual .deck-visual-hero {
+  aspect-ratio: 16 / 9;
+  max-height: 200px;
+}
+
+.deck-slide--reviews .deck-review-stage__photo {
+  aspect-ratio: 16 / 10;
+  max-height: 200px;
+}
+
+@media (max-width: 900px) {
+  body.survey-only .survey-overlay:has(.survey-deck.active) {
+    padding: 0;
+    align-items: stretch;
+  }
+
+  body.survey-only.survey-gate-scroll .survey-overlay {
+    padding:
+      max(16px, env(safe-area-inset-top, 0px))
+      max(12px, env(safe-area-inset-right, 0px))
+      max(20px, env(safe-area-inset-bottom, 0px))
+      max(12px, env(safe-area-inset-left, 0px)) !important;
+    align-items: flex-start !important;
+  }
+
+  body.survey-only .survey-card:has(.survey-deck.active) {
+    max-width: none;
+    height: 100%;
+    max-height: 100dvh;
+    border-radius: 0;
+    padding: max(52px, calc(env(safe-area-inset-top, 0px) + 44px)) 16px 0;
+  }
+
+  .survey-deck.active .deck-actions {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -10px 28px rgba(15, 23, 42, 0.08);
+    background: #fff;
+  }
+
+  .survey-deck.active .deck-slides {
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .survey-deck.active .deck-slide.is-active {
+    margin-top: auto;
+    margin-bottom: auto;
+  }
+
+  .deck-actions .btn-control[data-action="prev"] {
+    display: inline-flex !important;
+  }
+}
+
+@media (min-width: 901px) {
+  body.survey-only .survey-card:has(.survey-deck.active) {
+    border-radius: 20px;
+    box-shadow: 0 24px 64px rgba(15, 23, 42, 0.12);
+    border: 1px solid #e5e7eb;
+  }
+}
+
+
+/* Deck composition: center content column inside slides */
+.survey-deck.active .deck-slide.is-active .deck-visual-hero,
+.survey-deck.active .deck-slide.is-active .deck-pills,
+.survey-deck.active .deck-slide.is-active .deck-publish,
+.survey-deck.active .deck-slide.is-active .deck-review-stage,
+.survey-deck.active .deck-slide.is-active .deck-checklist {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.survey-deck.active .deck-slide.is-active h2,
+.survey-deck.active .deck-slide.is-active .deck-lead {
+  text-wrap: pretty;
 }

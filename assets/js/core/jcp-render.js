@@ -37,13 +37,6 @@
       }
       console.warn('JCP render: renderPricing is not available');
       return;
-    case 'contact':
-      if (typeof window.renderContact === 'function') {
-        window.renderContact();
-        return;
-      }
-      console.warn('JCP render: renderContact is not available');
-      return;
     case 'directory':
       templateUrl = `${assetBase}/directory/index.html`;
       break;

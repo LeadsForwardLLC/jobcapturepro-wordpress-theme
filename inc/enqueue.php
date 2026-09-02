@@ -40,11 +40,32 @@ function jcp_core_enqueue_assets(): void {
         return;
     }
 
+    // Sales Tool: assets enqueued by inc/sales-tool/enqueue.php (priority 5).
+    if ( ! empty( $pages['is_sales_tool'] ) ) {
+        return;
+    }
+
     // Always load navigation JS (skip on prototype - no header/footer)
     if ( ! $pages['is_prototype'] ) {
         jcp_core_enqueue_script( 'jcp-core-nav', 'js/core/jcp-nav.js' );
-        // Early bird banner dismiss behavior (no-op if banner not present).
-        jcp_core_enqueue_script( 'jcp-core-earlybird-banner', 'js/core/jcp-earlybird-banner.js', [ 'jcp-core-nav' ] );
+        // Site banner dismiss behavior (no-op if banner not present).
+        jcp_core_enqueue_script( 'jcp-core-site-banner', 'js/core/jcp-site-banner.js', [ 'jcp-core-nav' ] );
+        // After a demo, decorate Start Free Trial / onboarding links with name + email from localStorage.
+        jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-nav' ] );
+        if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {
+            $onb = [
+                'url'         => jcp_core_onboarding_app_url_raw(
+                    function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : []
+                ),
+                'sessionId'   => jcp_core_onboarding_hardcoded_session_id(),
+                'utmDefaults' => function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : [],
+            ];
+            wp_add_inline_script(
+                'jcp-core-onboarding-handoff',
+                'window.JCP_ONBOARDING = window.JCP_ONBOARDING || ' . wp_json_encode( $onb ) . ';',
+                'before'
+            );
+        }
     }
 
     // UI Library page (internal documentation - shows all components)
@@ -57,6 +78,7 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-sections', 'css/sections.css', [ 'jcp-core-components' ] );
         jcp_core_enqueue_style( 'jcp-core-hero-live-demo', 'css/components/hero-live-demo.css', [ 'jcp-core-sections' ] );
         jcp_core_enqueue_style( 'jcp-core-demo-app-phone', 'css/components/demo-app-phone.css', [ 'jcp-core-sections' ] );
+        jcp_core_enqueue_script( 'jcp-core-story-phone', 'js/pages/story-phone.js' );
         jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-sections' ] );
         jcp_core_enqueue_style( 'jcp-core-blog', 'css/pages/blog.css', [ 'jcp-core-sections' ] );
         jcp_core_enqueue_style( 'jcp-core-pricing', 'css/pages/pricing.css', [ 'jcp-core-sections' ] );
@@ -76,6 +98,7 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-sections', 'css/sections.css', [ 'jcp-core-components' ] );
         jcp_core_enqueue_style( 'jcp-core-hero-live-demo', 'css/components/hero-live-demo.css', [ 'jcp-core-sections' ] );
         jcp_core_enqueue_style( 'jcp-core-demo-app-phone', 'css/components/demo-app-phone.css', [ 'jcp-core-sections' ] );
+        jcp_core_enqueue_script( 'jcp-core-story-phone', 'js/pages/story-phone.js' );
     } else {
         // Other pages: include layout so .jcp-container works (page.php, blog, single)
         jcp_core_enqueue_style( 'jcp-core-layout', 'css/layout.css', [ 'jcp-core-base' ] );
@@ -86,19 +109,33 @@ function jcp_core_enqueue_assets(): void {
 
     // Page-specific assets
     if ( $pages['is_home'] ) {
-        jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-sections' ] );
+        // Homepage block pages reuse niche-landing section styles (authority, campaign
+        // surfaces, etc.). Must load for anonymous visitors — not only when the
+        // front-end editor is enqueued for logged-in editors.
+        jcp_core_enqueue_style( 'jcp-core-niche-landing', 'css/pages/niche-landing.css', [ 'jcp-core-sections', 'jcp-core-hero-live-demo' ] );
+        jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-sections', 'jcp-core-niche-landing' ] );
         $front_id = (int) get_option( 'page_on_front' );
         $uses_blocks = $front_id > 0 && get_post_meta( $front_id, jcp_page_content_meta_key(), true );
         if ( $uses_blocks ) {
             jcp_core_enqueue_script( 'jcp-core-home-interactions', 'js/pages/home-interactions.js' );
+            jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [ 'jcp-core-home-interactions' ] );
+            jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
         } else {
             jcp_core_enqueue_script( 'jcp-core-home', 'js/pages/home.js' );
+            jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [ 'jcp-core-home' ] );
+            jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
             $render_deps[] = 'jcp-core-home';
             $home_ctas = [
-                'primary_text'   => 'View the live demo',
-                'primary_url'    => '/demo',
-                'secondary_text' => 'Learn how it works',
-                'secondary_url'  => '#how-it-works',
+                'primary_text'   => 'See It for My Business →',
+                'primary_url'    => '/demo/',
+                'secondary_text' => 'Start Free 14-Day Trial',
+                'secondary_url'  => function_exists( 'jcp_core_onboarding_app_url_raw' )
+                    ? jcp_core_onboarding_app_url_raw(
+                        function_exists( 'jcp_core_onboarding_utm_defaults' )
+                            ? jcp_core_onboarding_utm_defaults( 'home_hero' )
+                            : []
+                    )
+                    : 'https://app.jobcapturepro.com/onboarding',
             ];
             wp_localize_script( 'jcp-core-home', 'JCP_HOME_HERO_CTAS', $home_ctas );
         }
@@ -109,6 +146,9 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-pricing', 'css/pages/pricing.css', [ 'jcp-core-sections' ] );
         jcp_core_enqueue_script( 'jcp-shared-faq', 'js/features/faq.js' );
         jcp_core_enqueue_script( 'jcp-core-pricing', 'js/pages/pricing.js', [ 'jcp-shared-faq' ] );
+        if ( function_exists( 'jcp_pricing_localize_payload' ) ) {
+            wp_localize_script( 'jcp-core-pricing', 'JCP_PRICING', jcp_pricing_localize_payload() );
+        }
         $render_deps[] = 'jcp-core-pricing';
     }
 
@@ -121,6 +161,37 @@ function jcp_core_enqueue_assets(): void {
         if ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() ) {
             // Reuse homepage hero/visual treatment (phone mockup, meta row, demo preview).
             jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-sections', 'jcp-core-hero-live-demo' ] );
+            jcp_core_enqueue_style( 'jcp-core-story-moments', 'css/components/story-moments.css', [ 'jcp-core-niche-landing' ] );
+            jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
+            jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [] );
+            jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
+            jcp_core_enqueue_script( 'jcp-core-campaign', 'js/pages/campaign.js', [], false, true );
+            jcp_core_enqueue_script( 'jcp-core-story-moments', 'js/pages/story-moments.js', [], false, true );
+            // Lightweight paid LP view signal for GTM/Meta (maps to PaidLandingView).
+            wp_add_inline_script(
+                'jcp-core-attribution',
+                "(function(){try{window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'PaidLandingView',page_path:location.pathname});}catch(e){}})();",
+                'after'
+            );
+            wp_add_inline_script(
+                'jcp-core-attribution',
+                "document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[href*=\"/demo\"]'):null;if(!a)return;try{window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'DemoCTA',cta_label:(a.textContent||'').trim().slice(0,80),href:a.href});}catch(err){}});",
+                'after'
+            );
+        }
+
+        // Sales-deck homepage preview (/home-preview/).
+        $is_home_preview = is_page( 'home-preview' );
+        if ( ! $is_home_preview && is_singular( 'page' ) && function_exists( 'jcp_page_get_content' ) ) {
+            $preview_content = jcp_page_get_content( (int) get_queried_object_id() );
+            $is_home_preview = ( ( $preview_content['preset'] ?? '' ) === 'home_v2' )
+                || ! empty( $preview_content['settings']['home_preview'] );
+        }
+        if ( $is_home_preview ) {
+            jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-sections', 'jcp-core-hero-live-demo' ] );
+            jcp_core_enqueue_style( 'jcp-core-home-v2', 'css/pages/home-v2.css', [ 'jcp-core-home', 'jcp-core-niche-landing' ] );
+            jcp_core_enqueue_script( 'jcp-core-home-v2', 'js/pages/home-v2.js', [], false, true );
+            jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [] );
         }
     }
 
@@ -134,14 +205,15 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-contact', 'css/pages/contact.css', [ 'jcp-core-sections' ] );
     }
 
+    if ( is_404() ) {
+        jcp_core_enqueue_style( 'jcp-core-sections', 'css/sections.css', [ 'jcp-core-components' ] );
+        jcp_core_enqueue_style( 'jcp-core-404', 'css/pages/404.css', [ 'jcp-core-sections' ] );
+    }
+
     if ( $pages['is_contact'] ) {
-        jcp_core_enqueue_style( 'jcp-core-contact', 'css/pages/contact.css', [ 'jcp-core-sections' ] );
-        jcp_core_enqueue_script( 'jcp-core-contact', 'js/pages/contact.js' );
-        $render_deps[] = 'jcp-core-contact';
-        wp_localize_script( 'jcp-core-contact', 'JCP_CONTACT_FORM', [
-            'rest_url'         => rest_url( 'jcp/v1/contact-submit' ),
-            'success_redirect' => home_url( '/contact-success/' ),
-        ] );
+        jcp_core_enqueue_style( 'jcp-core-sections', 'css/sections.css', [ 'jcp-core-components' ] );
+        jcp_core_enqueue_style( 'jcp-core-blog', 'css/pages/blog.css', [ 'jcp-core-sections' ] );
+        jcp_core_enqueue_style( 'jcp-core-contact', 'css/pages/contact.css', [ 'jcp-core-blog' ] );
     }
 
     if ( $pages['is_blog'] || $pages['is_single'] || $pages['is_page'] ) {
@@ -168,12 +240,11 @@ function jcp_core_enqueue_assets(): void {
         $front_id = (int) get_option( 'page_on_front' );
         $home_uses_blocks = $front_id > 0 && (bool) get_post_meta( $front_id, jcp_page_content_meta_key(), true );
     }
-    $needs_render = ( $pages['is_home'] && ! $home_uses_blocks ) || $pages['is_pricing'] || $pages['is_contact']
+    $needs_render = ( $pages['is_home'] && ! $home_uses_blocks ) || $pages['is_pricing']
         || $pages['is_prototype'] || $pages['is_demo'] || $pages['is_directory'] || $pages['is_company'] || $pages['is_estimate'];
     if ( $needs_render ) {
         jcp_core_enqueue_script( $render_handle, 'js/core/jcp-render.js', $render_deps );
-        // Decorate onboarding CTAs with demo form values (from localStorage) when present.
-        jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ $render_handle ] );
+        // Onboarding handoff (name/email from demo) is loaded sitewide with nav above.
         $globals = "window.JCP_ENV = 'live';\n";
         $globals .= "window.JCP_CONFIG = { env: 'live', baseUrl: '" . esc_url_raw( site_url() ) . "' };\n";
         $globals .= "window.JCP_ASSET_BASE = '" . esc_url_raw( get_stylesheet_directory_uri() . '/assets' ) . "';";
@@ -183,7 +254,9 @@ function jcp_core_enqueue_assets(): void {
         }
         if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {
             $onb = [
-                'url'         => jcp_core_onboarding_app_url_raw(),
+                'url'         => jcp_core_onboarding_app_url_raw(
+                    function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : []
+                ),
                 'sessionId'   => jcp_core_onboarding_hardcoded_session_id(),
                 'utmDefaults' => function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : [],
             ];

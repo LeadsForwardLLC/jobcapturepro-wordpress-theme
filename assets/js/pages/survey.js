@@ -43,11 +43,167 @@
   const getValue = (id) => (document.getElementById(id)?.value || '').trim();
 
   const BUSINESS_TYPE_OTHER = 'other';
+  const REFERRAL_SOURCE_OTHER = 'Other';
+
+  const loadBusinessTypeOptions = () => {
+    const el = document.getElementById('jcpBusinessTypeOptions');
+    if (!el) return [];
+    try {
+      const parsed = JSON.parse(el.textContent || '[]');
+      return Array.isArray(parsed) ? parsed.filter((o) => o && o.value && o.label) : [];
+    } catch (e) {
+      return [];
+    }
+  };
+
+  const businessTypeOptions = loadBusinessTypeOptions();
+  const nicheSearchEl = document.getElementById('nicheSearch');
+  const nicheHiddenEl = document.getElementById('niche');
+  const nicheOtherEl = document.getElementById('nicheOther');
+  const nicheListboxEl = document.getElementById('nicheListbox');
+  let nicheActiveIndex = -1;
+  let nicheListOpen = false;
+
+  const findBusinessTypeOption = (raw) => {
+    const q = String(raw || '').trim().toLowerCase();
+    if (!q) return null;
+    return businessTypeOptions.find(
+      (o) => String(o.value).toLowerCase() === q || String(o.label).toLowerCase() === q
+    ) || null;
+  };
+
+  const filterBusinessTypeOptions = (query) => {
+    const q = String(query || '').trim().toLowerCase();
+    if (!q) return businessTypeOptions.slice(0, 40);
+    const starts = [];
+    const contains = [];
+    businessTypeOptions.forEach((opt) => {
+      const label = String(opt.label || '').toLowerCase();
+      const value = String(opt.value || '').toLowerCase();
+      if (label.startsWith(q) || value.startsWith(q)) {
+        starts.push(opt);
+      } else if (label.includes(q) || value.includes(q)) {
+        contains.push(opt);
+      }
+    });
+    return starts.concat(contains).slice(0, 40);
+  };
+
+  const setNicheFields = (slug, otherText, displayText) => {
+    if (nicheHiddenEl) nicheHiddenEl.value = slug || '';
+    if (nicheOtherEl) nicheOtherEl.value = otherText || '';
+    if (nicheSearchEl && displayText != null) nicheSearchEl.value = displayText;
+  };
+
+  const closeNicheList = () => {
+    nicheListOpen = false;
+    nicheActiveIndex = -1;
+    if (nicheListboxEl) {
+      nicheListboxEl.hidden = true;
+      nicheListboxEl.innerHTML = '';
+    }
+    if (nicheSearchEl) {
+      nicheSearchEl.setAttribute('aria-expanded', 'false');
+      nicheSearchEl.removeAttribute('aria-activedescendant');
+    }
+  };
+
+  const updateNicheActiveOption = () => {
+    if (!nicheListboxEl) return;
+    const options = Array.from(nicheListboxEl.querySelectorAll('[role="option"]'));
+    options.forEach((opt, idx) => {
+      const active = idx === nicheActiveIndex;
+      opt.setAttribute('aria-selected', active ? 'true' : 'false');
+      opt.classList.toggle('is-active', active);
+      if (active) {
+        nicheSearchEl?.setAttribute('aria-activedescendant', opt.id);
+        opt.scrollIntoView({ block: 'nearest' });
+      }
+    });
+    if (nicheActiveIndex < 0) {
+      nicheSearchEl?.removeAttribute('aria-activedescendant');
+    }
+  };
+
+  const selectBusinessTypeOption = (opt) => {
+    if (!opt) return;
+    if (String(opt.value) === BUSINESS_TYPE_OTHER) {
+      setNicheFields(BUSINESS_TYPE_OTHER, '', '');
+      if (nicheSearchEl) {
+        nicheSearchEl.placeholder = 'Describe your trade…';
+        nicheSearchEl.focus();
+      }
+    } else {
+      setNicheFields(opt.value, '', opt.label);
+      if (nicheSearchEl) {
+        nicheSearchEl.placeholder = 'Start typing your trade…';
+      }
+    }
+    closeNicheList();
+    setHandoffStatus('');
+    scheduleSaveProgress();
+  };
+
+  const commitNicheFromSearch = () => {
+    const typed = nicheSearchEl ? nicheSearchEl.value.trim() : '';
+    if (!typed) {
+      setNicheFields('', '', typed);
+      return;
+    }
+    const match = findBusinessTypeOption(typed);
+    if (match && String(match.value) !== BUSINESS_TYPE_OTHER) {
+      setNicheFields(match.value, '', match.label);
+      return;
+    }
+    if (match && String(match.value) === BUSINESS_TYPE_OTHER) {
+      // Exact "Other" label/value without a custom description — prompt for detail.
+      setNicheFields(BUSINESS_TYPE_OTHER, '', '');
+      return;
+    }
+    setNicheFields(BUSINESS_TYPE_OTHER, typed, typed);
+  };
+
+  const openNicheList = (query) => {
+    if (!nicheListboxEl || !nicheSearchEl) return;
+    const matches = filterBusinessTypeOptions(query);
+    nicheListboxEl.innerHTML = '';
+    if (!matches.length) {
+      closeNicheList();
+      return;
+    }
+    matches.forEach((opt, idx) => {
+      const li = document.createElement('li');
+      li.id = `niche-option-${idx}`;
+      li.setAttribute('role', 'option');
+      li.setAttribute('aria-selected', 'false');
+      li.className = 'survey-combobox__option';
+      li.dataset.value = opt.value;
+      li.textContent = opt.label;
+      if (opt.group) {
+        li.dataset.group = opt.group;
+      }
+      li.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        selectBusinessTypeOption(opt);
+      });
+      nicheListboxEl.appendChild(li);
+    });
+    nicheListboxEl.hidden = false;
+    nicheListOpen = true;
+    nicheActiveIndex = 0;
+    nicheSearchEl.setAttribute('aria-expanded', 'true');
+    updateNicheActiveOption();
+  };
 
   const syncNicheOtherField = () => {
-    const wrap = document.getElementById('nicheOtherWrap');
-    const otherInput = document.getElementById('nicheOther');
-    const isOther = getValue('niche') === BUSINESS_TYPE_OTHER;
+    // Combobox: custom text lives in #nicheSearch / #nicheOther; no secondary field.
+    commitNicheFromSearch();
+  };
+
+  const syncReferralSourceOtherField = () => {
+    const wrap = document.getElementById('referralSourceOtherWrap');
+    const otherInput = document.getElementById('referralSourceOther');
+    const isOther = getValue('referralSource') === REFERRAL_SOURCE_OTHER;
     if (wrap) wrap.hidden = !isOther;
     if (otherInput) {
       otherInput.required = isOther;
@@ -55,7 +211,18 @@
     }
   };
 
+  const getReferralSourceValue = () => {
+    const selected = getValue('referralSource');
+    if (!selected) return '';
+    if (selected === REFERRAL_SOURCE_OTHER) {
+      const detail = getValue('referralSourceOther');
+      return detail ? `${REFERRAL_SOURCE_OTHER}: ${detail}` : REFERRAL_SOURCE_OTHER;
+    }
+    return selected;
+  };
+
   const getBusinessTypeValue = () => {
+    commitNicheFromSearch();
     const selected = getValue('niche');
     if (selected === BUSINESS_TYPE_OTHER) {
       return getValue('nicheOther');
@@ -64,30 +231,31 @@
   };
 
   const getBusinessTypeLabel = () => {
-    const nicheSelect = document.getElementById('niche');
-    if (!nicheSelect || !nicheSelect.value) return '';
-    if (nicheSelect.value === BUSINESS_TYPE_OTHER) {
+    commitNicheFromSearch();
+    const selected = getValue('niche');
+    if (!selected) return '';
+    if (selected === BUSINESS_TYPE_OTHER) {
       return getValue('nicheOther');
     }
-    const option = nicheSelect.options[nicheSelect.selectedIndex];
-    return option ? option.text.trim() : '';
+    const match = businessTypeOptions.find((o) => o.value === selected);
+    return match ? String(match.label).trim() : getValue('nicheSearch');
   };
 
   const setBusinessTypeFromStored = (storedType) => {
-    const nicheEl = document.getElementById('niche');
-    const nicheOtherEl = document.getElementById('nicheOther');
-    if (!nicheEl || storedType == null) return;
+    if (storedType == null) return;
     const raw = String(storedType).trim();
     if (!raw) return;
-    const hasOption = Array.from(nicheEl.options).some((opt) => opt.value === raw);
-    if (hasOption) {
-      nicheEl.value = raw;
-      if (nicheOtherEl) nicheOtherEl.value = '';
-    } else {
-      nicheEl.value = BUSINESS_TYPE_OTHER;
-      if (nicheOtherEl) nicheOtherEl.value = raw;
+    const byValue = businessTypeOptions.find((o) => o.value === raw);
+    if (byValue && byValue.value !== BUSINESS_TYPE_OTHER) {
+      setNicheFields(byValue.value, '', byValue.label);
+      return;
     }
-    syncNicheOtherField();
+    const byLabel = findBusinessTypeOption(raw);
+    if (byLabel && byLabel.value !== BUSINESS_TYPE_OTHER) {
+      setNicheFields(byLabel.value, '', byLabel.label);
+      return;
+    }
+    setNicheFields(BUSINESS_TYPE_OTHER, raw, raw);
   };
 
   const getAttributionPayload = () => (
@@ -101,15 +269,21 @@
   const INTAKE_COMPLETE_KEY = 'jcp_demo_intake_complete';
   const DEMO_SESSION_KEY = 'jcp_demo_session_id';
 
-  const getFormSnapshot = () => ({
-    businessName: getValue('businessName'),
-    niche: getValue('niche'),
-    nicheOther: getValue('nicheOther'),
-    firstName: getValue('firstName'),
-    lastName: getValue('lastName'),
-    email: getValue('email'),
-    goals: Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || []).map((input) => input.value),
-  });
+  const getFormSnapshot = () => {
+    commitNicheFromSearch();
+    return {
+      businessName: getValue('businessName'),
+      niche: getValue('niche'),
+      nicheOther: getValue('nicheOther'),
+      firstName: getValue('firstName'),
+      lastName: getValue('lastName'),
+      email: getValue('email'),
+      phone: getValue('phone'),
+      referralSource: getValue('referralSource'),
+      referralSourceOther: getValue('referralSourceOther'),
+      goals: Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || []).map((input) => input.value),
+    };
+  };
 
   const applyFormSnapshot = (form) => {
     if (!form || typeof form !== 'object') return;
@@ -121,8 +295,8 @@
     };
     setField('businessName', form.businessName);
     if (form.niche === BUSINESS_TYPE_OTHER) {
-      setField('niche', BUSINESS_TYPE_OTHER);
-      setField('nicheOther', form.nicheOther);
+      const other = (form.nicheOther || '').trim();
+      setNicheFields(BUSINESS_TYPE_OTHER, other, other);
     } else if (form.niche) {
       setBusinessTypeFromStored(form.niche);
     }
@@ -130,6 +304,10 @@
     setField('firstName', form.firstName);
     setField('lastName', form.lastName);
     setField('email', form.email);
+    setField('phone', form.phone);
+    setField('referralSource', form.referralSource);
+    setField('referralSourceOther', form.referralSourceOther);
+    syncReferralSourceOtherField();
     if (goalsWrap && Array.isArray(form.goals)) {
       goalsWrap.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
         cb.checked = form.goals.indexOf(cb.value) !== -1;
@@ -249,12 +427,9 @@
       const demoUser = getStoredDemoUser();
       if (!demoUser || typeof demoUser !== 'object') return false;
 
-      const hasBusiness = Boolean((demoUser.businessName || '').trim());
-      const hasIdentity = Boolean(
-        (demoUser.email || '').trim() ||
-        ((demoUser.firstName || '').trim() && (demoUser.lastName || '').trim())
-      );
-      if (!hasBusiness || !hasIdentity) return false;
+      const hasTrade = Boolean((demoUser.niche || demoUser.businessName || '').toString().trim());
+      const hasEmail = Boolean((demoUser.email || '').trim());
+      if (!hasTrade || !hasEmail) return false;
 
       const intakeDone = sessionStorage.getItem(INTAKE_COMPLETE_KEY) === '1';
       const hasSession = Boolean((sessionStorage.getItem(DEMO_SESSION_KEY) || '').trim());
@@ -291,16 +466,29 @@
   function surveyTrack(eventType, stepNumber, metadata) {
     const restEventUrl = (typeof window.JCP_DEMO_SURVEY !== 'undefined' && window.JCP_DEMO_SURVEY.rest_event_url) ? window.JCP_DEMO_SURVEY.rest_event_url : baseUrl + '/wp-json/jcp/v1/demo-event';
     try {
+      const body = {
+        session_id: getSurveySessionId(),
+        event_type: eventType,
+        step_number: stepNumber != null ? stepNumber : undefined,
+        metadata: metadata || undefined,
+        ...getAttributionPayload(),
+      };
+      const firstName = getValue('firstName');
+      const lastName = getValue('lastName');
+      const email = getValue('email');
+      const company = getValue('businessName');
+      if (firstName) body.first_name = firstName;
+      if (lastName) body.last_name = lastName;
+      if (email) body.email = email;
+      const phone = getValue('phone');
+      if (phone) body.phone = phone;
+      if (company) body.company = company;
+      const niche = getBusinessTypeValue();
+      if (niche) body.business_type = niche;
       fetch(restEventUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          session_id: getSurveySessionId(),
-          event_type: eventType,
-          step_number: stepNumber != null ? stepNumber : undefined,
-          metadata: metadata || undefined,
-          ...getAttributionPayload(),
-        })
+        body: JSON.stringify(body)
       }).catch(function() {});
     } catch (e) {}
   }
@@ -316,7 +504,7 @@
   const updateDesktopHandoff = () => {
     if (!handoffEl) return;
     const deckActive = deckSection?.classList.contains('active');
-    const show = isMobileSurvey() && (currentIndex === 2 || deckActive);
+    const show = isMobileSurvey();
     handoffEl.hidden = !show;
     if (shareDemoBtn) {
       shareDemoBtn.hidden = typeof navigator.share !== 'function';
@@ -382,12 +570,14 @@
       const firstNameEl = document.getElementById('firstName');
       const lastNameEl = document.getElementById('lastName');
       const emailEl = document.getElementById('email');
+      const phoneEl = document.getElementById('phone');
 
       if (businessNameEl && prefill.company != null) businessNameEl.value = prefill.company;
       if (prefill.business_type != null) setBusinessTypeFromStored(prefill.business_type);
       if (firstNameEl && prefill.first_name != null) firstNameEl.value = prefill.first_name;
       if (lastNameEl && prefill.last_name != null) lastNameEl.value = prefill.last_name;
       if (emailEl && prefill.email != null) emailEl.value = prefill.email;
+      if (phoneEl && prefill.phone != null) phoneEl.value = prefill.phone;
 
       // Early Access uses full labels as values; survey uses short values (calls, google, etc.).
       const eaToSurvey = {
@@ -410,18 +600,37 @@
     }
   };
 
+  const setProgressChromeVisible = (visible) => {
+    if (!progressWrap) return;
+    if (visible) {
+      progressWrap.classList.remove('is-hidden');
+      progressWrap.hidden = false;
+      progressWrap.setAttribute('aria-hidden', 'false');
+      return;
+    }
+    progressWrap.classList.add('is-hidden');
+    progressWrap.hidden = true;
+    progressWrap.setAttribute('aria-hidden', 'true');
+    if (stepIndicator) stepIndicator.hidden = true;
+  };
+
   const updateProgress = () => {
-    const stepNum = currentIndex + 1;
-    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+    const total = Math.max(1, steps.length);
+    const stepNum = Math.min(currentIndex + 1, total);
+    // Single-screen gate: never show step chrome / numbered badge.
+    if (total <= 1) {
+      setProgressChromeVisible(false);
+      return;
+    }
     if (progressText) {
-      progressText.textContent = `Step ${stepNum} of 3`;
+      progressText.textContent = `Step ${stepNum} of ${total}`;
     }
     if (stepIndicator) {
-      stepIndicator.textContent = `Step ${stepNum}/3`;
-      stepIndicator.hidden = !isMobile;
+      stepIndicator.textContent = `Step ${stepNum}/${total}`;
+      stepIndicator.hidden = true;
     }
     if (progressFill) {
-      progressFill.style.width = `${(stepNum / 3) * 100}%`;
+      progressFill.style.width = `${(stepNum / total) * 100}%`;
     }
     stepButtons.forEach((btn, idx) => {
       btn.classList.toggle('is-active', idx === currentIndex);
@@ -441,6 +650,8 @@
     const meta = { company: getValue('businessName'), business_type: getBusinessTypeValue() };
     const goals = Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || []).map((input) => input.value);
     if (goals.length) meta.demo_goals = goals;
+    const referral = getReferralSourceValue();
+    if (referral) meta.referral_source = referral;
     return meta;
   };
 
@@ -452,7 +663,7 @@
       step.classList.toggle('active', idx === index);
     });
     deckSection?.classList.remove('active');
-    progressWrap?.classList.remove('is-hidden');
+    setProgressChromeVisible(steps.length > 1);
     if (deckSkipHeader) deckSkipHeader.hidden = true;
     currentIndex = index;
     updateProgress();
@@ -485,11 +696,40 @@
     channelTimers = [];
   };
 
+  const CHANNEL_PREVIEW_LABELS = {
+    website: 'Live on your website',
+    google: 'Live on Google Business Profile',
+    social: 'Ready for social',
+    directory: 'Listed in your directory',
+  };
+
   const resetChannelTiles = () => {
     const slide = deckSlides.find((el) => el.classList.contains('deck-slide--channels'));
     if (!slide) return;
     slide.classList.remove('is-sequencing');
-    slide.querySelectorAll('.deck-tile').forEach((tile) => tile.classList.remove('is-visible'));
+    slide.querySelectorAll('.deck-tile').forEach((tile) => {
+      tile.classList.remove('is-visible', 'is-live');
+      tile.setAttribute('aria-pressed', 'false');
+      const status = tile.querySelector('.tile-status');
+      if (status) status.textContent = 'Publish';
+    });
+    const preview = slide.querySelector('[data-publish-preview]');
+    if (preview) preview.hidden = true;
+  };
+
+  const activateChannelTile = (tile, { revealPreview = true } = {}) => {
+    if (!tile) return;
+    const slide = tile.closest('.deck-slide--channels');
+    const channel = tile.getAttribute('data-channel') || 'website';
+    tile.classList.add('is-visible', 'is-live');
+    tile.setAttribute('aria-pressed', 'true');
+    const status = tile.querySelector('.tile-status');
+    if (status) status.textContent = 'Live';
+    if (!revealPreview || !slide) return;
+    const preview = slide.querySelector('[data-publish-preview]');
+    const label = slide.querySelector('[data-publish-preview-label]');
+    if (label) label.textContent = CHANNEL_PREVIEW_LABELS[channel] || CHANNEL_PREVIEW_LABELS.website;
+    if (preview) preview.hidden = false;
   };
 
   const runChannelsSequence = () => {
@@ -504,7 +744,7 @@
 
     tiles.forEach((tile, idx) => {
       channelTimers.push(setTimeout(() => {
-        tile.classList.add('is-visible');
+        activateChannelTile(tile, { revealPreview: idx === tiles.length - 1 });
       }, 180 + idx * 420));
     });
   };
@@ -566,14 +806,16 @@
     const isLast = deckIndex === total - 1;
     if (deckLaunchBtn) deckLaunchBtn.classList.toggle('is-hidden', !isLast);
     if (deckNextBtn) deckNextBtn.classList.toggle('is-hidden', isLast);
+    // Always keep Back available on deck (except slide 1) — mobile used to hide it and trap users.
     if (deckPrevBtn) {
-      deckPrevBtn.classList.toggle('is-hidden', isMobileSurvey() || deckIndex === 0);
+      deckPrevBtn.classList.toggle('is-hidden', deckIndex === 0);
     }
 
     if (deckSlidesWrap) deckSlidesWrap.scrollTop = 0;
 
     if (rankList) {
-      const isRankSlide = deckIndex === 3;
+      const rankSlideIndex = deckSlides.findIndex((el) => el.classList.contains('deck-slide--rank'));
+      const isRankSlide = rankSlideIndex >= 0 && deckIndex === rankSlideIndex;
       clearRankTimers();
       if (isRankSlide) {
         runRankSlideSequence();
@@ -582,7 +824,8 @@
       }
     }
 
-    const isChannelsSlide = deckIndex === 4;
+    const channelsSlideIndex = deckSlides.findIndex((el) => el.classList.contains('deck-slide--channels'));
+    const isChannelsSlide = channelsSlideIndex >= 0 && deckIndex === channelsSlideIndex;
     clearChannelTimers();
     if (isChannelsSlide) {
       runChannelsSequence();
@@ -594,64 +837,89 @@
   };
 
   const showDeck = (startIndex = 0) => {
+    document.documentElement.classList.remove('survey-gate-scroll');
+    document.body.classList.remove('survey-gate-scroll');
     steps.forEach((step) => step.classList.remove('active'));
     deckSection?.classList.add('active');
-    progressWrap?.classList.add('is-hidden');
+    setProgressChromeVisible(false);
     if (deckSkipHeader) deckSkipHeader.hidden = !isMobileSurvey();
     deckIndex = Math.min(Math.max(0, startIndex), Math.max(0, deckSlides.length - 1));
     setDeckUI();
 
-    // First slide: if they selected a business type, swap "job" for "[type] job"
+    // First slide: personalize with business type when available
     const titleEl = document.getElementById('deckSlide1Title');
     const label = getBusinessTypeLabel();
     if (titleEl && label) {
       titleEl.textContent = 'Every completed ' + label + ' job should help you win the next one.';
     }
+    const personalTitle = document.getElementById('deckPersonalTitle');
+    const business = getValue('businessName');
+    if (personalTitle && business) {
+      personalTitle.textContent = 'Ready, ' + business + '? See one job publish everywhere.';
+    }
+    hydrateRankName();
     updateDesktopHandoff();
     saveSurveyProgress();
   };
 
-  const validateStep1 = () => {
-    const businessName = getValue('businessName');
+
+  const deriveFirstName = () => {
+    const named = getValue('firstName');
+    if (named) return named;
+    const email = getValue('email');
+    const local = (email.split('@')[0] || '').replace(/[._-]+/g, ' ').trim();
+    if (!local) return 'there';
+    return local.split(' ').filter(Boolean).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  };
+
+  const resolveBusinessName = () => {
+    const named = getValue('businessName');
+    if (named) return named;
+    const nicheLabel = getBusinessTypeLabel();
+    return nicheLabel ? (nicheLabel + ' Pro') : 'Your Business';
+  };
+
+  /** Single-screen gate: trade + work email required; phone recommended but optional. */
+  const validateGate = () => {
+    commitNicheFromSearch();
     const nicheSelect = getValue('niche');
     const businessType = getBusinessTypeValue();
-    if (!businessName || !nicheSelect) {
-      alert('Please enter your business name and type to continue.');
-      return false;
-    }
-    if (nicheSelect === BUSINESS_TYPE_OTHER && !businessType) {
-      alert('Please describe your business type to continue.');
-      document.getElementById('nicheOther')?.focus();
-      return false;
-    }
-    return true;
-  };
-
-  const validateStep2 = () => {
-    const checked = goalsWrap ? goalsWrap.querySelectorAll('input[type="checkbox"]:checked') : [];
-    if (!checked.length) {
-      alert('Please choose at least one demo goal to continue.');
-      return false;
-    }
-    return true;
-  };
-
-  const validateStep3 = () => {
-    const firstName = getValue('firstName');
-    const lastName = getValue('lastName');
     const emailInput = document.getElementById('email');
     const email = getValue('email');
-    if (!firstName || !lastName) {
-      alert('Please enter your first and last name to continue.');
+    if (!nicheSelect && !getValue('nicheSearch')) {
+      alert('Please choose or type your business type to personalize the demo.');
+      nicheSearchEl?.focus();
+      nicheSearchEl?.classList.add('is-error');
       return false;
     }
+    if (!businessType || (nicheSelect === BUSINESS_TYPE_OTHER && !getValue('nicheOther'))) {
+      alert('Please describe your business type to continue.');
+      nicheSearchEl?.focus();
+      nicheSearchEl?.classList.add('is-error');
+      return false;
+    }
+    nicheSearchEl?.classList.remove('is-error');
     if (!email || !emailInput?.checkValidity()) {
       emailInput?.classList.add('is-error');
       emailInput?.focus();
+      alert('Please enter a valid work email to continue.');
       return false;
+    }
+    // Fill optional personalization defaults used by demo + CRM.
+    const businessEl = document.getElementById('businessName');
+    if (businessEl && !getValue('businessName')) {
+      businessEl.value = resolveBusinessName();
+    }
+    const firstEl = document.getElementById('firstName');
+    if (firstEl && !getValue('firstName')) {
+      firstEl.value = deriveFirstName();
     }
     return true;
   };
+
+  const validateStep1 = () => validateGate();
+  const validateStep2 = () => true;
+  const validateStep3 = () => validateGate();
 
   const enforceGoalLimit = () => {
     if (!goalsWrap) return;
@@ -664,7 +932,6 @@
     });
   };
 
-  // Save current survey data so Early Access form can prefill if user visits that page later.
   const saveSurveyPrefillForEarlyAccess = () => {
     const goals = Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || [])
       .map((input) => input.value);
@@ -672,9 +939,11 @@
       first_name: getValue('firstName'),
       last_name: getValue('lastName'),
       email: getValue('email'),
+      phone: getValue('phone'),
       company: getValue('businessName'),
       business_type: getBusinessTypeValue(),
       demo_goals: goals,
+      referral_source: getReferralSourceValue(),
     };
     try {
       localStorage.setItem('jcp_early_access_prefill', JSON.stringify(prefill));
@@ -683,11 +952,28 @@
     }
   };
 
-  // Submit opt-in when user clicks "Continue to preview" — sends full form to first webhook (Create Contact + tag demo-opt-in).
+  // GTM → Meta Lead: fires once when step 3 validates and they click Continue to demo.
+  const pushDemoOptInDataLayer = () => {
+    try {
+      if (sessionStorage.getItem('jcp_datalayer_demo_opt_in')) return;
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        event: 'demo_opt_in',
+        lead_type: 'demo',
+        source: 'demo_survey',
+      });
+      sessionStorage.setItem('jcp_datalayer_demo_opt_in', '1');
+    } catch (err) {
+      // no-op
+    }
+  };
+
+  // Submit opt-in on gate unlock — sends contact + attribution to Demo Survey webhook (Event=demo-opt-in).
   const submitDemoOptIn = async () => {
     const goals = Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || [])
       .map((input) => input.value);
     const restUrl = (typeof window.JCP_DEMO_SURVEY !== 'undefined' && window.JCP_DEMO_SURVEY.rest_url) || `${baseUrl}/wp-json/jcp/v1/demo-survey-submit`;
+    pushDemoOptInDataLayer();
     try {
       await Promise.race([
         fetch(restUrl, {
@@ -697,9 +983,11 @@
             first_name: getValue('firstName'),
             last_name: getValue('lastName'),
             email: getValue('email'),
+            phone: getValue('phone'),
             company: getValue('businessName'),
             business_type: getBusinessTypeValue(),
             demo_goals: goals,
+            referral_source: getReferralSourceValue(),
             ...getAttributionPayload(),
           }),
         }),
@@ -710,7 +998,7 @@
     }
   };
 
-  // When user clicks "Skip to demo" or "Launch the live demo" — send to second webhook so GHL can add tag "viewed-demo".
+  // Launch live demo — send to same webhook with Event=demo-viewed (tag demo-viewed).
   const launchDemo = async () => {
     const goals = Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || [])
       .map((input) => input.value);
@@ -729,6 +1017,7 @@
     const email = getValue('email');
     const businessName = getValue('businessName');
     const niche = getBusinessTypeValue();
+    const referralSource = getReferralSourceValue();
     localStorage.setItem('demoUser', JSON.stringify({
       businessName,
       niche,
@@ -736,6 +1025,8 @@
       firstName,
       lastName,
       email,
+      phone: getValue('phone'),
+      referralSource,
     }));
     saveSurveyPrefillForEarlyAccess();
     clearSurveyProgress();
@@ -750,9 +1041,11 @@
             first_name: firstName,
             last_name: lastName,
             email,
+            phone: getValue('phone'),
             company: businessName,
             business_type: niche,
             demo_goals: goals,
+            referral_source: referralSource,
             ...getAttributionPayload(),
           }),
         }),
@@ -795,10 +1088,12 @@
     }
 
     if (action === 'launch' && !deckActive) {
-      if (!validateStep3()) return;
-      surveyTrack('form_step_completed', 3, getSurveyFormMetadata());
+      if (!validateGate()) return;
+      surveyTrack('form_step_completed', 1, getSurveyFormMetadata());
       saveSurveyPrefillForEarlyAccess();
-      if (deckSlides.length) {
+      const params = new URLSearchParams(window.location.search || '');
+      const forceDeck = params.get('deck') === '1';
+      if (forceDeck && deckSlides.length) {
         submitDemoOptIn().then(() => showDeck());
         return;
       }
@@ -847,13 +1142,17 @@
     });
   });
 
+  document.getElementById('phone')?.addEventListener('input', (e) => {
+    e.target.classList.remove('is-error');
+  });
+
   document.getElementById('email')?.addEventListener('input', (e) => {
     e.target.classList.remove('is-error');
     setHandoffStatus('');
     scheduleSaveProgress();
   });
 
-  ['firstName', 'lastName', 'businessName', 'niche', 'nicheOther'].forEach((id) => {
+  ['firstName', 'lastName', 'phone', 'businessName', 'niche', 'nicheOther', 'nicheSearch', 'referralSource', 'referralSourceOther'].forEach((id) => {
     const el = document.getElementById(id);
     el?.addEventListener('input', () => {
       setHandoffStatus('');
@@ -865,7 +1164,66 @@
     });
   });
 
-  document.getElementById('niche')?.addEventListener('change', syncNicheOtherField);
+  if (nicheSearchEl) {
+    nicheSearchEl.addEventListener('input', () => {
+      nicheSearchEl.classList.remove('is-error');
+      openNicheList(nicheSearchEl.value);
+    });
+    nicheSearchEl.addEventListener('focus', () => {
+      openNicheList(nicheSearchEl.value);
+    });
+    nicheSearchEl.addEventListener('blur', () => {
+      // Delay so option mousedown can select first.
+      window.setTimeout(() => {
+        commitNicheFromSearch();
+        closeNicheList();
+        scheduleSaveProgress();
+      }, 120);
+    });
+    nicheSearchEl.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (nicheListOpen) {
+          e.preventDefault();
+          e.stopPropagation();
+          closeNicheList();
+        }
+        return;
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (!nicheListOpen) openNicheList(nicheSearchEl.value);
+        const count = nicheListboxEl?.querySelectorAll('[role="option"]').length || 0;
+        if (!count) return;
+        nicheActiveIndex = Math.min(count - 1, nicheActiveIndex + 1);
+        if (nicheActiveIndex < 0) nicheActiveIndex = 0;
+        updateNicheActiveOption();
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!nicheListOpen) return;
+        nicheActiveIndex = Math.max(0, nicheActiveIndex - 1);
+        updateNicheActiveOption();
+        return;
+      }
+      if (e.key === 'Enter') {
+        if (nicheListOpen && nicheActiveIndex >= 0 && nicheListboxEl) {
+          e.preventDefault();
+          const opts = Array.from(nicheListboxEl.querySelectorAll('[role="option"]'));
+          const active = opts[nicheActiveIndex];
+          if (active) {
+            const match = businessTypeOptions.find((o) => o.value === active.dataset.value);
+            if (match) selectBusinessTypeOption(match);
+          }
+        } else {
+          commitNicheFromSearch();
+          closeNicheList();
+        }
+      }
+    });
+  }
+
+  document.getElementById('referralSource')?.addEventListener('change', syncReferralSourceOtherField);
 
   goalsWrap?.addEventListener('change', () => {
     enforceGoalLimit();
@@ -892,8 +1250,22 @@
   closeBtn?.addEventListener('click', closeSurvey);
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
+      if (nicheListOpen) {
+        closeNicheList();
+        return;
+      }
       closeSurvey();
     }
+  });
+
+  // Interactive channel tiles on deck slide 2
+  document.addEventListener('click', (e) => {
+    const tile = e.target.closest('.deck-slide--channels .deck-tile[data-channel]');
+    if (!tile) return;
+    const slide = tile.closest('.deck-slide--channels');
+    if (!slide || !slide.classList.contains('is-active')) return;
+    clearChannelTimers();
+    activateChannelTile(tile, { revealPreview: true });
   });
 
   enforceGoalLimit();
@@ -925,15 +1297,18 @@
     applyFormSnapshot(restored.form);
   } else {
     syncNicheOtherField();
+    syncReferralSourceOtherField();
   }
 
   surveyTrack('demo_started', null, getSurveyFormMetadata());
 
-  if (restored && restored.phase === 'deck' && deckSlides.length) {
+  const paramsDeck = new URLSearchParams(window.location.search || '');
+  const allowDeckResume = paramsDeck.get('deck') === '1';
+  if (allowDeckResume && restored && restored.phase === 'deck' && deckSlides.length) {
     const deckStart = Number.isFinite(restored.deckIndex) ? restored.deckIndex : 0;
     showDeck(deckStart);
   } else if (restored && Number.isFinite(restored.currentIndex)) {
-    const stepStart = Math.min(Math.max(0, restored.currentIndex), steps.length - 1);
+    const stepStart = Math.min(Math.max(0, restored.currentIndex), Math.max(0, steps.length - 1));
     showStep(stepStart);
   } else {
     showStep(0);

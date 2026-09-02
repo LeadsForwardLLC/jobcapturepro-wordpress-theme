@@ -17,9 +17,12 @@ require_once get_template_directory() . '/inc/onboarding.php';
 
 // Sitewide settings (banner, signup URL, nav CTAs)
 require_once get_template_directory() . '/inc/global-settings.php';
+require_once get_template_directory() . '/inc/retire-promo-copy.php';
 require_once get_template_directory() . '/inc/fluent-forms-bridge.php';
 require_once get_template_directory() . '/inc/code-embed.php';
 require_once get_template_directory() . '/inc/form-landing.php';
+require_once get_template_directory() . '/inc/pricing-plans.php';
+require_once get_template_directory() . '/inc/sales-tool/bootstrap.php';
 require_once get_template_directory() . '/inc/nav-mega-menu.php';
 
 // Load company data functions (description resolution, demo companies, save_post description generation)
@@ -30,6 +33,9 @@ require_once get_template_directory() . '/inc/jcp-api-cpt.php';
 
 // Load asset enqueuing logic
 require_once get_template_directory() . '/inc/enqueue.php';
+
+// WP Rocket: exclude critical CSS/JS from stale minify + Delay JS.
+require_once get_template_directory() . '/inc/wp-rocket.php';
 
 // Load template routing
 require_once get_template_directory() . '/inc/template-routes.php';
@@ -51,9 +57,16 @@ require_once get_template_directory() . '/inc/page-blocks/presets.php';
 require_once get_template_directory() . '/inc/page-blocks/campaign-preset.php';
 require_once get_template_directory() . '/inc/page-blocks/writer-tools.php';
 require_once get_template_directory() . '/inc/page-blocks/schema.php';
+require_once get_template_directory() . '/inc/simple-editable-pages.php';
 require_once get_template_directory() . '/inc/page-blocks/writer-import.php';
 require_once get_template_directory() . '/inc/page-blocks/industry-media.php';
 require_once get_template_directory() . '/inc/page-blocks/demo-migration.php';
+require_once get_template_directory() . '/inc/page-blocks/case-study-form-modal.php';
+require_once get_template_directory() . '/inc/page-blocks/testimonials-upgrade.php';
+require_once get_template_directory() . '/inc/page-blocks/authority-upgrade.php';
+require_once get_template_directory() . '/inc/page-blocks/story-moments-upgrade.php';
+require_once get_template_directory() . '/inc/page-blocks/campaign-funnel-upgrade.php';
+require_once get_template_directory() . '/inc/page-blocks/start-free-trial-cta-upgrade.php';
 require_once get_template_directory() . '/inc/page-blocks/doc-sections.php';
 require_once get_template_directory() . '/inc/niche-landing/cpt.php';
 require_once get_template_directory() . '/inc/niche-landing/schema.php';
@@ -61,6 +74,7 @@ require_once get_template_directory() . '/inc/niche-landing/doc-parser.php';
 require_once get_template_directory() . '/inc/page-blocks/doc-parser.php';
 require_once get_template_directory() . '/inc/niche-landing/partials.php';
 require_once get_template_directory() . '/inc/niche-landing/components.php';
+require_once get_template_directory() . '/inc/niche-landing/story-moments.php';
 require_once get_template_directory() . '/inc/niche-landing/media.php';
 require_once get_template_directory() . '/inc/niche-landing/editable.php';
 require_once get_template_directory() . '/inc/niche-landing/split-block.php';
@@ -85,11 +99,11 @@ require_once get_template_directory() . '/inc/form-fields.php';
 // REST: Demo Survey form → GHL webhook
 require_once get_template_directory() . '/inc/rest-demo-survey.php';
 
-// REST: Contact form → GHL webhook
-require_once get_template_directory() . '/inc/rest-contact.php';
-
 // Demo analytics: DB table + REST endpoint
 require_once get_template_directory() . '/inc/demo-analytics.php';
+
+// Migrate /contact → /support + 301
+require_once get_template_directory() . '/inc/support-page-migrate.php';
 
 // Page template dropdown filter (must load on REST too — block editor template list).
 require_once get_template_directory() . '/inc/admin-page-templates.php';
@@ -164,3 +178,4 @@ function jcp_core_prototype_dequeue_conflicting_scripts(): void {
 	}
 }
 add_action( 'wp_enqueue_scripts', 'jcp_core_prototype_dequeue_conflicting_scripts', 9999 );
+

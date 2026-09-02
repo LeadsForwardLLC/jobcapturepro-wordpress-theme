@@ -81,9 +81,9 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
           <a href="<?php echo esc_url( home_url( '/demo' ) ); ?>"><?php esc_html_e( 'See the live demo', 'jcp-core' ); ?></a>
           <a href="<?php echo esc_url( $jcp_onboarding_url_dir_started ); ?>"<?php
             if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
-              jcp_niche_cta_tracking_attr( $jcp_onboarding_url_dir_started, 'footer', 'Get started' );
+              jcp_niche_cta_tracking_attr( $jcp_onboarding_url_dir_started, 'footer', 'Start Free Trial' );
             }
-          ?>><?php esc_html_e( 'Get started', 'jcp-core' ); ?></a>
+          ?>><?php esc_html_e( 'Start Free Trial', 'jcp-core' ); ?></a>
         </div>
       <?php else : ?>
         <div class="jcp-footer-brand">
@@ -107,12 +107,12 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
         </div>
         <div class="jcp-footer-col">
           <h4>Company</h4>
-          <a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a>
+          <a href="<?php echo esc_url( home_url( '/support/' ) ); ?>">Support</a>
           <a href="<?php echo esc_url( $jcp_onboarding_url ); ?>"<?php
             if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
-              jcp_niche_cta_tracking_attr( $jcp_onboarding_url, 'footer', 'Sign up' );
+              jcp_niche_cta_tracking_attr( $jcp_onboarding_url, 'footer', 'Start Free Trial' );
             }
-          ?>><?php esc_html_e( 'Sign up', 'jcp-core' ); ?></a>
+          ?>><?php esc_html_e( 'Start Free Trial', 'jcp-core' ); ?></a>
           <?php
           $about_page = get_page_by_path( 'about' );
           if ( $about_page && $about_page->post_status === 'publish' ) :

@@ -11,8 +11,9 @@
 
 /**
  * GHL webhook URL for Demo Survey (single workflow).
- * Fired for both: "Continue to preview" (Event=opt-in) and "Skip to demo" / "Launch the live demo" (Event=viewed-demo).
- * In GHL use an if/then: if Event = "demo-viewed" → Find Contact by Email → Add Tag "viewed-demo"; else (Event = "demo-opt-in") → Create Contact → Add tag (e.g. demo-opt-in).
+ * Fired for: gate unlock (Event=demo-opt-in) and launch into live demo (Event=demo-viewed),
+ * plus in-demo milestones (demo-run-started, demo-publish-seen, etc.).
+ * In GHL use if/then on Event. Tags for viewed are "demo-viewed" (not "viewed-demo").
  */
 define( 'JCP_GHL_DEMO_SURVEY_WEBHOOK_URL', 'https://services.leadconnectorhq.com/hooks/kMIwmFm9I7LJPEYo35qi/webhook-trigger/zYfSsYRsSdSdHlD5vqUv' );
 
@@ -68,6 +69,11 @@ function jcp_core_register_demo_survey_rest_routes(): void {
                 'type'              => 'array',
                 'items'             => [ 'type' => 'string' ],
             ],
+            'referral_source' => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
         ] + jcp_demo_ghl_attribution_rest_args(),
     ] );
 
@@ -114,6 +120,11 @@ function jcp_core_register_demo_survey_rest_routes(): void {
                 'type'              => 'array',
                 'items'             => [ 'type' => 'string' ],
             ],
+            'referral_source' => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
         ] + jcp_demo_ghl_attribution_rest_args(),
     ] );
 }
@@ -121,7 +132,7 @@ function jcp_core_register_demo_survey_rest_routes(): void {
 add_action( 'rest_api_init', 'jcp_core_register_demo_survey_rest_routes' );
 
 /**
- * REST args for lead attribution fields (UTMs, landing page, referrer).
+ * REST args for lead attribution fields (UTMs, landing page, referrer, GHL contact id).
  *
  * @return array<string, array<string, mixed>>
  */
@@ -147,6 +158,16 @@ function jcp_demo_ghl_attribution_rest_args(): array {
             'type'              => 'string',
             'sanitize_callback' => 'sanitize_text_field',
         ],
+        'utm_term'     => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'fbclid'       => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
         'landing_page' => [
             'required'          => false,
             'type'              => 'string',
@@ -157,7 +178,29 @@ function jcp_demo_ghl_attribution_rest_args(): array {
             'type'              => 'string',
             'sanitize_callback' => 'esc_url_raw',
         ],
+        'contact_id'   => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'jcp_demo_ghl_sanitize_contact_id',
+        ],
     ];
+}
+
+/**
+ * Sanitize / validate a GoHighLevel contact id from the client.
+ * Invalid values become empty so webhook payloads omit contactId (legacy create/update path).
+ *
+ * @param mixed $value Raw value.
+ */
+function jcp_demo_ghl_sanitize_contact_id( $value ): string {
+    $id = trim( sanitize_text_field( (string) $value ) );
+    if ( $id === '' || strlen( $id ) < 8 || strlen( $id ) > 64 ) {
+        return '';
+    }
+    if ( ! preg_match( '/^[A-Za-z0-9_-]+$/', $id ) ) {
+        return '';
+    }
+    return $id;
 }
 
 /**
@@ -178,7 +221,7 @@ function jcp_demo_ghl_merge_attribution_from_request( array $params, \WP_REST_Re
  * Normalize demo contact fields for GHL webhook payloads.
  *
  * @param array<string, mixed> $params Request params.
- * @return array{first_name: string, last_name: string, email: string, phone: string, company: string, business_type: string, service_area: string, use_case: string}
+ * @return array{first_name: string, last_name: string, email: string, phone: string, company: string, business_type: string, service_area: string, use_case: string, referral_source: string, utm_source: string, utm_medium: string, utm_campaign: string, utm_content: string, utm_term: string, fbclid: string, landing_page: string, referrer: string, contact_id: string}
  */
 function jcp_demo_ghl_normalize_contact_params( array $params ): array {
     $first_name    = isset( $params['first_name'] ) ? trim( (string) $params['first_name'] ) : '';
@@ -188,6 +231,7 @@ function jcp_demo_ghl_normalize_contact_params( array $params ): array {
     $company       = isset( $params['company'] ) ? trim( (string) $params['company'] ) : '';
     $business_type = isset( $params['business_type'] ) ? trim( (string) $params['business_type'] ) : '';
     $service_area  = isset( $params['service_area'] ) ? trim( (string) $params['service_area'] ) : '';
+    $referral_source = isset( $params['referral_source'] ) ? trim( (string) $params['referral_source'] ) : '';
 
     $demo_goals = $params['demo_goals'] ?? [];
     if ( ! is_array( $demo_goals ) ) {
@@ -205,20 +249,26 @@ function jcp_demo_ghl_normalize_contact_params( array $params ): array {
     }
 
     return [
-        'first_name'    => $first_name,
-        'last_name'     => $last_name,
-        'email'         => $email,
-        'phone'         => $phone,
-        'company'       => $company,
-        'business_type' => $business_type_label,
-        'service_area'  => $service_area,
-        'use_case'      => implode( ', ', $demo_goals ),
-        'utm_source'    => isset( $params['utm_source'] ) ? trim( (string) $params['utm_source'] ) : '',
-        'utm_medium'    => isset( $params['utm_medium'] ) ? trim( (string) $params['utm_medium'] ) : '',
-        'utm_campaign'  => isset( $params['utm_campaign'] ) ? trim( (string) $params['utm_campaign'] ) : '',
-        'utm_content'   => isset( $params['utm_content'] ) ? trim( (string) $params['utm_content'] ) : '',
-        'landing_page'  => isset( $params['landing_page'] ) ? trim( (string) $params['landing_page'] ) : '',
-        'referrer'      => isset( $params['referrer'] ) ? trim( (string) $params['referrer'] ) : '',
+        'first_name'       => $first_name,
+        'last_name'        => $last_name,
+        'email'            => $email,
+        'phone'            => $phone,
+        'company'          => $company,
+        'business_type'    => $business_type_label,
+        'service_area'     => $service_area,
+        'use_case'         => implode( ', ', $demo_goals ),
+        'referral_source'  => $referral_source,
+        'utm_source'       => isset( $params['utm_source'] ) ? trim( (string) $params['utm_source'] ) : '',
+        'utm_medium'       => isset( $params['utm_medium'] ) ? trim( (string) $params['utm_medium'] ) : '',
+        'utm_campaign'     => isset( $params['utm_campaign'] ) ? trim( (string) $params['utm_campaign'] ) : '',
+        'utm_content'      => isset( $params['utm_content'] ) ? trim( (string) $params['utm_content'] ) : '',
+        'utm_term'         => isset( $params['utm_term'] ) ? trim( (string) $params['utm_term'] ) : '',
+        'fbclid'           => isset( $params['fbclid'] ) ? trim( (string) $params['fbclid'] ) : '',
+        'landing_page'     => isset( $params['landing_page'] ) ? trim( (string) $params['landing_page'] ) : '',
+        'referrer'         => isset( $params['referrer'] ) ? trim( (string) $params['referrer'] ) : '',
+        'contact_id'       => function_exists( 'jcp_demo_ghl_sanitize_contact_id' )
+            ? jcp_demo_ghl_sanitize_contact_id( $params['contact_id'] ?? '' )
+            : '',
     ];
 }
 
@@ -245,10 +295,22 @@ function jcp_demo_ghl_build_webhook_body( string $event, array $params, array $t
         JCP_GHL_KEY_UTM_MEDIUM    => $contact['utm_medium'],
         JCP_GHL_KEY_UTM_CAMPAIGN  => $contact['utm_campaign'],
         JCP_GHL_KEY_UTM_CONTENT   => $contact['utm_content'],
+        JCP_GHL_KEY_UTM_TERM      => $contact['utm_term'],
+        JCP_GHL_KEY_FBCLID        => $contact['fbclid'],
         JCP_GHL_KEY_LANDING_PAGE  => $contact['landing_page'],
         JCP_GHL_KEY_REFERRER      => $contact['referrer'],
     ];
+    // When present, GHL workflows should Find/Update this contact instead of creating a duplicate.
+    if ( $contact['contact_id'] !== '' && defined( 'JCP_GHL_KEY_CONTACT_ID' ) ) {
+        $scalar[ JCP_GHL_KEY_CONTACT_ID ] = $contact['contact_id'];
+        // Human-readable alias for easier inbound-webhook field mapping in GHL.
+        $scalar['Contact Id'] = $contact['contact_id'];
+    }
     $body = http_build_query( $scalar, '', '&', PHP_QUERY_RFC3986 );
+    if ( $contact['referral_source'] !== '' ) {
+        // Match Early Access: Referral Source[] for GHL multi-select custom fields.
+        $body .= '&' . rawurlencode( JCP_GHL_KEY_REFERRAL_SOURCE ) . '%5B%5D=' . rawurlencode( $contact['referral_source'] );
+    }
     foreach ( $tags as $tag ) {
         $tag = trim( (string) $tag );
         if ( $tag === '' ) {
@@ -281,10 +343,16 @@ function jcp_core_demo_survey_submit_handler( \WP_REST_Request $request ): \WP_R
     $email      = $request->get_param( 'email' );
 
     if ( empty( trim( (string) $first_name ) ) || empty( trim( (string) $email ) ) ) {
-        return new \WP_REST_Response(
-            [ 'success' => false, 'message' => __( 'First name, last name, and email are required.', 'jcp-core' ) ],
-            400
-        );
+        if ( empty( trim( (string) $email ) ) ) {
+            return new \WP_REST_Response(
+                [ 'success' => false, 'message' => __( 'Work email is required.', 'jcp-core' ) ],
+                400
+            );
+        }
+        if ( empty( trim( (string) $first_name ) ) ) {
+            $local      = sanitize_text_field( (string) strstr( (string) $email, '@', true ) );
+            $first_name = $local !== '' ? $local : 'there';
+        }
     }
 
     $params = jcp_demo_ghl_merge_attribution_from_request(
@@ -297,6 +365,7 @@ function jcp_core_demo_survey_submit_handler( \WP_REST_Request $request ): \WP_R
             'business_type' => $request->get_param( 'business_type' ),
             'service_area'  => $request->get_param( 'service_area' ),
             'demo_goals'    => $request->get_param( 'demo_goals' ),
+            'referral_source' => $request->get_param( 'referral_source' ),
         ],
         $request
     );
@@ -360,6 +429,7 @@ function jcp_demo_ghl_contact_params_from_request( \WP_REST_Request $request, $m
             'business_type' => $request->get_param( 'business_type' ),
             'service_area'  => $request->get_param( 'service_area' ),
             'demo_goals'    => $request->get_param( 'demo_goals' ),
+            'referral_source' => $request->get_param( 'referral_source' ),
         ],
         $request
     );
@@ -376,6 +446,9 @@ function jcp_demo_ghl_contact_params_from_request( \WP_REST_Request $request, $m
     }
     if ( ( ! is_array( $params['demo_goals'] ) || empty( $params['demo_goals'] ) ) && ! empty( $metadata['demo_goals'] ) && is_array( $metadata['demo_goals'] ) ) {
         $params['demo_goals'] = $metadata['demo_goals'];
+    }
+    if ( trim( (string) ( $params['referral_source'] ?? '' ) ) === '' && ! empty( $metadata['referral_source'] ) ) {
+        $params['referral_source'] = $metadata['referral_source'];
     }
 
     return $params;
@@ -400,6 +473,16 @@ function jcp_demo_ghl_milestone_mapping( string $event_type, $metadata ): ?array
                 'event' => 'demo-publish-seen',
                 'tags'  => [ 'demo-publish-seen' ],
             ];
+        case 'demo_review_sent':
+            return [
+                'event' => 'demo-review-sent',
+                'tags'  => [ 'demo-review-sent' ],
+            ];
+        case 'demo_outcomes_opened':
+            return [
+                'event' => 'demo-outcomes-opened',
+                'tags'  => [ 'demo-outcomes-opened' ],
+            ];
         case 'post_demo_modal_shown':
             return [
                 'event' => 'demo-finished',
@@ -412,13 +495,20 @@ function jcp_demo_ghl_milestone_mapping( string $event_type, $metadata ): ?array
             ];
         case 'cta_clicked':
             $cta = is_array( $metadata ) && isset( $metadata['cta'] ) ? (string) $metadata['cta'] : '';
-            if ( ! in_array( $cta, [ 'view_directory', 'view_main_directory' ], true ) ) {
-                return null;
+            if ( in_array( $cta, [ 'view_directory', 'view_main_directory' ], true ) ) {
+                return [
+                    'event' => 'demo-cta-directory',
+                    'tags'  => [ 'demo-cta-directory' ],
+                ];
             }
-            return [
-                'event' => 'demo-cta-directory',
-                'tags'  => [ 'demo-cta-directory' ],
-            ];
+            if ( $cta === 'personalized_demo' ) {
+                return [
+                    'event' => 'demo-cta-personalized',
+                    'tags'  => [ 'demo-cta-personalized' ],
+                ];
+            }
+            // get_started_free is covered by demo_converted (same click also fires that event).
+            return null;
         default:
             return null;
     }
@@ -436,12 +526,27 @@ function jcp_demo_ghl_milestone_is_first_for_session( string $session_id, string
     $table = $wpdb->prefix . JCP_DEMO_EVENTS_TABLE;
 
     if ( $event_type === 'cta_clicked' ) {
+        $cta = is_array( $metadata ) && isset( $metadata['cta'] ) ? (string) $metadata['cta'] : '';
+        if ( $cta === '' ) {
+            return false;
+        }
+        // Directory CTAs share one GHL milestone bucket.
+        if ( in_array( $cta, [ 'view_directory', 'view_main_directory' ], true ) ) {
+            $count = (int) $wpdb->get_var(
+                $wpdb->prepare(
+                    "SELECT COUNT(*) FROM $table WHERE session_id = %s AND event_type = 'cta_clicked' AND (metadata LIKE %s OR metadata LIKE %s)",
+                    $session_id,
+                    '%"cta":"view_directory"%',
+                    '%"cta":"view_main_directory"%'
+                )
+            );
+            return $count === 1;
+        }
         $count = (int) $wpdb->get_var(
             $wpdb->prepare(
-                "SELECT COUNT(*) FROM $table WHERE session_id = %s AND event_type = 'cta_clicked' AND (metadata LIKE %s OR metadata LIKE %s)",
+                "SELECT COUNT(*) FROM $table WHERE session_id = %s AND event_type = 'cta_clicked' AND metadata LIKE %s",
                 $session_id,
-                '%"cta":"view_directory"%',
-                '%"cta":"view_main_directory"%'
+                '%"cta":"' . $wpdb->esc_like( $cta ) . '"%'
             )
         );
         return $count === 1;
@@ -530,7 +635,7 @@ function jcp_demo_ghl_maybe_forward_demo_milestone(
 }
 
 /**
- * Handle Demo Viewed POST: forward to same GHL webhook with Event=viewed-demo for if/then branching.
+ * Handle Demo Viewed POST: forward to same GHL webhook with Event=demo-viewed for if/then branching.
  *
  * @param \WP_REST_Request $request Request.
  * @return \WP_REST_Response
@@ -540,11 +645,15 @@ function jcp_core_demo_viewed_submit_handler( \WP_REST_Request $request ): \WP_R
     $last_name  = trim( (string) $request->get_param( 'last_name' ) );
     $email      = trim( (string) $request->get_param( 'email' ) );
 
-    if ( $first_name === '' || $email === '' || ! is_email( $email ) ) {
+    if ( $email === '' || ! is_email( $email ) ) {
         return new \WP_REST_Response(
-            [ 'success' => false, 'message' => __( 'First name, last name, and email are required.', 'jcp-core' ) ],
+            [ 'success' => false, 'message' => __( 'Work email is required.', 'jcp-core' ) ],
             400
         );
+    }
+    if ( $first_name === '' ) {
+        $local      = sanitize_text_field( (string) strstr( $email, '@', true ) );
+        $first_name = $local !== '' ? $local : 'there';
     }
 
     $body_string = jcp_core_build_demo_viewed_ghl_body(
@@ -557,6 +666,7 @@ function jcp_core_demo_viewed_submit_handler( \WP_REST_Request $request ): \WP_R
                 'business_type' => $request->get_param( 'business_type' ),
                 'service_area'  => $request->get_param( 'service_area' ),
                 'demo_goals'    => $request->get_param( 'demo_goals' ),
+                'referral_source' => $request->get_param( 'referral_source' ),
             ],
             $request
         )

@@ -31,58 +31,85 @@
     }
   })();
 
-  // Pricing data with monthly and yearly prices
-  // Features can be strings or { text: string, tooltip: string } for items with tooltips
-  const pricingData = {
+  // Pricing data — prefer shared PHP catalog (JCP_PRICING) so sales tool + pricing stay aligned.
+  const pricingDataFallback = {
     starter: {
       monthly: 99,
-      yearly: 79, // 20% discount
+      yearly: 79,
       name: 'Starter',
       description: 'Everything a single-location business needs to turn check-ins into reviews.',
-      pill: 'Single-location',
+      pill: '1 location only',
+      allows_additional_locations: false,
+      extra_location_fee: null,
       features: [
-        '1 location included',
+        { text: '1 location included', tooltip: 'Starter includes one operating location and cannot add more. Upgrade to Scale or Enterprise to add locations.' },
         { text: 'Unlimited check-in tracking', tooltip: 'Track unlimited jobs/check-ins for your included location.' },
-        { text: 'Automated review requests', tooltip: 'Automatically send review requests via SMS/email after a job is completed.' },
+        { text: 'On-site review requests', tooltip: 'After each job, your crew shows a QR code or sends a link so the customer can leave a review while the experience is fresh.' },
         { text: 'Team activity feed', tooltip: 'See check-ins and activity across your team in one place.' },
+        { text: 'Advanced analytics', tooltip: 'Reporting across check-ins, reviews, and performance.' },
+        { text: 'Free verified listing on the JCP Directory', tooltip: 'Every plan includes a free verified listing on the JobCapturePro Directory so customers can find and trust your business.' },
         'Email support'
       ]
     },
     scale: {
       monthly: 249,
-      yearly: 199, // 20% discount
+      yearly: 199,
       name: 'Scale',
       description: 'Built for multi-location brands ready to grow without adding overhead.',
       pill: 'Most popular',
+      allows_additional_locations: true,
+      extra_location_fee: 150,
       features: [
         'Everything in Starter',
-        { text: 'Multi-location support', tooltip: 'Manage multiple operating locations under one account.' },
-        { text: 'CRM integration', tooltip: 'Connect systems like Housecall Pro, Workiz, QuickBooks, and CompanyCam.' },
+        { text: 'Add locations anytime (+$150/mo each)', tooltip: 'Add more operating locations under one account at $150/month each.' },
+        { text: '1 Local Falcon keyword tracked', tooltip: 'Local Falcon keyword tracking scans a search phrase across a geographic grid to show how often you appear in the Google Map Pack (Share of Local Voice) and your average rank—so you can measure local Maps visibility over time. Not a ranking guarantee.' },
+        { text: 'CRM integration', tooltip: 'Connect systems like Housecall Pro, Jobber, ServiceTitan, and CompanyCam.' },
         'WordPress plugin',
         'Social Media posting',
         'Google Business Profile posting',
-        { text: 'Advanced analytics', tooltip: 'Deeper reporting across check-ins, reviews, and performance by location.' },
-        { text: 'Priority support', tooltip: 'Faster responses and escalation for time-sensitive issues.' },
-        'Add more locations any time'
+        { text: 'Priority support', tooltip: 'Faster responses and escalation for time-sensitive issues.' }
       ],
       featured: true
     },
     enterprise: {
       monthly: 399,
-      yearly: 319, // 20% discount
+      yearly: 319,
       name: 'Enterprise',
-      description: 'AI-powered insights and a dedicated team behind every location.',
+      description: 'Dedicated support and custom connectivity for multi-location teams.',
       pill: 'Enterprise',
+      allows_additional_locations: true,
+      extra_location_fee: 100,
       features: [
         'Everything in Scale',
-        { text: 'AI-powered insights', tooltip: 'Patterns and opportunities from your check-ins and reviews, surfaced by AI.' },
+        { text: 'Add locations anytime (+$100/mo each)', tooltip: 'Add more operating locations under one account at $100/month each.' },
+        { text: '3 Local Falcon keywords tracked', tooltip: 'Local Falcon keyword tracking scans a search phrase across a geographic grid to show how often you appear in the Google Map Pack (Share of Local Voice) and your average rank—so you can measure local Maps visibility over time. Enterprise includes 3 tracked keywords. Not a ranking guarantee.' },
         { text: 'Custom integrations', tooltip: 'Custom API integrations and tailored workflows for complex stacks.' },
         { text: 'Dedicated account manager', tooltip: 'A single point of contact for rollout, strategy, and ongoing success.' },
-        { text: 'SLA guarantee', tooltip: 'Priority handling with service-level commitments for support/uptime.' },
-        { text: 'Add locations and AI credits on demand', tooltip: 'Scale locations and AI usage as needed without replatforming.' }
+        { text: 'SLA guarantee', tooltip: 'Priority handling with service-level commitments for support/uptime.' }
       ]
     }
   };
+  const pricingData =
+    window.JCP_PRICING && window.JCP_PRICING.plans && typeof window.JCP_PRICING.plans === 'object'
+      ? { ...pricingDataFallback, ...window.JCP_PRICING.plans }
+      : pricingDataFallback;
+  const extraLocationFees = (() => {
+    const fromPhp = window.JCP_PRICING && window.JCP_PRICING.extraLocationFees;
+    if (fromPhp && typeof fromPhp === 'object') {
+      return {
+        starter: fromPhp.starter == null ? null : Number(fromPhp.starter),
+        scale: fromPhp.scale == null ? 150 : Number(fromPhp.scale),
+        enterprise: fromPhp.enterprise == null ? 100 : Number(fromPhp.enterprise),
+      };
+    }
+    return {
+      starter: null,
+      scale: Number(pricingData.scale?.extra_location_fee) || 150,
+      enterprise: Number(pricingData.enterprise?.extra_location_fee) || 100,
+    };
+  })();
+  const scaleLocationFee = extraLocationFees.scale;
+  const enterpriseLocationFee = extraLocationFees.enterprise;
 
   // Escape HTML for tooltip content (safe for innerHTML)
   const escapeHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -114,17 +141,17 @@
     {
       id: 'faq-pricing-locations',
       question: 'Can we use JobCapturePro for multiple locations?',
-      answer: 'Yes. Each location can have its own Google Business Profile and connected social accounts, with organization level management for multi location teams.'
+      answer: 'Starter is limited to one location and cannot add more. Scale lets you add locations at $150/month each and includes 1 Local Falcon keyword tracked. Enterprise adds locations at $100/month each and includes 3 Local Falcon keywords tracked, plus custom integrations and dedicated support.'
     },
     {
       id: 'faq-pricing-pricing',
       question: 'What is included in each plan?',
-      answer: 'All plans include core features like photo capture, proof generation, and basic publishing. Higher tiers add CRM integrations, automated reviews, social automation, and advanced reporting. See the comparison table above for details.'
+      answer: 'All plans include core features like photo capture, proof generation, basic publishing, and on-site QR review requests. Higher tiers add CRM integrations, social automation, and advanced reporting. See the comparison table above for details.'
     },
     {
       id: 'faq-pricing-trial',
-      question: 'Is there a free trial?',
-      answer: 'We offer early access pricing for founding members. Contact us to learn more about current offers and see if you qualify for special pricing.'
+      question: 'Can I start a free trial?',
+      answer: 'Yes. You can Start Free Trial with no credit card required. Explore the platform with your own jobs and cancel anytime.'
     },
     {
       id: 'faq-pricing-cancel',
@@ -186,8 +213,9 @@
           ${plan.features.map(renderFeature).join('')}
         </ul>
         <a class="btn ${plan.featured ? 'btn-primary' : 'btn-secondary'}" href="${escapeAttr(onboardingCtaHref)}">
-          ${hasPricing ? 'Get started' : 'Contact sales'}
+          ${hasPricing ? 'Start Free Trial' : 'Contact sales'}
         </a>
+        ${hasPricing ? '<p class="jcp-plan-cta-note">No credit card required</p>' : ''}
       </article>
     `;
   };
@@ -197,9 +225,20 @@
     if (!root) return;
 
     const pageTitle = (root.dataset.pageTitle || '').trim();
-    const pageSupporting = (root.dataset.pageSupporting || '').trim();
-    const heroTitle = pageTitle || 'Choose the plan that matches your growth';
-    const heroSubtitle = pageSupporting || 'Each tier aligns to business maturity and visibility goals. Get early bird pricing and unlock the benefits of turning real work into reviews, visibility, and trust that drives inbound demand.';
+    const pageSupportingRaw = (root.dataset.pageSupporting || '').trim();
+    const scrubRetiredPromo = (text) => {
+      if (!text) return text;
+      return text
+        .replace(/Get early bird pricing and unlock the benefits of turning real work into reviews, visibility, and trust that drives inbound demand\./gi,
+          'Start Free Trial and turn real work into reviews, visibility, and trust that drives inbound demand.')
+        .replace(/Get early bird pricing/gi, 'Start Free Trial')
+        .replace(/early bird pricing/gi, 'start-for-free pricing')
+        .replace(/early bird/gi, 'Start Free Trial')
+        .replace(/founding crew/gi, 'customers');
+    };
+    const pageSupporting = scrubRetiredPromo(pageSupportingRaw);
+    const heroTitle = scrubRetiredPromo(pageTitle) || 'Choose the plan that matches your growth';
+    const heroSubtitle = pageSupporting || 'Each tier aligns to business maturity and visibility goals. Start Free Trial and turn real work into reviews, visibility, and trust that drives inbound demand.';
 
     // Load FAQ component if available
     const faqHTML = typeof window.renderFAQ === 'function' 
@@ -217,8 +256,8 @@
         <section class="jcp-section rankings-section">
           <div class="jcp-container">
             <div class="rankings-header">
-              <h1>${escapeHtml(heroTitle)}</h1>
-              <p class="rankings-subtitle">${escapeHtml(heroSubtitle)}</p>
+              <h1 data-jcp-path="hero.h1">${escapeHtml(heroTitle)}</h1>
+              <p class="rankings-subtitle" data-jcp-path="hero.subheadline">${escapeHtml(heroSubtitle)}</p>
             </div>
             
             <!-- Billing Toggle -->
@@ -243,9 +282,9 @@
             </div>
             <section class="jcp-pricing-extras" aria-label="Add-ons and plan details">
               <div class="jcp-pricing-extras__head">
-                <p class="jcp-pricing-notes-label">Add-ons</p>
-                <h3 class="jcp-addons__title">Extend your plan as you grow</h3>
-                <p class="jcp-addons__sub">Each plan includes <strong>one</strong> operating location. Add another location for <strong>$199/month</strong> when you’re ready.</p>
+                <p class="jcp-pricing-notes-label">Locations &amp; add-ons</p>
+                <h3 class="jcp-addons__title">Grow locations when your plan allows it</h3>
+                <p class="jcp-addons__sub"><strong>Starter</strong> is locked to 1 location. <strong>Scale</strong> adds locations at <strong>$${scaleLocationFee}/mo</strong> each. <strong>Enterprise</strong> adds locations at <strong>$${enterpriseLocationFee}/mo</strong> each.</p>
               </div>
 
               <div class="jcp-addons__grid jcp-addons__grid--three">
@@ -269,29 +308,29 @@
                     </div>
                     <div class="jcp-addon-card__meta">
                       <div class="jcp-addon-card__name">Additional Location</div>
-                      <div class="jcp-addon-card__note">Available on Scale and Enterprise</div>
+                      <div class="jcp-addon-card__note">Scale $${scaleLocationFee}/mo · Enterprise $${enterpriseLocationFee}/mo</div>
                       <div class="jcp-addon-card__price">
-                        <span class="jcp-addon-card__amount">$199</span><span class="jcp-addon-card__period">/mo</span>
+                        <span class="jcp-addon-card__amount">From $${enterpriseLocationFee}</span><span class="jcp-addon-card__period">/mo</span>
                       </div>
                     </div>
                   </div>
-                  <div class="jcp-addon-card__body">Add another operating location under the same organization.</div>
+                  <div class="jcp-addon-card__body">Not available on Starter. Add another operating location under the same organization on Scale or Enterprise.</div>
                 </article>
 
                 <article class="jcp-addon-card jcp-addon-card--enterprise">
                   <div class="jcp-addon-card__top">
                     <div class="jcp-addon-card__icon">
-                      <img src="${icon('sparkles')}" alt="" width="18" height="18" />
+                      <img src="${icon('map-pin')}" alt="" width="18" height="18" />
                     </div>
                     <div class="jcp-addon-card__meta">
-                      <div class="jcp-addon-card__name">AI Credits Pack</div>
-                      <div class="jcp-addon-card__note">Enterprise only</div>
+                      <div class="jcp-addon-card__name">Local Falcon keyword tracking</div>
+                      <div class="jcp-addon-card__note">Scale 1 · Enterprise 3</div>
                       <div class="jcp-addon-card__price">
-                        <span class="jcp-addon-card__amount">$29</span><span class="jcp-addon-card__period">one-time</span>
+                        <span class="jcp-addon-card__amount">1–3</span><span class="jcp-addon-card__period">keywords</span>
                       </div>
                     </div>
                   </div>
-                  <div class="jcp-addon-card__body">Top up AI usage for insights and advanced automation.</div>
+                  <div class="jcp-addon-card__body">Scans a search phrase across a map grid to show Map Pack coverage (Share of Local Voice) and average rank—so you can measure local Maps visibility over time.</div>
                 </article>
               </div>
             </section>
@@ -331,6 +370,12 @@
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
               </div>
+              <div class="jcp-compare-row">
+                <div>Additional locations</div>
+                <div>Not available</div>
+                <div>+$${scaleLocationFee}/mo each</div>
+                <div>+$${enterpriseLocationFee}/mo each</div>
+              </div>
 
               <!-- Publish -->
               <div class="jcp-compare-row jcp-compare-group">
@@ -360,13 +405,13 @@
 
               <!-- Reviews -->
               <div class="jcp-compare-row jcp-compare-group">
-                <div>Manual review requests</div>
+                <div>On-site QR review requests</div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
               </div>
               <div class="jcp-compare-row">
-                <div>Automated review sequences</div>
+                <div>Review link option</div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
@@ -380,7 +425,7 @@
 
               <!-- Visibility -->
               <div class="jcp-compare-row jcp-compare-group">
-                <div>Directory listings</div>
+                <div>Free verified JCP Directory listing</div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
@@ -392,7 +437,13 @@
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
               </div>
               <div class="jcp-compare-row">
-                <div>Rank tracking</div>
+                <div>Local Falcon keyword tracking</div>
+                <div><img src="${icon('x')}" class="lucide-icon lucide-icon-xs" alt="Not available"></div>
+                <div>1 keyword</div>
+                <div>3 keywords</div>
+              </div>
+              <div class="jcp-compare-row">
+                <div>Rank tracking (Maps ranking + radius)</div>
                 <div><img src="${icon('x')}" class="lucide-icon lucide-icon-xs" alt="Not available"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
@@ -412,20 +463,26 @@
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
               </div>
               <div class="jcp-compare-row">
+                <div>Advanced analytics</div>
+                <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
+                <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
+                <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
+              </div>
+              <div class="jcp-compare-row">
                 <div>Local reporting dashboards</div>
-                <div><img src="${icon('x')}" class="lucide-icon lucide-icon-xs" alt="Not available"></div>
+                <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
               </div>
               <div class="jcp-compare-row">
                 <div>Multi-location dashboards</div>
                 <div><img src="${icon('x')}" class="lucide-icon lucide-icon-xs" alt="Not available"></div>
-                <div><img src="${icon('x')}" class="lucide-icon lucide-icon-xs" alt="Not available"></div>
+                <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
                 <div><img src="${icon('check')}" class="lucide-icon lucide-icon-xs" alt="Included"></div>
               </div>
             </div>
             <div class="jcp-actions jcp-compare-actions">
-              <a class="btn btn-primary" href="${escapeAttr(onboardingCtaHref)}">Get started</a>
+              <a class="btn btn-primary" href="${escapeAttr(onboardingCtaHref)}">Start Free Trial</a>
               <a class="btn btn-secondary" href="/demo">See the Demo</a>
             </div>
           </div>

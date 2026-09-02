@@ -356,7 +356,7 @@ function getDemoContactPayload() {
   }
 }
 
-function jcpDemoTrack(eventType, stepNumber, metadata) {
+function jcpDemoTrack(eventType, stepNumber, metadata, options) {
   const url = window.JCP_DEMO_EVENT && window.JCP_DEMO_EVENT.rest_url;
   if (!url) return;
   try {
@@ -367,10 +367,19 @@ function jcpDemoTrack(eventType, stepNumber, metadata) {
       metadata: metadata || undefined,
       ...getDemoContactPayload(),
     };
+    const payload = JSON.stringify(body);
+    const keepalive = Boolean(options && options.keepalive);
+    if (keepalive && typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+      try {
+        const blob = new Blob([payload], { type: 'application/json' });
+        if (navigator.sendBeacon(url, blob)) return;
+      } catch (e) {}
+    }
     fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
+      body: payload,
+      keepalive,
     }).catch(function() {});
   } catch (e) {}
 }
@@ -432,22 +441,262 @@ try {
   console.warn('Demo personalization fallback used');
 }
 
+try { refreshDemoAssetsForNiche(); } catch (e) {}
+
 
 /* ---------------------------
-   Demo Assets
+   Demo Assets (simulated job photos by niche — no live camera)
 ---------------------------- */
-const demoPhotos = [
-  'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=400&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=400&h=400&fit=crop',
-  'https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=400&h=400&fit=crop'
-];
+const DEFAULT_JOB_LOCATION = '1242 Mason Rd, Austin TX 78704';
 
-const descriptions = [
-  'Replaced an aging water heater and brought the system up to code. We installed a new high-efficiency unit, verified proper venting, and tested temperature + pressure relief for safe operation. Customer is back to consistent hot water with improved energy performance.',
-  'Completed a full water heater swap-out: removed the failing tank, installed a new unit, reconnected lines, and confirmed there are no leaks. Verified ignition and heating cycle, set the thermostat, and cleaned up the work area before departure.',
-  'Installed a new water heater and ensured everything is running safely and efficiently. Connections were tightened, valves were tested, and we confirmed stable hot-water delivery throughout the home.'
-];
+/** Unsplash job-scene URLs (no people / faces) keyed by niche family. */
+const NICHE_PHOTO_PACKS = {
+  plumbing: {
+    label: 'Plumbing job',
+    jobTitle: 'Water heater replacement',
+    photos: [
+      'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Water heater replacement at 1242 Mason Rd, Austin TX 78704. Installed a high-efficiency unit, verified venting, and tested T&P relief. Local, geotagged job proof ready for your website and Google.',
+      'Completed a full water heater swap-out: removed the failing tank, installed a new unit, reconnected lines, and confirmed there are no leaks.',
+      'Installed a new water heater and confirmed stable hot-water delivery throughout the home. Connections tightened, valves tested, work area cleaned.',
+    ],
+  },
+  hvac: {
+    label: 'HVAC job',
+    jobTitle: 'HVAC system install',
+    photos: [
+      'CAMPAIGN:jcp-campaign-job-proof.jpg',
+      'CAMPAIGN:jcp-campaign-hvac-capture.jpg',
+      'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'HVAC install at 1242 Mason Rd, Austin TX 78704. New outdoor unit set, lineset connected, and system commissioned for cooling. Geotagged job proof ready to publish.',
+      'Completed an HVAC changeout: set the condenser, verified refrigerant charge, and confirmed airflow through the home.',
+      'Finished HVAC service with before/after proof from the job site. System tested and left running clean.',
+    ],
+  },
+  electrical: {
+    label: 'Electrical job',
+    jobTitle: 'Panel upgrade',
+    photos: [
+      'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1558442074-3c19857bc1dc?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1473341302250-a0c3377630b0?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Electrical panel upgrade at 1242 Mason Rd, Austin TX 78704. New breaker layout, labeled circuits, and safety check completed.',
+      'Finished residential electrical work with clean terminations and tested outlets throughout the home.',
+      'Completed electrical service with geotagged job proof ready for website and Google.',
+    ],
+  },
+  roofing: {
+    label: 'Roofing job',
+    jobTitle: 'Roof replacement',
+    photos: [
+      'https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Roof replacement at 1242 Mason Rd, Austin TX 78704. Tear-off complete, new underlayment and shingles installed, flashing sealed.',
+      'Finished roofing work with clean ridges and validated drainage paths around the home.',
+      'Completed roofing service with geotagged proof ready to publish across your channels.',
+    ],
+  },
+  outdoor: {
+    label: 'Outdoor job',
+    jobTitle: 'Outdoor project',
+    photos: [
+      'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1598902108854-10e335adac99?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Outdoor project completed at 1242 Mason Rd, Austin TX 78704. Site cleaned, work documented, ready for homeowners nearby.',
+      'Finished outdoor service with clear before/after proof from the property.',
+      'Completed outdoor work with geotagged job proof ready for website and Google.',
+    ],
+  },
+  cleaning: {
+    label: 'Cleaning job',
+    jobTitle: 'Deep clean',
+    photos: [
+      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Deep clean completed at 1242 Mason Rd, Austin TX 78704. Surfaces detailed, floors finished, home left ready for the owner.',
+      'Finished cleaning service with clear job-site proof for your online presence.',
+      'Completed cleaning work with geotagged proof ready to publish.',
+    ],
+  },
+  remodeling: {
+    label: 'Remodel job',
+    jobTitle: 'Home remodel',
+    photos: [
+      'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Remodel work completed at 1242 Mason Rd, Austin TX 78704. Finished surfaces installed and site cleaned for handover.',
+      'Finished remodeling project with geotagged proof of the completed space.',
+      'Completed remodel service with publish-ready job documentation.',
+    ],
+  },
+  restoration: {
+    label: 'Restoration job',
+    jobTitle: 'Restoration work',
+    photos: [
+      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Restoration work completed at 1242 Mason Rd, Austin TX 78704. Affected areas treated, dried, and documented for the homeowner.',
+      'Finished restoration service with clear job-site proof.',
+      'Completed restoration with geotagged documentation ready to publish.',
+    ],
+  },
+  default: {
+    label: 'Job site',
+    jobTitle: 'Completed job',
+    photos: [
+      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1200&h=900&fit=crop&q=80',
+    ],
+    descriptions: [
+      'Completed job at 1242 Mason Rd, Austin TX 78704. Work documented on site with geotagged proof ready for your website and Google.',
+      'Finished service with clear job-site photos ready to publish across connected channels.',
+      'Completed work with publish-ready proof from the field.',
+    ],
+  },
+};
 
+function normalizeDemoNicheKey(raw) {
+  const slug = String(raw || '')
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  if (!slug) return 'plumbing';
+
+  const aliases = {
+    'hvac-heating-cooling': 'hvac',
+    'heating-cooling': 'hvac',
+    'water-heaters': 'plumbing',
+    'water-treatment': 'plumbing',
+    'septic-sewer': 'plumbing',
+    'cleaning-services': 'cleaning',
+    'house-cleaning': 'cleaning',
+    'carpet-cleaning': 'cleaning',
+    'pressure-washing': 'cleaning',
+    'window-cleaning': 'cleaning',
+    'deck-builder': 'outdoor',
+    'decks-patios': 'outdoor',
+    landscaping: 'outdoor',
+    'lawn-care': 'outdoor',
+    'tree-service': 'outdoor',
+    fencing: 'outdoor',
+    'pool-service': 'outdoor',
+    'pool-construction': 'outdoor',
+    'junk-removal': 'cleaning',
+    'dumpster-rental': 'cleaning',
+    'general-contracting': 'remodeling',
+    remodeling: 'remodeling',
+    'kitchen-remodeling': 'remodeling',
+    'bathroom-remodeling': 'remodeling',
+    flooring: 'remodeling',
+    painting: 'remodeling',
+    'foundation-repair': 'restoration',
+    'basement-waterproofing': 'restoration',
+    'water-damage-restoration': 'restoration',
+    'mold-remediation': 'restoration',
+    'siding-exterior': 'roofing',
+    gutters: 'roofing',
+    'windows-doors': 'roofing',
+    'home-windows': 'roofing',
+    solar: 'electrical',
+    generators: 'electrical',
+  };
+
+  if (NICHE_PHOTO_PACKS[slug]) return slug;
+  if (aliases[slug]) return aliases[slug];
+  if (slug.includes('hvac') || slug.includes('heat') || slug.includes('cool')) return 'hvac';
+  if (slug.includes('plumb') || slug.includes('pipe') || slug.includes('drain')) return 'plumbing';
+  if (slug.includes('electr') || slug.includes('solar') || slug.includes('wire')) return 'electrical';
+  if (slug.includes('roof') || slug.includes('gutter') || slug.includes('siding')) return 'roofing';
+  if (slug.includes('clean') || slug.includes('wash') || slug.includes('junk')) return 'cleaning';
+  if (slug.includes('pool') || slug.includes('lawn') || slug.includes('tree') || slug.includes('land') || slug.includes('fence') || slug.includes('deck')) {
+    return 'outdoor';
+  }
+  if (slug.includes('remodel') || slug.includes('kitchen') || slug.includes('bath') || slug.includes('floor') || slug.includes('paint')) {
+    return 'remodeling';
+  }
+  if (slug.includes('restor') || slug.includes('mold') || slug.includes('foundation') || slug.includes('water-damage')) {
+    return 'restoration';
+  }
+  return 'default';
+}
+
+function resolveDemoPhotoUrl(src) {
+  const raw = String(src || '');
+  if (raw.startsWith('CAMPAIGN:') && assetBase) {
+    return `${assetBase}/campaign/${raw.slice('CAMPAIGN:'.length)}`;
+  }
+  if (raw.startsWith('CAMPAIGN:')) {
+    return 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1200&h=900&fit=crop&q=80';
+  }
+  return raw;
+}
+
+function getDemoPhotoPack() {
+  const key = normalizeDemoNicheKey(demoUser && demoUser.niche);
+  const pack = NICHE_PHOTO_PACKS[key] || NICHE_PHOTO_PACKS.default;
+  const nicheLabel = String(demoUser.niche || key)
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+  const biz = (demoUser && demoUser.businessName || '').trim();
+  const descriptions = pack.descriptions.map((text) => {
+    if (!biz || text.includes(biz)) return text;
+    return text.replace(DEFAULT_JOB_LOCATION, `${DEFAULT_JOB_LOCATION} (${biz})`);
+  });
+  return {
+    key,
+    nicheLabel,
+    label: pack.label,
+    jobTitle: pack.jobTitle,
+    photos: pack.photos.map(resolveDemoPhotoUrl),
+    descriptions,
+  };
+}
+
+let demoPhotos = NICHE_PHOTO_PACKS.plumbing.photos.slice();
+let descriptions = NICHE_PHOTO_PACKS.plumbing.descriptions.slice();
+
+function refreshDemoAssetsForNiche() {
+  const pack = getDemoPhotoPack();
+  demoPhotos = pack.photos;
+  descriptions = pack.descriptions;
+  const badge = typeof document !== 'undefined' ? document.getElementById('demoCameraJobBadge') : null;
+  if (badge) {
+    const biz = (demoUser.businessName || '').trim();
+    badge.textContent = biz
+      ? `${pack.jobTitle} · ${biz}`
+      : `${pack.jobTitle} · ${DEFAULT_JOB_LOCATION.split(',')[0]}`;
+  }
+  const hint = typeof document !== 'undefined' ? document.getElementById('demoCameraHint') : null;
+  if (hint) {
+    hint.textContent = `Tap the shutter to capture this ${pack.label.toLowerCase()}`;
+  }
+}
 /* ---------------------------
    State
 ---------------------------- */
@@ -536,50 +785,50 @@ const DEMO_OUTCOME_ITEMS = [
   'Posted to social media',
   'Live on Google Business',
   'Added to JobCapturePro directory',
-  'Review request sent',
+  'Review request presented',
 ];
 
 const demoGuideContent = {
   step1: {
     pill: 'Step 1',
-    title: 'Start the demo',
-    body: 'Tap Start Demo above. You will walk through the real workflow step by step.',
+    title: 'Start your personalized demo',
+    body: 'Tap Start Demo. You’ll walk through the exact field workflow your crew would use.',
     interactHint: 'Tap the highlighted Start Demo button.'
   },
   step2: {
     pill: 'Step 2',
-    title: 'Tap + to create a check-in',
-    body: 'This is what your tech does on each job. One quick check-in powers everything.',
+    title: 'Create a job check-in',
+    body: 'This is the moment on site. One check-in becomes proof, reviews, and published updates.',
     interactHint: 'Tap the + button, then choose New Check-in.'
   },
   step3: {
     pill: 'Step 3',
-    title: 'Add a photo, then submit',
-    body: 'Photos generate the job content. Add one photo, then tap Submit.',
-    interactHint: 'Tap the camera, add a photo, then tap Submit.'
+    title: 'Add the job photo',
+    body: 'The photo is the marketing. Open the camera and capture a simulated job-site photo for this niche, then submit.',
+    interactHint: 'Tap the camera, capture the job photo (simulated), then tap Submit.'
   },
   step4: {
     pill: 'Step 4',
-    title: 'Publish the job',
-    body: 'Tap Publish Everywhere to push this job to your website, Google, social media and directory.',
-    interactHint: 'Tap Publish Everywhere to continue.'
+    title: 'AI builds a local SEO post',
+    body: 'Every check-in — from JobCapturePro or your field software — becomes a geotagged, location-optimized website post built to rank. Watch each piece of the post, then publish it everywhere.',
+    interactHint: 'Follow the highlight down the page, then tap Publish Everywhere.'
   },
   step5: {
     pill: 'Step 5',
-    title: 'Request a review',
-    body: 'Review requests go out automatically. Tap Request Review to preview it.',
-    interactHint: 'Tap Request Review to preview the automatic send.'
+    title: 'Ask for the review on site',
+    body: 'Optional but powerful — show the QR before you leave while the customer is still happy.',
+    interactHint: 'Tap Request Review to preview the QR handoff.'
   },
   step6: {
-    pill: 'Final step',
-    title: 'See everything that published',
-    body: 'Swipe the dots to explore what happened automatically for this job.',
+    pill: 'See the payoff',
+    title: 'One job. Published everywhere.',
+    body: 'Website, Google, social, directory, and a review ask — from a single check-in.',
     interactHint: ''
   },
   step6Dock: {
-    pill: 'Final step',
-    title: 'Ready to get started?',
-    body: 'Start free and turn every completed job into proof that drives more calls.',
+    pill: 'Ready?',
+    title: 'Start Free Trial',
+    body: 'Turn every finished job into proof, Google activity, reviews, and more calls.',
     interactHint: ''
   }
 };
@@ -590,14 +839,18 @@ const OUTCOMES_SLIDE_LABELS = [
   'Live on Google Business',
   'Added to JobCapturePro directory',
   'New 5-star review received',
+  'New job request received',
 ];
 
 const outcomesSlideshow = {
   index: 0,
-  total: 5,
+  total: 6,
   isOpen: false,
   touchStartX: 0,
+  autoTimer: null,
 };
+
+const OUTCOMES_AUTO_ROTATE_MS = 2000;
 
 let outcomesConfettiFrame = null;
 
@@ -1073,11 +1326,34 @@ function hideMobileSpotlight() {
   if (ring) ring.style.display = 'none';
 }
 
+function isCreateSheetOpen() {
+  return Boolean($('create-sheet-overlay')?.classList.contains('is-open'));
+}
+
+/** Step 2: highlight + until the sheet opens, then New Check-in (never Cancel). */
+function syncStep2GuidedAnchor() {
+  const checkinVisible = isCreateSheetOpen() && $('create-action-checkin');
+  tour.anchors.step2 = checkinVisible ? '#create-action-checkin' : '#fabNewCheckin';
+}
+
 function positionMobileSpotlight() {
   const ring = $('mobileSpotlight');
   if (!ring || !isGuidedDemoRun() || mobileGuideCollapsed || tour.isHidden || state.guideDisabled || state.isFinalStep) {
     hideMobileSpotlight();
     return;
+  }
+
+  // Loading / camera overlays are not interactive tour targets.
+  if (
+    document.body.classList.contains('jcp-processing-open') ||
+    document.body.classList.contains('jcp-camera-open')
+  ) {
+    hideMobileSpotlight();
+    return;
+  }
+
+  if (tour.stepKey === 'step2') {
+    syncStep2GuidedAnchor();
   }
 
   const selector = tour.anchors[tour.stepKey];
@@ -1087,8 +1363,23 @@ function positionMobileSpotlight() {
     return;
   }
 
+  // If the focal control is clipped (common after Publish → Request Review), scroll first.
+  const visibleBottom = getGuidedVisibleBottom(
+    getDemoAppScrollParents()[0] || document.documentElement
+  );
+  const pre = target.getBoundingClientRect();
+  if (pre.bottom > visibleBottom - 8 || pre.height < 24) {
+    scrollGuidedControlIntoView(target, tour.stepKey === 'step5' ? 28 : 12);
+  }
+
   const pad = 10;
   const r = target.getBoundingClientRect();
+  // Guard against zero-size / off-screen targets (common while sheets animate).
+  if (r.width < 8 || r.height < 8) {
+    hideMobileSpotlight();
+    return;
+  }
+
   ring.style.display = 'block';
   ring.style.top = `${Math.round(r.top - pad)}px`;
   ring.style.left = `${Math.round(r.left - pad)}px`;
@@ -1121,10 +1412,15 @@ function toggleMobileGuideCollapse() {
 }
 
 function syncMobileGuideChrome() {
+  const shell = $('mobileDemoShell');
   if (!isGuidedDemoRun()) {
+    if (shell) shell.hidden = true;
     updateGuidedCoachBackdrop();
     return;
   }
+
+  // Keep exit chrome through step 6 / outcomes; post-demo CSS hides it.
+  if (shell) shell.hidden = false;
 
   const stepKey = tour.stepKey;
   const step = stepKey === 'step6' && !outcomesSlideshow.isOpen
@@ -1135,6 +1431,7 @@ function syncMobileGuideChrome() {
 
   if (stepNum) {
     safeText('mobileDemoStep', `Step ${stepNum} of ${total}`);
+    safeText('mobileDemoChromeLabel', `Step ${stepNum} of ${total}`);
     const fill = $('mobileStepProgressFill');
     if (fill) fill.style.width = `${(stepNum / total) * 100}%`;
   }
@@ -1149,6 +1446,38 @@ function syncMobileGuideChrome() {
   updateMobileLayoutMetrics();
   positionMobileSpotlight();
   updateGuidedCoachBackdrop();
+  syncDemoStartFreeCtas();
+}
+
+function exitGuidedDemoToSurvey() {
+  try {
+    sessionStorage.removeItem(DEMO_INTAKE_COMPLETE_KEY);
+  } catch (e) {
+    // no-op
+  }
+  const returnUrl = sessionStorage.getItem('jcp_survey_return_url') || '/demo/?forceSurvey=1';
+  window.location.href = returnUrl;
+}
+
+function isClickOutsideGuidedCoach(target) {
+  if (!(target instanceof Element)) return false;
+  const stepper = $('mobile-stepper');
+  if (stepper && stepper.contains(target)) return false;
+  if ($('mobileGuidePill')?.contains(target)) return false;
+  if ($('mobileDemoShell')?.contains(target)) return false;
+  if ($('demoOutcomesModal')?.contains(target)) return false;
+  if ($('post-demo-panel')?.contains(target)) return false;
+  if (document.getElementById('demoPublishOverlay')?.contains(target)) return false;
+  if (document.getElementById('review-modal')?.contains(target)) return false;
+
+  // Keep coach open when tapping the highlighted control for this step.
+  const selector = tour.anchors[tour.stepKey];
+  const spotlightTarget = selector ? document.querySelector(selector) : null;
+  if (spotlightTarget && (spotlightTarget === target || spotlightTarget.contains(target))) {
+    return false;
+  }
+
+  return true;
 }
 
 function updateMobileLayoutMetrics() {
@@ -1173,7 +1502,7 @@ function getDemoSalesPhoneHref() {
     '';
   const digits = String(raw).replace(/[^\d+]/g, '');
   if (digits) return `tel:${digits}`;
-  return `${(baseUrl || '').replace(/\/$/, '')}/contact/`;
+  return `${(baseUrl || '').replace(/\/$/, '')}/support/`;
 }
 
 function updateMobileStepperLabel() {
@@ -1195,7 +1524,9 @@ function updateMobileStepperLabel() {
 
   if (hint) {
     const step = tour.stepKey ? demoGuideContent[tour.stepKey] : null;
-    const hintText = step?.interactHint || '';
+    const hintText = (tour.stepKey === 'step4' && tour.step4Hint)
+      ? tour.step4Hint
+      : (step?.interactHint || '');
     hint.textContent = hintText;
     hint.hidden = !hideNext || !hintText;
   }
@@ -1211,11 +1542,12 @@ const tour = {
 
   // This is the ONLY thing that should control what the tooltip says
   stepKey: 'step1',
+  step4Hint: '',
 
     anchors: {
       step1: '#btnStartDemo',
       step2: '#fabNewCheckin',
-      step3: '#submit-btn',
+      step3: '#uploadBtnCamera',
       step4: '#btnSavePublish',
       step5: '#btnRequestReview',
       step6: '#demoOutcomesModal',
@@ -1293,6 +1625,10 @@ function setTourStep(stepKey) {
       tourEl.classList.toggle('final-step', state.isFinalStep);
     }
   tour.stepKey = stepKey;
+  if (stepKey !== 'step4') {
+    tour.step4Hint = '';
+    clearStep4SeoBeatTimers();
+  }
   if (stepKey) {
     document.body.dataset.tourStep = stepKey;
   } else {
@@ -1308,6 +1644,9 @@ function setTourStep(stepKey) {
   updateTourNextLabel(getNextLabelForStep(stepKey));
   updateMobileStepperLabel();
   syncCreateSheetDemoState();
+  if (stepKey === 'step2') {
+    syncStep2GuidedAnchor();
+  }
   // Disable back buttons during guided steps (prevents breaking the flow) — skip on prototype
   if (!isPrototype) {
     lockBackButtons(['step2','step3','step4','step5'].includes(stepKey));
@@ -1319,6 +1658,13 @@ function setTourStep(stepKey) {
       const enabled = isPrototype || stepKey === 'step5';
       requestReviewBtn.disabled = !enabled;
       requestReviewBtn.classList.toggle('is-disabled', !enabled);
+    }
+
+    document.querySelectorAll('#edit-screen .is-demo-seo-spotlight').forEach((el) => {
+      el.classList.remove('is-demo-seo-spotlight');
+    });
+    if (stepKey === 'step5' && requestReviewBtn) {
+      requestReviewBtn.classList.add('is-demo-seo-spotlight');
     }
 
     const minimizeBtn = document.getElementById('tour-minimize');
@@ -1359,7 +1705,7 @@ function setTourStep(stepKey) {
 function getNextLabelForStep(stepKey) {
   if (stepKey === 'step4') return 'Publish →';
   if (stepKey === 'step5') return 'Send Review →';
-  if (stepKey === 'step6') return 'Get Started Free';
+  if (stepKey === 'step6') return 'Start Free Trial';
   return 'Next →';
 }
 
@@ -1867,6 +2213,7 @@ function goToNew() {
     submit.disabled = true;
     submit.onclick = null;
   }
+  syncStep3GuidedAnchor();
   if (tour.stepKey === 'step2') {
     setTourStep('step3');
     applyFocalPoint();
@@ -1890,6 +2237,18 @@ function openCreateActionSheet() {
   overlay.classList.add('is-open');
   sheet.classList.add('is-open');
   overlay.setAttribute('aria-hidden', 'false');
+
+  if (tour.stepKey === 'step2') {
+    syncStep2GuidedAnchor();
+    const refreshSpotlight = () => {
+      syncStep2GuidedAnchor();
+      positionMobileSpotlight();
+      applyFocalPoint();
+    };
+    requestAnimationFrame(refreshSpotlight);
+    setTimeout(refreshSpotlight, 80);
+    setTimeout(refreshSpotlight, 220);
+  }
 }
 
 function syncCreateSheetDemoState() {
@@ -1912,11 +2271,19 @@ function closeCreateActionSheet() {
   sheet.classList.remove('is-open');
   overlay.setAttribute('aria-hidden', 'true');
   document.querySelectorAll('.fab').forEach((el) => el.classList.remove('is-sheet-open'));
+
+  if (tour.stepKey === 'step2') {
+    syncStep2GuidedAnchor();
+    requestAnimationFrame(() => {
+      positionMobileSpotlight();
+      applyFocalPoint();
+    });
+  }
 }
 
 function handleCreateAction(action) {
   if (action === 'review' && isGuidedDemoRun() && tour.stepKey === 'step2') {
-    showDemoRestrictionTooltip($('create-action-review'), 'Send review request is not available in the demo');
+    showDemoRestrictionTooltip($('create-action-review'), 'Review requests unlock after you publish a job — that comes later in this demo');
     return;
   }
   closeCreateActionSheet();
@@ -1998,26 +2365,58 @@ function saveEditProfile() {
   goToProfile();
 }
 
-function addPhotos() {
+let demoCameraBusy = false;
+
+const PROCESSING_TITLE_CYCLE = [
+  'Creating your check-in…',
+  'Optimizing for local SEO…',
+  'Writing Google-ready copy…',
+  'Geotagging the job site…',
+  'Getting you found nearby…',
+  'Prepping for Google Business…',
+];
+
+const PROCESSING_STEP_IDS = ['step1', 'step2', 'step3', 'step4'];
+let processingTitleTimer = null;
+
+function startProcessingTitleCycle() {
+  stopProcessingTitleCycle();
+  let i = 0;
+  setProcessingTitle(PROCESSING_TITLE_CYCLE[0]);
+  processingTitleTimer = window.setInterval(() => {
+    i = (i + 1) % PROCESSING_TITLE_CYCLE.length;
+    setProcessingTitle(PROCESSING_TITLE_CYCLE[i]);
+  }, 880);
+}
+
+function stopProcessingTitleCycle() {
+  if (processingTitleTimer) {
+    window.clearInterval(processingTitleTimer);
+    processingTitleTimer = null;
+  }
+}
+
+function addPhotos(photoSrc) {
   if (state.photoCount >= 3) return;
 
   const grid = $('photo-grid');
   if (!grid) return;
 
   const idx = state.photoCount;
+  const src = photoSrc || demoPhotos[idx % demoPhotos.length];
 
   const photoDiv = document.createElement('div');
   photoDiv.className = 'photo-item';
   photoDiv.innerHTML = `
-    <img src="${demoPhotos[idx]}" alt="Job photo" width="120" height="90">
-    <button class="photo-remove" type="button">×</button>
+    <img src="${src}" alt="Job photo" width="120" height="90">
+    <button class="photo-remove" type="button" aria-label="Remove photo">×</button>
   `;
 
-  // Remove handler (safe)
   photoDiv.querySelector('.photo-remove')?.addEventListener('click', () => {
     photoDiv.remove();
     state.photoCount = Math.max(0, state.photoCount - 1);
     updateSubmitButtonState();
+    syncStep3GuidedAnchor();
     syncAttentionAnimations();
   });
 
@@ -2025,7 +2424,115 @@ function addPhotos() {
   state.photoCount++;
 
   updateSubmitButtonState();
+  syncStep3GuidedAnchor();
   syncAttentionAnimations();
+}
+
+function closeDemoCamera() {
+  const overlay = $('demoCameraOverlay');
+  if (overlay) {
+    overlay.hidden = true;
+    overlay.setAttribute('aria-hidden', 'true');
+  }
+  document.body.classList.remove('jcp-camera-open');
+  demoCameraBusy = false;
+  if (tour.stepKey === 'step3' && !document.body.classList.contains('jcp-processing-open')) {
+    syncStep3GuidedAnchor();
+    positionMobileSpotlight();
+  }
+}
+
+async function openDemoCamera() {
+  if (state.photoCount >= 3) return;
+  const overlay = $('demoCameraOverlay');
+  const video = $('demoCameraVideo');
+  const fallback = $('demoCameraFallback');
+  if (!overlay) {
+    addPhotos();
+    return;
+  }
+
+  if (state.currentScreen !== 'new-screen') {
+    setScreen('new-screen');
+  }
+
+  refreshDemoAssetsForNiche();
+
+  overlay.hidden = false;
+  overlay.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('jcp-camera-open');
+  hideMobileSpotlight();
+
+  // Simulated job camera only — never request webcam permission / getUserMedia.
+  if (video) {
+    try { video.srcObject = null; } catch (e) {}
+    video.pause?.();
+    video.removeAttribute('src');
+    video.style.display = 'none';
+    video.hidden = true;
+  }
+  if (fallback) {
+    fallback.hidden = false;
+    fallback.alt = getDemoPhotoPack().jobTitle || 'Job photo';
+    fallback.src = demoPhotos[state.photoCount % demoPhotos.length];
+  }
+
+  hideMobileSpotlight();
+}
+
+function captureDemoCameraFrame() {
+  const fallback = $('demoCameraFallback');
+  if (fallback && fallback.complete && fallback.naturalWidth > 0) {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = fallback.naturalWidth;
+      canvas.height = fallback.naturalHeight;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(fallback, 0, 0);
+        return canvas.toDataURL('image/jpeg', 0.88);
+      }
+    } catch (e) {
+      // Cross-origin Unsplash images taint the canvas — fall back to the URL.
+    }
+  }
+  return demoPhotos[state.photoCount % demoPhotos.length];
+}
+
+async function shutterDemoCamera() {
+  if (demoCameraBusy) return;
+  demoCameraBusy = true;
+
+  const flash = $('demoCameraFlash');
+  flash?.classList.remove('is-on');
+  void flash?.offsetWidth;
+  flash?.classList.add('is-on');
+
+  await wait(160);
+  const src = captureDemoCameraFrame();
+  closeDemoCamera();
+  addPhotos(src);
+
+  if (isGuidedDemoRun() && tour.stepKey === 'step3') {
+    tour.anchors.step3 = '#submit-btn';
+    updateMobileStepperLabel();
+    positionMobileSpotlight();
+  }
+  demoCameraBusy = false;
+}
+
+function syncStep3GuidedAnchor() {
+  if (!isGuidedDemoRun()) return;
+  if (document.body.classList.contains('jcp-camera-open')) {
+    hideMobileSpotlight();
+    return;
+  }
+  tour.anchors.step3 = state.photoCount >= 1 ? '#submit-btn' : '#uploadBtnCamera';
+  if (tour.stepKey === 'step3' && !document.body.classList.contains('jcp-processing-open')) {
+    applyFocalPoint();
+    positionMobileSpotlight();
+    updateTourFloating();
+  }
 }
 
 function updateSubmitButtonState() {
@@ -2043,33 +2550,79 @@ function updateSubmitButtonState() {
   }
 }
 
+function setProcessingTitle(text) {
+  const title = $('processingTitle');
+  if (!title) return;
+  if (title.textContent === text) return;
+  title.classList.add('is-swap');
+  window.setTimeout(() => {
+    title.textContent = text;
+    // Force reflow so the enter animation feels continuous.
+    void title.offsetWidth;
+    title.classList.remove('is-swap');
+  }, 180);
+}
+
+function setProcessingSub(text) {
+  const sub = $('processingSub');
+  if (sub) sub.textContent = text;
+}
+
+function setProcessingStepActive(stepId) {
+  PROCESSING_STEP_IDS.forEach((id) => {
+    const el = $(id);
+    if (!el) return;
+    el.classList.toggle('is-active', id === stepId && !el.classList.contains('done'));
+  });
+}
+
 async function processPhotos() {
   const overlay = $('processing');
   if (!overlay) {
-    // Fallback
     showEditScreen();
     return;
   }
+
+  hideMobileSpotlight();
+  document.body.classList.add('jcp-processing-open');
+  closeDemoCamera();
+
+  resetProcessingSteps(PROCESSING_STEP_IDS);
+  setProcessingSub('Turning this job into proof customers can find.');
+  setProcessingStepActive('step1');
+  startProcessingTitleCycle();
 
   overlay.classList.add('active');
   if (isPrototype && typeof window.CustomEvent !== 'undefined') {
     window.dispatchEvent(new CustomEvent('jcp-prototype-screen-change', { detail: { screenId: 'checkin-creation-screen' } }));
   }
 
-  await wait(700);
-  markProcessingStepDone('step1');
+  const beats = [
+    { id: 'step1', sub: 'Reading what was completed on site.' },
+    { id: 'step2', sub: 'So the work shows up for nearby searches.' },
+    { id: 'step3', sub: 'Building contractor-friendly, local-search copy.' },
+    { id: 'step4', sub: 'Ready for website, Google, and social.' },
+  ];
 
-  await wait(700);
-  markProcessingStepDone('step2');
+  for (let i = 0; i < beats.length; i++) {
+    const beat = beats[i];
+    setProcessingStepActive(beat.id);
+    setProcessingSub(beat.sub);
+    await wait(i === 0 ? 780 : 820);
+    markProcessingStepDone(beat.id);
+    hideMobileSpotlight();
+  }
 
-  await wait(700);
-  markProcessingStepDone('step3');
+  stopProcessingTitleCycle();
+  setProcessingTitle('Check-in ready');
+  setProcessingSub('Opening your finished job proof…');
+  await wait(480);
 
-  await wait(350);
   overlay.classList.remove('active');
+  document.body.classList.remove('jcp-processing-open');
+  hideMobileSpotlight();
 
-  // Reset steps
-  setTimeout(() => resetProcessingSteps(['step1','step2','step3']), 400);
+  setTimeout(() => resetProcessingSteps(PROCESSING_STEP_IDS), 400);
 
   if (isPrototype) {
     const summary = descriptions[0] || 'Replaced water heater.';
@@ -2094,18 +2647,24 @@ function markProcessingStepDone(stepId) {
   const step = $(stepId);
   if (!step) return;
   step.classList.add('done');
+  step.classList.remove('is-active');
   const icon = step.querySelector('.step-icon');
   if (icon) icon.innerHTML = `<img src="${assetBase}/shared/assets/icons/lucide/check.svg" class="lucide-icon lucide-icon-sm" alt="">`;
 }
 
 function resetProcessingSteps(ids) {
-  ids.forEach(id => {
+  (ids || PROCESSING_STEP_IDS).forEach((id) => {
     const step = $(id);
     if (!step) return;
-    step.classList.remove('done');
+    step.classList.remove('done', 'is-active');
     const icon = step.querySelector('.step-icon');
     if (icon) icon.textContent = '';
+    const label = step.getAttribute('data-processing-label');
+    const span = step.querySelector('span');
+    if (label && span) span.textContent = label;
   });
+  setProcessingTitle(PROCESSING_TITLE_CYCLE[0]);
+  setProcessingSub('Turning this job into proof customers can find.');
 }
 
 function showEditScreen() {
@@ -2144,6 +2703,13 @@ function showEditScreen() {
     }
   }
 
+  // Guided demo: always land on the geotagged / local-SEO AI sample.
+  if (descriptionField && !isPrototype) {
+    descriptionField.value = descriptions[0];
+  } else if (descriptionField && !descriptionField.value.trim()) {
+    descriptionField.value = descriptions[0];
+  }
+
   updateArchiveButtonUI();
   const publishBtn = $('btnSavePublish');
   if (publishBtn) {
@@ -2159,23 +2725,107 @@ function showEditScreen() {
   setScreen('edit-screen');
   setTourStep('step4');
 
-  // AUTO-SCROLL TO PUBLISH BUTTON (REAL SCROLLER)
-  setTimeout(() => {
-    const scroller = document.querySelector('#edit-screen .content-area');
-    const publishBtn = document.getElementById('btnSavePublish');
+  // Pace step 4: let people read the AI/local-SEO description before jumping to Publish.
+  runStep4SeoAppreciationBeat();
+}
 
-    if (!scroller || !publishBtn) return;
+/**
+ * Step 4 beat: slowly scroll + spotlight Location → Photos → Description → Tags → Publish.
+ */
+function clearStep4SeoBeatTimers() {
+  window.clearTimeout(runStep4SeoAppreciationBeat._timer);
+  if (Array.isArray(runStep4SeoAppreciationBeat._timers)) {
+    runStep4SeoAppreciationBeat._timers.forEach((id) => window.clearTimeout(id));
+  }
+  runStep4SeoAppreciationBeat._timers = [];
+  document.querySelectorAll('.is-demo-seo-spotlight').forEach((el) => {
+    el.classList.remove('is-demo-seo-spotlight');
+  });
+}
 
-    scroller.scrollTo({
-      top: publishBtn.offsetTop - 60,
-      behavior: 'smooth'
+function runStep4SeoAppreciationBeat() {
+  clearStep4SeoBeatTimers();
+
+  const scroller = document.querySelector('#edit-screen .content-area');
+  const publishBtn = document.getElementById('btnSavePublish');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const holdMs = reduceMotion ? 180 : 1350;
+  const settleMs = reduceMotion ? 40 : 380;
+  const behavior = reduceMotion ? 'auto' : 'smooth';
+
+  const sequence = [
+    { sel: '#edit-location-card', hint: 'Location is geotagged for local SEO.' },
+    { sel: '#edit-photos-block', hint: 'The job photo becomes proof on every channel.' },
+    { sel: '#edit-description-block', hint: 'AI wrote a local-SEO description from the job.' },
+    { sel: '#edit-tags-block', hint: 'Tags help organize and surface the work.' },
+    { sel: '#btnSavePublish', hint: 'Tap Publish Everywhere to push it live.' },
+  ];
+
+  const scrollToEl = (el, offset = 24) => {
+    if (!scroller || !el) return;
+    // Prefer offset relative to scroller content.
+    let top = 0;
+    try {
+      const parentTop = scroller.getBoundingClientRect().top;
+      const elTop = el.getBoundingClientRect().top;
+      top = Math.max(0, scroller.scrollTop + (elTop - parentTop) - offset);
+    } catch (e) {
+      top = Math.max(0, (el.offsetTop || 0) - offset);
+    }
+    scroller.scrollTo({ top, behavior });
+  };
+
+  const focusStep = (item) => {
+    if (tour.stepKey !== 'step4') return;
+    const el = document.querySelector(item.sel);
+    if (!el) return;
+
+    document.querySelectorAll('.is-demo-seo-spotlight').forEach((n) => {
+      n.classList.remove('is-demo-seo-spotlight');
     });
+    el.classList.add('is-demo-seo-spotlight');
+    tour.anchors.step4 = item.sel;
 
-    // RE-ANCHOR TOUR AFTER SCROLL
-    setTimeout(() => {
+    scrollToEl(el, item.sel === '#btnSavePublish' ? 48 : 20);
+
+    if (item.hint) {
+      tour.step4Hint = item.hint;
+      updateMobileStepperLabel();
+      syncMobileGuideChrome();
+    }
+
+    if (isGuidedDemoRun()) {
       updateTourFloating();
-    }, 300);
-  }, 500);
+      requestAnimationFrame(() => {
+        scrollGuidedControlIntoView(el, item.sel === '#btnSavePublish' ? 10 : 16);
+        positionMobileSpotlight();
+      });
+      setTimeout(() => positionMobileSpotlight(), settleMs);
+    }
+  };
+
+  let index = 0;
+  const advance = () => {
+    if (tour.stepKey !== 'step4') {
+      clearStep4SeoBeatTimers();
+      return;
+    }
+    if (index >= sequence.length) {
+      tour.anchors.step4 = '#btnSavePublish';
+      publishBtn?.classList.add('is-demo-seo-spotlight');
+      positionMobileSpotlight();
+      return;
+    }
+    const item = sequence[index++];
+    focusStep(item);
+    const t = window.setTimeout(advance, holdMs + settleMs);
+    runStep4SeoAppreciationBeat._timers.push(t);
+  };
+
+  // Small delay so edit-screen layout is ready after setScreen.
+  const start = window.setTimeout(advance, reduceMotion ? 60 : 200);
+  runStep4SeoAppreciationBeat._timers.push(start);
+  runStep4SeoAppreciationBeat._timer = start;
 }
 
 
@@ -2367,22 +3017,31 @@ async function runGuidedPublishSequence() {
     return;
   }
 
-  overlay.classList.add('active');
-  document.body.classList.add('jcp-publish-modal-open');
-  items.forEach((item) => item.classList.remove('is-done'));
+  const closeOverlay = () => {
+    overlay.classList.remove('active');
+    overlay.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('jcp-publish-modal-open');
+  };
 
-  for (let i = 0; i < items.length; i++) {
-    await wait(580);
-    items[i].classList.add('is-done');
-    if (i === 1) {
-      await publishToSocial();
+  try {
+    overlay.classList.add('active');
+    overlay.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('jcp-publish-modal-open');
+    items.forEach((item) => item.classList.remove('is-done'));
+
+    for (let i = 0; i < items.length; i++) {
+      await wait(480);
+      items[i].classList.add('is-done');
+      if (i === 1) {
+        await publishToSocial();
+      }
     }
-  }
 
-  await wait(650);
-  overlay.classList.remove('active');
-  document.body.classList.remove('jcp-publish-modal-open');
-  jcpDemoTrack('demo_publish_completed', 4);
+    await wait(520);
+    jcpDemoTrack('demo_publish_completed', 4);
+  } finally {
+    closeOverlay();
+  }
 }
 
 async function publishToSocial() {
@@ -2425,15 +3084,17 @@ function populateDemoReviewModal() {
   const address = checkin?.address || '105 Walnut St';
   const location = checkin?.location || 'Austin, TX';
   const imgSrc = checkin?.image || demoPhotos[0];
+  const business = (demoUser.businessName || 'Your Business').trim() || 'Your Business';
 
   safeText('demoReviewTitle', title);
   safeText('demoReviewLocation', `${address}, ${location}`);
+  safeText('demoReviewBusiness', business);
   const photo = $('demoReviewPhoto');
   if (photo) photo.src = imgSrc;
 
   const message = $('demoReviewMessage');
   if (message) {
-    message.value = 'We loved working with you! If you have a moment to leave a review, it would mean a lot to us.';
+    message.value = `We loved working with you at ${business}! If you have a moment to leave a review, it would mean a lot to us.`;
   }
 }
 
@@ -2442,6 +3103,12 @@ function openDemoReviewModal() {
   $('review-modal')?.classList.add('active');
   document.body.classList.add('jcp-review-modal-open');
   setMobileGuideCollapsed(true);
+}
+
+function setDemoReviewSendButtonLabel(sendBtn, label) {
+  if (!sendBtn) return;
+  const iconSrc = `${assetBase}/shared/assets/icons/lucide/send.svg`;
+  sendBtn.innerHTML = `<img src="${iconSrc}" class="lucide-icon lucide-icon-sm" alt=""> ${label}`;
 }
 
 async function confirmDemoReviewSend() {
@@ -2459,7 +3126,7 @@ async function confirmDemoReviewSend() {
   }
   if (sendBtn) {
     sendBtn.disabled = false;
-    sendBtn.textContent = 'Send';
+    setDemoReviewSendButtonLabel(sendBtn, 'Send');
   }
 
   await completeGuidedReviewFlow();
@@ -2521,6 +3188,24 @@ function getAvatarColor(initial) {
   return colors[code % colors.length];
 }
 
+function getDemoLeadServiceNeed(nicheLabel) {
+  const key = (typeof normalizeDemoNicheKey === 'function')
+    ? normalizeDemoNicheKey(nicheLabel)
+    : String(nicheLabel || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const needs = {
+    plumbing: 'Water heater not heating',
+    hvac: 'AC not cooling',
+    electrical: 'Panel upgrade quote',
+    roofing: 'Roof leak inspection',
+    outdoor: 'Yard project estimate',
+    cleaning: 'Deep clean request',
+    remodeling: 'Remodel quote request',
+    restoration: 'Water damage assessment',
+    default: 'Service request',
+  };
+  return needs[key] || needs.default;
+}
+
 function getOutcomesJobContext() {
   const checkin = getCurrentCheckinForReview();
   const businessName = demoUser.businessName || 'Your Business';
@@ -2550,6 +3235,8 @@ function getOutcomesJobContext() {
     reviewsCount: state.metrics?.reviews ?? 48,
     rating: '5.0',
     directoryUrl: getDemoDirectoryUrl(),
+    leadServiceNeed: getDemoLeadServiceNeed(nicheLabel),
+    leadCustomer: 'Sarah M.',
   };
 }
 
@@ -2571,11 +3258,14 @@ function buildOutcomesSlideHtml(index, ctx) {
   const reviewsCount = Number(ctx.reviewsCount) || 48;
   const rating = e(ctx.rating);
   const directoryUrl = e(ctx.directoryUrl);
+  const label = e(OUTCOMES_SLIDE_LABELS[index] || '');
+  const slideLabel = `<p class="demo-outcomes-slide__label">${label}</p>`;
 
   switch (index) {
     case 0:
       return `
         <article class="demo-outcomes-slide" data-slide="0">
+          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--website">
             <div class="outcomes-browser">
               <div class="outcomes-browser__bar">
@@ -2600,6 +3290,7 @@ function buildOutcomesSlideHtml(index, ctx) {
     case 1:
       return `
         <article class="demo-outcomes-slide" data-slide="1">
+          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--social">
             <div class="outcomes-social-card">
               <div class="outcomes-social-card__head">
@@ -2620,6 +3311,7 @@ function buildOutcomesSlideHtml(index, ctx) {
     case 2:
       return `
         <article class="demo-outcomes-slide" data-slide="2">
+          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--google">
             <div class="outcomes-gbp-card">
               <div class="outcomes-gbp-card__brand">
@@ -2637,6 +3329,7 @@ function buildOutcomesSlideHtml(index, ctx) {
     case 3:
       return `
         <article class="demo-outcomes-slide" data-slide="3">
+          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--directory">
             <div class="directory-card is-demo outcomes-directory-card" role="article">
               <span class="demo-flag">Demo Listing</span>
@@ -2681,9 +3374,10 @@ function buildOutcomesSlideHtml(index, ctx) {
             <a href="${directoryUrl}" target="_blank" rel="noopener noreferrer" class="outcomes-directory-view-link">View the directory</a>
           </div>
         </article>`;
-    default:
+    case 4:
       return `
         <article class="demo-outcomes-slide" data-slide="4">
+          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--review">
             <div class="outcomes-review-card">
               <div class="outcomes-review-card__stars" aria-hidden="true">★★★★★</div>
@@ -2697,11 +3391,43 @@ function buildOutcomesSlideHtml(index, ctx) {
               </div>
               <div class="outcomes-review-card__sent">
                 <img src="${assetBase}/shared/assets/icons/lucide/send.svg" class="lucide-icon lucide-icon-sm" alt="">
-                Review request sent automatically after the job
+                Review request presented with a QR code after the job
               </div>
             </div>
           </div>
         </article>`;
+    case 5:
+    default: {
+      const leadNeed = e(ctx.leadServiceNeed || getDemoLeadServiceNeed(ctx.nicheLabel));
+      const leadCustomer = e(ctx.leadCustomer || 'Sarah M.');
+      return `
+        <article class="demo-outcomes-slide" data-slide="5">
+          ${slideLabel}
+          <div class="outcomes-preview outcomes-preview--lead">
+            <div class="outcomes-lead-card">
+              <div class="outcomes-lead-card__banner">
+                <img src="${assetBase}/shared/assets/icons/lucide/bell-ring.svg" class="lucide-icon lucide-icon-sm" alt="">
+                <span>New lead · Just now</span>
+              </div>
+              <div class="outcomes-lead-card__body">
+                <div class="outcomes-lead-card__icon" aria-hidden="true">
+                  <img src="${assetBase}/shared/assets/icons/lucide/briefcase.svg" class="lucide-icon lucide-icon-sm" alt="">
+                </div>
+                <div class="outcomes-lead-card__copy">
+                  <strong>New ${niche} job request</strong>
+                  <p>${leadCustomer} · ${leadNeed}</p>
+                  <small>${location}</small>
+                  <span class="outcomes-lead-card__source">Came from Google / your website / reviews</span>
+                </div>
+              </div>
+              <div class="outcomes-lead-card__meta">
+                <img src="${assetBase}/shared/assets/icons/lucide/trending-up.svg" class="lucide-icon lucide-icon-sm" alt="">
+                Visibility from this check-in helped bring the next job in.
+              </div>
+            </div>
+          </div>
+        </article>`;
+    }
   }
 }
 
@@ -2731,25 +3457,171 @@ function updateOutcomesSlideshowUi() {
   });
 
   safeText('demoOutcomesSlideCounter', `${index + 1} of ${total}`);
-  safeText('demoOutcomesSlideLabel', OUTCOMES_SLIDE_LABELS[index] || '');
 
-  const isLast = index >= total - 1;
-  const nextBtn = $('demoOutcomesNextCta');
-  const finishBtn = $('demoOutcomesFinishCta');
-  if (nextBtn) {
-    nextBtn.hidden = isLast;
-    nextBtn.disabled = isLast;
+  const startFree = $('demoOutcomesStartFreeCta') || $('demoOutcomesFinishCta');
+  if (startFree) {
+    startFree.classList.add('demo-outcomes-modal__finish--solo');
+    if (startFree.tagName === 'A') {
+      startFree.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
+    } else {
+      startFree.dataset.outcomesAction = 'start_free';
+    }
+    ensureStackedStartFreeTrialCta(startFree);
   }
-  if (finishBtn) {
-    finishBtn.classList.toggle('demo-outcomes-modal__finish--solo', isLast);
+  syncDemoStartFreeCtas();
+}
+
+function goToDemoStartFree(source) {
+  const utm = source || 'demo_handoff';
+  jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free', source: utm, label: 'Start Free Trial' }, { keepalive: true });
+  jcpDemoTrack('demo_converted', null, { cta: 'get_started_free', source: utm }, { keepalive: true });
+  markDemoIntakeComplete();
+  window.location.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery(utm));
+}
+
+function syncDemoStartFreeCtas() {
+  const hrefChrome = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_chrome'));
+  const hrefOutcomes = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
+  const chrome = $('mobileDemoStartFree');
+  if (chrome) {
+    chrome.href = hrefChrome;
+    ensureStackedStartFreeTrialCta(chrome);
+  }
+  const outcomes = $('demoOutcomesStartFreeCta');
+  if (outcomes && outcomes.tagName === 'A') {
+    outcomes.href = hrefOutcomes;
+    ensureStackedStartFreeTrialCta(outcomes);
+  }
+  const headerCta = $('btnNext');
+  if (headerCta) {
+    const stackedMain = headerCta.querySelector('.jcp-trial-cta-main, .post-demo-cta-main');
+    const label = ((stackedMain && stackedMain.textContent) || headerCta.textContent || '').replace(/\s+/g, ' ');
+    if (/start\s+free\s+trial/i.test(label)) {
+      ensureStackedStartFreeTrialCta(headerCta, { arrow: true });
+    }
+  }
+  const post = document.querySelector('.post-demo-primary-cta');
+  if (post) {
+    post.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
+    ensureStackedStartFreeTrialCta(post);
+  }
+}
+
+/**
+ * Stack “Start Free Trial” + “No credit card required” inside a CTA.
+ * Never wipe with textContent once stacked — preserves the note line.
+ */
+function ensureStackedStartFreeTrialCta(el, opts = {}) {
+  if (!el) return;
+  const arrow = !!opts.arrow;
+  const mainLabel = arrow ? 'Start Free Trial →' : 'Start Free Trial';
+  const noteLabel = 'No credit card required';
+  el.classList.add('jcp-trial-cta-stacked');
+
+  let main =
+    el.querySelector('.jcp-trial-cta-main') ||
+    el.querySelector('.post-demo-cta-main');
+  let note =
+    el.querySelector('.jcp-trial-cta-note') ||
+    el.querySelector('.post-demo-cta-note');
+
+  if (main && note) {
+    const label = (main.textContent || '').trim();
+    if (
+      label === '' ||
+      /start\s+for\s+free|get\s+started\s+free|start\s+free(?!\s+trial)|start\s+free\s+trial/i.test(label)
+    ) {
+      main.textContent = mainLabel;
+    }
+    if (!(note.textContent || '').trim()) {
+      note.textContent = noteLabel;
+    }
+    return;
+  }
+
+  el.replaceChildren();
+  main = document.createElement('span');
+  main.className = 'jcp-trial-cta-main post-demo-cta-main';
+  main.textContent = mainLabel;
+  note = document.createElement('span');
+  note.className = 'jcp-trial-cta-note post-demo-cta-note';
+  note.textContent = noteLabel;
+  el.append(main, note);
+}
+
+/** @deprecated Use ensureStackedStartFreeTrialCta */
+function ensurePostDemoPrimaryCtaStacked(primaryCta) {
+  ensureStackedStartFreeTrialCta(primaryCta);
+}
+
+/**
+ * Migrate stale cached post-demo markup (SMS capture, note under button, full-width Replay).
+ * Safe no-op when HTML is already current.
+ */
+function migratePostDemoPanelMarkup() {
+  const panel = document.getElementById('post-demo-panel');
+  if (!panel) return;
+
+  document.getElementById('postDemoPhoneCapture')?.remove();
+  panel.querySelectorAll(
+    '.post-demo-phone-capture, .post-demo-phone-label, .post-demo-phone-row, .post-demo-phone-input, .post-demo-phone-btn, .post-demo-phone-status, #postDemoPhone, #postDemoPhoneBtn, #postDemoPhoneStatus'
+  ).forEach((el) => el.remove());
+
+  panel.querySelectorAll('.post-demo-note').forEach((el) => {
+    if (!el.closest('.post-demo-primary-cta')) el.remove();
+  });
+
+  const card = panel.querySelector('.post-demo-card') || panel;
+  if (!card.querySelector('.post-demo-trust')) {
+    const trust = document.createElement('p');
+    trust.className = 'post-demo-trust';
+    trust.setAttribute('aria-label', 'Trusted by contractors');
+    trust.innerHTML =
+      '<span class="post-demo-trust-stars" aria-hidden="true">★★★★★</span>' +
+      '<span class="post-demo-trust-copy">Trusted by crews who already take the photos</span>';
+    const title = card.querySelector('.post-demo-simple-title');
+    if (title) {
+      title.before(trust);
+    } else {
+      card.prepend(trust);
+    }
+  }
+
+  const primaryCta = panel.querySelector('.post-demo-primary-cta');
+  ensurePostDemoPrimaryCtaStacked(primaryCta);
+
+  const replay = document.getElementById('btnReplayDemo');
+  if (replay) {
+    const needsRestyle =
+      replay.classList.contains('btn') ||
+      replay.classList.contains('btn-secondary') ||
+      !replay.classList.contains('post-demo-replay-link');
+    if (needsRestyle) {
+      replay.className = 'post-demo-replay-link';
+      replay.type = 'button';
+    }
+    if (!replay.querySelector('.lucide-icon')) {
+      const icon = document.createElement('img');
+      icon.src = `${assetBase}/shared/assets/icons/lucide/rotate-ccw.svg`;
+      icon.className = 'lucide-icon lucide-icon-sm';
+      icon.alt = '';
+      icon.setAttribute('aria-hidden', 'true');
+      replay.replaceChildren(icon, document.createTextNode(' Replay demo'));
+    }
   }
 }
 
 function handleOutcomesModalAction(action) {
   if (action === 'next') {
-    if (outcomesSlideshow.index < outcomesSlideshow.total - 1) {
-      setOutcomesSlide(outcomesSlideshow.index + 1);
-    }
+    stepOutcomesSlide(1);
+    return;
+  }
+  if (action === 'prev') {
+    stepOutcomesSlide(-1);
+    return;
+  }
+  if (action === 'start_free') {
+    goToDemoStartFree('demo_outcomes');
     return;
   }
   if (action === 'finish') {
@@ -2777,27 +3649,62 @@ function onOutcomesModalClick(e) {
   }
 
   // Legacy markup (cached demo/index.html)
-  if (e.target.closest('#demoOutcomesNext, #demoOutcomesPrev')) {
+  if (e.target.closest('#demoOutcomesNext, #demoOutcomesPrev, #demoOutcomesNextCta')) {
     e.preventDefault();
     e.stopPropagation();
-    if (e.target.closest('#demoOutcomesPrev')) return;
+    if (e.target.closest('#demoOutcomesPrev')) {
+      handleOutcomesModalAction('prev');
+      return;
+    }
     handleOutcomesModalAction('next');
     return;
   }
-  if (e.target.closest('#demoOutcomesFinish, #demoOutcomesStartCta, #demoOutcomesPrimaryCta')) {
+  if (e.target.closest('#demoOutcomesFinish, #demoOutcomesStartCta, #demoOutcomesPrimaryCta, #demoOutcomesStartFreeCta, #demoOutcomesFinishCta')) {
     e.preventDefault();
     e.stopPropagation();
-    handleOutcomesModalAction('finish');
+    const el = e.target.closest('[data-outcomes-action]');
+    const action = el?.dataset?.outcomesAction || 'start_free';
+    handleOutcomesModalAction(action === 'finish' ? 'finish' : 'start_free');
   }
 }
 
-function setOutcomesSlide(index, { trackAnalytics = true } = {}) {
+function stepOutcomesSlide(delta, { trackAnalytics = true, restartAuto = true } = {}) {
+  const total = outcomesSlideshow.total;
+  const next = ((outcomesSlideshow.index + delta) % total + total) % total;
+  setOutcomesSlide(next, { trackAnalytics, restartAuto });
+}
+
+function setOutcomesSlide(index, { trackAnalytics = true, restartAuto = true } = {}) {
   const clamped = Math.min(Math.max(0, index), outcomesSlideshow.total - 1);
   outcomesSlideshow.index = clamped;
   updateOutcomesSlideshowUi();
   if (trackAnalytics && outcomesSlideshow.isOpen) {
     jcpDemoTrack('demo_outcomes_slide', clamped + 1);
   }
+  if (restartAuto && outcomesSlideshow.isOpen) {
+    startOutcomesAutoRotate();
+  }
+}
+
+function stopOutcomesAutoRotate() {
+  if (outcomesSlideshow.autoTimer) {
+    clearInterval(outcomesSlideshow.autoTimer);
+    outcomesSlideshow.autoTimer = null;
+  }
+}
+
+function startOutcomesAutoRotate() {
+  stopOutcomesAutoRotate();
+  if (!outcomesSlideshow.isOpen) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  outcomesSlideshow.autoTimer = setInterval(() => {
+    if (!outcomesSlideshow.isOpen) {
+      stopOutcomesAutoRotate();
+      return;
+    }
+    stepOutcomesSlide(1, { trackAnalytics: false, restartAuto: false });
+  }, OUTCOMES_AUTO_ROTATE_MS);
 }
 
 function stopOutcomesConfetti() {
@@ -2903,7 +3810,7 @@ function openOutcomesSlideshow() {
 
   renderOutcomesSlides();
   wireOutcomesSlideshow();
-  setOutcomesSlide(0, { trackAnalytics: false });
+  setOutcomesSlide(0, { trackAnalytics: false, restartAuto: true });
 
   modal.hidden = false;
   modal.setAttribute('aria-hidden', 'false');
@@ -2936,6 +3843,14 @@ function hideOutcomesCtaDock() {
 
 function completeDemoConversion() {
   jcpDemoTrack('demo_outcomes_completed', 6);
+  try {
+    if (window.parent && window.parent !== window) {
+      const params = new URLSearchParams(window.location.search || '');
+      if (params.get('embed') === '1') {
+        window.parent.postMessage({ type: 'jcp-demo-embed', event: 'outcomes_completed' }, window.location.origin);
+      }
+    }
+  } catch (e) {}
   if (outcomesSlideshow.isOpen) {
     closeOutcomesSlideshow({ keepDock: false });
   }
@@ -2949,6 +3864,7 @@ function closeOutcomesSlideshow({ keepDock = true } = {}) {
   const modal = $('demoOutcomesModal');
   if (!modal || modal.hidden) return;
 
+  stopOutcomesAutoRotate();
   stopOutcomesConfetti();
   outcomesSlideshow.isOpen = false;
   modal.classList.remove('is-visible');
@@ -2973,6 +3889,16 @@ function ensureOutcomesFooterButtons() {
   const card = modal.querySelector('.demo-outcomes-modal__card');
   if (!card) return;
 
+  // Migrate / remove legacy header subtitle (label now lives on each slide)
+  const legacySubtitle = card.querySelector('.demo-outcomes-modal__subtitle');
+  if (legacySubtitle) legacySubtitle.remove();
+
+  // Title copy migration for cached markup
+  const titleEl = $('demoOutcomesModalTitle');
+  if (titleEl && /this job ran on autopilot/i.test(titleEl.textContent || '')) {
+    titleEl.textContent = 'See what this check-in produced, all from one job photo.';
+  }
+
   let footer = card.querySelector('.demo-outcomes-modal__footer');
   if (!footer) {
     footer = document.createElement('div');
@@ -2980,24 +3906,89 @@ function ensureOutcomesFooterButtons() {
     card.appendChild(footer);
   }
 
-  if (!$('demoOutcomesNextCta')) {
-    const next = document.createElement('button');
-    next.type = 'button';
-    next.id = 'demoOutcomesNextCta';
-    next.className = 'btn btn-secondary demo-outcomes-modal__next';
-    next.dataset.outcomesAction = 'next';
-    next.textContent = 'Next';
-    footer.appendChild(next);
+  // Remove legacy “Next result” footer button
+  $('demoOutcomesNextCta')?.remove();
+  footer.querySelectorAll('.demo-outcomes-modal__next').forEach((el) => el.remove());
+
+  ensureOutcomesNavButtons(card);
+
+  // Migrate legacy Continue button → Start Free Trial link
+  const legacyFinish = $('demoOutcomesFinishCta');
+  if (legacyFinish && legacyFinish.tagName === 'BUTTON' && !$('demoOutcomesStartFreeCta')) {
+    const link = document.createElement('a');
+    link.id = 'demoOutcomesStartFreeCta';
+    link.className = 'btn btn-primary demo-outcomes-modal__finish demo-outcomes-modal__finish--solo jcp-trial-cta-stacked';
+    link.dataset.outcomesAction = 'start_free';
+    link.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
+    legacyFinish.replaceWith(link);
+    ensureStackedStartFreeTrialCta(link);
   }
 
-  if (!$('demoOutcomesFinishCta')) {
-    const finish = document.createElement('button');
-    finish.type = 'button';
-    finish.id = 'demoOutcomesFinishCta';
-    finish.className = 'btn btn-primary demo-outcomes-modal__finish';
-    finish.dataset.outcomesAction = 'finish';
-    finish.textContent = 'Get Started Free';
-    footer.appendChild(finish);
+  if (!$('demoOutcomesStartFreeCta') && !$('demoOutcomesFinishCta')) {
+    const start = document.createElement('a');
+    start.id = 'demoOutcomesStartFreeCta';
+    start.className = 'btn btn-primary demo-outcomes-modal__finish demo-outcomes-modal__finish--solo jcp-trial-cta-stacked';
+    start.dataset.outcomesAction = 'start_free';
+    start.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_outcomes'));
+    footer.appendChild(start);
+    ensureStackedStartFreeTrialCta(start);
+  } else {
+    const startFree = $('demoOutcomesStartFreeCta') || $('demoOutcomesFinishCta');
+    startFree?.classList.add('demo-outcomes-modal__finish--solo');
+    ensureStackedStartFreeTrialCta(startFree);
+  }
+
+  if (!$('demoOutcomesMoreOptions')) {
+    let more = card.querySelector('.demo-outcomes-modal__more');
+    if (!more) {
+      more = document.createElement('p');
+      more.className = 'demo-outcomes-modal__more';
+      card.appendChild(more);
+    }
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'demoOutcomesMoreOptions';
+    btn.className = 'demo-outcomes-modal__more-btn';
+    btn.dataset.outcomesAction = 'finish';
+    btn.textContent = 'See plans & demos';
+    more.appendChild(btn);
+  }
+
+  syncDemoStartFreeCtas();
+}
+
+function ensureOutcomesNavButtons(card) {
+  let stage = card.querySelector('.demo-outcomes-modal__stage');
+  const viewport = $('demoOutcomesViewport');
+  if (!viewport) return;
+
+  if (!stage) {
+    stage = document.createElement('div');
+    stage.className = 'demo-outcomes-modal__stage';
+    viewport.parentNode.insertBefore(stage, viewport);
+    stage.appendChild(viewport);
+  }
+
+  if (!$('demoOutcomesPrevBtn')) {
+    const prev = document.createElement('button');
+    prev.type = 'button';
+    prev.id = 'demoOutcomesPrevBtn';
+    prev.className = 'demo-outcomes-modal__nav demo-outcomes-modal__nav--prev';
+    prev.dataset.outcomesAction = 'prev';
+    prev.setAttribute('aria-label', 'Previous result');
+    prev.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>`;
+    stage.insertBefore(prev, viewport);
+  }
+
+  if (!$('demoOutcomesNextBtn')) {
+    const next = document.createElement('button');
+    next.type = 'button';
+    next.id = 'demoOutcomesNextBtn';
+    next.className = 'demo-outcomes-modal__nav demo-outcomes-modal__nav--next';
+    next.dataset.outcomesAction = 'next';
+    next.setAttribute('aria-label', 'Next result');
+    next.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>`;
+    stage.appendChild(next);
   }
 }
 
@@ -3036,38 +4027,36 @@ function wireOutcomesSlideshow() {
       viewport.addEventListener('touchend', (e) => {
         const delta = e.changedTouches[0].screenX - outcomesSlideshow.touchStartX;
         if (Math.abs(delta) < 40) return;
-        if (delta < 0) setOutcomesSlide(outcomesSlideshow.index + 1);
-        else setOutcomesSlide(outcomesSlideshow.index - 1);
+        if (delta < 0) stepOutcomesSlide(1);
+        else stepOutcomesSlide(-1);
       }, { passive: true });
     }
 
     document.addEventListener('keydown', (e) => {
       if (!outcomesSlideshow.isOpen) return;
       if (e.key === 'Escape') closeOutcomesSlideshow();
-      if (e.key === 'ArrowRight') setOutcomesSlide(outcomesSlideshow.index + 1);
-      if (e.key === 'ArrowLeft') setOutcomesSlide(outcomesSlideshow.index - 1);
+      if (e.key === 'ArrowRight') stepOutcomesSlide(1);
+      if (e.key === 'ArrowLeft') stepOutcomesSlide(-1);
     });
   }
 }
 
 function getDemoAppScrollParents() {
-  if (isGuidedDemoRun() && document.body.classList.contains('is-mobile-mode')) {
-    const activeApp = document.querySelector('.app-screen.active');
-    const contentArea = activeApp?.querySelector('.content-area');
-    const scrollableScreens = new Set([
-      'edit-screen',
-      'new-screen',
-      'request-review-screen',
-      'review-request-options-screen',
-    ]);
-    if (activeApp && scrollableScreens.has(activeApp.id) && contentArea) {
-      return [contentArea];
-    }
-    return [];
-  }
-  const screen = document.querySelector('.iphone-frame .screen');
   const activeApp = document.querySelector('.app-screen.active');
   const contentArea = activeApp?.querySelector('.content-area');
+  const scrollableScreens = new Set([
+    'edit-screen',
+    'new-screen',
+    'request-review-screen',
+    'review-request-options-screen',
+  ]);
+
+  // Guided phone UI (mobile fullscreen OR desktop phone shell): scroll the active content-area.
+  if (isGuidedDemoRun() && activeApp && scrollableScreens.has(activeApp.id) && contentArea) {
+    return [contentArea];
+  }
+
+  const screen = document.querySelector('.iphone-frame .screen');
   const parents = [];
   if (contentArea) parents.push(contentArea);
   if (screen) parents.push(screen);
@@ -3075,7 +4064,9 @@ function getDemoAppScrollParents() {
 }
 
 function resetGuidedMobileScroll() {
-  if (!isGuidedDemoRun() || !document.body.classList.contains('is-mobile-mode')) return;
+  if (!isGuidedDemoRun()) return;
+  // Only reset on true mobile layout — desktop keeps prior scroll (e.g. after Publish).
+  if (!document.body.classList.contains('is-mobile-mode')) return;
   const screen = document.querySelector('.iphone-frame .screen');
   if (screen) screen.scrollTop = 0;
   const contentArea = document.querySelector('.app-screen.active .content-area');
@@ -3094,17 +4085,24 @@ function getMobileStepperTop() {
   return stepper.getBoundingClientRect().top;
 }
 
+function getGuidedVisibleBottom(scrollParent) {
+  const parentRect = scrollParent.getBoundingClientRect();
+  const stepperTop = getMobileStepperTop();
+  const screen = document.querySelector('.iphone-frame .screen');
+  const screenBottom = screen ? screen.getBoundingClientRect().bottom : parentRect.bottom;
+  return Math.min(parentRect.bottom, stepperTop, screenBottom);
+}
+
 function scrollGuidedControlIntoView(target, extraGap = 10) {
-  if (!target || !isGuidedDemoRun() || !document.body.classList.contains('is-mobile-mode')) return;
+  if (!target || !isGuidedDemoRun()) return;
 
   const parents = getDemoAppScrollParents();
   if (!parents.length) return;
 
   const scrollParent = parents[0];
-  const stepperTop = getMobileStepperTop();
   const targetRect = target.getBoundingClientRect();
   const parentRect = scrollParent.getBoundingClientRect();
-  const maxVisibleBottom = Math.min(parentRect.bottom, stepperTop) - extraGap;
+  const maxVisibleBottom = getGuidedVisibleBottom(scrollParent) - extraGap;
 
   if (targetRect.bottom > maxVisibleBottom) {
     scrollParent.scrollTop += targetRect.bottom - maxVisibleBottom;
@@ -3114,26 +4112,34 @@ function scrollGuidedControlIntoView(target, extraGap = 10) {
 }
 
 function scrollGuidedStepTarget(stepKey) {
-  if (!isGuidedDemoRun() || !document.body.classList.contains('is-mobile-mode')) return;
+  if (!isGuidedDemoRun()) return;
   if (!stepKey || stepKey === 'step6') return;
+
+  // Step 4 owns its own paced scroll (description → Publish).
+  if (stepKey === 'step4') return;
 
   const selector = tour.anchors[stepKey];
   const target = selector ? document.querySelector(selector) : null;
   if (!target) return;
 
+  const gap = stepKey === 'step5' ? 28 : 10;
   const run = () => {
-    scrollGuidedControlIntoView(target);
+    scrollGuidedControlIntoView(target, gap);
     positionMobileSpotlight();
   };
 
   updateMobileLayoutMetrics();
   requestAnimationFrame(run);
   setTimeout(run, 280);
+  // Desktop publish overlay / layout settle can lag — second pass for Request Review.
+  if (stepKey === 'step5') {
+    setTimeout(run, 560);
+  }
 }
 
 function scrollDemoTargetIntoView(target, extraGap = 12) {
   if (!target) return;
-  if (isGuidedDemoRun() && document.body.classList.contains('is-mobile-mode')) {
+  if (isGuidedDemoRun()) {
     scrollGuidedControlIntoView(target, extraGap);
     return;
   }
@@ -3214,8 +4220,8 @@ async function sendReviewRequest() {
     <div class="feed-card">
       <div class="feed-image"><img src="${demoPhotos[0]}" alt="Job" width="400" height="300" loading="lazy"></div>
       <div class="feed-content">
-        <h4>Review Request Sent</h4>
-        <p>SMS sent automatically</p>
+        <h4>Review Request Shown</h4>
+        <p>QR code presented on site</p>
       </div>
     </div>
   `);
@@ -3256,9 +4262,9 @@ async function sendReviewRequest() {
   // Update top CTA
   const headerCta = document.getElementById('btnNext');
   if (headerCta) {
-    headerCta.textContent = 'Get Started →';
+    ensureStackedStartFreeTrialCta(headerCta, { arrow: true });
     headerCta.onclick = () => {
-      window.location.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_header_complete'));
+      goToDemoStartFree('demo_header_complete');
     };
   }
 }
@@ -3484,8 +4490,11 @@ function advanceDemo() {
       break;
 
     case 'step3':
-      if (state.photoCount === 0) addPhotos();
-      processPhotos();
+      if (state.photoCount === 0) {
+        openDemoCamera();
+      } else {
+        processPhotos();
+      }
       break;
 
     case 'step4':
@@ -3550,6 +4559,7 @@ function resetGuidedEditScreen() {
 }
 
 function restartGuidedDemo() {
+  // cta_clicked is fired from the Replay button handler before this runs.
   jcpDemoTrack('demo_replayed', null, { source: 'post_demo_panel' });
 
   state.isFinalStep = false;
@@ -3623,7 +4633,7 @@ function wireControls() {
 
   $('btnMobileNext')?.addEventListener('click', () => {
     if (tour.stepKey === 'step6' && !outcomesSlideshow.isOpen) {
-      completeDemoConversion();
+      goToDemoStartFree('demo_step6_dock');
       return;
     }
     advanceDemo();
@@ -3635,15 +4645,31 @@ function wireControls() {
     }
   });
 
-  $('mobileDemoClose')?.addEventListener('click', () => {
-    markDemoIntakeComplete();
-    const returnUrl = sessionStorage.getItem('jcp_survey_return_url') || '/demo/';
-    window.location.href = returnUrl;
+  $('mobileDemoStartFree')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    goToDemoStartFree('demo_chrome');
   });
+
+  // Tour box X / minimize: hide coach only. Full demo exit is top-right #mobileDemoExit.
+  $('mobileDemoClose')?.addEventListener('click', () => setMobileGuideCollapsed(true));
+  $('mobileDemoExit')?.addEventListener('click', () => exitGuidedDemoToSurvey());
 
   $('mobileGuideMinimize')?.addEventListener('click', () => toggleMobileGuideCollapse());
   $('mobileGuidePill')?.addEventListener('click', () => setMobileGuideCollapsed(false));
   $('guidedCoachBackdrop')?.addEventListener('click', () => setMobileGuideCollapsed(true));
+
+  // Click outside the tour card dismisses the coach (does not exit the demo).
+  document.addEventListener('pointerdown', (e) => {
+    if (!isGuidedDemoRun() || mobileGuideCollapsed || state.isFinalStep) return;
+    if (document.body.classList.contains('jcp-publish-modal-open')) return;
+    if (document.body.classList.contains('jcp-review-modal-open')) return;
+    if (document.body.classList.contains('jcp-post-demo-open')) return;
+    if (document.body.classList.contains('jcp-outcomes-modal-open')) return;
+    if (outcomesSlideshow.isOpen) return;
+    if (!isClickOutsideGuidedCoach(e.target)) return;
+    setMobileGuideCollapsed(true);
+  }, true);
+
   $('btnDemoReviewSend')?.addEventListener('click', () => confirmDemoReviewSend());
 
   $('btnStartDemo')?.addEventListener('click', () => {
@@ -3671,6 +4697,37 @@ function wireControls() {
       $('fabNewCheckin')?.classList.remove('fab-attention', 'fab-glow');
       openCreateActionSheet();
     });
+  });
+
+  // Prefer JS listeners over inline onclick so photo add works under guided chrome.
+  $('uploadBtnCamera')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    openDemoCamera();
+  });
+  $('uploadBtnGallery')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addPhotos();
+  });
+  // Legacy/extra buttons with data-action still add a photo (gallery-style).
+  document.querySelectorAll('[data-action="add-photos"]').forEach((btn) => {
+    if (btn.id === 'uploadBtnCamera' || btn.id === 'uploadBtnGallery') return;
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      addPhotos();
+    });
+  });
+
+  $('demoCameraCancel')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    closeDemoCamera();
+  });
+  $('demoCameraShutter')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    shutterDemoCamera();
   });
 
   $('tour-close')?.addEventListener('click', closeTour);
@@ -3725,6 +4782,8 @@ function init() {
   loadCheckins();
   initializeWebsite();
   applyPersonalization();
+  // DOM + personalization ready: niche photo pack, camera badge, hint.
+  try { refreshDemoAssetsForNiche(); } catch (e) {}
 
   // Mobile mode
   applyMobileMode();
@@ -3748,6 +4807,7 @@ function init() {
   wireControls();
   wirePostDemoPanel();
   wireOutcomesSlideshow();
+  syncDemoStartFreeCtas();
 
   // Apply demo mode restrictions if in demo mode (not on prototype)
   applyDemoRestrictions();
@@ -3905,8 +4965,25 @@ function showPostDemoPanel() {
   document.getElementById('post-demo-bubble')?.classList.add('is-hidden');
   setMobileGuideCollapsed(true);
 
+  migratePostDemoPanelMarkup();
+
+  // Rebuild Start Free Trial href at open time so survey email/name are included.
+  const primaryCta = document.querySelector('.post-demo-primary-cta');
+  if (primaryCta) {
+    primaryCta.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
+    ensurePostDemoPrimaryCtaStacked(primaryCta);
+  }
+
   panel.classList.add('active');
   jcpDemoTrack('post_demo_modal_shown');
+  try {
+    if (window.parent && window.parent !== window) {
+      const params = new URLSearchParams(window.location.search || '');
+      if (params.get('embed') === '1') {
+        window.parent.postMessage({ type: 'jcp-demo-embed', event: 'post_demo_shown' }, window.location.origin);
+      }
+    }
+  } catch (e) {}
   // Matomo: Demo / Completed (once per session)
   try {
     if (typeof _paq !== 'undefined' && !sessionStorage.getItem('jcp_matomo_demo_completed')) {
@@ -4005,6 +5082,8 @@ function emailDemoLink() {
    Bind panel buttons
 ---------------------------------- */
 function wirePostDemoPanel() {
+  migratePostDemoPanelMarkup();
+
   document
     .getElementById('postDemoX')
     ?.addEventListener('click', hidePostDemoPanel);
@@ -4016,14 +5095,33 @@ function wirePostDemoPanel() {
   const primaryCta = document.querySelector('.post-demo-primary-cta');
   if (primaryCta) {
     primaryCta.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
-    primaryCta.addEventListener('click', function() {
-      jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free' });
-      jcpDemoTrack('demo_converted');
-      // Matomo: Post Demo CTA Click (Early Access), once per session
+    ensurePostDemoPrimaryCtaStacked(primaryCta);
+    primaryCta.addEventListener('click', function(event) {
+      // Refresh PII + UTMs on click so the handoff always matches the latest survey data.
+      const handoffUrl = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
+      primaryCta.href = handoffUrl;
+      jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free', source: 'demo_post_panel', label: 'Start Free Trial' }, { keepalive: true });
+      jcpDemoTrack('demo_converted', null, { cta: 'get_started_free', source: 'demo_post_panel' }, { keepalive: true });
+      // Matomo: Post Demo CTA Click (Start Free Trial), once per session
       try {
         if (typeof _paq !== 'undefined' && !sessionStorage.getItem('jcp_matomo_demo_cta_early_access')) {
-          _paq.push(['trackEvent', 'Demo', 'Post Demo CTA Click (Early Access)']);
+          _paq.push(['trackEvent', 'Demo', 'Post Demo CTA Click (Start Free Trial)']);
           sessionStorage.setItem('jcp_matomo_demo_cta_early_access', '1');
+        }
+      } catch (e) {}
+      event.preventDefault();
+      window.location.href = handoffUrl;
+    });
+  }
+
+  const secondaryCta = document.querySelector('.post-demo-secondary-cta');
+  if (secondaryCta) {
+    secondaryCta.addEventListener('click', function() {
+      jcpDemoTrack('cta_clicked', null, { cta: 'personalized_demo', source: 'demo_post_panel', label: 'Apply for a personalized demo' }, { keepalive: true });
+      try {
+        if (typeof _paq !== 'undefined' && !sessionStorage.getItem('jcp_matomo_demo_cta_personalized')) {
+          _paq.push(['trackEvent', 'Demo', 'Post Demo CTA Click (Personalized Demo)']);
+          sessionStorage.setItem('jcp_matomo_demo_cta_personalized', '1');
         }
       } catch (e) {}
     });
@@ -4032,6 +5130,7 @@ function wirePostDemoPanel() {
   document
     .getElementById('btnReplayDemo')
     ?.addEventListener('click', () => {
+      jcpDemoTrack('cta_clicked', null, { cta: 'replay_demo', source: 'demo_post_panel', label: 'Replay demo' });
       restartGuidedDemo();
     });
 }
@@ -4082,6 +5181,9 @@ window.goBackFromReviewMethod = goBackFromReviewMethod;
 window.goBackToEdit = goBackToEdit;
 window.submitReviewRequestFromScreen = submitReviewRequestFromScreen;
 window.addPhotos = addPhotos;
+window.openDemoCamera = openDemoCamera;
+window.shutterDemoCamera = shutterDemoCamera;
+window.closeDemoCamera = closeDemoCamera;
 window.processPhotos = processPhotos;
 window.regenerateDescription = regenerateDescription;
 window.saveCheckin = saveCheckin;

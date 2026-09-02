@@ -1,59 +1,170 @@
 <?php
 /**
- * Survey Step 1: Business name + Business type
+ * Survey gate (single screen): trade + work email → launch demo.
+ * Phone is recommended (optional). Business name + first name are optional personalization.
  *
  * @package JCP_Core
  */
-$demo_headline = 'See a live demo built for your business';
-$demo_subhead  = 'Just a few details so the demo reflects real jobs and real outcomes.';
-$demo_btn      = 'Next step';
+$demo_headline = 'Unlock your personalized demo';
+$demo_subhead  = 'Your trade and work email get you in — phone is recommended. Ready in about 2 minutes.';
+$demo_btn      = 'Unlock my demo →';
 ?>
 <section class="survey-step active" data-step="0">
   <div class="survey-head">
-    <div class="survey-eyebrow">Online Demo</div>
+    <div class="survey-eyebrow">
+      <span class="survey-eyebrow-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="11" width="14" height="10" rx="2"/>
+          <path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+        </svg>
+      </span>
+      <span><?php esc_html_e( 'Personalized demo', 'jcp-core' ); ?></span>
+    </div>
     <h1 class="survey-title"><?php echo esc_html( $demo_headline ); ?></h1>
     <p class="survey-subtitle">
       <?php echo esc_html( $demo_subhead ); ?>
     </p>
   </div>
 
-  <form class="survey-form" autocomplete="off">
+  <form class="survey-form survey-form--gate" autocomplete="on">
+    <?php
+    $business_type_options = function_exists( 'jcp_core_business_type_flat_options' )
+      ? jcp_core_business_type_flat_options()
+      : [];
+    ?>
+    <div class="survey-field survey-combobox">
+      <label for="nicheSearch">Business type <span class="survey-required">*</span></label>
+      <div class="survey-combobox__control">
+        <input
+          id="nicheSearch"
+          type="text"
+          class="survey-input"
+          role="combobox"
+          aria-autocomplete="list"
+          aria-expanded="false"
+          aria-controls="nicheListbox"
+          aria-haspopup="listbox"
+          placeholder="<?php esc_attr_e( 'Start typing your trade…', 'jcp-core' ); ?>"
+          autocomplete="off"
+          maxlength="120"
+          required
+        />
+        <input type="hidden" id="niche" value="" />
+        <input type="hidden" id="nicheOther" value="" />
+        <ul
+          id="nicheListbox"
+          class="survey-combobox__list"
+          role="listbox"
+          hidden
+          aria-label="<?php esc_attr_e( 'Business type suggestions', 'jcp-core' ); ?>"
+        ></ul>
+      </div>
+      <script type="application/json" id="jcpBusinessTypeOptions"><?php echo wp_json_encode( $business_type_options ); ?></script>
+    </div>
+
     <div class="survey-field">
-      <label for="businessName">Business name</label>
+      <label for="email">Work email <span class="survey-required">*</span></label>
       <input
-        id="businessName"
-        type="text"
+        id="email"
+        type="email"
         class="survey-input"
-        placeholder="Summit Plumbing"
+        placeholder="you@company.com"
+        autocomplete="email"
         required
       />
     </div>
 
     <div class="survey-field">
-      <label for="niche">Business type</label>
-      <select id="niche" class="survey-input" required>
-        <?php
-        if ( function_exists( 'jcp_core_render_business_type_select_options' ) ) {
-            jcp_core_render_business_type_select_options( true );
-        }
-        ?>
-      </select>
-    </div>
-
-    <div class="survey-field survey-field--niche-other" id="nicheOtherWrap" hidden>
-      <label for="nicheOther">Describe your business type</label>
+      <label for="phone">Phone <span class="survey-recommended">(recommended)</span></label>
       <input
-        id="nicheOther"
-        type="text"
+        id="phone"
+        type="tel"
         class="survey-input"
-        placeholder="e.g. Mobile detailing"
-        maxlength="120"
-        autocomplete="off"
+        placeholder="(555) 555-5555"
+        autocomplete="tel"
+        inputmode="tel"
       />
     </div>
+
+    <div class="survey-grid-2 survey-gate-optional">
+      <div class="survey-field">
+        <label for="businessName">Business name <span class="survey-optional">(optional)</span></label>
+        <input
+          id="businessName"
+          type="text"
+          class="survey-input"
+          placeholder="Summit Plumbing"
+          autocomplete="organization"
+        />
+      </div>
+      <div class="survey-field">
+        <label for="firstName">First name <span class="survey-optional">(optional)</span></label>
+        <input
+          id="firstName"
+          type="text"
+          class="survey-input"
+          placeholder="Alex"
+          autocomplete="given-name"
+        />
+      </div>
+    </div>
+
+    <?php /* Kept in DOM (hidden) so existing JS / CRM payloads stay stable. */ ?>
+    <input type="hidden" id="lastName" value="" autocomplete="family-name" />
+    <input type="hidden" id="referralSource" value="" />
+    <input type="hidden" id="referralSourceOther" value="" />
   </form>
 
   <div class="survey-actions-row">
-    <button type="button" class="survey-btn" data-action="next"><?php echo esc_html( $demo_btn ); ?></button>
+    <button type="button" class="survey-btn" data-action="launch"><?php echo esc_html( $demo_btn ); ?></button>
+    <p class="survey-consent">By continuing you agree to receive the demo and relevant updates by email. Unsubscribe anytime.</p>
   </div>
+
+  <?php
+  /**
+   * Compact proof strip for the single-screen gate.
+   *
+   * @var list<array{name:string,role:string,quote:string}>
+   */
+  $survey_proof = [
+    [
+      'name'  => 'Trent Ellison',
+      'role'  => 'Home service operator',
+      'quote' => 'Turns completed jobs into useful online content — and the review side is amazing.',
+    ],
+    [
+      'name'  => 'Brian Hardy',
+      'role'  => 'Contractor',
+      'quote' => 'Takes my work site pictures and turns them into a full marketing campaign automatically.',
+    ],
+    [
+      'name'  => 'Peter Bonk',
+      'role'  => 'Marketing agency',
+      'quote' => 'Photos become GBP posts, website content, social, and reviews — easiest win for our HVAC client.',
+    ],
+  ];
+  ?>
+  <aside class="survey-proof survey-proof--compact" aria-label="<?php esc_attr_e( 'What customers say', 'jcp-core' ); ?>">
+    <div class="survey-proof-banner">
+      <span class="survey-proof-stars" aria-hidden="true">★★★★★</span>
+      <p class="survey-proof-banner-text">
+        <strong><?php esc_html_e( '5-star reviewed', 'jcp-core' ); ?></strong>
+        <span><?php esc_html_e( 'by contractors & agencies using JobCapturePro', 'jcp-core' ); ?></span>
+      </p>
+    </div>
+    <ul class="survey-proof-list">
+      <?php foreach ( $survey_proof as $review ) : ?>
+        <li class="survey-proof-item">
+          <span class="survey-proof-item-stars" aria-label="<?php esc_attr_e( '5 out of 5 stars', 'jcp-core' ); ?>">★★★★★</span>
+          <p class="survey-proof-quote">&ldquo;<?php echo esc_html( (string) ( $review['quote'] ?? '' ) ); ?>&rdquo;</p>
+          <p class="survey-proof-by">
+            <strong><?php echo esc_html( (string) ( $review['name'] ?? '' ) ); ?></strong>
+            <?php if ( ! empty( $review['role'] ) ) : ?>
+              <span><?php echo esc_html( (string) $review['role'] ); ?></span>
+            <?php endif; ?>
+          </p>
+        </li>
+      <?php endforeach; ?>
+    </ul>
+  </aside>
 </section>

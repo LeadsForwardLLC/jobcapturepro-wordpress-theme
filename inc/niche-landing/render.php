@@ -246,7 +246,7 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 		return;
 	}
 	$primary   = jcp_niche_resolve_cta( $h['cta_primary'] ?? [], $niche_key );
-	$secondary = jcp_niche_resolve_cta( $h['cta_secondary'] ?? [ 'label' => 'See how it works', 'url' => '#how-it-works' ], $niche_key );
+	$secondary = jcp_niche_resolve_cta( $h['cta_secondary'] ?? [ 'label' => 'Start Free 14-Day Trial', 'url' => '' ], $niche_key );
 	$variant   = (string) ( $c['_hero_variant'] ?? '' );
 	if ( ! in_array( $variant, jcp_block_hero_variants(), true ) ) {
 		$variant = ! isset( $h['show_visual'] ) || ! empty( $h['show_visual'] ) ? 'split' : 'centered';
@@ -313,14 +313,25 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 			<div class="jcp-hero-grid jcp-split-layout <?php echo esc_attr( jcp_media_position_class( $media['media_position'] ) ); ?>" data-jcp-split-path="hero" data-jcp-media-position-path="hero.media_position">
 				<div class="jcp-hero-copy hero-copy jcp-split-col jcp-split-col--copy" data-jcp-split-col="copy">
 					<?php if ( $is_home ) : ?>
+						<?php
+						/* Keep "into more {rotator}" as one wrap unit so "into" is never stranded alone. */
+						$h1_prefix = (string) ( $h['h1_prefix'] ?? $h['h1'] ?? '' );
+						$h1_prefix = preg_replace( '/\s+into\s*$/iu', '', $h1_prefix ) ?? $h1_prefix;
+						$h1_prefix = rtrim( $h1_prefix ) . ' ';
+						?>
 						<h1 class="jcp-hero-title" data-jcp-heading-tag-path="hero.headline_tag">
-							<span<?php jcp_niche_editable_attr( 'hero.h1_prefix' ); ?>><?php echo esc_html( (string) ( $h['h1_prefix'] ?? $h['h1'] ?? '' ) ); ?></span>
-							<span class="jcp-hero-title-end">
-								<?php esc_html_e( 'more', 'jcp-core' ); ?>
+							<span<?php jcp_niche_editable_attr( 'hero.h1_prefix' ); ?>><?php echo esc_html( $h1_prefix ); ?></span>
+							<span class="jcp-hero-title-end jcp-hero-more-rotator">
+								<?php echo esc_html( __( 'into', 'jcp-core' ) . ' ' . __( 'more', 'jcp-core' ) ); ?>
 								<span class="jcp-hero-rotating-word" aria-live="polite" data-words="<?php echo esc_attr( wp_json_encode( array_values( (array) $h['rotating_words'] ) ) ); ?>">
 									<?php echo esc_html( (string) ( $h['rotating_words'][0] ?? 'visibility' ) ); ?>
 								</span>
 							</span>
+						</h1>
+					<?php elseif ( trim( (string) ( $h['h1_emphasis'] ?? '' ) ) !== '' ) : ?>
+						<h1 class="jcp-hero-title" data-jcp-heading-tag-path="hero.headline_tag">
+							<span<?php jcp_niche_editable_attr( 'hero.h1' ); ?>><?php jcp_niche_e( (string) ( $h['h1'] ?? '' ) ); ?></span>
+							<span class="jcp-hero-emphasis"<?php jcp_niche_editable_attr( 'hero.h1_emphasis' ); ?>><?php jcp_niche_e( (string) $h['h1_emphasis'] ); ?></span>
 						</h1>
 					<?php else : ?>
 					<h1 class="jcp-hero-title" data-jcp-heading-tag-path="hero.headline_tag"<?php jcp_niche_editable_attr( 'hero.h1' ); ?>><?php jcp_niche_e( (string) $h['h1'] ); ?></h1>
@@ -331,13 +342,28 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 					<?php if ( $show_primary || $show_secondary ) : ?>
 					<div class="jcp-actions directory-cta-row">
 						<?php if ( $show_primary && $primary['label'] !== '' ) : ?>
+							<?php
+							$cta_microcopy   = trim( (string) ( $h['cta_microcopy'] ?? '' ) );
+							$trust_text      = $cta_microcopy !== '' ? $cta_microcopy : trim( (string) ( $h['trust_line'] ?? '' ) );
+							$trust_path      = $cta_microcopy !== '' ? 'hero.cta_microcopy' : 'hero.trust_line';
+							/* Home + campaign: microcopy stacks inside the primary button (LP pattern). */
+							$microcopy_in_btn = $show_trust && $trust_text !== '' && (
+								$is_home
+								|| ! empty( $c['campaign_landing'] )
+								|| ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() )
+							);
+							?>
 							<div class="jcp-hero-primary-cta">
-								<a class="btn btn-primary" href="<?php echo esc_url( $primary['url'] ); ?>"<?php jcp_niche_editable_link_attr( 'hero.cta_primary' ); jcp_niche_cta_tracking_attr( $primary['url'], str_contains( $primary['url'], 'firstpromoter.com' ) ? 'referral_hero' : 'niche_hero', $primary['label'] ); ?>><?php jcp_niche_e( $primary['label'] ); ?></a>
-								<?php
-								$cta_microcopy = trim( (string) ( $h['cta_microcopy'] ?? '' ) );
-								if ( $is_home && $cta_microcopy !== '' && $show_trust ) :
-									?>
-									<span class="jcp-hero-cta-microcopy jcp-niche-trust-line"<?php jcp_niche_editable_attr( 'hero.cta_microcopy' ); ?>><?php jcp_niche_e( $cta_microcopy ); ?></span>
+								<?php if ( $microcopy_in_btn ) : ?>
+									<a class="btn btn-primary jcp-hero-cta-stacked" href="<?php echo esc_url( $primary['url'] ); ?>" data-jcp-href-path="hero.cta_primary.url"<?php jcp_niche_cta_tracking_attr( $primary['url'], str_contains( $primary['url'], 'firstpromoter.com' ) ? 'referral_hero' : 'niche_hero', $primary['label'] ); ?>>
+										<span class="jcp-hero-cta-label"<?php jcp_niche_editable_attr( 'hero.cta_primary.label' ); ?>><?php jcp_niche_e( $primary['label'] ); ?></span>
+										<span class="jcp-hero-cta-microcopy jcp-niche-trust-line"<?php jcp_niche_editable_attr( $trust_path ); ?>><?php jcp_niche_e( $trust_text ); ?></span>
+									</a>
+								<?php else : ?>
+									<a class="btn btn-primary" href="<?php echo esc_url( $primary['url'] ); ?>"<?php jcp_niche_editable_link_attr( 'hero.cta_primary' ); jcp_niche_cta_tracking_attr( $primary['url'], str_contains( $primary['url'], 'firstpromoter.com' ) ? 'referral_hero' : 'niche_hero', $primary['label'] ); ?>><?php jcp_niche_e( $primary['label'] ); ?></a>
+									<?php if ( $show_trust && $trust_text !== '' ) : ?>
+										<span class="jcp-hero-cta-microcopy jcp-niche-trust-line"<?php jcp_niche_editable_attr( $trust_path ); ?>><?php jcp_niche_e( $trust_text ); ?></span>
+									<?php endif; ?>
 								<?php endif; ?>
 							</div>
 						<?php endif; ?>
@@ -346,9 +372,12 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 						<?php endif; ?>
 					</div>
 					<?php endif; ?>
-					<?php if ( ! $is_home && $show_trust && ! empty( $h['trust_line'] ) ) : ?>
-						<p class="jcp-niche-trust-line"<?php jcp_niche_editable_attr( 'hero.trust_line' ); ?>><?php jcp_niche_e( (string) $h['trust_line'] ); ?></p>
-					<?php endif; ?>
+					<?php
+					$social_proof = is_array( $h['social_proof'] ?? null ) ? $h['social_proof'] : [];
+					if ( $social_proof !== [] && jcp_niche_show_field( $h, 'show_social_proof', true ) && function_exists( 'jcp_component_hero_social_proof' ) ) {
+						jcp_component_hero_social_proof( $social_proof, 'hero.social_proof' );
+					}
+					?>
 					<?php if ( ! empty( $h['meta_stats'] ) && jcp_niche_show_field( $h, 'show_meta_stats', true ) ) : ?>
 						<?php jcp_component_home_meta_stats( (array) $h['meta_stats'] ); ?>
 					<?php endif; ?>
@@ -378,8 +407,8 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 								'height'  => '480',
 								'loading' => 'eager',
 							],
-							'phone_render'  => function () use ( $hero_demo, $phone_image, $phone_alt, $phone_cards, $phone_locked, $phone_cta ) {
-								jcp_component_hero_home_visual( $hero_demo, $phone_image, $phone_alt, true, $phone_cards, $phone_locked, $phone_cta );
+							'phone_render'  => function () use ( $hero_demo, $phone_image ) {
+								jcp_component_demo_app_phone( $hero_demo, $phone_image );
 							},
 						]
 					);
@@ -742,6 +771,7 @@ function jcp_niche_render_problem( array $c ): void {
 	if ( empty( $p['headline'] ) ) {
 		return;
 	}
+	$variant    = sanitize_key( (string) ( $p['variant'] ?? '' ) );
 	$show_icons = jcp_niche_show_field( $p, 'show_icons', true );
 	$vis_class  = jcp_niche_section_visibility_classes(
 		$p,
@@ -753,14 +783,71 @@ function jcp_niche_render_problem( array $c ): void {
 	);
 	$closing    = jcp_niche_field_visibility( $p, 'show_closing', true );
 	$close_text = trim( (string) ( $p['closing'] ?? '' ) );
+	$pain_points = (array) ( $p['pain_points'] ?? [] );
+	$without     = is_array( $p['contrast_without'] ?? null ) ? $p['contrast_without'] : [];
+	$with        = is_array( $p['contrast_with'] ?? null ) ? $p['contrast_with'] : [];
+	$is_contrast = $variant === 'contrast' || ( $pain_points === [] && ( ! empty( $without['steps'] ) || ! empty( $with['steps'] ) ) );
 	?>
-	<section class="jcp-section rankings-section jcp-niche-problem<?php echo esc_attr( $vis_class ); ?>">
+	<section class="jcp-section rankings-section jcp-niche-problem<?php echo $is_contrast ? ' jcp-niche-problem--contrast' : ''; ?><?php echo esc_attr( $vis_class ); ?>">
 		<div class="jcp-container">
 			<?php jcp_niche_render_section_header( $p, 'problem' ); ?>
+			<?php if ( $is_contrast ) : ?>
+				<div class="jcp-problem-contrast"<?php jcp_niche_array_attr( 'problem.contrast' ); ?>>
+					<?php
+					foreach (
+						[
+							[ 'key' => 'without', 'data' => $without, 'mod' => 'without' ],
+							[ 'key' => 'with', 'data' => $with, 'mod' => 'with' ],
+						] as $side
+					) :
+						$side_data = is_array( $side['data'] ) ? $side['data'] : [];
+						$label     = trim( (string) ( $side_data['label'] ?? '' ) );
+						$steps     = array_values( array_filter( array_map( 'strval', (array) ( $side_data['steps'] ?? [] ) ) ) );
+						$is_with   = (string) $side['mod'] === 'with';
+						$loop_note = trim( (string) ( $side_data['loop_note'] ?? '' ) );
+						if ( $is_with && $loop_note === '' ) {
+							$loop_note = __( 'Feeds the next job', 'jcp-core' );
+						}
+						if ( $label === '' && $steps === [] ) {
+							continue;
+						}
+						$step_count = count( $steps );
+						?>
+						<div class="jcp-problem-contrast__side jcp-problem-contrast__side--<?php echo esc_attr( (string) $side['mod'] ); ?><?php echo $is_with ? ' jcp-problem-contrast__side--cycle' : ''; ?>">
+							<?php if ( $label !== '' ) : ?>
+								<p class="jcp-problem-contrast__label"<?php jcp_niche_editable_attr( 'problem.contrast_' . $side['key'] . '.label' ); ?>><?php echo esc_html( $label ); ?></p>
+							<?php endif; ?>
+							<?php if ( $is_with ) : ?>
+								<div class="jcp-problem-contrast__cycle">
+									<ol class="jcp-problem-contrast__ring">
+										<?php foreach ( $steps as $si => $step ) : ?>
+											<li
+												class="<?php echo 0 === (int) $si ? 'is-loop-start' : ''; ?><?php echo (int) $si === $step_count - 1 ? ' is-loop-end' : ''; ?>"
+												data-step="<?php echo esc_attr( (string) ( $si + 1 ) ); ?>"
+												<?php jcp_niche_editable_attr( 'problem.contrast_' . $side['key'] . '.steps.' . $si ); ?>
+											><?php echo esc_html( $step ); ?></li>
+										<?php endforeach; ?>
+									</ol>
+									<p class="jcp-problem-contrast__loop-note"<?php jcp_niche_editable_attr( 'problem.contrast_with.loop_note' ); ?>>
+										<span class="jcp-problem-contrast__loop-arrow" aria-hidden="true">↻</span>
+										<?php echo esc_html( $loop_note ); ?>
+									</p>
+								</div>
+							<?php else : ?>
+								<ol class="jcp-problem-contrast__steps">
+									<?php foreach ( $steps as $si => $step ) : ?>
+										<li data-step="<?php echo esc_attr( (string) ( $si + 1 ) ); ?>"<?php jcp_niche_editable_attr( 'problem.contrast_' . $side['key'] . '.steps.' . $si ); ?>><?php echo esc_html( $step ); ?></li>
+									<?php endforeach; ?>
+								</ol>
+							<?php endif; ?>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			<?php else : ?>
 			<div class="ranking-factors-grid"<?php jcp_niche_array_attr( 'problem.pain_points' ); ?>>
 				<?php
 				$pain_icons = [ 'image-off', 'clock', 'map-pin', 'users' ];
-				foreach ( (array) ( $p['pain_points'] ?? [] ) as $pi => $pain ) :
+				foreach ( $pain_points as $pi => $pain ) :
 					if ( ! is_array( $pain ) ) {
 						continue;
 					}
@@ -789,6 +876,7 @@ function jcp_niche_render_problem( array $c ): void {
 				endforeach;
 				?>
 			</div>
+			<?php endif; ?>
 			<?php
 			if ( $closing['render'] && $close_text !== '' ) {
 				jcp_niche_render_section_closing( $close_text, 'problem.closing', $closing['attr'] );
@@ -810,6 +898,8 @@ function jcp_niche_render_benefits( array $c ): void {
 	if ( $headline === '' && empty( $items ) ) {
 		return;
 	}
+	$variant    = sanitize_key( (string) ( $b['variant'] ?? '' ) );
+	$is_job_flow = $variant === 'job_flow';
 	$section_id = ! empty( $b['section_id'] ) ? (string) $b['section_id'] : '';
 	$vis_class  = jcp_niche_section_visibility_classes(
 		$b,
@@ -826,8 +916,9 @@ function jcp_niche_render_benefits( array $c ): void {
 	$closing    = jcp_niche_field_visibility( $b, 'show_closing', true );
 	$sub_text   = trim( (string) ( $b['subheadline'] ?? '' ) );
 	$close_text = trim( (string) ( $b['closing'] ?? '' ) );
+	$flow_mods  = [ 'capture', 'website', 'google', 'reviews', 'social' ];
 	?>
-	<section class="jcp-section rankings-section jcp-niche-benefits<?php echo esc_attr( $vis_class ); ?>"<?php echo $section_id !== '' ? ' id="' . esc_attr( $section_id ) . '"' : ''; ?>>
+	<section class="jcp-section rankings-section jcp-niche-benefits<?php echo $is_job_flow ? ' jcp-niche-benefits--job-flow' : ''; ?><?php echo esc_attr( $vis_class ); ?>" data-jcp-reveal<?php echo $section_id !== '' ? ' id="' . esc_attr( $section_id ) . '"' : ''; ?>>
 		<div class="jcp-container">
 			<?php if ( $hl['render'] || ( $sub['render'] && $sub_text !== '' ) ) : ?>
 			<div class="rankings-header">
@@ -844,6 +935,75 @@ function jcp_niche_render_benefits( array $c ): void {
 				<?php endif; ?>
 			</div>
 			<?php endif; ?>
+			<?php if ( $is_job_flow ) : ?>
+			<div class="jcp-job-flow"<?php jcp_niche_array_attr( 'benefits.items' ); ?>>
+				<?php foreach ( $items as $bi => $item ) : ?>
+					<?php
+					if ( ! is_array( $item ) ) {
+						continue;
+					}
+					$img   = trim( (string) ( $item['image_url'] ?? '' ) );
+					$alt   = trim( (string) ( $item['image_alt'] ?? $item['title'] ?? '' ) );
+					$label = trim( (string) ( $item['label'] ?? '' ) );
+					$title = trim( (string) ( $item['title'] ?? '' ) );
+					$body  = trim( (string) ( $item['body'] ?? '' ) );
+					$mod   = sanitize_key( (string) ( $item['chrome'] ?? ( $flow_mods[ $bi ] ?? 'capture' ) ) );
+					if ( $label === '' && $mod === 'website' ) {
+						$label = __( 'Website', 'jcp-core' );
+					}
+					$step  = (int) $bi + 1;
+					?>
+					<article class="jcp-job-flow__step jcp-job-flow__step--<?php echo esc_attr( $mod ); ?>" data-jcp-array-item="<?php echo esc_attr( (string) $bi ); ?>" aria-label="<?php echo esc_attr( sprintf( /* translators: %d: step number */ __( 'Step %d', 'jcp-core' ), $step ) ); ?>">
+						<div class="jcp-job-flow__media" aria-hidden="<?php echo $img === '' ? 'true' : 'false'; ?>">
+							<span class="jcp-job-flow__num" aria-hidden="true"><?php echo esc_html( (string) $step ); ?></span>
+							<?php if ( $label !== '' ) : ?>
+								<span class="jcp-job-flow__badge"<?php jcp_niche_editable_attr( 'benefits.items.' . $bi . '.label' ); ?>><?php echo esc_html( $label ); ?></span>
+							<?php endif; ?>
+							<?php if ( $img !== '' ) : ?>
+								<img src="<?php echo esc_url( $img ); ?>" alt="<?php echo esc_attr( $alt ); ?>" width="480" height="360" loading="<?php echo $bi === 0 ? 'eager' : 'lazy'; ?>" decoding="async" class="jcp-editable-media-image" data-jcp-media-url-path="benefits.items.<?php echo esc_attr( (string) $bi ); ?>.image_url" data-jcp-media-alt-path="benefits.items.<?php echo esc_attr( (string) $bi ); ?>.image_alt" data-jcp-media-types="image"<?php jcp_niche_editable_attr( 'benefits.items.' . $bi . '.image_url' ); ?> />
+							<?php endif; ?>
+							<?php if ( $mod === 'capture' ) : ?>
+								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--capture" aria-hidden="true">
+									<strong>Check-in ready</strong>
+									<span>Photo captured · Just now</span>
+								</div>
+							<?php elseif ( $mod === 'website' ) : ?>
+								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--browser" aria-hidden="true">
+									<strong>Website jobs page</strong>
+									<span>yoursite.com/jobs</span>
+								</div>
+							<?php elseif ( $mod === 'google' ) : ?>
+								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--gbp" aria-hidden="true">
+									<strong>Google Business Profile</strong>
+									<span>Update ready · Today</span>
+								</div>
+							<?php elseif ( $mod === 'reviews' ) : ?>
+								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--qr" aria-hidden="true">
+									<span class="jcp-job-flow__qr"></span>
+									<span class="jcp-job-flow__chrome-text">
+										<strong>Scan to review</strong>
+										<span>Ask on site</span>
+									</span>
+								</div>
+							<?php elseif ( $mod === 'social' ) : ?>
+								<div class="jcp-job-flow__chrome jcp-job-flow__chrome--social" aria-hidden="true">
+									<strong>Post ready</strong>
+									<span>Social · Directory</span>
+								</div>
+							<?php endif; ?>
+						</div>
+						<div class="jcp-job-flow__copy">
+							<?php if ( $title !== '' ) : ?>
+								<h3 class="jcp-job-flow__title"<?php jcp_niche_editable_attr( 'benefits.items.' . $bi . '.title' ); ?>><?php echo esc_html( $title ); ?></h3>
+							<?php endif; ?>
+							<?php if ( $body !== '' ) : ?>
+								<p class="jcp-job-flow__body"<?php jcp_niche_editable_attr( 'benefits.items.' . $bi . '.body' ); ?>><?php echo esc_html( $body ); ?></p>
+							<?php endif; ?>
+						</div>
+					</article>
+				<?php endforeach; ?>
+			</div>
+			<?php else : ?>
 			<div class="ranking-factors-grid"<?php jcp_niche_array_attr( 'benefits.items' ); ?>>
 				<?php
 				$benefit_icons = [ 'badge-check', 'map-pin', 'message-square', 'star', 'building-2', 'phone' ];
@@ -872,11 +1032,14 @@ function jcp_niche_render_benefits( array $c ): void {
 							'show_title' => jcp_niche_show_field( $b, 'show_card_titles', true ),
 							'show_body'  => jcp_niche_show_field( $b, 'show_card_body', true ),
 							'show_stats' => jcp_niche_show_field( $b, 'show_card_stats', true ),
-						]
+						],
+						(string) ( $item['url'] ?? '' ),
+						'benefits.items.' . $bi . '.url'
 					);
 				endforeach;
 				?>
 			</div>
+			<?php endif; ?>
 			<?php
 			if ( $closing['render'] && $close_text !== '' ) {
 				echo '<p class="rankings-supporting jcp-niche-section-closing"' . $closing['attr']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -1156,6 +1319,27 @@ function jcp_niche_render_who_its_for( array $c ): void {
 			</div>
 			<?php endif; ?>
 			<?php endif; ?>
+			<?php
+			$agency = is_array( $w['agency_band'] ?? null ) ? $w['agency_band'] : [];
+			$agency_headline = trim( (string) ( $agency['headline'] ?? '' ) );
+			if ( $agency_headline !== '' ) :
+				$agency_body = trim( (string) ( $agency['body'] ?? '' ) );
+				$agency_cta  = trim( (string) ( $agency['cta_label'] ?? '' ) );
+				$agency_url  = trim( (string) ( $agency['cta_url'] ?? '/demo/' ) );
+				?>
+				<div class="jcp-agency-band">
+					<div class="jcp-agency-band__inner">
+						<p class="jcp-agency-band__eyebrow"><?php esc_html_e( 'For agencies', 'jcp-core' ); ?></p>
+						<h3 class="jcp-agency-band__headline"<?php jcp_niche_editable_attr( 'who_its_for.agency_band.headline' ); ?>><?php echo esc_html( $agency_headline ); ?></h3>
+						<?php if ( $agency_body !== '' ) : ?>
+							<p class="jcp-agency-band__body"<?php jcp_niche_editable_attr( 'who_its_for.agency_band.body' ); ?>><?php echo esc_html( $agency_body ); ?></p>
+						<?php endif; ?>
+						<?php if ( $agency_cta !== '' ) : ?>
+							<a class="btn btn-secondary" href="<?php echo esc_url( $agency_url !== '' ? $agency_url : home_url( '/demo/' ) ); ?>"<?php jcp_niche_editable_attr( 'who_its_for.agency_band.cta_label' ); ?>><?php echo esc_html( $agency_cta ); ?></a>
+						<?php endif; ?>
+					</div>
+				</div>
+			<?php endif; ?>
 			<?php jcp_niche_render_section_optional_ctas( $w, 'who_its_for', (string) ( $c['niche_key'] ?? $c['page_key'] ?? '' ) ); ?>
 		</div>
 	</section>
@@ -1231,14 +1415,16 @@ function jcp_niche_render_final_cta( array $c, string $niche_key ): void {
 	if ( empty( $f['headline'] ) ) {
 		return;
 	}
-	$primary = jcp_niche_resolve_cta( $f['cta_primary'] ?? [], $niche_key );
-	$note    = ! empty( $f['cta_note'] ) ? (string) $f['cta_note'] : __( 'No signup required. Setup in minutes.', 'jcp-core' );
-	$btn     = $primary['label'] !== '' ? $primary['label'] : __( 'See your business in the live demo', 'jcp-core' );
-	$url     = $primary['url'] !== '' ? $primary['url'] : home_url( '/demo/' );
-	$show_sub = jcp_niche_show_field( $f, 'show_subheadline', true );
+	$primary   = jcp_niche_resolve_cta( $f['cta_primary'] ?? [], $niche_key );
+	$secondary = jcp_niche_resolve_cta( $f['cta_secondary'] ?? [], $niche_key );
+	$note      = ! empty( $f['cta_note'] ) ? (string) $f['cta_note'] : __( 'No credit card required', 'jcp-core' );
+	$btn       = $primary['label'] !== '' ? $primary['label'] : __( 'See It for My Business →', 'jcp-core' );
+	$url       = $primary['url'] !== '' ? $primary['url'] : home_url( '/demo/' );
+	$show_sub  = jcp_niche_show_field( $f, 'show_subheadline', true );
 	$show_note = jcp_niche_show_field( $f, 'show_cta_note', true );
 	$show_headline = jcp_niche_show_field( $f, 'show_headline', true );
 	$show_cta = jcp_niche_show_field( $f, 'show_cta', true );
+	$show_secondary = $secondary['label'] !== '' && jcp_niche_show_field( $f, 'show_cta_secondary', true );
 	$heading_tag = jcp_niche_heading_tag_from_props( $f, 'h3', false );
 	?>
 	<section class="jcp-section rankings-section jcp-niche-final">
@@ -1261,6 +1447,17 @@ function jcp_niche_render_final_cta( array $c, string $niche_key ): void {
 					<a class="btn btn-primary rankings-cta-btn" href="<?php echo esc_url( $url ); ?>"<?php jcp_niche_editable_link_attr( 'final_cta.cta_primary' ); jcp_niche_cta_tracking_attr( $url, str_contains( $url, 'firstpromoter.com' ) ? 'referral_footer' : 'niche_footer', $btn ); ?>><?php echo esc_html( $btn ); ?></a>
 					<?php if ( $show_note ) : ?>
 						<p class="cta-note"<?php jcp_niche_editable_attr( 'final_cta.cta_note' ); ?>><?php echo esc_html( $note ); ?></p>
+					<?php endif; ?>
+					<?php if ( $show_secondary ) : ?>
+						<p class="cta-note cta-secondary-link">
+							<a href="<?php echo esc_url( $secondary['url'] ); ?>"<?php jcp_niche_editable_link_attr( 'final_cta.cta_secondary' ); jcp_niche_cta_tracking_attr( $secondary['url'], 'niche_footer_secondary', $secondary['label'] ); ?>><?php echo esc_html( $secondary['label'] ); ?></a>
+						</p>
+					<?php endif; ?>
+					<?php
+					$footnote = trim( (string) ( $f['cta_footnote'] ?? '' ) );
+					if ( $footnote !== '' ) :
+						?>
+						<p class="cta-note cta-footnote"<?php jcp_niche_editable_attr( 'final_cta.cta_footnote' ); ?>><?php echo esc_html( $footnote ); ?></p>
 					<?php endif; ?>
 				</div>
 				<?php endif; ?>
@@ -1287,9 +1484,10 @@ function jcp_niche_render_demo_preview( array $props, string $niche_key = '', st
 		$path,
 		$niche_key,
 		[
-			'variant'    => 'card',
-			'section_id' => $section_id,
-			'root_class' => 'jcp-block-demo-preview',
+			'variant'         => 'card',
+			'section_id'      => $section_id,
+			'root_class'      => 'jcp-block-demo-preview',
+			'wrap_container'  => true,
 		]
 	);
 }
@@ -1359,6 +1557,985 @@ function jcp_niche_render_proof_flow( array $props ): void {
 				</div>
 			<?php endif; ?>
 		</div>
+	</section>
+	<?php
+}
+
+/**
+ * Stable key for a testimonial review (id preferred, else name slug).
+ *
+ * @param array<string, mixed> $review Review item.
+ */
+function jcp_testimonials_review_key( array $review ): string {
+	if ( ! empty( $review['id'] ) ) {
+		return (string) $review['id'];
+	}
+	$name = trim( (string) ( $review['name'] ?? '' ) );
+	if ( $name !== '' ) {
+		return sanitize_title( $name );
+	}
+	return '';
+}
+
+/**
+ * Resolve featured review from list by featured_key (id, name slug, or first item).
+ *
+ * @param list<array<string, mixed>> $reviews      Normalized reviews.
+ * @param string                     $featured_key Featured key from props.
+ * @return array<string, mixed>|null
+ */
+function jcp_testimonials_resolve_featured( array $reviews, string $featured_key ): ?array {
+	if ( $reviews === [] ) {
+		return null;
+	}
+	$featured_key = trim( $featured_key );
+	if ( $featured_key !== '' ) {
+		foreach ( $reviews as $review ) {
+			if ( ! is_array( $review ) ) {
+				continue;
+			}
+			$key = jcp_testimonials_review_key( $review );
+			if ( $key === $featured_key ) {
+				return $review;
+			}
+			$name_slug = sanitize_title( (string) ( $review['name'] ?? '' ) );
+			if ( $name_slug !== '' && $name_slug === sanitize_title( $featured_key ) ) {
+				return $review;
+			}
+		}
+	}
+	foreach ( $reviews as $review ) {
+		if ( is_array( $review ) ) {
+			return $review;
+		}
+	}
+	return null;
+}
+
+/**
+ * Normalize reviews for testimonials block output.
+ *
+ * @param array<string, mixed> $props Block props.
+ * @return list<array{id:string,name:string,role:string,quote:string,rating:int,avatar_url:string,avatar_alt:string,initials:string}>
+ */
+function jcp_testimonials_normalize_reviews( array $props ): array {
+	$raw = $props['reviews'] ?? null;
+	if ( ! is_array( $raw ) || $raw === [] ) {
+		$raw = function_exists( 'jcp_page_canonical_testimonial_reviews' )
+			? jcp_page_canonical_testimonial_reviews()
+			: ( function_exists( 'jcp_sales_tool_default_reviews' ) ? jcp_sales_tool_default_reviews() : [] );
+	}
+
+	// Always backfill the four canonical reviews (home / campaign / sales must match).
+	if ( function_exists( 'jcp_page_canonical_testimonial_reviews' ) ) {
+		$canonical = jcp_page_canonical_testimonial_reviews();
+		if ( $canonical !== [] ) {
+			$by_id = [];
+			foreach ( $raw as $review ) {
+				if ( ! is_array( $review ) ) {
+					continue;
+				}
+				$id = trim( (string) ( $review['id'] ?? '' ) );
+				if ( $id === '' ) {
+					$id = sanitize_title( (string) ( $review['name'] ?? '' ) );
+				}
+				$quote = trim( (string) ( $review['quote'] ?? '' ) );
+				$name  = trim( (string) ( $review['name'] ?? '' ) );
+				// Incomplete rows do not block the canonical review.
+				if ( $id === '' || $name === '' || $quote === '' ) {
+					continue;
+				}
+				$by_id[ $id ] = $review;
+			}
+			$merged = [];
+			foreach ( $canonical as $want ) {
+				$id = (string) ( $want['id'] ?? '' );
+				$merged[] = ( $id !== '' && isset( $by_id[ $id ] ) ) ? $by_id[ $id ] : $want;
+			}
+			$raw = $merged;
+		}
+	}
+
+	$out = [];
+	foreach ( $raw as $review ) {
+		if ( ! is_array( $review ) ) {
+			continue;
+		}
+		$name  = trim( (string) ( $review['name'] ?? '' ) );
+		$quote = trim( (string) ( $review['quote'] ?? '' ) );
+		if ( $name === '' || $quote === '' ) {
+			continue;
+		}
+		$id = trim( (string) ( $review['id'] ?? '' ) );
+		if ( $id === '' ) {
+			$id = sanitize_title( $name );
+		}
+		$rating = isset( $review['rating'] ) ? (int) $review['rating'] : 5;
+		if ( $rating < 0 ) {
+			$rating = 0;
+		}
+		if ( $rating > 5 ) {
+			$rating = 5;
+		}
+		$avatar = trim( (string) ( $review['avatar_url'] ?? $review['avatar'] ?? $review['image_url'] ?? $review['photo_url'] ?? '' ) );
+		if ( $avatar !== '' && function_exists( 'set_url_scheme' ) ) {
+			$avatar = set_url_scheme( $avatar, 'https' );
+		}
+		$alt = trim( (string) ( $review['avatar_alt'] ?? $review['avatarAlt'] ?? $review['image_alt'] ?? '' ) );
+		if ( $alt === '' ) {
+			/* translators: %s: reviewer name. */
+			$alt = sprintf( __( 'Photo of %s', 'jcp-core' ), $name );
+		}
+		$out[] = [
+			'id'         => $id,
+			'name'       => $name,
+			'role'       => trim( (string) ( $review['role'] ?? '' ) ),
+			'quote'      => $quote,
+			'rating'     => $rating,
+			'avatar_url' => $avatar,
+			'avatar_alt' => $alt,
+			'initials'   => jcp_testimonials_review_initials( $name ),
+		];
+	}
+	return $out;
+}
+
+/**
+ * Build 1–2 letter initials for a reviewer name.
+ */
+function jcp_testimonials_review_initials( string $name ): string {
+	$name = trim( preg_replace( '/\s+/', ' ', $name ) ?? '' );
+	if ( $name === '' ) {
+		return '';
+	}
+	$parts = preg_split( '/\s+/', $name ) ?: [];
+	$first = isset( $parts[0][0] ) ? strtoupper( $parts[0][0] ) : '';
+	$last  = count( $parts ) > 1 && isset( $parts[ count( $parts ) - 1 ][0] )
+		? strtoupper( $parts[ count( $parts ) - 1 ][0] )
+		: '';
+	return $first . $last;
+}
+
+/**
+ * Render avatar mark for a review card / featured cite.
+ *
+ * @param array<string, mixed> $review Normalized review.
+ */
+function jcp_testimonials_render_avatar( array $review ): void {
+	$url      = trim( (string) ( $review['avatar_url'] ?? '' ) );
+	$alt      = trim( (string) ( $review['avatar_alt'] ?? '' ) );
+	$initials = trim( (string) ( $review['initials'] ?? '' ) );
+	if ( $initials === '' ) {
+		$initials = jcp_testimonials_review_initials( (string) ( $review['name'] ?? '' ) );
+	}
+	?>
+	<span class="jcp-testimonials-avatar" aria-hidden="true">
+		<?php if ( $url !== '' ) : ?>
+			<img src="<?php echo esc_url( $url ); ?>" alt="" width="44" height="44" loading="lazy" decoding="async" />
+		<?php else : ?>
+			<span class="jcp-testimonials-avatar__initials"><?php echo esc_html( $initials !== '' ? $initials : '?' ); ?></span>
+		<?php endif; ?>
+	</span>
+	<?php
+	unset( $alt ); // Alt reserved for parent accessible name; decorative avatar.
+}
+
+/**
+ * Render star row for a testimonial rating.
+ *
+ * @param int  $rating     Star count (0–5).
+ * @param bool $show_stars Whether to output stars.
+ */
+function jcp_testimonials_render_stars( int $rating, bool $show_stars ): void {
+	if ( ! $show_stars || $rating <= 0 ) {
+		return;
+	}
+	$filled = str_repeat( '★', $rating );
+	$empty  = str_repeat( '☆', max( 0, 5 - $rating ) );
+	/* translators: %d: star rating out of 5. */
+	$label = sprintf( __( '%d out of 5 stars', 'jcp-core' ), $rating );
+	?>
+	<div class="jcp-testimonials-stars" aria-label="<?php echo esc_attr( $label ); ?>">
+		<span aria-hidden="true"><?php echo esc_html( $filled . $empty ); ?></span>
+	</div>
+	<?php
+}
+
+/**
+ * Normalize abbreviated stat units for display (250k → 250K, $150m → $150M).
+ *
+ * @param string $raw Raw value.
+ */
+function jcp_niche_normalize_stat_value( string $raw ): string {
+	$raw = trim( $raw );
+	if ( $raw === '' ) {
+		return $raw;
+	}
+	return (string) preg_replace_callback(
+		'/(\$?[\d,]+(?:\.\d+)?)([kKmMbB])(\+?)/',
+		static function ( array $m ): string {
+			return $m[1] . strtoupper( $m[2] ) . $m[3];
+		},
+		$raw
+	);
+}
+
+/**
+ * Parse a display stat (e.g. 10, 250k+, $150M+) into count-up attributes.
+ *
+ * @param string $raw Raw value string.
+ * @return array{display:string,to:?float,prefix:string,suffix:string,format:string,decimals:int}
+ */
+function jcp_niche_parse_count_value( string $raw ): array {
+	$display = trim( $raw );
+	$out     = [
+		'display'  => $display,
+		'to'       => null,
+		'prefix'   => '',
+		'suffix'   => '',
+		'format'   => 'plain',
+		'decimals' => 0,
+	];
+	if ( $display === '' ) {
+		return $out;
+	}
+	if ( ! preg_match( '/^(\$?)([\d,]+(?:\.\d+)?)([kKmMbB]?)(\+?)$/', $display, $m ) ) {
+		return $out;
+	}
+	$prefix = (string) $m[1];
+	$num    = str_replace( ',', '', (string) $m[2] );
+	$scale  = strtolower( (string) $m[3] );
+	$scale_display = strtoupper( (string) $m[3] );
+	$plus   = (string) $m[4];
+	$to     = (float) $num;
+	if ( ! is_finite( $to ) || $to < 0 ) {
+		return $out;
+	}
+	$decimals = ( strpos( $num, '.' ) !== false ) ? strlen( substr( strrchr( $num, '.' ), 1 ) ) : 0;
+	$out['to']       = $to;
+	$out['prefix']   = $prefix;
+	$out['suffix']   = $scale_display . $plus;
+	$out['decimals'] = $decimals;
+	$out['format']   = ( strpos( (string) $m[2], ',' ) !== false ) ? 'comma' : 'plain';
+	return $out;
+}
+
+/**
+ * Render one authority stat value (static or count-up).
+ *
+ * @param array{value:string,label:string,detail:string} $stat Stat row.
+ * @param int                                              $i    Index.
+ * @param bool                                             $animate Whether to animate.
+ */
+function jcp_niche_render_authority_stat_value( array $stat, int $i, bool $animate ): void {
+	$stat['value'] = jcp_niche_normalize_stat_value( (string) ( $stat['value'] ?? '' ) );
+	$parsed = jcp_niche_parse_count_value( $stat['value'] );
+	$attrs  = '';
+	$class  = '';
+	if ( $animate && $parsed['to'] !== null ) {
+		$class = ' jcp-count-up';
+		$attrs = sprintf(
+			' data-count-to="%s" data-count-prefix="%s" data-count-suffix="%s" data-count-format="%s" data-count-decimals="%d" data-count-ms="1400"',
+			esc_attr( (string) $parsed['to'] ),
+			esc_attr( $parsed['prefix'] ),
+			esc_attr( $parsed['suffix'] ),
+			esc_attr( $parsed['format'] ),
+			(int) $parsed['decimals']
+		);
+	}
+	?>
+	<span class="<?php echo esc_attr( trim( $class ) ); ?>"<?php echo $attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- built from esc_attr above. ?><?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.value' ); ?>><?php echo esc_html( jcp_niche_normalize_stat_value( (string) ( $stat['value'] ?? '' ) ) ); ?></span>
+	<?php
+}
+
+/**
+ * Authority / credibility band (e.g. Built by LeadsForward).
+ *
+ * @param array<string, mixed> $props     Block props.
+ * @param string               $niche_key Page key for CTA URLs.
+ */
+function jcp_niche_render_authority( array $props, string $niche_key = '' ): void {
+	$headline = trim( (string) ( $props['headline'] ?? '' ) );
+	if ( $headline === '' ) {
+		return;
+	}
+
+	$section_id   = ! empty( $props['section_id'] ) ? (string) $props['section_id'] : 'built-by-leadsforward';
+	$eyebrow      = trim( (string) ( $props['eyebrow'] ?? '' ) );
+	$body         = trim( (string) ( $props['body'] ?? '' ) );
+	$cta_note     = trim( (string) ( $props['cta_note'] ?? '' ) );
+	$primary      = jcp_niche_resolve_cta( $props['cta_primary'] ?? [], $niche_key );
+	$variant      = sanitize_key( (string) ( $props['variant'] ?? 'panel' ) );
+	if ( $variant !== 'scoreboard' ) {
+		$variant = 'panel';
+	}
+	$show_eyebrow = ! array_key_exists( 'show_eyebrow', $props ) || ! empty( $props['show_eyebrow'] );
+	$show_body    = ! array_key_exists( 'show_body', $props ) || ! empty( $props['show_body'] );
+	$show_stats   = ! array_key_exists( 'show_stats', $props ) || ! empty( $props['show_stats'] );
+	$show_cta     = ! array_key_exists( 'show_cta', $props ) || ! empty( $props['show_cta'] );
+	$animate      = $variant === 'scoreboard';
+	$stats        = [];
+	foreach ( (array) ( $props['stats'] ?? [] ) as $row ) {
+		if ( ! is_array( $row ) ) {
+			continue;
+		}
+		$value = trim( (string) ( $row['value'] ?? '' ) );
+		$label = trim( (string) ( $row['label'] ?? '' ) );
+		if ( $value === '' && $label === '' ) {
+			continue;
+		}
+		$stats[] = [
+			'value'  => $value,
+			'label'  => $label,
+			'detail' => trim( (string) ( $row['detail'] ?? '' ) ),
+		];
+	}
+	$section_class = 'jcp-section jcp-block-authority jcp-authority--' . $variant;
+	?>
+	<section class="<?php echo esc_attr( $section_class ); ?>" id="<?php echo esc_attr( $section_id ); ?>" data-jcp-authority-variant="<?php echo esc_attr( $variant ); ?>">
+		<div class="jcp-container">
+			<?php if ( $variant === 'scoreboard' ) : ?>
+				<div class="jcp-authority-scoreboard">
+					<header class="jcp-authority-scoreboard__intro">
+						<?php if ( $show_eyebrow && $eyebrow !== '' ) : ?>
+							<p class="jcp-authority-eyebrow"<?php jcp_niche_editable_attr( 'authority.eyebrow' ); ?>><?php echo esc_html( $eyebrow ); ?></p>
+						<?php endif; ?>
+						<h2 class="jcp-authority-headline"<?php jcp_niche_editable_attr( 'authority.headline' ); ?>><?php echo esc_html( $headline ); ?></h2>
+						<?php if ( $show_body && $body !== '' ) : ?>
+							<p class="jcp-authority-body"<?php jcp_niche_editable_attr( 'authority.body' ); ?>><?php echo esc_html( $body ); ?></p>
+						<?php endif; ?>
+					</header>
+					<?php if ( $show_stats && $stats !== [] ) : ?>
+						<div class="jcp-authority-stats jcp-authority-scoreboard__stats"<?php jcp_niche_array_attr( 'authority.stats' ); ?>>
+							<?php foreach ( $stats as $i => $stat ) : ?>
+								<div class="jcp-authority-stat">
+									<div class="jcp-authority-stat-value">
+										<?php jcp_niche_render_authority_stat_value( $stat, $i, $animate ); ?>
+										<?php if ( $stat['label'] !== '' ) : ?>
+											<span class="jcp-authority-stat-label"<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.label' ); ?>><?php echo esc_html( $stat['label'] ); ?></span>
+										<?php endif; ?>
+									</div>
+									<?php if ( $stat['detail'] !== '' ) : ?>
+										<p class="jcp-authority-stat-detail"<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.detail' ); ?>><?php echo esc_html( $stat['detail'] ); ?></p>
+									<?php endif; ?>
+								</div>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
+					<?php if ( $show_cta && $primary['label'] !== '' ) : ?>
+						<div class="jcp-authority-cta jcp-authority-scoreboard__cta">
+							<a
+								href="<?php echo esc_url( $primary['url'] ); ?>"
+								class="btn btn-primary"
+								<?php jcp_niche_editable_link_paths( 'authority.cta_primary.label', 'authority.cta_primary.url' ); ?>
+								<?php jcp_niche_cta_tracking_attr( $primary['url'], 'authority_cta', $primary['label'] ); ?>
+							><?php echo esc_html( $primary['label'] ); ?></a>
+							<?php if ( $cta_note !== '' ) : ?>
+								<p class="jcp-authority-cta-note"<?php jcp_niche_editable_attr( 'authority.cta_note' ); ?>><?php echo esc_html( $cta_note ); ?></p>
+							<?php endif; ?>
+						</div>
+					<?php endif; ?>
+				</div>
+			<?php else : ?>
+				<div class="jcp-authority-panel">
+					<div class="jcp-authority-copy">
+						<?php if ( $show_eyebrow && $eyebrow !== '' ) : ?>
+							<p class="jcp-authority-eyebrow"<?php jcp_niche_editable_attr( 'authority.eyebrow' ); ?>><?php echo esc_html( $eyebrow ); ?></p>
+						<?php endif; ?>
+						<h2 class="jcp-authority-headline"<?php jcp_niche_editable_attr( 'authority.headline' ); ?>><?php echo esc_html( $headline ); ?></h2>
+						<?php if ( $show_body && $body !== '' ) : ?>
+							<p class="jcp-authority-body"<?php jcp_niche_editable_attr( 'authority.body' ); ?>><?php echo esc_html( $body ); ?></p>
+						<?php endif; ?>
+						<?php if ( $show_cta && $primary['label'] !== '' ) : ?>
+							<div class="jcp-authority-cta">
+								<a
+									href="<?php echo esc_url( $primary['url'] ); ?>"
+									class="btn btn-primary"
+									<?php jcp_niche_editable_link_paths( 'authority.cta_primary.label', 'authority.cta_primary.url' ); ?>
+									<?php jcp_niche_cta_tracking_attr( $primary['url'], 'authority_cta', $primary['label'] ); ?>
+								><?php echo esc_html( $primary['label'] ); ?></a>
+								<?php if ( $cta_note !== '' ) : ?>
+									<p class="jcp-authority-cta-note"<?php jcp_niche_editable_attr( 'authority.cta_note' ); ?>><?php echo esc_html( $cta_note ); ?></p>
+								<?php endif; ?>
+							</div>
+						<?php endif; ?>
+					</div>
+					<?php if ( $show_stats && $stats !== [] ) : ?>
+						<div class="jcp-authority-stats"<?php jcp_niche_array_attr( 'authority.stats' ); ?>>
+							<?php foreach ( $stats as $i => $stat ) : ?>
+								<div class="jcp-authority-stat">
+									<div class="jcp-authority-stat-value">
+										<?php jcp_niche_render_authority_stat_value( $stat, $i, false ); ?>
+										<?php if ( $stat['label'] !== '' ) : ?>
+											<span class="jcp-authority-stat-label"<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.label' ); ?>><?php echo esc_html( $stat['label'] ); ?></span>
+										<?php endif; ?>
+									</div>
+									<?php if ( $stat['detail'] !== '' ) : ?>
+										<p class="jcp-authority-stat-detail"<?php jcp_niche_editable_attr( 'authority.stats.' . $i . '.detail' ); ?>><?php echo esc_html( $stat['detail'] ); ?></p>
+									<?php endif; ?>
+								</div>
+							<?php endforeach; ?>
+						</div>
+					<?php endif; ?>
+				</div>
+			<?php endif; ?>
+		</div>
+	</section>
+	<?php
+}
+
+/**
+ * Local Falcon / SoLV before-after proof (anonymous case).
+ *
+ * @param array<string, mixed> $props     Block props.
+ * @param string               $niche_key Page key for CTA URLs.
+ */
+function jcp_niche_render_local_falcon_proof( array $props, string $niche_key = '' ): void {
+	$headline = trim( (string) ( $props['headline'] ?? '' ) );
+	if ( $headline === '' ) {
+		return;
+	}
+
+	$section_id   = ! empty( $props['section_id'] ) ? (string) $props['section_id'] : 'maps-proof';
+	$eyebrow      = trim( (string) ( $props['eyebrow'] ?? '' ) );
+	$subheadline  = trim( (string) ( $props['subheadline'] ?? '' ) );
+	$disclaimer   = trim( (string) ( $props['disclaimer'] ?? '' ) );
+	$show_eyebrow = ! array_key_exists( 'show_eyebrow', $props ) || ! empty( $props['show_eyebrow'] );
+	$show_cta     = ! array_key_exists( 'show_cta', $props ) || ! empty( $props['show_cta'] );
+	$primary      = jcp_niche_resolve_cta( $props['cta_primary'] ?? [], $niche_key );
+	$secondary    = jcp_niche_resolve_cta( $props['cta_secondary'] ?? [], $niche_key );
+	$markets      = [];
+	foreach ( (array) ( $props['markets'] ?? [] ) as $row ) {
+		if ( ! is_array( $row ) ) {
+			continue;
+		}
+		$img = trim( (string) ( $row['image_url'] ?? '' ) );
+		if ( $img === '' && empty( $row['market'] ) ) {
+			continue;
+		}
+		$markets[] = [
+			'market'       => trim( (string) ( $row['market'] ?? '' ) ),
+			'keyword'      => trim( (string) ( $row['keyword'] ?? '' ) ),
+			'before_solv'  => trim( (string) ( $row['before_solv'] ?? '' ) ),
+			'after_solv'   => trim( (string) ( $row['after_solv'] ?? '' ) ),
+			'before_label' => trim( (string) ( $row['before_label'] ?? __( 'Before', 'jcp-core' ) ) ),
+			'after_label'  => trim( (string) ( $row['after_label'] ?? __( 'After', 'jcp-core' ) ) ),
+			'image_url'    => $img,
+			'image_alt'    => trim( (string) ( $row['image_alt'] ?? '' ) ),
+		];
+	}
+	?>
+	<section class="jcp-section jcp-block-local-falcon" id="<?php echo esc_attr( $section_id ); ?>" data-jcp-reveal>
+		<div class="jcp-container">
+			<header class="jcp-local-falcon__header">
+				<?php if ( $show_eyebrow && $eyebrow !== '' ) : ?>
+					<p class="jcp-local-falcon__eyebrow"<?php jcp_niche_editable_attr( 'local_falcon_proof.eyebrow' ); ?>><?php echo esc_html( $eyebrow ); ?></p>
+				<?php endif; ?>
+				<h2 class="jcp-local-falcon__headline"<?php jcp_niche_editable_attr( 'local_falcon_proof.headline' ); ?>><?php echo esc_html( $headline ); ?></h2>
+				<?php if ( $subheadline !== '' ) : ?>
+					<p class="jcp-local-falcon__sub"<?php jcp_niche_editable_attr( 'local_falcon_proof.subheadline' ); ?>><?php echo esc_html( $subheadline ); ?></p>
+				<?php endif; ?>
+			</header>
+			<?php if ( $markets !== [] ) : ?>
+				<div class="jcp-local-falcon__grid">
+					<?php foreach ( $markets as $i => $market ) : ?>
+						<article class="jcp-local-falcon__card" data-jcp-lf-card>
+							<div class="jcp-local-falcon__meta">
+								<?php if ( $market['market'] !== '' ) : ?>
+									<h3 class="jcp-local-falcon__market"<?php jcp_niche_editable_attr( 'local_falcon_proof.markets.' . $i . '.market' ); ?>><?php echo esc_html( $market['market'] ); ?></h3>
+								<?php endif; ?>
+								<?php if ( $market['keyword'] !== '' ) : ?>
+									<p class="jcp-local-falcon__keyword"<?php jcp_niche_editable_attr( 'local_falcon_proof.markets.' . $i . '.keyword' ); ?>><?php echo esc_html( $market['keyword'] ); ?></p>
+								<?php endif; ?>
+								<div class="jcp-local-falcon__solv">
+									<span class="jcp-local-falcon__solv-before">
+										<em><?php echo esc_html( $market['before_label'] ); ?></em>
+										<strong<?php jcp_niche_editable_attr( 'local_falcon_proof.markets.' . $i . '.before_solv' ); ?>><?php echo esc_html( $market['before_solv'] ); ?></strong>
+										<span><?php esc_html_e( 'SoLV', 'jcp-core' ); ?></span>
+									</span>
+									<span class="jcp-local-falcon__solv-arrow" aria-hidden="true">→</span>
+									<span class="jcp-local-falcon__solv-after">
+										<em><?php echo esc_html( $market['after_label'] ); ?></em>
+										<strong<?php jcp_niche_editable_attr( 'local_falcon_proof.markets.' . $i . '.after_solv' ); ?>><?php echo esc_html( $market['after_solv'] ); ?></strong>
+										<span><?php esc_html_e( 'SoLV', 'jcp-core' ); ?></span>
+									</span>
+								</div>
+							</div>
+							<?php if ( $market['image_url'] !== '' ) : ?>
+								<figure class="jcp-local-falcon__figure">
+									<div class="jcp-local-falcon__compare" data-jcp-lf-compare>
+										<img src="<?php echo esc_url( $market['image_url'] ); ?>" alt="<?php echo esc_attr( $market['image_alt'] !== '' ? $market['image_alt'] : $market['market'] ); ?>" width="960" height="540" loading="lazy" decoding="async" />
+										<label class="jcp-local-falcon__slider-label">
+											<span class="screen-reader-text"><?php esc_html_e( 'Reveal after grid', 'jcp-core' ); ?></span>
+											<input type="range" min="0" max="100" value="50" data-jcp-lf-range />
+										</label>
+										<div class="jcp-local-falcon__reveal" data-jcp-lf-reveal style="width:50%"></div>
+									</div>
+								</figure>
+							<?php endif; ?>
+						</article>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
+			<?php if ( $disclaimer !== '' ) : ?>
+				<p class="jcp-local-falcon__disclaimer"<?php jcp_niche_editable_attr( 'local_falcon_proof.disclaimer' ); ?>><?php echo esc_html( $disclaimer ); ?></p>
+			<?php endif; ?>
+			<?php if ( $show_cta && ( $primary['label'] !== '' || $secondary['label'] !== '' ) ) : ?>
+				<div class="jcp-local-falcon__cta jcp-actions">
+					<?php if ( $primary['label'] !== '' ) : ?>
+						<a class="btn btn-primary" href="<?php echo esc_url( $primary['url'] ); ?>"<?php jcp_niche_editable_link_attr( 'local_falcon_proof.cta_primary' ); ?>><?php echo esc_html( $primary['label'] ); ?></a>
+					<?php endif; ?>
+					<?php if ( $secondary['label'] !== '' ) : ?>
+						<a class="btn btn-secondary" href="<?php echo esc_url( $secondary['url'] !== '' ? $secondary['url'] : ( function_exists( 'jcp_global_onboarding_url' ) ? jcp_global_onboarding_url( 'home_preview_lf' ) : home_url( '/' ) ) ); ?>"<?php jcp_niche_editable_link_attr( 'local_falcon_proof.cta_secondary' ); ?>><?php echo esc_html( $secondary['label'] ); ?></a>
+					<?php endif; ?>
+				</div>
+			<?php endif; ?>
+		</div>
+	</section>
+	<?php
+}
+
+/**
+ * Deterministic 7×7 geo-grid rank patterns (1–20+) for CSS heatmaps.
+ *
+ * @param string $pattern Pattern key.
+ * @return array<int, int> Exactly 49 ranks.
+ */
+function jcp_lf_case_grid_pattern( string $pattern ): array {
+	$patterns = [
+		// All out of pack / not ranking in tracked keywords.
+		'before_blank' => array_fill( 0, 49, 20 ),
+		// ~89.8% SoLV (~44/49 in top 3) — a few yellow edge cells.
+		'after_fr_wv'  => [
+			2, 1, 1, 2, 1, 3, 4,
+			1, 1, 2, 1, 2, 1, 3,
+			1, 2, 1, 1, 2, 1, 2,
+			2, 1, 1, 1, 1, 2, 5,
+			1, 1, 2, 1, 1, 3, 2,
+			3, 1, 1, 2, 1, 1, 6,
+			4, 3, 2, 1, 2, 3, 7,
+		],
+		// 100% SoLV — near-solid Map Pack green.
+		'after_bw_wv'  => [
+			1, 1, 2, 1, 1, 2, 1,
+			1, 2, 1, 1, 2, 1, 1,
+			2, 1, 1, 1, 1, 2, 1,
+			1, 1, 2, 1, 1, 1, 2,
+			1, 2, 1, 1, 2, 1, 1,
+			2, 1, 1, 2, 1, 1, 1,
+			1, 1, 2, 1, 1, 2, 1,
+		],
+		// ~83.7% SoLV (41/49 in top 3) — more yellow fringe.
+		'after_fr_mi'  => [
+			2, 1, 1, 3, 2, 4, 8,
+			1, 2, 1, 1, 2, 3, 5,
+			1, 1, 2, 1, 1, 2, 3,
+			3, 1, 1, 1, 2, 1, 6,
+			2, 1, 2, 1, 1, 3, 2,
+			5, 2, 1, 2, 1, 2, 7,
+			4, 3, 2, 1, 2, 3, 9,
+		],
+		// ~95.9% SoLV (47/49) — nearly solid green, two soft edges.
+		'after_bw_mi'  => [
+			1, 1, 2, 1, 1, 2, 3,
+			1, 2, 1, 1, 2, 1, 1,
+			2, 1, 1, 1, 1, 2, 1,
+			1, 1, 2, 1, 1, 1, 2,
+			1, 2, 1, 1, 2, 1, 1,
+			2, 1, 1, 2, 1, 1, 4,
+			1, 1, 2, 1, 1, 5, 1,
+		],
+	];
+
+	$grid = $patterns[ $pattern ] ?? $patterns['before_blank'];
+	if ( count( $grid ) !== 49 ) {
+		$grid = array_pad( array_slice( $grid, 0, 49 ), 49, 20 );
+	}
+	return array_map( 'intval', $grid );
+}
+
+/**
+ * Map a Local Falcon–style rank to a CSS color token class.
+ *
+ * @param int $rank Rank 1–20+.
+ */
+function jcp_lf_case_rank_class( int $rank ): string {
+	if ( $rank <= 3 ) {
+		return 'is-rank-top';
+	}
+	if ( $rank <= 10 ) {
+		return 'is-rank-mid';
+	}
+	if ( $rank <= 19 ) {
+		return 'is-rank-low';
+	}
+	return 'is-rank-out';
+}
+
+/**
+ * Render a 7×7 CSS geo-grid heatmap (optional real map underlay).
+ *
+ * @param array<int, int> $ranks   49 ranks.
+ * @param string          $label   Accessible label.
+ * @param string          $map_url Optional map background URL.
+ */
+function jcp_lf_case_render_grid( array $ranks, string $label, string $map_url = '' ): void {
+	$mapped = $map_url !== '';
+	?>
+	<div class="jcp-maps-scan<?php echo $mapped ? ' jcp-maps-scan--mapped' : ''; ?>" role="img" aria-label="<?php echo esc_attr( $label ); ?>">
+		<?php if ( $mapped ) : ?>
+			<img class="jcp-maps-scan__map" src="<?php echo esc_url( $map_url ); ?>" alt="" width="640" height="640" loading="lazy" decoding="async" />
+		<?php endif; ?>
+		<div class="jcp-maps-scan__cells">
+			<?php foreach ( $ranks as $rank ) : ?>
+				<span class="jcp-maps-scan__pin <?php echo esc_attr( jcp_lf_case_rank_class( (int) $rank ) ); ?>" title="<?php echo esc_attr( sprintf( /* translators: %d: map pack rank */ __( 'Rank %d', 'jcp-core' ), (int) $rank ) ); ?>"></span>
+			<?php endforeach; ?>
+		</div>
+	</div>
+	<?php
+}
+
+/**
+ * Anonymous Local Falcon case study — CSS heatmaps on real map underlays.
+ *
+ * @param array<string, mixed> $props     Block props.
+ * @param string               $niche_key Page key.
+ */
+function jcp_niche_render_local_rank_case_study( array $props, string $niche_key = '' ): void {
+	$headline = trim( (string) ( $props['headline'] ?? '' ) );
+	if ( $headline === '' ) {
+		return;
+	}
+
+	$section_id   = ! empty( $props['section_id'] ) ? (string) $props['section_id'] : 'case-study';
+	$eyebrow      = trim( (string) ( $props['eyebrow'] ?? '' ) );
+	$body         = trim( (string) ( $props['body'] ?? '' ) );
+	$footnote     = trim( (string) ( $props['footnote'] ?? '' ) );
+	$show_eyebrow = ! array_key_exists( 'show_eyebrow', $props ) || ! empty( $props['show_eyebrow'] );
+	$show_body    = ! array_key_exists( 'show_body', $props ) || ! empty( $props['show_body'] );
+	$show_stats   = ! array_key_exists( 'show_stats', $props ) || ! empty( $props['show_stats'] );
+	$show_cta     = ! empty( $props['show_cta'] );
+	$secondary    = function_exists( 'jcp_niche_resolve_cta' )
+		? jcp_niche_resolve_cta( $props['cta_secondary'] ?? [], $niche_key )
+		: [
+			'label' => trim( (string) ( ( $props['cta_secondary']['label'] ?? '' ) ) ),
+			'url'   => trim( (string) ( ( $props['cta_secondary']['url'] ?? '/demo/' ) ) ),
+		];
+
+	$stats = [];
+	foreach ( (array) ( $props['stats'] ?? [] ) as $row ) {
+		if ( ! is_array( $row ) ) {
+			continue;
+		}
+		$value = trim( (string) ( $row['value'] ?? '' ) );
+		$label = trim( (string) ( $row['label'] ?? '' ) );
+		if ( $value === '' && $label === '' ) {
+			continue;
+		}
+		$stats[] = [
+			'value' => $value,
+			'label' => $label,
+		];
+	}
+
+	$locations = [];
+	foreach ( (array) ( $props['locations'] ?? [] ) as $loc ) {
+		if ( ! is_array( $loc ) ) {
+			continue;
+		}
+		$name    = trim( (string) ( $loc['name'] ?? '' ) );
+		$address = trim( (string) ( $loc['address'] ?? '' ) );
+		if ( $name === '' && $address === '' ) {
+			continue;
+		}
+		$scans = [];
+		foreach ( (array) ( $loc['scans'] ?? [] ) as $scan ) {
+			if ( ! is_array( $scan ) ) {
+				continue;
+			}
+			$keyword = trim( (string) ( $scan['keyword'] ?? '' ) );
+			if ( $keyword === '' ) {
+				continue;
+			}
+			$before = is_array( $scan['before'] ?? null ) ? $scan['before'] : [];
+			$after  = is_array( $scan['after'] ?? null ) ? $scan['after'] : [];
+			$scans[] = [
+				'keyword'    => $keyword,
+				'before'     => [
+					'date'    => trim( (string) ( $before['date'] ?? '' ) ),
+					'solv'    => trim( (string) ( $before['solv'] ?? '' ) ),
+					'summary' => trim( (string) ( $before['summary'] ?? '' ) ),
+					'pattern' => trim( (string) ( $before['pattern'] ?? 'before_blank' ) ),
+				],
+				'after'      => [
+					'date'    => trim( (string) ( $after['date'] ?? '' ) ),
+					'solv'    => trim( (string) ( $after['solv'] ?? '' ) ),
+					'summary' => trim( (string) ( $after['summary'] ?? '' ) ),
+					'pattern' => trim( (string) ( $after['pattern'] ?? 'before_blank' ) ),
+				],
+				'grid_label' => trim( (string) ( $scan['grid_label'] ?? __( 'Google Maps coverage', 'jcp-core' ) ) ),
+			];
+		}
+		$locations[] = [
+			'name'    => $name,
+			'address' => $address,
+			'meta'    => trim( (string) ( $loc['meta'] ?? '' ) ),
+			'map_bg'  => trim( (string) ( $loc['map_bg'] ?? '' ) ),
+			'scans'   => $scans,
+		];
+	}
+	?>
+	<section class="jcp-section jcp-block-lf-case" id="<?php echo esc_attr( $section_id ); ?>" data-jcp-reveal>
+		<div class="jcp-container">
+			<header class="jcp-lf-case__header">
+				<?php if ( $show_eyebrow && $eyebrow !== '' ) : ?>
+					<p class="jcp-lf-case__eyebrow demo-badge"<?php jcp_niche_editable_attr( 'local_rank_case_study.eyebrow' ); ?>><?php echo esc_html( $eyebrow ); ?></p>
+				<?php endif; ?>
+				<h2 class="jcp-lf-case__headline"<?php jcp_niche_editable_attr( 'local_rank_case_study.headline' ); ?>><?php echo esc_html( $headline ); ?></h2>
+				<?php if ( $show_body && $body !== '' ) : ?>
+					<p class="jcp-lf-case__body"<?php jcp_niche_editable_attr( 'local_rank_case_study.body' ); ?>><?php echo esc_html( $body ); ?></p>
+				<?php endif; ?>
+			</header>
+
+			<?php if ( $show_stats && $stats !== [] ) : ?>
+				<ul class="jcp-lf-case__stats" role="list">
+					<?php foreach ( $stats as $i => $stat ) : ?>
+						<li class="jcp-lf-case__stat">
+							<strong class="jcp-lf-case__stat-value"<?php jcp_niche_editable_attr( 'local_rank_case_study.stats.' . $i . '.value' ); ?>><?php echo esc_html( $stat['value'] ); ?></strong>
+							<span class="jcp-lf-case__stat-label"<?php jcp_niche_editable_attr( 'local_rank_case_study.stats.' . $i . '.label' ); ?>><?php echo esc_html( $stat['label'] ); ?></span>
+						</li>
+					<?php endforeach; ?>
+				</ul>
+			<?php endif; ?>
+
+			<?php if ( $locations !== [] ) : ?>
+				<div class="jcp-lf-case__locations">
+					<?php foreach ( $locations as $li => $location ) : ?>
+						<article class="jcp-lf-case__location">
+							<header class="jcp-lf-case__location-head">
+								<?php if ( $location['name'] !== '' ) : ?>
+									<h3 class="jcp-lf-case__location-name"<?php jcp_niche_editable_attr( 'local_rank_case_study.locations.' . $li . '.name' ); ?>><?php echo esc_html( $location['name'] ); ?></h3>
+								<?php endif; ?>
+								<?php if ( $location['address'] !== '' ) : ?>
+									<p class="jcp-lf-case__location-address"<?php jcp_niche_editable_attr( 'local_rank_case_study.locations.' . $li . '.address' ); ?>><?php echo esc_html( $location['address'] ); ?></p>
+								<?php endif; ?>
+								<?php if ( $location['meta'] !== '' ) : ?>
+									<p class="jcp-lf-case__location-meta"<?php jcp_niche_editable_attr( 'local_rank_case_study.locations.' . $li . '.meta' ); ?>><?php echo esc_html( $location['meta'] ); ?></p>
+								<?php endif; ?>
+							</header>
+
+							<?php foreach ( $location['scans'] as $si => $scan ) : ?>
+								<div class="jcp-lf-case__scan">
+									<div class="jcp-lf-case__scan-chrome">
+										<span class="jcp-lf-case__keyword"<?php jcp_niche_editable_attr( 'local_rank_case_study.locations.' . $li . '.scans.' . $si . '.keyword' ); ?>><?php echo esc_html( $scan['keyword'] ); ?></span>
+										<span class="jcp-lf-case__scan-label"><?php echo esc_html( $scan['grid_label'] ); ?></span>
+									</div>
+									<div class="jcp-lf-case__compare">
+										<?php
+										foreach ( [ 'before', 'after' ] as $phase ) :
+											$side    = $scan[ $phase ];
+											$ranks   = jcp_lf_case_grid_pattern( (string) $side['pattern'] );
+											$summary = $side['summary'] !== ''
+												? $side['summary']
+												: ( $phase === 'before'
+													? __( 'Not showing up', 'jcp-core' )
+													: __( 'Showing up across town', 'jcp-core' ) );
+											$aria = sprintf(
+												/* translators: 1: before/after, 2: keyword, 3: plain result, 4: map coverage % */
+												__( '%1$s for %2$s — %3$s (%4$s of the map)', 'jcp-core' ),
+												$phase === 'before' ? __( 'Before', 'jcp-core' ) : __( 'After', 'jcp-core' ),
+												$scan['keyword'],
+												$summary,
+												$side['solv'] !== '' ? $side['solv'] : '—'
+											);
+											?>
+											<div class="jcp-lf-case__panel jcp-lf-case__panel--<?php echo esc_attr( $phase ); ?>">
+												<div class="jcp-lf-case__panel-head">
+													<span class="jcp-lf-case__phase"><?php echo esc_html( $phase === 'before' ? __( 'Before', 'jcp-core' ) : __( 'After', 'jcp-core' ) ); ?></span>
+													<?php if ( $side['date'] !== '' ) : ?>
+														<span class="jcp-lf-case__date"><?php echo esc_html( $side['date'] ); ?></span>
+													<?php endif; ?>
+												</div>
+												<?php jcp_lf_case_render_grid( $ranks, $aria, (string) ( $location['map_bg'] ?? '' ) ); ?>
+												<div class="jcp-lf-case__result">
+													<strong class="jcp-lf-case__result-summary"><?php echo esc_html( $summary ); ?></strong>
+													<?php if ( $side['solv'] !== '' ) : ?>
+														<span class="jcp-lf-case__result-cover"><?php echo esc_html( sprintf( /* translators: %s: percentage of map covered */ __( '%s of the map', 'jcp-core' ), $side['solv'] ) ); ?></span>
+													<?php endif; ?>
+												</div>
+											</div>
+										<?php endforeach; ?>
+									</div>
+								</div>
+							<?php endforeach; ?>
+						</article>
+					<?php endforeach; ?>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( $footnote !== '' ) : ?>
+				<p class="jcp-lf-case__footnote"<?php jcp_niche_editable_attr( 'local_rank_case_study.footnote' ); ?>><?php echo esc_html( $footnote ); ?></p>
+			<?php endif; ?>
+
+			<?php if ( $show_cta && $secondary['label'] !== '' ) : ?>
+				<p class="jcp-lf-case__cta">
+					<a class="jcp-lf-case__cta-link" href="<?php echo esc_url( $secondary['url'] !== '' ? $secondary['url'] : home_url( '/demo/' ) ); ?>"<?php jcp_niche_editable_link_attr( 'local_rank_case_study.cta_secondary' ); ?>><?php echo esc_html( $secondary['label'] ); ?></a>
+				</p>
+			<?php endif; ?>
+		</div>
+	</section>
+	<?php
+}
+
+/**
+ * Testimonials block — featured quote + secondary strip, or slider-only.
+ *
+ * @param array<string, mixed> $props Block props.
+ */
+function jcp_niche_render_testimonials( array $props ): void {
+	if ( empty( $props['headline'] ) ) {
+		return;
+	}
+
+	$reviews = jcp_testimonials_normalize_reviews( $props );
+	if ( $reviews === [] ) {
+		return;
+	}
+
+	// Public walls are always a full 4-up grid. Never peel one review into a featured panel.
+	$show_featured = false;
+	$featured      = null;
+	$featured_id   = '';
+	$slider_list   = $reviews;
+	$layout        = 'grid';
+
+	$section_id  = ! empty( $props['section_id'] ) ? (string) $props['section_id'] : 'testimonials';
+	$autoplay    = false;
+	$autoplay_ms = isset( $props['autoplay_ms'] ) ? max( 1000, (int) $props['autoplay_ms'] ) : 6000;
+	$per_view    = max( 4, isset( $props['per_view'] ) ? (int) $props['per_view'] : 4 );
+	$show_stars  = ! array_key_exists( 'show_stars', $props ) || ! empty( $props['show_stars'] );
+	$show_roles  = ! array_key_exists( 'show_roles', $props ) || ! empty( $props['show_roles'] );
+	$eyebrow_vis = jcp_niche_field_visibility( $props, 'show_eyebrow', true );
+	$eyebrow     = trim( (string) ( $props['eyebrow'] ?? '' ) );
+	$faces       = [];
+	foreach ( (array) ( $props['faces'] ?? [] ) as $face ) {
+		if ( ! is_array( $face ) ) {
+			continue;
+		}
+		$url = trim( (string) ( $face['image_url'] ?? '' ) );
+		if ( $url === '' ) {
+			continue;
+		}
+		$faces[] = [
+			'url' => $url,
+			'alt' => (string) ( $face['image_alt'] ?? $face['alt'] ?? '' ),
+		];
+	}
+	$faces_label = trim( (string) ( $props['faces_label'] ?? '' ) );
+	$store_json  = wp_json_encode( $reviews );
+	$mode_class  = ' jcp-testimonials--slider-only jcp-testimonials--grid';
+	?>
+	<section
+		class="jcp-section rankings-section jcp-block-testimonials<?php echo esc_attr( $mode_class ); ?>"
+		id="<?php echo esc_attr( $section_id ); ?>"
+		data-jcp-testimonials
+		data-layout="grid"
+		data-autoplay="0"
+		data-autoplay-ms="<?php echo esc_attr( (string) $autoplay_ms ); ?>"
+		data-per-view="<?php echo esc_attr( (string) $per_view ); ?>"
+		data-slider-only="1"
+	>
+		<div class="jcp-container">
+			<?php if ( $eyebrow_vis['render'] && $eyebrow !== '' ) : ?>
+				<p class="jcp-testimonials-eyebrow demo-badge"<?php jcp_niche_editable_attr( 'testimonials.eyebrow' ); ?>><?php echo esc_html( $eyebrow ); ?></p>
+			<?php endif; ?>
+			<?php jcp_niche_render_section_header( $props, 'testimonials' ); ?>
+			<?php if ( $faces !== [] ) : ?>
+				<div class="jcp-campaign-faces" aria-hidden="<?php echo $faces_label === '' ? 'true' : 'false'; ?>">
+					<div class="jcp-campaign-faces__row">
+						<?php foreach ( $faces as $face ) : ?>
+							<img src="<?php echo esc_url( $face['url'] ); ?>" alt="<?php echo esc_attr( $face['alt'] ); ?>" width="52" height="52" loading="lazy" decoding="async" />
+						<?php endforeach; ?>
+						<div class="jcp-campaign-faces__stars" aria-label="<?php echo esc_attr( sprintf( /* translators: %d: star rating out of 5. */ __( '%d out of 5 stars', 'jcp-core' ), 5 ) ); ?>">
+							<span aria-hidden="true"><?php echo esc_html( str_repeat( '★', 5 ) ); ?></span>
+						</div>
+						<?php if ( $faces_label !== '' ) : ?>
+							<span class="jcp-campaign-faces__label"><?php echo esc_html( $faces_label ); ?></span>
+						<?php endif; ?>
+					</div>
+				</div>
+			<?php endif; ?>
+			<div class="jcp-testimonials">
+				<?php if ( $show_featured && $featured ) : ?>
+				<figure class="jcp-testimonials-featured" data-jcp-testimonials-featured>
+					<?php jcp_testimonials_render_stars( (int) ( $featured['rating'] ?? 5 ), $show_stars ); ?>
+					<blockquote class="jcp-testimonials-quote">
+						<p><?php echo esc_html( (string) $featured['quote'] ); ?></p>
+					</blockquote>
+					<figcaption class="jcp-testimonials-cite">
+						<?php jcp_testimonials_render_avatar( $featured ); ?>
+						<span class="jcp-testimonials-cite-text">
+							<cite class="jcp-testimonials-name"><?php echo esc_html( (string) $featured['name'] ); ?></cite>
+							<?php if ( $show_roles && ! empty( $featured['role'] ) ) : ?>
+								<span class="jcp-testimonials-role"><?php echo esc_html( (string) $featured['role'] ); ?></span>
+							<?php endif; ?>
+						</span>
+					</figcaption>
+				</figure>
+				<?php endif; ?>
+				<?php if ( $slider_list !== [] ) : ?>
+				<div class="jcp-testimonials-slider" data-jcp-testimonials-slider>
+					<button type="button" class="jcp-testimonials-nav jcp-testimonials-nav--prev" data-jcp-testimonials-prev aria-label="<?php esc_attr_e( 'Previous review', 'jcp-core' ); ?>">
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+					</button>
+					<div class="jcp-testimonials-track" data-jcp-testimonials-track role="list">
+						<?php foreach ( $slider_list as $review ) : ?>
+							<?php
+							$card_key = jcp_testimonials_review_key( $review );
+							/* translators: %s: reviewer name. */
+							$card_label = sprintf( __( 'Review from %s', 'jcp-core' ), (string) $review['name'] );
+							?>
+							<article
+								class="jcp-testimonials-card"
+								data-review-key="<?php echo esc_attr( $card_key ); ?>"
+								aria-label="<?php echo esc_attr( $card_label ); ?>"
+								role="listitem"
+							>
+								<?php jcp_testimonials_render_stars( (int) ( $review['rating'] ?? 5 ), $show_stars ); ?>
+								<p class="jcp-testimonials-card-quote"><?php echo esc_html( (string) $review['quote'] ); ?></p>
+								<div class="jcp-testimonials-card-person">
+									<?php jcp_testimonials_render_avatar( $review ); ?>
+									<span class="jcp-testimonials-card-person-text">
+										<span class="jcp-testimonials-card-name"><?php echo esc_html( (string) $review['name'] ); ?></span>
+										<?php if ( $show_roles && ! empty( $review['role'] ) ) : ?>
+											<span class="jcp-testimonials-card-role"><?php echo esc_html( (string) $review['role'] ); ?></span>
+										<?php endif; ?>
+									</span>
+								</div>
+							</article>
+						<?php endforeach; ?>
+					</div>
+					<button type="button" class="jcp-testimonials-nav jcp-testimonials-nav--next" data-jcp-testimonials-next aria-label="<?php esc_attr_e( 'Next review', 'jcp-core' ); ?>">
+						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>
+					</button>
+					<div class="jcp-testimonials-dots" data-jcp-testimonials-dots role="tablist" aria-label="<?php esc_attr_e( 'Review slides', 'jcp-core' ); ?>"></div>
+				</div>
+				<?php endif; ?>
+			</div>
+		</div>
+		<?php if ( is_string( $store_json ) && $store_json !== '' ) : ?>
+			<?php
+			/*
+			 * Do not esc_html() here — it turns " into &quot; and JSON.parse(textContent) fails,
+			 * which leaves the slider uninitialized (nav clicks do nothing).
+			 * JSON_HEX_TAG / JSON_HEX_AMP keep </script> and & safe inside the script tag.
+			 */
+			$store_safe = wp_json_encode( $reviews, JSON_HEX_TAG | JSON_HEX_AMP | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+			?>
+			<?php if ( is_string( $store_safe ) && $store_safe !== '' ) : ?>
+			<script type="application/json" data-jcp-testimonials-store><?php echo $store_safe; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON_HEX_* encoded. ?></script>
+			<?php endif; ?>
+		<?php endif; ?>
 	</section>
 	<?php
 }

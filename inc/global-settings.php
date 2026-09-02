@@ -22,12 +22,12 @@ function jcp_global_settings_defaults(): array {
 		'banner'  => [
 			'enabled'     => true,
 			'visibility'  => 'marketing',
-			'headline'    => 'Early Bird:',
-			'text'        => 'Get the Enterprise plan (normally $399/mo) for $125/mo.',
-			'code'        => 'EARLYBIRD',
-			'cta_label'   => 'Claim offer',
+			'headline'    => 'Start Free Trial:',
+			'text'        => 'Start Free Trial — no credit card required.',
+			'code'        => '',
+			'cta_label'   => 'Start Free Trial',
 			'cta_url'     => '',
-			'coupon'      => 'earlybird',
+			'coupon'      => '',
 			'utm_content' => 'sitewide_banner',
 		],
 		'signup'  => [
@@ -36,7 +36,7 @@ function jcp_global_settings_defaults(): array {
 			'step'       => '1',
 		],
 		'nav_cta' => [
-			'primary_label'   => 'Get Started',
+			'primary_label'   => 'Start Free Trial',
 			'primary_url'     => '',
 			'secondary_label' => 'Login',
 			'secondary_url'   => '',
@@ -46,7 +46,8 @@ function jcp_global_settings_defaults(): array {
 			'overrides' => [],
 		],
 		'contact' => [
-			'support_email' => 'hello@jobcapturepro.com',
+			'support_email' => 'support@jobcapturepro.com',
+			'support_phone' => '(941) 941-9506',
 		],
 		'fluent_forms' => [
 			'enabled'            => true,
@@ -117,10 +118,10 @@ function jcp_global_header_nav_defaults(): array {
 					'enabled'   => true,
 				],
 				[
-					'id'        => 'contact',
-					'label'     => 'Contact',
-					'url'       => '/contact',
-					'data_page' => 'contact',
+					'id'        => 'support',
+					'label'     => 'Support',
+					'url'       => '/support',
+					'data_page' => 'support',
 					'enabled'   => true,
 				],
 				[
@@ -284,7 +285,142 @@ function jcp_global_settings(): array {
 	if ( ! is_array( $stored ) ) {
 		$stored = [];
 	}
-	return jcp_global_settings_merge( jcp_global_settings_defaults(), $stored );
+	$settings = jcp_global_settings_merge( jcp_global_settings_defaults(), $stored );
+	return jcp_global_settings_scrub_legacy_promo_copy( $settings );
+}
+
+/**
+ * Strip retired promo banner wording (legacy Early Bird / founding-crew campaigns).
+ *
+ * @param array<string, mixed> $settings Merged settings.
+ * @return array<string, mixed>
+ */
+function jcp_global_settings_scrub_legacy_promo_copy( array $settings ): array {
+	$banner = is_array( $settings['banner'] ?? null ) ? $settings['banner'] : [];
+	$defaults = jcp_global_settings_defaults()['banner'];
+
+	$contact = is_array( $settings['contact'] ?? null ) ? $settings['contact'] : [];
+	if ( ( $contact['support_email'] ?? '' ) === 'hello@jobcapturepro.com' ) {
+		$contact['support_email'] = 'support@jobcapturepro.com';
+	}
+	if ( trim( (string) ( $contact['support_phone'] ?? '' ) ) === '' ) {
+		$contact['support_phone'] = '(941) 941-9506';
+	}
+	$settings['contact'] = $contact;
+
+	$headline = (string) ( $banner['headline'] ?? '' );
+	$code     = (string) ( $banner['code'] ?? '' );
+	$coupon   = (string) ( $banner['coupon'] ?? '' );
+	$text     = (string) ( $banner['text'] ?? '' );
+
+	$is_early_bird_headline = (bool) preg_match( '/early\s*bird/i', $headline );
+	$is_early_bird_code     = (bool) preg_match( '/^earlybird$/i', trim( $code ) );
+	$is_early_bird_coupon   = (bool) preg_match( '/^earlybird$/i', trim( $coupon ) );
+	$is_founding_copy       = (bool) preg_match( '/founding\s+crew/i', $headline . ' ' . $text );
+
+	if ( $is_early_bird_headline || $is_founding_copy ) {
+		$banner['headline'] = (string) ( $defaults['headline'] ?? 'Start Free Trial:' );
+		$banner['text']     = (string) ( $defaults['text'] ?? '' );
+		$banner['cta_label'] = (string) ( $defaults['cta_label'] ?? 'Start Free Trial' );
+	}
+	if ( $is_early_bird_code ) {
+		$banner['code'] = '';
+	}
+	if ( $is_early_bird_coupon ) {
+		$banner['coupon'] = '';
+	}
+
+	// Migrate stored trial / start-free CTA copy → Start Free Trial.
+	$banner['headline']  = jcp_global_rewrite_trial_label( (string) ( $banner['headline'] ?? '' ), 'headline' );
+	$banner['text']      = jcp_global_rewrite_trial_label( (string) ( $banner['text'] ?? '' ), 'prose' );
+	$banner['cta_label'] = jcp_global_rewrite_trial_label( (string) ( $banner['cta_label'] ?? '' ), 'button' );
+
+	$nav = is_array( $settings['nav_cta'] ?? null ) ? $settings['nav_cta'] : [];
+	if ( isset( $nav['primary_label'] ) ) {
+		$nav['primary_label'] = jcp_global_rewrite_trial_label( (string) $nav['primary_label'], 'button' );
+	}
+	$settings['nav_cta'] = $nav;
+	$settings['banner']  = $banner;
+	return $settings;
+}
+
+/**
+ * Canonicalize primary trial/signup CTA wording to “Start Free Trial”.
+ *
+ * Preserves demo CTAs (e.g. personalized demo) — only rewrites trial/signup variants.
+ *
+ * @param string $text Raw label or sentence.
+ * @param string $kind button|headline|prose.
+ */
+function jcp_global_rewrite_trial_label( string $text, string $kind = 'button' ): string {
+	$trimmed = trim( $text );
+	if ( $trimmed === '' ) {
+		return $text;
+	}
+
+	// Skip demo-specific CTAs.
+	if ( preg_match( '/\b(personalized\s+demo|interactive\s+demo|live\s+demo|view\s+(the\s+)?demo|launch\s+(interactive\s+)?demo|see\s+it\s+for\s+my\s+business|see\s+.{0,40}demo|get\s+a\s+personalized\s+demo)\b/i', $trimmed ) ) {
+		return $text;
+	}
+
+	$canonical_btn      = 'Start Free Trial';
+	$canonical_headline = 'Start Free Trial:';
+
+	if ( preg_match( '/^start\s+free\s+trial:?$/i', $trimmed ) ) {
+		return $kind === 'headline' ? $canonical_headline : $canonical_btn;
+	}
+
+	$exact = [
+		'/^get\s+started\s+free!?$/i',
+		'/^get\s+started!?$/i',
+		'/^start\s+for\s+free!?$/i',
+		'/^start\s+free!?$/i',
+		'/^start\s+a\s+free(\s+\d+[-\s]?day)?\s+trial!?$/i',
+		'/^start\s+free(\s+\d+[-\s]?day)?\s+trial!?$/i',
+		'/^sign\s+up\s+for\s+free!?$/i',
+		'/^sign\s+up\s+free!?$/i',
+		'/^claim\s+(your\s+)?free\s+trial!?$/i',
+		'/^free\s+trial:?$/i',
+	];
+
+	if ( $kind === 'button' || $kind === 'headline' ) {
+		foreach ( $exact as $pattern ) {
+			if ( preg_match( $pattern, $trimmed ) ) {
+				return $kind === 'headline' ? $canonical_headline : $canonical_btn;
+			}
+		}
+		if ( $kind === 'headline' && preg_match( '/^(start\s+free|start\s+for\s+free|get\s+started\s+free|free\s+trial):?$/i', $trimmed ) ) {
+			return $canonical_headline;
+		}
+	}
+
+	$out = $text;
+	// Longer / more specific phrases first.
+	$replacements = [
+		[ '/\bGet\s+[Ss]tarted\s+[Ff]ree\b/', $canonical_btn ],
+		[ '/\bget\s+started\s+free\b/', $canonical_btn ],
+		[ '/\bStart\s+a\s+free(?:\s+\d+[-\s]?day)?\s+[Tt]rial\b/', $canonical_btn ],
+		[ '/\bstart\s+a\s+free(?:\s+\d+[-\s]?day)?\s+trial\b/', $canonical_btn ],
+		[ '/\bStart\s+[Ff]ree(?:\s+\d+[-\s]?day)?\s+[Tt]rial\b/', $canonical_btn ],
+		[ '/\bSign\s+[Uu]p\s+for\s+[Ff]ree\b/', $canonical_btn ],
+		[ '/\bsign\s+up\s+for\s+free\b/', $canonical_btn ],
+		[ '/\bStart\s+for\s+[Ff]ree\b/', $canonical_btn ],
+		[ '/\bstart\s+for\s+free\b/', $canonical_btn ],
+		[ '/\bStart\s+free\b(?!\s+[Tt]rial)/', $canonical_btn ],
+		[ '/\bstart\s+free\b(?!\s+trial)/', $canonical_btn ],
+		[ '/\bFree\s+14[-\s]?day\s+trial\b/i', $canonical_btn ],
+		[ '/\bfree\s+14[-\s]?day\s+trial\b/i', $canonical_btn ],
+		[ '/\bthe\s+free\s+trial\b/i', 'Start Free Trial' ],
+		[ '/\ba\s+free\s+trial\b/i', 'Start Free Trial' ],
+		[ '/\bFree\s+trial:?\b/', $canonical_headline ],
+		[ '/\bfree\s+trial\b/i', 'Start Free Trial' ],
+	];
+
+	foreach ( $replacements as [ $pattern, $replacement ] ) {
+		$out = preg_replace( $pattern, $replacement, $out ) ?? $out;
+	}
+
+	return $out;
 }
 
 /**
@@ -340,24 +476,28 @@ function jcp_global_should_show_banner( array $pages ): bool {
  */
 function jcp_global_banner_cta_url( array $banner ): string {
 	$url = trim( (string) ( $banner['cta_url'] ?? '' ) );
-	if ( $url !== '' ) {
-		if ( preg_match( '#^https?://#i', $url ) ) {
-			return esc_url( $url );
+	$label = trim( (string) ( $banner['cta_label'] ?? '' ) );
+	// Empty or demo leftovers for Start-free labels → app onboarding.
+	$path = (string) ( wp_parse_url( $url, PHP_URL_PATH ) ?? '' );
+	$is_demo = $url === '/demo' || rtrim( $path, '/' ) === '/demo';
+	if ( $url === '' || ( $is_demo && preg_match( '/start\s+(for\s+)?free|trial|sign\s*up|get\s*started|claim/i', $label ) ) ) {
+		$utm_content = (string) ( $banner['utm_content'] ?? 'sitewide_banner' );
+		$extra       = function_exists( 'jcp_core_onboarding_utm_defaults' )
+			? jcp_core_onboarding_utm_defaults( $utm_content )
+			: [ 'utm_content' => $utm_content ];
+		$coupon = trim( (string) ( $banner['coupon'] ?? '' ) );
+		if ( $coupon !== '' ) {
+			$extra['coupon'] = $coupon;
+			$extra['promo']  = $coupon;
 		}
-		return esc_url( home_url( $url ) );
+		return function_exists( 'jcp_core_onboarding_app_url' )
+			? jcp_core_onboarding_app_url( $extra )
+			: esc_url( 'https://app.jobcapturepro.com/onboarding' );
 	}
-	$utm_content = (string) ( $banner['utm_content'] ?? 'sitewide_banner' );
-	$extra       = function_exists( 'jcp_core_onboarding_utm_defaults' )
-		? jcp_core_onboarding_utm_defaults( $utm_content )
-		: [ 'utm_content' => $utm_content ];
-	$coupon = trim( (string) ( $banner['coupon'] ?? '' ) );
-	if ( $coupon !== '' ) {
-		$extra['coupon'] = $coupon;
-		$extra['promo']  = $coupon;
+	if ( preg_match( '#^https?://#i', $url ) ) {
+		return esc_url( $url );
 	}
-	return function_exists( 'jcp_core_onboarding_app_url' )
-		? jcp_core_onboarding_app_url( $extra )
-		: esc_url( home_url( '/pricing' ) );
+	return esc_url( home_url( $url ) );
 }
 
 /**
@@ -370,21 +510,30 @@ function jcp_global_banner_cta_url( array $banner ): string {
  * @return array{label: string, url: string}
  */
 function jcp_global_resolve_cta( string $label, string $url, string $utm_content = '', array $query_extra = [] ): array {
-	$label = trim( $label );
+	$label = jcp_global_rewrite_trial_label( trim( $label ), 'button' );
 	$url   = trim( $url );
 
 	$utm = $utm_content !== '' && function_exists( 'jcp_core_onboarding_utm_defaults' )
 		? jcp_core_onboarding_utm_defaults( $utm_content )
 		: ( $utm_content !== '' ? [ 'utm_content' => $utm_content ] : [] );
 
+	$is_signup_label = $label !== '' && (bool) preg_match(
+		'/trial|sign\s*up|get\s*started|claim|start\s+for\s+free|start\s+free/i',
+		$label
+	);
+	$url_path = (string) ( wp_parse_url( $url, PHP_URL_PATH ) ?? '' );
+	if ( $is_signup_label && ( $url === '/demo' || rtrim( $url_path, '/' ) === '/demo' ) ) {
+		$url = '';
+	}
+
 	if ( $url === '' && $label !== '' && preg_match( '/\blog\s*in\b/i', $label ) ) {
 		$url = function_exists( 'jcp_core_app_login_url_raw' )
 			? jcp_core_app_login_url_raw( array_merge( $utm, $query_extra ) )
 			: 'https://app.jobcapturepro.com/login';
-	} elseif ( $url === '' && $label !== '' && preg_match( '/trial|sign\s*up|get\s*started|claim/i', $label ) ) {
+	} elseif ( $url === '' && $is_signup_label ) {
 		$url = function_exists( 'jcp_core_onboarding_app_url_raw' )
 			? jcp_core_onboarding_app_url_raw( array_merge( $utm, $query_extra ) )
-			: home_url( '/demo' );
+			: 'https://app.jobcapturepro.com/onboarding';
 	} elseif ( $url === '' ) {
 		$url = home_url( '/demo' );
 	} elseif ( preg_match( '#^https?://app\.jobcapturepro\.com/login/?$#i', $url ) ) {
@@ -409,7 +558,7 @@ function jcp_global_resolve_cta( string $label, string $url, string $utm_content
  */
 function jcp_global_resolve_nav_ctas( ?int $post_id = null ): array {
 	$global = jcp_global_settings()['nav_cta'] ?? [];
-	$primary_label   = (string) ( $global['primary_label'] ?? 'Get Started' );
+	$primary_label   = (string) ( $global['primary_label'] ?? 'Start Free Trial' );
 	$primary_url     = (string) ( $global['primary_url'] ?? '' );
 	$secondary_label = (string) ( $global['secondary_label'] ?? 'Login' );
 	$secondary_url   = (string) ( $global['secondary_url'] ?? '' );
@@ -441,6 +590,20 @@ function jcp_global_resolve_nav_ctas( ?int $post_id = null ): array {
 	if ( $is_legacy_demo ) {
 		$secondary_label = 'Login';
 		$secondary_url   = '';
+	}
+
+	// Migrate legacy Get Started / Start Free Trial primary CTA → Start Free Trial.
+	if ( preg_match( '/^(get\s*started(\s+free)?|start\s+(for\s+)?free)$/i', trim( $primary_label ) ) ) {
+		$primary_label = 'Start Free Trial';
+	}
+	$primary_label = jcp_global_rewrite_trial_label( $primary_label, 'button' );
+
+	// Trial CTAs must never keep a leftover /demo URL from a prior label rename.
+	if ( preg_match( '/start\s+(for\s+)?free|start\s+free\s+trial|get\s+started/i', $primary_label ) ) {
+		$primary_path = (string) ( wp_parse_url( $primary_url, PHP_URL_PATH ) ?? '' );
+		if ( $primary_url === '/demo' || rtrim( $primary_path, '/' ) === '/demo' ) {
+			$primary_url = '';
+		}
 	}
 
 	return [

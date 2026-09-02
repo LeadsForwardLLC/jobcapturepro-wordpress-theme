@@ -116,7 +116,7 @@ function jcp_core_demo_run_url( array $args = [] ): string {
  * @return array<string, string>
  */
 function jcp_core_demo_run_query_args(): array {
-    $allowed = [ 'mode', 'name', 'first_name', 'last_name', 'business', 'company', 'niche', 'business_type', 'email', 'forceSurvey' ];
+    $allowed = [ 'mode', 'name', 'first_name', 'last_name', 'business', 'company', 'niche', 'business_type', 'email', 'forceSurvey', 'embed', 'source' ];
     $out     = [ 'mode' => 'run' ];
     foreach ( $allowed as $key ) {
         if ( ! isset( $_GET[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -177,14 +177,18 @@ function jcp_core_get_page_detection(): array {
         'is_prototype'    => is_page_template( 'page-prototype.php' ) || is_page( 'prototype' ) || $is_prototype_path,
         'is_demo'         => is_page_template( 'page-demo.php' ) || is_page( 'demo' ) || $path === 'demo' || get_query_var( 'jcp_route', '' ) === 'demo',
         'is_pricing'      => is_page_template( 'page-pricing.php' ) || is_page( 'pricing' ) || $path === 'pricing',
-        'is_contact'      => is_page_template( 'page-contact.php' ) || is_page( 'contact' ) || $path === 'contact',
+        'is_contact'      => is_page_template( 'page-support.php' ) || is_page_template( 'page-contact.php' ) || is_page( 'support' ) || is_page( 'contact' ) || $path === 'support' || $path === 'contact',
         'is_contact_success' => $path === 'contact-success',
+        'is_support'      => is_page_template( 'page-support.php' ) || is_page( 'support' ) || $path === 'support',
         'is_directory'    => is_page_template( 'page-directory.php' ) || is_page( 'directory' ) || $path === 'directory',
         'is_estimate'     => is_page_template( 'page-estimate.php' ) || is_page( 'estimate' ) || $path === 'estimate',
         'is_company'      => is_singular( 'jcp_company' ) || is_page( 'company' ) || $path === 'company' || ( preg_match( '#^directory/[^/]+$#', $path ) === 1 ),
         'is_ui_library'   => is_page_template( 'page-ui-library.php' ) || is_page( 'ui-library' ) || $path === 'ui-library',
         'is_wp_plugin_prototype' => is_page_template( 'page-wp-plugin-prototype.php' ) || is_page( 'wp-plugin-prototype' ) || $path === 'wp-plugin-prototype',
         'is_form_landing' => is_page_template( 'page-form-landing.php' ),
+        'is_sales_tool'   => ( function_exists( 'jcp_is_sales_tool_request' ) && jcp_is_sales_tool_request() )
+            || is_page_template( 'page-sales-tool.php' )
+            || is_singular( 'jcp_sales_deck' ),
         'is_blog'         => is_home() || is_archive() || is_single() || is_search(),
         'is_single'       => is_single() && ! is_singular( 'jcp_company' ),
         'is_page'         => is_page() && ! is_page_template(),
@@ -278,6 +282,12 @@ function jcp_core_get_page_editor_post_id(): int {
 	$front_id = (int) get_option( 'page_on_front' );
 	if ( $front_id > 0 && is_front_page() && jcp_page_is_content_page( $front_id ) ) {
 		return $front_id;
+	}
+	if ( function_exists( 'jcp_simple_editable_editor_post_id' ) ) {
+		$fallback = jcp_simple_editable_editor_post_id( 0 );
+		if ( $fallback > 0 && jcp_page_is_content_page( $fallback ) ) {
+			return $fallback;
+		}
 	}
 	return 0;
 }
