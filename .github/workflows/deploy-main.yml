@@ -42,11 +42,23 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
         run: |
-          rsync -avz \
-            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -p ${SSH_PORT}" \
-            --exclude '.git/' \
-            --exclude '.github/' \
-            ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_PATH}/"
+          set -euo pipefail
+          RSYNC_SSH="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -p ${SSH_PORT}"
+          for i in 1 2 3 4 5 6; do
+            echo "rsync attempt $i..."
+            if rsync -avz \
+              -e "$RSYNC_SSH" \
+              --exclude '.git/' \
+              --exclude '.github/' \
+              ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_PATH}/"; then
+              echo "rsync ok (attempt $i)"
+              exit 0
+            fi
+            echo "rsync attempt $i failed"
+            sleep $((i * 8))
+          done
+          echo "ERROR: rsync failed after retries"
+          exit 1
 
       - name: Purge WordPress and SiteGround caches
         env:
@@ -121,7 +133,7 @@ jobs:
               \$opt = \"siteground_optimizer_excluded_urls\";
               \$list = get_option(\$opt, array());
               if (!is_array(\$list)) { \$list = array(); }
-              foreach (array(\"/case-study/\", \"/case-study\", \"/contractor-demo/\", \"/contractor-demo\", \"/support/\", \"/support\", \"/contact/\", \"/contact\", \"/\") as \$path) {
+              foreach (array(\"/demo/\", \"/demo\", \"/case-study/\", \"/case-study\", \"/contractor-demo/\", \"/contractor-demo\", \"/support/\", \"/support\", \"/contact/\", \"/contact\", \"/\") as \$path) {
                 if (!in_array(\$path, \$list, true)) { \$list[] = \$path; }
               }
               update_option(\$opt, \$list);
