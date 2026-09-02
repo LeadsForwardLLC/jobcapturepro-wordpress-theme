@@ -468,6 +468,26 @@ body.survey-only .survey-overlay {
   padding: clamp(12px, 3vh, 32px) clamp(12px, 3vw, 28px);
 }
 
+/*
+ * Demo gate on short viewports: flex + overflow:hidden + align center clips the
+ * title (top) and proof strip (bottom). Scroll the overlay; use flex-start +
+ * margin:auto so tall cards start at the top and short cards still center.
+ * Deck mode keeps the locked overlay + internal slide scroll below.
+ */
+body.survey-only .survey-overlay:has(.survey-card--gate:not(:has(.survey-deck.active))) {
+  align-items: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+body.survey-only .survey-card--gate:not(:has(.survey-deck.active)) {
+  margin-block: auto;
+  max-height: none;
+  overflow: visible;
+}
+
 body.survey-only .survey-card:has(.survey-deck.active) {
   width: 100%;
   max-width: min(560px, 100%);
