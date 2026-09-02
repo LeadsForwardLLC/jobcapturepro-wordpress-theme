@@ -470,47 +470,33 @@ body.survey-only .survey-overlay {
 
 /*
  * DEMO GATE SCROLL (critical conversion surface)
- * Never use overflow:hidden + flex-center — that clips the logo and proof on
- * short windows. Gate mode uses body/html.survey-gate-scroll (set in PHP / JS).
- *
- * IMPORTANT: only ONE element may be the scrollport. If both html and body use
- * overflow-y:auto, body becomes a non-scrolling scroll container and (with
- * overscroll-behavior:contain) mouse-wheel events never chain to html — the
- * page shows a scrollbar but the wheel does nothing.
+ * Use a single fixed overlay as the ONLY scrollport. Document/html scroll is
+ * unreliable here: body was a non-scrolling overflow:auto trap (wheel died),
+ * and dual html+body scrollports + overscroll-behavior:contain blocked chaining.
  */
-html.survey-gate-scroll {
-  height: auto !important;
-  max-height: none !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  overscroll-behavior-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
+html.survey-gate-scroll,
 body.survey-only.survey-gate-scroll {
-  height: auto !important;
-  max-height: none !important;
-  min-height: 100%;
-  overflow: visible !important;
-  overscroll-behavior-y: auto;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+  overscroll-behavior: none;
 }
 
 body.survey-only.survey-gate-scroll .survey-overlay {
-  position: relative !important;
-  inset: auto !important;
-  top: auto !important;
-  right: auto !important;
-  bottom: auto !important;
-  left: auto !important;
+  position: fixed !important;
+  inset: 0 !important;
   width: 100% !important;
-  min-height: 100dvh;
-  min-height: 100vh;
-  height: auto !important;
-  max-height: none !important;
+  height: 100% !important;
+  max-height: 100dvh !important;
+  max-height: 100vh !important;
   display: flex !important;
   align-items: flex-start !important;
   justify-content: center !important;
-  overflow: visible !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
   padding:
     max(20px, env(safe-area-inset-top, 0px))
     clamp(12px, 3vw, 28px)
