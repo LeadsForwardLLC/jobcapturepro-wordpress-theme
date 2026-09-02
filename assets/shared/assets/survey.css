@@ -6,7 +6,7 @@
 body.survey-only {
   min-height: 100vh;
   background: #ffffff;
-  overflow: hidden;
+  overflow: hidden; /* deck/run lock — gate unlocks via :has() in css/pages/survey.css */
 }
 
 body.survey-only .directory-header,
@@ -2230,8 +2230,15 @@ input::-webkit-contacts-auto-fill-button {
   body.survey-only {
     min-height: 100dvh;
     min-height: 100vh;
-    overflow: hidden;
+    overflow: hidden; /* deck lock — gate unlocks via css/pages/survey.css :has() */
     background: #ffffff;
+  }
+
+  body.survey-only:has(.survey-card--gate:not(:has(.survey-deck.active))) {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    max-height: none !important;
   }
 
   .survey-overlay {
@@ -2239,6 +2246,13 @@ input::-webkit-contacts-auto-fill-button {
     background: #ffffff;
     align-items: stretch;
     justify-content: flex-start;
+  }
+
+  .survey-overlay:has(.survey-card--gate:not(:has(.survey-deck.active))) {
+    align-items: flex-start;
+    overflow: visible;
+    min-height: 100dvh;
+    height: auto;
   }
 
   .survey-overlay::before {
@@ -2264,8 +2278,7 @@ input::-webkit-contacts-auto-fill-button {
   .survey-card {
     width: 100%;
     max-width: none;
-    min-height: 100dvh;
-    min-height: 100vh;
+    min-height: 0;
     margin: 0;
     border: none;
     border-radius: 0;
@@ -2278,13 +2291,21 @@ input::-webkit-contacts-auto-fill-button {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    overflow-x: hidden;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow: visible;
+  }
+
+  /* Gate: grow with content; page/html scrolls (see css/pages/survey.css). */
+  .survey-card--gate:not(:has(.survey-deck.active)) {
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 
   .survey-card:has(.survey-deck.active) {
     overflow: hidden;
+    min-height: 100dvh;
+    min-height: 100vh;
     height: 100dvh;
     height: 100vh;
     max-height: 100dvh;

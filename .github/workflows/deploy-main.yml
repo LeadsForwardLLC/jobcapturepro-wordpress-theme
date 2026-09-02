@@ -87,6 +87,10 @@ jobs:
                 echo \"reseeded homepage id=\$hid\\n\";
               }
               \$urls = array(
+                home_url(\"/demo/\"),
+                home_url(\"/demo\"),
+                \"https://jobcapturepro.com/demo/\",
+                \"https://jobcapturepro.com/demo\",
                 home_url(\"/case-study/\"),
                 home_url(\"/case-study\"),
                 \"https://jobcapturepro.com/case-study/\",

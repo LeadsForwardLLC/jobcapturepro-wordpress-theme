@@ -469,23 +469,65 @@ body.survey-only .survey-overlay {
 }
 
 /*
- * Demo gate on short viewports: flex + overflow:hidden + align center clips the
- * title (top) and proof strip (bottom). Scroll the overlay; use flex-start +
- * margin:auto so tall cards start at the top and short cards still center.
- * Deck mode keeps the locked overlay + internal slide scroll below.
+ * DEMO GATE SCROLL (critical conversion surface)
+ * Never use overflow:hidden + flex-center + margin:auto — that clips the logo
+ * and proof strip on short windows with no reachable scroll range.
+ * Gate mode: document scrolls. Deck mode: keep locked overlay (below).
  */
-body.survey-only .survey-overlay:has(.survey-card--gate:not(:has(.survey-deck.active))) {
-  align-items: flex-start;
-  overflow-x: hidden;
-  overflow-y: auto;
+html:has(body.survey-only .survey-card--gate:not(:has(.survey-deck.active))),
+body.survey-only:has(.survey-card--gate:not(:has(.survey-deck.active))) {
+  height: auto !important;
+  max-height: none !important;
+  min-height: 100%;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+}
+
+body.survey-only .survey-overlay:has(.survey-card--gate:not(:has(.survey-deck.active))) {
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: 100% !important;
+  min-height: 100dvh;
+  min-height: 100vh;
+  height: auto !important;
+  max-height: none !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  overflow: visible !important;
+  padding:
+    max(20px, env(safe-area-inset-top, 0px))
+    clamp(12px, 3vw, 28px)
+    max(28px, env(safe-area-inset-bottom, 0px)) !important;
+  box-sizing: border-box;
 }
 
 body.survey-only .survey-card--gate:not(:has(.survey-deck.active)) {
-  margin-block: auto;
-  max-height: none;
-  overflow: visible;
+  width: 100%;
+  max-width: min(560px, 100%);
+  margin: 0 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  flex: 0 0 auto;
+}
+
+/* Short windows: keep the 5-star banner, hide tall quote tiles */
+@media (max-height: 820px) {
+  body.survey-only .survey-card--gate:not(:has(.survey-deck.active)) .survey-proof--compact .survey-proof-list {
+    display: none !important;
+  }
+
+  body.survey-only .survey-card--gate:not(:has(.survey-deck.active)) .survey-proof-banner {
+    margin-bottom: 0;
+  }
 }
 
 body.survey-only .survey-card:has(.survey-deck.active) {
@@ -612,9 +654,18 @@ body.survey-only .survey-card:has(.survey-deck.active) .survey-brand {
 }
 
 @media (max-width: 900px) {
-  body.survey-only .survey-overlay {
+  body.survey-only .survey-overlay:has(.survey-deck.active) {
     padding: 0;
     align-items: stretch;
+  }
+
+  body.survey-only .survey-overlay:has(.survey-card--gate:not(:has(.survey-deck.active))) {
+    padding:
+      max(16px, env(safe-area-inset-top, 0px))
+      max(12px, env(safe-area-inset-right, 0px))
+      max(20px, env(safe-area-inset-bottom, 0px))
+      max(12px, env(safe-area-inset-left, 0px)) !important;
+    align-items: flex-start !important;
   }
 
   body.survey-only .survey-card:has(.survey-deck.active) {
