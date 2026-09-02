@@ -2235,10 +2235,14 @@ input::-webkit-contacts-auto-fill-button {
   }
 
   body.survey-only.survey-gate-scroll {
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
+    overflow: visible !important;
     height: auto !important;
     max-height: none !important;
+  }
+
+  html.survey-gate-scroll {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
   }
 
   .survey-overlay {

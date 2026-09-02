@@ -471,18 +471,28 @@ body.survey-only .survey-overlay {
 /*
  * DEMO GATE SCROLL (critical conversion surface)
  * Never use overflow:hidden + flex-center — that clips the logo and proof on
- * short windows. Gate mode uses body.survey-gate-scroll (set in PHP / JS).
- * Avoid nested :has() selectors — several engines drop those rules entirely.
+ * short windows. Gate mode uses body/html.survey-gate-scroll (set in PHP / JS).
+ *
+ * IMPORTANT: only ONE element may be the scrollport. If both html and body use
+ * overflow-y:auto, body becomes a non-scrolling scroll container and (with
+ * overscroll-behavior:contain) mouse-wheel events never chain to html — the
+ * page shows a scrollbar but the wheel does nothing.
  */
-html.survey-gate-scroll,
+html.survey-gate-scroll {
+  height: auto !important;
+  max-height: none !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 body.survey-only.survey-gate-scroll {
   height: auto !important;
   max-height: none !important;
   min-height: 100%;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  overscroll-behavior-y: contain;
-  -webkit-overflow-scrolling: touch;
+  overflow: visible !important;
+  overscroll-behavior-y: auto;
 }
 
 body.survey-only.survey-gate-scroll .survey-overlay {
