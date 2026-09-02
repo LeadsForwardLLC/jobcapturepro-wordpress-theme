@@ -33,13 +33,13 @@ if ( $demo_mode ) {
 
 // Survey: minimal document shell (no site header/footer) for full-screen takeover.
 ?><!DOCTYPE html>
-<html <?php language_attributes(); ?>>
+<html <?php language_attributes(); ?> class="survey-gate-scroll">
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 	<?php wp_head(); ?>
 </head>
-<body <?php body_class( 'survey-only' ); ?>>
+<body <?php body_class( 'survey-only survey-gate-scroll' ); ?>>
 <?php get_template_part( 'templates/survey/wrapper' ); ?>
 <?php wp_footer(); ?>
 </body>

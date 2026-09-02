@@ -2230,11 +2230,11 @@ input::-webkit-contacts-auto-fill-button {
   body.survey-only {
     min-height: 100dvh;
     min-height: 100vh;
-    overflow: hidden; /* deck lock — gate unlocks via css/pages/survey.css :has() */
+    overflow: hidden; /* deck lock — gate unlocks via .survey-gate-scroll */
     background: #ffffff;
   }
 
-  body.survey-only:has(.survey-card--gate:not(:has(.survey-deck.active))) {
+  body.survey-only.survey-gate-scroll {
     overflow-x: hidden !important;
     overflow-y: auto !important;
     height: auto !important;
@@ -2248,7 +2248,7 @@ input::-webkit-contacts-auto-fill-button {
     justify-content: flex-start;
   }
 
-  .survey-overlay:has(.survey-card--gate:not(:has(.survey-deck.active))) {
+  body.survey-gate-scroll .survey-overlay {
     align-items: flex-start;
     overflow: visible;
     min-height: 100dvh;
@@ -2294,8 +2294,8 @@ input::-webkit-contacts-auto-fill-button {
     overflow: visible;
   }
 
-  /* Gate: grow with content; page/html scrolls (see css/pages/survey.css). */
-  .survey-card--gate:not(:has(.survey-deck.active)) {
+  /* Gate: grow with content; page/html scrolls via .survey-gate-scroll. */
+  body.survey-gate-scroll .survey-card--gate {
     min-height: 0 !important;
     height: auto !important;
     max-height: none !important;

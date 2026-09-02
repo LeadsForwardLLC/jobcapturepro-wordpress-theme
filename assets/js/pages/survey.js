@@ -837,6 +837,8 @@
   };
 
   const showDeck = (startIndex = 0) => {
+    document.documentElement.classList.remove('survey-gate-scroll');
+    document.body.classList.remove('survey-gate-scroll');
     steps.forEach((step) => step.classList.remove('active'));
     deckSection?.classList.add('active');
     setProgressChromeVisible(false);
