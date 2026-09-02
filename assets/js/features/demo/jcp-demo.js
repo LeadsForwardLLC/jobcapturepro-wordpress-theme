@@ -1450,8 +1450,12 @@ function syncMobileGuideChrome() {
 }
 
 function exitGuidedDemoToSurvey() {
-  markDemoIntakeComplete();
-  const returnUrl = sessionStorage.getItem('jcp_survey_return_url') || '/demo/';
+  try {
+    sessionStorage.removeItem(DEMO_INTAKE_COMPLETE_KEY);
+  } catch (e) {
+    // no-op
+  }
+  const returnUrl = sessionStorage.getItem('jcp_survey_return_url') || '/demo/?forceSurvey=1';
   window.location.href = returnUrl;
 }
 

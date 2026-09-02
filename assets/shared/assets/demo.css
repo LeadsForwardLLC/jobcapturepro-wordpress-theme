@@ -2828,9 +2828,19 @@ body .tour-float.final-step .tour-arrow {
   inset: 0;
   background: rgba(15, 23, 42, 0.72);
   display: none;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding:
+    max(16px, env(safe-area-inset-top, 0px))
+    max(12px, env(safe-area-inset-right, 0px))
+    max(20px, env(safe-area-inset-bottom, 0px))
+    max(12px, env(safe-area-inset-left, 0px));
   z-index: 9999;
+  box-sizing: border-box;
 }
 
 .post-demo-panel.active{
@@ -2876,11 +2886,13 @@ body .tour-float.final-step .tour-arrow {
 .post-demo-card{
   width: 100%;
   max-width: 560px;
+  margin: 0 auto;
   background: #ffffff;
   border-radius: 24px;
   padding: 24px;
   box-shadow: 0 40px 120px rgba(0,0,0,0.35);
   text-align: left;
+  flex: 0 0 auto;
 }
 
 .post-demo-card h2{
@@ -3812,7 +3824,7 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 .demo-outcomes-modal__card {
   position: relative;
   width: min(440px, 100%);
-  max-height: min(78vh, 640px);
+  max-height: min(90dvh, 720px);
   display: flex;
   flex-direction: column;
   background: #ffffff;
@@ -3946,7 +3958,9 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   flex: 1 1 auto;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   background: transparent;
   border: none;
   border-radius: 0;
@@ -4492,6 +4506,7 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   gap: 10px;
   margin-top: 8px;
   padding-top: 4px;
+  flex: 0 0 auto;
 }
 
 .demo-outcomes-modal__next,
@@ -4614,8 +4629,10 @@ body.jcp-outcomes-cta-dock .mobile-stepper-progress {
 }
 
 body.is-mobile-mode.jcp-outcomes-modal-open .demo-outcomes-modal {
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding:
     max(12px, env(safe-area-inset-top, 0px))
     max(12px, env(safe-area-inset-right, 0px))
@@ -4627,10 +4644,11 @@ body.is-mobile-mode.jcp-outcomes-modal-open .demo-outcomes-modal {
 body.is-mobile-mode.jcp-outcomes-modal-open .demo-outcomes-modal__card {
   width: 100%;
   max-width: 420px;
-  max-height: min(88dvh, 640px);
+  max-height: none;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
 }
 
 body.is-mobile-mode.jcp-outcomes-modal-open .demo-outcomes-modal__close {
@@ -5384,8 +5402,8 @@ body.jcp-guided-demo #post-demo-panel.active .post-demo-card--simple {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  min-height: min(100%, 520px);
+  justify-content: flex-start;
+  min-height: 0;
 }
 
 .post-demo-x {

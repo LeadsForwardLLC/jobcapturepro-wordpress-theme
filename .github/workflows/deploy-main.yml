@@ -43,14 +43,45 @@ jobs:
           REMOTE_PATH: ${{ secrets.REMOTE_PATH }}
         run: |
           set -euo pipefail
+          if [ -z "${REMOTE_PATH}" ]; then
+            echo "ERROR: REMOTE_PATH secret is empty"
+            exit 1
+          fi
+          echo "REMOTE_PATH length: ${#REMOTE_PATH}"
+
           RSYNC_SSH="ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=30 -o ServerAliveInterval=15 -o ServerAliveCountMax=3 -p ${SSH_PORT}"
+
+          resolve_target() {
+            local target="$1"
+            if $RSYNC_SSH "${SSH_USER}@${SSH_HOST}" "test -d '$target' && test -w '$target'"; then
+              echo "$target"
+              return 0
+            fi
+            echo "WARN: configured REMOTE_PATH not writable; searching for jobcapturepro-core..." >&2
+            local found
+            found=$($RSYNC_SSH "${SSH_USER}@${SSH_HOST}" "find \"\$HOME\" /home /var/www /srv -maxdepth 6 -type d -name 'jobcapturepro-core' 2>/dev/null | head -5")
+            echo "find results:" >&2
+            echo "$found" >&2
+            local first
+            first=$(printf '%s\n' "$found" | head -1 | tr -d '\r')
+            if [ -n "$first" ] && $RSYNC_SSH "${SSH_USER}@${SSH_HOST}" "test -d '$first' && test -w '$first'"; then
+              echo "$first"
+              return 0
+            fi
+            $RSYNC_SSH "${SSH_USER}@${SSH_HOST}" "echo HOME=\$HOME; pwd; ls -la \"\$HOME\" 2>/dev/null | head -40" >&2 || true
+            return 1
+          }
+
+          TARGET="$(resolve_target "$REMOTE_PATH")"
+          echo "Deploying to target length: ${#TARGET}"
+
           for i in 1 2 3 4 5 6; do
             echo "rsync attempt $i..."
             if rsync -avz \
               -e "$RSYNC_SSH" \
               --exclude '.git/' \
               --exclude '.github/' \
-              ./ "${SSH_USER}@${SSH_HOST}:${REMOTE_PATH}/"; then
+              ./ "${SSH_USER}@${SSH_HOST}:${TARGET}/"; then
               echo "rsync ok (attempt $i)"
               exit 0
             fi
