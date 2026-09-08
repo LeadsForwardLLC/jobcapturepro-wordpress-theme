@@ -2233,7 +2233,7 @@ function renderHomeCheckins() {
   if (state.savedCheckins.length === 0 && pendingJobs.length === 0) {
     if (emptyState) {
       emptyState.querySelector('h3').textContent = 'Start capturing proof';
-      emptyState.querySelector('p').textContent = 'Take a few photos → submit → automatically published everywhere.';
+      emptyState.querySelector('p').textContent = 'Take a few photos, submit, and turn finished work into public-facing proof.';
       emptyState.style.display = 'block';
     }
     return;
