@@ -879,7 +879,7 @@
     return nicheLabel ? (nicheLabel + ' Pro') : 'Your Business';
   };
 
-  /** Single-screen gate: trade + work email required; phone recommended but optional. */
+  /** Single-screen gate: trade + work email required. Business name optional. */
   const validateGate = () => {
     commitNicheFromSearch();
     const nicheSelect = getValue('niche');
@@ -904,15 +904,6 @@
       emailInput?.focus();
       alert('Please enter a valid work email to continue.');
       return false;
-    }
-    // Fill optional personalization defaults used by demo + CRM.
-    const businessEl = document.getElementById('businessName');
-    if (businessEl && !getValue('businessName')) {
-      businessEl.value = resolveBusinessName();
-    }
-    const firstEl = document.getElementById('firstName');
-    if (firstEl && !getValue('firstName')) {
-      firstEl.value = deriveFirstName();
     }
     return true;
   };
@@ -957,10 +948,20 @@
     try {
       if (sessionStorage.getItem('jcp_datalayer_demo_opt_in')) return;
       window.dataLayer = window.dataLayer || [];
+      const bizType = getBusinessTypeValue();
+      const attr = typeof getAttributionPayload === 'function' ? getAttributionPayload() : {};
       window.dataLayer.push({
         event: 'demo_opt_in',
         lead_type: 'demo',
         source: 'demo_survey',
+        business_type: bizType || '',
+        ...attr,
+      });
+      // Alias for CRO naming (do not map this to a second Meta Lead in GTM).
+      window.dataLayer.push({
+        event: 'DemoFormSubmitted',
+        business_type: bizType || '',
+        ...attr,
       });
       sessionStorage.setItem('jcp_datalayer_demo_opt_in', '1');
     } catch (err) {
@@ -1015,7 +1016,7 @@
     const firstName = getValue('firstName');
     const lastName = getValue('lastName');
     const email = getValue('email');
-    const businessName = getValue('businessName');
+    const businessName = getValue('businessName') || resolveBusinessName();
     const niche = getBusinessTypeValue();
     const referralSource = getReferralSourceValue();
     localStorage.setItem('demoUser', JSON.stringify({
@@ -1301,6 +1302,21 @@
   }
 
   surveyTrack('demo_started', null, getSurveyFormMetadata());
+  try {
+    if (!sessionStorage.getItem('jcp_dl_alias_DemoFormViewed')) {
+      window.dataLayer = window.dataLayer || [];
+      const attr = typeof getAttributionPayload === 'function' ? getAttributionPayload() : {};
+      window.dataLayer.push({
+        event: 'DemoFormViewed',
+        business_type: getBusinessTypeValue() || '',
+        landing_page_variant: attr.lp_variant || '',
+        ...attr,
+      });
+      sessionStorage.setItem('jcp_dl_alias_DemoFormViewed', '1');
+    }
+  } catch (e) {
+    // no-op
+  }
 
   const paramsDeck = new URLSearchParams(window.location.search || '');
   const allowDeckResume = paramsDeck.get('deck') === '1';

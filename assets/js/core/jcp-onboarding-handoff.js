@@ -117,6 +117,32 @@
     const demoSession = readDemoSession();
     if (demoSession) params.demo_session = demoSession;
 
+    try {
+      if (window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function') {
+        const attr = window.JCPLeadAttribution.getPayload() || {};
+        [
+          'utm_source',
+          'utm_medium',
+          'utm_campaign',
+          'utm_content',
+          'utm_term',
+          'fbclid',
+          'lp_variant',
+          'landing_page',
+          'referrer',
+          'contact_id',
+        ].forEach((key) => {
+          if (params[key]) return;
+          const val = attr[key];
+          if (val != null && String(val).trim() !== '') {
+            params[key] = String(val).trim();
+          }
+        });
+      }
+    } catch (e) {
+      // no-op
+    }
+
     return Object.keys(params).length ? params : null;
   };
 

@@ -1,13 +1,14 @@
 <?php
 /**
  * Survey gate (single screen): trade + work email → launch demo.
- * Phone is recommended (optional). Business name + first name are optional personalization.
+ * Business name is optional personalization. Phone / name / referral collected later at trial.
  *
  * @package JCP_Core
  */
-$demo_headline = 'Unlock your personalized demo';
-$demo_subhead  = 'Your trade and work email get you in — phone is recommended. Ready in about 2 minutes.';
-$demo_btn      = 'Unlock my demo →';
+$demo_headline = 'See JobCapturePro on your business';
+$demo_subhead  = 'Your trade and work email get you into a personalized demo.';
+$demo_btn      = 'See My Demo →';
+$demo_micro    = 'Free · About 2 minutes · No credit card';
 ?>
 <section class="survey-step active" data-step="0">
   <div class="survey-head">
@@ -75,48 +76,27 @@ $demo_btn      = 'Unlock my demo →';
     </div>
 
     <div class="survey-field">
-      <label for="phone">Phone <span class="survey-recommended">(recommended)</span></label>
+      <label for="businessName">Business name <span class="survey-optional">(optional)</span></label>
       <input
-        id="phone"
-        type="tel"
+        id="businessName"
+        type="text"
         class="survey-input"
-        placeholder="(555) 555-5555"
-        autocomplete="tel"
-        inputmode="tel"
+        placeholder="Summit Plumbing"
+        autocomplete="organization"
       />
     </div>
 
-    <div class="survey-grid-2 survey-gate-optional">
-      <div class="survey-field">
-        <label for="businessName">Business name <span class="survey-optional">(optional)</span></label>
-        <input
-          id="businessName"
-          type="text"
-          class="survey-input"
-          placeholder="Summit Plumbing"
-          autocomplete="organization"
-        />
-      </div>
-      <div class="survey-field">
-        <label for="firstName">First name <span class="survey-optional">(optional)</span></label>
-        <input
-          id="firstName"
-          type="text"
-          class="survey-input"
-          placeholder="Alex"
-          autocomplete="given-name"
-        />
-      </div>
-    </div>
-
-    <?php /* Kept in DOM (hidden) so existing JS / CRM payloads stay stable. */ ?>
+    <?php /* Kept in DOM (hidden) so existing JS / CRM payloads stay stable. Collected later at trial if needed. */ ?>
+    <input type="hidden" id="firstName" value="" autocomplete="given-name" />
     <input type="hidden" id="lastName" value="" autocomplete="family-name" />
+    <input type="hidden" id="phone" value="" autocomplete="tel" />
     <input type="hidden" id="referralSource" value="" />
     <input type="hidden" id="referralSourceOther" value="" />
   </form>
 
   <div class="survey-actions-row">
     <button type="button" class="survey-btn" data-action="launch"><?php echo esc_html( $demo_btn ); ?></button>
+    <p class="survey-microcopy"><?php echo esc_html( $demo_micro ); ?></p>
     <p class="survey-consent">By continuing you agree to receive the demo and relevant updates by email. Unsubscribe anytime.</p>
   </div>
 

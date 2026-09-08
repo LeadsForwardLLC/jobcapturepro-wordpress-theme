@@ -1250,7 +1250,7 @@
         .upload-buttons {
             display: flex;
             justify-content: center;
-            gap: 32px;
+            gap: 20px;
             margin-bottom: 32px;
         }
 
@@ -1269,6 +1269,27 @@
             box-shadow: none;
             transition: background 0.2s;
         }
+
+.upload-btn.upload-btn--labeled {
+  width: auto;
+  min-width: 108px;
+  height: auto;
+  min-height: 96px;
+  padding: 14px 12px 12px;
+  border-radius: 16px;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upload-btn-label {
+  display: block;
+  max-width: 7.5rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+  text-align: center;
+}
 
 .upload-btn .lucide-icon {
   width: 28px;
@@ -3467,7 +3488,7 @@ body.is-mobile-mode.jcp-phone-shell:not(.jcp-prototype-page) #login-screen .logi
   border: 2px solid rgba(255, 80, 62, 0.95);
   box-shadow:
     0 0 0 3px rgba(255, 255, 255, 0.92),
-    0 0 0 9999px rgba(15, 23, 42, 0.22);
+    0 0 0 9999px rgba(15, 23, 42, 0.14);
   pointer-events: none;
   transition:
     top 0.35s cubic-bezier(0.2, 0.9, 0.2, 1),
@@ -3905,6 +3926,23 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   font-weight: 800;
   line-height: 1.2;
   color: #111827;
+}
+
+.demo-outcomes-modal__sub {
+  margin: 6px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #6b7280;
+}
+
+.demo-outcomes-modal__imagine {
+  margin: 0 0 8px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #374151;
 }
 
 /* Legacy subtitle (pre-slide-label markup) — hide if still present */
@@ -4502,6 +4540,7 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 
 .demo-outcomes-modal__footer {
   display: flex;
+  flex-direction: column;
   align-items: stretch;
   gap: 10px;
   margin-top: 8px;

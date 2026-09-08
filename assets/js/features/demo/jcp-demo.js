@@ -9,9 +9,9 @@
    Personalization (Survey)
 ========================= */
 let demoUser = {
-  firstName: 'John',
-  lastName: 'Smith',
-  businessName: 'Summit Plumbing',
+  firstName: '',
+  lastName: '',
+  businessName: 'Your Business',
   niche: 'plumbing'
 };
 
@@ -118,6 +118,32 @@ function jcpDemoOnboardingHandoffQuery(utmContent) {
       } else if (allowed.has(slug)) {
         extra.industryId = slug;
         extra.industry_id = slug;
+      }
+    }
+    // Preserve paid attribution into trial without overwriting demoUser fields.
+    if (window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function') {
+      const attr = window.JCPLeadAttribution.getPayload() || {};
+      [
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_content',
+        'utm_term',
+        'fbclid',
+        'lp_variant',
+        'landing_page',
+        'referrer',
+        'contact_id',
+      ].forEach((key) => {
+        if (extra[key]) return;
+        const val = attr[key];
+        if (val != null && String(val).trim() !== '') {
+          extra[key] = String(val).trim();
+        }
+      });
+      // Prefer CRO utm_content from the CTA surface when present.
+      if (utmContent) {
+        extra.utm_content = utmContent;
       }
     }
   } catch (e) {}
@@ -357,6 +383,7 @@ function getDemoContactPayload() {
 }
 
 function jcpDemoTrack(eventType, stepNumber, metadata, options) {
+  jcpDemoPushDataLayerAlias(eventType, stepNumber, metadata);
   const url = window.JCP_DEMO_EVENT && window.JCP_DEMO_EVENT.rest_url;
   if (!url) return;
   try {
@@ -382,6 +409,73 @@ function jcpDemoTrack(eventType, stepNumber, metadata, options) {
       keepalive,
     }).catch(function() {});
   } catch (e) {}
+}
+
+/** CRO aliases for GTM (once per name/session). Do not map these to Meta Lead. */
+function jcpDemoPushDataLayerAlias(eventType, stepNumber, metadata) {
+  try {
+    const aliasMap = {
+      demo_run_started: 'DemoStarted',
+      demo_photo_captured: 'DemoPhotoCaptured',
+      demo_processing_started: 'DemoProcessingStarted',
+      demo_publish_completed: 'DemoPublishViewed',
+      demo_review_sent: 'DemoReviewViewed',
+      demo_outcomes_opened: 'DemoResultsViewed',
+      demo_completed: 'DemoCompleted',
+      demo_replayed: 'DemoReplayClicked',
+      demo_exited: 'DemoExited',
+    };
+    let alias = aliasMap[eventType] || null;
+    if (eventType === 'demo_step_viewed') {
+      const stepAliases = {
+        2: 'DemoCreateCheckinStarted',
+        3: 'DemoPhotoStep',
+        5: 'DemoReviewViewed',
+        6: 'DemoResultsViewed',
+      };
+      alias = stepAliases[stepNumber] || null;
+    }
+    if (eventType === 'cta_clicked') {
+      const cta = metadata && metadata.cta;
+      if (cta === 'get_started_free') alias = 'TrialCTAClicked';
+      else if (cta === 'personalized_demo') alias = 'OneOnOneDemoClicked';
+      else if (cta === 'replay_demo') alias = 'DemoReplayClicked';
+    }
+    if (!alias) return;
+    const key = 'jcp_dl_alias_' + alias;
+    if (sessionStorage.getItem(key)) return;
+    window.dataLayer = window.dataLayer || [];
+    const attr =
+      window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function'
+        ? window.JCPLeadAttribution.getPayload() || {}
+        : {};
+    window.dataLayer.push({
+      event: alias,
+      business_type: (demoUser && demoUser.niche) || '',
+      demo_variant: 'guided_v2',
+      landing_page_variant: attr.lp_variant || '',
+      utm_source: attr.utm_source || '',
+      utm_medium: attr.utm_medium || '',
+      utm_campaign: attr.utm_campaign || '',
+      utm_content: attr.utm_content || '',
+      utm_term: attr.utm_term || '',
+    });
+    sessionStorage.setItem(key, '1');
+    if (alias === 'DemoResultsViewed') {
+      const trialKey = 'jcp_dl_alias_TrialCTAViewed';
+      if (!sessionStorage.getItem(trialKey)) {
+        window.dataLayer.push({
+          event: 'TrialCTAViewed',
+          business_type: (demoUser && demoUser.niche) || '',
+          demo_variant: 'guided_v2',
+          landing_page_variant: attr.lp_variant || '',
+        });
+        sessionStorage.setItem(trialKey, '1');
+      }
+    }
+  } catch (e) {
+    // no-op
+  }
 }
 
 // Optional URL params for email links: ?mode=run&name=Jane&business=ABC+Plumbing&niche=plumbing
@@ -429,9 +523,13 @@ try {
       const parsed = JSON.parse(stored);
 
       demoUser = {
-        firstName: parsed.firstName || demoUser.firstName,
-        lastName: parsed.lastName || demoUser.lastName,
-        businessName: parsed.businessName || demoUser.businessName,
+        firstName: Object.prototype.hasOwnProperty.call(parsed, 'firstName')
+          ? String(parsed.firstName || '').trim()
+          : demoUser.firstName,
+        lastName: Object.prototype.hasOwnProperty.call(parsed, 'lastName')
+          ? String(parsed.lastName || '').trim()
+          : demoUser.lastName,
+        businessName: String(parsed.businessName || '').trim() || demoUser.businessName,
         niche: parsed.niche || demoUser.niche,
         email: parsed.email || ''
       };
@@ -781,9 +879,9 @@ const LOCATION_STORAGE_KEY = 'jcp_active_location_id';
    Guide Content
 ---------------------------- */
 const DEMO_OUTCOME_ITEMS = [
-  'Published on your website',
-  'Posted to social media',
-  'Live on Google Business',
+  'Ready on your website',
+  'Prepared for social',
+  'Updated for Google Business Profile',
   'Added to JobCapturePro directory',
   'Review request presented',
 ];
@@ -791,55 +889,55 @@ const DEMO_OUTCOME_ITEMS = [
 const demoGuideContent = {
   step1: {
     pill: 'Step 1',
-    title: 'Start your personalized demo',
-    body: 'Tap Start Demo. You’ll walk through the exact field workflow your crew would use.',
-    interactHint: 'Tap the highlighted Start Demo button.'
+    title: 'Create a job check-in',
+    body: 'One finished job becomes fresh proof across your marketing.',
+    interactHint: 'Tap +, then choose New Check-In.'
   },
   step2: {
-    pill: 'Step 2',
+    pill: 'Step 1',
     title: 'Create a job check-in',
-    body: 'This is the moment on site. One check-in becomes proof, reviews, and published updates.',
-    interactHint: 'Tap the + button, then choose New Check-in.'
+    body: 'One finished job becomes fresh proof across your marketing.',
+    interactHint: 'Tap +, then choose New Check-In.'
   },
   step3: {
-    pill: 'Step 3',
+    pill: 'Step 2',
     title: 'Add the job photo',
-    body: 'The photo is the marketing. Open the camera and capture a simulated job-site photo for this niche, then submit.',
-    interactHint: 'Tap the camera, capture the job photo (simulated), then tap Submit.'
+    body: 'This is the only thing your crew needs to capture.',
+    interactHint: 'Take the photo, then tap Submit.'
   },
   step4: {
-    pill: 'Step 4',
-    title: 'AI builds a local SEO post',
-    body: 'Every check-in — from JobCapturePro or your field software — becomes a geotagged, location-optimized website post built to rank. Watch each piece of the post, then publish it everywhere.',
-    interactHint: 'Follow the highlight down the page, then tap Publish Everywhere.'
+    pill: 'Step 3',
+    title: 'Watch the check-in get built',
+    body: 'One job photo becomes usable marketing proof.',
+    interactHint: 'Follow the highlight, then tap Publish Everywhere.'
   },
   step5: {
-    pill: 'Step 5',
-    title: 'Ask for the review on site',
-    body: 'Optional but powerful — show the QR before you leave while the customer is still happy.',
-    interactHint: 'Tap Request Review to preview the QR handoff.'
+    pill: 'Step 4',
+    title: 'Ask for the review while the job is fresh',
+    body: 'Your crew can show the customer a simple review request before leaving.',
+    interactHint: 'Tap Preview Review Request.'
   },
   step6: {
-    pill: 'See the payoff',
-    title: 'One job. Published everywhere.',
-    body: 'Website, Google, social, directory, and a review ask — from a single check-in.',
+    pill: 'Step 5',
+    title: 'See what one job just created',
+    body: 'One finished job now has proof working across your key channels.',
     interactHint: ''
   },
   step6Dock: {
-    pill: 'Ready?',
-    title: 'Start Free Trial',
-    body: 'Turn every finished job into proof, Google activity, reviews, and more calls.',
+    pill: 'Step 5',
+    title: 'Start My Free 14-Day Trial',
+    body: 'Now imagine this happening after every job your crew finishes.',
     interactHint: ''
   }
 };
 
 const OUTCOMES_SLIDE_LABELS = [
-  'Live on your website',
-  'Posted to social media',
-  'Live on Google Business',
+  'Ready on your website',
+  'Prepared for social',
+  'Updated for Google Business',
   'Added to JobCapturePro directory',
-  'New 5-star review received',
-  'New job request received',
+  'Review request ready',
+  'Fresh proof supporting new leads',
 ];
 
 const outcomesSlideshow = {
@@ -863,6 +961,16 @@ function escapeHtml(s) {
   if (s == null) return '';
   const t = String(s);
   return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function formatDemoGreetingHtml() {
+  const biz = escapeHtml((demoUser.businessName || '').trim() || 'your business');
+  const fn = (demoUser.firstName || '').trim();
+  // Prefer business name after gate simplification (first name optional / often empty).
+  if (fn && fn.toLowerCase() !== 'there' && !/@/.test(fn)) {
+    return `Hi, <span class="greeting-accent">${escapeHtml(fn)}</span> | ${biz}`;
+  }
+  return `Hi, <span class="greeting-accent">${biz}</span>`;
 }
 
 function safeText(id, value) {
@@ -893,7 +1001,7 @@ function applyPersonalization() {
 function updateProfilePersonalization() {
   const nameEl = $('profile-name');
   const emailEl = $('profile-email');
-  if (nameEl) nameEl.textContent = demoUser.firstName || 'User';
+  if (nameEl) nameEl.textContent = demoUser.firstName || demoUser.businessName || 'User';
   if (emailEl) {
     const email = demoUser.email || `${(demoUser.firstName || 'user').toLowerCase()}@${(demoUser.businessName || 'company').replace(/\s+/g, '').toLowerCase()}.com`;
     emailEl.textContent = email;
@@ -1426,8 +1534,10 @@ function syncMobileGuideChrome() {
   const step = stepKey === 'step6' && !outcomesSlideshow.isOpen
     ? demoGuideContent.step6Dock
     : (stepKey ? demoGuideContent[stepKey] : null);
-  const stepNum = stepKey && /^step(\d)$/.test(stepKey) ? parseInt(stepKey.slice(-1), 10) : null;
-  const total = 6;
+  // Ready screen removed: step2..step6 display as 1..5 of 5.
+  const displayMap = { step2: 1, step3: 2, step4: 3, step5: 4, step6: 5 };
+  const stepNum = stepKey && displayMap[stepKey] ? displayMap[stepKey] : null;
+  const total = 5;
 
   if (stepNum) {
     safeText('mobileDemoStep', `Step ${stepNum} of ${total}`);
@@ -1450,6 +1560,7 @@ function syncMobileGuideChrome() {
 }
 
 function exitGuidedDemoToSurvey() {
+  jcpDemoTrack('demo_exited', null, { source: 'guided_exit' }, { keepalive: true });
   try {
     sessionStorage.removeItem(DEMO_INTAKE_COMPLETE_KEY);
   } catch (e) {
@@ -1704,8 +1815,8 @@ function setTourStep(stepKey) {
 
 function getNextLabelForStep(stepKey) {
   if (stepKey === 'step4') return 'Publish →';
-  if (stepKey === 'step5') return 'Send Review →';
-  if (stepKey === 'step6') return 'Start Free Trial';
+  if (stepKey === 'step5') return 'Preview Review →';
+  if (stepKey === 'step6') return 'Start My Free 14-Day Trial';
   return 'Next →';
 }
 
@@ -2359,7 +2470,7 @@ function saveEditProfile() {
     updateProfilePersonalization();
     const greeting = document.querySelector('.greeting');
     if (greeting) {
-      greeting.innerHTML = `Hi, <span class="greeting-accent">${demoUser.firstName}</span> | ${demoUser.businessName}`;
+      greeting.innerHTML = formatDemoGreetingHtml();
     }
   }
   goToProfile();
@@ -2368,12 +2479,11 @@ function saveEditProfile() {
 let demoCameraBusy = false;
 
 const PROCESSING_TITLE_CYCLE = [
-  'Creating your check-in…',
-  'Optimizing for local SEO…',
-  'Writing Google-ready copy…',
-  'Geotagging the job site…',
-  'Getting you found nearby…',
-  'Prepping for Google Business…',
+  'Building your job check-in…',
+  'Scanning the job photos…',
+  'Adding location context…',
+  'Creating job content…',
+  'Preparing Google & website…',
 ];
 
 const PROCESSING_STEP_IDS = ['step1', 'step2', 'step3', 'step4'];
@@ -2422,6 +2532,10 @@ function addPhotos(photoSrc) {
 
   grid.appendChild(photoDiv);
   state.photoCount++;
+
+  if (state.photoCount === 1) {
+    jcpDemoPushDataLayerAlias('demo_photo_captured', 3, { source: 'add_photos' });
+  }
 
   updateSubmitButtonState();
   syncStep3GuidedAnchor();
@@ -2586,9 +2700,10 @@ async function processPhotos() {
   hideMobileSpotlight();
   document.body.classList.add('jcp-processing-open');
   closeDemoCamera();
+  jcpDemoPushDataLayerAlias('demo_processing_started', 3, { source: 'process_photos' });
 
   resetProcessingSteps(PROCESSING_STEP_IDS);
-  setProcessingSub('Turning this job into proof customers can find.');
+  setProcessingSub('JobCapturePro is turning one job photo into usable marketing proof.');
   setProcessingStepActive('step1');
   startProcessingTitleCycle();
 
@@ -2599,16 +2714,16 @@ async function processPhotos() {
 
   const beats = [
     { id: 'step1', sub: 'Reading what was completed on site.' },
-    { id: 'step2', sub: 'So the work shows up for nearby searches.' },
-    { id: 'step3', sub: 'Building contractor-friendly, local-search copy.' },
-    { id: 'step4', sub: 'Ready for website, Google, and social.' },
+    { id: 'step2', sub: 'Attaching where the work happened.' },
+    { id: 'step3', sub: 'Building clear job content from the photos.' },
+    { id: 'step4', sub: 'Preparing proof for website, Google, and social.' },
   ];
 
   for (let i = 0; i < beats.length; i++) {
     const beat = beats[i];
     setProcessingStepActive(beat.id);
     setProcessingSub(beat.sub);
-    await wait(i === 0 ? 780 : 820);
+    await wait(i === 0 ? 720 : 760);
     markProcessingStepDone(beat.id);
     hideMobileSpotlight();
   }
@@ -2616,7 +2731,7 @@ async function processPhotos() {
   stopProcessingTitleCycle();
   setProcessingTitle('Check-in ready');
   setProcessingSub('Opening your finished job proof…');
-  await wait(480);
+  await wait(420);
 
   overlay.classList.remove('active');
   document.body.classList.remove('jcp-processing-open');
@@ -2664,7 +2779,7 @@ function resetProcessingSteps(ids) {
     if (label && span) span.textContent = label;
   });
   setProcessingTitle(PROCESSING_TITLE_CYCLE[0]);
-  setProcessingSub('Turning this job into proof customers can find.');
+  setProcessingSub('JobCapturePro is turning one job photo into usable marketing proof.');
 }
 
 function showEditScreen() {
@@ -2754,11 +2869,11 @@ function runStep4SeoAppreciationBeat() {
   const behavior = reduceMotion ? 'auto' : 'smooth';
 
   const sequence = [
-    { sel: '#edit-location-card', hint: 'Location is geotagged for local SEO.' },
+    { sel: '#edit-location-card', hint: 'Location is attached for local context.' },
     { sel: '#edit-photos-block', hint: 'The job photo becomes proof on every channel.' },
-    { sel: '#edit-description-block', hint: 'AI wrote a local-SEO description from the job.' },
-    { sel: '#edit-tags-block', hint: 'Tags help organize and surface the work.' },
-    { sel: '#btnSavePublish', hint: 'Tap Publish Everywhere to push it live.' },
+    { sel: '#edit-description-block', hint: 'AI wrote job content from the photo.' },
+    { sel: '#edit-tags-block', hint: 'Tags help organize the work.' },
+    { sel: '#btnSavePublish', hint: 'Tap Publish Everywhere to continue.' },
   ];
 
   const scrollToEl = (el, offset = 24) => {
@@ -3030,14 +3145,14 @@ async function runGuidedPublishSequence() {
     items.forEach((item) => item.classList.remove('is-done'));
 
     for (let i = 0; i < items.length; i++) {
-      await wait(480);
+      await wait(640);
       items[i].classList.add('is-done');
       if (i === 1) {
         await publishToSocial();
       }
     }
 
-    await wait(520);
+    await wait(780);
     jcpDemoTrack('demo_publish_completed', 4);
   } finally {
     closeOverlay();
@@ -3473,7 +3588,7 @@ function updateOutcomesSlideshowUi() {
 
 function goToDemoStartFree(source) {
   const utm = source || 'demo_handoff';
-  jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free', source: utm, label: 'Start Free Trial' }, { keepalive: true });
+  jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free', source: utm, label: 'Start My Free 14-Day Trial' }, { keepalive: true });
   jcpDemoTrack('demo_converted', null, { cta: 'get_started_free', source: utm }, { keepalive: true });
   markDemoIntakeComplete();
   window.location.href = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery(utm));
@@ -3514,7 +3629,7 @@ function syncDemoStartFreeCtas() {
 function ensureStackedStartFreeTrialCta(el, opts = {}) {
   if (!el) return;
   const arrow = !!opts.arrow;
-  const mainLabel = arrow ? 'Start Free Trial →' : 'Start Free Trial';
+  const mainLabel = arrow ? 'Start My Free 14-Day Trial →' : 'Start My Free 14-Day Trial';
   const noteLabel = 'No credit card required';
   el.classList.add('jcp-trial-cta-stacked');
 
@@ -3529,7 +3644,7 @@ function ensureStackedStartFreeTrialCta(el, opts = {}) {
     const label = (main.textContent || '').trim();
     if (
       label === '' ||
-      /start\s+for\s+free|get\s+started\s+free|start\s+free(?!\s+trial)|start\s+free\s+trial/i.test(label)
+      /start\s+for\s+free|get\s+started\s+free|start\s+free(?!\s+trial)|start\s+free\s+trial|start\s+my\s+free\s+14-day\s+trial/i.test(label)
     ) {
       main.textContent = mainLabel;
     }
@@ -3606,7 +3721,7 @@ function migratePostDemoPanelMarkup() {
       icon.className = 'lucide-icon lucide-icon-sm';
       icon.alt = '';
       icon.setAttribute('aria-hidden', 'true');
-      replay.replaceChildren(icon, document.createTextNode(' Replay demo'));
+      replay.replaceChildren(icon, document.createTextNode(' Replay Demo'));
     }
   }
 }
@@ -3893,10 +4008,20 @@ function ensureOutcomesFooterButtons() {
   const legacySubtitle = card.querySelector('.demo-outcomes-modal__subtitle');
   if (legacySubtitle) legacySubtitle.remove();
 
-  // Title copy migration for cached markup
+  // Title / sub copy migration for cached markup
   const titleEl = $('demoOutcomesModalTitle');
-  if (titleEl && /this job ran on autopilot/i.test(titleEl.textContent || '')) {
-    titleEl.textContent = 'See what this check-in produced, all from one job photo.';
+  if (titleEl) {
+    const t = titleEl.textContent || '';
+    if (/this job ran on autopilot|this check-in produced/i.test(t)) {
+      titleEl.textContent = 'See what one job just created.';
+    }
+  }
+  if (!$('demoOutcomesModalSub')) {
+    const sub = document.createElement('p');
+    sub.className = 'demo-outcomes-modal__sub';
+    sub.id = 'demoOutcomesModalSub';
+    sub.textContent = 'One finished job now has proof working across your key channels.';
+    titleEl?.after(sub);
   }
 
   let footer = card.querySelector('.demo-outcomes-modal__footer');
@@ -3904,6 +4029,13 @@ function ensureOutcomesFooterButtons() {
     footer = document.createElement('div');
     footer.className = 'demo-outcomes-modal__footer';
     card.appendChild(footer);
+  }
+
+  if (!footer.querySelector('.demo-outcomes-modal__imagine')) {
+    const imagine = document.createElement('p');
+    imagine.className = 'demo-outcomes-modal__imagine';
+    imagine.textContent = 'Now imagine this happening after every job your crew finishes.';
+    footer.prepend(imagine);
   }
 
   // Remove legacy “Next result” footer button
@@ -3945,13 +4077,30 @@ function ensureOutcomesFooterButtons() {
       more.className = 'demo-outcomes-modal__more';
       card.appendChild(more);
     }
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.id = 'demoOutcomesMoreOptions';
-    btn.className = 'demo-outcomes-modal__more-btn';
-    btn.dataset.outcomesAction = 'finish';
-    btn.textContent = 'See plans & demos';
-    more.appendChild(btn);
+    const link = document.createElement('a');
+    link.id = 'demoOutcomesMoreOptions';
+    link.className = 'demo-outcomes-modal__more-btn';
+    link.href = '/personalized-demo/';
+    link.textContent = 'Book a 1-on-1 Demo';
+    more.appendChild(link);
+  } else {
+    const moreBtn = $('demoOutcomesMoreOptions');
+    if (moreBtn) {
+      if (moreBtn.tagName === 'BUTTON') {
+        const link = document.createElement('a');
+        link.id = 'demoOutcomesMoreOptions';
+        link.className = 'demo-outcomes-modal__more-btn';
+        link.href = '/personalized-demo/';
+        link.textContent = 'Book a 1-on-1 Demo';
+        moreBtn.replaceWith(link);
+      } else {
+        moreBtn.setAttribute('href', '/personalized-demo/');
+        moreBtn.removeAttribute('data-outcomes-action');
+        if (/see plans|demos/i.test(moreBtn.textContent || '')) {
+          moreBtn.textContent = 'Book a 1-on-1 Demo';
+        }
+      }
+    }
   }
 
   syncDemoStartFreeCtas();
@@ -4006,6 +4155,10 @@ function wireOutcomesSlideshow() {
   if (modal.dataset.bound !== '1') {
     modal.dataset.bound = '1';
     modal.addEventListener('click', onOutcomesModalClick);
+
+    $('demoOutcomesMoreOptions')?.addEventListener('click', () => {
+      jcpDemoTrack('cta_clicked', null, { cta: 'personalized_demo', source: 'demo_outcomes_modal', label: 'Book a 1-on-1 Demo' }, { keepalive: true });
+    });
 
     $('demoOutcomesDots')?.addEventListener('click', (e) => {
       const btn = e.target.closest('[data-slide]');
@@ -4578,7 +4731,7 @@ function restartGuidedDemo() {
   safeText('metric-checkins', '12');
   safeText('metric-posts', '36');
   safeText('metric-reviews', '48');
-  tour.stepKey = 'step1';
+  tour.stepKey = 'step2';
   tour.isHidden = false;
   tour.isMinimized = false;
   mobileGuideCollapsed = false;
@@ -4587,11 +4740,11 @@ function restartGuidedDemo() {
   resetGuidedEditScreen();
 
   document.querySelectorAll('.app-screen').forEach((s) => s.classList.remove('active'));
-  $('login-screen')?.classList.add('active');
-  state.currentScreen = 'login-screen';
-
-  $('btnStartDemo')?.classList.add('wiggle-attention');
-  setTourStep('step1');
+  $('login-screen')?.setAttribute('hidden', '');
+  $('login-screen')?.setAttribute('aria-hidden', 'true');
+  goToHome();
+  tour.stepKey = 'step2';
+  setTourStep('step2');
   showTour();
   applyFocalPoint();
   syncMobileGuideChrome();
@@ -4623,12 +4776,10 @@ function wireControls() {
   $('btnViewDirectory')?.addEventListener('click', openDirectoryProfileFromDemo);
 
   $('btnExit')?.addEventListener('click', () => {
-    setScreen('login-screen');
-    state.activeCheckinIndex = null;
+    exitGuidedDemoToSurvey();
   });
   $('mobileBtnExit')?.addEventListener('click', () => {
-    setScreen('login-screen');
-    state.activeCheckinIndex = null;
+    exitGuidedDemoToSurvey();
   });
 
   $('btnMobileNext')?.addEventListener('click', () => {
@@ -4796,9 +4947,7 @@ function init() {
   // Greeting
   const greeting = document.querySelector('.greeting');
   if (greeting) {
-    greeting.innerHTML = `
-      Hi, <span class="greeting-accent">${demoUser.firstName}</span> | ${demoUser.businessName}
-    `;
+    greeting.innerHTML = formatDemoGreetingHtml();
   }
 
   updateProfilePersonalization();
@@ -4892,7 +5041,9 @@ function init() {
         sessionStorage.setItem('jcp_datalayer_demo_run_started', '1');
       }
     } catch (e) {}
-    setTourStep('step1');
+    // Skip Ready screen — land on check-ins at create-check-in step.
+    goToHome();
+    setTourStep('step2');
     showTour();
     updateTourFloating();
   }, 50);
@@ -5100,7 +5251,7 @@ function wirePostDemoPanel() {
       // Refresh PII + UTMs on click so the handoff always matches the latest survey data.
       const handoffUrl = jcpBuildOnboardingUrl(jcpDemoOnboardingHandoffQuery('demo_post_panel'));
       primaryCta.href = handoffUrl;
-      jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free', source: 'demo_post_panel', label: 'Start Free Trial' }, { keepalive: true });
+      jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free', source: 'demo_post_panel', label: 'Start My Free 14-Day Trial' }, { keepalive: true });
       jcpDemoTrack('demo_converted', null, { cta: 'get_started_free', source: 'demo_post_panel' }, { keepalive: true });
       // Matomo: Post Demo CTA Click (Start Free Trial), once per session
       try {
@@ -5117,7 +5268,7 @@ function wirePostDemoPanel() {
   const secondaryCta = document.querySelector('.post-demo-secondary-cta');
   if (secondaryCta) {
     secondaryCta.addEventListener('click', function() {
-      jcpDemoTrack('cta_clicked', null, { cta: 'personalized_demo', source: 'demo_post_panel', label: 'Apply for a personalized demo' }, { keepalive: true });
+      jcpDemoTrack('cta_clicked', null, { cta: 'personalized_demo', source: 'demo_post_panel', label: 'Book a 1-on-1 Demo' }, { keepalive: true });
       try {
         if (typeof _paq !== 'undefined' && !sessionStorage.getItem('jcp_matomo_demo_cta_personalized')) {
           _paq.push(['trackEvent', 'Demo', 'Post Demo CTA Click (Personalized Demo)']);
@@ -5130,7 +5281,7 @@ function wirePostDemoPanel() {
   document
     .getElementById('btnReplayDemo')
     ?.addEventListener('click', () => {
-      jcpDemoTrack('cta_clicked', null, { cta: 'replay_demo', source: 'demo_post_panel', label: 'Replay demo' });
+      jcpDemoTrack('cta_clicked', null, { cta: 'replay_demo', source: 'demo_post_panel', label: 'Replay Demo' });
       restartGuidedDemo();
     });
 }

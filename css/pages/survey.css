@@ -430,6 +430,15 @@
   color: #64748b !important;
 }
 
+.survey-microcopy {
+  margin: 0.55rem 0 0;
+  text-align: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #475569;
+}
+
 @media (max-width: 640px) {
   .survey-deck .deck-slide--visual h2 {
     max-width: none;

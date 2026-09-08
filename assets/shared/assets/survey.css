@@ -449,6 +449,14 @@ body.survey-only #jcp-app {
   margin:0;
   line-height:1.4;
 }
+.survey-microcopy{
+  color:#475569;
+  font-size:13px;
+  font-weight:600;
+  margin:8px 0 0;
+  line-height:1.4;
+  text-align:center;
+}
 
 .survey-field-hint{
   color:#6b7280;

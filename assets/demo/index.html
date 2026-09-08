@@ -22,8 +22,8 @@
 
                 <div class="notch"></div>
                 <div class="screen">
-                    <!-- Start Demo Screen -->
-                    <div class="app-screen active" id="login-screen">
+                    <!-- Start screen kept for prototype/restart fallback; guided demo skips to check-ins -->
+                    <div class="app-screen" id="login-screen" hidden aria-hidden="true">
                         <div class="app-header">
                             <div class="app-header__left"></div>
                             <p class="app-header__title">JobCapturePro Demo</h1>
@@ -41,7 +41,7 @@
                         </div>
                     </div>
                     <!-- Home Screen -->
-                    <div class="app-screen" id="home-screen">
+                    <div class="app-screen active" id="home-screen">
                         <div class="app-header app-header--title-left">
                             <p class="app-header__title">Check-ins</h1>
                             <button type="button" class="location-switcher" id="location-switcher" data-action="switch-location" aria-label="Switch location">
@@ -71,7 +71,7 @@
 
                             <div class="empty-state">
                                 <h3>Start capturing proof</h3>
-                                <p>Take a few photos, submit, and get published everywhere.</p>
+                                <p>Take a few photos, submit, and turn finished work into public-facing proof.</p>
                                 <div class="empty-hint">
                                     <span>Tap <strong>+</strong> to create a check-in</span>
                                 </div>
@@ -80,7 +80,7 @@
 
                             <div class="demo-outcomes" id="demoOutcomes" hidden>
                               <p class="demo-outcomes-eyebrow">Automations completed</p>
-                              <h3 class="demo-outcomes-title">See what this check-in produced, all from one job photo.</h3>
+                              <h3 class="demo-outcomes-title">See what one job just created.</h3>
                               <ul class="demo-outcomes-list demo-publish-list" id="demoOutcomesList" aria-live="polite"></ul>
                               <div class="demo-review-received demo-review-received--recap" id="demoReviewReceived" hidden>
                                 <img class="demo-review-received-photo" id="demoReviewReceivedPhoto" src="" alt="" width="56" height="56" loading="lazy">
@@ -117,10 +117,16 @@
                         <div class="content-area">
 
                             <div class="upload-area">
-                                <div class="upload-hint">Take photos or upload images to generate your check-in</div>
+                                <div class="upload-hint">This is the only thing your crew needs to capture.</div>
                                 <div class="upload-buttons">
-                                    <button type="button" class="upload-btn" id="uploadBtnCamera" data-action="add-photos" aria-label="Take photo"><img src="../../shared/assets/icons/lucide/camera.svg" class="lucide-icon" alt=""></button>
-                                    <button type="button" class="upload-btn" id="uploadBtnGallery" data-action="add-photos" aria-label="Upload photo"><img src="../../shared/assets/icons/lucide/image.svg" class="lucide-icon" alt=""></button>
+                                    <button type="button" class="upload-btn upload-btn--labeled" id="uploadBtnCamera" data-action="add-photos" aria-label="Take a photo">
+                                      <img src="../../shared/assets/icons/lucide/camera.svg" class="lucide-icon" alt="">
+                                      <span class="upload-btn-label">Take a photo</span>
+                                    </button>
+                                    <button type="button" class="upload-btn upload-btn--labeled" id="uploadBtnGallery" data-action="add-photos" aria-label="Use a sample job">
+                                      <img src="../../shared/assets/icons/lucide/image.svg" class="lucide-icon" alt="">
+                                      <span class="upload-btn-label">Use a sample job</span>
+                                    </button>
                                 </div>
                             </div>
 
@@ -217,7 +223,7 @@
                             <div class="action-buttons action-buttons--normal" id="edit-screen-buttons-normal">
                                 <button class="btn btn-primary" id="btnSavePublish" onclick="saveCheckin()"><img src="../../shared/assets/icons/lucide/upload.svg" class="lucide-icon lucide-icon-sm" alt=""> Publish Everywhere</button>
                                 <button type="button" class="btn btn-warning" id="btnArchiveCheckin"><img src="../../shared/assets/icons/lucide/archive.svg" class="lucide-icon lucide-icon-sm" alt=""> <span id="btnArchiveCheckinLabel">Archive Check-In</span></button>
-                                <button class="btn btn-primary action-buttons__item--spaced" id="btnRequestReview" onclick="goToRequestReview()"><img src="../../shared/assets/icons/lucide/star.svg" class="lucide-icon lucide-icon-sm" alt=""> Request Review</button>
+                                <button class="btn btn-primary action-buttons__item--spaced" id="btnRequestReview" onclick="goToRequestReview()"><img src="../../shared/assets/icons/lucide/star.svg" class="lucide-icon lucide-icon-sm" alt=""> Preview Review Request</button>
                             </div>
                             <div class="action-buttons action-buttons--archived" id="edit-screen-buttons-archived" style="display: none;">
                                 <button type="button" class="btn btn-secondary" id="btnArchivedSave" onclick="saveArchivedCheckinEdits()"><img src="../../shared/assets/icons/lucide/check.svg" class="lucide-icon lucide-icon-sm" alt=""> Save</button>
@@ -362,24 +368,24 @@
                     <!-- Processing Overlay -->
                     <div class="processing-overlay" id="processing" aria-live="polite">
                         <div class="spinner" aria-hidden="true"></div>
-                        <div class="processing-title" id="processingTitle">Creating your check-in...</div>
-                        <p class="processing-sub" id="processingSub">Turning this job into proof customers can find.</p>
+                        <div class="processing-title" id="processingTitle">Building your job check-in...</div>
+                        <p class="processing-sub" id="processingSub">JobCapturePro is turning one job photo into usable marketing proof.</p>
                         <div class="processing-steps">
                             <div class="processing-step" id="step1" data-processing-label="Scanning the job photos…">
                                 <div class="step-icon"></div>
                                 <span>Scanning the job photos…</span>
                             </div>
-                            <div class="processing-step" id="step2" data-processing-label="Pinning it on the map…">
+                            <div class="processing-step" id="step2" data-processing-label="Adding location context…">
                                 <div class="step-icon"></div>
-                                <span>Pinning it on the map…</span>
+                                <span>Adding location context…</span>
                             </div>
-                            <div class="processing-step" id="step3" data-processing-label="Writing local-SEO copy…">
+                            <div class="processing-step" id="step3" data-processing-label="Creating job content…">
                                 <div class="step-icon"></div>
-                                <span>Writing local-SEO copy…</span>
+                                <span>Creating job content…</span>
                             </div>
-                            <div class="processing-step" id="step4" data-processing-label="Prepping Google & website…">
+                            <div class="processing-step" id="step4" data-processing-label="Preparing Google & website…">
                                 <div class="step-icon"></div>
-                                <span>Prepping Google &amp; website…</span>
+                                <span>Preparing Google &amp; website…</span>
                             </div>
                         </div>
                     </div>
@@ -497,8 +503,8 @@
         <!-- Review Request Modal -->
         <div class="modal-overlay" id="review-modal">
             <div class="modal modal--review-demo" role="dialog" aria-modal="true" aria-labelledby="demoReviewModalTitle">
-                <h3 id="demoReviewModalTitle">Review request</h3>
-                <p class="modal-sub">After the job, your crew shows the customer a QR code. Preview the request they present on site.</p>
+                <h3 id="demoReviewModalTitle">Ask for the review while the job is fresh</h3>
+                <p class="modal-sub">Your crew can show the customer a simple review request before leaving.</p>
                 <div class="demo-review-job" id="demoReviewJob">
                     <img id="demoReviewPhoto" src="" alt="" width="72" height="72" loading="lazy">
                     <div class="demo-review-job-copy">
@@ -526,21 +532,21 @@
                 <p class="demo-review-auto-note">They tap a star to open your review link — before your truck leaves.</p>
                 <div class="modal-actions">
                     <button class="btn btn-ghost" type="button" onclick="closeReviewDialog()">Cancel</button>
-                    <button class="btn btn-primary" type="button" id="btnDemoReviewSend"><img src="../../shared/assets/icons/lucide/send.svg" class="lucide-icon lucide-icon-sm" alt=""> Send</button>
+                    <button class="btn btn-primary" type="button" id="btnDemoReviewSend"><img src="../../shared/assets/icons/lucide/qr-code.svg" class="lucide-icon lucide-icon-sm" alt=""> Preview Review Request</button>
                 </div>
             </div>
         </div>
 
         <div class="demo-publish-overlay" id="demoPublishOverlay" aria-hidden="true">
             <div class="demo-publish-card">
-                <h3 class="demo-publish-title">Publishing everywhere</h3>
-                <p class="demo-publish-sub">Your job is going live across every channel.</p>
+                <h3 class="demo-publish-title">One job. Now working across your marketing.</h3>
+                <p class="demo-publish-sub">Your completed job is being turned into proof across connected channels.</p>
                 <ul class="demo-publish-list">
-                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Published on your website</li>
-                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Posted to social media</li>
-                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Job live on Google Business</li>
+                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Ready on your website</li>
+                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Prepared for social</li>
+                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Updated for Google Business Profile</li>
                     <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Added to JobCapturePro directory</li>
-                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Map pin updated</li>
+                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Map / service-area proof updated</li>
                 </ul>
             </div>
         </div>
@@ -735,7 +741,8 @@
     </button>
     <div class="demo-outcomes-modal__header">
       <p class="demo-outcomes-modal__eyebrow">Automations completed</p>
-      <h2 class="demo-outcomes-modal__title" id="demoOutcomesModalTitle">See what this check-in produced, all from one job photo.</h2>
+      <h2 class="demo-outcomes-modal__title" id="demoOutcomesModalTitle">See what one job just created.</h2>
+      <p class="demo-outcomes-modal__sub" id="demoOutcomesModalSub">One finished job now has proof working across your key channels.</p>
       <p class="demo-outcomes-modal__counter" id="demoOutcomesSlideCounter" aria-live="polite">1 of 6</p>
     </div>
     <div class="demo-outcomes-modal__stage">
@@ -755,15 +762,16 @@
     </div>
     <div class="demo-outcomes-modal__dots" id="demoOutcomesDots" role="tablist" aria-label="Outcome slides"></div>
     <div class="demo-outcomes-modal__footer">
+      <p class="demo-outcomes-modal__imagine">Now imagine this happening after every job your crew finishes.</p>
       <a
         class="btn btn-primary demo-outcomes-modal__finish demo-outcomes-modal__finish--solo jcp-trial-cta-stacked"
         id="demoOutcomesStartFreeCta"
         href="https://app.jobcapturepro.com/onboarding?sessionId=75ad8454-312e-4224-95b7-8f48f5cd0277&amp;step=1&amp;utm_source=jobcapturepro.com&amp;utm_medium=website&amp;utm_campaign=onboarding&amp;utm_content=demo_outcomes"
         data-outcomes-action="start_free"
-      ><span class="jcp-trial-cta-main">Start Free Trial</span><span class="jcp-trial-cta-note">No credit card required</span></a>
+      ><span class="jcp-trial-cta-main">Start My Free 14-Day Trial</span><span class="jcp-trial-cta-note">No credit card required</span></a>
     </div>
     <p class="demo-outcomes-modal__more">
-      <button type="button" class="demo-outcomes-modal__more-btn" id="demoOutcomesMoreOptions" data-outcomes-action="finish">See plans &amp; demos</button>
+      <a class="demo-outcomes-modal__more-btn" id="demoOutcomesMoreOptions" href="/personalized-demo/">Book a 1-on-1 Demo</a>
     </p>
   </div>
 </div>
@@ -786,21 +794,21 @@
       <span class="post-demo-trust-copy">Trusted by crews who already take the photos</span>
     </p>
 
-    <h2 class="post-demo-simple-title">Turn every job into more calls</h2>
-    <p class="post-demo-simple-body">One check-in publishes everywhere and opens review opportunities — so you win more work without chasing follow-ups.</p>
+    <h2 class="post-demo-simple-title">Now imagine this happening after every job</h2>
+    <p class="post-demo-simple-body">One check-in creates public-facing proof and review opportunities — so finished work keeps helping you win the next job.</p>
 
     <div class="post-demo-actions">
       <a class="btn btn-primary post-demo-primary-cta" href="https://app.jobcapturepro.com/onboarding?sessionId=75ad8454-312e-4224-95b7-8f48f5cd0277&amp;step=1&amp;utm_source=jobcapturepro.com&amp;utm_medium=website&amp;utm_campaign=onboarding&amp;utm_content=demo_static_assets">
-        <span class="post-demo-cta-main">Start Free Trial</span>
+        <span class="post-demo-cta-main">Start My Free 14-Day Trial</span>
         <span class="post-demo-cta-note">No credit card required</span>
       </a>
       <a class="btn btn-secondary post-demo-secondary-cta" href="/personalized-demo/">
-        Apply for a personalized demo
+        Book a 1-on-1 Demo
       </a>
-      <p class="post-demo-secondary-note">One-on-one with our team · Short assessment required</p>
+      <p class="post-demo-secondary-note">Talk with our team · Short assessment required</p>
       <button type="button" class="post-demo-replay-link" id="btnReplayDemo">
         <img src="../../shared/assets/icons/lucide/rotate-ccw.svg" class="lucide-icon lucide-icon-sm" alt="" aria-hidden="true">
-        Replay demo
+        Replay Demo
       </button>
     </div>
 
