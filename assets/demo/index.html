@@ -503,16 +503,21 @@
         <!-- Review Request Modal -->
         <div class="modal-overlay" id="review-modal">
             <div class="modal modal--review-demo" role="dialog" aria-modal="true" aria-labelledby="demoReviewModalTitle">
-                <h3 id="demoReviewModalTitle">Ask for the review while the job is fresh</h3>
-                <p class="modal-sub">Your crew can show the customer a simple review request before leaving.</p>
+                <header class="demo-review-head">
+                    <h3 id="demoReviewModalTitle">Ask for the review while the job is fresh</h3>
+                    <p class="modal-sub">Your crew can show the customer a simple review request before leaving.</p>
+                </header>
+
                 <div class="demo-review-job" id="demoReviewJob">
-                    <img id="demoReviewPhoto" src="" alt="" width="72" height="72" loading="lazy">
+                    <img id="demoReviewPhoto" src="" alt="" width="56" height="56" loading="lazy">
                     <div class="demo-review-job-copy">
                         <strong id="demoReviewTitle">Water Heater Replacement</strong>
                         <span id="demoReviewLocation">105 Walnut St, Austin, TX</span>
                     </div>
                 </div>
+
                 <div class="demo-review-customer-preview" aria-label="Customer-facing review preview">
+                    <p class="demo-review-preview-kicker">Customer preview</p>
                     <div class="demo-review-qr-row">
                         <div class="demo-review-qr" aria-hidden="true">
                             <img src="../../shared/assets/icons/lucide/qr-code.svg" class="lucide-icon" alt="">
@@ -526,13 +531,20 @@
                         <span class="demo-review-rate-label">Rate your experience</span>
                         <div class="demo-review-ask-stars" aria-label="5-star rating prompt" aria-hidden="true">★★★★★</div>
                     </div>
-                    <label class="demo-review-message-label" for="demoReviewMessage">Message customers see</label>
-                    <textarea class="input-field demo-review-message" id="demoReviewMessage" rows="3" placeholder="Add a personal note (optional)"></textarea>
+                    <div class="demo-review-message-block">
+                        <label class="demo-review-message-label" for="demoReviewMessage">Message customers see</label>
+                        <textarea class="input-field demo-review-message" id="demoReviewMessage" rows="2" placeholder="Add a personal note (optional)"></textarea>
+                    </div>
                 </div>
+
                 <p class="demo-review-auto-note">They tap a star to open your review link — before your truck leaves.</p>
-                <div class="modal-actions">
+
+                <div class="modal-actions modal-actions--review">
                     <button class="btn btn-ghost" type="button" onclick="closeReviewDialog()">Cancel</button>
-                    <button class="btn btn-primary" type="button" id="btnDemoReviewSend"><img src="../../shared/assets/icons/lucide/qr-code.svg" class="lucide-icon lucide-icon-sm" alt=""> Preview Review Request</button>
+                    <button class="btn btn-primary" type="button" id="btnDemoReviewSend">
+                        <img src="../../shared/assets/icons/lucide/qr-code.svg" class="lucide-icon lucide-icon-sm" alt="" aria-hidden="true">
+                        <span>Preview Review Request</span>
+                    </button>
                 </div>
             </div>
         </div>

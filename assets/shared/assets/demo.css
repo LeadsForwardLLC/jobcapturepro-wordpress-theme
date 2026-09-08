@@ -5287,24 +5287,41 @@ body.jcp-publish-modal-open .guided-coach-backdrop {
   transform: rotate(45deg);
 }
 
-/* Review send modal — app-like QR / review ask preview */
+/* Review send modal — clear hierarchy, roomy spacing, single-line CTA */
 .modal--review-demo {
-  max-width: 400px;
-  width: calc(100vw - 32px);
-  padding: 24px 20px 20px;
-  border-radius: 18px;
+  max-width: 420px;
+  width: min(420px, calc(100vw - 28px));
+  padding: 22px 20px 18px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
-.modal--review-demo h3 {
-  font-size: 20px;
-  margin-bottom: 8px;
+.modal--review-demo .demo-review-head {
+  margin: 0 0 16px;
+}
+
+.modal--review-demo h3,
+.modal--review-demo #demoReviewModalTitle {
+  font-size: 1.125rem;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+  font-weight: 800;
+  color: #111827;
 }
 
 .modal--review-demo .modal-sub {
-  margin: 0 0 14px;
-  font-size: 13px;
+  margin: 0;
+  font-size: 0.875rem;
   color: #6b7280;
   line-height: 1.45;
+}
+
+.modal--review-demo .modal-sub.modal-sub,
+.modal--review-demo p.modal-sub {
+  margin-bottom: 0;
 }
 
 .demo-review-job {
@@ -5314,13 +5331,13 @@ body.jcp-publish-modal-open .guided-coach-backdrop {
   padding: 10px 12px;
   border: 1px solid #e5e7eb;
   border-radius: 14px;
-  margin-bottom: 12px;
-  background: #f9fafb;
+  margin: 0 0 14px;
+  background: #f8fafc;
 }
 
 .demo-review-job img {
-  width: 56px;
-  height: 56px;
+  width: 52px;
+  height: 52px;
   border-radius: 10px;
   object-fit: cover;
   flex-shrink: 0;
@@ -5329,50 +5346,63 @@ body.jcp-publish-modal-open .guided-coach-backdrop {
 .demo-review-job-copy {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
 }
 
 .demo-review-job-copy strong {
-  font-size: 14px;
+  font-size: 0.9375rem;
+  font-weight: 700;
   color: #111827;
+  line-height: 1.3;
 }
 
 .demo-review-job-copy span {
-  font-size: 12px;
+  font-size: 0.8125rem;
   color: #6b7280;
+  line-height: 1.35;
 }
 
 .demo-review-customer-preview {
   border: 1px solid #e5e7eb;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 10px;
+  border-radius: 16px;
+  padding: 14px 14px 12px;
+  margin: 0 0 12px;
   background: #fff;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+}
+
+.demo-review-preview-kicker {
+  margin: 0 0 12px !important;
+  font-size: 0.6875rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9ca3af !important;
+  line-height: 1.2 !important;
 }
 
 .demo-review-qr-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 14px;
+  margin: 0 0 14px;
 }
 
 .demo-review-qr {
   flex-shrink: 0;
-  width: 52px;
-  height: 52px;
+  width: 48px;
+  height: 48px;
   border-radius: 12px;
   display: grid;
   place-items: center;
   background: rgba(255, 80, 62, 0.1);
-  border: 1px solid rgba(255, 80, 62, 0.18);
+  border: 1px solid rgba(255, 80, 62, 0.16);
 }
 
 .demo-review-qr .lucide-icon {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   color: #ff503e;
   filter: brightness(0) saturate(100%) invert(43%) sepia(72%) saturate(4208%) hue-rotate(339deg) brightness(100%) contrast(102%);
 }
@@ -5385,68 +5415,136 @@ body.jcp-publish-modal-open .guided-coach-backdrop {
 }
 
 .demo-review-qr-copy strong {
-  font-size: 14px;
+  font-size: 0.9375rem;
   font-weight: 800;
   color: #111827;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .demo-review-qr-copy span {
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: #6b7280;
 }
 
 .demo-review-rate {
   text-align: center;
-  padding: 10px 8px 12px;
-  margin-bottom: 12px;
+  padding: 12px 10px;
+  margin: 0 0 12px;
   border-radius: 12px;
-  background: #f9fafb;
-  border: 1px solid #f3f4f6;
+  background: #f8fafc;
 }
 
 .demo-review-rate-label {
   display: block;
-  font-size: 12px;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: #374151;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .demo-review-ask-stars {
   color: #f59e0b;
-  font-size: 22px;
-  letter-spacing: 3px;
+  font-size: 1.5rem;
+  letter-spacing: 0.18em;
   line-height: 1;
+}
+
+.demo-review-message-block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .demo-review-message-label {
   display: block;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   color: #9ca3af;
-  margin-bottom: 6px;
+  margin: 0;
 }
 
 .demo-review-message {
   margin: 0;
-  min-height: 72px;
-  font-size: 13px;
+  min-height: 0;
+  height: auto;
+  padding: 10px 12px;
+  font-size: 0.875rem;
   line-height: 1.45;
   resize: none;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #fafafa;
+  color: #374151;
+  box-shadow: none;
 }
 
 .demo-review-auto-note {
-  margin: 0 0 14px;
-  font-size: 12px;
-  color: #9ca3af;
-  line-height: 1.4;
+  margin: 0 0 16px !important;
+  font-size: 0.8125rem !important;
+  color: #9ca3af !important;
+  line-height: 1.4 !important;
 }
 
-.modal--review-demo .modal-actions {
+.modal--review-demo .modal-actions,
+.modal--review-demo .modal-actions--review {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
   margin-top: 0;
+  width: 100%;
+}
+
+.modal--review-demo .modal-actions .btn {
+  flex: initial;
+}
+
+.modal--review-demo .modal-actions .btn-ghost {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 4.5rem;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+
+.modal--review-demo .modal-actions .btn-primary,
+.modal--review-demo #btnDemoReviewSend {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: auto;
+  min-width: 0;
+  padding: 12px 14px;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.modal--review-demo #btnDemoReviewSend img,
+.modal--review-demo #btnDemoReviewSend .lucide-icon {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.modal--review-demo #btnDemoReviewSend span {
+  white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+  .modal--review-demo #btnDemoReviewSend {
+    font-size: 0.8125rem;
+    padding: 12px 10px;
+    gap: 6px;
+  }
 }
 
 /* Review animations on home */
