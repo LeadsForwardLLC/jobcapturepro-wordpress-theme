@@ -33,6 +33,12 @@ $body_classes = ( $hide_site_chrome ? 'jcp-landing-chrome-hidden' : 'jcp-global-
   <?php if ( $hide_site_chrome ) : ?>
     <?php
     $landing_demo_url = function_exists( 'home_url' ) ? home_url( '/demo/' ) : '/demo/';
+    if ( function_exists( 'jcp_campaign_current_variant_key' ) ) {
+      $lp_variant = jcp_campaign_current_variant_key();
+      if ( $lp_variant !== '' ) {
+        $landing_demo_url = add_query_arg( 'lp_variant', $lp_variant, $landing_demo_url );
+      }
+    }
     ?>
     <header class="jcp-landing-brandbar" role="banner" data-jcp-landing-brandbar>
       <div class="jcp-landing-brandbar__inner">

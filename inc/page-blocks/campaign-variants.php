@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** Seed version for all paid LP variants (bump to force-refresh content). */
-const JCP_CAMPAIGN_VARIANTS_SEED_VERSION = '1';
+const JCP_CAMPAIGN_VARIANTS_SEED_VERSION = '2';
 
 /**
  * Variant registry keyed by analytics id.
@@ -421,9 +421,18 @@ function jcp_campaign_variant_normalize_ctas( array $legacy, string $variant_key
  * @param string               $url CTA URL.
  */
 function jcp_campaign_variant_rewrite_ctas_node( array &$node, string $label, string $micro, string $url ): void {
-	if ( isset( $node['cta_primary'] ) && is_array( $node['cta_primary'] ) ) {
-		$node['cta_primary']['label'] = $label;
-		$node['cta_primary']['url']   = $url;
+	foreach ( [ 'cta_primary', 'cta_secondary' ] as $cta_key ) {
+		if ( ! isset( $node[ $cta_key ] ) || ! is_array( $node[ $cta_key ] ) ) {
+			continue;
+		}
+		$cta_url = (string) ( $node[ $cta_key ]['url'] ?? '' );
+		if ( $cta_url === '' || stripos( $cta_url, '/demo' ) === false ) {
+			continue;
+		}
+		if ( $cta_key === 'cta_primary' ) {
+			$node[ $cta_key ]['label'] = $label;
+		}
+		$node[ $cta_key ]['url'] = $url;
 	}
 	if ( array_key_exists( 'cta_note', $node ) ) {
 		$node['cta_note'] = $micro;
