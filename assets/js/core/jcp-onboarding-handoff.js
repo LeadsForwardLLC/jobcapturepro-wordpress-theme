@@ -81,6 +81,7 @@
     const last = (u.lastName || '').trim();
     const email = (u.email || '').trim();
     const company = (u.businessName || '').trim();
+    const phone = (u.phone || '').trim();
     const businessType = (u.niche || '').trim();
     const fullName = [first, last].filter(Boolean).join(' ').trim();
 
@@ -88,6 +89,11 @@
     if (first) params.first_name = first;
     if (last) params.last_name = last;
     if (email) params.email = email;
+    if (phone) {
+      params.phone = phone;
+      params.mobile = phone;
+      params.mobile_phone = phone;
+    }
     if (fullName) {
       params.full_name = fullName; // legacy / snake_case
       params.fullName = fullName;  // likely app key
@@ -95,11 +101,10 @@
     }
 
     // Org step
-    if (company) {
+    if (company && company.toLowerCase() !== 'your business') {
       params.company = company;                 // legacy
       params.organization_name = company;       // snake_case
       params.organizationName = company;        // likely app key
-      params.organizationName = company;        // explicit: matches Step 2 input id/key
     }
     if (businessType) {
       params.business_type = businessType;      // legacy

@@ -32,10 +32,10 @@
 
                         <div class="content-area">
                             <div class="login-container">
-                                <h2 class="login-title">Ready?</h2>
-                                <p class="login-subtitle">Click below to run the sales demo.</p>
-                                <button class="btn btn-primary" id="btnStartDemo">
-                                    Start Demo
+                                <h2 class="login-title">JobCapturePro</h2>
+                                <p class="login-subtitle">Loading your personalized demo…</p>
+                                <button class="btn btn-primary" id="btnStartDemo" hidden aria-hidden="true">
+                                    Continue
                                 </button>
                             </div>
                         </div>
@@ -539,10 +539,10 @@
 
         <div class="demo-publish-overlay" id="demoPublishOverlay" aria-hidden="true">
             <div class="demo-publish-card">
-                <h3 class="demo-publish-title">One job. Now working across your marketing.</h3>
+                <h3 class="demo-publish-title">One Job. Now Working Across Your Marketing.</h3>
                 <p class="demo-publish-sub">Your completed job is being turned into proof across connected channels.</p>
                 <ul class="demo-publish-list">
-                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Ready on your website</li>
+                    <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Ready for your website</li>
                     <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Prepared for social</li>
                     <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Updated for Google Business Profile</li>
                     <li class="demo-publish-item"><span class="demo-publish-check" aria-hidden="true"></span>Added to JobCapturePro directory</li>
@@ -720,7 +720,7 @@
   <div class="mobile-stepper-grab" aria-hidden="true"></div>
   <div class="mobile-stepper-copy">
     <p class="mobile-stepper-title" id="mobileStepTitle">Start the demo</p>
-    <p class="mobile-stepper-body" id="mobileStepBody">Tap Start Demo to begin.</p>
+    <p class="mobile-stepper-body" id="mobileStepBody">Tap +, then choose New Check-In.</p>
     <p class="mobile-stepper-hint" id="mobileStepInteractHint" hidden>Follow the highlight to continue.</p>
   </div>
   <button class="btn btn-primary btn-full" id="btnMobileNext" type="button">Next →</button>
@@ -770,6 +770,24 @@
         data-outcomes-action="start_free"
       ><span class="jcp-trial-cta-main">Start My Free 14-Day Trial</span><span class="jcp-trial-cta-note">No credit card required</span></a>
     </div>
+    <div class="demo-outcomes-modal__phone" id="demoOutcomesPhoneCapture">
+      <p class="demo-outcomes-modal__phone-title">Want help getting set up?</p>
+      <label class="demo-outcomes-modal__phone-label" for="demoOutcomesPhone">Mobile number (optional)</label>
+      <div class="demo-outcomes-modal__phone-row">
+        <input
+          type="tel"
+          id="demoOutcomesPhone"
+          class="demo-outcomes-modal__phone-input"
+          inputmode="tel"
+          autocomplete="tel"
+          placeholder="(___) ___-____"
+          maxlength="20"
+        />
+        <button type="button" class="btn btn-secondary demo-outcomes-modal__phone-btn" id="demoOutcomesPhoneBtn">Save</button>
+      </div>
+      <p class="demo-outcomes-modal__phone-note">We’ll only use this to help with your JobCapturePro setup.</p>
+      <p class="demo-outcomes-modal__phone-status" id="demoOutcomesPhoneStatus" aria-live="polite"></p>
+    </div>
     <p class="demo-outcomes-modal__more">
       <a class="demo-outcomes-modal__more-btn" id="demoOutcomesMoreOptions" href="/personalized-demo/">Talk to a JCP Expert</a>
     </p>
@@ -807,13 +825,13 @@
         <span class="post-demo-cta-note">No credit card required</span>
       </a>
       <a class="btn btn-secondary post-demo-secondary-cta" href="/personalized-demo/">
-        Book a 1-on-1 Demo
+        Talk to a JCP Expert
       </a>
       <p class="post-demo-secondary-note">Talk with our team · Short assessment required</p>
       <a class="post-demo-case-study-cta" id="postDemoCaseStudyCta" href="/case-study/?utm_content=demo_post_panel_last_resort">
-        Apply for the 90-day case study
+        Apply for the 90-Day Case Study
       </a>
-      <p class="post-demo-case-study-note">Last-resort option · 10 spots · Selection is not automatic</p>
+      <p class="post-demo-case-study-note">10 companies will be selected · Application required</p>
       <button type="button" class="post-demo-replay-link" id="btnReplayDemo">
         <img src="../../shared/assets/icons/lucide/rotate-ccw.svg" class="lucide-icon lucide-icon-sm" alt="" aria-hidden="true">
         Replay Demo

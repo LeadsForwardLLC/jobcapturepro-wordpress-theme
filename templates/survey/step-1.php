@@ -100,8 +100,7 @@ $survey_proof = [
       <script type="application/json" id="jcpBusinessTypeOptions"><?php echo wp_json_encode( $business_type_options ); ?></script>
     </div>
 
-    <?php /* Kept in DOM (hidden) so existing JS / CRM payloads stay stable. Collected later if needed. */ ?>
-    <input type="hidden" id="businessName" value="" autocomplete="organization" />
+    <?php /* Name / phone collected later (personalization + post-value). Kept for payload stability. */ ?>
     <input type="hidden" id="firstName" value="" autocomplete="given-name" />
     <input type="hidden" id="lastName" value="" autocomplete="family-name" />
     <input type="hidden" id="phone" value="" autocomplete="tel" />

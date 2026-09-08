@@ -4600,6 +4600,63 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   width: 100%;
 }
 
+.demo-outcomes-modal__phone {
+  margin: 12px 0 0;
+  padding: 12px 0 0;
+  border-top: 1px solid #e5e7eb;
+  text-align: left;
+}
+
+.demo-outcomes-modal__phone-title {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.demo-outcomes-modal__phone-label {
+  display: block;
+  margin: 0 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.demo-outcomes-modal__phone-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.demo-outcomes-modal__phone-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  font-size: 16px;
+  background: #fff;
+}
+
+.demo-outcomes-modal__phone-btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.demo-outcomes-modal__phone-note,
+.demo-outcomes-modal__phone-status {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #6b7280;
+}
+
+.demo-outcomes-modal__phone-status:not(:empty) {
+  color: #0f766e;
+  font-weight: 600;
+}
+
 .demo-outcomes-modal__more {
   margin: 10px 0 0;
   text-align: center;

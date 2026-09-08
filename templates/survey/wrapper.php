@@ -22,6 +22,7 @@ $logo_url = esc_url( 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCa
     </div>
 
     <?php get_template_part( 'templates/survey/step-1' ); ?>
+    <?php get_template_part( 'templates/survey/step-2' ); ?>
     <?php
     // Deck is optional (?deck=1). Default gate skips it so large campaign images
     // are not downloaded before the user enters the interactive demo.

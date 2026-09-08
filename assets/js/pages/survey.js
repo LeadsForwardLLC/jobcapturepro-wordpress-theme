@@ -411,7 +411,9 @@
     const email = (source.email || '').trim();
     if (firstName) url.searchParams.set('name', firstName);
     if (lastName) url.searchParams.set('last_name', lastName);
-    if (business) url.searchParams.set('business', business);
+    if (business && business.toLowerCase() !== 'your business') {
+      url.searchParams.set('business', business);
+    }
     if (niche) url.searchParams.set('niche', niche);
     if (email) url.searchParams.set('email', email);
     return url.href;
@@ -615,26 +617,8 @@
   };
 
   const updateProgress = () => {
-    const total = Math.max(1, steps.length);
-    const stepNum = Math.min(currentIndex + 1, total);
-    // Single-screen gate: never show step chrome / numbered badge.
-    if (total <= 1) {
-      setProgressChromeVisible(false);
-      return;
-    }
-    if (progressText) {
-      progressText.textContent = `Step ${stepNum} of ${total}`;
-    }
-    if (stepIndicator) {
-      stepIndicator.textContent = `Step ${stepNum}/${total}`;
-      stepIndicator.hidden = true;
-    }
-    if (progressFill) {
-      progressFill.style.width = `${(stepNum / total) * 100}%`;
-    }
-    stepButtons.forEach((btn, idx) => {
-      btn.classList.toggle('is-active', idx === currentIndex);
-    });
+    // Gate + optional personalization: never show numbered step chrome.
+    setProgressChromeVisible(false);
   };
 
   window.addEventListener('resize', () => {
@@ -663,12 +647,17 @@
       step.classList.toggle('active', idx === index);
     });
     deckSection?.classList.remove('active');
-    setProgressChromeVisible(steps.length > 1);
+    setProgressChromeVisible(false);
     if (deckSkipHeader) deckSkipHeader.hidden = true;
     currentIndex = index;
     updateProgress();
     updateDesktopHandoff();
     saveSurveyProgress();
+    if (index === 1) {
+      applyBusinessNamePlaceholder();
+      const bizInput = document.getElementById('businessName');
+      window.setTimeout(() => bizInput?.focus(), 50);
+    }
   };
 
   const clearRankTimers = () => {
@@ -875,8 +864,86 @@
   const resolveBusinessName = () => {
     const named = getValue('businessName');
     if (named) return named;
-    const nicheLabel = getBusinessTypeLabel();
-    return nicheLabel ? (nicheLabel + ' Pro') : 'Your Business';
+    // Neutral fallback when skipped — do not invent a fake trade brand.
+    return 'Your Business';
+  };
+
+  const BUSINESS_NAME_PLACEHOLDERS = {
+    plumbing: 'Summit Plumbing',
+    hvac: 'Summit Heating & Cooling',
+    electrical: 'Summit Electric',
+    roofing: 'Summit Roofing',
+    remodeling: 'Summit Remodeling',
+    painting: 'Summit Painting',
+    landscaping: 'Summit Landscaping',
+    'garage-door': 'Summit Garage Doors',
+    'pest-control': 'Summit Pest Control',
+    'tree-service': 'Summit Tree Service',
+    'power-washing': 'Summit Power Washing',
+    'pressure-washing': 'Summit Power Washing',
+  };
+
+  const applyBusinessNamePlaceholder = () => {
+    const input = document.getElementById('businessName');
+    if (!input) return;
+    const slug = (getValue('niche') || getBusinessTypeValue() || '').toLowerCase();
+    const label = (getBusinessTypeLabel() || '').toLowerCase();
+    let placeholder = 'Summit Plumbing';
+    const keys = Object.keys(BUSINESS_NAME_PLACEHOLDERS);
+    for (let i = 0; i < keys.length; i += 1) {
+      const key = keys[i];
+      if (slug === key || slug.includes(key) || label.includes(key.replace(/-/g, ' '))) {
+        placeholder = BUSINESS_NAME_PLACEHOLDERS[key];
+        break;
+      }
+    }
+    input.placeholder = placeholder;
+  };
+
+  const pushCroAliasOnce = (alias, extra) => {
+    try {
+      const key = 'jcp_dl_alias_' + alias;
+      if (sessionStorage.getItem(key)) return;
+      window.dataLayer = window.dataLayer || [];
+      const attr = typeof getAttributionPayload === 'function' ? getAttributionPayload() : {};
+      window.dataLayer.push({
+        event: alias,
+        business_type: getBusinessTypeValue() || '',
+        ...attr,
+        ...(extra || {}),
+      });
+      sessionStorage.setItem(key, '1');
+    } catch (e) {
+      // no-op
+    }
+  };
+
+  /** Enrich the same contact after optional personalization (no duplicate Meta Lead). */
+  const enrichDemoContact = async (fields) => {
+    const restUrl = (typeof window.JCP_DEMO_SURVEY !== 'undefined' && window.JCP_DEMO_SURVEY.rest_url) || `${baseUrl}/wp-json/jcp/v1/demo-survey-submit`;
+    try {
+      await Promise.race([
+        fetch(restUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            first_name: getValue('firstName'),
+            last_name: getValue('lastName'),
+            email: getValue('email'),
+            phone: getValue('phone'),
+            company: getValue('businessName'),
+            business_type: getBusinessTypeValue(),
+            demo_goals: [],
+            referral_source: getReferralSourceValue(),
+            ...getAttributionPayload(),
+            ...(fields || {}),
+          }),
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
+      ]);
+    } catch (err) {
+      console.warn('JCP Demo Survey: contact enrich failed', err);
+    }
   };
 
   /** Single-screen gate: trade + work email required. Business name optional. */
@@ -1016,7 +1083,8 @@
     const firstName = getValue('firstName');
     const lastName = getValue('lastName');
     const email = getValue('email');
-    const businessName = getValue('businessName') || resolveBusinessName();
+    const enteredBusiness = getValue('businessName');
+    const businessName = enteredBusiness || resolveBusinessName();
     const niche = getBusinessTypeValue();
     const referralSource = getReferralSourceValue();
     localStorage.setItem('demoUser', JSON.stringify({
@@ -1028,6 +1096,7 @@
       email,
       phone: getValue('phone'),
       referralSource,
+      businessNameProvided: Boolean(enteredBusiness),
     }));
     saveSurveyPrefillForEarlyAccess();
     clearSurveyProgress();
@@ -1043,7 +1112,7 @@
             last_name: lastName,
             email,
             phone: getValue('phone'),
-            company: businessName,
+            company: enteredBusiness,
             business_type: niche,
             demo_goals: goals,
             referral_source: referralSource,
@@ -1057,6 +1126,19 @@
     }
 
     window.location.href = buildPersonalizedDemoUrl();
+  };
+
+  const finishPersonalizationAndLaunch = async (didEnterName) => {
+    const entered = getValue('businessName');
+    if (didEnterName && entered) {
+      pushCroAliasOnce('BusinessNameEntered', { company: entered });
+      await enrichDemoContact({ company: entered });
+    } else {
+      const bizEl = document.getElementById('businessName');
+      if (bizEl) bizEl.value = '';
+      pushCroAliasOnce('BusinessNameSkipped');
+    }
+    await launchDemo();
   };
 
   const hydrateRankName = () => {
@@ -1098,7 +1180,24 @@
         submitDemoOptIn().then(() => showDeck());
         return;
       }
-      submitDemoOptIn().then(() => launchDemo());
+      // Opt-in contact first, then optional business-name personalization.
+      submitDemoOptIn().then(() => {
+        if (steps.length > 1) {
+          showStep(1);
+          return;
+        }
+        launchDemo();
+      });
+    }
+
+    if (action === 'personalize-continue') {
+      finishPersonalizationAndLaunch(true);
+      return;
+    }
+
+    if (action === 'personalize-skip') {
+      finishPersonalizationAndLaunch(false);
+      return;
     }
 
     if ((action === 'deck-next' || (deckActive && action === 'next')) && deckIndex < deckSlides.length - 1) {
@@ -1163,6 +1262,13 @@
       setHandoffStatus('');
       scheduleSaveProgress();
     });
+  });
+
+  document.getElementById('businessName')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      finishPersonalizationAndLaunch(true);
+    }
   });
 
   if (nicheSearchEl) {

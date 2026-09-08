@@ -104,6 +104,16 @@ function jcp_core_enqueue_assets(): void {
                 'rest_url' => rest_url( 'jcp/v1/demo-event' ),
             ]
         );
+        wp_localize_script(
+            'jcp-core-demo',
+            'JCP_DEMO_SURVEY',
+            [
+                'rest_url'        => rest_url( 'jcp/v1/demo-survey-submit' ),
+                'rest_viewed_url' => rest_url( 'jcp/v1/demo-viewed-submit' ),
+                'rest_event_url'  => rest_url( 'jcp/v1/demo-event' ),
+                'demo_run_url'    => home_url( '/demo/' ),
+            ]
+        );
         wp_add_inline_script( 'jcp-core-demo', 'window.JCP_IS_DEMO_MODE = true;', 'before' );
         wp_add_inline_script(
             'jcp-core-demo',

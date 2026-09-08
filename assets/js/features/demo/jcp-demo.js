@@ -79,10 +79,16 @@ function jcpDemoOnboardingHandoffQuery(utmContent) {
       extra.name = fullName;
     }
     const company = (demoUser.businessName || '').trim();
-    if (company) {
+    if (company && company.toLowerCase() !== 'your business') {
       extra.company = company;
       extra.organization_name = company;
       extra.organizationName = company;
+    }
+    const phone = (demoUser.phone || '').trim();
+    if (phone) {
+      extra.phone = phone;
+      extra.mobile = phone;
+      extra.mobile_phone = phone;
     }
     const industry = (demoUser.niche || '').trim();
     if (industry) {
@@ -368,15 +374,21 @@ function getDemoContactPayload() {
     const attribution = window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function'
       ? window.JCPLeadAttribution.getPayload()
       : {};
-    return {
+    const company = String(user.businessName || '').trim();
+    const payload = {
       email: String(user.email).trim(),
       first_name: String(user.firstName || '').trim(),
       last_name: String(user.lastName || '').trim(),
-      company: String(user.businessName || '').trim(),
       business_type: String(user.niche || '').trim(),
       demo_goals: Array.isArray(user.goals) ? user.goals : undefined,
       ...attribution,
     };
+    if (company && company.toLowerCase() !== 'your business') {
+      payload.company = company;
+    }
+    const phone = String(user.phone || '').trim();
+    if (phone) payload.phone = phone;
+    return payload;
   } catch (e) {
     return {};
   }
@@ -438,9 +450,10 @@ function jcpDemoPushDataLayerAlias(eventType, stepNumber, metadata) {
     if (eventType === 'cta_clicked') {
       const cta = metadata && metadata.cta;
       if (cta === 'get_started_free') alias = 'TrialCTAClicked';
-      else if (cta === 'personalized_demo') alias = 'OneOnOneDemoClicked';
+      else if (cta === 'personalized_demo') alias = 'ExpertCTAClicked';
       else if (cta === 'replay_demo') alias = 'DemoReplayClicked';
       else if (cta === 'case_study') alias = 'CaseStudyCTAClicked';
+      else if (cta === 'phone_save') alias = 'PhoneEntered';
     }
     if (eventType === 'case_study_cta') {
       alias = 'CaseStudyCTAClicked';
@@ -555,7 +568,7 @@ const DEFAULT_JOB_LOCATION = '1242 Mason Rd, Austin TX 78704';
 const NICHE_PHOTO_PACKS = {
   plumbing: {
     label: 'Plumbing job',
-    jobTitle: 'Water heater replacement',
+    jobTitle: 'Water Heater Replacement',
     photos: [
 		'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&h=600&fit=crop&q=75',
       'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=800&h=600&fit=crop&q=75',
@@ -569,7 +582,7 @@ const NICHE_PHOTO_PACKS = {
   },
   hvac: {
     label: 'HVAC job',
-    jobTitle: 'HVAC system install',
+    jobTitle: 'AC System Replacement',
     photos: [
       'CAMPAIGN:jcp-campaign-job-proof.jpg',
       'CAMPAIGN:jcp-campaign-hvac-capture.jpg',
@@ -583,7 +596,7 @@ const NICHE_PHOTO_PACKS = {
   },
   electrical: {
     label: 'Electrical job',
-    jobTitle: 'Panel upgrade',
+    jobTitle: 'Electrical Panel Upgrade',
     photos: [
       'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&h=600&fit=crop&q=75',
       'https://images.unsplash.com/photo-1558442074-3c19857bc1dc?w=800&h=600&fit=crop&q=75',
@@ -597,7 +610,7 @@ const NICHE_PHOTO_PACKS = {
   },
   roofing: {
     label: 'Roofing job',
-    jobTitle: 'Roof replacement',
+    jobTitle: 'Asphalt Shingle Roof Replacement',
     photos: [
       'https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=800&h=600&fit=crop&q=75',
       'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&h=600&fit=crop&q=75',
@@ -611,7 +624,7 @@ const NICHE_PHOTO_PACKS = {
   },
   outdoor: {
     label: 'Outdoor job',
-    jobTitle: 'Outdoor project',
+    jobTitle: 'Landscape Installation',
     photos: [
       'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800&h=600&fit=crop&q=75',
       'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&h=600&fit=crop&q=75',
@@ -625,7 +638,7 @@ const NICHE_PHOTO_PACKS = {
   },
   cleaning: {
     label: 'Cleaning job',
-    jobTitle: 'Deep clean',
+    jobTitle: 'Driveway Cleaning',
     photos: [
       'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop&q=75',
       'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=800&h=600&fit=crop&q=75',
@@ -639,7 +652,7 @@ const NICHE_PHOTO_PACKS = {
   },
   remodeling: {
     label: 'Remodel job',
-    jobTitle: 'Home remodel',
+    jobTitle: 'Kitchen Remodel',
     photos: [
       'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&h=600&fit=crop&q=75',
       'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop&q=75',
@@ -653,7 +666,7 @@ const NICHE_PHOTO_PACKS = {
   },
   restoration: {
     label: 'Restoration job',
-    jobTitle: 'Restoration work',
+    jobTitle: 'Completed Service Job',
     photos: [
       'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop&q=75',
       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=600&fit=crop&q=75',
@@ -667,7 +680,7 @@ const NICHE_PHOTO_PACKS = {
   },
   default: {
     label: 'Job site',
-    jobTitle: 'Completed job',
+    jobTitle: 'Completed Service Job',
     photos: [
       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=600&fit=crop&q=75',
       'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&q=75',
@@ -778,6 +791,10 @@ function getDemoPhotoPack() {
     photos: pack.photos.map(resolveDemoPhotoUrl),
     descriptions,
   };
+}
+
+function getDemoJobTitle() {
+  return getDemoPhotoPack().jobTitle || 'Completed Service Job';
 }
 
 let demoPhotos = NICHE_PHOTO_PACKS.plumbing.photos.slice();
@@ -917,7 +934,7 @@ const demoGuideContent = {
   },
   step5: {
     pill: 'Step 4',
-    title: 'Ask for the review while the job is fresh',
+    title: 'Ask for the Review While the Job Is Fresh.',
     body: 'Your crew can show the customer a simple review request before leaving.',
     interactHint: 'Tap Preview Review Request.'
   },
@@ -2804,7 +2821,7 @@ async function processPhotos() {
   if (isPrototype) {
     const summary = descriptions[0] || 'Replaced water heater.';
     state.savedCheckins.push({
-      title: 'Water Heater Replacement',
+      title: getDemoJobTitle(),
       address: '105 Walnut St',
       location: 'Austin, TX',
       summary,
@@ -3079,7 +3096,7 @@ if (publishBtn) {
   if (isPrototype) {
     publishBtn.innerHTML = `<img src="${assetBase}/shared/assets/icons/lucide/check.svg" class="lucide-icon lucide-icon-sm" alt=""> Saved`;
   } else {
-    publishBtn.textContent = 'Published';
+    publishBtn.textContent = 'Ready';
   }
   publishBtn.classList.add('is-disabled');
 }
@@ -3108,7 +3125,7 @@ if (publishBtn) {
     // Create new
     const desc = descField ? descField.value : 'Replaced water heater.';
     state.savedCheckins.push({
-      title: 'Water Heater Replacement',
+      title: getDemoJobTitle(),
       address: '105 Walnut St',
       location: 'Austin, TX',
       summary: desc,
@@ -3119,7 +3136,7 @@ if (publishBtn) {
     persistCheckins();
 
     initializeMap(() => {
-      addMapMarker(30.2672, -97.7431, 'Water Heater Replacement');
+      addMapMarker(30.2672, -97.7431, getDemoJobTitle());
     });
   }
 
@@ -3144,7 +3161,7 @@ if (empty) empty.remove();
 websiteContainer.insertAdjacentHTML(
   'afterbegin',
   createCheckinCard({
-    title: 'Water Heater Replacement',
+    title: getDemoJobTitle(),
     location: 'Austin, TX',
     date: new Date().toLocaleDateString('en-US', {
       month: 'long',
@@ -3231,8 +3248,8 @@ async function publishToSocial() {
     <div class="feed-card">
       <div class="feed-image"><img src="${demoPhotos[0]}" alt="Job" width="400" height="300" loading="lazy"></div>
       <div class="feed-content">
-        <h4>Water Heater Replacement • Austin, TX</h4>
-        <p>Posted today • Professional installation</p>
+        <h4>${getDemoJobTitle()} • Austin, TX</h4>
+        <p>Prepared just now • Professional installation</p>
       </div>
     </div>
   `;
@@ -3258,7 +3275,7 @@ function closeReviewDialog() {
 
 function populateDemoReviewModal() {
   const checkin = getCurrentCheckinForReview();
-  const title = checkin?.title || 'Water Heater Replacement';
+  const title = checkin?.title || getDemoJobTitle();
   const address = checkin?.address || '105 Walnut St';
   const location = checkin?.location || 'Austin, TX';
   const imgSrc = checkin?.image || demoPhotos[0];
@@ -3390,7 +3407,7 @@ function getOutcomesJobContext() {
   const image = checkin?.image || demoPhotos[0] || '';
   const address = checkin?.address || '105 Walnut St';
   const location = checkin?.location || 'Austin, TX';
-  const title = checkin?.title || 'Water Heater Replacement';
+  const title = checkin?.title || getDemoJobTitle();
   const summary = checkin?.summary || excerptText(descriptions[0], 16);
   const nicheLabel = demoUser.niche
     ? demoUser.niche.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
@@ -4146,6 +4163,8 @@ function ensureOutcomesFooterButtons() {
     ensureStackedStartFreeTrialCta(startFree);
   }
 
+  ensureOutcomesPhoneCapture(card);
+
   if (!$('demoOutcomesMoreOptions')) {
     let more = card.querySelector('.demo-outcomes-modal__more');
     if (!more) {
@@ -4242,6 +4261,119 @@ function ensureOutcomesNavButtons(card) {
     next.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>`;
     stage.appendChild(next);
   }
+}
+
+function formatUsPhoneInput(raw) {
+  const digits = String(raw || '').replace(/\D/g, '').slice(0, 10);
+  if (digits.length <= 3) return digits.length ? `(${digits}` : '';
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
+function persistDemoUserPhone(phone) {
+  const cleaned = String(phone || '').trim();
+  try {
+    demoUser.phone = cleaned;
+    const stored = JSON.parse(localStorage.getItem('demoUser') || '{}') || {};
+    stored.phone = cleaned;
+    localStorage.setItem('demoUser', JSON.stringify(stored));
+  } catch (e) {
+    demoUser.phone = cleaned;
+  }
+}
+
+function enrichContactWithPhone(phone) {
+  const email = (demoUser && demoUser.email) || '';
+  if (!email || !phone) return;
+  const surveyUrl =
+    (window.JCP_DEMO_SURVEY && window.JCP_DEMO_SURVEY.rest_url) ||
+    `${(window.JCP_CONFIG && window.JCP_CONFIG.baseUrl) || window.location.origin}/wp-json/jcp/v1/demo-survey-submit`;
+  const body = {
+    email,
+    phone,
+    first_name: (demoUser.firstName || '').trim(),
+    last_name: (demoUser.lastName || '').trim(),
+    company:
+      demoUser.businessName && String(demoUser.businessName).toLowerCase() !== 'your business'
+        ? String(demoUser.businessName).trim()
+        : '',
+    business_type: (demoUser.niche || '').trim(),
+    ...(window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function'
+      ? window.JCPLeadAttribution.getPayload() || {}
+      : {}),
+  };
+  try {
+    fetch(surveyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      keepalive: true,
+    }).catch(() => {});
+  } catch (e) {}
+}
+
+function ensureOutcomesPhoneCapture(card) {
+  if (!card) return;
+  let wrap = $('demoOutcomesPhoneCapture');
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.className = 'demo-outcomes-modal__phone';
+    wrap.id = 'demoOutcomesPhoneCapture';
+    wrap.innerHTML =
+      '<p class="demo-outcomes-modal__phone-title">Want help getting set up?</p>' +
+      '<label class="demo-outcomes-modal__phone-label" for="demoOutcomesPhone">Mobile number (optional)</label>' +
+      '<div class="demo-outcomes-modal__phone-row">' +
+      '<input type="tel" id="demoOutcomesPhone" class="demo-outcomes-modal__phone-input" inputmode="tel" autocomplete="tel" placeholder="(___) ___-____" maxlength="20" />' +
+      '<button type="button" class="btn btn-secondary demo-outcomes-modal__phone-btn" id="demoOutcomesPhoneBtn">Save</button>' +
+      '</div>' +
+      '<p class="demo-outcomes-modal__phone-note">We’ll only use this to help with your JobCapturePro setup.</p>' +
+      '<p class="demo-outcomes-modal__phone-status" id="demoOutcomesPhoneStatus" aria-live="polite"></p>';
+    const more = card.querySelector('.demo-outcomes-modal__more');
+    if (more) card.insertBefore(wrap, more);
+    else card.appendChild(wrap);
+  }
+
+  const input = $('demoOutcomesPhone');
+  const btn = $('demoOutcomesPhoneBtn');
+  const status = $('demoOutcomesPhoneStatus');
+  if (input && demoUser.phone && !input.value) {
+    input.value = formatUsPhoneInput(demoUser.phone);
+  }
+  if (wrap.dataset.bound === '1') return;
+  wrap.dataset.bound = '1';
+
+  input?.addEventListener('input', () => {
+    const formatted = formatUsPhoneInput(input.value);
+    if (formatted !== input.value) input.value = formatted;
+  });
+
+  const savePhone = () => {
+    const digits = String(input?.value || '').replace(/\D/g, '');
+    if (digits.length < 10) {
+      if (status) status.textContent = 'Enter a 10-digit mobile number, or skip.';
+      return;
+    }
+    const formatted = formatUsPhoneInput(digits);
+    if (input) input.value = formatted;
+    persistDemoUserPhone(formatted);
+    enrichContactWithPhone(formatted);
+    syncDemoStartFreeCtas();
+    if (status) status.textContent = 'Saved — we’ll only use this for setup help.';
+    jcpDemoTrack('cta_clicked', null, { cta: 'phone_save', source: 'demo_outcomes_modal' }, { keepalive: true });
+  };
+
+  btn?.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    savePhone();
+  });
+
+  input?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      savePhone();
+    }
+  });
 }
 
 function wireOutcomesSlideshow() {
@@ -4565,13 +4697,13 @@ function openCheckinForEdit(index, fromArchived = false) {
   }
 
   const status = document.querySelector('.status-pill');
-  if (status) status.innerHTML = `<img src="${assetBase}/shared/assets/icons/lucide/badge-check.svg" class="lucide-icon lucide-icon-sm" alt=""> Published`;
+  if (status) status.innerHTML = `<img src="${assetBase}/shared/assets/icons/lucide/badge-check.svg" class="lucide-icon lucide-icon-sm" alt=""> Ready`;
 
   const publishBtn = $('btnSavePublish');
   if (publishBtn) {
     publishBtn.disabled = true;
     publishBtn.classList.add('is-disabled');
-    publishBtn.textContent = 'Published';
+    publishBtn.textContent = 'Ready';
     publishBtn.onclick = null;
   }
 
@@ -5375,8 +5507,11 @@ function wirePostDemoPanel() {
 
   const secondaryCta = document.querySelector('.post-demo-secondary-cta');
   if (secondaryCta) {
+    if (/book a 1-on-1|book another demo/i.test(secondaryCta.textContent || '')) {
+      secondaryCta.textContent = 'Talk to a JCP Expert';
+    }
     secondaryCta.addEventListener('click', function() {
-      jcpDemoTrack('cta_clicked', null, { cta: 'personalized_demo', source: 'demo_post_panel', label: 'Book a 1-on-1 Demo' }, { keepalive: true });
+      jcpDemoTrack('cta_clicked', null, { cta: 'personalized_demo', source: 'demo_post_panel', label: 'Talk to a JCP Expert' }, { keepalive: true });
       try {
         if (typeof _paq !== 'undefined' && !sessionStorage.getItem('jcp_matomo_demo_cta_personalized')) {
           _paq.push(['trackEvent', 'Demo', 'Post Demo CTA Click (Personalized Demo)']);

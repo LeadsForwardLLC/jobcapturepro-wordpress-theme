@@ -524,6 +524,30 @@ body.survey-only.survey-gate-scroll .survey-card--gate {
   flex: 0 0 auto;
 }
 
+/* Personalization step: product-config feel, quieter Skip */
+.survey-step--personalize .survey-skip-link {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #6b7280;
+  font-size: 0.95rem;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  align-self: center;
+}
+
+.survey-step--personalize .survey-skip-link:hover {
+  color: #111827;
+}
+
+.survey-step--personalize.active ~ .survey-proof,
+.survey-card--gate:has(.survey-step--personalize.active) .survey-proof {
+  display: none !important;
+}
+
 /* Short windows: keep banner + featured quote; hide secondary cards only */
 @media (max-height: 820px) {
   body.survey-only.survey-gate-scroll .survey-proof--compact .survey-proof-list {
