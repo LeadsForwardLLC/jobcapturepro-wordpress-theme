@@ -1,6 +1,6 @@
 /**
- * Desktop-only exit-intent for the 90-day case study (last-resort).
- * On paid LPs / home: classic mouse-leave. On /demo/?mode=run: also Exit demo / outcomes close.
+ * Case-study exit-intent (last-resort).
+ * Desktop: mouse-leave. Mobile + demo: Exit/close / back. Interrupt: WAIT + hand.
  */
 (function () {
   'use strict';
@@ -10,6 +10,7 @@
   var shownKey = STORAGE_KEY + '_shown';
   var dismissKey = STORAGE_KEY + '_dismissed';
   var allowDemo = Boolean(cfg.allowDemo);
+  var minDesktop = Number(cfg.minWidth || 1024);
 
   function once(key) {
     try {
@@ -30,7 +31,7 @@
   }
 
   function isDesktop() {
-    return window.matchMedia && window.matchMedia('(min-width: ' + (cfg.minWidth || 1024) + 'px)').matches;
+    return window.matchMedia && window.matchMedia('(min-width: ' + minDesktop + 'px)').matches;
   }
 
   function isDemoPath() {
@@ -38,11 +39,9 @@
   }
 
   function isBlocked() {
-    if (!isDesktop()) return true;
     if (already(dismissKey) || already(shownKey)) return true;
     if (document.body.classList.contains('survey-only')) return true;
     if (isDemoPath() && !allowDemo) return true;
-    // Guided demo shell is normal during mode=run; only block when allowDemo is off.
     if (document.body.classList.contains('jcp-guided-demo') && !allowDemo) return true;
     var active = document.activeElement;
     if (active && /^(INPUT|TEXTAREA|SELECT)$/i.test(active.tagName)) return true;
@@ -85,6 +84,15 @@
     );
   }
 
+  function handSvg() {
+    return (
+      '<svg class="jcp-case-exit__hand-icon" viewBox="0 0 64 64" width="56" height="56" aria-hidden="true" focusable="false">' +
+      '<circle cx="32" cy="32" r="32" fill="#fff1ee"/>' +
+      '<path fill="#ff503e" d="M38.2 14.2c-1.3 0-2.4 1-2.4 2.4v11.2h-1.6V11.8c0-1.3-1.1-2.4-2.4-2.4s-2.4 1.1-2.4 2.4v15.9h-1.6V14.6c0-1.3-1.1-2.4-2.4-2.4s-2.4 1.1-2.4 2.4v16.2h-1.6V18.8c0-1.3-1.1-2.4-2.4-2.4s-2.4 1.1-2.4 2.4v20.3c0 7.2 4.4 12.7 12.1 12.7 5.9 0 10.4-3.4 12.1-8.9l2.8-9.1c.5-1.6-.4-3.3-2-3.8-1-.3-2-.1-2.7.5V16.6c0-1.3-1.1-2.4-2.4-2.4z"/>' +
+      '</svg>'
+    );
+  }
+
   function close(root, dismissed) {
     if (!root) return;
     root.classList.remove('is-open');
@@ -110,8 +118,12 @@
       '<div class="jcp-case-exit__backdrop" data-case-exit-dismiss="1"></div>' +
       '<div class="jcp-case-exit__card">' +
       '<button type="button" class="jcp-case-exit__close" aria-label="Close" data-case-exit-dismiss="1">×</button>' +
-      '<p class="jcp-case-exit__eyebrow">Last open spots</p>' +
-      '<h2 class="jcp-case-exit__title" id="jcpCaseExitTitle">Apply for the 90-day case study</h2>' +
+      '<div class="jcp-case-exit__interrupt">' +
+      handSvg() +
+      '<p class="jcp-case-exit__wait" id="jcpCaseExitTitle">WAIT</p>' +
+      '<p class="jcp-case-exit__eyebrow">Before you go · last open spots</p>' +
+      '</div>' +
+      '<h2 class="jcp-case-exit__title">Apply for the 90-day case study</h2>' +
       '<p class="jcp-case-exit__body">We are selecting 10 home-service companies for hands-on onboarding and measurable results. Selected companies receive JobCapturePro free during the study. Applying does not guarantee acceptance.</p>' +
       buildCapacityHtml() +
       '<div class="jcp-case-exit__actions">' +
@@ -128,6 +140,7 @@
       spots_total: cfg.spotsTotal,
       page_path: location.pathname,
       source: source || 'mouseleave',
+      viewport: isDesktop() ? 'desktop' : 'mobile',
     });
 
     root.addEventListener('click', function (e) {
@@ -177,14 +190,15 @@
     armed = true;
   }, delay);
 
+  // Desktop classic exit-intent.
   document.addEventListener('mouseout', function (e) {
-    if (!armed || isBlocked()) return;
+    if (!armed || !isDesktop() || isBlocked()) return;
     if (e.relatedTarget || e.toElement) return;
     if (typeof e.clientY === 'number' && e.clientY > 12) return;
     open('mouseleave');
   });
 
-  // Demo run: Exit demo / close outcomes should surface the last-resort offer once.
+  // Demo: Exit demo / close outcomes (desktop + mobile).
   if (allowDemo) {
     document.addEventListener(
       'click',
@@ -193,9 +207,10 @@
         var t = e.target;
         if (!(t instanceof Element)) return;
         var exitBtn = t.closest('#mobileDemoExit, button[aria-label="Exit demo"], a[aria-label="Exit demo"]');
-        var outcomesClose = t.closest('#demoOutcomesModalClose, #demoOutcomesModalBackdrop, .demo-outcomes-modal__close');
+        var outcomesClose = t.closest(
+          '#demoOutcomesModalClose, #demoOutcomesModalBackdrop, .demo-outcomes-modal__close'
+        );
         if (!exitBtn && !outcomesClose) return;
-        // Prefer exit-intent once; don't fight every close click after dismiss.
         if (open(exitBtn && !outcomesClose ? 'demo_exit' : 'outcomes_close')) {
           e.preventDefault();
           e.stopPropagation();
@@ -203,5 +218,25 @@
       },
       true
     );
+  }
+
+  // Mobile / tablet: intercept one back gesture after arm delay.
+  if (!isDesktop()) {
+    try {
+      var histKey = STORAGE_KEY + '_hist';
+      if (!sessionStorage.getItem(histKey)) {
+        history.pushState({ jcpCaseExit: 1 }, '', location.href);
+        sessionStorage.setItem(histKey, '1');
+      }
+    } catch (e) {}
+
+    window.addEventListener('popstate', function () {
+      if (!armed || isBlocked()) return;
+      if (open('mobile_back')) {
+        try {
+          history.pushState({ jcpCaseExit: 1 }, '', location.href);
+        } catch (err) {}
+      }
+    });
   }
 })();

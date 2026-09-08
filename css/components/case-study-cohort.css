@@ -66,7 +66,7 @@
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 20px;
   box-sizing: border-box;
 }
 
@@ -77,32 +77,70 @@
 .jcp-case-exit__backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(15, 23, 42, 0.55);
 }
 
 .jcp-case-exit__card {
   position: relative;
   z-index: 1;
   width: min(440px, 100%);
-  padding: 28px 24px 22px;
+  max-height: min(92vh, 720px);
+  overflow: auto;
+  padding: 26px 22px 20px;
   border-radius: 18px;
   background: #fff;
-  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.32);
   box-sizing: border-box;
+  text-align: center;
+  animation: jcp-case-exit-in 0.28s ease-out;
 }
 
-.jcp-case-exit__eyebrow {
-  margin: 0 0 8px;
-  font-size: 12px;
-  font-weight: 800;
+@keyframes jcp-case-exit-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.jcp-case-exit__interrupt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 12px;
+}
+
+.jcp-case-exit__hand-icon {
+  display: block;
+  margin: 0 auto 2px;
+}
+
+.jcp-case-exit__wait {
+  margin: 0;
+  font-size: clamp(40px, 9vw, 52px);
+  line-height: 0.95;
+  font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #ff503e;
 }
 
+.jcp-case-exit__eyebrow {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
 .jcp-case-exit__title {
   margin: 0 0 8px;
-  font-size: 22px;
+  font-size: clamp(20px, 4.5vw, 24px);
   line-height: 1.2;
   font-weight: 800;
   color: #111827;
@@ -113,10 +151,12 @@
   font-size: 14px;
   line-height: 1.45;
   color: #4b5563;
+  text-align: left;
 }
 
 .jcp-case-exit__capacity {
   margin-bottom: 16px;
+  text-align: left;
 }
 
 .jcp-case-exit__actions {
@@ -129,12 +169,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 48px;
+  min-height: 52px;
   padding: 0 18px;
   border-radius: 12px;
   background: #ff503e;
   color: #fff !important;
   font-weight: 800;
+  font-size: 16px;
   text-decoration: none !important;
   border: none;
   cursor: pointer;
@@ -152,26 +193,24 @@
   font-size: 13px;
   font-weight: 650;
   cursor: pointer;
-  padding: 6px;
+  padding: 8px;
 }
 
 .jcp-case-exit__close {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 36px;
-  height: 36px;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
   border: none;
   border-radius: 999px;
   background: #f3f4f6;
   color: #111827;
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1;
   cursor: pointer;
 }
 
-@media (max-width: 1023px) {
-  .jcp-case-exit {
-    display: none !important;
-  }
+body.jcp-case-exit-open {
+  overflow: hidden;
 }
