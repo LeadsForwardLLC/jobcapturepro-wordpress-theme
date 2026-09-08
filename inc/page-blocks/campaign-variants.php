@@ -408,33 +408,38 @@ function jcp_campaign_variant_normalize_ctas( array $legacy, string $variant_key
 	$label = 'See It On My Business';
 	$micro = 'Free personalized demo · About 2 minutes · No credit card';
 	$url   = '/demo/?lp_variant=' . rawurlencode( $variant_key );
-
-	$rewrite = static function ( &$node ) use ( $label, $micro, $url ): void {
-		if ( ! is_array( $node ) ) {
-			return;
-		}
-		if ( isset( $node['cta_primary'] ) && is_array( $node['cta_primary'] ) ) {
-			$node['cta_primary']['label'] = $label;
-			$node['cta_primary']['url']   = $url;
-		}
-		if ( array_key_exists( 'cta_note', $node ) ) {
-			$node['cta_note'] = $micro;
-		}
-		if ( array_key_exists( 'trust_line', $node ) ) {
-			$node['trust_line'] = $micro;
-		}
-		if ( array_key_exists( 'cta_microcopy', $node ) ) {
-			$node['cta_microcopy'] = $micro;
-		}
-		foreach ( $node as &$child ) {
-			if ( is_array( $child ) ) {
-				$rewrite( $child );
-			}
-		}
-	};
-
-	$rewrite( $legacy );
+	jcp_campaign_variant_rewrite_ctas_node( $legacy, $label, $micro, $url );
 	return $legacy;
+}
+
+/**
+ * Recursively normalize CTA fields on a legacy content node.
+ *
+ * @param array<string, mixed> $node Node.
+ * @param string               $label CTA label.
+ * @param string               $micro Microcopy.
+ * @param string               $url CTA URL.
+ */
+function jcp_campaign_variant_rewrite_ctas_node( array &$node, string $label, string $micro, string $url ): void {
+	if ( isset( $node['cta_primary'] ) && is_array( $node['cta_primary'] ) ) {
+		$node['cta_primary']['label'] = $label;
+		$node['cta_primary']['url']   = $url;
+	}
+	if ( array_key_exists( 'cta_note', $node ) ) {
+		$node['cta_note'] = $micro;
+	}
+	if ( array_key_exists( 'trust_line', $node ) ) {
+		$node['trust_line'] = $micro;
+	}
+	if ( array_key_exists( 'cta_microcopy', $node ) ) {
+		$node['cta_microcopy'] = $micro;
+	}
+	foreach ( $node as &$child ) {
+		if ( is_array( $child ) ) {
+			jcp_campaign_variant_rewrite_ctas_node( $child, $label, $micro, $url );
+		}
+	}
+	unset( $child );
 }
 
 /**
