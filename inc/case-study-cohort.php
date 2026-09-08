@@ -137,9 +137,6 @@ function jcp_case_study_should_load_exit_intent(): bool {
 	if ( is_admin() || wp_is_json_request() ) {
 		return false;
 	}
-	if ( function_exists( 'jcp_page_current_hides_site_chrome' ) && jcp_page_current_hides_site_chrome() ) {
-		return false;
-	}
 	if ( jcp_case_study_is_current_page() ) {
 		return false;
 	}
@@ -153,10 +150,11 @@ function jcp_case_study_should_load_exit_intent(): bool {
 	if ( function_exists( 'jcp_core_is_demo_run_request' ) && jcp_core_is_demo_run_request() ) {
 		return false;
 	}
-	if ( ! empty( $pages['is_home'] ) ) {
+	// Paid campaign LPs hide site chrome but still need the last-resort exit intent.
+	if ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() ) {
 		return true;
 	}
-	if ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() ) {
+	if ( ! empty( $pages['is_home'] ) ) {
 		return true;
 	}
 	return false;
