@@ -2,14 +2,55 @@
 /**
  * 90-day case study cohort: capacity helpers + page bar + exit-intent enqueue.
  *
- * Capacity metric = admin-edited selected/claimed companies (max 10).
- * Application ≠ acceptance.
+ * Capacity metric = admin-edited applicant spots filled toward a cohort of 10.
+ * Urgency also uses an application-window close date (countdown).
  *
  * @package JCP_Core
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
+}
+
+/**
+ * Sanitize YYYY-MM-DD close date (empty allowed).
+ */
+function jcp_case_study_sanitize_closes_at( string $raw ): string {
+	$raw = trim( $raw );
+	if ( $raw === '' ) {
+		return '';
+	}
+	if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $raw ) ) {
+		return '';
+	}
+	$ts = strtotime( $raw . ' 23:59:59' );
+	return $ts ? gmdate( 'Y-m-d', $ts ) : '';
+}
+
+/**
+ * Application window close date (Y-m-d), end-of-day site timezone.
+ */
+function jcp_case_study_closes_at(): string {
+	$settings = function_exists( 'jcp_global_settings' ) ? jcp_global_settings() : [];
+	$raw      = isset( $settings['case_study']['closes_at'] )
+		? (string) $settings['case_study']['closes_at']
+		: '2026-09-30';
+	$clean = jcp_case_study_sanitize_closes_at( $raw );
+	return $clean !== '' ? $clean : '2026-09-30';
+}
+
+/**
+ * Unix timestamp for application window close (site timezone end of day).
+ */
+function jcp_case_study_closes_at_ts(): int {
+	$date = jcp_case_study_closes_at();
+	$tz   = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+	try {
+		$dt = new DateTimeImmutable( $date . ' 23:59:59', $tz );
+		return (int) $dt->getTimestamp();
+	} catch ( Exception $e ) {
+		return (int) strtotime( $date . ' 23:59:59 UTC' );
+	}
 }
 
 /**
@@ -20,7 +61,7 @@ function jcp_case_study_spots_total(): int {
 }
 
 /**
- * Number of companies already selected/claimed (0–10).
+ * Number of applicant spots already filled (0–10).
  */
 function jcp_case_study_spots_claimed(): int {
 	$settings = function_exists( 'jcp_global_settings' ) ? jcp_global_settings() : [];
@@ -32,7 +73,7 @@ function jcp_case_study_spots_claimed(): int {
 }
 
 /**
- * Spots still available for selection.
+ * Applicant spots still open.
  */
 function jcp_case_study_spots_remaining(): int {
 	return max( 0, jcp_case_study_spots_total() - jcp_case_study_spots_claimed() );
@@ -80,6 +121,7 @@ function jcp_case_study_render_capacity_bar( string $context = 'page' ): void {
 	$total     = jcp_case_study_spots_total();
 	$remaining = jcp_case_study_spots_remaining();
 	$percent   = jcp_case_study_capacity_percent();
+	$closes_ts = jcp_case_study_closes_at_ts();
 	$mod       = sanitize_html_class( $context );
 	?>
 	<div
@@ -88,27 +130,31 @@ function jcp_case_study_render_capacity_bar( string $context = 'page' ): void {
 		aria-live="polite"
 		data-spots-claimed="<?php echo esc_attr( (string) $claimed ); ?>"
 		data-spots-total="<?php echo esc_attr( (string) $total ); ?>"
+		data-closes-at="<?php echo esc_attr( (string) $closes_ts ); ?>"
 	>
 		<div class="jcp-case-capacity__head">
 			<p class="jcp-case-capacity__label">
-				<strong><?php echo esc_html( sprintf( /* translators: 1: claimed count, 2: total */ __( '%1$d of %2$d companies selected', 'jcp-core' ), $claimed, $total ) ); ?></strong>
+				<strong><?php echo esc_html( sprintf( /* translators: 1: filled count, 2: total */ __( '%1$d of %2$d applicant spots filled', 'jcp-core' ), $claimed, $total ) ); ?></strong>
 			</p>
 			<p class="jcp-case-capacity__meta">
 				<?php
 				if ( $remaining <= 0 ) {
-					esc_html_e( 'Cohort full · Applications still reviewed for waitlist', 'jcp-core' );
+					esc_html_e( 'Cohort goal reached · Late applications go to the waitlist', 'jcp-core' );
 				} else {
 					echo esc_html(
 						sprintf(
-							/* translators: %d: remaining spots */
-							_n( '%d spot remaining', '%d spots remaining', $remaining, 'jcp-core' ),
+							/* translators: %d: remaining applicant spots */
+							_n( '%d more application needed', '%d more applications needed', $remaining, 'jcp-core' ),
 							$remaining
 						)
 					);
 					echo ' · ';
-					esc_html_e( 'Application required — selection is not automatic', 'jcp-core' );
+					esc_html_e( 'Window closes when spots fill or the deadline hits', 'jcp-core' );
 				}
 				?>
+			</p>
+			<p class="jcp-case-capacity__countdown" data-jcp-case-countdown="<?php echo esc_attr( (string) $closes_ts ); ?>">
+				<?php esc_html_e( 'Application window closing…', 'jcp-core' ); ?>
 			</p>
 		</div>
 		<div class="jcp-case-capacity__track" aria-hidden="true">
@@ -173,13 +219,14 @@ function jcp_case_study_enqueue_assets(): void {
 	}
 
 	jcp_core_enqueue_style( 'jcp-core-case-study-cohort', 'css/components/case-study-cohort.css', [ 'jcp-core-base' ] );
+	jcp_core_enqueue_script( 'jcp-core-case-study-countdown', 'js/features/case-study-countdown.js', [] );
 
 	if ( $exit ) {
 		// Demo run skips marketing enqueue; register base so cohort CSS still prints.
 		if ( function_exists( 'jcp_core_is_demo_run_request' ) && jcp_core_is_demo_run_request() ) {
 			jcp_core_enqueue_style( 'jcp-core-base', 'css/base.css' );
 		}
-		jcp_core_enqueue_script( 'jcp-core-case-study-exit', 'js/features/case-study-exit-intent.js', [] );
+		jcp_core_enqueue_script( 'jcp-core-case-study-exit', 'js/features/case-study-exit-intent.js', [ 'jcp-core-case-study-countdown' ] );
 		wp_localize_script(
 			'jcp-core-case-study-exit',
 			'JCP_CASE_STUDY',
@@ -188,6 +235,7 @@ function jcp_case_study_enqueue_assets(): void {
 				'spotsClaimed'   => jcp_case_study_spots_claimed(),
 				'spotsTotal'     => jcp_case_study_spots_total(),
 				'spotsRemaining' => jcp_case_study_spots_remaining(),
+				'closesAtTs'     => jcp_case_study_closes_at_ts(),
 				'delayMs'        => function_exists( 'jcp_core_is_demo_run_request' ) && jcp_core_is_demo_run_request() ? 8000 : 18000,
 				'minWidth'       => 1024,
 				'allowDemo'      => function_exists( 'jcp_core_is_demo_run_request' ) && jcp_core_is_demo_run_request(),

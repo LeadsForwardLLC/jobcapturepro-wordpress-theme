@@ -4249,7 +4249,7 @@ function ensureOutcomesFooterButtons() {
     last.appendChild(cs);
     const note = document.createElement('span');
     note.className = 'demo-outcomes-modal__last-resort-note';
-    note.textContent = '10 companies will be selected · Application required';
+    note.textContent = '10 applicant spots · Window closing';
     last.appendChild(note);
   } else {
     const csBtn = $('demoOutcomesCaseStudy');
@@ -4262,7 +4262,7 @@ function ensureOutcomesFooterButtons() {
     }
     const note = card.querySelector('.demo-outcomes-modal__last-resort-note');
     if (note) {
-      note.textContent = '10 companies will be selected · Application required';
+      note.textContent = '10 applicant spots · Window closing';
     }
   }
 

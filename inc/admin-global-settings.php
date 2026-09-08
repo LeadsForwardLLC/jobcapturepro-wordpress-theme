@@ -85,6 +85,9 @@ function jcp_global_settings_handle_save(): void {
 		],
 		'case_study' => [
 			'spots_claimed' => max( 0, min( 10, (int) ( $input['case_study']['spots_claimed'] ?? 0 ) ) ),
+			'closes_at'     => function_exists( 'jcp_case_study_sanitize_closes_at' )
+				? jcp_case_study_sanitize_closes_at( (string) ( $input['case_study']['closes_at'] ?? '' ) )
+				: sanitize_text_field( (string) ( $input['case_study']['closes_at'] ?? '' ) ),
 		],
 	];
 
@@ -352,14 +355,15 @@ function jcp_global_settings_render_page(): void {
 			<?php
 			$cs = $s['case_study'] ?? [];
 			$claimed = max( 0, min( 10, (int) ( $cs['spots_claimed'] ?? 0 ) ) );
+			$closes  = (string) ( $cs['closes_at'] ?? '2026-09-30' );
 			?>
 			<h2><?php esc_html_e( '90-day case study cohort', 'jcp-core' ); ?></h2>
 			<p class="description">
-				<?php esc_html_e( 'Shown on /case-study/ as a capacity bar. Count companies that have been selected/claimed only — not applications under review. Application does not equal acceptance.', 'jcp-core' ); ?>
+				<?php esc_html_e( 'Public urgency uses applicant spots filled + an application-window close date (countdown). Update the filled count as applications come in.', 'jcp-core' ); ?>
 			</p>
 			<table class="form-table" role="presentation">
 				<tr>
-					<th scope="row"><label for="jcp_case_spots_claimed"><?php esc_html_e( 'Companies selected', 'jcp-core' ); ?></label></th>
+					<th scope="row"><label for="jcp_case_spots_claimed"><?php esc_html_e( 'Applicant spots filled', 'jcp-core' ); ?></label></th>
 					<td>
 						<input
 							type="number"
@@ -371,7 +375,20 @@ function jcp_global_settings_render_page(): void {
 							step="1"
 							value="<?php echo esc_attr( (string) $claimed ); ?>"
 						/>
-						<span class="description"><?php esc_html_e( 'of 10 total spots', 'jcp-core' ); ?></span>
+						<span class="description"><?php esc_html_e( 'of 10 — how many applications you are counting toward the cohort goal', 'jcp-core' ); ?></span>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="jcp_case_closes_at"><?php esc_html_e( 'Application window closes', 'jcp-core' ); ?></label></th>
+					<td>
+						<input
+							type="date"
+							class="regular-text"
+							id="jcp_case_closes_at"
+							name="jcp_global[case_study][closes_at]"
+							value="<?php echo esc_attr( $closes ); ?>"
+						/>
+						<span class="description"><?php esc_html_e( 'Shown as a live countdown on the exit-intent and capacity bar.', 'jcp-core' ); ?></span>
 					</td>
 				</tr>
 			</table>

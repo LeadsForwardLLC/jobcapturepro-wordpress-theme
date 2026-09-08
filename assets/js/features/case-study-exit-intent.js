@@ -60,12 +60,13 @@
     var total = Number(cfg.spotsTotal || 10);
     var remaining = Math.max(0, total - claimed);
     var pct = total > 0 ? Math.round((claimed / total) * 100) : 0;
+    var closesAt = Number(cfg.closesAtTs || 0);
     var meta =
       remaining <= 0
-        ? 'Cohort full · Applications still reviewed for waitlist'
+        ? 'Cohort goal reached · Late applications go to the waitlist'
         : remaining +
-          (remaining === 1 ? ' spot remaining' : ' spots remaining') +
-          ' · Application required — selection is not automatic';
+          (remaining === 1 ? ' more application needed' : ' more applications needed') +
+          ' · Window closes when spots fill or the deadline hits';
     return (
       '<div class="jcp-case-capacity jcp-case-capacity--modal jcp-case-exit__capacity" role="status">' +
       '<div class="jcp-case-capacity__head">' +
@@ -73,10 +74,16 @@
       claimed +
       ' of ' +
       total +
-      ' companies selected</strong></p>' +
+      ' applicant spots filled</strong></p>' +
       '<p class="jcp-case-capacity__meta">' +
       meta +
-      '</p></div>' +
+      '</p>' +
+      (closesAt
+        ? '<p class="jcp-case-capacity__countdown" data-jcp-case-countdown="' +
+          closesAt +
+          '">Application window closing…</p>'
+        : '') +
+      '</div>' +
       '<div class="jcp-case-capacity__track" aria-hidden="true">' +
       '<span class="jcp-case-capacity__fill" style="width:' +
       pct +
@@ -121,20 +128,23 @@
       '<div class="jcp-case-exit__interrupt">' +
       handSvg() +
       '<p class="jcp-case-exit__wait" id="jcpCaseExitTitle">WAIT</p>' +
-      '<p class="jcp-case-exit__eyebrow">Before you go · last open spots</p>' +
+      '<p class="jcp-case-exit__eyebrow">Before you go · application window closing</p>' +
       '</div>' +
       '<h2 class="jcp-case-exit__title">Apply for the 90-day case study</h2>' +
-      '<p class="jcp-case-exit__body">We are selecting 10 home-service companies for hands-on onboarding and measurable results. Selected companies receive JobCapturePro free during the study. Applying does not guarantee acceptance.</p>' +
+      '<p class="jcp-case-exit__body">We’re gathering applications from 10 home-service companies for hands-on onboarding and measurable results. Accepted companies get JobCapturePro free during the study. Once we have enough applicants — or the window hits the deadline — enrollment closes.</p>' +
       buildCapacityHtml() +
       '<div class="jcp-case-exit__actions">' +
       '<a class="jcp-case-exit__primary" id="jcpCaseExitApply" href="' +
       String(cfg.url || '/case-study/') +
-      '">Apply for a case study spot</a>' +
+      '">Apply while spots are open</a>' +
       '<button type="button" class="jcp-case-exit__dismiss" data-case-exit-dismiss="1">No thanks — continue browsing</button>' +
       '</div></div>';
 
     document.body.appendChild(root);
     document.body.classList.add('jcp-case-exit-open');
+    if (window.JCPCaseStudyCountdown && typeof window.JCPCaseStudyCountdown.refreshAll === 'function') {
+      window.JCPCaseStudyCountdown.refreshAll();
+    }
     pushEvent('CaseStudyExitIntentShown', {
       spots_claimed: cfg.spotsClaimed,
       spots_total: cfg.spotsTotal,

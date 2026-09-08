@@ -56,6 +56,7 @@ function jcp_global_settings_defaults(): array {
 		],
 		'case_study' => [
 			'spots_claimed' => 0,
+			'closes_at'     => '2026-09-30',
 		],
 	];
 }
