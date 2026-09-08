@@ -183,6 +183,12 @@ jobs:
                 \"https://jobcapturepro.com/support/\",
                 \"https://jobcapturepro.com/contact/\",
               );
+              if (function_exists(\"rocket_clean_domain\")) { rocket_clean_domain(); echo \"rocket_clean_domain\\n\"; }
+              if (function_exists(\"rocket_clean_minify\")) { rocket_clean_minify(); echo \"rocket_clean_minify\\n\"; }
+              if (function_exists(\"rocket_clean_files\")) {
+                rocket_clean_files(\$urls);
+                echo \"rocket_clean_files count=\" . count(\$urls) . \"\\n\";
+              }
               if (function_exists(\"sg_cachepress_purge_cache\")) {
                 foreach (\$urls as \$u) {
                   sg_cachepress_purge_cache(\$u);
