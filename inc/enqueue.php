@@ -38,6 +38,11 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-survey', 'css/pages/survey.css', [ 'jcp-core-survey-shared' ] );
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
         jcp_core_enqueue_script( 'jcp-core-survey', 'js/pages/survey.js', [ 'jcp-core-attribution' ] );
+        wp_add_inline_script(
+            'jcp-core-survey',
+            'window.JCP_CONFIG=window.JCP_CONFIG||{env:"live",baseUrl:' . wp_json_encode( site_url() ) . '};',
+            'before'
+        );
         wp_localize_script(
             'jcp-core-survey',
             'JCP_DEMO_SURVEY',
