@@ -4329,10 +4329,16 @@ function enrichContactWithPhone(phone) {
   const surveyUrl =
     (window.JCP_DEMO_SURVEY && window.JCP_DEMO_SURVEY.rest_url) ||
     `${(window.JCP_CONFIG && window.JCP_CONFIG.baseUrl) || window.location.origin}/wp-json/jcp/v1/demo-survey-submit`;
+  let firstName = (demoUser.firstName || '').trim();
+  if (!firstName) {
+    const local = String(email).split('@')[0] || '';
+    firstName = local || 'there';
+  }
   const body = {
+    event: 'demo-phone-entered',
     email,
     phone,
-    first_name: (demoUser.firstName || '').trim(),
+    first_name: firstName,
     last_name: (demoUser.lastName || '').trim(),
     company:
       demoUser.businessName && String(demoUser.businessName).toLowerCase() !== 'your business'

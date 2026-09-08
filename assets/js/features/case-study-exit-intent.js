@@ -1,6 +1,6 @@
 /**
  * Desktop-only exit-intent for the 90-day case study (last-resort).
- * Does not run on /demo/ or when a form field is focused.
+ * On paid LPs / home: classic mouse-leave. On /demo/?mode=run: also Exit demo / outcomes close.
  */
 (function () {
   'use strict';
@@ -9,6 +9,7 @@
   var STORAGE_KEY = 'jcp_case_study_exit_intent';
   var shownKey = STORAGE_KEY + '_shown';
   var dismissKey = STORAGE_KEY + '_dismissed';
+  var allowDemo = Boolean(cfg.allowDemo);
 
   function once(key) {
     try {
@@ -32,12 +33,17 @@
     return window.matchMedia && window.matchMedia('(min-width: ' + (cfg.minWidth || 1024) + 'px)').matches;
   }
 
+  function isDemoPath() {
+    return /\/demo\/?/i.test(location.pathname || '');
+  }
+
   function isBlocked() {
     if (!isDesktop()) return true;
     if (already(dismissKey) || already(shownKey)) return true;
-    if (document.body.classList.contains('jcp-guided-demo')) return true;
     if (document.body.classList.contains('survey-only')) return true;
-    if (/\/demo\/?/i.test(location.pathname)) return true;
+    if (isDemoPath() && !allowDemo) return true;
+    // Guided demo shell is normal during mode=run; only block when allowDemo is off.
+    if (document.body.classList.contains('jcp-guided-demo') && !allowDemo) return true;
     var active = document.activeElement;
     if (active && /^(INPUT|TEXTAREA|SELECT)$/i.test(active.tagName)) return true;
     return false;
@@ -91,9 +97,9 @@
     }
   }
 
-  function open() {
-    if (isBlocked()) return;
-    if (!once(shownKey)) return;
+  function open(source) {
+    if (isBlocked()) return false;
+    if (!once(shownKey)) return false;
 
     var root = document.createElement('div');
     root.className = 'jcp-case-exit is-open';
@@ -121,6 +127,7 @@
       spots_claimed: cfg.spotsClaimed,
       spots_total: cfg.spotsTotal,
       page_path: location.pathname,
+      source: source || 'mouseleave',
     });
 
     root.addEventListener('click', function (e) {
@@ -155,7 +162,13 @@
       },
       true
     );
+    return true;
   }
+
+  window.JCPCaseStudyExit = {
+    open: open,
+    isBlocked: isBlocked,
+  };
 
   var armed = false;
   var delay = Number(cfg.delayMs || 18000);
@@ -168,6 +181,27 @@
     if (!armed || isBlocked()) return;
     if (e.relatedTarget || e.toElement) return;
     if (typeof e.clientY === 'number' && e.clientY > 12) return;
-    open();
+    open('mouseleave');
   });
+
+  // Demo run: Exit demo / close outcomes should surface the last-resort offer once.
+  if (allowDemo) {
+    document.addEventListener(
+      'click',
+      function (e) {
+        if (!armed || isBlocked()) return;
+        var t = e.target;
+        if (!(t instanceof Element)) return;
+        var exitBtn = t.closest('#mobileDemoExit, button[aria-label="Exit demo"], a[aria-label="Exit demo"]');
+        var outcomesClose = t.closest('#demoOutcomesModalClose, #demoOutcomesModalBackdrop, .demo-outcomes-modal__close');
+        if (!exitBtn && !outcomesClose) return;
+        // Prefer exit-intent once; don't fight every close click after dismiss.
+        if (open(exitBtn && !outcomesClose ? 'demo_exit' : 'outcomes_close')) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      },
+      true
+    );
+  }
 })();

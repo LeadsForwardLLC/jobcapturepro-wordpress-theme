@@ -141,13 +141,15 @@ function jcp_case_study_should_load_exit_intent(): bool {
 		return false;
 	}
 	$pages = function_exists( 'jcp_core_get_page_detection' ) ? jcp_core_get_page_detection() : [];
-	if ( ! empty( $pages['is_demo'] ) ) {
-		return false;
-	}
+	// Gate-only /demo/ (no mode=run): skip — don't interrupt opt-in.
 	if ( function_exists( 'jcp_core_is_demo_survey_request' ) && jcp_core_is_demo_survey_request() ) {
 		return false;
 	}
+	// Interactive demo run: show last-resort exit intent (after outcomes / exit attempts).
 	if ( function_exists( 'jcp_core_is_demo_run_request' ) && jcp_core_is_demo_run_request() ) {
+		return true;
+	}
+	if ( ! empty( $pages['is_demo'] ) ) {
 		return false;
 	}
 	// Paid campaign LPs hide site chrome but still need the last-resort exit intent.
@@ -173,6 +175,10 @@ function jcp_case_study_enqueue_assets(): void {
 	jcp_core_enqueue_style( 'jcp-core-case-study-cohort', 'css/components/case-study-cohort.css', [ 'jcp-core-base' ] );
 
 	if ( $exit ) {
+		// Demo run skips marketing enqueue; register base so cohort CSS still prints.
+		if ( function_exists( 'jcp_core_is_demo_run_request' ) && jcp_core_is_demo_run_request() ) {
+			jcp_core_enqueue_style( 'jcp-core-base', 'css/base.css' );
+		}
 		jcp_core_enqueue_script( 'jcp-core-case-study-exit', 'js/features/case-study-exit-intent.js', [] );
 		wp_localize_script(
 			'jcp-core-case-study-exit',
@@ -182,8 +188,9 @@ function jcp_case_study_enqueue_assets(): void {
 				'spotsClaimed'   => jcp_case_study_spots_claimed(),
 				'spotsTotal'     => jcp_case_study_spots_total(),
 				'spotsRemaining' => jcp_case_study_spots_remaining(),
-				'delayMs'        => 18000,
+				'delayMs'        => function_exists( 'jcp_core_is_demo_run_request' ) && jcp_core_is_demo_run_request() ? 8000 : 18000,
 				'minWidth'       => 1024,
+				'allowDemo'      => function_exists( 'jcp_core_is_demo_run_request' ) && jcp_core_is_demo_run_request(),
 			]
 		);
 	}

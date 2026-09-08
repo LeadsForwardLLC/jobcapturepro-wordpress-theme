@@ -74,6 +74,11 @@ function jcp_core_register_demo_survey_rest_routes(): void {
                 'type'              => 'string',
                 'sanitize_callback' => 'sanitize_text_field',
             ],
+            'event'          => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
         ] + jcp_demo_ghl_attribution_rest_args(),
     ] );
 
@@ -322,14 +327,32 @@ function jcp_demo_ghl_build_webhook_body( string $event, array $params, array $t
 }
 
 /**
- * Build application/x-www-form-urlencoded body for Demo Survey GHL webhook.
- * Shared contact fields + demo-specific fields. Tags: demo-completed, demo-interest.
+ * Allowed Event overrides for /demo-survey-submit (same webhook, GHL if/then branches).
  *
- * @param array $params Sanitized request params.
+ * @return array<string, string[]> Map of event => tags.
+ */
+function jcp_demo_survey_allowed_events(): array {
+    return [
+        'demo-opt-in'         => [ 'demo-completed', 'demo-interest' ],
+        'demo-phone-entered'  => [ 'demo-phone-entered' ],
+        'demo-company-enrich' => [ 'demo-company-enrich' ],
+    ];
+}
+
+/**
+ * Build application/x-www-form-urlencoded body for Demo Survey GHL webhook.
+ * Default Event=demo-opt-in. Pass event=demo-phone-entered to update phone + SMS branch.
+ *
+ * @param array $params Sanitized request params (optional event key).
  * @return string
  */
 function jcp_core_build_demo_survey_ghl_body( array $params ): string {
-    return jcp_demo_ghl_build_webhook_body( 'demo-opt-in', $params, [ 'demo-completed', 'demo-interest' ] );
+    $allowed = jcp_demo_survey_allowed_events();
+    $event   = isset( $params['event'] ) ? sanitize_text_field( (string) $params['event'] ) : 'demo-opt-in';
+    if ( ! isset( $allowed[ $event ] ) ) {
+        $event = 'demo-opt-in';
+    }
+    return jcp_demo_ghl_build_webhook_body( $event, $params, $allowed[ $event ] );
 }
 
 /**
@@ -357,15 +380,16 @@ function jcp_core_demo_survey_submit_handler( \WP_REST_Request $request ): \WP_R
 
     $params = jcp_demo_ghl_merge_attribution_from_request(
         [
-            'first_name'    => $first_name,
-            'last_name'     => $request->get_param( 'last_name' ),
-            'email'         => $email,
-            'phone'         => $request->get_param( 'phone' ),
-            'company'       => $request->get_param( 'company' ),
-            'business_type' => $request->get_param( 'business_type' ),
-            'service_area'  => $request->get_param( 'service_area' ),
-            'demo_goals'    => $request->get_param( 'demo_goals' ),
+            'first_name'      => $first_name,
+            'last_name'       => $request->get_param( 'last_name' ),
+            'email'           => $email,
+            'phone'           => $request->get_param( 'phone' ),
+            'company'         => $request->get_param( 'company' ),
+            'business_type'   => $request->get_param( 'business_type' ),
+            'service_area'    => $request->get_param( 'service_area' ),
+            'demo_goals'      => $request->get_param( 'demo_goals' ),
             'referral_source' => $request->get_param( 'referral_source' ),
+            'event'           => $request->get_param( 'event' ),
         ],
         $request
     );
@@ -505,6 +529,12 @@ function jcp_demo_ghl_milestone_mapping( string $event_type, $metadata ): ?array
                 return [
                     'event' => 'demo-cta-personalized',
                     'tags'  => [ 'demo-cta-personalized' ],
+                ];
+            }
+            if ( $cta === 'phone_save' ) {
+                return [
+                    'event' => 'demo-phone-entered',
+                    'tags'  => [ 'demo-phone-entered' ],
                 ];
             }
             // get_started_free is covered by demo_converted (same click also fires that event).
