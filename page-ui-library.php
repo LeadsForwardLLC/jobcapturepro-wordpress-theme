@@ -103,7 +103,7 @@ $icon = function( $name ) {
 							</span>
 							<div class="meta-copy">
 								<strong class="meta-title">1 photo</strong>
-								<span class="meta-detail">Starts the workflow</span>
+								<span class="meta-detail">starts the workflow</span>
 							</div>
 						</div>
 						<div class="meta-item meta-stat-channels">
@@ -121,7 +121,7 @@ $icon = function( $name ) {
 							</span>
 							<div class="meta-copy">
 								<strong class="meta-title">More jobs</strong>
-								<span class="meta-detail">From finished work</span>
+								<span class="meta-detail">from finished work</span>
 							</div>
 						</div>
 					</div>

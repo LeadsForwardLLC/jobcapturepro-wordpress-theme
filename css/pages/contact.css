@@ -45,7 +45,7 @@
   font-size: var(--jcp-font-size-sm);
   font-weight: var(--jcp-font-weight-semibold);
   letter-spacing: 0.06em;
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--jcp-color-primary);
 }
 
@@ -239,7 +239,7 @@
   font-size: var(--jcp-font-size-sm);
   font-weight: var(--jcp-font-weight-semibold);
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--jcp-color-text-secondary);
 }
 

@@ -616,17 +616,17 @@ function jcp_page_default_block_props( string $type ): array {
 			[
 				'value'  => '1',
 				'label'  => 'photo',
-				'detail' => __( 'Starts the workflow', 'jcp-core' ),
+				'detail' => __( 'starts the workflow', 'jcp-core' ),
 			],
 			[
 				'value'  => '5',
 				'label'  => 'channels',
-				'detail' => __( 'Published online', 'jcp-core' ),
+				'detail' => __( 'published online', 'jcp-core' ),
 			],
 			[
 				'value'  => 'More',
 				'label'  => 'jobs',
-				'detail' => __( 'From finished work', 'jcp-core' ),
+				'detail' => __( 'from finished work', 'jcp-core' ),
 			],
 		],
 	];

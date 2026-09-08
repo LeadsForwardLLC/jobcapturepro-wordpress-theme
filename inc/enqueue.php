@@ -126,7 +126,7 @@ function jcp_core_enqueue_assets(): void {
             jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
             $render_deps[] = 'jcp-core-home';
             $home_ctas = [
-                'primary_text'   => 'See It for My Business →',
+                'primary_text'   => 'See it for my business →',
                 'primary_url'    => '/demo/',
                 'secondary_text' => 'Start Free 14-Day Trial',
                 'secondary_url'  => function_exists( 'jcp_core_onboarding_app_url_raw' )

@@ -162,7 +162,7 @@
                       <img src="${icon('camera')}" class="meta-icon" alt="">
                       <strong>1 photo</strong>
                     </div>
-                    <span>Starts the workflow</span>
+                    <span>starts the workflow</span>
                   </div>
                   <div class="meta-item meta-stat-channels">
                     <div class="meta-label">
@@ -176,7 +176,7 @@
                       <img src="${icon('clock')}" class="meta-icon" alt="">
                       <strong>More jobs</strong>
                     </div>
-                    <span>From finished work</span>
+                    <span>from finished work</span>
                   </div>
                 </div>
               </div>

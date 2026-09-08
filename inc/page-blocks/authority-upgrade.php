@@ -37,7 +37,7 @@ function jcp_page_authority_leadsforward_props(): array {
 			],
 		],
 		'cta_primary'   => [
-			'label' => __( 'See JobCapturePro On My Business', 'jcp-core' ),
+			'label' => __( 'See JobCapturePro on my business', 'jcp-core' ),
 			'url'   => '/demo/',
 		],
 		'cta_note'      => __( 'Free personalized demo · About 2 minutes · No credit card', 'jcp-core' ),
@@ -196,7 +196,7 @@ function jcp_page_upgrade_campaign_authority( array $content, int $post_id ): ar
 		$props['show_body']     = true;
 		if ( empty( $props['cta_primary']['label'] ) ) {
 			$props['cta_primary'] = [
-				'label' => __( 'See JobCapturePro On My Business', 'jcp-core' ),
+				'label' => __( 'See JobCapturePro on my business', 'jcp-core' ),
 				'url'   => '/demo/',
 			];
 		}

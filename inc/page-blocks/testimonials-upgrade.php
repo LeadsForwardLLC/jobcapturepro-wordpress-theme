@@ -21,19 +21,19 @@ function jcp_page_home_balanced_meta_stats(): array {
 		[
 			'icon'      => 'camera',
 			'label'     => '1 photo',
-			'detail'    => 'Starts the workflow',
+			'detail'    => 'starts the workflow',
 			'css_class' => 'meta-stat-photo',
 		],
 		[
 			'icon'      => 'map',
 			'label'     => '5 channels',
-			'detail'    => 'Published online',
+			'detail'    => 'published online',
 			'css_class' => 'meta-stat-channels',
 		],
 		[
 			'icon'      => 'badge-check',
 			'label'     => 'More jobs',
-			'detail'    => 'From finished work',
+			'detail'    => 'from finished work',
 			'css_class' => 'meta-stat-busywork',
 		],
 	];
@@ -75,11 +75,11 @@ function jcp_page_home_meta_stats_need_balance( array $stats ): bool {
 	foreach ( $canonical as $i => $want ) {
 		$row = is_array( $stats[ $i ] ?? null ) ? $stats[ $i ] : [];
 		$label  = strtolower( trim( (string) ( $row['label'] ?? '' ) ) );
-		$detail = strtolower( trim( (string) ( $row['detail'] ?? '' ) ) );
+		$detail = trim( (string) ( $row['detail'] ?? '' ) );
 		$want_label  = strtolower( (string) $want['label'] );
-		$want_detail = strtolower( (string) $want['detail'] );
+		$want_detail = (string) $want['detail'];
 
-		// Standard homepage labels: always keep canonical details in sync.
+		// Standard homepage labels: always keep canonical details in sync (incl. sentence case).
 		if ( $label === $want_label && $detail !== $want_detail ) {
 			return true;
 		}

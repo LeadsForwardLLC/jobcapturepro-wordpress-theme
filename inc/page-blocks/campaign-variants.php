@@ -13,16 +13,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** Seed version for all paid LP variants (bump to force-refresh content). */
-const JCP_CAMPAIGN_VARIANTS_SEED_VERSION = '2';
+const JCP_CAMPAIGN_VARIANTS_SEED_VERSION = '3';
 
 /**
  * Variant registry keyed by analytics id.
+ *
+ * Headings use sentence case (first word + proper nouns only).
  *
  * @return array<string, array<string, mixed>>
  */
 function jcp_campaign_variants(): array {
 	$cta = [
-		'label' => 'See It On My Business',
+		'label' => 'See it on my business',
 		'url'   => '/demo/',
 	];
 	$micro = 'Free personalized demo · About 2 minutes · No credit card';
@@ -30,24 +32,24 @@ function jcp_campaign_variants(): array {
 	return [
 		'formula'     => [
 			'slug'         => 'contractor-formula',
-			'post_title'   => 'The Contractor Marketing Formula Is Simpler Than You Think',
+			'post_title'   => 'The contractor marketing formula is simpler than you think',
 			'post_excerpt' => 'Your crew already creates the proof. See how one finished job becomes marketing with JobCapturePro.',
 			'label'        => 'Formula',
 			'seo'          => [
-				'title'            => 'The Contractor Marketing Formula Is Simpler Than You Think | JobCapturePro',
+				'title'            => 'The contractor marketing formula is simpler than you think | JobCapturePro',
 				'meta_description' => 'Your crew already creates the proof. See how one completed job can become website content, Google activity, social proof and review opportunities with JobCapturePro.',
 			],
 			'hero'         => [
-				'eyebrow'       => 'THE CONTRACTOR MARKETING FORMULA',
+				'eyebrow'       => 'The contractor marketing formula',
 				'show_eyebrow'  => true,
-				'h1'            => 'You Don’t Need Another Marketing Trick. You Need Proof.',
+				'h1'            => 'You don’t need another marketing trick. You need proof.',
 				'subheadline'   => 'Your crew already creates it on every finished job. JobCapturePro turns that real work into website proof, Google activity, social content and review opportunities — automatically.',
 				'cta_primary'   => $cta,
 				'trust_line'    => $micro,
 				'cta_microcopy' => $micro,
 			],
 			'how_it_works' => [
-				'headline'       => 'The Formula Is Actually Pretty Simple.',
+				'headline'       => 'The formula is actually pretty simple.',
 				'subheadline'    => 'Finish the job. Capture the proof. Let JobCapturePro put it to work.',
 				'numeric_steps'  => true,
 				'show_cta'       => false,
@@ -69,13 +71,13 @@ function jcp_campaign_variants(): array {
 				],
 			],
 			'benefits'     => [
-				'headline'    => 'One Finished Job Can Become More Than One Marketing Asset.',
+				'headline'    => 'One finished job can become more than one marketing asset.',
 				'subheadline' => 'Your tech captures the job once. JobCapturePro helps turn that work into proof across the channels homeowners actually use.',
 				'cta_primary' => $cta,
 				'cta_note'    => $micro,
 			],
 			'final_cta'    => [
-				'headline'      => 'Forget the Formula. Put the Work You Already Did to Work.',
+				'headline'      => 'Forget the formula. Put the work you already did to work.',
 				'subheadline'   => 'See what one finished job could become for your business.',
 				'cta_primary'   => $cta,
 				'cta_note'      => $micro,
@@ -96,17 +98,17 @@ function jcp_campaign_variants(): array {
 		],
 		'nature_doc'  => [
 			'slug'         => 'contractor-nature',
-			'post_title'   => 'Make Every Finished Job Keep Working',
+			'post_title'   => 'Make every finished job keep working',
 			'post_excerpt' => 'See how finished-job proof keeps working after the crew leaves.',
 			'label'        => 'Nature Doc',
 			'seo'          => [
-				'title'            => 'Make Every Finished Job Keep Working | JobCapturePro',
+				'title'            => 'Make every finished job keep working | JobCapturePro',
 				'meta_description' => 'See how JobCapturePro turns completed-job photos, location and job details into website proof, Google activity, social content and review opportunities.',
 			],
 			'hero'         => [
-				'eyebrow'       => 'THE JOB IS FINISHED. THE PROOF SHOULDN’T BE.',
+				'eyebrow'       => 'The job is finished. The proof shouldn’t be.',
 				'show_eyebrow'  => true,
-				'h1'            => 'Your Finished Jobs Should Keep Working After the Crew Leaves.',
+				'h1'            => 'Your finished jobs should keep working after the crew leaves.',
 				'subheadline'   => 'JobCapturePro turns the photos, location and job details your team already creates into website proof, Google activity, social content and review opportunities.',
 				'cta_primary'   => $cta,
 				'trust_line'    => $micro,
@@ -114,7 +116,7 @@ function jcp_campaign_variants(): array {
 			],
 			'problem'      => [
 				'variant'           => 'contrast',
-				'headline'          => 'Normally, This Is Where the Marketing Dies.',
+				'headline'          => 'Normally, this is where the marketing dies.',
 				'subheadline'       => 'The job is done. The customer is happy. Someone took the photos. Then the truck leaves — and most of that proof disappears into a camera roll or internal system.',
 				'show_subheadline'  => true,
 				'contrast_without'  => [
@@ -139,7 +141,7 @@ function jcp_campaign_variants(): array {
 				'section_id'        => 'where-marketing-dies',
 			],
 			'benefits'     => [
-				'headline'    => 'One Job. Working in Several Places at Once.',
+				'headline'    => 'One job. Working in several places at once.',
 				'subheadline' => 'Capture the job once, then put that real-world proof across the places homeowners look before they call.',
 				'items'       => [
 					[
@@ -188,13 +190,13 @@ function jcp_campaign_variants(): array {
 			],
 			'authority'    => [
 				'eyebrow'     => 'Built by LeadsForward',
-				'headline'    => 'Built After a Decade of Helping Contractors Grow.',
+				'headline'    => 'Built after a decade of helping contractors grow.',
 				'body'        => 'We spent years helping home-service companies generate demand and kept seeing the same problem: great work happened every day, but the proof rarely made it online. JobCapturePro was built to close that gap.',
 				'cta_primary' => $cta,
 				'cta_note'    => $micro,
 			],
 			'final_cta'    => [
-				'headline'     => 'Make the Next Job Start the Cycle.',
+				'headline'     => 'Make the next job start the cycle.',
 				'subheadline'  => 'Finish the work. Capture the proof. Let JobCapturePro help put it to work.',
 				'cta_primary'  => $cta,
 				'cta_note'     => $micro,
@@ -215,18 +217,18 @@ function jcp_campaign_variants(): array {
 		],
 		'proof_waste' => [
 			'slug'         => 'job-proof',
-			'post_title'   => 'Stop Wasting the Proof Your Jobs Already Create',
+			'post_title'   => 'Stop wasting the proof your jobs already create',
 			'post_excerpt' => 'You already pay to create valuable job proof. See how JobCapturePro helps put it to work.',
 			'label'        => 'Proof Waste',
 			'copy_status'  => 'draft',
 			'seo'          => [
-				'title'            => 'Stop Wasting the Proof Your Jobs Already Create | JobCapturePro',
+				'title'            => 'Stop wasting the proof your jobs already create | JobCapturePro',
 				'meta_description' => 'Contractors create valuable proof on every finished job — then often leave it trapped in phones and CRMs. See how JobCapturePro helps turn that work into public-facing marketing.',
 			],
 			'hero'         => [
-				'eyebrow'       => 'YOU ALREADY PAID FOR THE PROOF',
+				'eyebrow'       => 'You already paid for the proof',
 				'show_eyebrow'  => true,
-				'h1'            => 'Stop Paying Twice for Marketing You Already Created.',
+				'h1'            => 'Stop paying twice for marketing you already created.',
 				'subheadline'   => 'Your crew finishes jobs and takes the photos. Too often that proof stays trapped in camera rolls, CRMs, or internal folders — where the next customer never sees it. JobCapturePro helps turn completed-job proof into website content, Google activity, social posts, and review opportunities.',
 				'cta_primary'   => $cta,
 				'trust_line'    => $micro,
@@ -234,7 +236,7 @@ function jcp_campaign_variants(): array {
 			],
 			'problem'      => [
 				'variant'          => 'contrast',
-				'headline'         => 'The Work Happened. The Marketing Value Often Didn’t.',
+				'headline'         => 'The work happened. The marketing value often didn’t.',
 				'subheadline'      => 'Every finished job creates photos, location, and job details homeowners care about. When that stays private, you paid for proof that never becomes public marketing.',
 				'show_subheadline' => true,
 				'contrast_without' => [
@@ -258,13 +260,13 @@ function jcp_campaign_variants(): array {
 				'section_id'       => 'proof-waste',
 			],
 			'benefits'     => [
-				'headline'    => 'Turn Completed Jobs Into Proof Homeowners Can Actually See.',
+				'headline'    => 'Turn completed jobs into proof homeowners can actually see.',
 				'subheadline' => 'Capture the job once. JobCapturePro helps put that real work across the channels people check before they call.',
 				'cta_primary' => $cta,
 				'cta_note'    => $micro,
 			],
 			'final_cta'    => [
-				'headline'     => 'Stop Leaving Finished-Job Proof On the Table.',
+				'headline'     => 'Stop leaving finished-job proof on the table.',
 				'subheadline'  => 'See what one completed job could become for your business.',
 				'cta_primary'  => $cta,
 				'cta_note'     => $micro,
@@ -285,25 +287,25 @@ function jcp_campaign_variants(): array {
 		],
 		'founder'     => [
 			'slug'         => 'why-we-built-jcp',
-			'post_title'   => 'Why We Built JobCapturePro',
+			'post_title'   => 'Why we built JobCapturePro',
 			'post_excerpt' => 'Built by LeadsForward after years of helping contractors grow — and watching finished-job proof go unused.',
 			'label'        => 'Founder',
 			'copy_status'  => 'draft',
 			'seo'          => [
-				'title'            => 'Why We Built JobCapturePro | JobCapturePro',
+				'title'            => 'Why we built JobCapturePro | JobCapturePro',
 				'meta_description' => 'LeadsForward built JobCapturePro after years of helping contractors grow — and repeatedly seeing completed-job proof fail to become public marketing.',
 			],
 			'hero'         => [
-				'eyebrow'       => 'BUILT BY LEADSFORWARD',
+				'eyebrow'       => 'Built by LeadsForward',
 				'show_eyebrow'  => true,
-				'h1'            => 'We Built JobCapturePro Because Finished Jobs Kept Going Unused.',
+				'h1'            => 'We built JobCapturePro because finished jobs kept going unused.',
 				'subheadline'   => 'After years helping home-service companies grow, we kept seeing the same gap: contractors created valuable proof every day, but that proof rarely became public marketing. JobCapturePro was built to close it.',
 				'cta_primary'   => $cta,
 				'trust_line'    => $micro,
 				'cta_microcopy' => $micro,
 			],
 			'how_it_works' => [
-				'headline'      => 'The Pattern We Saw Over and Over.',
+				'headline'      => 'The pattern we saw over and over.',
 				'subheadline'   => 'Great work. Real photos. Then almost none of it showed up where the next homeowner looks.',
 				'numeric_steps' => true,
 				'show_cta'      => false,
@@ -326,19 +328,19 @@ function jcp_campaign_variants(): array {
 			],
 			'authority'    => [
 				'eyebrow'     => 'Built by LeadsForward',
-				'headline'    => 'A Decade Helping Contractors Grow — Then the Missing Piece.',
+				'headline'    => 'A decade helping contractors grow — then the missing piece.',
 				'body'        => 'LeadsForward spent years helping contractors generate demand. JobCapturePro came from the recurring problem we could not ignore: completed jobs create proof, but that proof too often never becomes public-facing marketing.',
 				'cta_primary' => $cta,
 				'cta_note'    => $micro,
 			],
 			'benefits'     => [
-				'headline'    => 'What JobCapturePro Is Built to Do.',
+				'headline'    => 'What JobCapturePro is built to do.',
 				'subheadline' => 'Help contractors turn work they already completed into proof homeowners can see — without inventing a new marketing process for the crew.',
 				'cta_primary' => $cta,
 				'cta_note'    => $micro,
 			],
 			'final_cta'    => [
-				'headline'     => 'See the System We Built for That Gap.',
+				'headline'     => 'See the system we built for that gap.',
 				'subheadline'  => 'A short personalized demo shows how one finished job can become public-facing proof.',
 				'cta_primary'  => $cta,
 				'cta_note'     => $micro,
@@ -405,7 +407,7 @@ function jcp_campaign_variant_is_assoc( array $arr ): bool {
  * @return array<string, mixed>
  */
 function jcp_campaign_variant_normalize_ctas( array $legacy, string $variant_key ): array {
-	$label = 'See It On My Business';
+	$label = 'See it on my business';
 	$micro = 'Free personalized demo · About 2 minutes · No credit card';
 	$url   = '/demo/?lp_variant=' . rawurlencode( $variant_key );
 	jcp_campaign_variant_rewrite_ctas_node( $legacy, $label, $micro, $url );

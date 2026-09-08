@@ -38,7 +38,7 @@ function jcp_niche_story_moments_defaults(): array {
 		'reviews_photo_alt'   => __( 'Owner on site after a completed job', 'jcp-core' ),
 		'reviews_quote'       => __( '“Tech was on time and cleaned up. 5 stars.”', 'jcp-core' ),
 		'cta_primary'         => [
-			'label' => __( 'See JobCapturePro On My Business', 'jcp-core' ),
+			'label' => __( 'See JobCapturePro on my business', 'jcp-core' ),
 			'url'   => '/demo/',
 		],
 		'cta_note'            => __( 'Free demo · ~2 min · No card', 'jcp-core' ),

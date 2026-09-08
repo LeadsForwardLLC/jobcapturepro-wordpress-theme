@@ -8,7 +8,7 @@
   "hide_site_chrome": true,
   "campaign_landing": true,
   "seo": {
-    "title": "See JobCapturePro On Your Business | Free Demo",
+    "title": "See JobCapturePro on your business | Free demo",
     "meta_description": "Your crew already takes job photos. See how JobCapturePro turns them into website proof, Google activity, reviews, and social, in a free personalized demo.",
     "keywords": [
       "contractor marketing demo",
@@ -21,7 +21,7 @@
     "h1": "Every finished job should help win the next one.",
     "subheadline": "JobCapturePro turns the photos your crew already takes into website proof, Google activity, social content and review opportunities, without adding another marketing task to your day.",
     "cta_primary": {
-      "label": "See JobCapturePro On My Business",
+      "label": "See JobCapturePro on my business",
       "url": "/demo/"
     },
     "cta_secondary": {
@@ -61,21 +61,21 @@
     {
       "value": "1",
       "label": "photo",
-      "detail": "Starts the workflow",
+      "detail": "starts the workflow",
       "icon": "camera",
       "css_class": "meta-stat-photo"
     },
     {
       "value": "5",
       "label": "channels",
-      "detail": "Published online",
+      "detail": "published online",
       "icon": "map",
       "css_class": "meta-stat-channels"
     },
     {
       "value": "More",
       "label": "jobs",
-      "detail": "From finished work",
+      "detail": "from finished work",
       "icon": "badge-check",
       "css_class": "meta-stat-busywork"
     }
@@ -128,7 +128,7 @@
     ],
     "closing": "Your crew captures the job once. JobCapturePro puts it to work.",
     "cta_primary": {
-      "label": "See JobCapturePro On My Business",
+      "label": "See JobCapturePro on my business",
       "url": "/demo/"
     },
     "cta_note": "Free demo · ~2 min · No card",
@@ -158,7 +158,7 @@
       }
     ],
     "cta_primary": {
-      "label": "See JobCapturePro On My Business",
+      "label": "See JobCapturePro on my business",
       "url": "/demo/"
     },
     "cta_note": "Free demo · ~2 min · No card",
@@ -217,7 +217,7 @@
     "reviews_photo_alt": "Owner on site after a completed job",
     "reviews_quote": "“Tech was on time and cleaned up. 5 stars.”",
     "cta_primary": {
-      "label": "See JobCapturePro On My Business",
+      "label": "See JobCapturePro on my business",
       "url": "/demo/"
     },
     "cta_note": "Free demo · ~2 min · No card",
@@ -399,7 +399,7 @@
     ],
     "footnote": "Each colored pin is a spot on the map where we checked if they showed up in Google’s local results. Green = near the top. Red = not showing. Past results don’t guarantee future rankings.",
     "cta_secondary": {
-      "label": "See It for My Business",
+      "label": "See it for my business",
       "url": "/demo/"
     },
     "section_id": "case-study",
@@ -442,7 +442,7 @@
     "headline": "You've already done the hard part.",
     "subheadline": "The job is finished. The proof already exists. Now put it to work.",
     "cta_primary": {
-      "label": "See JobCapturePro On My Business",
+      "label": "See JobCapturePro on my business",
       "url": "/demo/"
     },
     "cta_note": "Free demo · ~2 min · No card",

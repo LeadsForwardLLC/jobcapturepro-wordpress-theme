@@ -24,8 +24,8 @@
   margin: 0 0 0.5rem;
   font-size: 0.75rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
   color: #ff503e;
 }
 
@@ -77,8 +77,8 @@
   margin: 0 0 0.35rem;
   font-size: 0.7rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
   color: #ff503e;
 }
 

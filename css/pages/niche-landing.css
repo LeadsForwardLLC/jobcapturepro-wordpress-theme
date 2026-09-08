@@ -3754,8 +3754,8 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   margin: 0 0 0.75rem;
   font-size: 0.8125rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
   color: #ffb4a6;
 }
 
@@ -5483,8 +5483,8 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   color: var(--jcp-color-primary, #ff503e);
   font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
 }
 
 :is(.jcp-page-campaign, .jcp-home) .jcp-lf-case__headline {
@@ -5835,8 +5835,8 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   margin: 0 0 var(--jcp-space-md, 1rem);
   font-size: 0.75rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
   color: #b45309;
   background: rgba(251, 191, 36, 0.14);
   border: 1px solid rgba(245, 158, 11, 0.28);
@@ -5850,4 +5850,9 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   font-size: 1rem;
   font-weight: 700;
   color: #334155;
+}
+
+/* Sentence-case headings: never force title/all-caps via CSS */
+:is(.jcp-page-campaign, .jcp-home, .jcp-marketing) :is(h1, h2, h3, h4, .jcp-hero-eyebrow, .jcp-testimonials-eyebrow, .jcp-authority-eyebrow) {
+  text-transform: none;
 }
