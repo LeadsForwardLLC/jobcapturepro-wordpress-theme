@@ -749,10 +749,37 @@ function jcp_campaign_variants_maybe_seed(): void {
 add_action( 'init', 'jcp_campaign_variants_maybe_seed', 25 );
 
 /**
+ * Whether a variant key is valid for analytics (registry or control LP).
+ */
+function jcp_campaign_is_known_variant_key( string $key ): bool {
+	$key = trim( $key );
+	if ( $key === '' ) {
+		return false;
+	}
+	if ( $key === 'contractor_demo' ) {
+		return true;
+	}
+	return (bool) jcp_campaign_variant( $key );
+}
+
+/**
  * Current page campaign variant key.
  * Control LP /contractor-demo/ stamps as contractor_demo for analytics.
  */
 function jcp_campaign_current_variant_key(): string {
+	// Path-first: survives odd query timing / cached shells.
+	if ( function_exists( 'is_page' ) && is_page( 'contractor-demo' ) ) {
+		return 'contractor_demo';
+	}
+	$request_path = '';
+	if ( isset( $_SERVER['REQUEST_URI'] ) ) { // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		$request_path = (string) wp_parse_url( (string) wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_PATH ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+	}
+	$request_path = untrailingslashit( $request_path );
+	if ( $request_path === '/contractor-demo' ) {
+		return 'contractor_demo';
+	}
+
 	if ( ! is_singular( 'page' ) ) {
 		return '';
 	}
@@ -761,13 +788,13 @@ function jcp_campaign_current_variant_key(): string {
 		return '';
 	}
 	$meta = (string) get_post_meta( $post_id, '_jcp_campaign_variant', true );
-	if ( $meta !== '' && jcp_campaign_variant( $meta ) ) {
+	if ( $meta !== '' && jcp_campaign_is_known_variant_key( $meta ) ) {
 		return $meta;
 	}
 	if ( function_exists( 'jcp_page_get_content' ) ) {
 		$content = jcp_page_get_content( $post_id );
 		$key     = (string) ( $content['settings']['campaign_variant'] ?? '' );
-		if ( $key !== '' && jcp_campaign_variant( $key ) ) {
+		if ( $key !== '' && jcp_campaign_is_known_variant_key( $key ) ) {
 			return $key;
 		}
 	}
@@ -826,6 +853,31 @@ function jcp_campaign_variant_bootstrap_script(): void {
 add_action( 'wp_head', 'jcp_campaign_variant_bootstrap_script', 1 );
 
 /**
+ * Recursively stamp any /demo URL inside a content node with lp_variant.
+ *
+ * @param mixed  $node Node.
+ * @param string $url  Target demo URL.
+ */
+function jcp_campaign_stamp_demo_urls( &$node, string $url ): void {
+	if ( is_string( $node ) ) {
+		if ( $node !== '' && stripos( $node, '/demo' ) !== false && stripos( $node, 'lp_variant=' ) === false ) {
+			// Absolute or relative /demo/ links without variant.
+			if ( preg_match( '#^https?://[^/]+/demo/?(\?.*)?$#i', $node ) || preg_match( '#^/demo/?(\?.*)?$#i', $node ) ) {
+				$node = $url;
+			}
+		}
+		return;
+	}
+	if ( ! is_array( $node ) ) {
+		return;
+	}
+	foreach ( $node as &$child ) {
+		jcp_campaign_stamp_demo_urls( $child, $url );
+	}
+	unset( $child );
+}
+
+/**
  * Stamp control /contractor-demo/ CTAs with lp_variant at render time (no DB write).
  *
  * @param array<string, mixed> $content Content document.
@@ -834,17 +886,37 @@ add_action( 'wp_head', 'jcp_campaign_variant_bootstrap_script', 1 );
  */
 function jcp_campaign_stamp_control_lp_ctas( array $content, int $post_id ): array {
 	$post = get_post( $post_id );
-	if ( ! ( $post instanceof WP_Post ) || $post->post_name !== 'contractor-demo' ) {
+	$is_control = ( $post instanceof WP_Post && $post->post_name === 'contractor-demo' )
+		|| ( function_exists( 'is_page' ) && is_page( 'contractor-demo' ) );
+	if ( ! $is_control ) {
 		return $content;
 	}
+	$demo_url = '/demo/?lp_variant=contractor_demo';
 	jcp_campaign_variant_rewrite_ctas_node(
 		$content,
 		'See it on my business',
 		'Free personalized demo · About 2 minutes · No credit card',
-		'/demo/?lp_variant=contractor_demo'
+		$demo_url
 	);
+	jcp_campaign_stamp_demo_urls( $content, $demo_url );
 	return $content;
 }
+
+/**
+ * Persist control LP analytics meta so lp_variant works even if path checks miss.
+ */
+function jcp_campaign_ensure_control_lp_meta(): void {
+	$page = get_page_by_path( 'contractor-demo', OBJECT, 'page' );
+	if ( ! ( $page instanceof WP_Post ) ) {
+		return;
+	}
+	$id   = (int) $page->ID;
+	$meta = (string) get_post_meta( $id, '_jcp_campaign_variant', true );
+	if ( $meta !== 'contractor_demo' ) {
+		update_post_meta( $id, '_jcp_campaign_variant', 'contractor_demo' );
+	}
+}
+add_action( 'init', 'jcp_campaign_ensure_control_lp_meta', 30 );
 
 /**
  * Rank Math / document title for variants when Rank Math meta is empty.

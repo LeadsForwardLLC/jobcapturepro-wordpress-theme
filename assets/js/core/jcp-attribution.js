@@ -15,11 +15,34 @@
   ];
   const EXTRA_KEYS = ['lp_variant'];
 
+  /** Path → analytics key for paid LPs (belt-and-suspenders if PHP attr misses). */
+  const PATH_VARIANT_MAP = {
+    '/contractor-demo': 'contractor_demo',
+    '/contractor-formula': 'formula',
+    '/contractor-nature': 'nature_doc',
+    '/job-proof': 'proof_waste',
+    '/why-we-built-jcp': 'founder',
+  };
+
+  function readLpVariantFromPath() {
+    try {
+      const path = String(window.location.pathname || '').replace(/\/+$/, '') || '/';
+      return PATH_VARIANT_MAP[path] || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
   function readLpVariantFromPage() {
     try {
       const fromBody = document.body && document.body.getAttribute('data-jcp-lp-variant');
       const fromHtml = document.documentElement && document.documentElement.getAttribute('data-jcp-lp-variant');
-      const raw = (fromBody || fromHtml || '').trim();
+      const fromPath = readLpVariantFromPath();
+      const raw = (fromBody || fromHtml || fromPath || '').trim();
+      if (raw && document.body && !document.body.getAttribute('data-jcp-lp-variant')) {
+        document.body.setAttribute('data-jcp-lp-variant', raw);
+        document.documentElement.setAttribute('data-jcp-lp-variant', raw);
+      }
       return raw ? raw.slice(0, 64) : '';
     } catch (e) {
       return '';

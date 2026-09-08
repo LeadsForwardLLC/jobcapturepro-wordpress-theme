@@ -20,6 +20,44 @@ const baseUrl = window.JCP_CONFIG && window.JCP_CONFIG.baseUrl
   : window.location.origin;
 const assetBase = window.JCP_ASSET_BASE || '';
 
+/** Append stored paid attribution onto an internal marketing URL. */
+function jcpAppendAttributionToUrl(href, extraParams) {
+  try {
+    const u = new URL(href, window.location.origin);
+    const attr =
+      window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function'
+        ? window.JCPLeadAttribution.getPayload() || {}
+        : {};
+    const keys = [
+      'utm_source',
+      'utm_medium',
+      'utm_campaign',
+      'utm_content',
+      'utm_term',
+      'fbclid',
+      'lp_variant',
+      'contact_id',
+    ];
+    keys.forEach((key) => {
+      if (u.searchParams.get(key)) return;
+      const fromExtra = extraParams && extraParams[key] != null ? String(extraParams[key]).trim() : '';
+      const fromAttr = attr[key] != null ? String(attr[key]).trim() : '';
+      const val = fromExtra || fromAttr;
+      if (val) u.searchParams.set(key, val);
+    });
+    if (extraParams && typeof extraParams === 'object') {
+      Object.keys(extraParams).forEach((key) => {
+        if (keys.includes(key)) return;
+        const val = extraParams[key] != null ? String(extraParams[key]).trim() : '';
+        if (val && !u.searchParams.get(key)) u.searchParams.set(key, val);
+      });
+    }
+    return u.pathname + u.search + u.hash;
+  } catch (e) {
+    return href;
+  }
+}
+
 /** Build app onboarding URL; merges UTM defaults, then extra params (demo_session, email, names, utm_content, …). */
 function jcpBuildOnboardingUrl(extraParams) {
   const fallback =
@@ -4175,7 +4213,7 @@ function ensureOutcomesFooterButtons() {
     const link = document.createElement('a');
     link.id = 'demoOutcomesMoreOptions';
     link.className = 'demo-outcomes-modal__more-btn';
-    link.href = '/personalized-demo/';
+    link.href = jcpAppendAttributionToUrl('/personalized-demo/');
     link.textContent = 'Talk to a JCP Expert';
     more.appendChild(link);
   } else {
@@ -4185,11 +4223,11 @@ function ensureOutcomesFooterButtons() {
         const link = document.createElement('a');
         link.id = 'demoOutcomesMoreOptions';
         link.className = 'demo-outcomes-modal__more-btn';
-        link.href = '/personalized-demo/';
+        link.href = jcpAppendAttributionToUrl('/personalized-demo/');
         link.textContent = 'Talk to a JCP Expert';
         moreBtn.replaceWith(link);
       } else {
-        moreBtn.setAttribute('href', '/personalized-demo/');
+        moreBtn.setAttribute('href', jcpAppendAttributionToUrl('/personalized-demo/'));
         moreBtn.removeAttribute('data-outcomes-action');
         moreBtn.textContent = 'Talk to a JCP Expert';
       }
@@ -4206,7 +4244,7 @@ function ensureOutcomesFooterButtons() {
     const cs = document.createElement('a');
     cs.id = 'demoOutcomesCaseStudy';
     cs.className = 'demo-outcomes-modal__last-resort-btn';
-    cs.href = '/case-study/?utm_content=demo_outcomes_last_resort';
+    cs.href = jcpAppendAttributionToUrl('/case-study/', { utm_content: 'demo_outcomes_last_resort' });
     cs.textContent = 'Apply for the 90-Day Case Study';
     last.appendChild(cs);
     const note = document.createElement('span');
@@ -4217,7 +4255,10 @@ function ensureOutcomesFooterButtons() {
     const csBtn = $('demoOutcomesCaseStudy');
     if (csBtn) {
       csBtn.textContent = 'Apply for the 90-Day Case Study';
-      csBtn.setAttribute('href', '/case-study/?utm_content=demo_outcomes_last_resort');
+      csBtn.setAttribute(
+        'href',
+        jcpAppendAttributionToUrl('/case-study/', { utm_content: 'demo_outcomes_last_resort' })
+      );
     }
     const note = card.querySelector('.demo-outcomes-modal__last-resort-note');
     if (note) {

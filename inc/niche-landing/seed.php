@@ -218,6 +218,7 @@ function jcp_niche_seed_contractor_demo( bool $force_refresh = false ): int {
 		if ( $force_refresh || ! $has_content ) {
 			jcp_page_save_content( $id, $doc );
 		}
+		update_post_meta( $id, '_jcp_campaign_variant', 'contractor_demo' );
 		return $id;
 	}
 
@@ -236,6 +237,7 @@ function jcp_niche_seed_contractor_demo( bool $force_refresh = false ): int {
 	}
 	$id = (int) $id;
 	update_post_meta( $id, '_wp_page_template', 'page-jcp-blocks.php' );
+	update_post_meta( $id, '_jcp_campaign_variant', 'contractor_demo' );
 	jcp_page_save_content( $id, $doc );
 	return $id;
 }
