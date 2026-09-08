@@ -12,6 +12,9 @@
  */
 function jcp_page_render( int $post_id ): void {
 	$content   = jcp_page_get_content( $post_id );
+	if ( function_exists( 'jcp_campaign_stamp_control_lp_ctas' ) ) {
+		$content = jcp_campaign_stamp_control_lp_ctas( $content, $post_id );
+	}
 	$legacy    = jcp_page_blocks_to_legacy( $content );
 	$page_key  = ! empty( $legacy['niche_key'] ) ? sanitize_title( (string) $legacy['niche_key'] ) : sanitize_title( get_post_field( 'post_name', $post_id ) );
 	$page_kind = (string) ( $content['page_kind'] ?? 'marketing' );

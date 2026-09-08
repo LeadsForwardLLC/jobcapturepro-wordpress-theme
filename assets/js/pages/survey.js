@@ -416,6 +416,28 @@
     }
     if (niche) url.searchParams.set('niche', niche);
     if (email) url.searchParams.set('email', email);
+
+    // Preserve paid attribution into ?mode=run (URL + stored first-touch payload).
+    const attrKeys = [
+      'utm_source',
+      'utm_medium',
+      'utm_campaign',
+      'utm_content',
+      'utm_term',
+      'fbclid',
+      'lp_variant',
+      'contact_id',
+    ];
+    const attr = typeof getAttributionPayload === 'function' ? getAttributionPayload() : {};
+    const current = new URLSearchParams(window.location.search || '');
+    attrKeys.forEach((key) => {
+      if (url.searchParams.get(key)) return;
+      const fromAttr = attr && attr[key] != null ? String(attr[key]).trim() : '';
+      const fromUrl = (current.get(key) || '').trim();
+      const val = fromAttr || fromUrl;
+      if (val) url.searchParams.set(key, val);
+    });
+
     return url.href;
   };
 

@@ -749,7 +749,8 @@ function jcp_campaign_variants_maybe_seed(): void {
 add_action( 'init', 'jcp_campaign_variants_maybe_seed', 25 );
 
 /**
- * Current page campaign variant key (empty for control /contractor-demo/).
+ * Current page campaign variant key.
+ * Control LP /contractor-demo/ stamps as contractor_demo for analytics.
  */
 function jcp_campaign_current_variant_key(): string {
 	if ( ! is_singular( 'page' ) ) {
@@ -769,6 +770,10 @@ function jcp_campaign_current_variant_key(): string {
 		if ( $key !== '' && jcp_campaign_variant( $key ) ) {
 			return $key;
 		}
+	}
+	$post = get_post( $post_id );
+	if ( $post instanceof WP_Post && $post->post_name === 'contractor-demo' ) {
+		return 'contractor_demo';
 	}
 	return '';
 }
@@ -819,6 +824,27 @@ function jcp_campaign_variant_bootstrap_script(): void {
 	);
 }
 add_action( 'wp_head', 'jcp_campaign_variant_bootstrap_script', 1 );
+
+/**
+ * Stamp control /contractor-demo/ CTAs with lp_variant at render time (no DB write).
+ *
+ * @param array<string, mixed> $content Content document.
+ * @param int                  $post_id Post ID.
+ * @return array<string, mixed>
+ */
+function jcp_campaign_stamp_control_lp_ctas( array $content, int $post_id ): array {
+	$post = get_post( $post_id );
+	if ( ! ( $post instanceof WP_Post ) || $post->post_name !== 'contractor-demo' ) {
+		return $content;
+	}
+	jcp_campaign_variant_rewrite_ctas_node(
+		$content,
+		'See it on my business',
+		'Free personalized demo · About 2 minutes · No credit card',
+		'/demo/?lp_variant=contractor_demo'
+	);
+	return $content;
+}
 
 /**
  * Rank Math / document title for variants when Rank Math meta is empty.
