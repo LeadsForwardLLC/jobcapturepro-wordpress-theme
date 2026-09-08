@@ -12,6 +12,8 @@ $demo_mode = isset( $_GET['mode'] ) && $_GET['mode'] === 'run'; // phpcs:ignore
 $demo_embed = $demo_mode && isset( $_GET['embed'] ) && (string) $_GET['embed'] === '1'; // phpcs:ignore
 
 if ( $demo_mode ) {
+	$demo_markup = function_exists( 'jcp_core_get_demo_run_markup' ) ? jcp_core_get_demo_run_markup() : '';
+	$hydrated    = $demo_markup !== '';
 	?><!DOCTYPE html>
 <html <?php language_attributes(); ?> class="jcp-demo-run-html<?php echo $demo_embed ? ' jcp-demo-embed-html' : ''; ?>">
 <head>
@@ -23,7 +25,10 @@ if ( $demo_mode ) {
 	<?php wp_head(); ?>
 </head>
 <body <?php body_class( $demo_embed ? 'jcp-demo-run demo-run-only jcp-demo-embed' : 'jcp-demo-run demo-run-only' ); ?>>
-<div id="jcp-app" data-jcp-page="demo"<?php echo $demo_embed ? ' data-jcp-embed="1"' : ''; ?>></div>
+<div id="jcp-app" data-jcp-page="demo"<?php echo $demo_embed ? ' data-jcp-embed="1"' : ''; ?><?php echo $hydrated ? ' data-jcp-hydrated="1"' : ''; ?>><?php
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted local theme template, path-rewritten.
+	echo $demo_markup;
+?></div>
 <?php wp_footer(); ?>
 </body>
 </html>

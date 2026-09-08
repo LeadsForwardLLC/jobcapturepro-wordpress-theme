@@ -70,6 +70,49 @@ function jcp_core_enqueue_assets(): void {
         return;
     }
 
+    // /demo/?mode=run: minimal shell only (no marketing CSS/nav; Leaflet + directory CSS lazy).
+    if ( $demo_run ) {
+        jcp_core_enqueue_style( 'jcp-core-demo-shared', 'assets/shared/assets/demo.css' );
+        jcp_core_enqueue_style( 'jcp-core-demo', 'css/pages/demo.css', [ 'jcp-core-demo-shared' ] );
+        jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
+        jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [] );
+        jcp_core_enqueue_script( $render_handle, 'js/core/jcp-render.js', [] );
+        jcp_core_enqueue_script( 'jcp-core-demo', 'js/features/demo/jcp-demo.js', [ $render_handle, 'jcp-core-attribution', 'jcp-core-onboarding-handoff' ] );
+
+        $globals = "window.JCP_ENV = 'live';\n";
+        $globals .= "window.JCP_CONFIG = { env: 'live', baseUrl: '" . esc_url_raw( site_url() ) . "' };\n";
+        $globals .= "window.JCP_ASSET_BASE = '" . esc_url_raw( get_stylesheet_directory_uri() . '/assets' ) . "';";
+        $demo_tpl_ver = jcp_core_asset_version( 'assets/demo/index.html' );
+        if ( $demo_tpl_ver ) {
+            $globals .= "\nwindow.JCP_DEMO_TEMPLATE_VERSION = '" . esc_js( $demo_tpl_ver ) . "';";
+        }
+        if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {
+            $onb = [
+                'url'         => jcp_core_onboarding_app_url_raw(
+                    function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : []
+                ),
+                'sessionId'   => jcp_core_onboarding_hardcoded_session_id(),
+                'utmDefaults' => function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : [],
+            ];
+            $globals .= "\nwindow.JCP_ONBOARDING = " . wp_json_encode( $onb ) . ';';
+        }
+        wp_add_inline_script( $render_handle, $globals, 'before' );
+        wp_localize_script(
+            'jcp-core-demo',
+            'JCP_DEMO_EVENT',
+            [
+                'rest_url' => rest_url( 'jcp/v1/demo-event' ),
+            ]
+        );
+        wp_add_inline_script( 'jcp-core-demo', 'window.JCP_IS_DEMO_MODE = true;', 'before' );
+        wp_add_inline_script(
+            'jcp-core-demo',
+            "(function(){function a(){if(window.JCP_IS_DEMO_MODE!==true)return;document.body.classList.add('jcp-guided-demo','demo-run-only');var m=window.matchMedia('(max-width:1024px)').matches;if(m){document.documentElement.classList.add('jcp-demo-run-mobile');document.body.classList.add('is-mobile-mode','jcp-phone-shell');}else{document.body.classList.add('jcp-desktop-guided');}}if(document.body)a();else document.addEventListener('DOMContentLoaded',a);})();",
+            'before'
+        );
+        return;
+    }
+
     $is_marketing = $pages['is_home'] || $pages['is_pricing'] || $pages['is_contact'] || ! empty( $pages['is_niche_landing'] );
 
     // Form Landing: minimal shell only (no nav / marketing stack).
@@ -320,28 +363,7 @@ function jcp_core_enqueue_assets(): void {
         return;
     }
 
-    // Demo page - same UI as prototype but with restrictions
-    if ( $pages['is_demo'] ) {
-        // Survey gate assets are handled by the early-return path above.
-        // This branch is ?mode=run only.
-        jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
-        jcp_core_enqueue_style( 'jcp-core-demo-shared', 'assets/shared/assets/demo.css' );
-        jcp_core_enqueue_style( 'jcp-core-demo', 'css/pages/demo.css', [ 'jcp-core-demo-shared' ] );
-        jcp_core_enqueue_style( 'jcp-core-leaflet', 'demo/leaflet/leaflet.css', [ 'jcp-core-demo' ] );
-        jcp_core_enqueue_style( 'jcp-core-directory-cards', 'assets/directory/directory.css', [ 'jcp-core-demo' ] );
-        jcp_core_enqueue_script( 'jcp-core-leaflet', 'demo/leaflet/leaflet.js', [ $render_handle ] );
-        jcp_core_enqueue_script( 'jcp-core-demo', 'js/features/demo/jcp-demo.js', [ 'jcp-core-leaflet', 'jcp-core-attribution' ] );
-        wp_localize_script( 'jcp-core-demo', 'JCP_DEMO_EVENT', [
-            'rest_url' => rest_url( 'jcp/v1/demo-event' ),
-        ] );
-        wp_add_inline_script( 'jcp-core-demo', 'window.JCP_IS_DEMO_MODE = true;', 'before' );
-        wp_add_inline_script(
-            'jcp-core-demo',
-            "(function(){function a(){if(window.JCP_IS_DEMO_MODE!==true)return;document.body.classList.add('jcp-guided-demo','demo-run-only');var m=window.matchMedia('(max-width:1024px)').matches;if(m){document.documentElement.classList.add('jcp-demo-run-mobile');document.body.classList.add('is-mobile-mode','jcp-phone-shell');}else{document.body.classList.add('jcp-desktop-guided');}}if(document.body)a();else document.addEventListener('DOMContentLoaded',a);})();",
-            'before'
-        );
-        return;
-    }
+    // Demo ?mode=run is handled by the early-return path above.
 
     // Directory page
     if ( $pages['is_directory'] ) {

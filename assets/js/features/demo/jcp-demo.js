@@ -557,9 +557,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Plumbing job',
     jobTitle: 'Water heater replacement',
     photos: [
-      'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=1200&h=900&fit=crop&q=80',
+		'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
       'Water heater replacement at 1242 Mason Rd, Austin TX 78704. Installed a high-efficiency unit, verified venting, and tested T&P relief. Local, geotagged job proof ready for your website and Google.',
@@ -573,7 +573,7 @@ const NICHE_PHOTO_PACKS = {
     photos: [
       'CAMPAIGN:jcp-campaign-job-proof.jpg',
       'CAMPAIGN:jcp-campaign-hvac-capture.jpg',
-      'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
       'HVAC install at 1242 Mason Rd, Austin TX 78704. New outdoor unit set, lineset connected, and system commissioned for cooling. Geotagged job proof ready to publish.',
@@ -585,9 +585,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Electrical job',
     jobTitle: 'Panel upgrade',
     photos: [
-      'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1558442074-3c19857bc1dc?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1473341302250-a0c3377630b0?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1558442074-3c19857bc1dc?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1473341302250-a0c3377630b0?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
       'Electrical panel upgrade at 1242 Mason Rd, Austin TX 78704. New breaker layout, labeled circuits, and safety check completed.',
@@ -599,9 +599,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Roofing job',
     jobTitle: 'Roof replacement',
     photos: [
-      'https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
       'Roof replacement at 1242 Mason Rd, Austin TX 78704. Tear-off complete, new underlayment and shingles installed, flashing sealed.',
@@ -613,9 +613,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Outdoor job',
     jobTitle: 'Outdoor project',
     photos: [
-      'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1598902108854-10e335adac99?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1598902108854-10e335adac99?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
       'Outdoor project completed at 1242 Mason Rd, Austin TX 78704. Site cleaned, work documented, ready for homeowners nearby.',
@@ -627,9 +627,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Cleaning job',
     jobTitle: 'Deep clean',
     photos: [
-      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
       'Deep clean completed at 1242 Mason Rd, Austin TX 78704. Surfaces detailed, floors finished, home left ready for the owner.',
@@ -641,9 +641,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Remodel job',
     jobTitle: 'Home remodel',
     photos: [
-      'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
       'Remodel work completed at 1242 Mason Rd, Austin TX 78704. Finished surfaces installed and site cleaned for handover.',
@@ -655,9 +655,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Restoration job',
     jobTitle: 'Restoration work',
     photos: [
-      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
       'Restoration work completed at 1242 Mason Rd, Austin TX 78704. Affected areas treated, dried, and documented for the homeowner.',
@@ -669,9 +669,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Job site',
     jobTitle: 'Completed job',
     photos: [
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=1200&h=900&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1200&h=900&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&q=75',
+      'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
       'Completed job at 1242 Mason Rd, Austin TX 78704. Work documented on site with geotagged proof ready for your website and Google.',
@@ -754,7 +754,7 @@ function resolveDemoPhotoUrl(src) {
     return `${assetBase}/campaign/${raw.slice('CAMPAIGN:'.length)}`;
   }
   if (raw.startsWith('CAMPAIGN:')) {
-    return 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1200&h=900&fit=crop&q=80';
+    return 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&h=600&fit=crop&q=75';
   }
   return raw;
 }
@@ -2273,21 +2273,79 @@ function startPendingJob(job, jobIndex) {
 }
 
 /* =========================================================
-   Map (Leaflet)
+   Map (Leaflet) — lazy-loaded only when the map screen is used
 ========================================================= */
 
-function initializeMap() {
-  if (state.map) return;
+function ensureLeaflet(done) {
+  if (typeof L !== 'undefined') {
+    if (typeof done === 'function') done();
+    return;
+  }
+  if (!window.__jcpLeafletWaiters) {
+    window.__jcpLeafletWaiters = [];
+  }
+  if (typeof done === 'function') {
+    window.__jcpLeafletWaiters.push(done);
+  }
+  if (window.__jcpLeafletLoading) return;
+  window.__jcpLeafletLoading = true;
 
-  // Safety: only init if the element exists
+  const base = (window.JCP_ASSET_BASE || '').replace(/\/$/, '');
+  const cssHref = `${base}/demo/leaflet/leaflet.css`;
+  const jsSrc = `${base}/demo/leaflet/leaflet.js`;
+
+  if (!document.querySelector('link[data-jcp-leaflet]')) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = cssHref;
+    link.setAttribute('data-jcp-leaflet', '1');
+    document.head.appendChild(link);
+  }
+
+  const script = document.createElement('script');
+  script.src = jsSrc;
+  script.async = true;
+  script.onload = () => {
+    window.__jcpLeafletLoading = false;
+    const waiters = window.__jcpLeafletWaiters || [];
+    window.__jcpLeafletWaiters = [];
+    waiters.forEach((fn) => {
+      try { fn(); } catch (e) { /* ignore */ }
+    });
+  };
+  script.onerror = () => {
+    window.__jcpLeafletLoading = false;
+    window.__jcpLeafletWaiters = [];
+  };
+  document.head.appendChild(script);
+}
+
+function initializeMap(done) {
+  if (state.map) {
+    if (typeof done === 'function') done();
+    return;
+  }
+
   const mapEl = $('job-map');
-  if (!mapEl || typeof L === 'undefined') return;
+  if (!mapEl) {
+    if (typeof done === 'function') done();
+    return;
+  }
 
-  state.map = L.map('job-map').setView([30.2672, -97.7431], 11);
+  ensureLeaflet(() => {
+    if (state.map || typeof L === 'undefined') {
+      if (typeof done === 'function') done();
+      return;
+    }
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
-  }).addTo(state.map);
+    state.map = L.map('job-map').setView([30.2672, -97.7431], 11);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(state.map);
+
+    if (typeof done === 'function') done();
+  });
 }
 
 function addMapMarker(lat, lng, title) {
@@ -3060,8 +3118,9 @@ if (publishBtn) {
     });
     persistCheckins();
 
-    initializeMap();
-    addMapMarker(30.2672, -97.7431, 'Water Heater Replacement');
+    initializeMap(() => {
+      addMapMarker(30.2672, -97.7431, 'Water Heater Replacement');
+    });
   }
 
   // Prototype: save only, no publish to website/social
@@ -3919,9 +3978,22 @@ function fireOutcomesConfetti() {
   outcomesConfettiFrame = requestAnimationFrame(tick);
 }
 
+function ensureDirectoryCardStyles() {
+  if (document.getElementById('jcp-directory-cards-css')) return;
+  const base = (window.JCP_ASSET_BASE || '').replace(/\/$/, '');
+  if (!base) return;
+  const link = document.createElement('link');
+  link.id = 'jcp-directory-cards-css';
+  link.rel = 'stylesheet';
+  link.href = `${base}/directory/directory.css`;
+  document.head.appendChild(link);
+}
+
 function openOutcomesSlideshow() {
   const modal = $('demoOutcomesModal');
   if (!modal) return;
+
+  ensureDirectoryCardStyles();
 
   hideDemoOutcomesInline();
   outcomesSlideshow.isOpen = true;
