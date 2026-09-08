@@ -15,6 +15,7 @@ function jcp_core_enqueue_assets(): void {
     $pages = jcp_core_get_page_detection();
     $render_handle = 'jcp-core-render';
     $render_deps = [];
+    $demo_run = ! empty( $pages['is_demo'] ) && isset( $_GET['mode'] ) && $_GET['mode'] === 'run'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
     // Preload LCP image to improve LCP (exclude from lazy-load in WP Rocket)
     if ( $pages['is_home'] ) {
@@ -28,6 +29,40 @@ function jcp_core_enqueue_assets(): void {
         add_action( 'wp_head', function () use ( $lcp_url ) {
             echo '<link rel="preload" href="' . $lcp_url . '" as="image">' . "\n";
         }, 1 );
+    }
+
+    // /demo/ survey gate: minimal shell only (no marketing CSS, demo.css, or jcp-render).
+    if ( ! empty( $pages['is_demo'] ) && ! $demo_run ) {
+        jcp_core_enqueue_style( 'jcp-core-base', 'css/base.css' );
+        jcp_core_enqueue_style( 'jcp-core-survey-shared', 'assets/shared/assets/survey.css', [ 'jcp-core-base' ] );
+        jcp_core_enqueue_style( 'jcp-core-survey', 'css/pages/survey.css', [ 'jcp-core-survey-shared' ] );
+        jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
+        jcp_core_enqueue_script( 'jcp-core-survey', 'js/pages/survey.js', [ 'jcp-core-attribution' ] );
+        wp_localize_script(
+            'jcp-core-survey',
+            'JCP_DEMO_SURVEY',
+            [
+                'rest_url'        => rest_url( 'jcp/v1/demo-survey-submit' ),
+                'rest_viewed_url' => rest_url( 'jcp/v1/demo-viewed-submit' ),
+                'rest_event_url'  => rest_url( 'jcp/v1/demo-event' ),
+                'demo_run_url'    => home_url( '/demo/' ),
+            ]
+        );
+        if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {
+            $onb = [
+                'url'         => jcp_core_onboarding_app_url_raw(
+                    function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : []
+                ),
+                'sessionId'   => jcp_core_onboarding_hardcoded_session_id(),
+                'utmDefaults' => function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : [],
+            ];
+            wp_add_inline_script(
+                'jcp-core-survey',
+                'window.JCP_ONBOARDING = window.JCP_ONBOARDING || ' . wp_json_encode( $onb ) . ';',
+                'before'
+            );
+        }
+        return;
     }
 
     $is_marketing = $pages['is_home'] || $pages['is_pricing'] || $pages['is_contact'] || ! empty( $pages['is_niche_landing'] );
@@ -282,36 +317,24 @@ function jcp_core_enqueue_assets(): void {
 
     // Demo page - same UI as prototype but with restrictions
     if ( $pages['is_demo'] ) {
-        $demo_mode = isset( $_GET['mode'] ) && $_GET['mode'] === 'run'; // phpcs:ignore
+        // Survey gate assets are handled by the early-return path above.
+        // This branch is ?mode=run only.
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
         jcp_core_enqueue_style( 'jcp-core-demo-shared', 'assets/shared/assets/demo.css' );
         jcp_core_enqueue_style( 'jcp-core-demo', 'css/pages/demo.css', [ 'jcp-core-demo-shared' ] );
-        if ( $demo_mode ) {
-            jcp_core_enqueue_style( 'jcp-core-leaflet', 'demo/leaflet/leaflet.css', [ 'jcp-core-demo' ] );
-            jcp_core_enqueue_style( 'jcp-core-directory-cards', 'assets/directory/directory.css', [ 'jcp-core-demo' ] );
-            jcp_core_enqueue_script( 'jcp-core-leaflet', 'demo/leaflet/leaflet.js', [ $render_handle ] );
-            jcp_core_enqueue_script( 'jcp-core-demo', 'js/features/demo/jcp-demo.js', [ 'jcp-core-leaflet', 'jcp-core-attribution' ] );
-            wp_localize_script( 'jcp-core-demo', 'JCP_DEMO_EVENT', [
-                'rest_url' => rest_url( 'jcp/v1/demo-event' ),
-            ] );
-            // Demo mode: restricted access
-            wp_add_inline_script( 'jcp-core-demo', 'window.JCP_IS_DEMO_MODE = true;', 'before' );
-            wp_add_inline_script(
-                'jcp-core-demo',
-                "(function(){function a(){if(window.JCP_IS_DEMO_MODE!==true)return;document.body.classList.add('jcp-guided-demo','demo-run-only');var m=window.matchMedia('(max-width:1024px)').matches;if(m){document.documentElement.classList.add('jcp-demo-run-mobile');document.body.classList.add('is-mobile-mode','jcp-phone-shell');}else{document.body.classList.add('jcp-desktop-guided');}}if(document.body)a();else document.addEventListener('DOMContentLoaded',a);})();",
-                'before'
-            );
-        } else {
-            jcp_core_enqueue_style( 'jcp-core-survey-shared', 'assets/shared/assets/survey.css' );
-            jcp_core_enqueue_style( 'jcp-core-survey', 'css/pages/survey.css', [ 'jcp-core-demo', 'jcp-core-survey-shared' ] );
-            jcp_core_enqueue_script( 'jcp-core-survey', 'js/pages/survey.js', [ $render_handle, 'jcp-core-attribution' ] );
-            wp_localize_script( 'jcp-core-survey', 'JCP_DEMO_SURVEY', [
-                'rest_url'        => rest_url( 'jcp/v1/demo-survey-submit' ),
-                'rest_viewed_url' => rest_url( 'jcp/v1/demo-viewed-submit' ),
-                'rest_event_url'  => rest_url( 'jcp/v1/demo-event' ),
-                'demo_run_url'    => home_url( '/demo/' ),
-            ] );
-        }
+        jcp_core_enqueue_style( 'jcp-core-leaflet', 'demo/leaflet/leaflet.css', [ 'jcp-core-demo' ] );
+        jcp_core_enqueue_style( 'jcp-core-directory-cards', 'assets/directory/directory.css', [ 'jcp-core-demo' ] );
+        jcp_core_enqueue_script( 'jcp-core-leaflet', 'demo/leaflet/leaflet.js', [ $render_handle ] );
+        jcp_core_enqueue_script( 'jcp-core-demo', 'js/features/demo/jcp-demo.js', [ 'jcp-core-leaflet', 'jcp-core-attribution' ] );
+        wp_localize_script( 'jcp-core-demo', 'JCP_DEMO_EVENT', [
+            'rest_url' => rest_url( 'jcp/v1/demo-event' ),
+        ] );
+        wp_add_inline_script( 'jcp-core-demo', 'window.JCP_IS_DEMO_MODE = true;', 'before' );
+        wp_add_inline_script(
+            'jcp-core-demo',
+            "(function(){function a(){if(window.JCP_IS_DEMO_MODE!==true)return;document.body.classList.add('jcp-guided-demo','demo-run-only');var m=window.matchMedia('(max-width:1024px)').matches;if(m){document.documentElement.classList.add('jcp-demo-run-mobile');document.body.classList.add('is-mobile-mode','jcp-phone-shell');}else{document.body.classList.add('jcp-desktop-guided');}}if(document.body)a();else document.addEventListener('DOMContentLoaded',a);})();",
+            'before'
+        );
         return;
     }
 

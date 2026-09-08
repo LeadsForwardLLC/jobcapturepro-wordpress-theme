@@ -59,7 +59,7 @@
     fetchUrl = `${templateUrl}?v=${encodeURIComponent(window.JCP_DEMO_TEMPLATE_VERSION)}`;
   }
 
-  fetch(fetchUrl, { cache: 'no-store' })
+  fetch(fetchUrl)
     .then((res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.text();
