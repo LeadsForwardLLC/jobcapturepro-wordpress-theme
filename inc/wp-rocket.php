@@ -94,7 +94,7 @@ add_filter( 'rocket_exclude_js', 'jcp_core_rocket_exclude_js' );
  * Bump $bust when critical front-end assets change and anonymous CSS must refresh.
  */
 function jcp_core_rocket_bust_stale_minify(): void {
-	$bust = '2026-09-08-outcomes-copy-v1';
+	$bust = '2026-09-08-lp-attr-v2';
 	if ( get_option( 'jcp_core_rocket_bust' ) === $bust ) {
 		return;
 	}
@@ -105,6 +105,21 @@ function jcp_core_rocket_bust_stale_minify(): void {
 	}
 	if ( function_exists( 'rocket_clean_domain' ) ) {
 		rocket_clean_domain();
+	}
+	// Paid LP URLs must not serve pre-attribution HTML.
+	if ( function_exists( 'rocket_clean_files' ) ) {
+		rocket_clean_files(
+			[
+				home_url( '/contractor-demo/' ),
+				home_url( '/contractor-demo' ),
+				home_url( '/contractor-formula/' ),
+				home_url( '/contractor-nature/' ),
+				home_url( '/job-proof/' ),
+				home_url( '/why-we-built-jcp/' ),
+				home_url( '/demo/' ),
+				home_url( '/demo' ),
+			]
+		);
 	}
 }
 add_action( 'init', 'jcp_core_rocket_bust_stale_minify', 20 );
