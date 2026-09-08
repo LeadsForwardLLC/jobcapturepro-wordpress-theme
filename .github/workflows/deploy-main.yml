@@ -139,9 +139,14 @@ jobs:
               }
               if (function_exists(\"jcp_niche_seed_contractor_demo\")) {
                 \$cid = jcp_niche_seed_contractor_demo(true);
-                update_option(\"jcp_contractor_demo_seed_version\", \"27\");
+                update_option(\"jcp_contractor_demo_seed_version\", \"33\");
                 update_option(\"jcp_niche_contractor_demo_seeded\", \"1\");
                 echo \"reseeded contractor-demo id=\$cid\\n\";
+              }
+              if (function_exists(\"jcp_campaign_variants_seed_all\")) {
+                \$vids = jcp_campaign_variants_seed_all(true);
+                update_option(\"jcp_campaign_variants_seed_version\", \"1\");
+                echo \"reseeded campaign variants: \" . implode(\",\", array_keys(\$vids)) . \"\\n\";
               }
               if (function_exists(\"jcp_page_seed_home\")) {
                 \$hid = jcp_page_seed_home(true);
@@ -163,6 +168,14 @@ jobs:
                 home_url(\"/contractor-demo\"),
                 \"https://jobcapturepro.com/contractor-demo/\",
                 \"https://jobcapturepro.com/contractor-demo\",
+                home_url(\"/contractor-formula/\"),
+                home_url(\"/contractor-nature/\"),
+                home_url(\"/job-proof/\"),
+                home_url(\"/why-we-built-jcp/\"),
+                \"https://jobcapturepro.com/contractor-formula/\",
+                \"https://jobcapturepro.com/contractor-nature/\",
+                \"https://jobcapturepro.com/job-proof/\",
+                \"https://jobcapturepro.com/why-we-built-jcp/\",
                 home_url(\"/support/\"),
                 home_url(\"/support\"),
                 home_url(\"/contact/\"),

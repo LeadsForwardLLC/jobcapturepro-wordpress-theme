@@ -170,12 +170,12 @@ function jcp_core_enqueue_assets(): void {
             // Lightweight paid LP view signal for GTM/Meta (maps to PaidLandingView).
             wp_add_inline_script(
                 'jcp-core-attribution',
-                "(function(){try{window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'PaidLandingView',page_path:location.pathname});}catch(e){}})();",
+                "(function(){try{window.dataLayer=window.dataLayer||[];var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||'';window.dataLayer.push({event:'PaidLandingView',page_path:location.pathname,lp_variant:v||'default'});}catch(e){}})();",
                 'after'
             );
             wp_add_inline_script(
                 'jcp-core-attribution',
-                "document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[href*=\"/demo\"]'):null;if(!a)return;try{window.dataLayer=window.dataLayer||[];window.dataLayer.push({event:'DemoCTA',cta_label:(a.textContent||'').trim().slice(0,80),href:a.href});}catch(err){}});",
+                "document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[href*=\"/demo\"]'):null;if(!a)return;try{if(window.__jcpDemoCtaFired)return;window.__jcpDemoCtaFired=1;window.dataLayer=window.dataLayer||[];var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||'';window.dataLayer.push({event:'DemoCTA',cta_label:(a.textContent||'').trim().slice(0,80),href:a.href,lp_variant:v||'default'});}catch(err){}});",
                 'after'
             );
         }

@@ -94,7 +94,7 @@ add_filter( 'rocket_exclude_js', 'jcp_core_rocket_exclude_js' );
  * Bump $bust when critical front-end assets change and anonymous CSS must refresh.
  */
 function jcp_core_rocket_bust_stale_minify(): void {
-	$bust = '2026-09-02-survey-gate-wheel-v6';
+	$bust = '2026-09-08-campaign-lp-variants-v1';
 	if ( get_option( 'jcp_core_rocket_bust' ) === $bust ) {
 		return;
 	}

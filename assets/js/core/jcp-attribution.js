@@ -13,6 +13,18 @@
     'utm_term',
     'fbclid',
   ];
+  const EXTRA_KEYS = ['lp_variant'];
+
+  function readLpVariantFromPage() {
+    try {
+      const fromBody = document.body && document.body.getAttribute('data-jcp-lp-variant');
+      const fromHtml = document.documentElement && document.documentElement.getAttribute('data-jcp-lp-variant');
+      const raw = (fromBody || fromHtml || '').trim();
+      return raw ? raw.slice(0, 64) : '';
+    } catch (e) {
+      return '';
+    }
+  }
 
   /**
    * GoHighLevel contact IDs are opaque strings (often 20–28 alphanumeric).
@@ -72,6 +84,12 @@
         });
       }
 
+      // Preserve first-touch UTMs; always stamp LP variant from page or URL when present.
+      const pageVariant = readLpVariantFromPage() || params.get('lp_variant') || '';
+      if (pageVariant && !data.lp_variant) {
+        data.lp_variant = pageVariant;
+      }
+
       const contactId = readContactIdFromUrl();
       if (contactId) {
         data.contact_id = contactId;
@@ -92,6 +110,10 @@
         const value = data[key] != null ? String(data[key]).trim() : '';
         if (value) out[key] = value;
       });
+      EXTRA_KEYS.forEach((key) => {
+        const value = data[key] != null ? String(data[key]).trim() : '';
+        if (value) out[key] = value;
+      });
       if (data.landing_page) out.landing_page = String(data.landing_page).trim();
       if (data.referrer) out.referrer = String(data.referrer).trim();
       if (isValidGhlContactId(data.contact_id)) {
@@ -103,11 +125,14 @@
     }
   }
 
-  /** Append stored UTMs (+ contact_id) to bare /demo/ links so shareable URLs keep attribution too. */
+  /** Append stored UTMs (+ contact_id + lp_variant) to bare /demo/ links so shareable URLs keep attribution too. */
   function decorateDemoLinks() {
     try {
       const payload = getLeadAttributionPayload();
       const keys = PARAM_KEYS.filter((k) => payload[k]);
+      EXTRA_KEYS.forEach((k) => {
+        if (payload[k]) keys.push(k);
+      });
       if (payload.contact_id) keys.push('contact_id');
       if (!keys.length) return;
       document.querySelectorAll('a[href*="/demo"]').forEach((a) => {

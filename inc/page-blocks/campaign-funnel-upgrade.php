@@ -38,10 +38,20 @@ function jcp_page_upgrade_campaign_funnel_order( array $content, int $post_id ):
 		'faq',
 		'final_cta',
 	];
+	// Paid LP variants may provide a custom spine (message-match bridge first).
+	$custom_order = $content['settings']['campaign_funnel_order'] ?? null;
+	if ( is_array( $custom_order ) && $custom_order !== [] ) {
+		$desired = array_values( array_map( 'strval', $custom_order ) );
+	}
+
 	$remove = [
 		'demo_preview' => true,
 		'how_it_works' => true,
 	];
+	// Keep how_it_works when a variant funnel explicitly includes it.
+	if ( in_array( 'how_it_works', $desired, true ) ) {
+		unset( $remove['how_it_works'] );
+	}
 
 	$by_type = [];
 	$changed = false;

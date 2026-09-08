@@ -312,6 +312,13 @@ function jcp_niche_render_hero( array $c, string $niche_key ): void {
 		<div class="jcp-container">
 			<div class="jcp-hero-grid jcp-split-layout <?php echo esc_attr( jcp_media_position_class( $media['media_position'] ) ); ?>" data-jcp-split-path="hero" data-jcp-media-position-path="hero.media_position">
 				<div class="jcp-hero-copy hero-copy jcp-split-col jcp-split-col--copy" data-jcp-split-col="copy">
+					<?php
+					$hero_eyebrow = trim( (string) ( $h['eyebrow'] ?? '' ) );
+					$show_eyebrow = ! array_key_exists( 'show_eyebrow', $h ) || ! empty( $h['show_eyebrow'] );
+					if ( $show_eyebrow && $hero_eyebrow !== '' ) :
+						?>
+						<p class="jcp-hero-eyebrow demo-badge"<?php jcp_niche_editable_attr( 'hero.eyebrow' ); ?>><?php echo esc_html( $hero_eyebrow ); ?></p>
+					<?php endif; ?>
 					<?php if ( $is_home ) : ?>
 						<?php
 						/* Keep "into more {rotator}" as one wrap unit so "into" is never stranded alone. */
@@ -664,6 +671,12 @@ function jcp_niche_render_how_it_works( array $c, string $niche_key ): void {
 					</div>
 				<?php endforeach; ?>
 			</div>
+			<?php endif; ?>
+			<?php
+			$how_closing = trim( (string) ( $h['closing'] ?? '' ) );
+			if ( $how_closing !== '' ) :
+				?>
+				<p class="jcp-how-closing"<?php jcp_niche_editable_attr( 'how_it_works.closing' ); ?>><?php echo esc_html( $how_closing ); ?></p>
 			<?php endif; ?>
 			<?php
 			jcp_niche_render_section_optional_ctas(

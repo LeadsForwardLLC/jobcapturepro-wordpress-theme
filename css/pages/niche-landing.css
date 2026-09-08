@@ -5827,3 +5827,27 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
     font-size: 0.92rem;
   }
 }
+
+/* Paid LP variant hero eyebrow + how-it-works closing */
+.jcp-hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0 var(--jcp-space-md, 1rem);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #b45309;
+  background: rgba(251, 191, 36, 0.14);
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+}
+
+.jcp-how-closing {
+  margin: 1.25rem 0 0;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #334155;
+}
