@@ -96,7 +96,11 @@ function jcp_core_demo_run_dequeue_plugin_assets(): void {
 	if ( ! function_exists( 'jcp_core_is_demo_run_request' ) || ! jcp_core_is_demo_run_request() ) {
 		return;
 	}
-	wp_dequeue_style( 'jobcapturepro-tailwind' );
-	wp_deregister_style( 'jobcapturepro-tailwind' );
+	$handles = [ 'jobcapturepro-tailwind', 'jobcapturepro-plugin-tailwind', 'tailwind', 'tailwindcss' ];
+	foreach ( $handles as $handle ) {
+		wp_dequeue_style( $handle );
+		wp_deregister_style( $handle );
+	}
 }
 add_action( 'wp_enqueue_scripts', 'jcp_core_demo_run_dequeue_plugin_assets', 1000 );
+add_action( 'wp_print_styles', 'jcp_core_demo_run_dequeue_plugin_assets', 100 );
