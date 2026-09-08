@@ -88,3 +88,15 @@ function jcp_core_demo_run_trim_wp_chrome(): void {
 	remove_action( 'wp_head', 'wp_shortlink_wp_head' );
 }
 add_action( 'template_redirect', 'jcp_core_demo_run_trim_wp_chrome', 20 );
+
+/**
+ * Drop plugin CSS unused by the interactive demo shell.
+ */
+function jcp_core_demo_run_dequeue_plugin_assets(): void {
+	if ( ! function_exists( 'jcp_core_is_demo_run_request' ) || ! jcp_core_is_demo_run_request() ) {
+		return;
+	}
+	wp_dequeue_style( 'jobcapturepro-tailwind' );
+	wp_deregister_style( 'jobcapturepro-tailwind' );
+}
+add_action( 'wp_enqueue_scripts', 'jcp_core_demo_run_dequeue_plugin_assets', 1000 );
