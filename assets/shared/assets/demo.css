@@ -4621,6 +4621,33 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   color: #374151;
 }
 
+.demo-outcomes-modal__last-resort {
+  margin: 4px 0 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.demo-outcomes-modal__last-resort-btn {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.demo-outcomes-modal__last-resort-btn:hover {
+  color: #374151;
+}
+
+.demo-outcomes-modal__last-resort-note {
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
 .demo-outcomes-modal__actions,
 #demoOutcomesPrev,
 #demoOutcomesStartCta,
@@ -5534,6 +5561,30 @@ body.jcp-guided-demo #post-demo-panel.active .post-demo-x {
   font-size: 12px;
   line-height: 1.4;
   color: #9ca3af;
+}
+
+.post-demo-case-study-cta {
+  display: block;
+  margin: -6px auto 0;
+  text-align: center;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.post-demo-case-study-cta:hover {
+  color: #374151;
+}
+
+.post-demo-case-study-note {
+  margin: 4px 0 14px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+  line-height: 1.35;
 }
 
 .post-demo-replay-link {

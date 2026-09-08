@@ -54,6 +54,9 @@ function jcp_global_settings_defaults(): array {
 			'default_shortcode'  => '',
 			'mount_global_modal' => false,
 		],
+		'case_study' => [
+			'spots_claimed' => 0,
+		],
 	];
 }
 

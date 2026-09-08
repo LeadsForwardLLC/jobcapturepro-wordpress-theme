@@ -29,6 +29,11 @@ $body_classes = ( $hide_site_chrome ? 'jcp-landing-chrome-hidden' : 'jcp-global-
   <?php wp_head(); ?>
 </head>
 <body <?php body_class( $body_classes ); ?>>
+  <?php
+  if ( function_exists( 'wp_body_open' ) ) {
+    wp_body_open();
+  }
+  ?>
   <div class="jcp-header-stack" id="jcpHeaderStack">
   <?php if ( $hide_site_chrome ) : ?>
     <?php
@@ -123,4 +128,9 @@ $body_classes = ( $hide_site_chrome ? 'jcp-landing-chrome-hidden' : 'jcp-global-
     }
   })();
   </script>
+  <?php
+  if ( function_exists( 'jcp_case_study_is_current_page' ) && jcp_case_study_is_current_page() && function_exists( 'jcp_case_study_print_capacity_on_page' ) ) {
+    jcp_case_study_print_capacity_on_page();
+  }
+  ?>
   <div class="jcp-shell">

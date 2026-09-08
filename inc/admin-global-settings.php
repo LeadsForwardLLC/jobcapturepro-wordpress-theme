@@ -83,6 +83,9 @@ function jcp_global_settings_handle_save(): void {
 				: sanitize_text_field( (string) ( $input['fluent_forms']['default_shortcode'] ?? '' ) ),
 			'mount_global_modal' => ! empty( $input['fluent_forms']['mount_global_modal'] ),
 		],
+		'case_study' => [
+			'spots_claimed' => max( 0, min( 10, (int) ( $input['case_study']['spots_claimed'] ?? 0 ) ) ),
+		],
 	];
 
 	update_option( jcp_global_settings_option_key(), jcp_global_settings_merge( jcp_global_settings_defaults(), $settings ) );
@@ -342,6 +345,33 @@ function jcp_global_settings_render_page(): void {
 							<input type="checkbox" name="jcp_global[fluent_forms][mount_global_modal]" value="1" <?php checked( ! empty( $ff['mount_global_modal'] ) ); ?> />
 							<?php esc_html_e( 'Footer modal opened by links to #apply / #jcp-form-modal or [data-jcp-form-trigger]', 'jcp-core' ); ?>
 						</label>
+					</td>
+				</tr>
+			</table>
+
+			<?php
+			$cs = $s['case_study'] ?? [];
+			$claimed = max( 0, min( 10, (int) ( $cs['spots_claimed'] ?? 0 ) ) );
+			?>
+			<h2><?php esc_html_e( '90-day case study cohort', 'jcp-core' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'Shown on /case-study/ as a capacity bar. Count companies that have been selected/claimed only — not applications under review. Application does not equal acceptance.', 'jcp-core' ); ?>
+			</p>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><label for="jcp_case_spots_claimed"><?php esc_html_e( 'Companies selected', 'jcp-core' ); ?></label></th>
+					<td>
+						<input
+							type="number"
+							class="small-text"
+							id="jcp_case_spots_claimed"
+							name="jcp_global[case_study][spots_claimed]"
+							min="0"
+							max="10"
+							step="1"
+							value="<?php echo esc_attr( (string) $claimed ); ?>"
+						/>
+						<span class="description"><?php esc_html_e( 'of 10 total spots', 'jcp-core' ); ?></span>
 					</td>
 				</tr>
 			</table>

@@ -440,6 +440,10 @@ function jcpDemoPushDataLayerAlias(eventType, stepNumber, metadata) {
       if (cta === 'get_started_free') alias = 'TrialCTAClicked';
       else if (cta === 'personalized_demo') alias = 'OneOnOneDemoClicked';
       else if (cta === 'replay_demo') alias = 'DemoReplayClicked';
+      else if (cta === 'case_study') alias = 'CaseStudyCTAClicked';
+    }
+    if (eventType === 'case_study_cta') {
+      alias = 'CaseStudyCTAClicked';
     }
     if (!alias) return;
     const key = 'jcp_dl_alias_' + alias;
@@ -4103,6 +4107,25 @@ function ensureOutcomesFooterButtons() {
     }
   }
 
+  if (!$('demoOutcomesCaseStudy')) {
+    let last = card.querySelector('.demo-outcomes-modal__last-resort');
+    if (!last) {
+      last = document.createElement('p');
+      last.className = 'demo-outcomes-modal__last-resort';
+      card.appendChild(last);
+    }
+    const cs = document.createElement('a');
+    cs.id = 'demoOutcomesCaseStudy';
+    cs.className = 'demo-outcomes-modal__last-resort-btn';
+    cs.href = '/case-study/?utm_content=demo_outcomes_last_resort';
+    cs.textContent = 'Apply for the 90-day case study';
+    last.appendChild(cs);
+    const note = document.createElement('span');
+    note.className = 'demo-outcomes-modal__last-resort-note';
+    note.textContent = '10 companies selected · Application required — not automatic acceptance';
+    last.appendChild(note);
+  }
+
   syncDemoStartFreeCtas();
 }
 
@@ -4158,6 +4181,11 @@ function wireOutcomesSlideshow() {
 
     $('demoOutcomesMoreOptions')?.addEventListener('click', () => {
       jcpDemoTrack('cta_clicked', null, { cta: 'personalized_demo', source: 'demo_outcomes_modal', label: 'Book a 1-on-1 Demo' }, { keepalive: true });
+    });
+
+    $('demoOutcomesCaseStudy')?.addEventListener('click', () => {
+      jcpDemoTrack('cta_clicked', null, { cta: 'case_study', source: 'demo_outcomes_modal', label: 'Apply for the 90-day case study' }, { keepalive: true });
+      jcpDemoPushDataLayerAlias('case_study_cta', null, { source: 'demo_outcomes_modal' });
     });
 
     $('demoOutcomesDots')?.addEventListener('click', (e) => {
@@ -5277,6 +5305,12 @@ function wirePostDemoPanel() {
       } catch (e) {}
     });
   }
+
+  document
+    .getElementById('postDemoCaseStudyCta')
+    ?.addEventListener('click', () => {
+      jcpDemoTrack('cta_clicked', null, { cta: 'case_study', source: 'demo_post_panel', label: 'Apply for the 90-day case study' }, { keepalive: true });
+    });
 
   document
     .getElementById('btnReplayDemo')
