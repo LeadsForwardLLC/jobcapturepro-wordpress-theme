@@ -104,8 +104,8 @@
       {
         "title": "Google activity",
         "body": "Fresh completed work supports an active local presence.",
-        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-job-proof.jpg",
-        "image_alt": "Completed job ready as a Google Business Profile update",
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-operator.jpg",
+        "image_alt": "Contractor ready to publish job activity to Google",
         "label": "Google",
         "chrome": "google"
       },
@@ -177,7 +177,7 @@
     "pain_points": [],
     "closing": "",
     "contrast_without": {
-      "label": "Without JCP",
+      "label": "Without JobCapturePro",
       "steps": [
         "Job finished",
         "Photos stored",
@@ -185,7 +185,7 @@
       ]
     },
     "contrast_with": {
-      "label": "With JCP",
+      "label": "With JobCapturePro",
       "steps": [
         "Job finished",
         "Proof created",

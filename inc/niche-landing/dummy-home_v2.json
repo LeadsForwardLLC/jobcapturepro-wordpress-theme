@@ -39,12 +39,13 @@
     "pain_points": [],
     "closing": "",
     "contrast_without": {
-      "label": "Without JCP",
+      "label": "Without JobCapturePro",
       "steps": ["Job finished", "Photo sits on the phone", "Nothing happens"]
     },
     "contrast_with": {
-      "label": "With JCP",
-      "steps": ["Job finished", "Proof built", "Published + review ask"]
+      "label": "With JobCapturePro",
+      "steps": ["Job finished", "Proof built", "Published + reused", "Review opportunity"],
+      "loop_note": "Feeds the next job"
     },
     "section_id": "camera-roll"
   },
@@ -64,8 +65,8 @@
       {
         "title": "Maps / GBP",
         "body": "Fresh activity that keeps your profile looking alive.",
-        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-job-proof.jpg",
-        "image_alt": "Completed job ready as a Google Business Profile update",
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-operator.jpg",
+        "image_alt": "Contractor ready to publish job activity to Google Maps",
         "label": "Google",
         "chrome": "google"
       },

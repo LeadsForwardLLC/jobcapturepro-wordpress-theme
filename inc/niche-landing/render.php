@@ -817,6 +817,10 @@ function jcp_niche_render_problem( array $c ): void {
 						$label     = trim( (string) ( $side_data['label'] ?? '' ) );
 						$steps     = array_values( array_filter( array_map( 'strval', (array) ( $side_data['steps'] ?? [] ) ) ) );
 						$is_with   = (string) $side['mod'] === 'with';
+						// Cycle UI is a fixed 2×2 ring — never render more than 4 "with" steps.
+						if ( $is_with && count( $steps ) > 4 ) {
+							$steps = array_slice( $steps, 0, 4 );
+						}
 						$loop_note = trim( (string) ( $side_data['loop_note'] ?? '' ) );
 						if ( $is_with && $loop_note === '' ) {
 							$loop_note = __( 'Feeds the next job', 'jcp-core' );

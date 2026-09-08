@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** Seed version for all paid LP variants (bump to force-refresh content). */
-const JCP_CAMPAIGN_VARIANTS_SEED_VERSION = '3';
+const JCP_CAMPAIGN_VARIANTS_SEED_VERSION = '4';
 
 /**
  * Variant registry keyed by analytics id.
@@ -134,7 +134,6 @@ function jcp_campaign_variants(): array {
 						'Check-in created',
 						'Proof published',
 						'Review opportunity',
-						'Work keeps working',
 					],
 					'loop_note' => 'One completed job can keep creating value long after your crew leaves.',
 				],
@@ -157,24 +156,16 @@ function jcp_campaign_variants(): array {
 						'body'      => 'Fresh job activity for your Business Profile.',
 						'label'     => 'Google',
 						'chrome'    => 'google',
-						'image_url' => '__CAMPAIGN_ASSET__/jcp-campaign-job-proof.jpg',
-						'image_alt' => 'Completed job for Google Business Profile',
+						'image_url' => '__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg',
+						'image_alt' => 'Completed job ready for Google Business Profile',
 					],
 					[
-						'title'     => 'Social',
-						'body'      => 'Completed work becomes usable social content.',
+						'title'     => 'Social + directory',
+						'body'      => 'Completed work becomes usable social content and strengthens your JCP listing.',
 						'label'     => 'Social',
 						'chrome'    => 'social',
 						'image_url' => '__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg',
-						'image_alt' => 'Social-ready job proof',
-					],
-					[
-						'title'     => 'Directory',
-						'body'      => 'Real job activity strengthens your JCP listing.',
-						'label'     => 'Directory',
-						'chrome'    => 'social',
-						'image_url' => '__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg',
-						'image_alt' => 'Directory listing proof',
+						'image_alt' => 'Social and directory-ready job proof',
 					],
 					[
 						'title'     => 'Reviews',
@@ -454,6 +445,60 @@ function jcp_campaign_variant_rewrite_ctas_node( array &$node, string $label, st
 }
 
 /**
+ * Keep contrast cycles at 4 steps and benefit cards on unique images.
+ *
+ * @param array<string, mixed> $legacy Legacy content.
+ * @return array<string, mixed>
+ */
+function jcp_campaign_variant_normalize_shared_visuals( array $legacy ): array {
+	if ( isset( $legacy['problem']['contrast_with']['steps'] ) && is_array( $legacy['problem']['contrast_with']['steps'] ) ) {
+		$steps = array_values(
+			array_filter(
+				array_map( 'strval', $legacy['problem']['contrast_with']['steps'] ),
+				static function ( $step ) {
+					return trim( $step ) !== '';
+				}
+			)
+		);
+		$legacy['problem']['contrast_with']['steps'] = array_slice( $steps, 0, 4 );
+	}
+
+	$fallback_images = [
+		'__CAMPAIGN_ASSET__/jcp-campaign-hvac-capture.jpg',
+		'__CAMPAIGN_ASSET__/jcp-campaign-job-proof.jpg',
+		'__CAMPAIGN_ASSET__/jcp-campaign-face-operator.jpg',
+		'__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg',
+		'__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg',
+	];
+
+	if ( isset( $legacy['benefits']['items'] ) && is_array( $legacy['benefits']['items'] ) ) {
+		$seen = [];
+		$fi   = 0;
+		foreach ( $legacy['benefits']['items'] as $i => $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+			$url = trim( (string) ( $item['image_url'] ?? '' ) );
+			if ( $url === '' || isset( $seen[ $url ] ) ) {
+				while ( $fi < count( $fallback_images ) && isset( $seen[ $fallback_images[ $fi ] ] ) ) {
+					$fi++;
+				}
+				if ( $fi < count( $fallback_images ) ) {
+					$url = $fallback_images[ $fi ];
+					$fi++;
+				}
+			}
+			if ( $url !== '' ) {
+				$seen[ $url ] = true;
+				$legacy['benefits']['items'][ $i ]['image_url'] = $url;
+			}
+		}
+	}
+
+	return $legacy;
+}
+
+/**
  * Ensure a legacy section exists as a block in the document.
  *
  * @param array<string, mixed> $doc    Block document.
@@ -518,6 +563,7 @@ function jcp_campaign_variant_document( string $variant_key ): array {
 	}
 
 	$legacy = jcp_campaign_variant_normalize_ctas( $legacy, $variant_key );
+	$legacy = jcp_campaign_variant_normalize_shared_visuals( $legacy );
 
 	$asset_base = trailingslashit( get_template_directory_uri() ) . 'assets/campaign';
 	$encoded    = wp_json_encode( $legacy );

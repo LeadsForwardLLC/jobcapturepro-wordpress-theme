@@ -4434,8 +4434,8 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   margin: 0 0 1rem;
   font-size: 0.75rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  text-transform: none;
   color: var(--jcp-color-text-secondary, #64748b);
 }
 
