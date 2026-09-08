@@ -394,10 +394,28 @@ body.survey-only #jcp-app {
   line-height: 1.45;
   color: #374151;
   font-weight: 600;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  overflow: hidden;
+}
+
+.survey-proof-featured {
+  margin: 0 0 12px;
+  padding: 16px 16px 14px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+  box-sizing: border-box;
+}
+
+.survey-proof-featured-quote {
+  margin: 8px 0 10px;
+}
+
+.survey-proof-featured-quote p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #1f2937;
+  font-weight: 650;
 }
 .survey-proof-by {
   margin: 0;
@@ -434,7 +452,9 @@ body.survey-only #jcp-app {
   }
   .survey-proof-quote {
     font-size: 14px;
-    -webkit-line-clamp: 3;
+  }
+  .survey-proof-featured-quote p {
+    font-size: 14px;
   }
 }
 
@@ -2863,7 +2883,7 @@ input::-webkit-contacts-auto-fill-button {
 }
 @media (min-width: 720px) {
   .survey-proof--compact .survey-proof-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (max-width: 768px) {

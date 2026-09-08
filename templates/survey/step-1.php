@@ -1,14 +1,39 @@
 <?php
 /**
- * Survey gate (single screen): trade + work email → launch demo.
- * Business name is optional personalization. Phone / name / referral collected later at trial.
+ * Survey gate (single screen): work email + trade → launch demo.
+ * Business name / phone / name / referral collected later (fields kept hidden for payload stability).
  *
  * @package JCP_Core
  */
-$demo_headline = 'See JobCapturePro on your business';
-$demo_subhead  = 'Your trade and work email get you into a personalized demo.';
+$demo_headline = 'See JobCapturePro on Your Business';
+$demo_subhead  = 'Enter your work email and trade. We’ll personalize the demo for you.';
 $demo_btn      = 'See My Demo →';
 $demo_micro    = 'Free · About 2 minutes · No credit card';
+
+/**
+ * Featured proof uses the canonical Peter Bonk quote (sales-tool defaults).
+ * Secondary cards use the other approved survey gate quotes, shown in full.
+ *
+ * @var array{name:string,role:string,quote:string} $survey_featured
+ * @var list<array{name:string,role:string,quote:string}> $survey_proof
+ */
+$survey_featured = [
+	'name'  => 'Peter Bonk',
+	'role'  => 'Marketing agency',
+	'quote' => 'One of the easiest marketing wins we\'ve had for an HVAC client. Techs already take photos. Now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.',
+];
+$survey_proof = [
+	[
+		'name'  => 'Trent Ellison',
+		'role'  => 'Home service operator',
+		'quote' => 'Easy to use and really smart. Makes it super simple to turn completed work into useful online content, and the review side is amazing.',
+	],
+	[
+		'name'  => 'Brian Hardy',
+		'role'  => 'Contractor',
+		'quote' => 'Awesome. It takes my work site pictures and turns them into a marketing campaign.',
+	],
+];
 ?>
 <section class="survey-step active" data-step="0">
   <div class="survey-head">
@@ -33,6 +58,18 @@ $demo_micro    = 'Free · About 2 minutes · No credit card';
       ? jcp_core_business_type_flat_options()
       : [];
     ?>
+    <div class="survey-field">
+      <label for="email">Work email <span class="survey-required">*</span></label>
+      <input
+        id="email"
+        type="email"
+        class="survey-input"
+        placeholder="you@company.com"
+        autocomplete="email"
+        required
+      />
+    </div>
+
     <div class="survey-field survey-combobox">
       <label for="nicheSearch">Business type <span class="survey-required">*</span></label>
       <div class="survey-combobox__control">
@@ -63,30 +100,8 @@ $demo_micro    = 'Free · About 2 minutes · No credit card';
       <script type="application/json" id="jcpBusinessTypeOptions"><?php echo wp_json_encode( $business_type_options ); ?></script>
     </div>
 
-    <div class="survey-field">
-      <label for="email">Work email <span class="survey-required">*</span></label>
-      <input
-        id="email"
-        type="email"
-        class="survey-input"
-        placeholder="you@company.com"
-        autocomplete="email"
-        required
-      />
-    </div>
-
-    <div class="survey-field">
-      <label for="businessName">Business name <span class="survey-optional">(optional)</span></label>
-      <input
-        id="businessName"
-        type="text"
-        class="survey-input"
-        placeholder="Summit Plumbing"
-        autocomplete="organization"
-      />
-    </div>
-
-    <?php /* Kept in DOM (hidden) so existing JS / CRM payloads stay stable. Collected later at trial if needed. */ ?>
+    <?php /* Kept in DOM (hidden) so existing JS / CRM payloads stay stable. Collected later if needed. */ ?>
+    <input type="hidden" id="businessName" value="" autocomplete="organization" />
     <input type="hidden" id="firstName" value="" autocomplete="given-name" />
     <input type="hidden" id="lastName" value="" autocomplete="family-name" />
     <input type="hidden" id="phone" value="" autocomplete="tel" />
@@ -100,30 +115,6 @@ $demo_micro    = 'Free · About 2 minutes · No credit card';
     <p class="survey-consent">By continuing you agree to receive the demo and relevant updates by email. Unsubscribe anytime.</p>
   </div>
 
-  <?php
-  /**
-   * Compact proof strip for the single-screen gate.
-   *
-   * @var list<array{name:string,role:string,quote:string}>
-   */
-  $survey_proof = [
-    [
-      'name'  => 'Trent Ellison',
-      'role'  => 'Home service operator',
-      'quote' => 'Turns completed jobs into useful online content — and the review side is amazing.',
-    ],
-    [
-      'name'  => 'Brian Hardy',
-      'role'  => 'Contractor',
-      'quote' => 'Takes my work site pictures and turns them into a full marketing campaign automatically.',
-    ],
-    [
-      'name'  => 'Peter Bonk',
-      'role'  => 'Marketing agency',
-      'quote' => 'Photos become GBP posts, website content, social, and reviews — easiest win for our HVAC client.',
-    ],
-  ];
-  ?>
   <aside class="survey-proof survey-proof--compact" aria-label="<?php esc_attr_e( 'What customers say', 'jcp-core' ); ?>">
     <div class="survey-proof-banner">
       <span class="survey-proof-stars" aria-hidden="true">★★★★★</span>
@@ -132,6 +123,20 @@ $demo_micro    = 'Free · About 2 minutes · No credit card';
         <span><?php esc_html_e( 'by contractors & agencies using JobCapturePro', 'jcp-core' ); ?></span>
       </p>
     </div>
+
+    <figure class="survey-proof-featured">
+      <span class="survey-proof-item-stars" aria-label="<?php esc_attr_e( '5 out of 5 stars', 'jcp-core' ); ?>">★★★★★</span>
+      <blockquote class="survey-proof-featured-quote">
+        <p>&ldquo;<?php echo esc_html( (string) ( $survey_featured['quote'] ?? '' ) ); ?>&rdquo;</p>
+      </blockquote>
+      <figcaption class="survey-proof-by">
+        <strong><?php echo esc_html( (string) ( $survey_featured['name'] ?? '' ) ); ?></strong>
+        <?php if ( ! empty( $survey_featured['role'] ) ) : ?>
+          <span><?php echo esc_html( (string) $survey_featured['role'] ); ?></span>
+        <?php endif; ?>
+      </figcaption>
+    </figure>
+
     <ul class="survey-proof-list">
       <?php foreach ( $survey_proof as $review ) : ?>
         <li class="survey-proof-item">

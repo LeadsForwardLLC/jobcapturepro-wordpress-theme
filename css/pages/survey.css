@@ -524,13 +524,13 @@ body.survey-only.survey-gate-scroll .survey-card--gate {
   flex: 0 0 auto;
 }
 
-/* Short windows: keep the 5-star banner, hide tall quote tiles */
+/* Short windows: keep banner + featured quote; hide secondary cards only */
 @media (max-height: 820px) {
   body.survey-only.survey-gate-scroll .survey-proof--compact .survey-proof-list {
     display: none !important;
   }
 
-  body.survey-only.survey-gate-scroll .survey-proof-banner {
+  body.survey-only.survey-gate-scroll .survey-proof-featured {
     margin-bottom: 0;
   }
 }
