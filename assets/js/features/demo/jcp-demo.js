@@ -883,11 +883,11 @@ const LOCATION_STORAGE_KEY = 'jcp_active_location_id';
    Guide Content
 ---------------------------- */
 const DEMO_OUTCOME_ITEMS = [
-  'Ready on your website',
+  'Ready for your website',
   'Prepared for social',
-  'Updated for Google Business Profile',
+  'Prepared for Google Business Profile',
   'Added to JobCapturePro directory',
-  'Review request presented',
+  'Review request created',
 ];
 
 const demoGuideContent = {
@@ -936,12 +936,12 @@ const demoGuideContent = {
 };
 
 const OUTCOMES_SLIDE_LABELS = [
-  'Ready on your website',
+  'Ready for your website',
   'Prepared for social',
-  'Updated for Google Business',
+  'Prepared for Google Business',
   'Added to JobCapturePro directory',
-  'Review request ready',
-  'Fresh proof supporting new leads',
+  'Review request created',
+  'Lead opportunity created',
 ];
 
 const outcomesSlideshow = {
@@ -3399,7 +3399,7 @@ function buildOutcomesSlideHtml(index, ctx) {
                     <strong>${title}</strong>
                     <span>${address}, ${location}</span>
                     <p>${webSummary}</p>
-                    <em>Published just now</em>
+                    <em>Prepared just now</em>
                   </div>
                 </div>
               </div>
@@ -3416,7 +3416,7 @@ function buildOutcomesSlideHtml(index, ctx) {
                 <span class="outcomes-social-card__avatar">${business.charAt(0)}</span>
                 <div>
                   <strong>${business}</strong>
-                  <span>Just now · ${location}</span>
+                  <span>Prepared just now · ${location}</span>
                 </div>
               </div>
               <p class="outcomes-social-card__copy">${socialSummary}</p>
@@ -3441,7 +3441,7 @@ function buildOutcomesSlideHtml(index, ctx) {
               <img class="outcomes-gbp-card__photo" src="${img}" alt="" width="400" height="200" loading="lazy">
               <h4>${title} completed in ${location}</h4>
               <p>${gbpSummary}</p>
-              <span class="outcomes-gbp-card__meta">Posted automatically · Verified job</span>
+              <span class="outcomes-gbp-card__meta">Prepared automatically · Verified job details</span>
             </div>
           </div>
         </article>`;
@@ -3479,7 +3479,7 @@ function buildOutcomesSlideHtml(index, ctx) {
                 <span class="meta-divider">·</span>
                 <span class="meta-inline">
                   <img src="${assetBase}/shared/assets/icons/lucide/clock.svg" class="lucide-icon lucide-icon-xs" alt="">
-                  Active just now
+                  Updated just now
                 </span>
               </div>
               <div class="card-rating">
@@ -3503,14 +3503,14 @@ function buildOutcomesSlideHtml(index, ctx) {
               <div class="outcomes-review-card__body">
                 <img class="outcomes-review-card__thumb" src="${img}" alt="" width="56" height="56" loading="lazy">
                 <div class="outcomes-review-card__copy">
-                  <strong>New 5-star review</strong>
+                  <strong>Review request created</strong>
                   <p>"Great service, fast and very professional!"</p>
-                  <small>Arrived right after your review request</small>
+                  <small>Example of the request your crew can show on site</small>
                 </div>
               </div>
               <div class="outcomes-review-card__sent">
                 <img src="${assetBase}/shared/assets/icons/lucide/send.svg" class="lucide-icon lucide-icon-sm" alt="">
-                Review request presented with a QR code after the job
+                Ready to present with a QR code after the job
               </div>
             </div>
           </div>
@@ -3526,22 +3526,22 @@ function buildOutcomesSlideHtml(index, ctx) {
             <div class="outcomes-lead-card">
               <div class="outcomes-lead-card__banner">
                 <img src="${assetBase}/shared/assets/icons/lucide/bell-ring.svg" class="lucide-icon lucide-icon-sm" alt="">
-                <span>New lead · Just now</span>
+                <span>Example opportunity</span>
               </div>
               <div class="outcomes-lead-card__body">
                 <div class="outcomes-lead-card__icon" aria-hidden="true">
                   <img src="${assetBase}/shared/assets/icons/lucide/briefcase.svg" class="lucide-icon lucide-icon-sm" alt="">
                 </div>
                 <div class="outcomes-lead-card__copy">
-                  <strong>New ${niche} job request</strong>
+                  <strong>${niche} job inquiry</strong>
                   <p>${leadCustomer} · ${leadNeed}</p>
                   <small>${location}</small>
-                  <span class="outcomes-lead-card__source">Came from Google / your website / reviews</span>
+                  <span class="outcomes-lead-card__source">The kind of inquiry fresh job proof can support</span>
                 </div>
               </div>
               <div class="outcomes-lead-card__meta">
                 <img src="${assetBase}/shared/assets/icons/lucide/trending-up.svg" class="lucide-icon lucide-icon-sm" alt="">
-                Visibility from this check-in helped bring the next job in.
+                Finished-job proof helps homeowners trust who to call next.
               </div>
             </div>
           </div>
@@ -4085,7 +4085,7 @@ function ensureOutcomesFooterButtons() {
     link.id = 'demoOutcomesMoreOptions';
     link.className = 'demo-outcomes-modal__more-btn';
     link.href = '/personalized-demo/';
-    link.textContent = 'Book a 1-on-1 Demo';
+    link.textContent = 'Talk to a JCP Expert';
     more.appendChild(link);
   } else {
     const moreBtn = $('demoOutcomesMoreOptions');
@@ -4095,14 +4095,12 @@ function ensureOutcomesFooterButtons() {
         link.id = 'demoOutcomesMoreOptions';
         link.className = 'demo-outcomes-modal__more-btn';
         link.href = '/personalized-demo/';
-        link.textContent = 'Book a 1-on-1 Demo';
+        link.textContent = 'Talk to a JCP Expert';
         moreBtn.replaceWith(link);
       } else {
         moreBtn.setAttribute('href', '/personalized-demo/');
         moreBtn.removeAttribute('data-outcomes-action');
-        if (/see plans|demos/i.test(moreBtn.textContent || '')) {
-          moreBtn.textContent = 'Book a 1-on-1 Demo';
-        }
+        moreBtn.textContent = 'Talk to a JCP Expert';
       }
     }
   }
@@ -4118,12 +4116,22 @@ function ensureOutcomesFooterButtons() {
     cs.id = 'demoOutcomesCaseStudy';
     cs.className = 'demo-outcomes-modal__last-resort-btn';
     cs.href = '/case-study/?utm_content=demo_outcomes_last_resort';
-    cs.textContent = 'Apply for the 90-day case study';
+    cs.textContent = 'Apply for the 90-Day Case Study';
     last.appendChild(cs);
     const note = document.createElement('span');
     note.className = 'demo-outcomes-modal__last-resort-note';
-    note.textContent = '10 companies selected · Application required — not automatic acceptance';
+    note.textContent = '10 companies will be selected · Application required';
     last.appendChild(note);
+  } else {
+    const csBtn = $('demoOutcomesCaseStudy');
+    if (csBtn) {
+      csBtn.textContent = 'Apply for the 90-Day Case Study';
+      csBtn.setAttribute('href', '/case-study/?utm_content=demo_outcomes_last_resort');
+    }
+    const note = card.querySelector('.demo-outcomes-modal__last-resort-note');
+    if (note) {
+      note.textContent = '10 companies will be selected · Application required';
+    }
   }
 
   syncDemoStartFreeCtas();
@@ -4180,11 +4188,11 @@ function wireOutcomesSlideshow() {
     modal.addEventListener('click', onOutcomesModalClick);
 
     $('demoOutcomesMoreOptions')?.addEventListener('click', () => {
-      jcpDemoTrack('cta_clicked', null, { cta: 'personalized_demo', source: 'demo_outcomes_modal', label: 'Book a 1-on-1 Demo' }, { keepalive: true });
+      jcpDemoTrack('cta_clicked', null, { cta: 'personalized_demo', source: 'demo_outcomes_modal', label: 'Talk to a JCP Expert' }, { keepalive: true });
     });
 
     $('demoOutcomesCaseStudy')?.addEventListener('click', () => {
-      jcpDemoTrack('cta_clicked', null, { cta: 'case_study', source: 'demo_outcomes_modal', label: 'Apply for the 90-day case study' }, { keepalive: true });
+      jcpDemoTrack('cta_clicked', null, { cta: 'case_study', source: 'demo_outcomes_modal', label: 'Apply for the 90-Day Case Study' }, { keepalive: true });
       jcpDemoPushDataLayerAlias('case_study_cta', null, { source: 'demo_outcomes_modal' });
     });
 
