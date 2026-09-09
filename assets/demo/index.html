@@ -752,29 +752,39 @@
       </svg>
     </button>
     <div class="demo-outcomes-modal__header">
-      <p class="demo-outcomes-modal__eyebrow">Automations completed</p>
+      <p class="demo-outcomes-modal__eyebrow">
+        <span class="demo-outcomes-modal__eyebrow-icon" aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        </span>
+        Proof generated from this job
+      </p>
       <h2 class="demo-outcomes-modal__title" id="demoOutcomesModalTitle">See what one job just created.</h2>
-      <p class="demo-outcomes-modal__sub" id="demoOutcomesModalSub">One finished job now has proof working across your key channels.</p>
+      <p class="demo-outcomes-modal__sub" id="demoOutcomesModalSub">Swipe the previews — then start your free trial to do this after every job.</p>
+      <p class="demo-outcomes-modal__channel" id="demoOutcomesActiveLabel" aria-live="polite">Ready for your website</p>
       <p class="demo-outcomes-modal__counter" id="demoOutcomesSlideCounter" aria-live="polite">1 of 6</p>
     </div>
     <div class="demo-outcomes-modal__stage">
-      <button type="button" class="demo-outcomes-modal__nav demo-outcomes-modal__nav--prev" id="demoOutcomesPrevBtn" data-outcomes-action="prev" aria-label="Previous result">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true">
-          <path d="M15 18l-6-6 6-6"/>
-        </svg>
-      </button>
       <div class="demo-outcomes-modal__viewport" id="demoOutcomesViewport">
         <div class="demo-outcomes-modal__track" id="demoOutcomesTrack"></div>
       </div>
-      <button type="button" class="demo-outcomes-modal__nav demo-outcomes-modal__nav--next" id="demoOutcomesNextBtn" data-outcomes-action="next" aria-label="Next result">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true">
-          <path d="M9 18l6-6-6-6"/>
-        </svg>
-      </button>
+      <div class="demo-outcomes-modal__controls">
+        <button type="button" class="demo-outcomes-modal__nav demo-outcomes-modal__nav--prev" id="demoOutcomesPrevBtn" data-outcomes-action="prev" aria-label="Previous result">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6"/>
+          </svg>
+        </button>
+        <div class="demo-outcomes-modal__dots" id="demoOutcomesDots" role="tablist" aria-label="Outcome slides"></div>
+        <button type="button" class="demo-outcomes-modal__nav demo-outcomes-modal__nav--next" id="demoOutcomesNextBtn" data-outcomes-action="next" aria-label="Next result">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </button>
+      </div>
     </div>
-    <div class="demo-outcomes-modal__dots" id="demoOutcomesDots" role="tablist" aria-label="Outcome slides"></div>
     <div class="demo-outcomes-modal__footer">
-      <p class="demo-outcomes-modal__imagine">Now imagine this happening after every job your crew finishes.</p>
+      <p class="demo-outcomes-modal__imagine">Ready to put every finished job to work?</p>
       <a
         class="btn btn-primary demo-outcomes-modal__finish demo-outcomes-modal__finish--solo jcp-trial-cta-stacked"
         id="demoOutcomesStartFreeCta"
@@ -783,7 +793,7 @@
       ><span class="jcp-trial-cta-main">Start My Free 14-Day Trial</span><span class="jcp-trial-cta-note">No credit card required</span></a>
     </div>
     <div class="demo-outcomes-modal__phone" id="demoOutcomesPhoneCapture">
-      <p class="demo-outcomes-modal__phone-title">Want help getting set up?</p>
+      <p class="demo-outcomes-modal__phone-title">Want a quick setup text?</p>
       <label class="demo-outcomes-modal__phone-label" for="demoOutcomesPhone">Mobile number (optional)</label>
       <div class="demo-outcomes-modal__phone-row">
         <input
@@ -800,13 +810,15 @@
       <p class="demo-outcomes-modal__phone-note">We’ll only use this to help with your JobCapturePro setup.</p>
       <p class="demo-outcomes-modal__phone-status" id="demoOutcomesPhoneStatus" aria-live="polite"></p>
     </div>
-    <p class="demo-outcomes-modal__more">
-      <a class="demo-outcomes-modal__more-btn" id="demoOutcomesMoreOptions" href="/personalized-demo/">Talk to a JCP Expert</a>
-    </p>
-    <p class="demo-outcomes-modal__last-resort">
-      <a class="demo-outcomes-modal__last-resort-btn" id="demoOutcomesCaseStudy" href="/case-study/?utm_content=demo_outcomes_last_resort">Apply for the 90-Day Case Study</a>
-      <span class="demo-outcomes-modal__last-resort-note">10 applicant spots · Window closing</span>
-    </p>
+    <div class="demo-outcomes-modal__alt-ctas">
+      <p class="demo-outcomes-modal__last-resort">
+        <a class="demo-outcomes-modal__last-resort-btn" id="demoOutcomesCaseStudy" href="/case-study/?utm_content=demo_outcomes_last_resort">Apply for the FREE 90-Day Case Study</a>
+        <span class="demo-outcomes-modal__last-resort-note">10 applicant spots · Window closing</span>
+      </p>
+      <p class="demo-outcomes-modal__more">
+        <a class="demo-outcomes-modal__more-btn" id="demoOutcomesMoreOptions" href="/personalized-demo/">Talk to a JCP Expert</a>
+      </p>
+    </div>
   </div>
 </div>
 

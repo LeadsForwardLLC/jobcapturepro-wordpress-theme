@@ -3912,12 +3912,32 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 }
 
 .demo-outcomes-modal__eyebrow {
-  margin: 0 0 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 5px 10px 5px 6px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #9ca3af;
+  color: #047857;
+  line-height: 1.2;
+}
+
+.demo-outcomes-modal__eyebrow-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #10b981;
+  color: #ffffff;
+  flex: 0 0 auto;
 }
 
 .demo-outcomes-modal__title {
@@ -3936,13 +3956,21 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   color: #6b7280;
 }
 
+.demo-outcomes-modal__channel {
+  margin: 10px 0 0;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #ff503e;
+}
+
 .demo-outcomes-modal__imagine {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   text-align: center;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   line-height: 1.35;
-  color: #374151;
+  color: #111827;
 }
 
 /* Legacy subtitle (pre-slide-label markup) — hide if still present */
@@ -3951,7 +3979,7 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 }
 
 .demo-outcomes-modal__counter {
-  margin: 6px 0 10px;
+  margin: 4px 0 0;
   font-size: 12px;
   color: #9ca3af;
 }
@@ -3959,10 +3987,20 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 .demo-outcomes-modal__stage {
   position: relative;
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
   flex: 1 1 auto;
   min-height: 0;
+}
+
+.demo-outcomes-modal__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  padding: 2px 0 4px;
 }
 
 .demo-outcomes-modal__nav {
@@ -4028,18 +4066,14 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   flex-direction: column;
   align-items: stretch;
   justify-content: center;
-  gap: 10px;
+  gap: 0;
 }
 
-.demo-outcomes-slide__label {
-  margin: 0;
-  flex-shrink: 0;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  color: #ff503e;
-  line-height: 1.3;
+/* Channel label moved to modal header chip — hide leftover per-slide labels */
+.demo-outcomes-slide__label,
+.outcomes-preview--directory > a,
+.outcomes-preview--directory .outcomes-directory-link {
+  display: none !important;
 }
 
 .outcomes-preview {
@@ -4518,8 +4552,10 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 .demo-outcomes-modal__dots {
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 8px;
-  margin: 12px 0 14px;
+  margin: 0;
+  flex: 0 0 auto;
 }
 
 .demo-outcomes-dot {
@@ -4543,8 +4579,9 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   flex-direction: column;
   align-items: stretch;
   gap: 10px;
-  margin-top: 8px;
-  padding-top: 4px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
   flex: 0 0 auto;
 }
 
@@ -4601,7 +4638,7 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 }
 
 .demo-outcomes-modal__phone {
-  margin: 12px 0 0;
+  margin: 14px 0 0;
   padding: 12px 0 0;
   border-top: 1px solid #e5e7eb;
   text-align: left;
@@ -4657,45 +4694,57 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   font-weight: 600;
 }
 
+.demo-outcomes-modal__alt-ctas {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
 .demo-outcomes-modal__more {
-  margin: 10px 0 0;
+  margin: 0;
   text-align: center;
+  order: 2;
 }
 
 .demo-outcomes-modal__more-btn {
   border: none;
   background: transparent;
-  color: #6b7280;
-  font-size: 13px;
+  color: #9ca3af;
+  font-size: 12px;
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 2px 6px;
 }
 
 .demo-outcomes-modal__more-btn:hover {
-  color: #374151;
+  color: #6b7280;
 }
 
 .demo-outcomes-modal__last-resort {
-  margin: 4px 0 0;
+  margin: 0;
   text-align: center;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  order: 1;
 }
 
 .demo-outcomes-modal__last-resort-btn {
-  color: #6b7280;
-  font-size: 12px;
-  font-weight: 650;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .demo-outcomes-modal__last-resort-btn:hover {
-  color: #374151;
+  color: #111827;
 }
 
 .demo-outcomes-modal__last-resort-note {
@@ -4790,6 +4839,13 @@ body.is-mobile-mode .demo-outcomes-modal__viewport {
 body.is-mobile-mode .demo-outcomes-modal__stage {
   flex: 1 1 auto;
   min-height: 0;
+  flex-direction: column;
+  gap: 8px;
+}
+
+body.is-mobile-mode .demo-outcomes-modal__controls {
+  gap: 10px;
+  padding: 0 0 2px;
 }
 
 body.is-mobile-mode .demo-outcomes-modal__nav {
@@ -4807,11 +4863,11 @@ body.is-mobile-mode .demo-outcomes-slide {
   height: auto;
   min-height: 0;
   padding: 0;
-  gap: 8px;
+  gap: 0;
 }
 
 body.is-mobile-mode .demo-outcomes-slide__label {
-  font-size: 12px;
+  display: none !important;
 }
 
 body.is-mobile-mode .outcomes-preview {
@@ -4835,12 +4891,24 @@ body.is-mobile-mode .outcomes-job-card img {
 }
 
 body.is-mobile-mode .demo-outcomes-modal__dots {
-  margin: 10px 0 12px;
+  margin: 0;
   flex-shrink: 0;
 }
 
 body.is-mobile-mode .demo-outcomes-modal__footer {
   flex-shrink: 0;
+  margin-top: 10px;
+  padding-top: 10px;
+}
+
+body.is-mobile-mode .demo-outcomes-modal__channel {
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+body.is-mobile-mode .demo-outcomes-modal__imagine {
+  font-size: 13px;
+  margin-bottom: 8px;
 }
 
 body.is-mobile-mode.jcp-phone-shell.jcp-outcomes-modal-open .demo-outcomes-modal {

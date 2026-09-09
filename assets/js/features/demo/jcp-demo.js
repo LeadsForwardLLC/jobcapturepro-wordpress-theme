@@ -3485,20 +3485,15 @@ function buildOutcomesSlideHtml(index, ctx) {
   const gbpSummary = e(excerptText(ctx.summary, 10));
   const niche = e(ctx.nicheLabel);
   const slug = e(ctx.slug);
-  const first = e(ctx.firstName);
   const initial = e(ctx.initial);
   const jobsCount = Number(ctx.jobsCount) || 12;
   const reviewsCount = Number(ctx.reviewsCount) || 48;
   const rating = e(ctx.rating);
-  const directoryUrl = e(ctx.directoryUrl);
-  const label = e(OUTCOMES_SLIDE_LABELS[index] || '');
-  const slideLabel = `<p class="demo-outcomes-slide__label">${label}</p>`;
 
   switch (index) {
     case 0:
       return `
         <article class="demo-outcomes-slide" data-slide="0">
-          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--website">
             <div class="outcomes-browser">
               <div class="outcomes-browser__bar">
@@ -3523,7 +3518,6 @@ function buildOutcomesSlideHtml(index, ctx) {
     case 1:
       return `
         <article class="demo-outcomes-slide" data-slide="1">
-          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--social">
             <div class="outcomes-social-card">
               <div class="outcomes-social-card__head">
@@ -3544,7 +3538,6 @@ function buildOutcomesSlideHtml(index, ctx) {
     case 2:
       return `
         <article class="demo-outcomes-slide" data-slide="2">
-          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--google">
             <div class="outcomes-gbp-card">
               <div class="outcomes-gbp-card__brand">
@@ -3562,7 +3555,6 @@ function buildOutcomesSlideHtml(index, ctx) {
     case 3:
       return `
         <article class="demo-outcomes-slide" data-slide="3">
-          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--directory">
             <div class="directory-card is-demo outcomes-directory-card" role="article">
               <span class="demo-flag">Demo Listing</span>
@@ -3604,13 +3596,11 @@ function buildOutcomesSlideHtml(index, ctx) {
                 <span class="view-profile">View activity</span>
               </div>
             </div>
-            <a href="${directoryUrl}" target="_blank" rel="noopener noreferrer" class="outcomes-directory-view-link">View the directory</a>
           </div>
         </article>`;
     case 4:
       return `
         <article class="demo-outcomes-slide" data-slide="4">
-          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--review">
             <div class="outcomes-review-card">
               <div class="outcomes-review-card__stars" aria-hidden="true">★★★★★</div>
@@ -3635,7 +3625,6 @@ function buildOutcomesSlideHtml(index, ctx) {
       const leadCustomer = e(ctx.leadCustomer || 'Sarah M.');
       return `
         <article class="demo-outcomes-slide" data-slide="5">
-          ${slideLabel}
           <div class="outcomes-preview outcomes-preview--lead">
             <div class="outcomes-lead-card">
               <div class="outcomes-lead-card__banner">
@@ -3690,6 +3679,7 @@ function updateOutcomesSlideshowUi() {
   });
 
   safeText('demoOutcomesSlideCounter', `${index + 1} of ${total}`);
+  safeText('demoOutcomesActiveLabel', OUTCOMES_SLIDE_LABELS[index] || '');
 
   const startFree = $('demoOutcomesStartFreeCta') || $('demoOutcomesFinishCta');
   if (startFree) {
@@ -4135,11 +4125,24 @@ function ensureOutcomesFooterButtons() {
   const card = modal.querySelector('.demo-outcomes-modal__card');
   if (!card) return;
 
-  // Migrate / remove legacy header subtitle (label now lives on each slide)
+  const header = card.querySelector('.demo-outcomes-modal__header');
   const legacySubtitle = card.querySelector('.demo-outcomes-modal__subtitle');
   if (legacySubtitle) legacySubtitle.remove();
 
-  // Title / sub copy migration for cached markup
+  // Eyebrow badge (icon + clearer status copy) for cached markup
+  let eyebrow = header?.querySelector('.demo-outcomes-modal__eyebrow');
+  if (!eyebrow && header) {
+    eyebrow = document.createElement('p');
+    eyebrow.className = 'demo-outcomes-modal__eyebrow';
+    header.prepend(eyebrow);
+  }
+  if (eyebrow) {
+    eyebrow.innerHTML =
+      '<span class="demo-outcomes-modal__eyebrow-icon" aria-hidden="true">' +
+      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.75">' +
+      '<path d="M20 6L9 17l-5-5"/></svg></span>Proof generated from this job';
+  }
+
   const titleEl = $('demoOutcomesModalTitle');
   if (titleEl) {
     const t = titleEl.textContent || '';
@@ -4147,12 +4150,30 @@ function ensureOutcomesFooterButtons() {
       titleEl.textContent = 'See what one job just created.';
     }
   }
-  if (!$('demoOutcomesModalSub')) {
-    const sub = document.createElement('p');
-    sub.className = 'demo-outcomes-modal__sub';
-    sub.id = 'demoOutcomesModalSub';
-    sub.textContent = 'One finished job now has proof working across your key channels.';
-    titleEl?.after(sub);
+
+  let subEl = $('demoOutcomesModalSub');
+  if (!subEl) {
+    subEl = document.createElement('p');
+    subEl.className = 'demo-outcomes-modal__sub';
+    subEl.id = 'demoOutcomesModalSub';
+    titleEl?.after(subEl);
+  }
+  if (subEl) {
+    subEl.textContent = 'Swipe the previews — then start your free trial to do this after every job.';
+  }
+
+  let channelEl = $('demoOutcomesActiveLabel');
+  if (!channelEl && header) {
+    channelEl = document.createElement('p');
+    channelEl.className = 'demo-outcomes-modal__channel';
+    channelEl.id = 'demoOutcomesActiveLabel';
+    channelEl.setAttribute('aria-live', 'polite');
+    const counter = $('demoOutcomesSlideCounter');
+    if (counter) header.insertBefore(channelEl, counter);
+    else header.appendChild(channelEl);
+  }
+  if (channelEl && !channelEl.textContent.trim()) {
+    channelEl.textContent = OUTCOMES_SLIDE_LABELS[outcomesSlideshow.index] || OUTCOMES_SLIDE_LABELS[0];
   }
 
   let footer = card.querySelector('.demo-outcomes-modal__footer');
@@ -4162,20 +4183,19 @@ function ensureOutcomesFooterButtons() {
     card.appendChild(footer);
   }
 
-  if (!footer.querySelector('.demo-outcomes-modal__imagine')) {
-    const imagine = document.createElement('p');
+  let imagine = footer.querySelector('.demo-outcomes-modal__imagine');
+  if (!imagine) {
+    imagine = document.createElement('p');
     imagine.className = 'demo-outcomes-modal__imagine';
-    imagine.textContent = 'Now imagine this happening after every job your crew finishes.';
     footer.prepend(imagine);
   }
+  imagine.textContent = 'Ready to put every finished job to work?';
 
-  // Remove legacy “Next result” footer button
   $('demoOutcomesNextCta')?.remove();
   footer.querySelectorAll('.demo-outcomes-modal__next').forEach((el) => el.remove());
 
   ensureOutcomesNavButtons(card);
 
-  // Migrate legacy Continue button → Start Free Trial link
   const legacyFinish = $('demoOutcomesFinishCta');
   if (legacyFinish && legacyFinish.tagName === 'BUTTON' && !$('demoOutcomesStartFreeCta')) {
     const link = document.createElement('a');
@@ -4203,66 +4223,76 @@ function ensureOutcomesFooterButtons() {
 
   ensureOutcomesPhoneCapture(card);
 
+  const caseStudyLabel = 'Apply for the FREE 90-Day Case Study';
+  const caseStudyHref = jcpAppendAttributionToUrl('/case-study/', { utm_content: 'demo_outcomes_last_resort' });
+  const expertHref = jcpAppendAttributionToUrl('/personalized-demo/');
+
+  let alt = card.querySelector('.demo-outcomes-modal__alt-ctas');
+  if (!alt) {
+    alt = document.createElement('div');
+    alt.className = 'demo-outcomes-modal__alt-ctas';
+    card.appendChild(alt);
+  }
+
+  let last = alt.querySelector('.demo-outcomes-modal__last-resort') || card.querySelector('.demo-outcomes-modal__last-resort');
+  if (!last) {
+    last = document.createElement('p');
+    last.className = 'demo-outcomes-modal__last-resort';
+  }
+  if (last.parentElement !== alt) alt.appendChild(last);
+
+  if (!$('demoOutcomesCaseStudy')) {
+    const cs = document.createElement('a');
+    cs.id = 'demoOutcomesCaseStudy';
+    cs.className = 'demo-outcomes-modal__last-resort-btn';
+    cs.href = caseStudyHref;
+    cs.textContent = caseStudyLabel;
+    last.prepend(cs);
+  } else {
+    const csBtn = $('demoOutcomesCaseStudy');
+    csBtn.textContent = caseStudyLabel;
+    csBtn.setAttribute('href', caseStudyHref);
+    if (csBtn.parentElement !== last) last.prepend(csBtn);
+  }
+
+  let note = last.querySelector('.demo-outcomes-modal__last-resort-note');
+  if (!note) {
+    note = document.createElement('span');
+    note.className = 'demo-outcomes-modal__last-resort-note';
+    last.appendChild(note);
+  }
+  note.textContent = '10 applicant spots · Window closing';
+
+  let more = alt.querySelector('.demo-outcomes-modal__more') || card.querySelector('.demo-outcomes-modal__more');
+  if (!more) {
+    more = document.createElement('p');
+    more.className = 'demo-outcomes-modal__more';
+  }
+  // Expert is always last under the case-study option.
+  if (more.parentElement !== alt) alt.appendChild(more);
+  else alt.appendChild(more);
+
   if (!$('demoOutcomesMoreOptions')) {
-    let more = card.querySelector('.demo-outcomes-modal__more');
-    if (!more) {
-      more = document.createElement('p');
-      more.className = 'demo-outcomes-modal__more';
-      card.appendChild(more);
-    }
     const link = document.createElement('a');
     link.id = 'demoOutcomesMoreOptions';
     link.className = 'demo-outcomes-modal__more-btn';
-    link.href = jcpAppendAttributionToUrl('/personalized-demo/');
+    link.href = expertHref;
     link.textContent = 'Talk to a JCP Expert';
     more.appendChild(link);
   } else {
     const moreBtn = $('demoOutcomesMoreOptions');
-    if (moreBtn) {
-      if (moreBtn.tagName === 'BUTTON') {
-        const link = document.createElement('a');
-        link.id = 'demoOutcomesMoreOptions';
-        link.className = 'demo-outcomes-modal__more-btn';
-        link.href = jcpAppendAttributionToUrl('/personalized-demo/');
-        link.textContent = 'Talk to a JCP Expert';
-        moreBtn.replaceWith(link);
-      } else {
-        moreBtn.setAttribute('href', jcpAppendAttributionToUrl('/personalized-demo/'));
-        moreBtn.removeAttribute('data-outcomes-action');
-        moreBtn.textContent = 'Talk to a JCP Expert';
-      }
-    }
-  }
-
-  if (!$('demoOutcomesCaseStudy')) {
-    let last = card.querySelector('.demo-outcomes-modal__last-resort');
-    if (!last) {
-      last = document.createElement('p');
-      last.className = 'demo-outcomes-modal__last-resort';
-      card.appendChild(last);
-    }
-    const cs = document.createElement('a');
-    cs.id = 'demoOutcomesCaseStudy';
-    cs.className = 'demo-outcomes-modal__last-resort-btn';
-    cs.href = jcpAppendAttributionToUrl('/case-study/', { utm_content: 'demo_outcomes_last_resort' });
-    cs.textContent = 'Apply for the 90-Day Case Study';
-    last.appendChild(cs);
-    const note = document.createElement('span');
-    note.className = 'demo-outcomes-modal__last-resort-note';
-    note.textContent = '10 applicant spots · Window closing';
-    last.appendChild(note);
-  } else {
-    const csBtn = $('demoOutcomesCaseStudy');
-    if (csBtn) {
-      csBtn.textContent = 'Apply for the 90-Day Case Study';
-      csBtn.setAttribute(
-        'href',
-        jcpAppendAttributionToUrl('/case-study/', { utm_content: 'demo_outcomes_last_resort' })
-      );
-    }
-    const note = card.querySelector('.demo-outcomes-modal__last-resort-note');
-    if (note) {
-      note.textContent = '10 applicant spots · Window closing';
+    if (moreBtn.tagName === 'BUTTON') {
+      const link = document.createElement('a');
+      link.id = 'demoOutcomesMoreOptions';
+      link.className = 'demo-outcomes-modal__more-btn';
+      link.href = expertHref;
+      link.textContent = 'Talk to a JCP Expert';
+      moreBtn.replaceWith(link);
+    } else {
+      moreBtn.setAttribute('href', expertHref);
+      moreBtn.removeAttribute('data-outcomes-action');
+      moreBtn.textContent = 'Talk to a JCP Expert';
+      if (moreBtn.parentElement !== more) more.appendChild(moreBtn);
     }
   }
 
@@ -4281,26 +4311,54 @@ function ensureOutcomesNavButtons(card) {
     stage.appendChild(viewport);
   }
 
+  let controls = stage.querySelector('.demo-outcomes-modal__controls');
+  if (!controls) {
+    controls = document.createElement('div');
+    controls.className = 'demo-outcomes-modal__controls';
+    stage.appendChild(controls);
+  }
+
+  // Migrate legacy side arrows into the bottom controls row.
+  const prev = $('demoOutcomesPrevBtn');
+  const next = $('demoOutcomesNextBtn');
+  const dots = $('demoOutcomesDots');
+  if (prev && prev.parentElement !== controls) controls.appendChild(prev);
+  if (dots && dots.parentElement !== controls) controls.appendChild(dots);
+  if (next && next.parentElement !== controls) controls.appendChild(next);
+
   if (!$('demoOutcomesPrevBtn')) {
-    const prev = document.createElement('button');
-    prev.type = 'button';
-    prev.id = 'demoOutcomesPrevBtn';
-    prev.className = 'demo-outcomes-modal__nav demo-outcomes-modal__nav--prev';
-    prev.dataset.outcomesAction = 'prev';
-    prev.setAttribute('aria-label', 'Previous result');
-    prev.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>`;
-    stage.insertBefore(prev, viewport);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'demoOutcomesPrevBtn';
+    btn.className = 'demo-outcomes-modal__nav demo-outcomes-modal__nav--prev';
+    btn.dataset.outcomesAction = 'prev';
+    btn.setAttribute('aria-label', 'Previous result');
+    btn.innerHTML =
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>';
+    controls.insertBefore(btn, controls.firstChild);
+  }
+
+  if (!$('demoOutcomesDots')) {
+    const dotsEl = document.createElement('div');
+    dotsEl.id = 'demoOutcomesDots';
+    dotsEl.className = 'demo-outcomes-modal__dots';
+    dotsEl.setAttribute('role', 'tablist');
+    dotsEl.setAttribute('aria-label', 'Outcome slides');
+    const prevBtn = $('demoOutcomesPrevBtn');
+    if (prevBtn && prevBtn.nextSibling) controls.insertBefore(dotsEl, prevBtn.nextSibling);
+    else controls.appendChild(dotsEl);
   }
 
   if (!$('demoOutcomesNextBtn')) {
-    const next = document.createElement('button');
-    next.type = 'button';
-    next.id = 'demoOutcomesNextBtn';
-    next.className = 'demo-outcomes-modal__nav demo-outcomes-modal__nav--next';
-    next.dataset.outcomesAction = 'next';
-    next.setAttribute('aria-label', 'Next result');
-    next.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>`;
-    stage.appendChild(next);
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.id = 'demoOutcomesNextBtn';
+    btn.className = 'demo-outcomes-modal__nav demo-outcomes-modal__nav--next';
+    btn.dataset.outcomesAction = 'next';
+    btn.setAttribute('aria-label', 'Next result');
+    btn.innerHTML =
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" aria-hidden="true"><path d="M9 18l6-6-6-6"/></svg>';
+    controls.appendChild(btn);
   }
 }
 
@@ -4367,7 +4425,7 @@ function ensureOutcomesPhoneCapture(card) {
     wrap.className = 'demo-outcomes-modal__phone';
     wrap.id = 'demoOutcomesPhoneCapture';
     wrap.innerHTML =
-      '<p class="demo-outcomes-modal__phone-title">Want help getting set up?</p>' +
+      '<p class="demo-outcomes-modal__phone-title">Want a quick setup text?</p>' +
       '<label class="demo-outcomes-modal__phone-label" for="demoOutcomesPhone">Mobile number (optional)</label>' +
       '<div class="demo-outcomes-modal__phone-row">' +
       '<input type="tel" id="demoOutcomesPhone" class="demo-outcomes-modal__phone-input" inputmode="tel" autocomplete="tel" placeholder="(___) ___-____" maxlength="20" />' +
@@ -4375,9 +4433,14 @@ function ensureOutcomesPhoneCapture(card) {
       '</div>' +
       '<p class="demo-outcomes-modal__phone-note">We’ll only use this to help with your JobCapturePro setup.</p>' +
       '<p class="demo-outcomes-modal__phone-status" id="demoOutcomesPhoneStatus" aria-live="polite"></p>';
+    const alt = card.querySelector('.demo-outcomes-modal__alt-ctas');
     const more = card.querySelector('.demo-outcomes-modal__more');
-    if (more) card.insertBefore(wrap, more);
+    if (alt) card.insertBefore(wrap, alt);
+    else if (more) card.insertBefore(wrap, more);
     else card.appendChild(wrap);
+  } else {
+    const phoneTitle = wrap.querySelector('.demo-outcomes-modal__phone-title');
+    if (phoneTitle) phoneTitle.textContent = 'Want a quick setup text?';
   }
 
   const input = $('demoOutcomesPhone');
@@ -4443,7 +4506,7 @@ function wireOutcomesSlideshow() {
     });
 
     $('demoOutcomesCaseStudy')?.addEventListener('click', () => {
-      jcpDemoTrack('cta_clicked', null, { cta: 'case_study', source: 'demo_outcomes_modal', label: 'Apply for the 90-Day Case Study' }, { keepalive: true });
+      jcpDemoTrack('cta_clicked', null, { cta: 'case_study', source: 'demo_outcomes_modal', label: 'Apply for the FREE 90-Day Case Study' }, { keepalive: true });
       jcpDemoPushDataLayerAlias('case_study_cta', null, { source: 'demo_outcomes_modal' });
     });
 
