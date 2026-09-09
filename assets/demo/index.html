@@ -791,24 +791,35 @@
         href="https://app.jobcapturepro.com/onboarding?sessionId=75ad8454-312e-4224-95b7-8f48f5cd0277&amp;step=1&amp;utm_source=jobcapturepro.com&amp;utm_medium=website&amp;utm_campaign=onboarding&amp;utm_content=demo_outcomes"
         data-outcomes-action="start_free"
       ><span class="jcp-trial-cta-main">Start My Free 14-Day Trial</span><span class="jcp-trial-cta-note">No credit card required</span></a>
-    </div>
-    <div class="demo-outcomes-modal__phone" id="demoOutcomesPhoneCapture">
-      <p class="demo-outcomes-modal__phone-title">Want a quick setup text?</p>
-      <label class="demo-outcomes-modal__phone-label" for="demoOutcomesPhone">Mobile number (optional)</label>
-      <div class="demo-outcomes-modal__phone-row">
-        <input
-          type="tel"
-          id="demoOutcomesPhone"
-          class="demo-outcomes-modal__phone-input"
-          inputmode="tel"
-          autocomplete="tel"
-          placeholder="(___) ___-____"
-          maxlength="20"
-        />
-        <button type="button" class="btn btn-secondary demo-outcomes-modal__phone-btn" id="demoOutcomesPhoneBtn">Save</button>
+      <div class="demo-outcomes-modal__assist" id="demoOutcomesSoftAssist">
+        <p class="demo-outcomes-modal__assist-title">Want a setup tip by text? <span class="demo-outcomes-modal__assist-optional">Optional</span></p>
+        <div class="demo-outcomes-modal__assist-fields">
+          <label class="demo-outcomes-modal__assist-sr" for="demoOutcomesFirstName">First name</label>
+          <input
+            type="text"
+            id="demoOutcomesFirstName"
+            class="demo-outcomes-modal__assist-input demo-outcomes-modal__assist-input--name"
+            autocomplete="given-name"
+            name="given-name"
+            placeholder="First name"
+            maxlength="40"
+          />
+          <label class="demo-outcomes-modal__assist-sr" for="demoOutcomesPhone">Mobile number</label>
+          <input
+            type="tel"
+            id="demoOutcomesPhone"
+            class="demo-outcomes-modal__assist-input demo-outcomes-modal__assist-input--phone"
+            inputmode="tel"
+            autocomplete="tel"
+            name="tel"
+            placeholder="Mobile"
+            maxlength="20"
+          />
+        </div>
+        <button type="button" class="demo-outcomes-modal__assist-btn" id="demoOutcomesAssistBtn">Text me a tip</button>
+        <p class="demo-outcomes-modal__assist-note">Skip anytime — the free trial is above.</p>
+        <p class="demo-outcomes-modal__assist-status" id="demoOutcomesAssistStatus" aria-live="polite"></p>
       </div>
-      <p class="demo-outcomes-modal__phone-note">We’ll only use this to help with your JobCapturePro setup.</p>
-      <p class="demo-outcomes-modal__phone-status" id="demoOutcomesPhoneStatus" aria-live="polite"></p>
     </div>
     <div class="demo-outcomes-modal__alt-ctas">
       <p class="demo-outcomes-modal__last-resort">

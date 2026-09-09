@@ -3695,6 +3695,7 @@ function updateOutcomesSlideshowUi() {
 }
 
 function goToDemoStartFree(source) {
+  flushOutcomesSoftAssist({ silent: true });
   const utm = source || 'demo_handoff';
   jcpDemoTrack('cta_clicked', null, { cta: 'get_started_free', source: utm, label: 'Start My Free 14-Day Trial' }, { keepalive: true });
   jcpDemoTrack('demo_converted', null, { cta: 'get_started_free', source: utm }, { keepalive: true });
@@ -4221,7 +4222,7 @@ function ensureOutcomesFooterButtons() {
     ensureStackedStartFreeTrialCta(startFree);
   }
 
-  ensureOutcomesPhoneCapture(card);
+  ensureOutcomesSoftAssist(card);
 
   const caseStudyLabel = 'Apply for the FREE 90-Day Case Study';
   const caseStudyHref = jcpAppendAttributionToUrl('/case-study/', { utm_content: 'demo_outcomes_last_resort' });
@@ -4381,13 +4382,34 @@ function persistDemoUserPhone(phone) {
   }
 }
 
-function enrichContactWithPhone(phone) {
+function persistDemoUserFirstName(name) {
+  const cleaned = String(name || '').trim();
+  try {
+    demoUser.firstName = cleaned;
+    const stored = JSON.parse(localStorage.getItem('demoUser') || '{}') || {};
+    stored.firstName = cleaned;
+    localStorage.setItem('demoUser', JSON.stringify(stored));
+  } catch (e) {
+    demoUser.firstName = cleaned;
+  }
+  try {
+    const greeting = document.querySelector('.greeting');
+    if (greeting && typeof formatDemoGreetingHtml === 'function') {
+      greeting.innerHTML = formatDemoGreetingHtml();
+    }
+    if (typeof updateProfilePersonalization === 'function') {
+      updateProfilePersonalization();
+    }
+  } catch (e) {}
+}
+
+function enrichContactWithPhone(phone, firstNameOverride) {
   const email = (demoUser && demoUser.email) || '';
   if (!email || !phone) return;
   const surveyUrl =
     (window.JCP_DEMO_SURVEY && window.JCP_DEMO_SURVEY.rest_url) ||
     `${(window.JCP_CONFIG && window.JCP_CONFIG.baseUrl) || window.location.origin}/wp-json/jcp/v1/demo-survey-submit`;
-  let firstName = (demoUser.firstName || '').trim();
+  let firstName = String(firstNameOverride || demoUser.firstName || '').trim();
   if (!firstName) {
     const local = String(email).split('@')[0] || '';
     firstName = local || 'there';
@@ -4417,73 +4439,191 @@ function enrichContactWithPhone(phone) {
   } catch (e) {}
 }
 
-function ensureOutcomesPhoneCapture(card) {
-  if (!card) return;
-  let wrap = $('demoOutcomesPhoneCapture');
-  if (!wrap) {
-    wrap = document.createElement('div');
-    wrap.className = 'demo-outcomes-modal__phone';
-    wrap.id = 'demoOutcomesPhoneCapture';
-    wrap.innerHTML =
-      '<p class="demo-outcomes-modal__phone-title">Want a quick setup text?</p>' +
-      '<label class="demo-outcomes-modal__phone-label" for="demoOutcomesPhone">Mobile number (optional)</label>' +
-      '<div class="demo-outcomes-modal__phone-row">' +
-      '<input type="tel" id="demoOutcomesPhone" class="demo-outcomes-modal__phone-input" inputmode="tel" autocomplete="tel" placeholder="(___) ___-____" maxlength="20" />' +
-      '<button type="button" class="btn btn-secondary demo-outcomes-modal__phone-btn" id="demoOutcomesPhoneBtn">Save</button>' +
-      '</div>' +
-      '<p class="demo-outcomes-modal__phone-note">We’ll only use this to help with your JobCapturePro setup.</p>' +
-      '<p class="demo-outcomes-modal__phone-status" id="demoOutcomesPhoneStatus" aria-live="polite"></p>';
-    const alt = card.querySelector('.demo-outcomes-modal__alt-ctas');
-    const more = card.querySelector('.demo-outcomes-modal__more');
-    if (alt) card.insertBefore(wrap, alt);
-    else if (more) card.insertBefore(wrap, more);
-    else card.appendChild(wrap);
-  } else {
-    const phoneTitle = wrap.querySelector('.demo-outcomes-modal__phone-title');
-    if (phoneTitle) phoneTitle.textContent = 'Want a quick setup text?';
+function getOutcomesSoftAssistValues() {
+  const nameInput = $('demoOutcomesFirstName');
+  const phoneInput = $('demoOutcomesPhone');
+  const firstName = String(nameInput?.value || '').trim();
+  const phoneRaw = String(phoneInput?.value || '').trim();
+  const digits = phoneRaw.replace(/\D/g, '');
+  return { nameInput, phoneInput, firstName, phoneRaw, digits };
+}
+
+/**
+ * Persist optional name/phone from outcomes soft-assist.
+ * @param {{ silent?: boolean, requirePhone?: boolean }} opts
+ * @returns {'ok'|'need_phone'|'empty'}
+ */
+function flushOutcomesSoftAssist(opts = {}) {
+  const { silent = false, requirePhone = false } = opts;
+  const status = $('demoOutcomesAssistStatus') || $('demoOutcomesPhoneStatus');
+  const { nameInput, phoneInput, firstName, digits } = getOutcomesSoftAssistValues();
+
+  if (!firstName && digits.length === 0) {
+    if (!silent && status) status.textContent = '';
+    return 'empty';
   }
 
-  const input = $('demoOutcomesPhone');
-  const btn = $('demoOutcomesPhoneBtn');
-  const status = $('demoOutcomesPhoneStatus');
-  if (input && demoUser.phone && !input.value) {
-    input.value = formatUsPhoneInput(demoUser.phone);
+  if (firstName) persistDemoUserFirstName(firstName);
+
+  if (digits.length > 0 && digits.length < 10) {
+    if (!silent && status) {
+      status.textContent = requirePhone
+        ? 'Add a 10-digit mobile for the tip — or just start your free trial above.'
+        : 'Add a full 10-digit mobile, or skip and start your trial.';
+    }
+    return 'need_phone';
   }
+
+  if (digits.length >= 10) {
+    const formatted = formatUsPhoneInput(digits);
+    if (phoneInput) phoneInput.value = formatted;
+    persistDemoUserPhone(formatted);
+    enrichContactWithPhone(formatted, firstName);
+    syncDemoStartFreeCtas();
+    if (!silent && status) {
+      status.textContent = firstName
+        ? `Thanks ${firstName.split(' ')[0]} — tip coming to your phone.`
+        : 'Got it — tip coming to your phone.';
+    }
+    return 'ok';
+  }
+
+  // Name only
+  syncDemoStartFreeCtas();
+  if (!silent && status) {
+    status.textContent = requirePhone
+      ? 'Add a mobile number for the tip — or just start your free trial above.'
+      : 'Got your name — start your free trial above anytime.';
+  }
+  return requirePhone ? 'need_phone' : 'ok';
+}
+
+function ensureOutcomesSoftAssist(card) {
+  if (!card) return;
+
+  const footer = card.querySelector('.demo-outcomes-modal__footer');
+  let wrap = $('demoOutcomesSoftAssist') || $('demoOutcomesPhoneCapture');
+
+  // Migrate legacy phone-only block into soft assist under the trial CTA.
+  if (wrap && wrap.id === 'demoOutcomesPhoneCapture') {
+    wrap.id = 'demoOutcomesSoftAssist';
+    wrap.className = 'demo-outcomes-modal__assist';
+  }
+
+  if (!wrap) {
+    wrap = document.createElement('div');
+    wrap.className = 'demo-outcomes-modal__assist';
+    wrap.id = 'demoOutcomesSoftAssist';
+    wrap.innerHTML =
+      '<p class="demo-outcomes-modal__assist-title">Want a setup tip by text? <span class="demo-outcomes-modal__assist-optional">Optional</span></p>' +
+      '<div class="demo-outcomes-modal__assist-fields">' +
+      '<label class="demo-outcomes-modal__assist-sr" for="demoOutcomesFirstName">First name</label>' +
+      '<input type="text" id="demoOutcomesFirstName" class="demo-outcomes-modal__assist-input demo-outcomes-modal__assist-input--name" autocomplete="given-name" placeholder="First name" maxlength="40" />' +
+      '<label class="demo-outcomes-modal__assist-sr" for="demoOutcomesPhone">Mobile number</label>' +
+      '<input type="tel" id="demoOutcomesPhone" class="demo-outcomes-modal__assist-input demo-outcomes-modal__assist-input--phone" inputmode="tel" autocomplete="tel" placeholder="Mobile" maxlength="20" />' +
+      '</div>' +
+      '<button type="button" class="demo-outcomes-modal__assist-btn" id="demoOutcomesAssistBtn">Text me a tip</button>' +
+      '<p class="demo-outcomes-modal__assist-note">Skip anytime — the free trial is above.</p>' +
+      '<p class="demo-outcomes-modal__assist-status" id="demoOutcomesAssistStatus" aria-live="polite"></p>';
+  } else {
+    // Upgrade cached markup in place when possible.
+    if (!$('demoOutcomesFirstName')) {
+      const fields = wrap.querySelector('.demo-outcomes-modal__assist-fields') || wrap.querySelector('.demo-outcomes-modal__phone-row');
+      if (fields) {
+        fields.className = 'demo-outcomes-modal__assist-fields';
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.id = 'demoOutcomesFirstName';
+        nameInput.className = 'demo-outcomes-modal__assist-input demo-outcomes-modal__assist-input--name';
+        nameInput.autocomplete = 'given-name';
+        nameInput.placeholder = 'First name';
+        nameInput.maxLength = 40;
+        fields.insertBefore(nameInput, fields.firstChild);
+      }
+    }
+    const phoneInput = $('demoOutcomesPhone');
+    if (phoneInput) {
+      phoneInput.classList.add('demo-outcomes-modal__assist-input', 'demo-outcomes-modal__assist-input--phone');
+      phoneInput.placeholder = 'Mobile';
+    }
+    let btn = $('demoOutcomesAssistBtn') || $('demoOutcomesPhoneBtn');
+    if (btn) {
+      btn.id = 'demoOutcomesAssistBtn';
+      btn.className = 'demo-outcomes-modal__assist-btn';
+      btn.textContent = 'Text me a tip';
+      btn.classList.remove('btn', 'btn-secondary', 'demo-outcomes-modal__phone-btn');
+    }
+    const title = wrap.querySelector('.demo-outcomes-modal__assist-title, .demo-outcomes-modal__phone-title');
+    if (title) {
+      title.className = 'demo-outcomes-modal__assist-title';
+      title.innerHTML =
+        'Want a setup tip by text? <span class="demo-outcomes-modal__assist-optional">Optional</span>';
+    }
+    const note = wrap.querySelector('.demo-outcomes-modal__assist-note, .demo-outcomes-modal__phone-note');
+    if (note) {
+      note.className = 'demo-outcomes-modal__assist-note';
+      note.textContent = 'Skip anytime — the free trial is above.';
+    }
+    const status = wrap.querySelector('.demo-outcomes-modal__assist-status, .demo-outcomes-modal__phone-status');
+    if (status) {
+      status.className = 'demo-outcomes-modal__assist-status';
+      status.id = 'demoOutcomesAssistStatus';
+    }
+    wrap.querySelector('.demo-outcomes-modal__phone-label')?.remove();
+  }
+
+  if (footer && wrap.parentElement !== footer) {
+    footer.appendChild(wrap);
+  } else if (!wrap.parentElement) {
+    const alt = card.querySelector('.demo-outcomes-modal__alt-ctas');
+    if (footer) footer.appendChild(wrap);
+    else if (alt) card.insertBefore(wrap, alt);
+    else card.appendChild(wrap);
+  }
+
+  const nameInput = $('demoOutcomesFirstName');
+  const phoneInput = $('demoOutcomesPhone');
+  if (nameInput && demoUser.firstName && !nameInput.value) {
+    nameInput.value = demoUser.firstName;
+  }
+  if (phoneInput && demoUser.phone && !phoneInput.value) {
+    phoneInput.value = formatUsPhoneInput(demoUser.phone);
+  }
+
   if (wrap.dataset.bound === '1') return;
   wrap.dataset.bound = '1';
 
-  input?.addEventListener('input', () => {
-    const formatted = formatUsPhoneInput(input.value);
-    if (formatted !== input.value) input.value = formatted;
+  phoneInput?.addEventListener('input', () => {
+    const formatted = formatUsPhoneInput(phoneInput.value);
+    if (formatted !== phoneInput.value) phoneInput.value = formatted;
   });
 
-  const savePhone = () => {
-    const digits = String(input?.value || '').replace(/\D/g, '');
-    if (digits.length < 10) {
-      if (status) status.textContent = 'Enter a 10-digit mobile number, or skip.';
-      return;
+  const submitAssist = () => {
+    const result = flushOutcomesSoftAssist({ silent: false, requirePhone: true });
+    if (result === 'ok') {
+      jcpDemoTrack('cta_clicked', null, { cta: 'phone_save', source: 'demo_outcomes_modal', label: 'Text me a tip' }, { keepalive: true });
     }
-    const formatted = formatUsPhoneInput(digits);
-    if (input) input.value = formatted;
-    persistDemoUserPhone(formatted);
-    enrichContactWithPhone(formatted);
-    syncDemoStartFreeCtas();
-    if (status) status.textContent = 'Saved — we’ll only use this for setup help.';
-    jcpDemoTrack('cta_clicked', null, { cta: 'phone_save', source: 'demo_outcomes_modal' }, { keepalive: true });
   };
 
-  btn?.addEventListener('click', (e) => {
+  $('demoOutcomesAssistBtn')?.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    savePhone();
+    submitAssist();
   });
 
-  input?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      savePhone();
-    }
+  [nameInput, phoneInput].forEach((el) => {
+    el?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submitAssist();
+      }
+    });
   });
+}
+
+/** @deprecated Use ensureOutcomesSoftAssist */
+function ensureOutcomesPhoneCapture(card) {
+  ensureOutcomesSoftAssist(card);
 }
 
 function wireOutcomesSlideshow() {
