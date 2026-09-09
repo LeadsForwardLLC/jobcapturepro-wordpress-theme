@@ -2962,7 +2962,7 @@ function showEditScreen() {
 }
 
 /**
- * Step 4 beat: slowly scroll + spotlight Location → Photos → Description → Tags → Publish.
+ * Step 4 beat: spotlight Location → Description → Publish Everywhere (skip photos/tags noise).
  */
 function clearStep4SeoBeatTimers() {
   window.clearTimeout(runStep4SeoAppreciationBeat._timer);
@@ -2981,15 +2981,14 @@ function runStep4SeoAppreciationBeat() {
   const scroller = document.querySelector('#edit-screen .content-area');
   const publishBtn = document.getElementById('btnSavePublish');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const holdMs = reduceMotion ? 180 : 1350;
+  // Fewer beats → slightly longer hold so Location + Description land before Publish.
+  const holdMs = reduceMotion ? 180 : 1600;
   const settleMs = reduceMotion ? 40 : 380;
   const behavior = reduceMotion ? 'auto' : 'smooth';
 
   const sequence = [
     { sel: '#edit-location-card', hint: 'Location is attached for local context.' },
-    { sel: '#edit-photos-block', hint: 'The job photo becomes proof on every channel.' },
     { sel: '#edit-description-block', hint: 'AI wrote job content from the photo.' },
-    { sel: '#edit-tags-block', hint: 'Tags help organize the work.' },
     { sel: '#btnSavePublish', hint: 'Tap Publish Everywhere to continue.' },
   ];
 
