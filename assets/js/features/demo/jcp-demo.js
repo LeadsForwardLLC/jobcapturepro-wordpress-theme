@@ -938,11 +938,11 @@ const LOCATION_STORAGE_KEY = 'jcp_active_location_id';
    Guide Content
 ---------------------------- */
 const DEMO_OUTCOME_ITEMS = [
-  'Ready for your website',
-  'Prepared for social',
-  'Prepared for Google Business Profile',
-  'Added to JobCapturePro directory',
-  'Review request created',
+  'Publishing to your website',
+  'Posting to social',
+  'Updating Google Business Profile',
+  'Adding to JobCapturePro directory',
+  'Updating map / service-area proof',
 ];
 
 const demoGuideContent = {
@@ -991,9 +991,9 @@ const demoGuideContent = {
 };
 
 const OUTCOMES_SLIDE_LABELS = [
-  'Ready for your website',
-  'Prepared for social',
-  'Prepared for Google Business',
+  'Published to your website',
+  'Posted to social',
+  'Updated on Google Business',
   'Added to JobCapturePro directory',
   'Review request created',
   'Lead opportunity created',
