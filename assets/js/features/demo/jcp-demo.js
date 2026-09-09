@@ -413,9 +413,15 @@ function getDemoContactPayload() {
       ? window.JCPLeadAttribution.getPayload()
       : {};
     const company = String(user.businessName || '').trim();
+    const email = String(user.email).trim();
+    let firstName = String(user.firstName || '').trim();
+    if (!firstName) {
+      const local = email.split('@')[0] || '';
+      firstName = local || 'there';
+    }
     const payload = {
-      email: String(user.email).trim(),
-      first_name: String(user.firstName || '').trim(),
+      email,
+      first_name: firstName,
       last_name: String(user.lastName || '').trim(),
       business_type: String(user.niche || '').trim(),
       demo_goals: Array.isArray(user.goals) ? user.goals : undefined,
@@ -4439,32 +4445,33 @@ function enrichContactWithPhone(phone, firstNameOverride) {
 }
 
 function getOutcomesSoftAssistValues() {
-  const nameInput = $('demoOutcomesFirstName');
   const phoneInput = $('demoOutcomesPhone');
-  const firstName = String(nameInput?.value || '').trim();
   const phoneRaw = String(phoneInput?.value || '').trim();
   const digits = phoneRaw.replace(/\D/g, '');
-  return { nameInput, phoneInput, firstName, phoneRaw, digits };
+  const firstName = String((demoUser && demoUser.firstName) || '').trim();
+  return { phoneInput, firstName, phoneRaw, digits };
 }
 
 /**
- * Persist optional name/phone from outcomes soft-assist.
+ * Persist optional phone from outcomes soft-assist (name comes from personalize step).
  * @param {{ silent?: boolean, requirePhone?: boolean }} opts
  * @returns {'ok'|'need_phone'|'empty'}
  */
 function flushOutcomesSoftAssist(opts = {}) {
   const { silent = false, requirePhone = false } = opts;
   const status = $('demoOutcomesAssistStatus') || $('demoOutcomesPhoneStatus');
-  const { nameInput, phoneInput, firstName, digits } = getOutcomesSoftAssistValues();
+  const { phoneInput, firstName, digits } = getOutcomesSoftAssistValues();
 
-  if (!firstName && digits.length === 0) {
-    if (!silent && status) status.textContent = '';
-    return 'empty';
+  if (digits.length === 0) {
+    if (!silent && status) {
+      status.textContent = requirePhone
+        ? 'Add a mobile number for the tip — or just start your free trial above.'
+        : '';
+    }
+    return digits.length === 0 && requirePhone ? 'need_phone' : 'empty';
   }
 
-  if (firstName) persistDemoUserFirstName(firstName);
-
-  if (digits.length > 0 && digits.length < 10) {
+  if (digits.length < 10) {
     if (!silent && status) {
       status.textContent = requirePhone
         ? 'Add a 10-digit mobile for the tip — or just start your free trial above.'
@@ -4473,28 +4480,17 @@ function flushOutcomesSoftAssist(opts = {}) {
     return 'need_phone';
   }
 
-  if (digits.length >= 10) {
-    const formatted = formatUsPhoneInput(digits);
-    if (phoneInput) phoneInput.value = formatted;
-    persistDemoUserPhone(formatted);
-    enrichContactWithPhone(formatted, firstName);
-    syncDemoStartFreeCtas();
-    if (!silent && status) {
-      status.textContent = firstName
-        ? `Thanks ${firstName.split(' ')[0]} — tip coming to your phone.`
-        : 'Got it — tip coming to your phone.';
-    }
-    return 'ok';
-  }
-
-  // Name only
+  const formatted = formatUsPhoneInput(digits);
+  if (phoneInput) phoneInput.value = formatted;
+  persistDemoUserPhone(formatted);
+  enrichContactWithPhone(formatted, firstName);
   syncDemoStartFreeCtas();
   if (!silent && status) {
-    status.textContent = requirePhone
-      ? 'Add a mobile number for the tip — or just start your free trial above.'
-      : 'Got your name — start your free trial above anytime.';
+    status.textContent = firstName
+      ? `Thanks ${firstName.split(' ')[0]} — tip coming to your phone.`
+      : 'Got it — tip coming to your phone.';
   }
-  return requirePhone ? 'need_phone' : 'ok';
+  return 'ok';
 }
 
 function ensureOutcomesSoftAssist(card) {
@@ -4503,72 +4499,38 @@ function ensureOutcomesSoftAssist(card) {
   const footer = card.querySelector('.demo-outcomes-modal__footer');
   let wrap = $('demoOutcomesSoftAssist') || $('demoOutcomesPhoneCapture');
 
-  // Migrate legacy phone-only block into soft assist under the trial CTA.
   if (wrap && wrap.id === 'demoOutcomesPhoneCapture') {
     wrap.id = 'demoOutcomesSoftAssist';
     wrap.className = 'demo-outcomes-modal__assist';
   }
 
+  const assistHtml =
+    '<p class="demo-outcomes-modal__assist-title">Want a setup tip by text? <span class="demo-outcomes-modal__assist-optional">Optional</span></p>' +
+    '<div class="demo-outcomes-modal__assist-row">' +
+    '<label class="demo-outcomes-modal__assist-sr" for="demoOutcomesPhone">Mobile number</label>' +
+    '<input type="tel" id="demoOutcomesPhone" class="demo-outcomes-modal__assist-input demo-outcomes-modal__assist-input--phone" inputmode="tel" autocomplete="tel" placeholder="(___) ___-____" maxlength="20" />' +
+    '<button type="button" class="demo-outcomes-modal__assist-btn" id="demoOutcomesAssistBtn">Text me a tip</button>' +
+    '</div>' +
+    '<p class="demo-outcomes-modal__assist-note">Skip anytime — the free trial is above.</p>' +
+    '<p class="demo-outcomes-modal__assist-status" id="demoOutcomesAssistStatus" aria-live="polite"></p>';
+
   if (!wrap) {
     wrap = document.createElement('div');
     wrap.className = 'demo-outcomes-modal__assist';
     wrap.id = 'demoOutcomesSoftAssist';
-    wrap.innerHTML =
-      '<p class="demo-outcomes-modal__assist-title">Want a setup tip by text? <span class="demo-outcomes-modal__assist-optional">Optional</span></p>' +
-      '<div class="demo-outcomes-modal__assist-fields">' +
-      '<label class="demo-outcomes-modal__assist-sr" for="demoOutcomesFirstName">First name</label>' +
-      '<input type="text" id="demoOutcomesFirstName" class="demo-outcomes-modal__assist-input demo-outcomes-modal__assist-input--name" autocomplete="given-name" placeholder="First name" maxlength="40" />' +
-      '<label class="demo-outcomes-modal__assist-sr" for="demoOutcomesPhone">Mobile number</label>' +
-      '<input type="tel" id="demoOutcomesPhone" class="demo-outcomes-modal__assist-input demo-outcomes-modal__assist-input--phone" inputmode="tel" autocomplete="tel" placeholder="Mobile" maxlength="20" />' +
-      '</div>' +
-      '<button type="button" class="demo-outcomes-modal__assist-btn" id="demoOutcomesAssistBtn">Text me a tip</button>' +
-      '<p class="demo-outcomes-modal__assist-note">Skip anytime — the free trial is above.</p>' +
-      '<p class="demo-outcomes-modal__assist-status" id="demoOutcomesAssistStatus" aria-live="polite"></p>';
-  } else {
-    // Upgrade cached markup in place when possible.
-    if (!$('demoOutcomesFirstName')) {
-      const fields = wrap.querySelector('.demo-outcomes-modal__assist-fields') || wrap.querySelector('.demo-outcomes-modal__phone-row');
-      if (fields) {
-        fields.className = 'demo-outcomes-modal__assist-fields';
-        const nameInput = document.createElement('input');
-        nameInput.type = 'text';
-        nameInput.id = 'demoOutcomesFirstName';
-        nameInput.className = 'demo-outcomes-modal__assist-input demo-outcomes-modal__assist-input--name';
-        nameInput.autocomplete = 'given-name';
-        nameInput.placeholder = 'First name';
-        nameInput.maxLength = 40;
-        fields.insertBefore(nameInput, fields.firstChild);
-      }
+    wrap.innerHTML = assistHtml;
+  } else if (
+    $('demoOutcomesFirstName') ||
+    wrap.querySelector('.demo-outcomes-modal__assist-fields') ||
+    !wrap.querySelector('.demo-outcomes-modal__assist-row')
+  ) {
+    const priorPhone = $('demoOutcomesPhone')?.value || '';
+    wrap.className = 'demo-outcomes-modal__assist';
+    wrap.id = 'demoOutcomesSoftAssist';
+    wrap.innerHTML = assistHtml;
+    if (priorPhone && $('demoOutcomesPhone')) {
+      $('demoOutcomesPhone').value = priorPhone;
     }
-    const phoneInput = $('demoOutcomesPhone');
-    if (phoneInput) {
-      phoneInput.classList.add('demo-outcomes-modal__assist-input', 'demo-outcomes-modal__assist-input--phone');
-      phoneInput.placeholder = 'Mobile';
-    }
-    let btn = $('demoOutcomesAssistBtn') || $('demoOutcomesPhoneBtn');
-    if (btn) {
-      btn.id = 'demoOutcomesAssistBtn';
-      btn.className = 'demo-outcomes-modal__assist-btn';
-      btn.textContent = 'Text me a tip';
-      btn.classList.remove('btn', 'btn-secondary', 'demo-outcomes-modal__phone-btn');
-    }
-    const title = wrap.querySelector('.demo-outcomes-modal__assist-title, .demo-outcomes-modal__phone-title');
-    if (title) {
-      title.className = 'demo-outcomes-modal__assist-title';
-      title.innerHTML =
-        'Want a setup tip by text? <span class="demo-outcomes-modal__assist-optional">Optional</span>';
-    }
-    const note = wrap.querySelector('.demo-outcomes-modal__assist-note, .demo-outcomes-modal__phone-note');
-    if (note) {
-      note.className = 'demo-outcomes-modal__assist-note';
-      note.textContent = 'Skip anytime — the free trial is above.';
-    }
-    const status = wrap.querySelector('.demo-outcomes-modal__assist-status, .demo-outcomes-modal__phone-status');
-    if (status) {
-      status.className = 'demo-outcomes-modal__assist-status';
-      status.id = 'demoOutcomesAssistStatus';
-    }
-    wrap.querySelector('.demo-outcomes-modal__phone-label')?.remove();
   }
 
   if (footer && wrap.parentElement !== footer) {
@@ -4580,11 +4542,7 @@ function ensureOutcomesSoftAssist(card) {
     else card.appendChild(wrap);
   }
 
-  const nameInput = $('demoOutcomesFirstName');
   const phoneInput = $('demoOutcomesPhone');
-  if (nameInput && demoUser.firstName && !nameInput.value) {
-    nameInput.value = demoUser.firstName;
-  }
   if (phoneInput && demoUser.phone && !phoneInput.value) {
     phoneInput.value = formatUsPhoneInput(demoUser.phone);
   }
@@ -4610,13 +4568,11 @@ function ensureOutcomesSoftAssist(card) {
     submitAssist();
   });
 
-  [nameInput, phoneInput].forEach((el) => {
-    el?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        submitAssist();
-      }
-    });
+  phoneInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitAssist();
+    }
   });
 }
 

@@ -943,13 +943,15 @@
   /** Enrich the same contact after optional personalization (no duplicate Meta Lead). */
   const enrichDemoContact = async (fields) => {
     const restUrl = (typeof window.JCP_DEMO_SURVEY !== 'undefined' && window.JCP_DEMO_SURVEY.rest_url) || `${baseUrl}/wp-json/jcp/v1/demo-survey-submit`;
+    const firstName = (fields && fields.first_name) || getValue('firstName') || deriveFirstName();
     try {
       await Promise.race([
         fetch(restUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            first_name: getValue('firstName'),
+            event: 'demo-opt-in',
+            first_name: firstName,
             last_name: getValue('lastName'),
             email: getValue('email'),
             phone: getValue('phone'),
@@ -959,6 +961,7 @@
             referral_source: getReferralSourceValue(),
             ...getAttributionPayload(),
             ...(fields || {}),
+            first_name: firstName,
           }),
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
@@ -1064,13 +1067,14 @@
       .map((input) => input.value);
     const restUrl = (typeof window.JCP_DEMO_SURVEY !== 'undefined' && window.JCP_DEMO_SURVEY.rest_url) || `${baseUrl}/wp-json/jcp/v1/demo-survey-submit`;
     pushDemoOptInDataLayer();
+    const firstName = getValue('firstName') || deriveFirstName();
     try {
       await Promise.race([
         fetch(restUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            first_name: getValue('firstName'),
+            first_name: firstName,
             last_name: getValue('lastName'),
             email: getValue('email'),
             phone: getValue('phone'),
@@ -1078,6 +1082,7 @@
             business_type: getBusinessTypeValue(),
             demo_goals: goals,
             referral_source: getReferralSourceValue(),
+            event: 'demo-opt-in',
             ...getAttributionPayload(),
           }),
         }),
@@ -1130,7 +1135,7 @@
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            first_name: firstName,
+            first_name: firstName || deriveFirstName(),
             last_name: lastName,
             email,
             phone: getValue('phone'),
@@ -1150,15 +1155,32 @@
     window.location.href = buildPersonalizedDemoUrl();
   };
 
-  const finishPersonalizationAndLaunch = async (didEnterName) => {
-    const entered = getValue('businessName');
-    if (didEnterName && entered) {
-      pushCroAliasOnce('BusinessNameEntered', { company: entered });
-      await enrichDemoContact({ company: entered });
-    } else {
-      const bizEl = document.getElementById('businessName');
+  const finishPersonalizationAndLaunch = async (didContinue) => {
+    const firstNameEl = document.getElementById('firstName');
+    const bizEl = document.getElementById('businessName');
+    const firstName = getValue('firstName');
+    const company = getValue('businessName');
+
+    if (!didContinue) {
+      if (firstNameEl) firstNameEl.value = '';
       if (bizEl) bizEl.value = '';
       pushCroAliasOnce('BusinessNameSkipped');
+      await launchDemo();
+      return;
+    }
+
+    if (company) {
+      pushCroAliasOnce('BusinessNameEntered', { company });
+    }
+    if (firstName) {
+      pushCroAliasOnce('FirstNameEntered', { first_name: firstName });
+    }
+    // Always refresh GHL with whatever they entered (name and/or company).
+    if (firstName || company) {
+      await enrichDemoContact({
+        first_name: firstName || deriveFirstName(),
+        company: company || undefined,
+      });
     }
     await launchDemo();
   };
@@ -1287,6 +1309,12 @@
   });
 
   document.getElementById('businessName')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      finishPersonalizationAndLaunch(true);
+    }
+  });
+  document.getElementById('firstName')?.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       finishPersonalizationAndLaunch(true);

@@ -1,7 +1,7 @@
 <?php
 /**
- * Survey gate (single screen): work email + trade → launch demo.
- * Business name / phone / name / referral collected later (fields kept hidden for payload stability).
+ * Survey gate (single screen): work email + trade → optional personalize → launch demo.
+ * Business name / first name on personalize step; phone collected post-value.
  *
  * @package JCP_Core
  */
@@ -100,8 +100,7 @@ $survey_proof = [
       <script type="application/json" id="jcpBusinessTypeOptions"><?php echo wp_json_encode( $business_type_options ); ?></script>
     </div>
 
-    <?php /* Name / phone collected later (personalization + post-value). Kept for payload stability. */ ?>
-    <input type="hidden" id="firstName" value="" autocomplete="given-name" />
+    <?php /* Phone collected post-value; first name asked on personalize step. */ ?>
     <input type="hidden" id="lastName" value="" autocomplete="family-name" />
     <input type="hidden" id="phone" value="" autocomplete="tel" />
     <input type="hidden" id="referralSource" value="" />

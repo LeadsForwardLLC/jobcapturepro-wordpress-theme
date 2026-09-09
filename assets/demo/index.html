@@ -793,17 +793,7 @@
       ><span class="jcp-trial-cta-main">Start My Free 14-Day Trial</span><span class="jcp-trial-cta-note">No credit card required</span></a>
       <div class="demo-outcomes-modal__assist" id="demoOutcomesSoftAssist">
         <p class="demo-outcomes-modal__assist-title">Want a setup tip by text? <span class="demo-outcomes-modal__assist-optional">Optional</span></p>
-        <div class="demo-outcomes-modal__assist-fields">
-          <label class="demo-outcomes-modal__assist-sr" for="demoOutcomesFirstName">First name</label>
-          <input
-            type="text"
-            id="demoOutcomesFirstName"
-            class="demo-outcomes-modal__assist-input demo-outcomes-modal__assist-input--name"
-            autocomplete="given-name"
-            name="given-name"
-            placeholder="First name"
-            maxlength="40"
-          />
+        <div class="demo-outcomes-modal__assist-row">
           <label class="demo-outcomes-modal__assist-sr" for="demoOutcomesPhone">Mobile number</label>
           <input
             type="tel"
@@ -812,11 +802,11 @@
             inputmode="tel"
             autocomplete="tel"
             name="tel"
-            placeholder="Mobile"
+            placeholder="(___) ___-____"
             maxlength="20"
           />
+          <button type="button" class="demo-outcomes-modal__assist-btn" id="demoOutcomesAssistBtn">Text me a tip</button>
         </div>
-        <button type="button" class="demo-outcomes-modal__assist-btn" id="demoOutcomesAssistBtn">Text me a tip</button>
         <p class="demo-outcomes-modal__assist-note">Skip anytime — the free trial is above.</p>
         <p class="demo-outcomes-modal__assist-status" id="demoOutcomesAssistStatus" aria-live="polite"></p>
       </div>

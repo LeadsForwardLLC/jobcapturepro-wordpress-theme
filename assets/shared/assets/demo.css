@@ -3852,7 +3852,9 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   border-radius: 22px;
   box-shadow: 0 28px 80px rgba(15, 23, 42, 0.28);
   padding: 18px 18px 14px;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   transform: translateY(40px);
   opacity: 0;
   transition:
@@ -3990,8 +3992,10 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   flex-direction: column;
   align-items: stretch;
   gap: 10px;
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .demo-outcomes-modal__controls {
@@ -4031,11 +4035,12 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 }
 
 .demo-outcomes-modal__viewport {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
+  width: 100%;
   min-width: 0;
-  min-height: 0;
+  max-width: 100%;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
   background: transparent;
   border: none;
@@ -4044,7 +4049,8 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 
 .demo-outcomes-modal__track {
   display: flex;
-  height: 100%;
+  width: 100%;
+  height: auto;
   align-items: stretch;
   transition: transform 0.38s cubic-bezier(0.2, 0.9, 0.2, 1);
 }
@@ -4057,9 +4063,11 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 
 .demo-outcomes-slide {
   flex: 0 0 100%;
+  width: 100%;
+  max-width: 100%;
   min-width: 100%;
-  height: 100%;
-  padding: 0 2px 4px;
+  height: auto;
+  padding: 0;
   box-sizing: border-box;
   overflow: hidden;
   display: flex;
@@ -4683,18 +4691,19 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   border: 0;
 }
 
+.demo-outcomes-modal__assist-row,
 .demo-outcomes-modal__assist-fields,
 .demo-outcomes-modal__phone-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
-  align-items: stretch;
-  justify-content: center;
+  align-items: center;
+  justify-content: stretch;
 }
 
 .demo-outcomes-modal__assist-input,
 .demo-outcomes-modal__phone-input {
-  flex: 1 1 120px;
+  flex: 1 1 auto;
   min-width: 0;
   height: 40px;
   padding: 0 12px;
@@ -4707,14 +4716,13 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
 }
 
 .demo-outcomes-modal__assist-input--name {
-  flex: 1 1 100px;
-  max-width: 140px;
+  display: none !important;
 }
 
 .demo-outcomes-modal__assist-input--phone,
 .demo-outcomes-modal__phone-input {
-  flex: 1 1 140px;
-  max-width: 180px;
+  flex: 1 1 auto;
+  max-width: none;
 }
 
 .demo-outcomes-modal__assist-input:focus,
@@ -4728,15 +4736,17 @@ body.jcp-guided-demo:not(.jcp-prototype-page) .mobile-stepper-header {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-top: 8px;
-  min-height: 36px;
+  flex: 0 0 auto;
+  margin-top: 0;
+  min-height: 40px;
   padding: 0 14px;
   border: 1px solid #e5e7eb;
-  border-radius: 999px;
+  border-radius: 10px;
   background: #ffffff;
   color: #374151;
   font-size: 13px;
   font-weight: 650;
+  white-space: nowrap;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -4903,16 +4913,20 @@ body.is-mobile-mode.jcp-outcomes-modal-open .demo-outcomes-modal__close {
 }
 
 body.is-mobile-mode .demo-outcomes-modal__viewport {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
+  width: 100%;
   min-height: 0;
   max-height: none;
+  overflow-x: hidden;
 }
 
 body.is-mobile-mode .demo-outcomes-modal__stage {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
+  width: 100%;
   min-height: 0;
   flex-direction: column;
   gap: 8px;
+  overflow: hidden;
 }
 
 body.is-mobile-mode .demo-outcomes-modal__controls {
@@ -4983,7 +4997,7 @@ body.is-mobile-mode .demo-outcomes-modal__assist-input--name,
 body.is-mobile-mode .demo-outcomes-modal__assist-input--phone,
 body.is-mobile-mode .demo-outcomes-modal__phone-input {
   max-width: none;
-  flex: 1 1 calc(50% - 4px);
+  flex: 1 1 auto;
 }
 
 body.is-mobile-mode .demo-outcomes-modal__channel {
@@ -5011,12 +5025,16 @@ body.is-mobile-mode.jcp-phone-shell.jcp-outcomes-modal-open .demo-outcomes-modal
   width: 100%;
   max-width: 420px;
   max-height: min(88dvh, 640px);
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body.is-mobile-mode.jcp-phone-shell .demo-outcomes-modal__viewport {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
+  width: 100%;
   min-height: 0;
   max-height: none;
+  overflow-x: hidden;
 }
 
 body.is-mobile-mode.jcp-phone-shell .demo-outcomes-modal__track {

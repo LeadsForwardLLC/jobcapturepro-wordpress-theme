@@ -1,7 +1,7 @@
 <?php
 /**
- * Optional business personalization — after email + trade, before interactive demo.
- * Feels like configuring the product, not a second lead form.
+ * Optional personalization — after email + trade, before interactive demo.
+ * First name + business name (both skippable) so the demo and GHL feel personal.
  *
  * @package JCP_Core
  */
@@ -17,13 +17,25 @@
       </span>
       <span><?php esc_html_e( 'Make it yours', 'jcp-core' ); ?></span>
     </div>
-    <h1 class="survey-title"><?php esc_html_e( 'What should we call your business?', 'jcp-core' ); ?></h1>
+    <h1 class="survey-title"><?php esc_html_e( 'Personalize your demo', 'jcp-core' ); ?></h1>
     <p class="survey-subtitle">
-      <?php esc_html_e( 'Optional — we’ll use this name in your personalized demo.', 'jcp-core' ); ?>
+      <?php esc_html_e( 'Optional — we’ll use this to tailor the demo. Skip anytime.', 'jcp-core' ); ?>
     </p>
   </div>
 
-  <form class="survey-form survey-form--personalize" autocomplete="organization" onsubmit="return false;">
+  <form class="survey-form survey-form--personalize" autocomplete="on" onsubmit="return false;">
+    <div class="survey-field">
+      <label for="firstName"><?php esc_html_e( 'First name', 'jcp-core' ); ?></label>
+      <input
+        id="firstName"
+        type="text"
+        class="survey-input"
+        name="given-name"
+        placeholder="<?php esc_attr_e( 'Jordan', 'jcp-core' ); ?>"
+        autocomplete="given-name"
+        maxlength="60"
+      />
+    </div>
     <div class="survey-field">
       <label for="businessName"><?php esc_html_e( 'Business name', 'jcp-core' ); ?></label>
       <input
@@ -39,7 +51,7 @@
   </form>
 
   <div class="survey-actions-row">
-    <button type="button" class="survey-btn" data-action="personalize-continue"><?php esc_html_e( 'Use This Business →', 'jcp-core' ); ?></button>
+    <button type="button" class="survey-btn" data-action="personalize-continue"><?php esc_html_e( 'Continue →', 'jcp-core' ); ?></button>
     <button type="button" class="survey-skip-link" data-action="personalize-skip"><?php esc_html_e( 'Skip', 'jcp-core' ); ?></button>
   </div>
 </section>
