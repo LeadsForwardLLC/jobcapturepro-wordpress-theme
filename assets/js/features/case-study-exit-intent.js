@@ -56,33 +56,17 @@
   }
 
   function buildCapacityHtml() {
-    var claimed = Number(cfg.spotsClaimed || 0);
-    var total = Number(cfg.spotsTotal || 10);
-    var remaining = Math.max(0, total - claimed);
-    var pct = total > 0 ? Math.round((claimed / total) * 100) : 0;
-    var closesAt = Number(cfg.closesAtTs || 0);
-    var meta =
-      remaining <= 0
-        ? 'Cohort goal reached · Late applications go to the waitlist'
-        : remaining +
-          (remaining === 1 ? ' more application needed' : ' more applications needed') +
-          ' · Window closes when spots fill or the deadline hits';
+    var pct = Math.max(0, Math.min(100, Number(cfg.fillPercent != null ? cfg.fillPercent : 80)));
+    var selecting = Number(cfg.selectingTotal || 10);
     return (
       '<div class="jcp-case-capacity jcp-case-capacity--modal jcp-case-exit__capacity" role="status">' +
       '<div class="jcp-case-capacity__head">' +
-      '<p class="jcp-case-capacity__label"><strong>' +
-      claimed +
-      ' of ' +
-      total +
-      ' applicant spots filled</strong></p>' +
-      '<p class="jcp-case-capacity__meta">' +
-      meta +
-      '</p>' +
-      (closesAt
-        ? '<p class="jcp-case-capacity__countdown" data-jcp-case-countdown="' +
-          closesAt +
-          '">Application window closing…</p>'
-        : '') +
+      '<p class="jcp-case-capacity__label"><strong>Applications are ' +
+      pct +
+      '% full</strong></p>' +
+      '<p class="jcp-case-capacity__meta">We’re only selecting ' +
+      selecting +
+      ' businesses</p>' +
       '</div>' +
       '<div class="jcp-case-capacity__track" aria-hidden="true">' +
       '<span class="jcp-case-capacity__fill" style="width:' +
@@ -128,26 +112,23 @@
       '<div class="jcp-case-exit__interrupt">' +
       handSvg() +
       '<p class="jcp-case-exit__wait" id="jcpCaseExitTitle">WAIT</p>' +
-      '<p class="jcp-case-exit__eyebrow">Before you go · application window closing</p>' +
+      '<p class="jcp-case-exit__eyebrow">Before you go · only 10 businesses selected</p>' +
       '</div>' +
-      '<h2 class="jcp-case-exit__title">Apply for the 90-day case study</h2>' +
-      '<p class="jcp-case-exit__body">We’re gathering applications from 10 home-service companies for hands-on onboarding and measurable results. Accepted companies get JobCapturePro free during the study. Once we have enough applicants — or the window hits the deadline — enrollment closes.</p>' +
+      '<h2 class="jcp-case-exit__title">Apply for the FREE 90-day case study</h2>' +
+      '<p class="jcp-case-exit__body">We’re selecting 10 home-service companies for hands-on onboarding and measurable results. Selected companies get JobCapturePro free during the study. Anyone can apply — applications may far outnumber the 10 spots.</p>' +
       buildCapacityHtml() +
       '<div class="jcp-case-exit__actions">' +
       '<a class="jcp-case-exit__primary" id="jcpCaseExitApply" href="' +
       String(cfg.url || '/case-study/') +
-      '">Apply while spots are open</a>' +
+      '">Apply to be considered</a>' +
       '<button type="button" class="jcp-case-exit__dismiss" data-case-exit-dismiss="1">No thanks — continue browsing</button>' +
       '</div></div>';
 
     document.body.appendChild(root);
     document.body.classList.add('jcp-case-exit-open');
-    if (window.JCPCaseStudyCountdown && typeof window.JCPCaseStudyCountdown.refreshAll === 'function') {
-      window.JCPCaseStudyCountdown.refreshAll();
-    }
     pushEvent('CaseStudyExitIntentShown', {
-      spots_claimed: cfg.spotsClaimed,
-      spots_total: cfg.spotsTotal,
+      fill_percent: cfg.fillPercent,
+      selecting_total: cfg.selectingTotal,
       page_path: location.pathname,
       source: source || 'mouseleave',
       viewport: isDesktop() ? 'desktop' : 'mobile',
@@ -166,7 +147,7 @@
       apply.addEventListener('click', function () {
         pushEvent('CaseStudyCTAClicked', {
           source: 'exit_intent',
-          spots_claimed: cfg.spotsClaimed,
+          fill_percent: cfg.fillPercent,
           page_path: location.pathname,
         });
         try {

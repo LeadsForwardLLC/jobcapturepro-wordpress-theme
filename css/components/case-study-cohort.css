@@ -43,16 +43,7 @@
 }
 
 .jcp-case-capacity__countdown {
-  margin: 6px 0 0;
-  font-size: 13px;
-  line-height: 1.35;
-  font-weight: 800;
-  color: #ff503e;
-  letter-spacing: 0.01em;
-}
-
-.jcp-case-capacity__countdown.is-closed {
-  color: #6b7280;
+  display: none !important;
 }
 
 .jcp-case-capacity__track {

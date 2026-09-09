@@ -84,10 +84,7 @@ function jcp_global_settings_handle_save(): void {
 			'mount_global_modal' => ! empty( $input['fluent_forms']['mount_global_modal'] ),
 		],
 		'case_study' => [
-			'spots_claimed' => max( 0, min( 10, (int) ( $input['case_study']['spots_claimed'] ?? 0 ) ) ),
-			'closes_at'     => function_exists( 'jcp_case_study_sanitize_closes_at' )
-				? jcp_case_study_sanitize_closes_at( (string) ( $input['case_study']['closes_at'] ?? '' ) )
-				: sanitize_text_field( (string) ( $input['case_study']['closes_at'] ?? '' ) ),
+			'applications_fill_percent' => max( 0, min( 100, (int) ( $input['case_study']['applications_fill_percent'] ?? 80 ) ) ),
 		],
 	];
 
@@ -353,42 +350,30 @@ function jcp_global_settings_render_page(): void {
 			</table>
 
 			<?php
-			$cs = $s['case_study'] ?? [];
-			$claimed = max( 0, min( 10, (int) ( $cs['spots_claimed'] ?? 0 ) ) );
-			$closes  = (string) ( $cs['closes_at'] ?? '2026-09-30' );
+			$cs      = $s['case_study'] ?? [];
+			$fill_pct = function_exists( 'jcp_case_study_applications_fill_percent' )
+				? jcp_case_study_applications_fill_percent()
+				: max( 0, min( 100, (int) ( $cs['applications_fill_percent'] ?? 80 ) ) );
 			?>
 			<h2><?php esc_html_e( '90-day case study cohort', 'jcp-core' ); ?></h2>
 			<p class="description">
-				<?php esc_html_e( 'Public urgency uses applicant spots filled + an application-window close date (countdown). Update the filled count as applications come in.', 'jcp-core' ); ?>
+				<?php esc_html_e( 'We select 10 businesses. The public bar shows how full the application pipeline feels (not how many of the 10 are taken).', 'jcp-core' ); ?>
 			</p>
 			<table class="form-table" role="presentation">
 				<tr>
-					<th scope="row"><label for="jcp_case_spots_claimed"><?php esc_html_e( 'Applicant spots filled', 'jcp-core' ); ?></label></th>
+					<th scope="row"><label for="jcp_case_fill_pct"><?php esc_html_e( 'Applications fill %', 'jcp-core' ); ?></label></th>
 					<td>
 						<input
 							type="number"
 							class="small-text"
-							id="jcp_case_spots_claimed"
-							name="jcp_global[case_study][spots_claimed]"
+							id="jcp_case_fill_pct"
+							name="jcp_global[case_study][applications_fill_percent]"
 							min="0"
-							max="10"
+							max="100"
 							step="1"
-							value="<?php echo esc_attr( (string) $claimed ); ?>"
+							value="<?php echo esc_attr( (string) $fill_pct ); ?>"
 						/>
-						<span class="description"><?php esc_html_e( 'of 10 — how many applications you are counting toward the cohort goal', 'jcp-core' ); ?></span>
-					</td>
-				</tr>
-				<tr>
-					<th scope="row"><label for="jcp_case_closes_at"><?php esc_html_e( 'Application window closes', 'jcp-core' ); ?></label></th>
-					<td>
-						<input
-							type="date"
-							class="regular-text"
-							id="jcp_case_closes_at"
-							name="jcp_global[case_study][closes_at]"
-							value="<?php echo esc_attr( $closes ); ?>"
-						/>
-						<span class="description"><?php esc_html_e( 'Shown as a live countdown on the exit-intent and capacity bar.', 'jcp-core' ); ?></span>
+						<span class="description"><?php esc_html_e( 'Shown as “Applications are X% full” — default 80. Only 10 businesses will be selected.', 'jcp-core' ); ?></span>
 					</td>
 				</tr>
 			</table>

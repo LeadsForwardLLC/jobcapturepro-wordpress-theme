@@ -4267,7 +4267,7 @@ function ensureOutcomesFooterButtons() {
     note.className = 'demo-outcomes-modal__last-resort-note';
     last.appendChild(note);
   }
-  note.textContent = '10 applicant spots · Window closing';
+  note.textContent = 'Selecting 10 businesses · Applications filling up';
 
   let more = alt.querySelector('.demo-outcomes-modal__more') || card.querySelector('.demo-outcomes-modal__more');
   if (!more) {

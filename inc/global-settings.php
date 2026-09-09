@@ -55,8 +55,7 @@ function jcp_global_settings_defaults(): array {
 			'mount_global_modal' => false,
 		],
 		'case_study' => [
-			'spots_claimed' => 0,
-			'closes_at'     => '2026-09-30',
+			'applications_fill_percent' => 80,
 		],
 	];
 }
