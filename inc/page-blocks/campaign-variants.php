@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /** Seed version for all paid LP variants (bump to force-refresh content). */
-const JCP_CAMPAIGN_VARIANTS_SEED_VERSION = '4';
+const JCP_CAMPAIGN_VARIANTS_SEED_VERSION = '5';
 
 /**
  * Variant registry keyed by analytics id.

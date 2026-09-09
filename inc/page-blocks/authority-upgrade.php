@@ -186,21 +186,26 @@ function jcp_page_upgrade_campaign_authority( array $content, int $post_id ): ar
 		$props                   = is_array( $block['props'] ?? null ) ? $block['props'] : [];
 		$props['variant']        = 'scoreboard';
 		$props['stats']          = $canonical['stats'];
-		$props['eyebrow']       = $canonical['eyebrow'];
-		$props['headline']      = $canonical['headline'];
-		$props['body']          = $canonical['body'];
+		// Keep message-matched authority copy when a variant already set it.
+		if ( trim( (string) ( $props['eyebrow'] ?? '' ) ) === '' ) {
+			$props['eyebrow'] = $canonical['eyebrow'];
+		}
+		if ( trim( (string) ( $props['headline'] ?? '' ) ) === '' ) {
+			$props['headline'] = $canonical['headline'];
+		}
+		if ( trim( (string) ( $props['body'] ?? '' ) ) === '' ) {
+			$props['body'] = $canonical['body'];
+		}
 		$props['show_stats']    = true;
 		$props['show_cta']      = true;
 		$props['show_eyebrow']  = true;
 		$props['show_headline'] = true;
 		$props['show_body']     = true;
-		if ( empty( $props['cta_primary']['label'] ) ) {
-			$props['cta_primary'] = [
-				'label' => __( 'See JobCapturePro on my business', 'jcp-core' ),
-				'url'   => '/demo/',
-			];
-		}
-		$props['cta_note'] = __( 'Free personalized demo · About 2 minutes · No credit card', 'jcp-core' );
+		$props['cta_primary']   = [
+			'label' => 'See it on my business',
+			'url'   => (string) ( $props['cta_primary']['url'] ?? '/demo/' ),
+		];
+		$props['cta_note'] = 'Free personalized demo · About 2 minutes · No credit card';
 		$blocks[ $i ]['props'] = $props;
 		if ( ! isset( $blocks[ $i ]['layout'] ) || ! is_array( $blocks[ $i ]['layout'] ) ) {
 			$blocks[ $i ]['layout'] = [];

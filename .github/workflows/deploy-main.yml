@@ -139,13 +139,13 @@ jobs:
               }
               if (function_exists(\"jcp_niche_seed_contractor_demo\")) {
                 \$cid = jcp_niche_seed_contractor_demo(true);
-                update_option(\"jcp_contractor_demo_seed_version\", \"35\");
+                update_option(\"jcp_contractor_demo_seed_version\", \"36\");
                 update_option(\"jcp_niche_contractor_demo_seeded\", \"1\");
                 echo \"reseeded contractor-demo id=\$cid\\n\";
               }
               if (function_exists(\"jcp_campaign_variants_seed_all\")) {
                 \$vids = jcp_campaign_variants_seed_all(true);
-                update_option(\"jcp_campaign_variants_seed_version\", \"4\");
+                update_option(\"jcp_campaign_variants_seed_version\", \"5\");
                 echo \"reseeded campaign variants: \" . implode(\",\", array_keys(\$vids)) . \"\\n\";
               }
               if (function_exists(\"jcp_page_seed_home\")) {

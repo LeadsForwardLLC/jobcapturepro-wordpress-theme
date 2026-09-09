@@ -59,9 +59,9 @@ $body_classes = ( $hide_site_chrome ? 'jcp-landing-chrome-hidden' : 'jcp-global-
         <a
           class="jcp-landing-brandbar__cta"
           href="<?php echo esc_url( $landing_demo_url ); ?>"
-          data-cta="Start Demo"
+          data-cta="See it on my business"
           data-cta-location="landing_sticky_bar"
-        ><?php esc_html_e( 'Start Demo', 'jcp-core' ); ?></a>
+        ><?php esc_html_e( 'See it on my business', 'jcp-core' ); ?></a>
       </div>
     </header>
   <?php else : ?>

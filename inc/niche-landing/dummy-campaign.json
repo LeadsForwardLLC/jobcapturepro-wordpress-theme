@@ -399,7 +399,7 @@
     ],
     "footnote": "Each colored pin is a spot on the map where we checked if they showed up in Google’s local results. Green = near the top. Red = not showing. Past results don’t guarantee future rankings.",
     "cta_secondary": {
-      "label": "See it for my business",
+      "label": "See it on my business",
       "url": "/demo/"
     },
     "section_id": "case-study",
