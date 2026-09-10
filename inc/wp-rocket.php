@@ -55,6 +55,9 @@ function jcp_core_rocket_delay_js_exclusions( array $excluded ): array {
 	$excluded[] = 'survey.js';
 	$excluded[] = 'jcp-demo';
 	$excluded[] = 'jcp-demo.js';
+	// Must run on idle timeout even when Delay JS is on (campaign + demo TBT path).
+	$excluded[] = 'jcp-campaign-delay-js';
+	$excluded[] = 'jcp-delayed-analytics';
 	return array_values( array_unique( $excluded ) );
 }
 add_filter( 'rocket_delay_js_exclusions', 'jcp_core_rocket_delay_js_exclusions' );
@@ -94,7 +97,7 @@ add_filter( 'rocket_exclude_js', 'jcp_core_rocket_exclude_js' );
  * Bump $bust when critical front-end assets change and anonymous CSS must refresh.
  */
 function jcp_core_rocket_bust_stale_minify(): void {
-	$bust = '2026-09-10-campaign-lp-perf-v2';
+	$bust = '2026-09-10-campaign-lp-perf-v3';
 	if ( get_option( 'jcp_core_rocket_bust' ) === $bust ) {
 		return;
 	}
