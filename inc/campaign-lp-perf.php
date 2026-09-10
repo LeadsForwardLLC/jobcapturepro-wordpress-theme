@@ -21,7 +21,7 @@ function jcp_core_is_campaign_lp_request(): bool {
 }
 
 /**
- * Dequeue plugin CSS unused by campaign LPs (Tailwind, WP block library).
+ * Dequeue plugin CSS / chrome JS unused by campaign LPs.
  */
 function jcp_core_campaign_lp_dequeue_unused_assets(): void {
 	if ( ! jcp_core_is_campaign_lp_request() ) {
@@ -51,6 +51,9 @@ function jcp_core_campaign_lp_dequeue_unused_assets(): void {
 	$script_handles = [
 		'wp-embed',
 		'googlesitekit-events-provider-content-events',
+		// Landing chrome hides the top banner; don't pay for its JS reflows.
+		'jcp-core-site-banner',
+		'jcp-core-nav',
 	];
 	foreach ( $script_handles as $handle ) {
 		wp_dequeue_script( $handle );
@@ -62,7 +65,43 @@ add_action( 'wp_print_styles', 'jcp_core_campaign_lp_dequeue_unused_assets', 101
 add_action( 'wp_print_scripts', 'jcp_core_campaign_lp_dequeue_unused_assets', 101 );
 
 /**
- * Async-load CSS that is not needed for first paint on campaign LPs.
+ * Inline critical above-the-fold CSS so sheets can load async without FOUC/CLS.
+ */
+function jcp_core_campaign_lp_inline_critical_css(): void {
+	if ( ! jcp_core_is_campaign_lp_request() ) {
+		return;
+	}
+
+	echo '<style id="jcp-campaign-critical">';
+	echo 'html{scroll-behavior:auto}';
+	echo 'body.jcp-campaign-variant{margin:0;background:#fff;color:#111827;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}';
+	echo 'body.jcp-landing-chrome-hidden .directory-header,body.jcp-landing-chrome-hidden .jcp-top-banner,body.jcp-landing-chrome-hidden .mobile-menu-overlay,body.jcp-landing-chrome-hidden footer.jcp-footer{display:none!important}';
+	echo '.jcp-landing-brandbar{display:flex;align-items:center;justify-content:center;min-height:56px;padding:.55rem 1rem;background:rgba(255,255,255,.96);border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:50}';
+	echo '.jcp-landing-brandbar__inner{display:flex;align-items:center;justify-content:center;gap:.75rem;width:100%;max-width:72rem;margin-inline:auto}';
+	echo '.jcp-landing-brandbar__logo{display:block;height:34px;width:auto}';
+	echo '.jcp-landing-brandbar__cta{display:none}';
+	echo '.jcp-page-campaign .jcp-block-root{opacity:1!important;transform:none!important;animation:none!important}';
+	echo '.jcp-page-campaign .jcp-niche-benefits--job-flow .jcp-job-flow__step{opacity:1!important;transform:none!important}';
+	echo '.jcp-hero,.jcp-page-campaign .directory-hero{padding:1.25rem 1rem 2rem;background:#fff}';
+	echo '.jcp-hero-grid{display:grid;gap:1.5rem;align-items:center;max-width:72rem;margin:0 auto}';
+	echo '@media(min-width:900px){.jcp-hero-grid{grid-template-columns:1.05fr .95fr;gap:2rem;padding:0 1rem}}';
+	echo '.jcp-hero h1,.jcp-page-campaign .directory-hero h1{font-size:clamp(1.75rem,4.2vw,2.75rem);line-height:1.12;letter-spacing:-.02em;margin:0 0 .75rem;font-weight:800;color:#111827}';
+	echo '.jcp-hero p,.jcp-page-campaign .jcp-hero-sub{font-size:1.05rem;line-height:1.5;color:#4b5563;margin:0 0 1rem;max-width:36rem}';
+	echo '.btn-primary,.jcp-page-campaign .btn-primary{display:inline-flex;align-items:center;justify-content:center;min-height:3rem;padding:.85rem 1.25rem;border-radius:999px;background:#ff503e;color:#fff!important;font-weight:750;text-decoration:none;border:0}';
+	echo '.jcp-story-phone{position:relative;min-height:420px;display:flex;flex-direction:column;align-items:center}';
+	echo '.jcp-story-phone__device,.hero-phone-mockup{display:block;width:min(100%,280px);margin:0 auto;text-decoration:none;color:inherit}';
+	echo '.phone-frame,.hero-phone-frame{border-radius:28px;background:#0b1220;padding:10px;box-shadow:0 18px 50px rgba(15,23,42,.22)}';
+	echo '.phone-screen,.demo-phone-screen{border-radius:22px;overflow:hidden;background:#fff;aspect-ratio:9/19.5}';
+	echo '.jcp-story-scene:not(.is-active){display:none}';
+	echo '.jcp-story-scene.is-active{display:block}';
+	echo '.jcp-story-checkin-card__photo{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover}';
+	echo '.jcp-story-phone__caption{margin:.85rem 0 0;text-align:center;font-size:.9rem;color:#4b5563;min-height:1.35em}';
+	echo '</style>' . "\n";
+}
+add_action( 'wp_head', 'jcp_core_campaign_lp_inline_critical_css', 2 );
+
+/**
+ * Async-load theme CSS on campaign LPs (critical CSS is inlined above).
  *
  * @param string $html   Link tag HTML.
  * @param string $handle Style handle.
@@ -73,11 +112,19 @@ function jcp_core_campaign_lp_async_secondary_css( string $html, string $handle 
 	}
 
 	$async_handles = [
+		'jcp-core-base',
+		'jcp-core-layout',
+		'jcp-core-buttons',
+		'jcp-core-components',
+		'jcp-core-utilities',
+		'jcp-core-sections',
+		'jcp-core-hero-live-demo',
+		'jcp-core-demo-app-phone',
+		'jcp-core-niche-landing',
+		'jcp-core-home',
 		'jcp-core-story-moments',
 		'jcp-core-content-prose',
 		'jcp-core-case-study-cohort',
-		'jcp-core-utilities',
-		'jcp-core-home',
 	];
 	if ( ! in_array( $handle, $async_handles, true ) ) {
 		return $html;
@@ -90,21 +137,15 @@ function jcp_core_campaign_lp_async_secondary_css( string $html, string $handle 
 	if ( ! is_string( $async ) ) {
 		return $html;
 	}
-	if ( strpos( $async, 'noscript' ) === false ) {
-		$href = '';
-		if ( preg_match( '/href=[\'"]([^\'"]+)[\'"]/', $async, $m ) ) {
-			$href = $m[1];
-		}
-		if ( $href !== '' ) {
-			$async .= '<noscript><link rel="stylesheet" href="' . esc_url( $href ) . '"></noscript>';
-		}
+	if ( strpos( $async, 'noscript' ) === false && preg_match( '/href=[\'"]([^\'"]+)[\'"]/', $async, $m ) ) {
+		$async .= '<noscript><link rel="stylesheet" href="' . esc_url( $m[1] ) . '"></noscript>';
 	}
 	return $async;
 }
 add_filter( 'style_loader_tag', 'jcp_core_campaign_lp_async_secondary_css', 25, 2 );
 
 /**
- * Preload the first above-the-fold campaign photo (benefits card), not a hidden scene image.
+ * Preload the LCP check-in photo (360w WebP).
  */
 function jcp_core_campaign_lp_preload_lcp(): void {
 	if ( ! jcp_core_is_campaign_lp_request() ) {
@@ -144,7 +185,8 @@ function jcp_core_campaign_lp_optimize_asset_url( string $url, int $width = 0 ):
 		$suffix = '-64';
 	} elseif ( $width > 0 && $width <= 120 ) {
 		$suffix = '-192';
-	} elseif ( $width > 0 && $width <= 400 ) {
+	} elseif ( $width > 0 && $width <= 520 ) {
+		// Benefit cards declare width=480 but display ~372 CSS px.
 		$suffix = '-360';
 	} elseif ( $width > 0 && $width <= 720 ) {
 		$suffix = '-640';
@@ -185,7 +227,6 @@ function jcp_core_campaign_lp_rewrite_images( string $html ): string {
 				return $m[0];
 			}
 
-			// XHTML self-closing slash left by WP/Rocket — strip before we append attrs.
 			$attrs = rtrim( $attrs );
 			$attrs = preg_replace( '/\s*\/\s*$/', '', $attrs ) ?? $attrs;
 
@@ -207,7 +248,6 @@ function jcp_core_campaign_lp_rewrite_images( string $html ): string {
 				$attrs
 			);
 
-			// Tiny avatars / chips: never compete with LCP.
 			if ( $width > 0 && $width <= 96 ) {
 				if ( ! preg_match( '/\bloading=/i', $attrs ) ) {
 					$attrs .= ' loading="lazy"';
@@ -217,34 +257,32 @@ function jcp_core_campaign_lp_rewrite_images( string $html ): string {
 				}
 			}
 
-			// Phone LCP is the check-in card photo when that scene starts active.
-			if ( strpos( $attrs, 'jcp-story-checkin-card__photo' ) !== false && preg_match( '/\bfetchpriority=["\']high["\']/', $attrs ) ) {
-				// Keep as authored; rewriter should not demote.
-			} elseif ( strpos( $attrs, 'jcp-story-camera__img' ) !== false ) {
-				// Never let the hidden camera beat steal LCP.
+			if ( strpos( $attrs, 'jcp-story-camera__img' ) !== false ) {
 				$attrs = preg_replace( '/\bfetchpriority=["\'][^"\']*["\']/i', 'fetchpriority="low"', $attrs ) ?? $attrs;
+				$attrs = preg_replace( '/\bloading=["\'][^"\']*["\']/i', 'loading="lazy"', $attrs ) ?? $attrs;
 				if ( ! preg_match( '/\bloading=/i', $attrs ) ) {
 					$attrs .= ' loading="lazy"';
-				} else {
-					$attrs = preg_replace( '/\bloading=["\'][^"\']*["\']/i', 'loading="lazy"', $attrs ) ?? $attrs;
 				}
 			}
 
-			// Benefits cards are below the phone on desktop — do not compete with phone LCP.
 			if ( strpos( $attrs, 'benefits.items.0.image_url' ) !== false ) {
 				$attrs = preg_replace( '/\bfetchpriority=["\'][^"\']*["\']/i', 'fetchpriority="low"', $attrs ) ?? $attrs;
 				if ( ! preg_match( '/\bfetchpriority=/i', $attrs ) ) {
 					$attrs .= ' fetchpriority="low"';
 				}
+				// Match displayed ~372px cards — avoid declaring 480x360 with a 360w file.
+				$attrs = preg_replace( '/\bwidth=["\']\d+["\']/', 'width="360"', $attrs, 1 ) ?? $attrs;
+				$attrs = preg_replace( '/\bheight=["\']\d+["\']/', 'height="240"', $attrs, 1 ) ?? $attrs;
 			}
 
-			// Force lazy on later benefit images.
 			if ( $width >= 400 && preg_match( '/benefits\.items\.[1-9]/', $attrs ) ) {
 				if ( preg_match( '/\bloading=["\']eager["\']/i', $attrs ) ) {
 					$attrs = preg_replace( '/\bloading=["\']eager["\']/i', 'loading="lazy"', $attrs, 1 ) ?? $attrs;
 				} elseif ( ! preg_match( '/\bloading=/i', $attrs ) ) {
 					$attrs .= ' loading="lazy"';
 				}
+				$attrs = preg_replace( '/\bwidth=["\']\d+["\']/', 'width="360"', $attrs, 1 ) ?? $attrs;
+				$attrs = preg_replace( '/\bheight=["\']\d+["\']/', 'height="240"', $attrs, 1 ) ?? $attrs;
 			}
 
 			return '<img' . $attrs . '>';
@@ -252,7 +290,6 @@ function jcp_core_campaign_lp_rewrite_images( string $html ): string {
 		$html
 	) ?? $html;
 
-	// JSON stores that still point at campaign JPGs (skip data: URIs).
 	$html = preg_replace_callback(
 		'#https?://[^"\'\s]+/assets/campaign/[a-z0-9._-]+\.jpe?g#i',
 		static function ( array $m ): string {
@@ -289,7 +326,7 @@ function jcp_core_campaign_lp_strip_bad_preloads( string $html ): string {
 }
 
 /**
- * Drop Rocket map-bg lazy pairs on campaign LPs (hero no longer uses that image).
+ * Drop Rocket map-bg lazy pairs on campaign LPs.
  *
  * @param string $html Page HTML.
  */

@@ -5353,10 +5353,11 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   animation: none !important;
 }
 
+/* Campaign LPs: keep blocks visible (opacity reveals hurt CLS / Speed Index / LCP). */
 .jcp-page-campaign .jcp-block-root {
-  opacity: 0;
-  transform: translateY(16px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  opacity: 1;
+  transform: none;
+  transition: none;
 }
 
 /* If Delay JS / blocked scripts never add .is-visible, still reveal content. */
@@ -5368,7 +5369,7 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
 }
 
 .jcp-page-campaign .jcp-block-root:not([data-jcp-block-type="hero"]):not(.is-visible) {
-  animation: jcpCampaignForceVisible 0.45s ease 1.75s forwards;
+  animation: none;
 }
 
 .jcp-page-campaign .jcp-block-root.is-visible,
@@ -5388,9 +5389,9 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
 }
 
 .jcp-page-campaign .jcp-niche-benefits--job-flow .jcp-job-flow__step {
-  opacity: 0;
-  transform: translateY(14px);
-  transition: opacity 0.45s ease, transform 0.45s ease;
+  opacity: 1;
+  transform: none;
+  transition: none;
 }
 
 .jcp-page-campaign .jcp-niche-benefits--job-flow.is-visible .jcp-job-flow__step,
@@ -5400,16 +5401,17 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
 }
 
 .jcp-page-campaign .jcp-niche-benefits--job-flow.is-visible .jcp-job-flow__step:nth-child(1),
-.jcp-page-campaign .jcp-block-root.is-visible .jcp-job-flow__step:nth-child(1) { transition-delay: 0.04s; }
+.jcp-page-campaign .jcp-block-root.is-visible .jcp-job-flow__step:nth-child(1),
 .jcp-page-campaign .jcp-niche-benefits--job-flow.is-visible .jcp-job-flow__step:nth-child(2),
-.jcp-page-campaign .jcp-block-root.is-visible .jcp-job-flow__step:nth-child(2) { transition-delay: 0.1s; }
+.jcp-page-campaign .jcp-block-root.is-visible .jcp-job-flow__step:nth-child(2),
 .jcp-page-campaign .jcp-niche-benefits--job-flow.is-visible .jcp-job-flow__step:nth-child(3),
-.jcp-page-campaign .jcp-block-root.is-visible .jcp-job-flow__step:nth-child(3) { transition-delay: 0.16s; }
+.jcp-page-campaign .jcp-block-root.is-visible .jcp-job-flow__step:nth-child(3),
 .jcp-page-campaign .jcp-niche-benefits--job-flow.is-visible .jcp-job-flow__step:nth-child(4),
-.jcp-page-campaign .jcp-block-root.is-visible .jcp-job-flow__step:nth-child(4) { transition-delay: 0.22s; }
+.jcp-page-campaign .jcp-block-root.is-visible .jcp-job-flow__step:nth-child(4),
 .jcp-page-campaign .jcp-niche-benefits--job-flow.is-visible .jcp-job-flow__step:nth-child(5),
-.jcp-page-campaign .jcp-block-root.is-visible .jcp-job-flow__step:nth-child(5) { transition-delay: 0.28s; }
-
+.jcp-page-campaign .jcp-block-root.is-visible .jcp-job-flow__step:nth-child(5) {
+  transition-delay: 0s;
+}
 .jcp-page-campaign .btn-primary {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }

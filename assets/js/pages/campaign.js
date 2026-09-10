@@ -51,23 +51,17 @@
     if (!bar) return;
 
     var threshold = 36;
-    var ticking = false;
+    var compact = false;
 
     function update() {
-      ticking = false;
-      var compact = window.scrollY > threshold;
-      if (bar.classList.contains('is-compact') === compact) return;
+      var next = (window.scrollY || 0) > threshold;
+      if (next === compact) return;
+      compact = next;
       bar.classList.toggle('is-compact', compact);
     }
 
-    function onScroll() {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(update);
-    }
-
-    update();
-    window.addEventListener('scroll', onScroll, { passive: true });
+    // Don't force layout on boot — wait for first scroll.
+    window.addEventListener('scroll', update, { passive: true });
   }
 
   function ready(fn) {
