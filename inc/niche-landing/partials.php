@@ -9,21 +9,6 @@
  */
 
 /**
- * Ranking factor card (homepage pattern).
- *
- * @param string               $title            Card title.
- * @param string               $icon             Lucide icon name.
- * @param string               $stat_value       Optional stat value.
- * @param string               $stat_label       Optional stat label.
- * @param callable(): void|null $body_cb          Optional inner HTML callback.
- * @param string               $title_path       JSON path for title.
- * @param string               $stat_value_path  JSON path for stat value.
- * @param string               $stat_label_path  JSON path for stat label.
- * @param int                  $array_index      Optional list index for add/remove UI (-1 = none).
- * @param string               $icon_path        JSON path for icon slug (e.g. benefits.items.0.icon).
- * @param bool                 $show_icon        Whether to render the icon wrapper.
- */
-/**
  * Ranking / benefit / audience factor card.
  *
  * @param string               $title           Title.
@@ -38,15 +23,27 @@
  * @param string               $icon_path       Editable icon path.
  * @param bool                 $show_icon       Whether to output the icon.
  * @param array<string, bool>  $pieces          show_title, show_body, show_stats.
+ * @param string               $url             Optional whole-card link URL.
+ * @param string               $url_path        Flat content path for the card URL (editor).
  */
-function jcp_niche_factor_card( string $title, string $icon, string $stat_value = '', string $stat_label = '', ?callable $body_cb = null, string $title_path = '', string $stat_value_path = '', string $stat_label_path = '', int $array_index = -1, string $icon_path = '', bool $show_icon = true, array $pieces = [] ): void {
+function jcp_niche_factor_card( string $title, string $icon, string $stat_value = '', string $stat_label = '', ?callable $body_cb = null, string $title_path = '', string $stat_value_path = '', string $stat_label_path = '', int $array_index = -1, string $icon_path = '', bool $show_icon = true, array $pieces = [], string $url = '', string $url_path = '' ): void {
 	$show_title = ! array_key_exists( 'show_title', $pieces ) || ! empty( $pieces['show_title'] );
 	$show_body  = ! array_key_exists( 'show_body', $pieces ) || ! empty( $pieces['show_body'] );
 	$show_stats = ! array_key_exists( 'show_stats', $pieces ) || ! empty( $pieces['show_stats'] );
+	$url        = trim( $url );
+	$linked     = $url !== '';
+	$classes    = 'ranking-factor-card' . ( $linked ? ' ranking-factor-card--linked' : '' );
 	?>
-	<div class="ranking-factor-card"<?php if ( $array_index >= 0 ) { jcp_niche_array_item_attr( $array_index ); } ?>>
+	<div class="<?php echo esc_attr( $classes ); ?>"<?php
+	if ( $array_index >= 0 ) {
+		jcp_niche_array_item_attr( $array_index );
+	}
+	if ( $url_path !== '' ) {
+		echo ' data-jcp-card-link-path="' . esc_attr( $url_path ) . '"';
+	}
+	?>>
 		<?php if ( $show_icon ) : ?>
-		<div class="factor-icon-wrapper"<?php if ( $icon_path !== '' ) { echo ' data-jcp-icon-path="' . esc_attr( $icon_path ) . '" title="' . esc_attr__( 'Click to change icon', 'jcp-core' ) . '" role="button" tabindex="0"'; } ?>>
+		<div class="factor-icon-wrapper"<?php if ( $icon_path !== '' && function_exists( 'jcp_niche_user_can_inline_edit' ) && jcp_niche_user_can_inline_edit() ) { echo ' data-jcp-icon-path="' . esc_attr( $icon_path ) . '" title="' . esc_attr__( 'Click to change icon', 'jcp-core' ) . '" role="button" tabindex="0"'; } ?>>
 			<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="factor-icon" alt="" width="32" height="32" />
 		</div>
 		<?php endif; ?>
@@ -64,12 +61,15 @@ function jcp_niche_factor_card( string $title, string $icon, string $stat_value 
 				<?php endif; ?>
 			</div>
 		<?php endif; ?>
+		<?php if ( $linked ) : ?>
+			<a class="ranking-factor-card__link" href="<?php echo esc_url( $url ); ?>" aria-label="<?php echo esc_attr( $title !== '' ? $title : __( 'Open', 'jcp-core' ) ); ?>" tabindex="-1"></a>
+		<?php endif; ?>
 	</div>
 	<?php
 }
 
 /**
- * Hero-style meta strip (1 photo / 4 channels pattern).
+ * Hero-style meta strip (1 photo / 5 channels pattern).
  *
  * @param array<int, array<string, string>> $items       Items with value, label, detail, icon keys.
  * @param string                            $path_prefix JSON path prefix (e.g. core_mechanic).
@@ -186,7 +186,8 @@ function jcp_niche_render_step_lines( array $lines, string $path_prefix ): void 
 }
 
 /**
- * Homepage-style core mechanic row (1 photo / 4 channels / 0 busywork).
+ * Homepage-style core mechanic row (1 photo / 5 places / More jobs).
+ * Uses the shared meta-stats component so layout matches the homepage hero.
  *
  * @param array<int, array<string, string>> $items       Items.
  * @param string                            $path_prefix JSON path prefix.
@@ -196,54 +197,25 @@ function jcp_niche_render_core_mechanic_strip( array $items, string $path_prefix
 	if ( empty( $normalized ) ) {
 		return;
 	}
-	?>
-	<div class="directory-meta jcp-core-mechanic-meta"<?php if ( $path_prefix !== '' ) { jcp_niche_array_attr( $path_prefix ); } ?>>
-		<?php foreach ( $normalized as $i => $item ) : ?>
-			<?php
-			$raw = $items[ $i ] ?? [];
-			if ( ! is_array( $raw ) ) {
-				continue;
-			}
-			$icon   = (string) ( $item['icon'] ?? 'check' );
-			$value  = trim( (string) ( $raw['value'] ?? '' ) );
-			$word   = trim( (string) ( $raw['label'] ?? '' ) );
-			$detail = (string) ( $item['detail'] ?? '' );
-			$base   = $path_prefix !== '' ? $path_prefix . '.' . $i : '';
-			$class  = (string) ( $item['css_class'] ?? '' );
-			$combined = (string) ( $item['label'] ?? '' );
-			?>
-			<div class="meta-item jcp-collection-item<?php echo $class !== '' ? ' ' . esc_attr( $class ) : ''; ?>"<?php if ( $path_prefix !== '' ) { jcp_niche_array_item_attr( (int) $i ); } ?>>
-				<div class="meta-label">
-					<span class="factor-icon-wrapper jcp-hero-meta-icon"<?php if ( $base !== '' ) { ?> data-jcp-icon-path="<?php echo esc_attr( $base . '.icon' ); ?>" title="<?php esc_attr_e( 'Click to change icon', 'jcp-core' ); ?>" role="button" tabindex="0"<?php } ?>>
-						<img src="<?php echo esc_url( jcp_core_icon( $icon ) ); ?>" class="meta-icon" alt="" width="20" height="20" />
-					</span>
-					<strong>
-						<?php if ( $base !== '' && ( $value !== '' || $word !== '' ) ) : ?>
-							<span<?php jcp_niche_editable_attr( $base . '.value' ); ?>><?php echo esc_html( $value ); ?></span><?php if ( $word !== '' ) : ?><span<?php jcp_niche_editable_attr( $base . '.label' ); ?>><?php echo esc_html( ' ' . $word ); ?></span><?php endif; ?>
-						<?php else : ?>
-							<?php echo esc_html( $combined ); ?>
-						<?php endif; ?>
-					</strong>
-				</div>
-				<?php if ( $detail !== '' ) : ?>
-					<span class="meta-detail"<?php if ( $base !== '' ) { jcp_niche_editable_attr( $base . '.detail' ); } ?>><?php echo esc_html( $detail ); ?></span>
-				<?php endif; ?>
-				<?php if ( $path_prefix !== '' ) { jcp_niche_collection_remove_btn(); } ?>
-			</div>
-		<?php endforeach; ?>
-		<?php if ( $path_prefix !== '' ) { jcp_niche_collection_add_btn( __( '+ Add stat', 'jcp-core' ) ); } ?>
-	</div>
-	<?php
+
+	$for_component = [];
+	foreach ( $normalized as $i => $item ) {
+		$raw = is_array( $items[ $i ] ?? null ) ? $items[ $i ] : [];
+		$row = [
+			'icon'      => (string) ( $item['icon'] ?? 'check' ),
+			'label'     => (string) ( $item['label'] ?? '' ),
+			'detail'    => (string) ( $item['detail'] ?? '' ),
+			'css_class' => (string) ( $item['css_class'] ?? '' ),
+			'value'     => trim( (string) ( $raw['value'] ?? '' ) ),
+			'word'      => trim( (string) ( $raw['label'] ?? '' ) ),
+		];
+		$for_component[] = $row;
+	}
+
+	jcp_component_home_meta_stats( $for_component, $path_prefix, 'jcp-core-mechanic-meta', $path_prefix !== '' );
 }
 
-/**
- * Single checkmark bullet row.
- *
- * @param string $text        Display text.
- * @param string $path        Optional JSON path for inline editor.
- * @param int    $index       Array index.
- * @param bool   $editable    Whether remove control is shown.
- */
+
 function jcp_niche_render_conversion_point( string $text, string $path, int $index, bool $editable ): void {
 	if ( $text === '' && ! $editable ) {
 		return;
@@ -420,7 +392,11 @@ function jcp_niche_render_section_optional_ctas( array $props, string $base_path
 		<?php if ( $show_primary ) : ?>
 		<div class="benefits-cta-slot jcp-section-cta-slot"<?php jcp_niche_optional_slot_attr( $base_path . '.cta_primary', 'cta', $primary_label ); ?>>
 			<?php if ( $has_primary ) : ?>
-				<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary"<?php jcp_niche_editable_link_attr( $base_path . '.cta_primary' ); ?>><?php echo esc_html( $primary['label'] ); ?></a>
+				<a href="<?php echo esc_url( $primary['url'] ); ?>" class="btn btn-primary"<?php jcp_niche_editable_link_attr( $base_path . '.cta_primary' ); ?><?php
+				if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+					jcp_niche_cta_tracking_attr( $primary['url'], $base_path . '_cta', $primary['label'] );
+				}
+				?>><?php echo esc_html( $primary['label'] ); ?></a>
 			<?php endif; ?>
 		</div>
 		<?php endif; ?>
@@ -436,4 +412,10 @@ function jcp_niche_render_section_optional_ctas( array $props, string $base_path
 		<?php endif; ?>
 	</div>
 	<?php
+	$cta_note = trim( (string) ( $props['cta_note'] ?? '' ) );
+	if ( $cta_note !== '' && ( $show_primary || $show_secondary ) ) :
+		?>
+		<p class="cta-note jcp-section-cta-note"<?php jcp_niche_editable_attr( $base_path . '.cta_note' ); ?>><?php echo esc_html( $cta_note ); ?></p>
+		<?php
+	endif;
 }

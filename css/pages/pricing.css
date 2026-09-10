@@ -516,6 +516,13 @@
   justify-content: center;
 }
 
+.jcp-plan-cta-note {
+  margin: 0.5rem 0 0;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--jcp-color-muted, #6b7280);
+}
+
 /* ============================================================
    COMPARE TABLE
    ============================================================ */

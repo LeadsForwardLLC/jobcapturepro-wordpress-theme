@@ -19,6 +19,22 @@
 
   let templateUrl = '';
 
+  // Server-hydrated demo shell: skip fetch waterfall and boot immediately.
+  if (page === 'demo' && root.dataset.jcpHydrated === '1') {
+    root.style.minHeight = '';
+    const bootHydratedDemo = () => {
+      if (typeof window.initDemo === 'function') {
+        window.initDemo();
+      }
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', bootHydratedDemo);
+    } else {
+      bootHydratedDemo();
+    }
+    return;
+  }
+
   // Treat prototype and demo the same (fetch demo/index.html, then initDemo)
   if (page === 'prototype' || page === 'demo') {
     templateUrl = `${assetBase}/demo/index.html`;
@@ -36,13 +52,6 @@
         return;
       }
       console.warn('JCP render: renderPricing is not available');
-      return;
-    case 'contact':
-      if (typeof window.renderContact === 'function') {
-        window.renderContact();
-        return;
-      }
-      console.warn('JCP render: renderContact is not available');
       return;
     case 'directory':
       templateUrl = `${assetBase}/directory/index.html`;
@@ -66,7 +75,7 @@
     fetchUrl = `${templateUrl}?v=${encodeURIComponent(window.JCP_DEMO_TEMPLATE_VERSION)}`;
   }
 
-  fetch(fetchUrl, { cache: 'no-store' })
+  fetch(fetchUrl)
     .then((res) => {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return res.text();

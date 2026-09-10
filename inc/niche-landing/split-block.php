@@ -215,12 +215,24 @@ function jcp_niche_render_split_media_block( array $props, string $path, string 
 					'media_alt'          => $media['media_alt'],
 					'default_image'      => jcp_media_default_phone_image(),
 					'phone_mockup_style' => $phone_style,
-					'phone_render'       => function () use ( $demo_url, $phone_style ) {
-						if ( $phone_style === 'live_demo' ) {
-							jcp_component_demo_app_phone( $demo_url );
+					'phone_render'       => function () use ( $demo_url, $phone_style, $props ) {
+						$photo = (string) ( $props['phone_image_url'] ?? $props['image_url'] ?? '' );
+						$alt   = (string) ( $props['phone_image_alt'] ?? $props['media_alt'] ?? '' );
+						$cta   = (string) ( $props['phone_cta_label'] ?? '' );
+						// Mid-page: photo + status cards. Hero owns the full animated story phone.
+						if ( $phone_style === 'story' ) {
+							jcp_component_demo_app_phone( $demo_url, $photo );
 							return;
 						}
-						jcp_component_demo_app_phone( '' );
+						jcp_component_hero_home_visual(
+							$demo_url,
+							$photo,
+							$alt,
+							true,
+							null,
+							false,
+							$cta !== '' ? $cta : __( 'Try the demo', 'jcp-core' )
+						);
 					},
 					'img_attrs'          => [
 						'class'   => 'demo-preview-slot-image jcp-media-text-image',

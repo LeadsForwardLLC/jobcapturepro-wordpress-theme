@@ -436,6 +436,47 @@ body.mobile-menu-open .jcp-top-banner {
   transform: scaleX(1);
 }
 
+/* Whole-card link (benefits): stretched hit target over the card */
+.ranking-factor-card--linked {
+  cursor: pointer;
+}
+
+.ranking-factor-card__link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  text-decoration: none;
+  color: inherit;
+}
+
+body.jcp-inline-editing .ranking-factor-card__link {
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.jcp-inline-editing .ranking-factor-card[data-jcp-card-link-path].is-card-link-target {
+  outline: 2px solid var(--jcp-color-primary, #ff503e);
+  outline-offset: 2px;
+}
+
+body.jcp-inline-editing .ranking-factor-card[data-jcp-card-link-path].ranking-factor-card--linked::after {
+  content: 'Linked';
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  z-index: 3;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--jcp-color-primary, #ff503e);
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
 /* ============================================================
    HERO COMPONENT
    ============================================================ */

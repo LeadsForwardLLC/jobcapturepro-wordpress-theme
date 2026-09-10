@@ -81,6 +81,7 @@
     const last = (u.lastName || '').trim();
     const email = (u.email || '').trim();
     const company = (u.businessName || '').trim();
+    const phone = (u.phone || '').trim();
     const businessType = (u.niche || '').trim();
     const fullName = [first, last].filter(Boolean).join(' ').trim();
 
@@ -88,6 +89,11 @@
     if (first) params.first_name = first;
     if (last) params.last_name = last;
     if (email) params.email = email;
+    if (phone) {
+      params.phone = phone;
+      params.mobile = phone;
+      params.mobile_phone = phone;
+    }
     if (fullName) {
       params.full_name = fullName; // legacy / snake_case
       params.fullName = fullName;  // likely app key
@@ -95,11 +101,10 @@
     }
 
     // Org step
-    if (company) {
+    if (company && company.toLowerCase() !== 'your business') {
       params.company = company;                 // legacy
       params.organization_name = company;       // snake_case
       params.organizationName = company;        // likely app key
-      params.organizationName = company;        // explicit: matches Step 2 input id/key
     }
     if (businessType) {
       params.business_type = businessType;      // legacy
@@ -116,6 +121,32 @@
 
     const demoSession = readDemoSession();
     if (demoSession) params.demo_session = demoSession;
+
+    try {
+      if (window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function') {
+        const attr = window.JCPLeadAttribution.getPayload() || {};
+        [
+          'utm_source',
+          'utm_medium',
+          'utm_campaign',
+          'utm_content',
+          'utm_term',
+          'fbclid',
+          'lp_variant',
+          'landing_page',
+          'referrer',
+          'contact_id',
+        ].forEach((key) => {
+          if (params[key]) return;
+          const val = attr[key];
+          if (val != null && String(val).trim() !== '') {
+            params[key] = String(val).trim();
+          }
+        });
+      }
+    } catch (e) {
+      // no-op
+    }
 
     return Object.keys(params).length ? params : null;
   };
@@ -163,6 +194,22 @@
       if (next && next !== href) a.setAttribute('href', next);
     });
   };
+
+  // Re-apply on click in case localStorage was written after initial decorate.
+  document.addEventListener(
+    'click',
+    (event) => {
+      const a = event.target && event.target.closest ? event.target.closest('a[href]') : null;
+      if (!a) return;
+      const href = a.getAttribute('href') || '';
+      if (!isOnboardingUrl(href)) return;
+      const extra = buildHandoffParams();
+      if (!extra) return;
+      const next = decorateHref(href, extra);
+      if (next && next !== href) a.setAttribute('href', next);
+    },
+    true
+  );
 
   // Templates can render after DOMContentLoaded; run a few times.
   const run = () => {

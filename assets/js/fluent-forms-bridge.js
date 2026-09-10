@@ -21,6 +21,31 @@
     return document.querySelector('.jcp-fluent-quote-modal');
   }
 
+  /**
+   * Fluent often leaves Submit in a sibling .ff_submit_btn_wrapper while
+   * .ff-inner_submit_container only holds Previous (empty column-2). Move
+   * Submit into that column so the mobile dock CSS pins both actions.
+   */
+  function normalizeStepSubmitDock(root) {
+    var scope = root && root.querySelectorAll ? root : document;
+    var steps = scope.querySelectorAll('.fluentform-step, .ff-step, .ff-el-form-step');
+    Array.prototype.forEach.call(steps, function (step) {
+      var wrapper = step.querySelector(
+        ':scope > .ff_submit_btn_wrapper, :scope > .ff-el-group.ff_submit_btn_wrapper'
+      );
+      if (!wrapper) {
+        return;
+      }
+      var col2 =
+        step.querySelector('.ff-inner_submit_container .ff-t-column-2')
+        || step.querySelector('.ff-inner_submit_container .ff-t-cell:last-child');
+      if (!col2 || col2.contains(wrapper)) {
+        return;
+      }
+      col2.appendChild(wrapper);
+    });
+  }
+
   function openModal(modal) {
     if (!modal) {
       return;
@@ -29,6 +54,7 @@
     modal.classList.add(OPEN_CLASS);
     modal.setAttribute('aria-hidden', 'false');
     document.body.classList.add(BODY_CLASS);
+    normalizeStepSubmitDock(modal);
     var closeBtn = modal.querySelector('[data-jcp-form-close]');
     if (closeBtn && typeof closeBtn.focus === 'function') {
       closeBtn.focus();
@@ -48,6 +74,24 @@
     lastFocus = null;
   }
 
+  function hrefOpensFormModal(href) {
+    if (!href) {
+      return false;
+    }
+    if (href === '#apply' || href === '#jcp-form-modal') {
+      return true;
+    }
+    try {
+      var url = new URL(href, window.location.href);
+      if (url.origin !== window.location.origin) {
+        return false;
+      }
+      return url.hash === '#apply' || url.hash === '#jcp-form-modal';
+    } catch (e) {
+      return /#apply$/.test(href) || /#jcp-form-modal$/.test(href);
+    }
+  }
+
   function resolveModalFromTrigger(el) {
     var target = el.getAttribute('data-jcp-form-target') || '';
     if (target.indexOf('#') === 0) {
@@ -57,13 +101,13 @@
       return getModal(target);
     }
     var href = el.getAttribute('href') || '';
-    if (href === '#apply' || href === '#jcp-form-modal') {
-      var modal = getModal(href === '#apply' ? 'jcp-form-modal' : href.slice(1));
+    if (hrefOpensFormModal(href)) {
+      var modal = getModal('jcp-form-modal');
       if (modal) {
         return modal;
       }
       // Inline form: let browser scroll to #apply.
-      if (href === '#apply' && document.getElementById('apply')) {
+      if ((href === '#apply' || /#apply$/.test(href)) && document.getElementById('apply')) {
         return null;
       }
     }
@@ -78,10 +122,7 @@
       return true;
     }
     var href = el.getAttribute('href') || '';
-    if (href === '#jcp-form-modal') {
-      return true;
-    }
-    if (href === '#apply' && getModal('jcp-form-modal')) {
+    if (hrefOpensFormModal(href) && getModal('jcp-form-modal')) {
       return true;
     }
     return false;
@@ -95,6 +136,11 @@
       return;
     }
 
+    // Never intercept anything inside a Fluent Form (next/prev/submit/Choices).
+    if (event.target.closest('form.frm-fluent-form, .fluentform, .ff-el-group, .choices')) {
+      return;
+    }
+
     var trigger = event.target.closest('a, button');
     if (!trigger || !isFormTrigger(trigger)) {
       return;
@@ -105,7 +151,7 @@
       || trigger.classList.contains('ff-btn-submit')
       || trigger.classList.contains('ff-btn-next')
       || trigger.classList.contains('ff-btn-prev')
-      || trigger.closest('.step-nav, .ff_step_nav_last, .ff_submit_btn_wrapper')
+      || trigger.closest('.step-nav, .ff_step_nav_last, .ff_submit_btn_wrapper, .ff-inner_submit_container')
     ) {
       return;
     }
@@ -185,6 +231,88 @@
     });
   }
 
+  function stickyOffset() {
+    var top = document.querySelector('.jcp-form-landing__top');
+    var h = top ? top.getBoundingClientRect().height : 0;
+    return Math.max(72, Math.round(h) + 16);
+  }
+
+  function getScrollHost(el) {
+    var modalBody = el && el.closest ? el.closest('.jcp-fluent-quote-modal__body') : null;
+    if (modalBody) {
+      return modalBody;
+    }
+    // Marketing pages often scroll .jcp-shell instead of the window.
+    var shell = document.querySelector('.jcp-shell');
+    if (shell && shell.scrollHeight > shell.clientHeight + 1) {
+      return shell;
+    }
+    return null;
+  }
+
+  function scrollHostToTop(behavior) {
+    var shell = document.querySelector('.jcp-shell');
+    if (shell && shell.scrollHeight > shell.clientHeight + 1) {
+      try {
+        shell.scrollTo({ top: 0, behavior: behavior || 'smooth' });
+      } catch (e) {
+        shell.scrollTop = 0;
+      }
+      return;
+    }
+    try {
+      window.scrollTo({ top: 0, behavior: behavior || 'smooth' });
+    } catch (e2) {
+      window.scrollTo(0, 0);
+    }
+  }
+
+  /** Keep Fluent multi-step auto-scroll clear of the Form Landing sticky bar. */
+  function syncFluentScrollOffset() {
+    window.ff_scroll_top_offset = stickyOffset();
+  }
+
+  function firstErrorLabel(error) {
+    if (!error || !error.querySelector) {
+      return '';
+    }
+    var label = error.querySelector('.ff-el-input--label label, label');
+    var text = (label && label.textContent) || '';
+    return String(text).replace(/\*/g, '').trim().slice(0, 80);
+  }
+
+  function showValidationNotice(form, message) {
+    if (!form) {
+      return;
+    }
+    var host = form.closest('.jcp-fluent-bridge, .fluentform, .fluentform_wrapper_7') || form.parentElement;
+    if (!host) {
+      return;
+    }
+    var notice = document.querySelector('.jcp-ff-validation-notice') || host.querySelector('.jcp-ff-validation-notice');
+    if (!notice) {
+      notice = document.createElement('div');
+      notice.className = 'jcp-ff-validation-notice';
+      notice.setAttribute('role', 'alert');
+      notice.setAttribute('aria-live', 'assertive');
+      // Prefer fixed banner under the form-landing header so Step 5 users always see it.
+      var landingMain = document.getElementById('jcp-form-landing-main');
+      if (landingMain) {
+        landingMain.insertBefore(notice, landingMain.firstChild);
+      } else {
+        host.insertBefore(notice, host.firstChild);
+      }
+    }
+    notice.textContent = message || 'Please complete the highlighted required fields, then try again.';
+    notice.classList.add('is-visible');
+    window.clearTimeout(notice._jcpHide);
+    notice._jcpHide = window.setTimeout(function () {
+      notice.classList.remove('is-visible');
+    }, 12000);
+    // Bring the banner into view immediately (users are often scrolled to Submit).
+    scrollHostToTop('smooth');
+  }
+
   function scrollToFirstError(scope) {
     var root = scope && scope.querySelector ? scope : document;
     var form = null;
@@ -201,9 +329,15 @@
       || root.querySelector('.ff-errors-in-stack .error')
       || root.querySelector('.text-danger');
     if (!error) {
+      showValidationNotice(form);
       return;
     }
+    var label = firstErrorLabel(error);
+    var msg = label
+      ? ('Please complete: “' + label + '”, then try Submit again.')
+      : 'Please complete the highlighted required fields, then try again.';
     revealErrorStep(error, form).then(function (target) {
+      showValidationNotice(form, msg);
       if (!target || typeof target.scrollIntoView !== 'function') {
         return;
       }
@@ -212,8 +346,129 @@
       if (rect.width === 0 && rect.height === 0) {
         return;
       }
+      var host = getScrollHost(target);
+      if (host) {
+        var hostRect = host.getBoundingClientRect();
+        var nextTop = host.scrollTop + (rect.top - hostRect.top) - Math.max(24, stickyOffset() / 3);
+        host.scrollTo({ top: Math.max(0, nextTop), behavior: 'smooth' });
+        return;
+      }
       target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Re-adjust for sticky form-landing header covering the field.
+      window.setTimeout(function () {
+        var y = window.scrollY || window.pageYOffset || 0;
+        window.scrollTo({ top: Math.max(0, y - stickyOffset()), behavior: 'smooth' });
+      }, 50);
     });
+  }
+
+  /**
+   * Submit can look dead when Fluent validates a hidden earlier step and never
+   * scrolls. Watchdog + explicit click hook guarantee visible feedback.
+   */
+  function bindSubmitWatchdog() {
+    document.addEventListener(
+      'click',
+      function (event) {
+        var btn = event.target && event.target.closest
+          ? event.target.closest('button.ff-btn-submit, .ff-btn-submit')
+          : null;
+        if (!btn) {
+          return;
+        }
+        var form = btn.closest('form.frm-fluent-form') || (btn.form || null);
+        if (!form) {
+          return;
+        }
+        // Keep Submit associated with the form even if DOM moves.
+        if (form.id && !btn.getAttribute('form')) {
+          btn.setAttribute('form', form.id);
+        }
+        window.clearTimeout(bindSubmitWatchdog._timer);
+        bindSubmitWatchdog._armed = true;
+        bindSubmitWatchdog._timer = window.setTimeout(function () {
+          if (!bindSubmitWatchdog._armed) {
+            return;
+          }
+          bindSubmitWatchdog._armed = false;
+          if (!document.body.contains(form)) {
+            return;
+          }
+          // Still on the same page with no success message → surface errors.
+          if (document.querySelector('.ff-message-success, .ff_success_msg')) {
+            return;
+          }
+          scrollToFirstError(form);
+        }, 900);
+      },
+      true
+    );
+    if (!window.jQuery) {
+      return;
+    }
+    window.jQuery(document)
+      .off('fluentform_submission_success.jcpWatch')
+      .on('fluentform_submission_success.jcpWatch', function () {
+        bindSubmitWatchdog._armed = false;
+        window.clearTimeout(bindSubmitWatchdog._timer);
+      });
+
+    // Support form → thank-you page (topic-aware).
+    window.jQuery(document)
+      .off('fluentform_submission_success.jcpSupportThanks')
+      .on('fluentform_submission_success.jcpSupportThanks', function (event, response) {
+        var supportRoot = document.querySelector('.jcp-support-page');
+        if (!supportRoot) {
+          return;
+        }
+        var form = null;
+        if (response && response.form && response.form.length) {
+          form = response.form[0];
+        } else if (event && event.target && event.target.nodeType === 1) {
+          form = event.target.closest('form.frm-fluent-form') || event.target;
+        }
+        if (!form) {
+          form = supportRoot.querySelector('form.frm-fluent-form');
+        }
+        var topic = '';
+        if (form) {
+          var topicField =
+            form.querySelector('select[name="dropdown"]')
+            || form.querySelector('select[name="topic"]')
+            || form.querySelector('select[data-name="dropdown"]')
+            || form.querySelector('.ff-el-input--content select');
+          if (topicField && topicField.value) {
+            topic = String(topicField.value).trim();
+          }
+        }
+        var base = supportRoot.getAttribute('data-jcp-support-thanks') || '/contact-success/';
+        var url = base;
+        try {
+          var u = new URL(base, window.location.origin);
+          if (topic && topic !== '- Select -') {
+            u.searchParams.set('topic', topic);
+          }
+          url = u.pathname + u.search;
+        } catch (e) {
+          if (topic && topic !== '- Select -') {
+            url += (url.indexOf('?') >= 0 ? '&' : '?') + 'topic=' + encodeURIComponent(topic);
+          }
+        }
+        window.setTimeout(function () {
+          window.location.assign(url);
+        }, 250);
+      });
+    window.jQuery(document)
+      .off(
+        'fluentform_submission_failed.jcpWatch fluentform_submitted_failed.jcpWatch fluentform_validation_failed.jcpWatch'
+      )
+      .on(
+        'fluentform_submission_failed.jcpWatch fluentform_submitted_failed.jcpWatch fluentform_validation_failed.jcpWatch',
+        function () {
+          bindSubmitWatchdog._armed = false;
+          window.clearTimeout(bindSubmitWatchdog._timer);
+        }
+      );
   }
 
   function bindFluentHelpers() {
@@ -235,20 +490,115 @@
         scrollToFirstError(el || document);
       }, 60);
     }
+    function onStepOrReady(e) {
+      var root = (e && e.target && e.target.nodeType === 1) ? e.target : document;
+      normalizeStepSubmitDock(root.closest ? (root.closest('.jcp-fluent-bridge') || root) : document);
+    }
     $(document)
       .off('fluentform_submission_failed.jcpBridge fluentform_submitted_failed.jcpBridge fluentform_validation_failed.jcpBridge')
       .on(
         'fluentform_submission_failed.jcpBridge fluentform_submitted_failed.jcpBridge fluentform_validation_failed.jcpBridge',
         onFail
       );
+    $(document)
+      .off(
+        'fluentform_init.jcpBridgeDock fluentform_init_step.jcpBridgeDock fluentform_step_change.jcpBridgeDock fluentform_step_changed.jcpBridgeDock fluentform_step_down.jcpBridgeDock fluentform_step_up.jcpBridgeDock'
+      )
+      .on(
+        'fluentform_init.jcpBridgeDock fluentform_init_step.jcpBridgeDock fluentform_step_change.jcpBridgeDock fluentform_step_changed.jcpBridgeDock fluentform_step_down.jcpBridgeDock fluentform_step_up.jcpBridgeDock',
+        onStepOrReady
+      );
+    // Fluent step transitions: re-dock after Next/Prev paints.
+    $(document)
+      .off('click.jcpBridgeDock')
+      .on('click.jcpBridgeDock', '.ff-btn-next, .ff-btn-prev', function () {
+        window.setTimeout(function () {
+          normalizeStepSubmitDock(document);
+        }, 50);
+        window.setTimeout(function () {
+          normalizeStepSubmitDock(document);
+        }, 400);
+      });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bindFluentHelpers);
+    document.addEventListener('DOMContentLoaded', function () {
+      syncFluentScrollOffset();
+      bindFluentHelpers();
+      bindSubmitWatchdog();
+      normalizeStepSubmitDock(document);
+    });
   } else {
+    syncFluentScrollOffset();
     bindFluentHelpers();
+    bindSubmitWatchdog();
+    normalizeStepSubmitDock(document);
   }
   window.setTimeout(bindFluentHelpers, 500);
+  window.setTimeout(bindSubmitWatchdog, 500);
+  window.setTimeout(function () {
+    normalizeStepSubmitDock(document);
+  }, 500);
+  window.addEventListener('resize', syncFluentScrollOffset);
+
+  function openModalFromHash() {
+    if (window.location.hash !== '#apply' && window.location.hash !== '#jcp-form-modal') {
+      return;
+    }
+    var modal = getModal('jcp-form-modal');
+    if (modal) {
+      openModal(modal);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', openModalFromHash);
+  } else {
+    openModalFromHash();
+  }
+  window.addEventListener('hashchange', openModalFromHash);
+
+  /**
+   * SiteGround Dynamic Cache can keep a stale HIT for /case-study/ after deploys
+   * when `wp sg` is unavailable. If we detect the old inline embed, soft-reload
+   * once with a cache-busting query so visitors get the modal takeover HTML.
+   */
+  function rescueStaleCaseStudyInline() {
+    try {
+      if (!/\/case-study\/?$/.test(window.location.pathname)) {
+        return;
+      }
+      if (window.location.search && /(?:^|[?&])(?:jcp|qa|v|nocache|fresh|purge)=/.test(window.location.search)) {
+        return;
+      }
+      if (document.getElementById('jcp-form-modal')) {
+        return;
+      }
+      var apply = document.getElementById('apply');
+      if (!apply || apply.getAttribute('data-jcp-form-display') !== 'inline') {
+        return;
+      }
+      if (!apply.querySelector('.jcp-fluent-bridge--inline, form.frm-fluent-form')) {
+        return;
+      }
+      if (window.sessionStorage && window.sessionStorage.getItem('jcpCsCacheBust') === '1') {
+        return;
+      }
+      if (window.sessionStorage) {
+        window.sessionStorage.setItem('jcpCsCacheBust', '1');
+      }
+      var bust = 'jcp=' + String(Date.now());
+      var next = window.location.pathname + '?' + bust + window.location.hash;
+      window.location.replace(next);
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', rescueStaleCaseStudyInline);
+  } else {
+    rescueStaleCaseStudyInline();
+  }
 
   window.jcpFluentQuoteOpen = function (id) {
     openModal(getModal(id || 'jcp-form-modal'));
