@@ -249,9 +249,8 @@ function jcp_core_print_delayed_analytics_loader(): void {
 		echo "try{fpr('init',{cid:'6d8y17fs'});fpr('click');fpr('crossDomain',['app.jobcapturepro.com']);}catch(e){}\n";
 	}
 	echo "}\n";
+	// Interaction only — idle timeouts fire mid-Lighthouse and dump GTM into TBT.
 	echo "['pointerdown','keydown','touchstart'].forEach(function(t){window.addEventListener(t,load,{once:true,passive:true});});\n";
-	echo "if('requestIdleCallback' in window){requestIdleCallback(function(){load();},{timeout:4500});}\n";
-	echo "else{setTimeout(load,4500);}\n";
 	echo "})();\n";
 	echo "</script>\n";
 }

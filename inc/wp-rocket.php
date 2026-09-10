@@ -97,7 +97,7 @@ add_filter( 'rocket_exclude_js', 'jcp_core_rocket_exclude_js' );
  * Bump $bust when critical front-end assets change and anonymous CSS must refresh.
  */
 function jcp_core_rocket_bust_stale_minify(): void {
-	$bust = '2026-09-10-campaign-lp-perf-v3';
+	$bust = '2026-09-10-campaign-lp-perf-v4-no-idle-dump';
 	if ( get_option( 'jcp_core_rocket_bust' ) === $bust ) {
 		return;
 	}

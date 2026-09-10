@@ -103,14 +103,14 @@ function jcp_core_campaign_lp_async_secondary_css( string $html, string $handle 
 add_filter( 'style_loader_tag', 'jcp_core_campaign_lp_async_secondary_css', 25, 2 );
 
 /**
- * Preload the real LCP image (story phone / HVAC capture WebP), not the map CSS bg.
+ * Preload the first above-the-fold campaign photo (benefits card), not a hidden scene image.
  */
 function jcp_core_campaign_lp_preload_lcp(): void {
 	if ( ! jcp_core_is_campaign_lp_request() ) {
 		return;
 	}
 
-	$webp = get_template_directory_uri() . '/assets/campaign/jcp-campaign-hvac-capture.webp';
+	$webp = get_template_directory_uri() . '/assets/campaign/jcp-campaign-hvac-capture-640.webp';
 	echo '<link rel="preload" as="image" type="image/webp" href="' . esc_url( $webp ) . '" fetchpriority="high">' . "\n";
 }
 add_action( 'wp_head', 'jcp_core_campaign_lp_preload_lcp', 1 );
@@ -125,6 +125,9 @@ function jcp_core_campaign_lp_optimize_asset_url( string $url, int $width = 0 ):
 	if ( $url === '' || strpos( $url, '/assets/campaign/' ) === false ) {
 		return $url;
 	}
+	if ( strpos( $url, 'data:' ) === 0 ) {
+		return $url;
+	}
 	if ( ! preg_match( '#^(https?://[^/]+)?(/[^"\']+/assets/campaign/)([^/"\']+?)(-(192|640))?(\.webp|\.jpe?g)(\?[^"\']*)?$#i', $url, $m ) ) {
 		return $url;
 	}
@@ -133,7 +136,6 @@ function jcp_core_campaign_lp_optimize_asset_url( string $url, int $width = 0 ):
 	$base   = $m[3];
 	$query  = $m[7] ?? '';
 
-	// Skip already-sized variants in the basename.
 	$base = preg_replace( '/-(192|640)$/', '', $base ) ?? $base;
 
 	$suffix = '';
@@ -143,7 +145,7 @@ function jcp_core_campaign_lp_optimize_asset_url( string $url, int $width = 0 ):
 		$suffix = '-640';
 	}
 
-	$dir = trailingslashit( get_template_directory() ) . 'assets/campaign/';
+	$dir        = trailingslashit( get_template_directory() ) . 'assets/campaign/';
 	$candidates = [];
 	if ( $suffix !== '' ) {
 		$candidates[] = $base . $suffix . '.webp';
@@ -170,7 +172,6 @@ function jcp_core_campaign_lp_rewrite_images( string $html ): string {
 		return $html;
 	}
 
-	// Rewrite each <img> that references campaign assets.
 	$html = preg_replace_callback(
 		'/<img\b([^>]*)>/i',
 		static function ( array $m ): string {
@@ -179,36 +180,54 @@ function jcp_core_campaign_lp_rewrite_images( string $html ): string {
 				return $m[0];
 			}
 
+			// XHTML self-closing slash left by WP/Rocket — strip before we append attrs.
+			$attrs = rtrim( $attrs );
+			$attrs = preg_replace( '/\s*\/\s*$/', '', $attrs ) ?? $attrs;
+
 			$width = 0;
 			if ( preg_match( '/\bwidth=["\'](\d+)["\']/', $attrs, $wm ) ) {
 				$width = (int) $wm[1];
 			}
 
 			$attrs = preg_replace_callback(
-				'/\b(src|data-lazy-src|data-src)=["\']([^"\']+)["\']/i',
+				'/\b(src|data-lazy-src|data-src)=(["\'])([^"\']+)\2/i',
 				static function ( array $am ) use ( $width ): string {
-					$opt = jcp_core_campaign_lp_optimize_asset_url( $am[2], $width );
-					return $am[1] . '="' . esc_attr( $opt ) . '"';
+					$raw = $am[3];
+					if ( strpos( $raw, 'data:' ) === 0 ) {
+						return $am[0];
+					}
+					$opt = jcp_core_campaign_lp_optimize_asset_url( $raw, $width );
+					return $am[1] . '=' . $am[2] . esc_attr( $opt ) . $am[2];
 				},
 				$attrs
 			);
 
 			// Tiny avatars / chips: never compete with LCP.
-			if ( $width > 0 && $width <= 96 && stripos( $attrs, 'fetchpriority' ) === false ) {
+			if ( $width > 0 && $width <= 96 ) {
 				if ( ! preg_match( '/\bloading=/i', $attrs ) ) {
 					$attrs .= ' loading="lazy"';
 				}
+				if ( ! preg_match( '/\bfetchpriority=/i', $attrs ) ) {
+					$attrs .= ' fetchpriority="low"';
+				}
 			}
 
-			// Story-phone camera photo is the usual LCP candidate.
-			if ( strpos( $attrs, 'jcp-story-camera__img' ) !== false && stripos( $attrs, 'fetchpriority' ) === false ) {
+			// Visible benefits hero card (eager) — real LCP candidate on desktop.
+			if (
+				strpos( $attrs, 'benefits.items.0.image_url' ) !== false
+				&& ! preg_match( '/\bfetchpriority=/i', $attrs )
+			) {
 				$attrs .= ' fetchpriority="high"';
-				$attrs = preg_replace( '/\bloading=["\'][^"\']*["\']/i', '', $attrs ) ?? $attrs;
+				$attrs  = preg_replace( '/\bloading=["\'][^"\']*["\']/i', 'loading="eager"', $attrs ) ?? $attrs;
 			}
 
-			// First eager benefit image stays eager; force lazy on large below-fold repeats.
-			if ( $width >= 400 && preg_match( '/\bloading=["\']eager["\']/i', $attrs ) && preg_match( '/benefits\.items\.[1-9]/', $attrs ) ) {
-				$attrs = preg_replace( '/\bloading=["\']eager["\']/i', 'loading="lazy"', $attrs, 1 ) ?? $attrs;
+			// Force lazy on later benefit images.
+			if ( $width >= 400 && preg_match( '/benefits\.items\.[1-9]/', $attrs ) ) {
+				if ( preg_match( '/\bloading=["\']eager["\']/i', $attrs ) ) {
+					$attrs = preg_replace( '/\bloading=["\']eager["\']/i', 'loading="lazy"', $attrs, 1 ) ?? $attrs;
+				} elseif ( ! preg_match( '/\bloading=/i', $attrs ) ) {
+					$attrs .= ' loading="lazy"';
+				}
 			}
 
 			return '<img' . $attrs . '>';
@@ -216,7 +235,7 @@ function jcp_core_campaign_lp_rewrite_images( string $html ): string {
 		$html
 	) ?? $html;
 
-	// JSON stores / inline style urls that still point at campaign JPGs.
+	// JSON stores that still point at campaign JPGs (skip data: URIs).
 	$html = preg_replace_callback(
 		'#https?://[^"\'\s]+/assets/campaign/[a-z0-9._-]+\.jpe?g#i',
 		static function ( array $m ): string {
@@ -253,6 +272,27 @@ function jcp_core_campaign_lp_strip_bad_preloads( string $html ): string {
 }
 
 /**
+ * Drop Rocket map-bg lazy pairs on campaign LPs (hero no longer uses that image).
+ *
+ * @param string $html Page HTML.
+ */
+function jcp_core_campaign_lp_strip_map_bg_rocket( string $html ): string {
+	$html = preg_replace(
+		'#<style id="wpr-lazyload-bg-exclusion">.*?</style>#is',
+		'<style id="wpr-lazyload-bg-exclusion"></style>',
+		$html,
+		1
+	) ?? $html;
+	$html = preg_replace(
+		'#const rocket_excluded_pairs = \[.*?\];#s',
+		'const rocket_excluded_pairs = [];',
+		$html,
+		1
+	) ?? $html;
+	return $html;
+}
+
+/**
  * Combined HTML transform for campaign LPs.
  *
  * @param string $html Page HTML.
@@ -277,147 +317,3 @@ function jcp_core_campaign_lp_install_html_buffer(): void {
 	ob_start( 'jcp_core_campaign_lp_transform_html' );
 }
 add_action( 'template_redirect', 'jcp_core_campaign_lp_install_html_buffer', 1 );
-
-/**
- * Script handles that can wait until idle/interaction on campaign LPs.
- *
- * @return string[]
- */
-function jcp_core_campaign_lp_delayable_script_handles(): array {
-	return [
-		'jcp-core-story-phone',
-		'jcp-core-authority',
-		'jcp-core-story-moments',
-		'jcp-core-campaign',
-		'jcp-core-testimonials',
-		'jcp-core-home-interactions',
-		'jcp-core-case-study-exit',
-		'jcp-core-onboarding-handoff',
-		'jcp-core-site-banner',
-	];
-}
-
-/**
- * On campaign LPs, allow Rocket Delay JS for heavy theme scripts.
- *
- * @param string[] $excluded Delay JS exclusion patterns.
- * @return string[]
- */
-function jcp_core_campaign_lp_rocket_delay_exclusions( array $excluded ): array {
-	if ( ! jcp_core_is_campaign_lp_request() ) {
-		return $excluded;
-	}
-
-	$allow_delay = [
-		'jcp-core-story-phone',
-		'story-phone.js',
-		'jcp-core-authority',
-		'authority.js',
-		'jcp-core-story-moments',
-		'story-moments.js',
-		'jcp-core-campaign',
-		'campaign.js',
-		'jcp-core-testimonials',
-		'testimonials.js',
-		'jcp-core-home-interactions',
-		'home-interactions.js',
-		'jcp-core-case-study-exit',
-		'case-study-exit-intent.js',
-		'jcp-core-onboarding-handoff',
-		'jcp-onboarding-handoff.js',
-		'jcp-core-site-banner',
-		'jcp-site-banner.js',
-	];
-
-	$out = [];
-	foreach ( $excluded as $item ) {
-		$keep = true;
-		foreach ( $allow_delay as $needle ) {
-			if ( stripos( (string) $item, $needle ) !== false ) {
-				$keep = false;
-				break;
-			}
-		}
-		if ( $keep ) {
-			$out[] = $item;
-		}
-	}
-	return array_values( $out );
-}
-add_filter( 'rocket_delay_js_exclusions', 'jcp_core_campaign_lp_rocket_delay_exclusions', 100 );
-
-/**
- * Mark non-critical campaign scripts so they do not execute during first paint / TBT.
- *
- * @param string $tag    Script HTML.
- * @param string $handle Script handle.
- * @param string $src    Script URL.
- */
-function jcp_core_campaign_lp_delay_script_tag( string $tag, string $handle, string $src ): string {
-	if ( ! jcp_core_is_campaign_lp_request() ) {
-		return $tag;
-	}
-	if ( ! in_array( $handle, jcp_core_campaign_lp_delayable_script_handles(), true ) ) {
-		return $tag;
-	}
-	if ( $src === '' ) {
-		return $tag;
-	}
-
-	return sprintf(
-		'<script type="text/plain" data-jcp-delay-js id="%1$s-js" src="%2$s"></script>' . "\n",
-		esc_attr( $handle ),
-		esc_url( $src )
-	);
-}
-add_filter( 'script_loader_tag', 'jcp_core_campaign_lp_delay_script_tag', 40, 3 );
-
-/**
- * Idle/interaction loader for delayed campaign scripts.
- */
-function jcp_core_campaign_lp_print_delayed_script_loader(): void {
-	if ( ! jcp_core_is_campaign_lp_request() ) {
-		return;
-	}
-	echo "<script id=\"jcp-campaign-delay-js\">\n";
-	echo "(function(){\n";
-	echo "function boot(){\n";
-	echo "var nodes=document.querySelectorAll('script[data-jcp-delay-js][src]');\n";
-	echo "if(!nodes.length)return;\n";
-	echo "nodes.forEach(function(node){\n";
-	echo "var s=document.createElement('script');\n";
-	echo "s.src=node.getAttribute('src');\n";
-	echo "s.defer=true;\n";
-	echo "if(node.id)s.id=node.id;\n";
-	echo "node.parentNode.insertBefore(s,node);\n";
-	echo "node.parentNode.removeChild(node);\n";
-	echo "});\n";
-	echo "}\n";
-	echo "['pointerdown','keydown','touchstart'].forEach(function(t){window.addEventListener(t,boot,{once:true,passive:true});});\n";
-	echo "if('requestIdleCallback' in window){requestIdleCallback(function(){boot();},{timeout:4000});}\n";
-	echo "else{setTimeout(boot,4000);}\n";
-	echo "})();\n";
-	echo "</script>\n";
-}
-add_action( 'wp_footer', 'jcp_core_campaign_lp_print_delayed_script_loader', 1 );
-
-/**
- * Drop Rocket map-bg lazy pairs on campaign LPs (hero no longer uses that image).
- *
- * @param string $html Page HTML.
- */
-function jcp_core_campaign_lp_strip_map_bg_rocket( string $html ): string {
-	$html = preg_replace(
-		'#<style id="wpr-lazyload-bg-exclusion">.*?</style>#is',
-		'<style id="wpr-lazyload-bg-exclusion"></style>',
-		$html,
-		1
-	) ?? $html;
-	$html = preg_replace(
-		'#const rocket_excluded_pairs = \[.*?\];#s',
-		'const rocket_excluded_pairs = [];',
-		$html,
-		1
-	) ?? $html;
-	return $html;
-}
