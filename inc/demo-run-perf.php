@@ -86,14 +86,38 @@ function jcp_core_demo_run_preload_hints(): void {
 		return;
 	}
 
-	$base   = esc_url( jcp_core_asset_url( 'css/base.css' ) );
-	$shared = esc_url( jcp_core_asset_url( 'assets/shared/assets/survey.css' ) );
-	$page   = esc_url( jcp_core_asset_url( 'css/pages/survey.css' ) );
-	echo '<link rel="preload" href="' . $base . '" as="style">' . "\n";
-	echo '<link rel="preload" href="' . $shared . '" as="style">' . "\n";
-	echo '<link rel="preload" href="' . $page . '" as="style">' . "\n";
+	$logo = esc_url( get_template_directory_uri() . '/assets/brand/jcp-logo-dark-320.webp' );
+	echo '<link rel="preload" as="image" type="image/webp" href="' . $logo . '" fetchpriority="high">' . "\n";
 }
 add_action( 'wp_head', 'jcp_core_demo_run_preload_hints', 2 );
+
+/**
+ * Inline critical survey-gate CSS so the H1 paints before the 50KB+ stylesheet arrives.
+ * Full survey.css loads async afterward.
+ */
+function jcp_core_demo_survey_inline_critical_css(): void {
+	if ( ! function_exists( 'jcp_core_is_demo_survey_request' ) || ! jcp_core_is_demo_survey_request() ) {
+		return;
+	}
+	echo '<style id="jcp-survey-critical">';
+	echo 'body.survey-only{min-height:100vh;background:#fff;margin:0}';
+	echo 'body.survey-only .directory-header,body.survey-only .mobile-menu-overlay,body.survey-only header,body.survey-only footer{display:none!important}';
+	echo '.survey-overlay{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;padding:48px 24px;z-index:9999}';
+	echo '.survey-card{width:100%;max-width:440px;background:#fff;border-radius:20px;padding:28px 24px;box-sizing:border-box}';
+	echo '.survey-brand{display:flex;justify-content:center;margin:0 0 18px}';
+	echo '.survey-brand img{display:block;width:160px;height:auto}';
+	echo '.survey-title{font-size:28px;font-weight:900;line-height:1.15;color:#111827;margin:0 0 8px}';
+	echo '.survey-subtitle{font-size:15px;color:#6b7280;line-height:1.45;margin:0 0 14px}';
+	echo '.survey-step{display:none}.survey-step.active{display:block}';
+	echo '.survey-form{display:grid;gap:14px;margin-top:18px}';
+	echo '.survey-input{width:100%;padding:16px;border-radius:14px;border:2px solid #d1d5db;font-size:16px;min-height:54px;box-sizing:border-box;background:#fff;color:#111827}';
+	echo '.survey-btn{width:100%;padding:18px;border-radius:14px;border:0;background:#FF503E;color:#fff;font-size:16px;font-weight:800;cursor:pointer}';
+	echo '.survey-close{position:fixed;top:24px;right:24px;width:44px;height:44px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;display:grid;place-items:center;z-index:10}';
+	echo '.survey-proof,.survey-step-indicator,.survey-progress{display:none}';
+	echo '@media(max-width:768px){.survey-overlay{padding:24px 16px;align-items:flex-start}.survey-title{font-size:24px}}';
+	echo '</style>' . "\n";
+}
+add_action( 'wp_head', 'jcp_core_demo_survey_inline_critical_css', 3 );
 
 /**
  * Strip non-essential WP chrome on demo shells.
@@ -347,6 +371,17 @@ function jcp_core_demo_shell_strip_early_analytics( string $html ): string {
 		'',
 		$html
 	) ?? $html;
+	// New Relic (SiteGround / host agent) — shows up in critical path on /demo/.
+	$html = preg_replace(
+		'#<script[^>]+src=["\'][^"\']*(?:js-agent\.newrelic\.com|bam\.nr-data\.net)[^"\']*["\'][^>]*>\s*</script>#i',
+		'',
+		$html
+	) ?? $html;
+	$html = preg_replace(
+		'#<script[^>]*>[^<]*(?:NREUM|newrelic|nr-data)[^<]*</script>#is',
+		'',
+		$html
+	) ?? $html;
 
 	return $html;
 }
@@ -373,7 +408,7 @@ function jcp_core_demo_survey_defer_third_party_scripts( string $tag, string $ha
 add_filter( 'script_loader_tag', 'jcp_core_demo_survey_defer_third_party_scripts', 20, 3 );
 
 /**
- * Load page-level survey.css after first paint (shared CSS remains blocking).
+ * Async non-critical survey CSS after first paint (critical CSS is inlined).
  *
  * @param string $html   Link tag HTML.
  * @param string $handle Style handle.
@@ -382,14 +417,20 @@ function jcp_core_demo_survey_async_secondary_css( string $html, string $handle 
 	if ( ! function_exists( 'jcp_core_is_demo_survey_request' ) || ! jcp_core_is_demo_survey_request() ) {
 		return $html;
 	}
-	if ( $handle !== 'jcp-core-survey' ) {
+	if ( ! in_array( $handle, [ 'jcp-core-survey', 'jcp-core-survey-shared', 'jcp-core-base' ], true ) ) {
 		return $html;
 	}
 	if ( strpos( $html, 'onload=' ) !== false ) {
 		return $html;
 	}
 	$async = preg_replace( "/\smedia=['\"]all['\"]/", " media='print' onload=\"this.media='all'\"", $html, 1 );
-	return is_string( $async ) ? $async : $html;
+	if ( ! is_string( $async ) ) {
+		return $html;
+	}
+	if ( strpos( $async, 'noscript' ) === false && preg_match( '/href=[\'"]([^\'"]+)[\'"]/', $async, $m ) ) {
+		$async .= '<noscript><link rel="stylesheet" href="' . esc_url( $m[1] ) . '"></noscript>';
+	}
+	return $async;
 }
 add_filter( 'style_loader_tag', 'jcp_core_demo_survey_async_secondary_css', 20, 2 );
 

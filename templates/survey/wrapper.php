@@ -5,7 +5,7 @@
  *
  * @package JCP_Core
  */
-$logo_url = esc_url( 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png' );
+$logo_url = esc_url( get_template_directory_uri() . '/assets/brand/jcp-logo-dark-320.webp' );
 ?>
 <div class="survey-overlay">
   <button class="survey-close" id="surveyClose" type="button" aria-label="<?php esc_attr_e( 'Close demo', 'jcp-core' ); ?>">
@@ -18,7 +18,15 @@ $logo_url = esc_url( 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCa
 
   <div class="survey-card survey-card--gate">
     <div class="survey-brand">
-      <img src="<?php echo $logo_url; ?>" alt="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>" width="180" height="40" />
+      <img
+        src="<?php echo $logo_url; ?>"
+        alt="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>"
+        width="160"
+        height="36"
+        decoding="async"
+        fetchpriority="high"
+        data-no-lazy=""
+      />
     </div>
 
     <?php get_template_part( 'templates/survey/step-1' ); ?>
