@@ -651,6 +651,39 @@ body.survey-only #jcp-app {
   color: #111827;
 }
 
+.survey-input::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+  -webkit-text-fill-color: #9ca3af;
+}
+
+.survey-input::-webkit-input-placeholder {
+  color: #9ca3af;
+  -webkit-text-fill-color: #9ca3af;
+}
+
+.survey-input::-moz-placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+.survey-input:focus {
+  border-color: #FF503E;
+  box-shadow: 0 0 0 4px rgba(255,80,62,0.15);
+  color: #111827;
+  -webkit-text-fill-color: #111827;
+}
+
+.survey-input:focus::placeholder {
+  color: #9ca3af;
+  -webkit-text-fill-color: #9ca3af;
+}
+
+.survey-input:focus::-webkit-input-placeholder {
+  color: #9ca3af;
+  -webkit-text-fill-color: #9ca3af;
+}
+
 select.survey-input {
   appearance: none;
   -webkit-appearance: none;
@@ -659,13 +692,6 @@ select.survey-input {
   background-repeat: no-repeat;
   background-position: right 14px center;
   background-size: 16px 16px;
-}
-
-.survey-input:focus {
-  border-color: #FF503E;
-  box-shadow: 0 0 0 4px rgba(255,80,62,0.15);
-  color: #111827;
-  -webkit-text-fill-color: #111827;
 }
 
 .survey-input.is-error {

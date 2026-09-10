@@ -32,7 +32,7 @@
         type="text"
         class="survey-input"
         name="organization"
-        placeholder="Summit Plumbing"
+        placeholder="<?php esc_attr_e( 'Enter your business name', 'jcp-core' ); ?>"
         autocomplete="organization"
         maxlength="120"
       />

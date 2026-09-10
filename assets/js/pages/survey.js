@@ -890,36 +890,10 @@
     return 'Your Business';
   };
 
-  const BUSINESS_NAME_PLACEHOLDERS = {
-    plumbing: 'Summit Plumbing',
-    hvac: 'Summit Heating & Cooling',
-    electrical: 'Summit Electric',
-    roofing: 'Summit Roofing',
-    remodeling: 'Summit Remodeling',
-    painting: 'Summit Painting',
-    landscaping: 'Summit Landscaping',
-    'garage-door': 'Summit Garage Doors',
-    'pest-control': 'Summit Pest Control',
-    'tree-service': 'Summit Tree Service',
-    'power-washing': 'Summit Power Washing',
-    'pressure-washing': 'Summit Power Washing',
-  };
-
   const applyBusinessNamePlaceholder = () => {
     const input = document.getElementById('businessName');
     if (!input) return;
-    const slug = (getValue('niche') || getBusinessTypeValue() || '').toLowerCase();
-    const label = (getBusinessTypeLabel() || '').toLowerCase();
-    let placeholder = 'Summit Plumbing';
-    const keys = Object.keys(BUSINESS_NAME_PLACEHOLDERS);
-    for (let i = 0; i < keys.length; i += 1) {
-      const key = keys[i];
-      if (slug === key || slug.includes(key) || label.includes(key.replace(/-/g, ' '))) {
-        placeholder = BUSINESS_NAME_PLACEHOLDERS[key];
-        break;
-      }
-    }
-    input.placeholder = placeholder;
+    input.placeholder = 'Enter your business name';
   };
 
   const pushCroAliasOnce = (alias, extra) => {
