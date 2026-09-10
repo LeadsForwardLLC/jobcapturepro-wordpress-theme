@@ -115,43 +115,80 @@ function jcp_core_demo_shell_trim_wp_chrome(): void {
 add_action( 'template_redirect', 'jcp_core_demo_shell_trim_wp_chrome', 20 );
 
 /**
- * Drop CSS/JS unused by the lean demo shells (survey gate + interactive run).
+ * Pages where third-party analytics must not block interactivity.
+ * Demo funnel + paid campaign LPs (heavy ad traffic).
+ */
+function jcp_core_should_delay_third_party_analytics(): bool {
+	if ( jcp_core_is_demo_shell_request() ) {
+		return true;
+	}
+	if ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() ) {
+		return true;
+	}
+	return false;
+}
+
+/**
+ * Block Site Kit from printing gtag/GTM early (we re-inject after idle).
+ *
+ * @param bool $blocked Whether the tag is blocked.
+ */
+function jcp_core_block_site_kit_early_tags( bool $blocked ): bool {
+	return jcp_core_should_delay_third_party_analytics() ? true : $blocked;
+}
+add_filter( 'googlesitekit_analytics-4_tag_blocked', 'jcp_core_block_site_kit_early_tags' );
+add_filter( 'googlesitekit_tagmanager_tag_blocked', 'jcp_core_block_site_kit_early_tags' );
+add_filter( 'googlesitekit_ads_tag_blocked', 'jcp_core_block_site_kit_early_tags' );
+add_filter( 'googlesitekit_adsense_tag_blocked', 'jcp_core_block_site_kit_early_tags' );
+
+/**
+ * Dequeue head-blocking third-party scripts on high-traffic conversion pages.
  */
 function jcp_core_demo_shell_dequeue_unused_assets(): void {
-	if ( ! jcp_core_is_demo_shell_request() ) {
+	$is_shell = jcp_core_is_demo_shell_request();
+	$delay_tp = jcp_core_should_delay_third_party_analytics();
+	if ( ! $is_shell && ! $delay_tp ) {
 		return;
 	}
 
-	$style_handles = [
-		'jobcapturepro-tailwind',
-		'jobcapturepro-plugin-tailwind',
-		'tailwind',
-		'tailwindcss',
-		'tailwind.min.css',
-		'wp-block-library',
-		'wp-block-library-theme',
-		'classic-theme-styles',
-		'global-styles',
-		'wc-blocks-style',
-		'woocommerce-general',
-		'woocommerce-layout',
-		'woocommerce-smallscreen',
-	];
-	foreach ( $style_handles as $handle ) {
-		wp_dequeue_style( $handle );
-		wp_deregister_style( $handle );
+	if ( $is_shell ) {
+		$style_handles = [
+			'jobcapturepro-tailwind',
+			'jobcapturepro-plugin-tailwind',
+			'tailwind',
+			'tailwindcss',
+			'tailwind.min.css',
+			'wp-block-library',
+			'wp-block-library-theme',
+			'classic-theme-styles',
+			'global-styles',
+			'wc-blocks-style',
+			'woocommerce-general',
+			'woocommerce-layout',
+			'woocommerce-smallscreen',
+		];
+		foreach ( $style_handles as $handle ) {
+			wp_dequeue_style( $handle );
+			wp_deregister_style( $handle );
+		}
 	}
 
-	// Survey gate does not need Site Kit content-events provider (unused JS).
-	if ( function_exists( 'jcp_core_is_demo_survey_request' ) && jcp_core_is_demo_survey_request() ) {
-		$script_handles = [
-			'googlesitekit-events-provider-content-events',
-			'wp-embed',
-		];
-		foreach ( $script_handles as $handle ) {
-			wp_dequeue_script( $handle );
-			wp_deregister_script( $handle );
-		}
+	$script_handles = [];
+	if ( $is_shell ) {
+		$script_handles[] = 'googlesitekit-events-provider-content-events';
+		$script_handles[] = 'wp-embed';
+	}
+	if ( $delay_tp ) {
+		// Site Kit gtag + FirstPromoter — reloaded after idle / first interaction.
+		$script_handles[] = 'google_gtagjs';
+		$script_handles[] = 'googlesitekit-gtag';
+		$script_handles[] = 'firstpromoter-js';
+		$script_handles[] = 'rocket-preload-links';
+		$script_handles[] = 'rocket-browser-checker';
+	}
+	foreach ( array_unique( $script_handles ) as $handle ) {
+		wp_dequeue_script( $handle );
+		wp_deregister_script( $handle );
 	}
 }
 add_action( 'wp_enqueue_scripts', 'jcp_core_demo_shell_dequeue_unused_assets', 1000 );
@@ -159,24 +196,154 @@ add_action( 'wp_print_styles', 'jcp_core_demo_shell_dequeue_unused_assets', 100 
 add_action( 'wp_print_scripts', 'jcp_core_demo_shell_dequeue_unused_assets', 100 );
 
 /**
- * FirstPromoter was loading sync in &lt;head&gt; on /demo/ — defer it so it
- * does not block first paint (affiliate still loads).
+ * Delayed analytics bootstrap (GTM + gtag + FirstPromoter).
+ * Keeps dataLayer so early survey events still queue.
+ */
+function jcp_core_print_delayed_analytics_loader(): void {
+	if ( ! jcp_core_should_delay_third_party_analytics() ) {
+		return;
+	}
+
+	/**
+	 * Filter delayed analytics config for conversion pages.
+	 *
+	 * @param array{gtm_id:string,gtag_id:string,fpr:bool} $cfg Config.
+	 */
+	$cfg = apply_filters(
+		'jcp_core_delayed_analytics',
+		[
+			'gtm_id'  => 'GTM-MVCMTVCZ',
+			'gtag_id' => 'GT-WKGPHZXP',
+			'fpr'     => true,
+		]
+	);
+
+	$gtm  = preg_replace( '/[^A-Z0-9\-]/', '', (string) ( $cfg['gtm_id'] ?? '' ) );
+	$gtag = preg_replace( '/[^A-Z0-9\-]/', '', (string) ( $cfg['gtag_id'] ?? '' ) );
+	$fpr  = ! empty( $cfg['fpr'] );
+
+	echo "\n<script id=\"jcp-delayed-analytics\">\n";
+	echo "(function(){\n";
+	echo "window.dataLayer=window.dataLayer||[];\n";
+	echo "var loaded=false;\n";
+	echo "function load(){\n";
+	echo "if(loaded)return;loaded=true;\n";
+	if ( $gtm !== '' ) {
+		echo "var gtm=" . wp_json_encode( $gtm ) . ";\n";
+		echo "window.dataLayer.push({'gtm.start':new Date().getTime(),event:'gtm.js'});\n";
+		echo "var f=document.getElementsByTagName('script')[0],j=document.createElement('script'),dl=window.dataLayer!='dataLayer'?'&l=dataLayer':'';\n";
+		echo "j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+gtm+dl;f.parentNode.insertBefore(j,f);\n";
+	}
+	if ( $gtag !== '' ) {
+		echo "var gid=" . wp_json_encode( $gtag ) . ";\n";
+		echo "var gs=document.createElement('script');gs.async=true;gs.src='https://www.googletagmanager.com/gtag/js?id='+gid;\n";
+		echo "document.head.appendChild(gs);\n";
+		echo "window.gtag=window.gtag||function(){dataLayer.push(arguments);};\n";
+		echo "gtag('js',new Date());\n";
+		echo "gtag('config',gid,{googlesitekit_post_type:(document.body&&document.body.classList.contains('page')?'page':'')});\n";
+	}
+	if ( $fpr ) {
+		echo "if(!window.fpr){(function(w){w.fpr=w.fpr||function(){w.fpr.q=w.fpr.q||[];w.fpr.q[arguments[0]=='set'?'unshift':'push'](arguments);};})(window);}\n";
+		echo "var fs=document.createElement('script');fs.async=true;fs.src='https://cdn.firstpromoter.com/fpr.js';\n";
+		echo "document.head.appendChild(fs);\n";
+		echo "try{fpr('init',{cid:'6d8y17fs'});fpr('click');fpr('crossDomain',['app.jobcapturepro.com']);}catch(e){}\n";
+	}
+	echo "}\n";
+	echo "['pointerdown','keydown','touchstart','scroll'].forEach(function(t){window.addEventListener(t,load,{once:true,passive:true});});\n";
+	echo "if('requestIdleCallback' in window){requestIdleCallback(function(){load();},{timeout:2500});}\n";
+	echo "else{setTimeout(load,2500);}\n";
+	echo "})();\n";
+	echo "</script>\n";
+}
+add_action( 'wp_footer', 'jcp_core_print_delayed_analytics_loader', 5 );
+
+/**
+ * Strip any remaining early GTM/gtag/FPR tags plugins still print in the HTML.
+ */
+function jcp_core_demo_shell_start_analytics_buffer(): void {
+	if ( ! jcp_core_should_delay_third_party_analytics() ) {
+		return;
+	}
+	ob_start( 'jcp_core_demo_shell_strip_early_analytics' );
+}
+add_action( 'template_redirect', 'jcp_core_demo_shell_start_analytics_buffer', 0 );
+
+/**
+ * @param string $html Full page HTML.
+ */
+function jcp_core_demo_shell_strip_early_analytics( string $html ): string {
+	if ( $html === '' ) {
+		return $html;
+	}
+
+	// Remove Site Kit / GTM bootstrap blocks that execute immediately.
+	$html = preg_replace(
+		'#<!-- Google tag \(gtag\.js\) snippet added by Site Kit -->.*?<script[^>]*id="google_gtagjs-js-after"[^>]*>.*?</script>#is',
+		'',
+		$html
+	) ?? $html;
+	$html = preg_replace(
+		'#<script[^>]*id="google_gtagjs-js"[^>]*>.*?</script>\s*<script[^>]*id="google_gtagjs-js-after"[^>]*>.*?</script>#is',
+		'',
+		$html
+	) ?? $html;
+	$html = preg_replace(
+		'#<script[^>]*src=["\']https://www\.googletagmanager\.com/gtag/js\?id=[^"\']+["\'][^>]*>\s*</script>#i',
+		'',
+		$html
+	) ?? $html;
+	$html = preg_replace(
+		'#<script>\s*\(function\(w,d,s,l,i\)\{w\[l\]=w\[l\]\|\|\[\];w\[l\]\.push\(\{\'gtm\.start\':.*?\'https://www\.googletagmanager\.com/gtm\.js\?id=\'\+i\+dl;.*?</script>#is',
+		'',
+		$html
+	) ?? $html;
+	$html = preg_replace(
+		'#<noscript>.*?googletagmanager\.com/ns\.html\?id=GTM-[^<]+</noscript>#is',
+		'',
+		$html
+	) ?? $html;
+	$html = preg_replace(
+		'#<script[^>]*id="firstpromoter-js-js-before"[^>]*>.*?</script>\s*<script[^>]*id="firstpromoter-js-js"[^>]*>.*?</script>#is',
+		'',
+		$html
+	) ?? $html;
+	$html = preg_replace(
+		'#<script[^>]*src=["\'][^"\']*firstpromoter\.com/fpr\.js[^"\']*["\'][^>]*>\s*</script>#i',
+		'',
+		$html
+	) ?? $html;
+	$html = preg_replace(
+		'#<link[^>]+href=[\'"]//cdn\.firstpromoter\.com[\'"][^>]*>#i',
+		'',
+		$html
+	) ?? $html;
+	$html = preg_replace(
+		'#<link[^>]+href=[\'"]//www\.googletagmanager\.com[\'"][^>]*>#i',
+		'',
+		$html
+	) ?? $html;
+
+	return $html;
+}
+
+/**
+ * FirstPromoter was loading sync in &lt;head&gt; — kept as safety net if not stripped.
  *
  * @param string $tag    Script HTML.
  * @param string $handle Script handle.
  * @param string $src    Script URL.
  */
 function jcp_core_demo_survey_defer_third_party_scripts( string $tag, string $handle, string $src ): string {
-	if ( ! function_exists( 'jcp_core_is_demo_survey_request' ) || ! jcp_core_is_demo_survey_request() ) {
+	if ( ! jcp_core_should_delay_third_party_analytics() ) {
 		return $tag;
 	}
-	if ( $handle !== 'firstpromoter-js' && strpos( $src, 'firstpromoter.com' ) === false ) {
-		return $tag;
+	if ( $handle === 'firstpromoter-js' || strpos( $src, 'firstpromoter.com' ) !== false ) {
+		return '';
 	}
-	if ( strpos( $tag, ' defer' ) !== false || strpos( $tag, ' async' ) !== false ) {
-		return $tag;
+	if ( $handle === 'google_gtagjs' || strpos( $src, 'googletagmanager.com/gtag' ) !== false ) {
+		return '';
 	}
-	return str_replace( ' src=', ' defer src=', $tag );
+	return $tag;
 }
 add_filter( 'script_loader_tag', 'jcp_core_demo_survey_defer_third_party_scripts', 20, 3 );
 
