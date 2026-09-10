@@ -120,9 +120,21 @@
       return;
     }
 
-    setActiveScene(root, 'home');
-    elapsed = 0;
-    start = performance.now();
+    var startScene = root.getAttribute('data-start-scene') || 'home';
+    var startProgress = 0;
+    for (var i = 0; i < SCENES.length; i++) {
+      if (SCENES[i].id === startScene) {
+        startProgress = SCENES[i].from;
+        break;
+      }
+    }
+    setActiveScene(root, startScene);
+    elapsed = startProgress * LOOP_MS;
+    start = performance.now() - elapsed;
+    if (caption && captions.length) {
+      lastCaption = captionIndex(startProgress);
+      setCaption(caption, captions[lastCaption] || captions[0]);
+    }
 
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(

@@ -77,6 +77,7 @@ function jcp_core_campaign_lp_async_secondary_css( string $html, string $handle 
 		'jcp-core-content-prose',
 		'jcp-core-case-study-cohort',
 		'jcp-core-utilities',
+		'jcp-core-home',
 	];
 	if ( ! in_array( $handle, $async_handles, true ) ) {
 		return $html;
@@ -110,7 +111,7 @@ function jcp_core_campaign_lp_preload_lcp(): void {
 		return;
 	}
 
-	$webp = get_template_directory_uri() . '/assets/campaign/jcp-campaign-hvac-capture-640.webp';
+	$webp = get_template_directory_uri() . '/assets/campaign/jcp-campaign-hvac-capture-360.webp';
 	echo '<link rel="preload" as="image" type="image/webp" href="' . esc_url( $webp ) . '" fetchpriority="high">' . "\n";
 }
 add_action( 'wp_head', 'jcp_core_campaign_lp_preload_lcp', 1 );
@@ -128,7 +129,7 @@ function jcp_core_campaign_lp_optimize_asset_url( string $url, int $width = 0 ):
 	if ( strpos( $url, 'data:' ) === 0 ) {
 		return $url;
 	}
-	if ( ! preg_match( '#^(https?://[^/]+)?(/[^"\']+/assets/campaign/)([^/"\']+?)(-(192|640))?(\.webp|\.jpe?g)(\?[^"\']*)?$#i', $url, $m ) ) {
+	if ( ! preg_match( '#^(https?://[^/]+)?(/[^"\']+/assets/campaign/)([^/"\']+?)(-(64|192|360|640))?(\.webp|\.jpe?g)(\?[^"\']*)?$#i', $url, $m ) ) {
 		return $url;
 	}
 
@@ -136,11 +137,15 @@ function jcp_core_campaign_lp_optimize_asset_url( string $url, int $width = 0 ):
 	$base   = $m[3];
 	$query  = $m[7] ?? '';
 
-	$base = preg_replace( '/-(192|640)$/', '', $base ) ?? $base;
+	$base = preg_replace( '/-(64|192|360|640)$/', '', $base ) ?? $base;
 
 	$suffix = '';
-	if ( $width > 0 && $width <= 120 ) {
+	if ( $width > 0 && $width <= 64 ) {
+		$suffix = '-64';
+	} elseif ( $width > 0 && $width <= 120 ) {
 		$suffix = '-192';
+	} elseif ( $width > 0 && $width <= 400 ) {
+		$suffix = '-360';
 	} elseif ( $width > 0 && $width <= 720 ) {
 		$suffix = '-640';
 	}
@@ -212,13 +217,25 @@ function jcp_core_campaign_lp_rewrite_images( string $html ): string {
 				}
 			}
 
-			// Visible benefits hero card (eager) — real LCP candidate on desktop.
-			if (
-				strpos( $attrs, 'benefits.items.0.image_url' ) !== false
-				&& ! preg_match( '/\bfetchpriority=/i', $attrs )
-			) {
-				$attrs .= ' fetchpriority="high"';
-				$attrs  = preg_replace( '/\bloading=["\'][^"\']*["\']/i', 'loading="eager"', $attrs ) ?? $attrs;
+			// Phone LCP is the check-in card photo when that scene starts active.
+			if ( strpos( $attrs, 'jcp-story-checkin-card__photo' ) !== false && preg_match( '/\bfetchpriority=["\']high["\']/', $attrs ) ) {
+				// Keep as authored; rewriter should not demote.
+			} elseif ( strpos( $attrs, 'jcp-story-camera__img' ) !== false ) {
+				// Never let the hidden camera beat steal LCP.
+				$attrs = preg_replace( '/\bfetchpriority=["\'][^"\']*["\']/i', 'fetchpriority="low"', $attrs ) ?? $attrs;
+				if ( ! preg_match( '/\bloading=/i', $attrs ) ) {
+					$attrs .= ' loading="lazy"';
+				} else {
+					$attrs = preg_replace( '/\bloading=["\'][^"\']*["\']/i', 'loading="lazy"', $attrs ) ?? $attrs;
+				}
+			}
+
+			// Benefits cards are below the phone on desktop — do not compete with phone LCP.
+			if ( strpos( $attrs, 'benefits.items.0.image_url' ) !== false ) {
+				$attrs = preg_replace( '/\bfetchpriority=["\'][^"\']*["\']/i', 'fetchpriority="low"', $attrs ) ?? $attrs;
+				if ( ! preg_match( '/\bfetchpriority=/i', $attrs ) ) {
+					$attrs .= ' fetchpriority="low"';
+				}
 			}
 
 			// Force lazy on later benefit images.

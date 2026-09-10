@@ -247,7 +247,11 @@ function jcp_component_hero_home_visual( string $demo_url = '', string $photo_ur
 function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url = '' ): void {
 	$demo_url  = $demo_url !== '' ? $demo_url : home_url( '/demo/' );
 	$photo_url = $photo_url !== '' ? $photo_url : ( function_exists( 'jcp_media_default_phone_image' ) ? jcp_media_default_phone_image() : '' );
-	$captions  = [
+	$is_campaign = function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing();
+	// Campaign LPs: start on the check-in photo beat so LCP is visible on first paint
+	// (camera scene used to become LCP ~4s later → catastrophic element render delay).
+	$start_scene = $is_campaign ? 'checkin' : 'home';
+	$captions    = [
 		__( '1. Tap + to start a check-in', 'jcp-core' ),
 		__( '2. Snap the finished job photo', 'jcp-core' ),
 		__( '3. AI writes usable local proof', 'jcp-core' ),
@@ -255,7 +259,7 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 		__( '5. More visibility → more reasons to call', 'jcp-core' ),
 	];
 	?>
-	<div class="jcp-story-phone" data-jcp-story-phone>
+	<div class="jcp-story-phone" data-jcp-story-phone data-start-scene="<?php echo esc_attr( $start_scene ); ?>">
 		<div class="jcp-story-phone__glow" aria-hidden="true"></div>
 		<div class="jcp-story-phone__orbit" aria-hidden="true">
 			<span class="jcp-story-chip jcp-story-chip--maps" data-story-chip="maps">
@@ -299,7 +303,7 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 
 						<div class="demo-app-screen jcp-story-stage" aria-hidden="true">
 							<!-- Scene: home / empty -->
-							<div class="jcp-story-scene jcp-story-scene--home is-active" data-story-scene="home">
+							<div class="jcp-story-scene jcp-story-scene--home<?php echo $start_scene === 'home' ? ' is-active' : ''; ?>" data-story-scene="home"<?php echo $start_scene === 'home' ? '' : ' aria-hidden="true"'; ?>>
 								<div class="demo-app-header">
 									<p class="demo-app-header__title"><?php esc_html_e( 'Check-ins', 'jcp-core' ); ?></p>
 								</div>
@@ -338,14 +342,14 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 							</div>
 
 							<!-- Scene: camera capture -->
-							<div class="jcp-story-scene jcp-story-scene--camera" data-story-scene="camera">
+							<div class="jcp-story-scene jcp-story-scene--camera" data-story-scene="camera" aria-hidden="true">
 								<div class="jcp-story-camera">
 									<div class="jcp-story-camera__chrome">
 										<span><?php esc_html_e( 'PHOTO', 'jcp-core' ); ?></span>
 									</div>
 									<div class="jcp-story-camera__view">
 										<?php if ( $photo_url !== '' ) : ?>
-										<img src="<?php echo esc_url( $photo_url ); ?>" alt="" class="jcp-story-camera__img" loading="lazy" decoding="async" />
+										<img src="<?php echo esc_url( $photo_url ); ?>" alt="" class="jcp-story-camera__img" width="640" height="426" loading="lazy" decoding="async" fetchpriority="low" />
 										<?php endif; ?>
 										<span class="jcp-story-camera__reticle"></span>
 										<span class="jcp-story-camera__flash"></span>
@@ -355,7 +359,7 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 							</div>
 
 							<!-- Scene: AI processing -->
-							<div class="jcp-story-scene jcp-story-scene--process" data-story-scene="process">
+							<div class="jcp-story-scene jcp-story-scene--process" data-story-scene="process" aria-hidden="true">
 								<div class="jcp-story-process">
 									<div class="jcp-story-process__spinner" aria-hidden="true"></div>
 									<p class="jcp-story-process__title jcp-story-process__title--1"><?php esc_html_e( 'Creating your check-in…', 'jcp-core' ); ?></p>
@@ -370,14 +374,28 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 							</div>
 
 							<!-- Scene: check-in ready + published -->
-							<div class="jcp-story-scene jcp-story-scene--checkin" data-story-scene="checkin">
+							<div class="jcp-story-scene jcp-story-scene--checkin<?php echo $start_scene === 'checkin' ? ' is-active' : ''; ?>" data-story-scene="checkin"<?php echo $start_scene === 'checkin' ? '' : ' aria-hidden="true"'; ?>>
 								<div class="demo-app-header">
 									<p class="demo-app-header__title"><?php esc_html_e( 'Check-ins', 'jcp-core' ); ?></p>
 								</div>
 								<div class="demo-content-area">
 									<div class="jcp-story-checkin-card">
 										<?php if ( $photo_url !== '' ) : ?>
-										<img src="<?php echo esc_url( $photo_url ); ?>" alt="" class="jcp-story-checkin-card__photo" loading="lazy" decoding="async" />
+										<img
+											src="<?php echo esc_url( $photo_url ); ?>"
+											alt=""
+											class="jcp-story-checkin-card__photo"
+											width="640"
+											height="426"
+											<?php if ( $start_scene === 'checkin' ) : ?>
+											loading="eager"
+											fetchpriority="high"
+											<?php else : ?>
+											loading="lazy"
+											fetchpriority="low"
+											<?php endif; ?>
+											decoding="async"
+										/>
 										<?php endif; ?>
 										<div class="jcp-story-checkin-card__body">
 											<div class="demo-item-title"><?php esc_html_e( 'Water heater install', 'jcp-core' ); ?></div>

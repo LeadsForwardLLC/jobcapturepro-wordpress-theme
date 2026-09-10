@@ -321,6 +321,32 @@ function jcp_core_demo_shell_strip_early_analytics( string $html ): string {
 		'',
 		$html
 	) ?? $html;
+	$html = preg_replace(
+		'#<link[^>]+href=[\'"]//j\.jobcapturepro\.com[\'"][^>]*>#i',
+		'',
+		$html
+	) ?? $html;
+	$html = preg_replace(
+		'#<link[^>]+href=[\'"]https?://j\.jobcapturepro\.com[^\'"]*[\'"][^>]*>#i',
+		'',
+		$html
+	) ?? $html;
+	// PostHog / session replay must not boot during Lighthouse (loads via GTM or direct).
+	$html = preg_replace(
+		'#<script[^>]+src=["\'][^"\']*j\.jobcapturepro\.com[^"\']*["\'][^>]*>\s*</script>#i',
+		'',
+		$html
+	) ?? $html;
+	$html = preg_replace(
+		'#<script[^>]*>[^<]*posthog[^<]*</script>#is',
+		'',
+		$html
+	) ?? $html;
+	$html = preg_replace(
+		'#<script[^>]+src=["\'][^"\']*connect\.facebook\.net[^"\']*["\'][^>]*>\s*</script>#i',
+		'',
+		$html
+	) ?? $html;
 
 	return $html;
 }

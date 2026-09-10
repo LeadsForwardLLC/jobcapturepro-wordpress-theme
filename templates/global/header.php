@@ -49,11 +49,13 @@ $body_classes = ( $hide_site_chrome ? 'jcp-landing-chrome-hidden' : 'jcp-global-
       <div class="jcp-landing-brandbar__inner">
         <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="jcp-landing-brandbar__link" aria-label="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>">
           <img
-            src="https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png"
+            src="<?php echo esc_url( get_template_directory_uri() . '/assets/brand/jcp-logo-dark-320.webp' ); ?>"
             alt="JobCapturePro"
             class="jcp-landing-brandbar__logo"
             width="160"
             height="36"
+            decoding="async"
+            fetchpriority="low"
           />
         </a>
         <a
