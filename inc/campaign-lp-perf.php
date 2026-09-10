@@ -97,20 +97,25 @@ function jcp_core_campaign_lp_inline_critical_css(): void {
 	echo '.jcp-page-campaign .jcp-meta-stats .meta-item,.jcp-page-campaign .directory-meta .meta-item{display:flex;gap:.75rem;flex:1 1 0;min-width:0}';
 	echo '@media(max-width:480px){.jcp-page-campaign .jcp-meta-stats,.jcp-page-campaign .directory-meta{flex-direction:column;gap:.75rem}}';
 	/*
-	 * Story phone: keep column visible + reserve height on mobile before
-	 * async niche-landing.css. Do NOT override .jcp-story-scene display.
+	 * Story phone: keep column visible + lock final sizes with !important so
+	 * later demo-app-phone / niche-landing width rules cannot thrash CLS.
+	 * Do NOT override .jcp-story-scene display.
 	 */
+	echo '.jcp-page-campaign .jcp-hero-visual-column:has(.jcp-story-phone),.jcp-page-campaign .jcp-hero-visual:has(.jcp-story-phone){display:block!important}';
 	echo '.jcp-page-campaign .jcp-story-phone{display:flex;flex-direction:column;align-items:center;width:100%;max-width:360px;margin-inline:auto}';
-	echo '.jcp-page-campaign .jcp-story-phone__device.hero-phone-mockup{display:block;width:min(100%,300px);max-width:300px;margin-inline:auto;opacity:1;transform:none;animation:none}';
-	echo '.jcp-page-campaign .jcp-story-phone__device .phone-screen{aspect-ratio:9/19.5;width:100%;height:auto}';
+	echo '.jcp-page-campaign .jcp-story-phone__device.hero-phone-mockup,.jcp-page-campaign .demo-preview-phone-mockup.hero-phone-mockup{display:block!important;width:min(100%,300px)!important;max-width:300px!important;margin-inline:auto;opacity:1!important;transform:none!important;animation:none!important}';
+	echo '.jcp-page-campaign .jcp-story-phone__device .phone-screen,.jcp-page-campaign .demo-preview-phone-mockup .phone-screen{aspect-ratio:9/19.5!important;width:100%!important;height:auto!important}';
 	echo '.jcp-page-campaign .jcp-story-phone__caption{min-height:2.6em}';
+	echo '@media(min-width:769px){.jcp-page-campaign .jcp-hero-visual-column:has(.jcp-story-phone),.jcp-page-campaign .jcp-story-phone{min-height:620px}}';
 	echo '@media(max-width:768px){';
 	echo '.jcp-page-campaign .jcp-hero-visual-column:has(.jcp-story-phone),.jcp-page-campaign .jcp-hero-visual:has(.jcp-story-phone),.jcp-page-campaign .jcp-story-phone{display:flex!important;justify-content:center}';
 	echo '.jcp-page-campaign .jcp-hero-visual-column:has(.jcp-story-phone),.jcp-page-campaign .jcp-story-phone{min-height:560px}';
 	echo '.jcp-page-campaign .jcp-story-phone{max-width:320px}';
-	echo '.jcp-page-campaign .jcp-story-phone__device.hero-phone-mockup{width:min(100%,260px);max-width:260px}';
+	echo '.jcp-page-campaign .jcp-story-phone__device.hero-phone-mockup,.jcp-page-campaign .demo-preview-phone-mockup.hero-phone-mockup{width:min(100%,260px)!important;max-width:260px!important}';
 	echo '}';
 	echo '</style>' . "\n";
+	// Neutralize delayed Rocket header-height script before it can run.
+	echo '<script>document.documentElement.style.setProperty("--jcp-header-stack-height","0px");document.documentElement.style.setProperty("--jcp-header-height","0px");</script>' . "\n";
 }
 add_action( 'wp_head', 'jcp_core_campaign_lp_inline_critical_css', 2 );
 
@@ -371,6 +376,12 @@ function jcp_core_campaign_lp_transform_html( string $html ): string {
 	$html = jcp_core_campaign_lp_strip_bad_preloads( $html );
 	$html = jcp_core_campaign_lp_strip_map_bg_rocket( $html );
 	$html = jcp_core_campaign_lp_rewrite_images( $html );
+	// Prevent delayed header-stack measurement from fighting campaign padding:0.
+	$html = preg_replace(
+		'#document\.documentElement\.style\.setProperty\(\s*[\'"]--jcp-header-stack-height[\'"]\s*,\s*height\s*\+\s*[\'"]px[\'"]\s*\)#',
+		'document.documentElement.style.setProperty("--jcp-header-stack-height","0px")',
+		$html
+	) ?? $html;
 	return $html;
 }
 
