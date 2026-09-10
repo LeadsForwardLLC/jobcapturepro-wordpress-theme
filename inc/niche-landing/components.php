@@ -349,7 +349,7 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 									</div>
 									<div class="jcp-story-camera__view">
 										<?php if ( $photo_url !== '' ) : ?>
-										<img src="<?php echo esc_url( $photo_url ); ?>" alt="" class="jcp-story-camera__img" width="640" height="426" loading="lazy" decoding="async" fetchpriority="low" />
+										<img src="<?php echo esc_url( $photo_url ); ?>" alt="" class="jcp-story-camera__img" width="360" height="240" loading="lazy" decoding="async" fetchpriority="low" />
 										<?php endif; ?>
 										<span class="jcp-story-camera__reticle"></span>
 										<span class="jcp-story-camera__flash"></span>
@@ -385,11 +385,12 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 											src="<?php echo esc_url( $photo_url ); ?>"
 											alt=""
 											class="jcp-story-checkin-card__photo"
-											width="640"
-											height="426"
+											width="360"
+											height="240"
 											<?php if ( $start_scene === 'checkin' ) : ?>
 											loading="eager"
 											fetchpriority="high"
+											data-no-lazy=""
 											<?php else : ?>
 											loading="lazy"
 											fetchpriority="low"

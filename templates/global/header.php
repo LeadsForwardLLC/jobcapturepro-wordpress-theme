@@ -55,7 +55,9 @@ $body_classes = ( $hide_site_chrome ? 'jcp-landing-chrome-hidden' : 'jcp-global-
             width="160"
             height="36"
             decoding="async"
-            fetchpriority="low"
+            fetchpriority="high"
+            data-no-lazy=""
+            data-skip-lazy=""
           />
         </a>
         <a

@@ -97,7 +97,7 @@ add_filter( 'rocket_exclude_js', 'jcp_core_rocket_exclude_js' );
  * Bump $bust when critical front-end assets change and anonymous CSS must refresh.
  */
 function jcp_core_rocket_bust_stale_minify(): void {
-	$bust = '2026-09-10-campaign-lp-perf-v5-lcp-checkin';
+	$bust = '2026-09-10-campaign-lp-perf-v6-lcp-360';
 	if ( get_option( 'jcp_core_rocket_bust' ) === $bust ) {
 		return;
 	}
@@ -126,3 +126,31 @@ function jcp_core_rocket_bust_stale_minify(): void {
 	}
 }
 add_action( 'init', 'jcp_core_rocket_bust_stale_minify', 20 );
+
+/**
+ * Keep brandbar logo + campaign LCP photo out of Rocket lazyload.
+ *
+ * @param string[] $attributes Excluded attribute names/values.
+ * @return string[]
+ */
+function jcp_core_rocket_lazyload_excluded_attributes( array $attributes ): array {
+	$attributes[] = 'data-no-lazy';
+	$attributes[] = 'data-skip-lazy';
+	$attributes[] = 'jcp-landing-brandbar__logo';
+	$attributes[] = 'jcp-story-checkin-card__photo';
+	return array_values( array_unique( $attributes ) );
+}
+add_filter( 'rocket_lazyload_excluded_attributes', 'jcp_core_rocket_lazyload_excluded_attributes' );
+
+/**
+ * @param string[] $src Excluded src fragments.
+ * @return string[]
+ */
+function jcp_core_rocket_lazyload_excluded_src( array $src ): array {
+	$src[] = 'jcp-logo-dark-320';
+	$src[] = 'jcp-campaign-hvac-capture-360';
+	$src[] = 'jcp-story-checkin-card__photo';
+	return array_values( array_unique( $src ) );
+}
+add_filter( 'rocket_lazyload_excluded_src', 'jcp_core_rocket_lazyload_excluded_src' );
+
