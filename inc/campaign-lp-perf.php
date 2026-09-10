@@ -74,28 +74,20 @@ function jcp_core_campaign_lp_inline_critical_css(): void {
 
 	echo '<style id="jcp-campaign-critical">';
 	echo 'html{scroll-behavior:auto}';
-	echo 'body.jcp-campaign-variant{margin:0;background:#fff;color:#111827;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}';
+	echo 'body.jcp-campaign-variant{margin:0;background:#fff;color:#111827}';
 	echo 'body.jcp-landing-chrome-hidden .directory-header,body.jcp-landing-chrome-hidden .jcp-top-banner,body.jcp-landing-chrome-hidden .mobile-menu-overlay,body.jcp-landing-chrome-hidden footer.jcp-footer{display:none!important}';
 	echo '.jcp-landing-brandbar{display:flex;align-items:center;justify-content:center;min-height:56px;padding:.55rem 1rem;background:rgba(255,255,255,.96);border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:50}';
 	echo '.jcp-landing-brandbar__inner{display:flex;align-items:center;justify-content:center;gap:.75rem;width:100%;max-width:72rem;margin-inline:auto}';
 	echo '.jcp-landing-brandbar__logo{display:block;height:34px;width:auto}';
-	echo '.jcp-landing-brandbar__cta{display:none}';
-	echo '.jcp-page-campaign .jcp-block-root{opacity:1!important;transform:none!important;animation:none!important}';
-	echo '.jcp-page-campaign .jcp-niche-benefits--job-flow .jcp-job-flow__step{opacity:1!important;transform:none!important}';
+	echo '.jcp-landing-brandbar__cta{opacity:0;pointer-events:none}';
+	echo '.jcp-page-campaign .jcp-block-root{opacity:1;transform:none}';
 	echo '.jcp-hero,.jcp-page-campaign .directory-hero{padding:1.25rem 1rem 2rem;background:#fff}';
 	echo '.jcp-hero-grid{display:grid;gap:1.5rem;align-items:center;max-width:72rem;margin:0 auto}';
 	echo '@media(min-width:900px){.jcp-hero-grid{grid-template-columns:1.05fr .95fr;gap:2rem;padding:0 1rem}}';
 	echo '.jcp-hero h1,.jcp-page-campaign .directory-hero h1{font-size:clamp(1.75rem,4.2vw,2.75rem);line-height:1.12;letter-spacing:-.02em;margin:0 0 .75rem;font-weight:800;color:#111827}';
 	echo '.jcp-hero p,.jcp-page-campaign .jcp-hero-sub{font-size:1.05rem;line-height:1.5;color:#4b5563;margin:0 0 1rem;max-width:36rem}';
 	echo '.btn-primary,.jcp-page-campaign .btn-primary{display:inline-flex;align-items:center;justify-content:center;min-height:3rem;padding:.85rem 1.25rem;border-radius:999px;background:#ff503e;color:#fff!important;font-weight:750;text-decoration:none;border:0}';
-	echo '.jcp-story-phone{position:relative;min-height:420px;display:flex;flex-direction:column;align-items:center}';
-	echo '.jcp-story-phone__device,.hero-phone-mockup{display:block;width:min(100%,280px);margin:0 auto;text-decoration:none;color:inherit}';
-	echo '.phone-frame,.hero-phone-frame{border-radius:28px;background:#0b1220;padding:10px;box-shadow:0 18px 50px rgba(15,23,42,.22)}';
-	echo '.phone-screen,.demo-phone-screen{border-radius:22px;overflow:hidden;background:#fff;aspect-ratio:9/19.5}';
-	echo '.jcp-story-scene:not(.is-active){display:none}';
-	echo '.jcp-story-scene.is-active{display:block}';
-	echo '.jcp-story-checkin-card__photo{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover}';
-	echo '.jcp-story-phone__caption{margin:.85rem 0 0;text-align:center;font-size:.9rem;color:#4b5563;min-height:1.35em}';
+	/* Do NOT override .jcp-story-scene display/flex — breaks the hero phone animation. */
 	echo '</style>' . "\n";
 }
 add_action( 'wp_head', 'jcp_core_campaign_lp_inline_critical_css', 2 );
@@ -118,8 +110,7 @@ function jcp_core_campaign_lp_async_secondary_css( string $html, string $handle 
 		'jcp-core-components',
 		'jcp-core-utilities',
 		'jcp-core-sections',
-		'jcp-core-hero-live-demo',
-		'jcp-core-demo-app-phone',
+		// Keep hero-live-demo + demo-app-phone BLOCKING — required for phone animation/LCP.
 		'jcp-core-niche-landing',
 		'jcp-core-home',
 		'jcp-core-story-moments',

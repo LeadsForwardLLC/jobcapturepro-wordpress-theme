@@ -113,7 +113,7 @@ function jcp_core_demo_survey_inline_critical_css(): void {
 	echo '.survey-input{width:100%;padding:16px;border-radius:14px;border:2px solid #d1d5db;font-size:16px;min-height:54px;box-sizing:border-box;background:#fff;color:#111827}';
 	echo '.survey-btn{width:100%;padding:18px;border-radius:14px;border:0;background:#FF503E;color:#fff;font-size:16px;font-weight:800;cursor:pointer}';
 	echo '.survey-close{position:fixed;top:24px;right:24px;width:44px;height:44px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;display:grid;place-items:center;z-index:10}';
-	echo '.survey-proof,.survey-step-indicator,.survey-progress{display:none}';
+	echo '.survey-step-indicator,.survey-progress{display:none}';
 	echo '@media(max-width:768px){.survey-overlay{padding:24px 16px;align-items:flex-start}.survey-title{font-size:24px}}';
 	echo '</style>' . "\n";
 }
@@ -417,7 +417,7 @@ function jcp_core_demo_survey_async_secondary_css( string $html, string $handle 
 	if ( ! function_exists( 'jcp_core_is_demo_survey_request' ) || ! jcp_core_is_demo_survey_request() ) {
 		return $html;
 	}
-	if ( ! in_array( $handle, [ 'jcp-core-survey', 'jcp-core-survey-shared', 'jcp-core-base' ], true ) ) {
+	if ( ! in_array( $handle, [ 'jcp-core-survey', 'jcp-core-base' ], true ) ) {
 		return $html;
 	}
 	if ( strpos( $html, 'onload=' ) !== false ) {
