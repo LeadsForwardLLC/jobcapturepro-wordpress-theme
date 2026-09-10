@@ -247,10 +247,9 @@ function jcp_component_hero_home_visual( string $demo_url = '', string $photo_ur
 function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url = '' ): void {
 	$demo_url  = $demo_url !== '' ? $demo_url : home_url( '/demo/' );
 	$photo_url = $photo_url !== '' ? $photo_url : ( function_exists( 'jcp_media_default_phone_image' ) ? jcp_media_default_phone_image() : '' );
-	$is_campaign = function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing();
-	// Campaign LPs: start on the check-in photo beat so LCP is visible on first paint
-	// (camera scene used to become LCP ~4s later → catastrophic element render delay).
-	$start_scene = $is_campaign ? 'checkin' : 'home';
+	// Always start on home so JS scene timing stays in sync with the 18s CSS keyframes
+	// (starting mid-loop on checkin left the card/photo at opacity:0 — blank phone).
+	$start_scene = 'home';
 	$captions    = [
 		__( '1. Tap + to start a check-in', 'jcp-core' ),
 		__( '2. Snap the finished job photo', 'jcp-core' ),
@@ -387,15 +386,9 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 											class="jcp-story-checkin-card__photo"
 											width="360"
 											height="240"
-											<?php if ( $start_scene === 'checkin' ) : ?>
-											loading="eager"
-											fetchpriority="high"
-											data-no-lazy=""
-											<?php else : ?>
 											loading="lazy"
-											fetchpriority="low"
-											<?php endif; ?>
 											decoding="async"
+											fetchpriority="low"
 										/>
 										<?php endif; ?>
 										<div class="jcp-story-checkin-card__body">

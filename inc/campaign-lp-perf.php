@@ -136,15 +136,15 @@ function jcp_core_campaign_lp_async_secondary_css( string $html, string $handle 
 add_filter( 'style_loader_tag', 'jcp_core_campaign_lp_async_secondary_css', 25, 2 );
 
 /**
- * Preload the LCP check-in photo (360w WebP).
+ * Preload logo only — do not preload mid-loop phone frames (desyncs animation).
  */
 function jcp_core_campaign_lp_preload_lcp(): void {
 	if ( ! jcp_core_is_campaign_lp_request() ) {
 		return;
 	}
 
-	$webp = get_template_directory_uri() . '/assets/campaign/jcp-campaign-hvac-capture-360.webp';
-	echo '<link rel="preload" as="image" type="image/webp" href="' . esc_url( $webp ) . '" fetchpriority="high">' . "\n";
+	$logo = get_template_directory_uri() . '/assets/brand/jcp-logo-dark-320.webp';
+	echo '<link rel="preload" as="image" type="image/webp" href="' . esc_url( $logo ) . '" fetchpriority="high">' . "\n";
 }
 add_action( 'wp_head', 'jcp_core_campaign_lp_preload_lcp', 1 );
 
