@@ -5030,15 +5030,21 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
     margin-inline: auto;
   }
 
-  /* Hide live-demo phone for visitors on mobile; editor override lives in hero-live-demo.css */
-  .jcp-niche .jcp-hero-visual-column:has(.hero-phone-mockup),
-  .jcp-page-campaign .jcp-hero-visual-column:has(.hero-phone-mockup) {
-    display: none !important;
-  }
-
-  body.jcp-inline-editing.jcp-niche .jcp-hero-visual-column:has(.hero-phone-mockup),
-  body.jcp-inline-editing.jcp-page-campaign .jcp-hero-visual-column:has(.hero-phone-mockup) {
-    display: block !important;
+  /*
+   * Story phone must stay visible on mobile for campaign/niche heroes.
+   * The old rule hid :has(.hero-phone-mockup), which also matched the story
+   * phone device — async niche-landing then collapsed the column after first
+   * paint and caused catastrophic CLS (~0.7) on throttled mobile.
+   * Old photo+cards stack is already hidden in hero-live-demo.css.
+   */
+  .jcp-niche .jcp-hero-visual-column:has(.jcp-story-phone),
+  .jcp-page-campaign .jcp-hero-visual-column:has(.jcp-story-phone),
+  .jcp-niche .jcp-hero-visual:has(.jcp-story-phone),
+  .jcp-page-campaign .jcp-hero-visual:has(.jcp-story-phone),
+  .jcp-niche .jcp-story-phone,
+  .jcp-page-campaign .jcp-story-phone {
+    display: flex !important;
+    justify-content: center;
   }
 }
 

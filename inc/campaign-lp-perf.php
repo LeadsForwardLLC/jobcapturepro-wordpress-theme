@@ -87,7 +87,23 @@ function jcp_core_campaign_lp_inline_critical_css(): void {
 	echo '.jcp-hero h1,.jcp-page-campaign .directory-hero h1{font-size:clamp(1.75rem,4.2vw,2.75rem);line-height:1.12;letter-spacing:-.02em;margin:0 0 .75rem;font-weight:800;color:#111827}';
 	echo '.jcp-hero p,.jcp-page-campaign .jcp-hero-sub{font-size:1.05rem;line-height:1.5;color:#4b5563;margin:0 0 1rem;max-width:36rem}';
 	echo '.btn-primary,.jcp-page-campaign .btn-primary{display:inline-flex;align-items:center;justify-content:center;min-height:3rem;padding:.85rem 1.25rem;border-radius:999px;background:#ff503e;color:#fff!important;font-weight:750;text-decoration:none;border:0}';
-	/* Do NOT override .jcp-story-scene display/flex — breaks the hero phone animation. */
+	/* Meta stats: reserve flex layout before async sections.css arrives. */
+	echo '.jcp-page-campaign .jcp-meta-stats,.jcp-page-campaign .directory-meta{display:flex;gap:1rem;margin-top:1rem;width:100%;align-items:flex-start;flex-wrap:nowrap}';
+	echo '.jcp-page-campaign .jcp-meta-stats .meta-item,.jcp-page-campaign .directory-meta .meta-item{display:flex;gap:.75rem;flex:1 1 0;min-width:0}';
+	echo '@media(max-width:480px){.jcp-page-campaign .jcp-meta-stats,.jcp-page-campaign .directory-meta{flex-direction:column;gap:.75rem}}';
+	/*
+	 * Story phone: keep column visible + reserve aspect-ratio space on mobile
+	 * before async niche-landing.css. Do NOT override .jcp-story-scene display.
+	 */
+	echo '.jcp-page-campaign .jcp-story-phone{display:flex;flex-direction:column;align-items:center;width:100%;max-width:360px;margin-inline:auto}';
+	echo '.jcp-page-campaign .jcp-story-phone__device.hero-phone-mockup{display:block;width:min(100%,300px);max-width:300px;margin-inline:auto}';
+	echo '.jcp-page-campaign .jcp-story-phone__device .phone-screen{aspect-ratio:9/19.5;width:100%;height:auto}';
+	echo '.jcp-page-campaign .jcp-story-phone__caption{min-height:2.6em}';
+	echo '@media(max-width:768px){';
+	echo '.jcp-page-campaign .jcp-hero-visual-column:has(.jcp-story-phone),.jcp-page-campaign .jcp-hero-visual:has(.jcp-story-phone),.jcp-page-campaign .jcp-story-phone{display:flex!important;justify-content:center}';
+	echo '.jcp-page-campaign .jcp-story-phone{max-width:320px}';
+	echo '.jcp-page-campaign .jcp-story-phone__device.hero-phone-mockup{width:min(100%,260px);max-width:260px}';
+	echo '}';
 	echo '</style>' . "\n";
 }
 add_action( 'wp_head', 'jcp_core_campaign_lp_inline_critical_css', 2 );
