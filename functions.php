@@ -35,6 +35,7 @@ require_once get_template_directory() . '/inc/jcp-api-cpt.php';
 // Load asset enqueuing logic
 require_once get_template_directory() . '/inc/enqueue.php';
 require_once get_template_directory() . '/inc/demo-run-perf.php';
+require_once get_template_directory() . '/inc/campaign-lp-perf.php';
 
 // WP Rocket: exclude critical CSS/JS from stale minify + Delay JS.
 require_once get_template_directory() . '/inc/wp-rocket.php';

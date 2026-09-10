@@ -5345,6 +5345,14 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   }
 }
 
+/* Campaign LPs: no map CSS background — it stole LCP preload + drove SI / animations. */
+.jcp-page-campaign.jcp-home .directory-hero,
+.jcp-page-campaign .directory-hero,
+.jcp-page-campaign .jcp-hero {
+  background-image: none !important;
+  animation: none !important;
+}
+
 .jcp-page-campaign .jcp-block-root {
   opacity: 0;
   transform: translateY(16px);
