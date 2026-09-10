@@ -262,6 +262,7 @@ function jcp_core_campaign_lp_transform_html( string $html ): string {
 		return $html;
 	}
 	$html = jcp_core_campaign_lp_strip_bad_preloads( $html );
+	$html = jcp_core_campaign_lp_strip_map_bg_rocket( $html );
 	$html = jcp_core_campaign_lp_rewrite_images( $html );
 	return $html;
 }
@@ -278,8 +279,26 @@ function jcp_core_campaign_lp_install_html_buffer(): void {
 add_action( 'template_redirect', 'jcp_core_campaign_lp_install_html_buffer', 1 );
 
 /**
+ * Script handles that can wait until idle/interaction on campaign LPs.
+ *
+ * @return string[]
+ */
+function jcp_core_campaign_lp_delayable_script_handles(): array {
+	return [
+		'jcp-core-story-phone',
+		'jcp-core-authority',
+		'jcp-core-story-moments',
+		'jcp-core-campaign',
+		'jcp-core-testimonials',
+		'jcp-core-home-interactions',
+		'jcp-core-case-study-exit',
+		'jcp-core-onboarding-handoff',
+		'jcp-core-site-banner',
+	];
+}
+
+/**
  * On campaign LPs, allow Rocket Delay JS for heavy theme scripts.
- * Hero stays visible via CSS; home scene ships with .is-active in markup.
  *
  * @param string[] $excluded Delay JS exclusion patterns.
  * @return string[]
@@ -302,6 +321,12 @@ function jcp_core_campaign_lp_rocket_delay_exclusions( array $excluded ): array 
 		'testimonials.js',
 		'jcp-core-home-interactions',
 		'home-interactions.js',
+		'jcp-core-case-study-exit',
+		'case-study-exit-intent.js',
+		'jcp-core-onboarding-handoff',
+		'jcp-onboarding-handoff.js',
+		'jcp-core-site-banner',
+		'jcp-site-banner.js',
 	];
 
 	$out = [];
@@ -320,3 +345,79 @@ function jcp_core_campaign_lp_rocket_delay_exclusions( array $excluded ): array 
 	return array_values( $out );
 }
 add_filter( 'rocket_delay_js_exclusions', 'jcp_core_campaign_lp_rocket_delay_exclusions', 100 );
+
+/**
+ * Mark non-critical campaign scripts so they do not execute during first paint / TBT.
+ *
+ * @param string $tag    Script HTML.
+ * @param string $handle Script handle.
+ * @param string $src    Script URL.
+ */
+function jcp_core_campaign_lp_delay_script_tag( string $tag, string $handle, string $src ): string {
+	if ( ! jcp_core_is_campaign_lp_request() ) {
+		return $tag;
+	}
+	if ( ! in_array( $handle, jcp_core_campaign_lp_delayable_script_handles(), true ) ) {
+		return $tag;
+	}
+	if ( $src === '' ) {
+		return $tag;
+	}
+
+	return sprintf(
+		'<script type="text/plain" data-jcp-delay-js id="%1$s-js" src="%2$s"></script>' . "\n",
+		esc_attr( $handle ),
+		esc_url( $src )
+	);
+}
+add_filter( 'script_loader_tag', 'jcp_core_campaign_lp_delay_script_tag', 40, 3 );
+
+/**
+ * Idle/interaction loader for delayed campaign scripts.
+ */
+function jcp_core_campaign_lp_print_delayed_script_loader(): void {
+	if ( ! jcp_core_is_campaign_lp_request() ) {
+		return;
+	}
+	echo "<script id=\"jcp-campaign-delay-js\">\n";
+	echo "(function(){\n";
+	echo "function boot(){\n";
+	echo "var nodes=document.querySelectorAll('script[data-jcp-delay-js][src]');\n";
+	echo "if(!nodes.length)return;\n";
+	echo "nodes.forEach(function(node){\n";
+	echo "var s=document.createElement('script');\n";
+	echo "s.src=node.getAttribute('src');\n";
+	echo "s.defer=true;\n";
+	echo "if(node.id)s.id=node.id;\n";
+	echo "node.parentNode.insertBefore(s,node);\n";
+	echo "node.parentNode.removeChild(node);\n";
+	echo "});\n";
+	echo "}\n";
+	echo "['pointerdown','keydown','touchstart'].forEach(function(t){window.addEventListener(t,boot,{once:true,passive:true});});\n";
+	echo "if('requestIdleCallback' in window){requestIdleCallback(function(){boot();},{timeout:4000});}\n";
+	echo "else{setTimeout(boot,4000);}\n";
+	echo "})();\n";
+	echo "</script>\n";
+}
+add_action( 'wp_footer', 'jcp_core_campaign_lp_print_delayed_script_loader', 1 );
+
+/**
+ * Drop Rocket map-bg lazy pairs on campaign LPs (hero no longer uses that image).
+ *
+ * @param string $html Page HTML.
+ */
+function jcp_core_campaign_lp_strip_map_bg_rocket( string $html ): string {
+	$html = preg_replace(
+		'#<style id="wpr-lazyload-bg-exclusion">.*?</style>#is',
+		'<style id="wpr-lazyload-bg-exclusion"></style>',
+		$html,
+		1
+	) ?? $html;
+	$html = preg_replace(
+		'#const rocket_excluded_pairs = \[.*?\];#s',
+		'const rocket_excluded_pairs = [];',
+		$html,
+		1
+	) ?? $html;
+	return $html;
+}
