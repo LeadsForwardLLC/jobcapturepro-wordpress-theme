@@ -106,7 +106,6 @@ function jcp_core_campaign_lp_inline_critical_css(): void {
 	echo '.jcp-page-campaign .jcp-story-phone__device.hero-phone-mockup,.jcp-page-campaign .demo-preview-phone-mockup.hero-phone-mockup{display:block!important;width:min(100%,300px)!important;max-width:300px!important;margin-inline:auto;opacity:1!important;transform:none!important;animation:none!important}';
 	echo '.jcp-page-campaign .jcp-story-phone__device .phone-screen,.jcp-page-campaign .demo-preview-phone-mockup .phone-screen{aspect-ratio:9/19.5!important;width:100%!important;height:auto!important}';
 	echo '.jcp-page-campaign .jcp-story-phone__caption{min-height:2.6em}';
-	echo '@media(min-width:769px){.jcp-page-campaign .jcp-hero-visual-column:has(.jcp-story-phone),.jcp-page-campaign .jcp-story-phone{min-height:620px}}';
 	echo '@media(max-width:768px){';
 	echo '.jcp-page-campaign .jcp-hero-visual-column:has(.jcp-story-phone),.jcp-page-campaign .jcp-hero-visual:has(.jcp-story-phone),.jcp-page-campaign .jcp-story-phone{display:flex!important;justify-content:center}';
 	echo '.jcp-page-campaign .jcp-hero-visual-column:has(.jcp-story-phone),.jcp-page-campaign .jcp-story-phone{min-height:560px}';
@@ -363,6 +362,39 @@ function jcp_core_campaign_lp_strip_map_bg_rocket( string $html ): string {
 }
 
 /**
+ * Force layout-critical campaign sheets to stay render-blocking even if an
+ * older HTML cache or another filter marked them media=print.
+ *
+ * @param string $html Page HTML.
+ */
+function jcp_core_campaign_lp_force_blocking_layout_css( string $html ): string {
+	$must_block = [
+		'base.css',
+		'layout.css',
+		'sections.css',
+		'niche-landing.css',
+		'demo-app-phone.css',
+		'hero-live-demo.css',
+	];
+	foreach ( $must_block as $file ) {
+		$html = preg_replace_callback(
+			'/<link\b([^>]*' . preg_quote( $file, '/' ) . '[^>]*)>/i',
+			static function ( array $m ) use ( $file ): string {
+				$tag = $m[0];
+				if ( strpos( $tag, 'rel=' ) !== false && strpos( $tag, 'stylesheet' ) === false ) {
+					return $tag;
+				}
+				$tag = preg_replace( "/\smedia=['\"]print['\"]/", " media='all'", $tag ) ?? $tag;
+				$tag = preg_replace( '/\sonload=("|\')[^"\']*\1/', '', $tag ) ?? $tag;
+				return $tag;
+			},
+			$html
+		) ?? $html;
+	}
+	return $html;
+}
+
+/**
  * Combined HTML transform for campaign LPs.
  *
  * @param string $html Page HTML.
@@ -373,6 +405,7 @@ function jcp_core_campaign_lp_transform_html( string $html ): string {
 	}
 	$html = jcp_core_campaign_lp_strip_bad_preloads( $html );
 	$html = jcp_core_campaign_lp_strip_map_bg_rocket( $html );
+	$html = jcp_core_campaign_lp_force_blocking_layout_css( $html );
 	$html = jcp_core_campaign_lp_rewrite_images( $html );
 	// Prevent delayed header-stack measurement from fighting campaign padding:0.
 	$html = preg_replace(
