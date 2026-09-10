@@ -5034,7 +5034,7 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
   .jcp-page-campaign .hero-phone-mockup,
   .jcp-niche .demo-phone-mockup,
   .jcp-page-campaign .demo-phone-mockup {
-    max-width: min(280px, 100%);
+    max-width: min(260px, 100%);
     margin-inline: auto;
   }
 
