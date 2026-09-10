@@ -74,7 +74,12 @@ function jcp_core_campaign_lp_inline_critical_css(): void {
 
 	echo '<style id="jcp-campaign-critical">';
 	echo 'html{scroll-behavior:auto}';
-	echo 'body.jcp-campaign-variant{margin:0;background:#fff;color:#111827}';
+	/*
+	 * Kill site-header body offset immediately. Async base.css sets
+	 * padding-top:var(--jcp-header-stack-height) (~69–72px); when that lands
+	 * after first paint the whole hero shifts (~0.3 CLS on mobile).
+	 */
+	echo 'body.jcp-campaign-variant,body.jcp-landing-chrome-hidden{margin:0;background:#fff;color:#111827;padding-top:0!important;--jcp-header-height:0px;--jcp-header-stack-height:0px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif}';
 	echo 'body.jcp-landing-chrome-hidden .directory-header,body.jcp-landing-chrome-hidden .jcp-top-banner,body.jcp-landing-chrome-hidden .mobile-menu-overlay,body.jcp-landing-chrome-hidden footer.jcp-footer{display:none!important}';
 	echo '.jcp-landing-brandbar{display:flex;align-items:center;justify-content:center;min-height:56px;padding:.55rem 1rem;background:rgba(255,255,255,.96);border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:50}';
 	echo '.jcp-landing-brandbar__inner{display:flex;align-items:center;justify-content:center;gap:.75rem;width:100%;max-width:72rem;margin-inline:auto}';
@@ -92,15 +97,16 @@ function jcp_core_campaign_lp_inline_critical_css(): void {
 	echo '.jcp-page-campaign .jcp-meta-stats .meta-item,.jcp-page-campaign .directory-meta .meta-item{display:flex;gap:.75rem;flex:1 1 0;min-width:0}';
 	echo '@media(max-width:480px){.jcp-page-campaign .jcp-meta-stats,.jcp-page-campaign .directory-meta{flex-direction:column;gap:.75rem}}';
 	/*
-	 * Story phone: keep column visible + reserve aspect-ratio space on mobile
-	 * before async niche-landing.css. Do NOT override .jcp-story-scene display.
+	 * Story phone: keep column visible + reserve height on mobile before
+	 * async niche-landing.css. Do NOT override .jcp-story-scene display.
 	 */
 	echo '.jcp-page-campaign .jcp-story-phone{display:flex;flex-direction:column;align-items:center;width:100%;max-width:360px;margin-inline:auto}';
-	echo '.jcp-page-campaign .jcp-story-phone__device.hero-phone-mockup{display:block;width:min(100%,300px);max-width:300px;margin-inline:auto}';
+	echo '.jcp-page-campaign .jcp-story-phone__device.hero-phone-mockup{display:block;width:min(100%,300px);max-width:300px;margin-inline:auto;opacity:1;transform:none;animation:none}';
 	echo '.jcp-page-campaign .jcp-story-phone__device .phone-screen{aspect-ratio:9/19.5;width:100%;height:auto}';
 	echo '.jcp-page-campaign .jcp-story-phone__caption{min-height:2.6em}';
 	echo '@media(max-width:768px){';
 	echo '.jcp-page-campaign .jcp-hero-visual-column:has(.jcp-story-phone),.jcp-page-campaign .jcp-hero-visual:has(.jcp-story-phone),.jcp-page-campaign .jcp-story-phone{display:flex!important;justify-content:center}';
+	echo '.jcp-page-campaign .jcp-hero-visual-column:has(.jcp-story-phone),.jcp-page-campaign .jcp-story-phone{min-height:560px}';
 	echo '.jcp-page-campaign .jcp-story-phone{max-width:320px}';
 	echo '.jcp-page-campaign .jcp-story-phone__device.hero-phone-mockup{width:min(100%,260px);max-width:260px}';
 	echo '}';

@@ -4851,6 +4851,14 @@ body.jcp-inline-editing [data-jcp-icon-path]:hover {
   }
 }
 
+/* Campaign / chrome-hidden LPs use the sticky brandbar only — no site-header offset. */
+body.jcp-landing-chrome-hidden,
+body.jcp-campaign-variant {
+  --jcp-header-height: 0px;
+  --jcp-header-stack-height: 0px;
+  padding-top: 0 !important;
+}
+
 body.jcp-landing-chrome-hidden .jcp-footer--landing-minimal {
   margin-top: 2rem;
   padding: 1.25rem 0 calc(1.25rem + env(safe-area-inset-bottom, 0px));
