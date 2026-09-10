@@ -25,6 +25,13 @@ if ( $demo_mode ) {
 	<?php wp_head(); ?>
 </head>
 <body <?php body_class( $demo_embed ? 'jcp-demo-run demo-run-only jcp-demo-embed' : 'jcp-demo-run demo-run-only' ); ?>>
+<div id="jcpDemoPrep" class="jcp-demo-prep" hidden aria-hidden="true" aria-live="polite">
+	<div class="jcp-demo-prep__inner">
+		<div class="jcp-demo-prep__spinner" aria-hidden="true"></div>
+		<p class="jcp-demo-prep__title">Preparing your demo…</p>
+		<p class="jcp-demo-prep__sub" id="jcpDemoPrepSub"></p>
+	</div>
+</div>
 <div id="jcp-app" data-jcp-page="demo"<?php echo $demo_embed ? ' data-jcp-embed="1"' : ''; ?><?php echo $hydrated ? ' data-jcp-hydrated="1"' : ''; ?>><?php
 	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- trusted local theme template, path-rewritten.
 	echo $demo_markup;

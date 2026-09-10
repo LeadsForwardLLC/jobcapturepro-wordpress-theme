@@ -1094,7 +1094,46 @@
   };
 
   // Launch live demo — send to same webhook with Event=demo-viewed (tag demo-viewed).
+  const showSurveyDemoPrep = () => {
+    let el = document.getElementById('jcpDemoPrep');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'jcpDemoPrep';
+      el.className = 'jcp-demo-prep';
+      el.setAttribute('aria-live', 'polite');
+      el.innerHTML =
+        '<div class="jcp-demo-prep__inner">' +
+        '<div class="jcp-demo-prep__spinner" aria-hidden="true"></div>' +
+        '<p class="jcp-demo-prep__title">Preparing your demo…</p>' +
+        '<p class="jcp-demo-prep__sub" id="jcpDemoPrepSub"></p>' +
+        '</div>';
+      document.body.appendChild(el);
+    }
+    const nicheVal = getBusinessTypeValue();
+    const nicheOpt = findBusinessTypeOption(nicheVal);
+    const nicheLabel = (nicheOpt && nicheOpt.label) || nicheVal || '';
+    const biz = getValue('businessName') || '';
+    let sub = 'Getting your JobCapturePro demo ready.';
+    if (nicheLabel && biz) {
+      sub = `Loading a personalized ${nicheLabel} workflow for ${biz}.`;
+    } else if (nicheLabel) {
+      sub = `Loading your personalized ${nicheLabel} demo.`;
+    }
+    const title = el.querySelector('.jcp-demo-prep__title');
+    const subEl = el.querySelector('#jcpDemoPrepSub') || el.querySelector('.jcp-demo-prep__sub');
+    if (title) title.textContent = 'Preparing your demo…';
+    if (subEl) subEl.textContent = sub;
+    el.hidden = false;
+    el.setAttribute('aria-hidden', 'false');
+    // Show only if navigation/webhook wait is perceptible.
+    window.setTimeout(() => {
+      if (!document.getElementById('jcpDemoPrep')) return;
+      el.classList.add('is-visible');
+    }, 140);
+  };
+
   const launchDemo = async () => {
+    showSurveyDemoPrep();
     const goals = Array.from(goalsWrap?.querySelectorAll('input[type="checkbox"]:checked') || [])
       .map((input) => input.value);
 

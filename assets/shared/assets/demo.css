@@ -1244,7 +1244,16 @@
           font-weight: 400;
           color: #6b7280;
           line-height: 1.4;
-          margin-bottom: 24px;
+          margin-bottom: 10px;
+        }
+
+        .upload-integrations-note {
+          font-size: 12px;
+          font-weight: 400;
+          color: #9ca3af;
+          line-height: 1.45;
+          margin: 0 auto 20px;
+          max-width: 280px;
         }
 
         .upload-buttons {

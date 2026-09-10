@@ -114,6 +114,14 @@ function jcp_core_enqueue_assets(): void {
                 'demo_run_url'    => home_url( '/demo/' ),
             ]
         );
+        $demo_integrations = function_exists( 'jcp_core_demo_field_software_integrations' )
+            ? jcp_core_demo_field_software_integrations()
+            : [ 'Housecall Pro', 'Jobber', 'ServiceTitan', 'CompanyCam' ];
+        wp_add_inline_script(
+            'jcp-core-demo',
+            'window.JCP_DEMO_INTEGRATIONS = ' . wp_json_encode( array_values( $demo_integrations ) ) . ';',
+            'before'
+        );
         wp_add_inline_script( 'jcp-core-demo', 'window.JCP_IS_DEMO_MODE = true;', 'before' );
         wp_add_inline_script(
             'jcp-core-demo',

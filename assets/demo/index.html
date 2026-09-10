@@ -118,6 +118,7 @@
 
                             <div class="upload-area">
                                 <div class="upload-hint">This is the only thing your crew needs to capture.</div>
+                                <p class="upload-integrations-note" id="uploadIntegrationsNote">Already use Housecall Pro, Jobber, ServiceTitan or CompanyCam? Keep your current workflow — JCP can pull in job data and photos automatically.</p>
                                 <div class="upload-buttons">
                                     <button type="button" class="upload-btn upload-btn--labeled" id="uploadBtnCamera" data-action="add-photos" aria-label="Take a photo">
                                       <img src="../../shared/assets/icons/lucide/camera.svg" class="lucide-icon" alt="">
@@ -132,7 +133,7 @@
 
                             <div class="photo-grid" id="photo-grid"></div>
 
-                            <button class="btn btn-primary btn-full" id="submit-btn" disabled>Submit</button>
+                            <button class="btn btn-primary btn-full" id="submit-btn" disabled>Create Check-In →</button>
 
                         </div>
                         <div class="tab-bar">
@@ -257,7 +258,7 @@
                             <div class="app-header__right"></div>
                         </div>
                         <div class="content-area">
-                            <p class="request-review-subtitle" id="request-review-subtitle">105 Walnut St, Austin, TX</p>
+                            <p class="request-review-subtitle" id="request-review-subtitle">1242 Mason Rd, Austin, TX</p>
                             <div class="section-title">Include a message</div>
                             <textarea class="input-field request-review-message" id="request-review-message" rows="4" placeholder="Add a personal note (optional)">We loved working with you! If you have a moment to leave a review, it would mean a lot to us.</textarea>
                             <div class="section-title">Job details</div>
@@ -267,7 +268,7 @@
                                         <img src="../../shared/assets/icons/lucide/map-pin.svg" class="lucide-icon lucide-icon-lg" alt="">
                                     </div>
                                     <div class="location-info">
-                                        <h3 id="request-review-address">105 Walnut St</h3>
+                                        <h3 id="request-review-address">1242 Mason Rd</h3>
                                         <p id="request-review-location">Austin, TX</p>
                                     </div>
                                 </div>
@@ -512,7 +513,7 @@
                     <img id="demoReviewPhoto" src="" alt="" width="56" height="56" loading="lazy">
                     <div class="demo-review-job-copy">
                         <strong id="demoReviewTitle">Water Heater Replacement</strong>
-                        <span id="demoReviewLocation">105 Walnut St, Austin, TX</span>
+                        <span id="demoReviewLocation">1242 Mason Rd, Austin, TX</span>
                     </div>
                 </div>
 
@@ -761,7 +762,7 @@
         Proof generated from this job
       </p>
       <h2 class="demo-outcomes-modal__title" id="demoOutcomesModalTitle">See what one job just created.</h2>
-      <p class="demo-outcomes-modal__sub" id="demoOutcomesModalSub">Swipe the previews — then start your free trial to do this after every job.</p>
+      <p class="demo-outcomes-modal__sub" id="demoOutcomesModalSub">Swipe through the 6 marketing assets JobCapturePro created from one job.</p>
       <p class="demo-outcomes-modal__channel" id="demoOutcomesActiveLabel" aria-live="polite">Published to your website</p>
       <p class="demo-outcomes-modal__counter" id="demoOutcomesSlideCounter" aria-live="polite">1 of 6</p>
     </div>
@@ -791,25 +792,6 @@
         href="https://app.jobcapturepro.com/onboarding?sessionId=75ad8454-312e-4224-95b7-8f48f5cd0277&amp;step=1&amp;utm_source=jobcapturepro.com&amp;utm_medium=website&amp;utm_campaign=onboarding&amp;utm_content=demo_outcomes"
         data-outcomes-action="start_free"
       ><span class="jcp-trial-cta-main">Start My Free 14-Day Trial</span><span class="jcp-trial-cta-note">No credit card required</span></a>
-      <div class="demo-outcomes-modal__assist" id="demoOutcomesSoftAssist">
-        <p class="demo-outcomes-modal__assist-title">Want a setup tip by text? <span class="demo-outcomes-modal__assist-optional">Optional</span></p>
-        <div class="demo-outcomes-modal__assist-row">
-          <label class="demo-outcomes-modal__assist-sr" for="demoOutcomesPhone">Mobile number</label>
-          <input
-            type="tel"
-            id="demoOutcomesPhone"
-            class="demo-outcomes-modal__assist-input demo-outcomes-modal__assist-input--phone"
-            inputmode="tel"
-            autocomplete="tel"
-            name="tel"
-            placeholder="(___) ___-____"
-            maxlength="20"
-          />
-          <button type="button" class="demo-outcomes-modal__assist-btn" id="demoOutcomesAssistBtn">Text me a tip</button>
-        </div>
-        <p class="demo-outcomes-modal__assist-note">Skip anytime — the free trial is above.</p>
-        <p class="demo-outcomes-modal__assist-status" id="demoOutcomesAssistStatus" aria-live="polite"></p>
-      </div>
     </div>
     <div class="demo-outcomes-modal__alt-ctas">
       <p class="demo-outcomes-modal__last-resort">

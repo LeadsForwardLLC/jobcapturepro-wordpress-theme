@@ -762,3 +762,72 @@ body.survey-only .survey-card:has(.survey-deck.active) .survey-brand {
 .survey-deck.active .deck-slide.is-active .deck-lead {
   text-wrap: pretty;
 }
+
+/* Demo prep loader after personalization (covers webhook + navigation) */
+.jcp-demo-prep {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.18s ease, visibility 0.18s ease;
+}
+
+.jcp-demo-prep.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.jcp-demo-prep__inner {
+  max-width: 320px;
+  text-align: center;
+}
+
+.jcp-demo-prep__spinner {
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 14px;
+  border: 2.5px solid #e5e7eb;
+  border-top-color: #ff503e;
+  border-radius: 50%;
+  animation: jcp-demo-prep-spin 0.7s linear infinite;
+}
+
+.jcp-demo-prep__title {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.3;
+}
+
+.jcp-demo-prep__sub {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: #6b7280;
+  line-height: 1.45;
+}
+
+@keyframes jcp-demo-prep-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jcp-demo-prep__spinner {
+    animation: none;
+    border-top-color: #e5e7eb;
+    border-right-color: #ff503e;
+  }
+  .jcp-demo-prep {
+    transition: none;
+  }
+}

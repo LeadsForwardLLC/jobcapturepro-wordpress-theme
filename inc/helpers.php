@@ -111,6 +111,22 @@ function jcp_core_demo_run_url( array $args = [] ): string {
 }
 
 /**
+ * Supported field-software names for demo CRM reassurance copy.
+ * Prefer the sales-tool integration callouts list when available.
+ *
+ * @return list<string>
+ */
+function jcp_core_demo_field_software_integrations(): array {
+	if ( function_exists( 'jcp_sales_tool_integration_callouts' ) ) {
+		$names = jcp_sales_tool_integration_callouts( [] );
+		if ( is_array( $names ) && $names !== [] ) {
+			return array_values( array_map( 'strval', $names ) );
+		}
+	}
+	return [ 'Housecall Pro', 'Jobber', 'ServiceTitan', 'CompanyCam' ];
+}
+
+/**
  * Sanitized query args allowed on demo run URLs.
  *
  * @return array<string, string>

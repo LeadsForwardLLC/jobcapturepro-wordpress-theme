@@ -606,7 +606,132 @@ try { refreshDemoAssetsForNiche(); } catch (e) {}
 /* ---------------------------
    Demo Assets (simulated job photos by niche — no live camera)
 ---------------------------- */
-const DEFAULT_JOB_LOCATION = '1242 Mason Rd, Austin TX 78704';
+/** Single source of truth for the guided-demo sample job (all screens). */
+const CANONICAL_SAMPLE_JOB = Object.freeze({
+  street: '1242 Mason Rd',
+  city: 'Austin',
+  state: 'TX',
+  zip: '78704',
+  cityState: 'Austin, TX',
+  fullAddress: '1242 Mason Rd, Austin TX 78704',
+  lat: 30.2672,
+  lng: -97.7431,
+  customer: 'John Doe',
+});
+
+const DEFAULT_JOB_LOCATION = CANONICAL_SAMPLE_JOB.fullAddress;
+
+function getCanonicalSampleJob() {
+  return CANONICAL_SAMPLE_JOB;
+}
+
+function getCanonicalStreet() {
+  return CANONICAL_SAMPLE_JOB.street;
+}
+
+function getCanonicalCityState() {
+  return CANONICAL_SAMPLE_JOB.cityState;
+}
+
+function getCanonicalFullAddress() {
+  return CANONICAL_SAMPLE_JOB.fullAddress;
+}
+
+/** Field-software names for CRM reassurance (override via window.JCP_DEMO_INTEGRATIONS). */
+function getDemoIntegrationNames() {
+  const fromConfig = window.JCP_DEMO_INTEGRATIONS;
+  if (Array.isArray(fromConfig) && fromConfig.length) {
+    return fromConfig.map((n) => String(n || '').trim()).filter(Boolean);
+  }
+  return ['Housecall Pro', 'Jobber', 'ServiceTitan', 'CompanyCam'];
+}
+
+function formatDemoIntegrationList(names) {
+  const list = (names || []).filter(Boolean);
+  if (list.length <= 1) return list[0] || 'your CRM';
+  if (list.length === 2) return `${list[0]} or ${list[1]}`;
+  return `${list.slice(0, -1).join(', ')} or ${list[list.length - 1]}`;
+}
+
+function getDemoIntegrationsReassuranceCopy() {
+  const names = formatDemoIntegrationList(getDemoIntegrationNames());
+  return `Already use ${names}? Keep your current workflow — JCP can pull in job data and photos automatically.`;
+}
+
+function applyDemoIntegrationsReassurance() {
+  const el = document.getElementById('uploadIntegrationsNote');
+  if (el) el.textContent = getDemoIntegrationsReassuranceCopy();
+}
+
+/** Lightweight prep overlay — only shown when init takes long enough to feel stalled. */
+let demoPrepRevealTimer = null;
+let demoPrepPending = false;
+
+function getDemoPrepCopy() {
+  const biz = String((demoUser && demoUser.businessName) || '').trim();
+  const niche = String((demoUser && demoUser.niche) || '').trim();
+  const nicheLabel = niche
+    ? niche.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+    : '';
+  const realBiz = biz && !/^your business$/i.test(biz);
+  let sub = 'Getting your JobCapturePro demo ready.';
+  if (nicheLabel && realBiz) {
+    sub = `Loading a personalized ${nicheLabel} workflow for ${biz}.`;
+  } else if (nicheLabel) {
+    sub = `Loading your personalized ${nicheLabel} demo.`;
+  }
+  return { title: 'Preparing your demo…', sub };
+}
+
+function ensureDemoPrepOverlay() {
+  let el = document.getElementById('jcpDemoPrep');
+  if (el) return el;
+  el = document.createElement('div');
+  el.id = 'jcpDemoPrep';
+  el.className = 'jcp-demo-prep';
+  el.hidden = true;
+  el.setAttribute('aria-hidden', 'true');
+  el.setAttribute('aria-live', 'polite');
+  el.innerHTML =
+    '<div class="jcp-demo-prep__inner">' +
+    '<div class="jcp-demo-prep__spinner" aria-hidden="true"></div>' +
+    '<p class="jcp-demo-prep__title">Preparing your demo…</p>' +
+    '<p class="jcp-demo-prep__sub" id="jcpDemoPrepSub"></p>' +
+    '</div>';
+  document.body.appendChild(el);
+  return el;
+}
+
+function beginDemoPrepOverlay() {
+  demoPrepPending = true;
+  const el = ensureDemoPrepOverlay();
+  const copy = getDemoPrepCopy();
+  const title = el.querySelector('.jcp-demo-prep__title');
+  const sub = el.querySelector('#jcpDemoPrepSub') || el.querySelector('.jcp-demo-prep__sub');
+  if (title) title.textContent = copy.title;
+  if (sub) sub.textContent = copy.sub;
+  if (demoPrepRevealTimer) window.clearTimeout(demoPrepRevealTimer);
+  // Avoid flash when boot is nearly instant.
+  demoPrepRevealTimer = window.setTimeout(() => {
+    if (!demoPrepPending) return;
+    el.hidden = false;
+    el.setAttribute('aria-hidden', 'false');
+    el.classList.add('is-visible');
+  }, 140);
+}
+
+function endDemoPrepOverlay() {
+  demoPrepPending = false;
+  if (demoPrepRevealTimer) {
+    window.clearTimeout(demoPrepRevealTimer);
+    demoPrepRevealTimer = null;
+  }
+  const el = document.getElementById('jcpDemoPrep');
+  if (!el) return;
+  el.classList.remove('is-visible');
+  el.hidden = true;
+  el.setAttribute('aria-hidden', 'true');
+}
 
 /** Unsplash job-scene URLs (no people / faces) keyed by niche family. */
 const NICHE_PHOTO_PACKS = {
@@ -619,7 +744,7 @@ const NICHE_PHOTO_PACKS = {
       'https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
-      'Water heater replacement at 1242 Mason Rd, Austin TX 78704. Installed a high-efficiency unit, verified venting, and tested T&P relief. Local, geotagged job proof ready for your website and Google.',
+      `Water heater replacement at ${getCanonicalFullAddress()}. Installed a high-efficiency unit, verified venting, and tested T&P relief. Local, geotagged job proof ready for your website and Google.`,
       'Completed a full water heater swap-out: removed the failing tank, installed a new unit, reconnected lines, and confirmed there are no leaks.',
       'Installed a new water heater and confirmed stable hot-water delivery throughout the home. Connections tightened, valves tested, work area cleaned.',
     ],
@@ -633,7 +758,7 @@ const NICHE_PHOTO_PACKS = {
       'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
-      'HVAC install at 1242 Mason Rd, Austin TX 78704. New outdoor unit set, lineset connected, and system commissioned for cooling. Geotagged job proof ready to publish.',
+      `HVAC install at ${getCanonicalFullAddress()}. New outdoor unit set, lineset connected, and system commissioned for cooling. Geotagged job proof ready to publish.`,
       'Completed an HVAC changeout: set the condenser, verified refrigerant charge, and confirmed airflow through the home.',
       'Finished HVAC service with before/after proof from the job site. System tested and left running clean.',
     ],
@@ -647,7 +772,7 @@ const NICHE_PHOTO_PACKS = {
       'https://images.unsplash.com/photo-1473341302250-a0c3377630b0?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
-      'Electrical panel upgrade at 1242 Mason Rd, Austin TX 78704. New breaker layout, labeled circuits, and safety check completed.',
+      `Electrical panel upgrade at ${getCanonicalFullAddress()}. New breaker layout, labeled circuits, and safety check completed.`,
       'Finished residential electrical work with clean terminations and tested outlets throughout the home.',
       'Completed electrical service with geotagged job proof ready for website and Google.',
     ],
@@ -661,7 +786,7 @@ const NICHE_PHOTO_PACKS = {
       'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
-      'Roof replacement at 1242 Mason Rd, Austin TX 78704. Tear-off complete, new underlayment and shingles installed, flashing sealed.',
+      `Roof replacement at ${getCanonicalFullAddress()}. Tear-off complete, new underlayment and shingles installed, flashing sealed.`,
       'Finished roofing work with clean ridges and validated drainage paths around the home.',
       'Completed roofing service with geotagged proof ready to publish across your channels.',
     ],
@@ -675,7 +800,7 @@ const NICHE_PHOTO_PACKS = {
       'https://images.unsplash.com/photo-1598902108854-10e335adac99?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
-      'Outdoor project completed at 1242 Mason Rd, Austin TX 78704. Site cleaned, work documented, ready for homeowners nearby.',
+      `Outdoor project completed at ${getCanonicalFullAddress()}. Site cleaned, work documented, ready for homeowners nearby.`,
       'Finished outdoor service with clear before/after proof from the property.',
       'Completed outdoor work with geotagged job proof ready for website and Google.',
     ],
@@ -689,7 +814,7 @@ const NICHE_PHOTO_PACKS = {
       'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
-      'Deep clean completed at 1242 Mason Rd, Austin TX 78704. Surfaces detailed, floors finished, home left ready for the owner.',
+      `Deep clean completed at ${getCanonicalFullAddress()}. Surfaces detailed, floors finished, home left ready for the owner.`,
       'Finished cleaning service with clear job-site proof for your online presence.',
       'Completed cleaning work with geotagged proof ready to publish.',
     ],
@@ -703,7 +828,7 @@ const NICHE_PHOTO_PACKS = {
       'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
-      'Remodel work completed at 1242 Mason Rd, Austin TX 78704. Finished surfaces installed and site cleaned for handover.',
+      `Remodel work completed at ${getCanonicalFullAddress()}. Finished surfaces installed and site cleaned for handover.`,
       'Finished remodeling project with geotagged proof of the completed space.',
       'Completed remodel service with publish-ready job documentation.',
     ],
@@ -717,7 +842,7 @@ const NICHE_PHOTO_PACKS = {
       'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
-      'Restoration work completed at 1242 Mason Rd, Austin TX 78704. Affected areas treated, dried, and documented for the homeowner.',
+      `Restoration work completed at ${getCanonicalFullAddress()}. Affected areas treated, dried, and documented for the homeowner.`,
       'Finished restoration service with clear job-site proof.',
       'Completed restoration with geotagged documentation ready to publish.',
     ],
@@ -731,7 +856,7 @@ const NICHE_PHOTO_PACKS = {
       'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&h=600&fit=crop&q=75',
     ],
     descriptions: [
-      'Completed job at 1242 Mason Rd, Austin TX 78704. Work documented on site with geotagged proof ready for your website and Google.',
+      `Completed job at ${getCanonicalFullAddress()}. Work documented on site with geotagged proof ready for your website and Google.`,
       'Finished service with clear job-site photos ready to publish across connected channels.',
       'Completed work with publish-ready proof from the field.',
     ],
@@ -968,7 +1093,7 @@ const demoGuideContent = {
     pill: 'Step 2',
     title: 'Add the job photo',
     body: 'This is the only thing your crew needs to capture.',
-    interactHint: 'Take the photo, then tap Submit.'
+    interactHint: 'Take the photo, then tap Create Check-In.'
   },
   step4: {
     pill: 'Step 3',
@@ -2155,7 +2280,7 @@ function loadSampleCheckins() {
   const samples = Array.from({ length: 6 }).map((_, i) => ({
     title: 'Service Job Completed',
     address: `${100 + i} Main St`,
-    location: 'Austin, TX',
+    location: getCanonicalCityState(),
     summary: 'Completed professional service work.',
     customer: 'Customer',
     time: `${i + 1}d ago`,
@@ -2234,7 +2359,7 @@ function renderHomeCheckins() {
       item.className = 'home-checkin-item';
       item.innerHTML = `
         <div class="home-checkin-left">
-          <h3>${checkin.address || '105 Walnut St'}</h3>
+          <h3>${checkin.address || getCanonicalStreet()}</h3>
           <div class="home-checkin-location">${checkin.location}</div>
           <div class="home-checkin-desc">${excerptText(checkin.summary || 'Replaced water heater.', 10)}</div>
           <div class="home-checkin-meta">
@@ -2290,7 +2415,7 @@ function renderHomeCheckins() {
     item.className = 'home-checkin-item';
     item.innerHTML = `
       <div class="home-checkin-left">
-        <h3>${checkin.address || '105 Walnut St'}</h3>
+        <h3>${checkin.address || getCanonicalStreet()}</h3>
         <div class="home-checkin-location">${checkin.location}</div>
         <div class="home-checkin-desc">${excerptText(checkin.summary || 'Replaced water heater.', 10)}</div>
         <div class="home-checkin-meta">
@@ -2619,7 +2744,7 @@ function startProcessingTitleCycle() {
   processingTitleTimer = window.setInterval(() => {
     i = (i + 1) % PROCESSING_TITLE_CYCLE.length;
     setProcessingTitle(PROCESSING_TITLE_CYCLE[i]);
-  }, 880);
+  }, 520);
 }
 
 function stopProcessingTitleCycle() {
@@ -2846,7 +2971,8 @@ async function processPhotos() {
     const beat = beats[i];
     setProcessingStepActive(beat.id);
     setProcessingSub(beat.sub);
-    await wait(i === 0 ? 720 : 760);
+    // Simulated beats only — keep total processing UI around 2–3s.
+    await wait(i === 0 ? 480 : 520);
     markProcessingStepDone(beat.id);
     hideMobileSpotlight();
   }
@@ -2854,7 +2980,7 @@ async function processPhotos() {
   stopProcessingTitleCycle();
   setProcessingTitle('Check-in ready');
   setProcessingSub('Opening your finished job proof…');
-  await wait(420);
+  await wait(280);
 
   overlay.classList.remove('active');
   document.body.classList.remove('jcp-processing-open');
@@ -2866,10 +2992,10 @@ async function processPhotos() {
     const summary = descriptions[0] || 'Replaced water heater.';
     state.savedCheckins.push({
       title: getDemoJobTitle(),
-      address: '105 Walnut St',
-      location: 'Austin, TX',
+      address: getCanonicalStreet(),
+      location: getCanonicalCityState(),
       summary,
-      customer: 'John Doe',
+      customer: getCanonicalSampleJob().customer,
       time: 'Just now',
       image: demoPhotos[0]
     });
@@ -2915,8 +3041,8 @@ function showEditScreen() {
     const checkin = state.savedCheckins[state.activeCheckinIndex];
     if (checkin) {
       if (descriptionField) descriptionField.value = checkin.summary || '';
-      if (addressEl) addressEl.textContent = checkin.address || '105 Walnut St';
-      if (locationEl) locationEl.textContent = checkin.location || 'Austin, TX';
+      if (addressEl) addressEl.textContent = checkin.address || getCanonicalStreet();
+      if (locationEl) locationEl.textContent = checkin.location || getCanonicalCityState();
       if (editGrid) {
         editGrid.innerHTML = '';
         const imgSrc = checkin.image || demoPhotos[0];
@@ -3169,17 +3295,18 @@ if (publishBtn) {
     const desc = descField ? descField.value : 'Replaced water heater.';
     state.savedCheckins.push({
       title: getDemoJobTitle(),
-      address: '105 Walnut St',
-      location: 'Austin, TX',
+      address: getCanonicalStreet(),
+      location: getCanonicalCityState(),
       summary: desc,
-      customer: 'John Doe',
+      customer: getCanonicalSampleJob().customer,
       time: 'Just now',
       image: demoPhotos[0]
     });
     persistCheckins();
 
     initializeMap(() => {
-      addMapMarker(30.2672, -97.7431, getDemoJobTitle());
+      const job = getCanonicalSampleJob();
+      addMapMarker(job.lat, job.lng, getDemoJobTitle());
     });
   }
 
@@ -3205,7 +3332,7 @@ websiteContainer.insertAdjacentHTML(
   'afterbegin',
   createCheckinCard({
     title: getDemoJobTitle(),
-    location: 'Austin, TX',
+    location: getCanonicalCityState(),
     date: new Date().toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',
@@ -3291,7 +3418,7 @@ async function publishToSocial() {
     <div class="feed-card">
       <div class="feed-image"><img src="${demoPhotos[0]}" alt="Job" width="400" height="300" loading="lazy"></div>
       <div class="feed-content">
-        <h4>${getDemoJobTitle()} • Austin, TX</h4>
+        <h4>${getDemoJobTitle()} • ${getCanonicalCityState()}</h4>
         <p>Prepared just now • Professional installation</p>
       </div>
     </div>
@@ -3319,8 +3446,8 @@ function closeReviewDialog() {
 function populateDemoReviewModal() {
   const checkin = getCurrentCheckinForReview();
   const title = checkin?.title || getDemoJobTitle();
-  const address = checkin?.address || '105 Walnut St';
-  const location = checkin?.location || 'Austin, TX';
+  const address = checkin?.address || getCanonicalStreet();
+  const location = checkin?.location || getCanonicalCityState();
   const imgSrc = checkin?.image || demoPhotos[0];
   const business = (demoUser.businessName || 'Your Business').trim() || 'Your Business';
 
@@ -3448,8 +3575,8 @@ function getOutcomesJobContext() {
   const checkin = getCurrentCheckinForReview();
   const businessName = demoUser.businessName || 'Your Business';
   const image = checkin?.image || demoPhotos[0] || '';
-  const address = checkin?.address || '105 Walnut St';
-  const location = checkin?.location || 'Austin, TX';
+  const address = checkin?.address || getCanonicalStreet();
+  const location = checkin?.location || getCanonicalCityState();
   const title = checkin?.title || getDemoJobTitle();
   const summary = checkin?.summary || excerptText(descriptions[0], 16);
   const nicheLabel = demoUser.niche
@@ -4165,7 +4292,7 @@ function ensureOutcomesFooterButtons() {
     titleEl?.after(subEl);
   }
   if (subEl) {
-    subEl.textContent = 'Swipe the previews — then start your free trial to do this after every job.';
+    subEl.textContent = 'Swipe through the 6 marketing assets JobCapturePro created from one job.';
   }
 
   let channelEl = $('demoOutcomesActiveLabel');
@@ -4494,86 +4621,13 @@ function flushOutcomesSoftAssist(opts = {}) {
 }
 
 function ensureOutcomesSoftAssist(card) {
-  if (!card) return;
-
-  const footer = card.querySelector('.demo-outcomes-modal__footer');
-  let wrap = $('demoOutcomesSoftAssist') || $('demoOutcomesPhoneCapture');
-
-  if (wrap && wrap.id === 'demoOutcomesPhoneCapture') {
-    wrap.id = 'demoOutcomesSoftAssist';
-    wrap.className = 'demo-outcomes-modal__assist';
-  }
-
-  const assistHtml =
-    '<p class="demo-outcomes-modal__assist-title">Want a setup tip by text? <span class="demo-outcomes-modal__assist-optional">Optional</span></p>' +
-    '<div class="demo-outcomes-modal__assist-row">' +
-    '<label class="demo-outcomes-modal__assist-sr" for="demoOutcomesPhone">Mobile number</label>' +
-    '<input type="tel" id="demoOutcomesPhone" class="demo-outcomes-modal__assist-input demo-outcomes-modal__assist-input--phone" inputmode="tel" autocomplete="tel" placeholder="(___) ___-____" maxlength="20" />' +
-    '<button type="button" class="demo-outcomes-modal__assist-btn" id="demoOutcomesAssistBtn">Text me a tip</button>' +
-    '</div>' +
-    '<p class="demo-outcomes-modal__assist-note">Skip anytime — the free trial is above.</p>' +
-    '<p class="demo-outcomes-modal__assist-status" id="demoOutcomesAssistStatus" aria-live="polite"></p>';
-
-  if (!wrap) {
-    wrap = document.createElement('div');
-    wrap.className = 'demo-outcomes-modal__assist';
-    wrap.id = 'demoOutcomesSoftAssist';
-    wrap.innerHTML = assistHtml;
-  } else if (
-    $('demoOutcomesFirstName') ||
-    wrap.querySelector('.demo-outcomes-modal__assist-fields') ||
-    !wrap.querySelector('.demo-outcomes-modal__assist-row')
-  ) {
-    const priorPhone = $('demoOutcomesPhone')?.value || '';
-    wrap.className = 'demo-outcomes-modal__assist';
-    wrap.id = 'demoOutcomesSoftAssist';
-    wrap.innerHTML = assistHtml;
-    if (priorPhone && $('demoOutcomesPhone')) {
-      $('demoOutcomesPhone').value = priorPhone;
-    }
-  }
-
-  if (footer && wrap.parentElement !== footer) {
-    footer.appendChild(wrap);
-  } else if (!wrap.parentElement) {
-    const alt = card.querySelector('.demo-outcomes-modal__alt-ctas');
-    if (footer) footer.appendChild(wrap);
-    else if (alt) card.insertBefore(wrap, alt);
-    else card.appendChild(wrap);
-  }
-
-  const phoneInput = $('demoOutcomesPhone');
-  if (phoneInput && demoUser.phone && !phoneInput.value) {
-    phoneInput.value = formatUsPhoneInput(demoUser.phone);
-  }
-
-  if (wrap.dataset.bound === '1') return;
-  wrap.dataset.bound = '1';
-
-  phoneInput?.addEventListener('input', () => {
-    const formatted = formatUsPhoneInput(phoneInput.value);
-    if (formatted !== phoneInput.value) phoneInput.value = formatted;
-  });
-
-  const submitAssist = () => {
-    const result = flushOutcomesSoftAssist({ silent: false, requirePhone: true });
-    if (result === 'ok') {
-      jcpDemoTrack('cta_clicked', null, { cta: 'phone_save', source: 'demo_outcomes_modal', label: 'Text me a tip' }, { keepalive: true });
-    }
-  };
-
-  $('demoOutcomesAssistBtn')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    submitAssist();
-  });
-
-  phoneInput?.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      submitAssist();
-    }
-  });
+  // CRO: remove SMS/phone soft-assist from the final conversion modal only.
+  // Keep flush/enrich helpers available for other callers (e.g. trial handoff).
+  const wrap =
+    $('demoOutcomesSoftAssist') ||
+    $('demoOutcomesPhoneCapture') ||
+    card?.querySelector?.('.demo-outcomes-modal__assist');
+  wrap?.remove();
 }
 
 /** @deprecated Use ensureOutcomesSoftAssist */
@@ -4887,8 +4941,8 @@ function openCheckinForEdit(index, fromArchived = false) {
 
   const addressEl = document.querySelector('#edit-screen .location-info h3');
   const locationEl = document.querySelector('#edit-screen .location-info p');
-  if (addressEl) addressEl.textContent = checkin.address || '105 Walnut St';
-  if (locationEl) locationEl.textContent = checkin.location || 'Austin, TX';
+  if (addressEl) addressEl.textContent = checkin.address || getCanonicalStreet();
+  if (locationEl) locationEl.textContent = checkin.location || getCanonicalCityState();
 
   const editGrid = $('edit-photo-grid');
   if (editGrid) {
@@ -4989,9 +5043,9 @@ function goToRequestReview() {
   const locationEl = $('request-review-location');
   const messageEl = $('request-review-message');
   const photosEl = $('request-review-photos');
-  if (subtitle) subtitle.textContent = checkin ? `${checkin.address || '105 Walnut St'}, ${checkin.location || 'Austin, TX'}` : '105 Walnut St, Austin, TX';
-  if (addressEl) addressEl.textContent = checkin?.address || '105 Walnut St';
-  if (locationEl) locationEl.textContent = checkin?.location || 'Austin, TX';
+  if (subtitle) subtitle.textContent = checkin ? `${checkin.address || getCanonicalStreet()}, ${checkin.location || getCanonicalCityState()}` : getCanonicalStreet() + ', ' + getCanonicalCityState();
+  if (addressEl) addressEl.textContent = checkin?.address || getCanonicalStreet();
+  if (locationEl) locationEl.textContent = checkin?.location || getCanonicalCityState();
   if (messageEl) messageEl.value = 'We loved working with you! If you have a moment to leave a review, it would mean a lot to us.';
   if (photosEl) {
     const imgSrc = checkin?.image || demoPhotos[0];
@@ -5375,11 +5429,13 @@ function initPasswordToggles() {
 ========================================================= */
 
 function init() {
+  beginDemoPrepOverlay();
   loadCheckins();
   initializeWebsite();
   applyPersonalization();
   // DOM + personalization ready: niche photo pack, camera badge, hint.
   try { refreshDemoAssetsForNiche(); } catch (e) {}
+  try { applyDemoIntegrationsReassurance(); } catch (e) {}
 
   // Mobile mode
   applyMobileMode();
@@ -5428,6 +5484,7 @@ function init() {
     ensurePrototypeControlsEnabled();
     syncAttentionAnimations();
     initLocationSmartPrompt();
+    endDemoPrepOverlay();
     return;
   }
 
@@ -5445,7 +5502,7 @@ function init() {
     if (returnState.stepKey) {
       setTourStep(returnState.stepKey);
     }
-    
+
     // Only show tour if guide is not disabled
     // (when returning from directory, guide is disabled and tooltip should be hidden)
     if (!state.guideDisabled) {
@@ -5456,11 +5513,12 @@ function init() {
       document.getElementById('tour-float')?.classList.add('is-hidden');
       document.getElementById('tour-bubble')?.classList.add('is-hidden');
     }
-    
+
     if (returnState.showPostDemoPanel) {
       showPostDemoPanel();
     }
     clearReturnState();
+    endDemoPrepOverlay();
     return;
   }
 
@@ -5491,7 +5549,10 @@ function init() {
     setTourStep('step2');
     showTour();
     updateTourFloating();
-  }, 50);
+    applyFocalPoint();
+    syncAttentionAnimations();
+    endDemoPrepOverlay();
+  }, 0);
 }
 
 function updateTourNextLabel(label = 'Next →') {

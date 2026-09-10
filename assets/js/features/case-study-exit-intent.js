@@ -1,6 +1,6 @@
 /**
  * Case-study exit-intent (last-resort).
- * Desktop: mouse-leave. Mobile + demo: Exit/close / back. Interrupt: WAIT + hand.
+ * Desktop: mouse-leave. Mobile + demo: Exit/close / back. Interrupt: BEFORE YOU GO + hand.
  */
 (function () {
   'use strict';
@@ -55,23 +55,19 @@
     } catch (e) {}
   }
 
+  /**
+   * Credibility-safe scarcity: admin fill % is marketing-edited, not live app counts.
+   * Do not show fabricated percentages / progress bars.
+   */
   function buildCapacityHtml() {
-    var pct = Math.max(0, Math.min(100, Number(cfg.fillPercent != null ? cfg.fillPercent : 80)));
     var selecting = Number(cfg.selectingTotal || 10);
     return (
       '<div class="jcp-case-capacity jcp-case-capacity--modal jcp-case-exit__capacity" role="status">' +
       '<div class="jcp-case-capacity__head">' +
-      '<p class="jcp-case-capacity__label"><strong>Applications are ' +
-      pct +
-      '% full</strong></p>' +
-      '<p class="jcp-case-capacity__meta">We’re only selecting ' +
+      '<p class="jcp-case-capacity__label"><strong>Only ' +
       selecting +
-      ' businesses</p>' +
-      '</div>' +
-      '<div class="jcp-case-capacity__track" aria-hidden="true">' +
-      '<span class="jcp-case-capacity__fill" style="width:' +
-      pct +
-      '%"></span></div></div>'
+      ' businesses will be selected.</strong></p>' +
+      '</div></div>'
     );
   }
 
@@ -82,6 +78,13 @@
       '<path fill="#ff503e" d="M38.2 14.2c-1.3 0-2.4 1-2.4 2.4v11.2h-1.6V11.8c0-1.3-1.1-2.4-2.4-2.4s-2.4 1.1-2.4 2.4v15.9h-1.6V14.6c0-1.3-1.1-2.4-2.4-2.4s-2.4 1.1-2.4 2.4v16.2h-1.6V18.8c0-1.3-1.1-2.4-2.4-2.4s-2.4 1.1-2.4 2.4v20.3c0 7.2 4.4 12.7 12.1 12.7 5.9 0 10.4-3.4 12.1-8.9l2.8-9.1c.5-1.6-.4-3.3-2-3.8-1-.3-2-.1-2.7.5V16.6c0-1.3-1.1-2.4-2.4-2.4z"/>' +
       '</svg>'
     );
+  }
+
+  function dismissLabel() {
+    if (isDemoPath() || document.body.classList.contains('jcp-guided-demo') || allowDemo) {
+      return 'No thanks — continue the demo';
+    }
+    return 'No thanks — continue browsing';
   }
 
   function close(root, dismissed) {
@@ -111,17 +114,18 @@
       '<button type="button" class="jcp-case-exit__close" aria-label="Close" data-case-exit-dismiss="1">×</button>' +
       '<div class="jcp-case-exit__interrupt">' +
       handSvg() +
-      '<p class="jcp-case-exit__wait" id="jcpCaseExitTitle">WAIT</p>' +
-      '<p class="jcp-case-exit__eyebrow">Before you go · only 10 businesses selected</p>' +
+      '<p class="jcp-case-exit__wait" id="jcpCaseExitTitle">BEFORE YOU GO</p>' +
       '</div>' +
-      '<h2 class="jcp-case-exit__title">Apply for the FREE 90-day case study</h2>' +
-      '<p class="jcp-case-exit__body">We’re selecting 10 home-service companies for hands-on onboarding and measurable results. Selected companies get JobCapturePro free during the study. Anyone can apply — applications may far outnumber the 10 spots.</p>' +
+      '<h2 class="jcp-case-exit__title">Want to use JobCapturePro free for 90 days?</h2>' +
+      '<p class="jcp-case-exit__body">We\'re selecting 10 home-service companies for hands-on onboarding and a 90-day results study. Selected businesses use JobCapturePro free during the study.</p>' +
       buildCapacityHtml() +
       '<div class="jcp-case-exit__actions">' +
       '<a class="jcp-case-exit__primary" id="jcpCaseExitApply" href="' +
       String(cfg.url || '/case-study/') +
-      '">Apply to be considered</a>' +
-      '<button type="button" class="jcp-case-exit__dismiss" data-case-exit-dismiss="1">No thanks — continue browsing</button>' +
+      '">Apply for a Case Study Spot →</a>' +
+      '<button type="button" class="jcp-case-exit__dismiss" data-case-exit-dismiss="1">' +
+      dismissLabel() +
+      '</button>' +
       '</div></div>';
 
     document.body.appendChild(root);
