@@ -131,14 +131,12 @@ function jcp_core_campaign_lp_async_secondary_css( string $html, string $handle 
 	}
 
 	$async_handles = [
-		'jcp-core-base',
-		'jcp-core-layout',
+		// Keep layout/base/sections/niche BLOCKING — async arrival was resizing
+		// the hero phone column after first paint (CLS 0.3–0.5 on mobile).
+		// hero-live-demo + demo-app-phone stay blocking for the story phone.
 		'jcp-core-buttons',
 		'jcp-core-components',
 		'jcp-core-utilities',
-		'jcp-core-sections',
-		// Keep hero-live-demo + demo-app-phone BLOCKING — required for phone animation/LCP.
-		'jcp-core-niche-landing',
 		'jcp-core-home',
 		'jcp-core-story-moments',
 		'jcp-core-content-prose',
