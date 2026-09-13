@@ -22,6 +22,7 @@
     '/contractor-nature': 'nature_doc',
     '/job-proof': 'proof_waste',
     '/why-we-built-jcp': 'founder',
+    '/job-proof-demo': 'job_proof_demo',
   };
 
   function readLpVariantFromPath() {

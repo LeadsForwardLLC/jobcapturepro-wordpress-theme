@@ -22,6 +22,7 @@ require_once get_template_directory() . '/inc/retire-promo-copy.php';
 require_once get_template_directory() . '/inc/fluent-forms-bridge.php';
 require_once get_template_directory() . '/inc/code-embed.php';
 require_once get_template_directory() . '/inc/form-landing.php';
+require_once get_template_directory() . '/inc/job-proof-demo.php';
 require_once get_template_directory() . '/inc/pricing-plans.php';
 require_once get_template_directory() . '/inc/sales-tool/bootstrap.php';
 require_once get_template_directory() . '/inc/nav-mega-menu.php';

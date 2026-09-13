@@ -141,6 +141,29 @@ function jcp_core_enqueue_assets(): void {
         return;
     }
 
+    // /job-proof-demo/: standalone paid proof funnel (not /demo/).
+    if ( function_exists( 'jcp_job_proof_demo_is_current' ) && jcp_job_proof_demo_is_current() ) {
+        jcp_core_enqueue_style( 'jcp-core-job-proof-demo', 'css/pages/job-proof-demo.css' );
+        jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
+        jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );
+        jcp_core_enqueue_script( 'jcp-core-job-proof-demo', 'js/pages/job-proof-demo.js', [ 'jcp-core-attribution', 'jcp-core-onboarding-handoff' ] );
+        if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {
+            $onb = [
+                'url'         => jcp_core_onboarding_app_url_raw(
+                    function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults( 'job_proof_demo_trial' ) : []
+                ),
+                'sessionId'   => jcp_core_onboarding_hardcoded_session_id(),
+                'utmDefaults' => function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : [],
+            ];
+            wp_add_inline_script(
+                'jcp-core-job-proof-demo',
+                'window.JCP_ONBOARDING = window.JCP_ONBOARDING || ' . wp_json_encode( $onb ) . ';',
+                'before'
+            );
+        }
+        return;
+    }
+
     // Sales Tool: assets enqueued by inc/sales-tool/enqueue.php (priority 5).
     if ( ! empty( $pages['is_sales_tool'] ) ) {
         return;
@@ -271,12 +294,12 @@ function jcp_core_enqueue_assets(): void {
             // Lightweight paid LP view signal for GTM/Meta (maps to PaidLandingView).
             wp_add_inline_script(
                 'jcp-core-attribution',
-                "(function(){try{window.dataLayer=window.dataLayer||[];var map={'/contractor-demo':'contractor_demo','/contractor-formula':'formula','/contractor-nature':'nature_doc','/job-proof':'proof_waste','/why-we-built-jcp':'founder'};var path=(location.pathname||'').replace(/\\/+$/,'')||'/';var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||map[path]||'';if(v&&document.body&&!document.body.getAttribute('data-jcp-lp-variant')){document.body.setAttribute('data-jcp-lp-variant',v);document.documentElement.setAttribute('data-jcp-lp-variant',v);}window.dataLayer.push({event:'PaidLandingView',page_path:location.pathname,lp_variant:v||'default'});}catch(e){}})();",
+                "(function(){try{window.dataLayer=window.dataLayer||[];var map={'/contractor-demo':'contractor_demo','/contractor-formula':'formula','/contractor-nature':'nature_doc','/job-proof':'proof_waste','/why-we-built-jcp':'founder','/job-proof-demo':'job_proof_demo'};var path=(location.pathname||'').replace(/\\/+$/,'')||'/';var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||map[path]||'';if(v&&document.body&&!document.body.getAttribute('data-jcp-lp-variant')){document.body.setAttribute('data-jcp-lp-variant',v);document.documentElement.setAttribute('data-jcp-lp-variant',v);}window.dataLayer.push({event:'PaidLandingView',page_path:location.pathname,lp_variant:v||'default'});}catch(e){}})();",
                 'after'
             );
             wp_add_inline_script(
                 'jcp-core-attribution',
-                "document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[href*=\"/demo\"]'):null;if(!a)return;try{if(window.__jcpDemoCtaFired)return;window.__jcpDemoCtaFired=1;window.dataLayer=window.dataLayer||[];var map={'/contractor-demo':'contractor_demo','/contractor-formula':'formula','/contractor-nature':'nature_doc','/job-proof':'proof_waste','/why-we-built-jcp':'founder'};var path=(location.pathname||'').replace(/\\/+$/,'')||'/';var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||map[path]||'';window.dataLayer.push({event:'DemoCTA',cta_label:(a.textContent||'').trim().slice(0,80),href:a.href,lp_variant:v||'default'});}catch(err){}});",
+                "document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[href*=\"/demo\"]'):null;if(!a)return;try{if(window.__jcpDemoCtaFired)return;window.__jcpDemoCtaFired=1;window.dataLayer=window.dataLayer||[];var map={'/contractor-demo':'contractor_demo','/contractor-formula':'formula','/contractor-nature':'nature_doc','/job-proof':'proof_waste','/why-we-built-jcp':'founder','/job-proof-demo':'job_proof_demo'};var path=(location.pathname||'').replace(/\\/+$/,'')||'/';var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||map[path]||'';window.dataLayer.push({event:'DemoCTA',cta_label:(a.textContent||'').trim().slice(0,80),href:a.href,lp_variant:v||'default'});}catch(err){}});",
                 'after'
             );
         }

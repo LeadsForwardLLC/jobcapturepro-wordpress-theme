@@ -30,6 +30,7 @@ function jcp_admin_special_page_templates(): array {
 		'estimate'            => 'page-estimate.php',
 		'prototype'           => 'page-prototype.php',
 		'company'             => 'page-company.php',
+		'job-proof-demo'      => 'page-job-proof-demo.php',
 		'wp-plugin-prototype' => 'page-wp-plugin-prototype.php',
 		'ui-library'          => 'page-ui-library.php',
 	];
@@ -60,6 +61,10 @@ function jcp_admin_minimal_page_templates( array $templates ): array {
 
 	if ( isset( $templates['page-form-landing.php'] ) ) {
 		$out['page-form-landing.php'] = $templates['page-form-landing.php'];
+	}
+
+	if ( isset( $templates['page-job-proof-demo.php'] ) ) {
+		$out['page-job-proof-demo.php'] = $templates['page-job-proof-demo.php'];
 	}
 
 	if ( isset( $templates['page-sales-tool.php'] ) ) {
