@@ -135,8 +135,8 @@ body.jcp-job-proof-demo {
 }
 
 .jpd-stage__title--sm {
-  font-size: clamp(1.3rem, 3.2vw, 1.75rem);
-  max-width: 28ch;
+  font-size: clamp(1.25rem, 3vw, 1.7rem);
+  max-width: 28rem;
 }
 
 .jpd-stage__sub {
@@ -312,12 +312,13 @@ body.jcp-job-proof-demo {
   opacity: 1;
 }
 
-/* Primary outputs — Website / Google / Social */
+/* Primary outputs — Website / Google / Social (equal cards) */
 .jpd-outputs {
   display: grid;
   grid-template-columns: 1fr;
   gap: 12px;
   margin: 0 0 10px;
+  align-items: stretch;
 }
 
 @media (min-width: 860px) {
@@ -330,15 +331,25 @@ body.jcp-job-proof-demo {
 .jpd-output {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   min-width: 0;
+  height: 100%;
+}
+
+.jpd-output--primary {
+  background: #fff;
+  border: 1px solid var(--jpd-line);
+  border-radius: 14px;
+  padding: 12px;
+  box-sizing: border-box;
 }
 
 .jpd-output__meta {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-height: 2.8em;
 }
 
 .jpd-output__channel {
@@ -355,28 +366,53 @@ body.jcp-job-proof-demo {
   font-size: 13px;
   font-weight: 700;
   color: var(--jpd-ink);
+  line-height: 1.25;
 }
 
 .jpd-preview {
   margin: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .jpd-stage .jcp-sm-browser,
 .jpd-stage .jcp-sm-gbp,
 .jpd-stage .jcp-sm-social {
   margin: 0;
-  height: auto;
+  height: 100%;
   min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .jpd-stage .jcp-sm-gbp__photo,
 .jpd-stage .jcp-sm-social__photo {
-  max-height: 110px;
+  width: 100%;
+  height: 112px;
+  max-height: none;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
+  flex-shrink: 0;
+}
+
+.jpd-stage .jcp-sm-job-card img {
+  width: 72px;
+  height: 54px;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
 .jpd-stage .jcp-sm-browser__body {
   padding: 10px;
+  flex: 1 1 auto;
+}
+
+.jpd-stage .jcp-sm-gbp__copy,
+.jpd-stage .jcp-sm-social__copy {
+  flex: 1 1 auto;
 }
 
 .jpd-stage .jcp-sm-social__copy {
@@ -389,7 +425,8 @@ body.jcp-job-proof-demo {
   display: grid;
   grid-template-columns: 1fr;
   gap: 8px;
-  margin: 0 0 18px;
+  margin: 0 0 8px;
+  align-items: stretch;
 }
 
 @media (min-width: 560px) {
@@ -404,6 +441,8 @@ body.jcp-job-proof-demo {
   background: #fff;
   border: 1px solid var(--jpd-line);
   border-radius: 12px;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .jpd-output-compact__row {
@@ -442,19 +481,34 @@ body.jcp-job-proof-demo {
   color: var(--jpd-muted);
 }
 
+.jpd-publish-note {
+  margin: 0 0 16px;
+  font-size: 12px;
+  color: var(--jpd-muted);
+  line-height: 1.35;
+}
+
 /* Convert — bridge + trial immediately under outputs */
 .jpd-convert {
-  max-width: 480px;
+  max-width: 540px;
   margin: 0 0 18px;
   text-align: left;
 }
 
 .jpd-bridge-line {
-  margin: 0 0 12px;
-  font-size: clamp(1.05rem, 2.4vw, 1.2rem);
+  margin: 0 0 8px;
+  font-size: clamp(1.1rem, 2.5vw, 1.3rem);
   font-weight: 700;
   line-height: 1.3;
   color: var(--jpd-ink);
+}
+
+.jpd-bridge-support {
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--jpd-muted);
+  max-width: 40rem;
 }
 
 .jpd-convert .btn-primary {
@@ -466,6 +520,78 @@ body.jcp-job-proof-demo {
   margin: 8px 0 0;
   color: var(--jpd-muted);
   font-size: 14px;
+}
+
+/* Compact local-search explanation */
+.jpd-search-explain {
+  max-width: 720px;
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid var(--jpd-line);
+  border-radius: 14px;
+}
+
+.jpd-search-explain__title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.jpd-search-explain__copy {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: #334155;
+}
+
+.jpd-search-explain__concepts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+@media (min-width: 640px) {
+  .jpd-search-explain__concepts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+.jpd-search-explain__concepts li {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--jpd-muted);
+}
+
+.jpd-search-explain__concepts strong {
+  color: var(--jpd-ink);
+  font-weight: 800;
+}
+
+/* Hide live-chat / launcher widgets on this paid funnel */
+body.jcp-job-proof-demo #chat-widget-container,
+body.jcp-job-proof-demo #lc_text-widget,
+body.jcp-job-proof-demo .lc_text-widget,
+body.jcp-job-proof-demo [id*="chat-widget"],
+body.jcp-job-proof-demo [class*="chat-widget"],
+body.jcp-job-proof-demo [class*="ChatWidget"],
+body.jcp-job-proof-demo iframe[src*="leadconnector"],
+body.jcp-job-proof-demo iframe[src*="msgsndr"],
+body.jcp-job-proof-demo button[aria-label="Open chat"],
+body.jcp-job-proof-demo button[aria-label*="Open chat" i],
+body.jcp-job-proof-demo [data-testid*="chat"],
+body.jcp-job-proof-demo .leadconnector-chat,
+body.jcp-job-proof-demo #leadconnector-chat,
+body.jcp-job-proof-demo .ghl-chat-widget {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  opacity: 0 !important;
 }
 
 /* Compact horizontal trust strip */

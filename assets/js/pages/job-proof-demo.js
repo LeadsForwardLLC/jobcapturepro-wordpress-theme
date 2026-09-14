@@ -264,6 +264,36 @@
     showMoment(n, { skipScroll: true });
   }
 
+  function hideChatWidgets() {
+    var selectors = [
+      '#chat-widget-container',
+      '#lc_text-widget',
+      '.lc_text-widget',
+      '[id*="chat-widget"]',
+      '[class*="chat-widget"]',
+      'iframe[src*="leadconnector"]',
+      'iframe[src*="msgsndr"]',
+      'button[aria-label="Open chat"]',
+      '.leadconnector-chat',
+      '#leadconnector-chat',
+      '.ghl-chat-widget',
+    ];
+    selectors.forEach(function (sel) {
+      document.querySelectorAll(sel).forEach(function (el) {
+        el.style.setProperty('display', 'none', 'important');
+        el.style.setProperty('visibility', 'hidden', 'important');
+        el.setAttribute('aria-hidden', 'true');
+      });
+    });
+    document.querySelectorAll('button').forEach(function (btn) {
+      var label = (btn.getAttribute('aria-label') || btn.textContent || '').toLowerCase();
+      if (label.indexOf('open chat') !== -1 || label === 'chat') {
+        btn.style.setProperty('display', 'none', 'important');
+        btn.setAttribute('aria-hidden', 'true');
+      }
+    });
+  }
+
   function init() {
     trackProof('proof_lp_viewed');
     trackProof('proof_job_viewed');
@@ -271,6 +301,18 @@
     decorateExpertLinks();
     window.setTimeout(decorateTrialLinks, 200);
     window.setTimeout(decorateExpertLinks, 200);
+    hideChatWidgets();
+    window.setTimeout(hideChatWidgets, 500);
+    window.setTimeout(hideChatWidgets, 2000);
+    window.setTimeout(hideChatWidgets, 5000);
+    if ('MutationObserver' in window) {
+      try {
+        var mo = new MutationObserver(function () {
+          hideChatWidgets();
+        });
+        mo.observe(document.documentElement, { childList: true, subtree: true });
+      } catch (e) {}
+    }
 
     document.querySelectorAll('img[data-fallback]').forEach(function (img) {
       img.addEventListener('error', function () {

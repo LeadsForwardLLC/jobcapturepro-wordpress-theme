@@ -41,6 +41,15 @@ $photo_fallback = function_exists( 'jcp_job_proof_demo_asset_url' )
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<style id="jpd-hide-chat">
+		/* Early hide for GTM/GHL chat launchers before page CSS loads */
+		#chat-widget-container, #lc_text-widget, .lc_text-widget,
+		[id*="chat-widget"], [class*="chat-widget"],
+		iframe[src*="leadconnector"], iframe[src*="msgsndr"],
+		button[aria-label="Open chat"], .leadconnector-chat, #leadconnector-chat, .ghl-chat-widget {
+			display: none !important; visibility: hidden !important; pointer-events: none !important;
+		}
+	</style>
 	<?php wp_head(); ?>
 </head>
 <body <?php body_class( 'jcp-job-proof-demo jcp-landing-chrome-hidden' ); ?> data-jcp-lp-variant="job_proof_demo">
