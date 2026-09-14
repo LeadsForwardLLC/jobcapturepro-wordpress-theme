@@ -84,7 +84,7 @@ body.jcp-job-proof-demo {
 
 /* Single stage = hero + proof */
 .jpd-stage {
-  padding: 20px 0 48px;
+  padding: 14px 0 48px;
   background:
     radial-gradient(120% 80% at 10% 0%, rgba(255, 80, 62, 0.08), transparent 55%),
     linear-gradient(180deg, #fff 0%, var(--jpd-soft) 100%);
@@ -97,15 +97,15 @@ body.jcp-job-proof-demo {
 
 .jpd-stage__intro {
   max-width: var(--jpd-max);
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .jpd-stage__title {
-  margin: 0 0 10px;
-  font-size: clamp(1.55rem, 4.8vw, 2.35rem);
+  margin: 0 0 8px;
+  font-size: clamp(1.4rem, 3.8vw, 2rem);
   line-height: 1.15;
   letter-spacing: -0.03em;
-  max-width: 18ch;
+  max-width: 20ch;
 }
 
 .jpd-stage__title--sm {
@@ -152,14 +152,15 @@ body.jcp-job-proof-demo {
   border: 1px solid var(--jpd-line);
   border-radius: var(--jpd-radius);
   overflow: hidden;
-  margin: 0 0 18px;
-  max-width: var(--jpd-max);
+  margin: 0 0 14px;
+  max-width: min(var(--jpd-max), 560px);
   box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
 }
 
 .jpd-job-card__media {
   position: relative;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
+  max-height: 280px;
   background: #e2e8f0;
 }
 
@@ -183,7 +184,7 @@ body.jcp-job-proof-demo {
 }
 
 .jpd-job-card__body {
-  padding: 14px 16px 16px;
+  padding: 12px 14px 14px;
 }
 
 .jpd-job-card__service {
