@@ -138,6 +138,10 @@
 
   function showMoment(n, opts) {
     opts = opts || {};
+    if (n !== 2 && state.checkinTimer) {
+      window.clearTimeout(state.checkinTimer);
+      state.checkinTimer = 0;
+    }
     state.moment = n;
     var stage = document.querySelector('[data-jpd-stage]');
     if (stage) stage.setAttribute('data-active-moment', String(n));
@@ -184,7 +188,16 @@
   function runCheckinSequence() {
     var status = document.getElementById('jpdCheckinStatus');
     var card = document.getElementById('jpdCheckinCard');
+    var distribute = document.getElementById('jpdDistribute');
+    var distLabel = document.getElementById('jpdDistributeLabel');
     if (card) card.classList.remove('is-ready');
+    if (distribute) {
+      distribute.hidden = true;
+      distribute.classList.remove('is-active');
+      distribute.querySelectorAll('[data-jpd-node]').forEach(function (node) {
+        node.classList.remove('is-lit');
+      });
+    }
     state.checkinReady = false;
 
     if (state.checkinTimer) {
@@ -204,18 +217,44 @@
       i += 1;
       if (i < lines.length) {
         if (status) status.textContent = lines[i];
-        state.checkinTimer = window.setTimeout(tick, 380);
+        state.checkinTimer = window.setTimeout(tick, 320);
         return;
       }
       if (status) status.textContent = 'Check-in ready';
       if (card) card.classList.add('is-ready');
       state.checkinReady = true;
       trackProof('proof_checkin_created');
+      state.checkinTimer = window.setTimeout(runDistributeSequence, 400);
+    }
+    state.checkinTimer = window.setTimeout(tick, 320);
+  }
+
+  function runDistributeSequence() {
+    var distribute = document.getElementById('jpdDistribute');
+    var distLabel = document.getElementById('jpdDistributeLabel');
+    var nodes = distribute ? distribute.querySelectorAll('[data-jpd-node]') : [];
+    if (distribute) {
+      distribute.hidden = false;
+      window.requestAnimationFrame(function () {
+        distribute.classList.add('is-active');
+      });
+    }
+    if (distLabel) distLabel.textContent = 'Publishing across connected destinations…';
+
+    var idx = 0;
+    function lightNext() {
+      if (idx < nodes.length) {
+        nodes[idx].classList.add('is-lit');
+        idx += 1;
+        state.checkinTimer = window.setTimeout(lightNext, 320);
+        return;
+      }
+      if (distLabel) distLabel.textContent = 'Fresh proof across your connected presence';
       state.checkinTimer = window.setTimeout(function () {
         showMoment(3);
-      }, 650);
+      }, 450);
     }
-    state.checkinTimer = window.setTimeout(tick, 380);
+    state.checkinTimer = window.setTimeout(lightNext, 180);
   }
 
   function onClick(e) {
