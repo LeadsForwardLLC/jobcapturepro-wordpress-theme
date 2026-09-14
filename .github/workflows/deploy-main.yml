@@ -75,18 +75,19 @@ jobs:
           TARGET="$(resolve_target "$REMOTE_PATH")"
           echo "Deploying to target length: ${#TARGET}"
 
-          # SiteGround often denies rsync receiver change_dir even when SSH can write.
-          # Prefer tar-over-SSH (same auth, shell write path).
+          # Extract to a temp dir first, then sync into the live theme.
+          # In-place tar -xzf can leave truncated PHP files readable mid-deploy
+          # (source dumps sitewide when functions.php already requires them).
           for i in 1 2 3 4 5 6; do
             echo "tar-over-ssh attempt $i..."
             if tar -czf - \
               --exclude='.git' \
               --exclude='.github' \
               --exclude='.DS_Store' \
-              . | "${SSH_CMD[@]}" "${SSH_USER}@${SSH_HOST}" "cd '$TARGET' && tar -xzf -"; then
+              . | "${SSH_CMD[@]}" "${SSH_USER}@${SSH_HOST}" "set -e; TMP=\"${TARGET}.__deploy_\$\$\"; rm -rf \"\$TMP\"; mkdir -p \"\$TMP\"; tar -xzf - -C \"\$TMP\"; test -f \"\$TMP/style.css\"; test -f \"\$TMP/functions.php\"; test -f \"\$TMP/inc/helpers.php\"; if command -v rsync >/dev/null 2>&1; then rsync -a --delete \"\$TMP\"/ \"${TARGET}\"/; else cp -a \"\$TMP\"/. \"${TARGET}\"/\"; fi; rm -rf \"\$TMP\""; then
               echo "tar-over-ssh ok (attempt $i)"
               # Sanity: confirm a sentinel file landed
-              "${SSH_CMD[@]}" "${SSH_USER}@${SSH_HOST}" "test -f '$TARGET/style.css' && test -f '$TARGET/css/pages/survey.css' && echo deploy_files_ok"
+              "${SSH_CMD[@]}" "${SSH_USER}@${SSH_HOST}" "test -f '$TARGET/style.css' && test -f '$TARGET/css/pages/survey.css' && test -f '$TARGET/inc/job-proof-demo.php' && head -c 5 '$TARGET/inc/job-proof-demo.php' | grep -q '<?php' && echo deploy_files_ok"
               exit 0
             fi
             echo "tar-over-ssh attempt $i failed"

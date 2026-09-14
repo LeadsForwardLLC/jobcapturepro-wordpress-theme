@@ -22,7 +22,14 @@ require_once get_template_directory() . '/inc/retire-promo-copy.php';
 require_once get_template_directory() . '/inc/fluent-forms-bridge.php';
 require_once get_template_directory() . '/inc/code-embed.php';
 require_once get_template_directory() . '/inc/form-landing.php';
-require_once get_template_directory() . '/inc/job-proof-demo.php';
+// Guard: never include a mid-deploy truncated PHP file (would dump source sitewide).
+$jcp_job_proof_demo_inc = get_template_directory() . '/inc/job-proof-demo.php';
+if ( is_readable( $jcp_job_proof_demo_inc ) ) {
+	$jcp_jpd_head = (string) @file_get_contents( $jcp_job_proof_demo_inc, false, null, 0, 5 );
+	if ( $jcp_jpd_head === '<?php' ) {
+		require_once $jcp_job_proof_demo_inc;
+	}
+}
 require_once get_template_directory() . '/inc/pricing-plans.php';
 require_once get_template_directory() . '/inc/sales-tool/bootstrap.php';
 require_once get_template_directory() . '/inc/nav-mega-menu.php';
