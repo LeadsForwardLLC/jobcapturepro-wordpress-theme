@@ -8,6 +8,13 @@
   box-sizing: border-box;
 }
 
+/* Campaign LPs zero body padding-top while the brandbar stays fixed —
+   clear that bar so the capacity strip is not clipped underneath. */
+body.jcp-landing-chrome-hidden .jcp-case-capacity-wrap,
+body.jcp-campaign-variant .jcp-case-capacity-wrap {
+  padding-top: calc(56px + 12px + env(safe-area-inset-top, 0px));
+}
+
 .jcp-case-capacity {
   padding: 14px 16px;
   border-radius: 14px;

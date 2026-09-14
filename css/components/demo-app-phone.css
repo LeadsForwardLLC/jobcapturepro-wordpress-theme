@@ -818,22 +818,24 @@
   50% { transform: scale(0.985); }
 }
 
+/* Hold the check-in card through the channel-chip beat (~58–74%).
+   Earlier fade-out (72%) left a blank Check-ins screen while chips were still up. */
 @keyframes jcpStoryCardIn {
   0%, 52% { opacity: 0; transform: translateY(10px); }
-  56%, 72% { opacity: 1; transform: translateY(0); }
-  76%, 100% { opacity: 0; transform: translateY(6px); }
+  56%, 78% { opacity: 1; transform: translateY(0); }
+  84%, 100% { opacity: 0; transform: translateY(6px); }
 }
 
 @keyframes jcpStoryBadgeIn {
   0%, 58% { opacity: 0; transform: translateY(4px); }
-  62%, 72% { opacity: 1; transform: translateY(0); }
-  76%, 100% { opacity: 0; }
+  62%, 78% { opacity: 1; transform: translateY(0); }
+  84%, 100% { opacity: 0; }
 }
 
 @keyframes jcpStoryChannelPill {
   0%, 56% { opacity: 0; transform: translateY(6px); border-color: #e5e7eb; color: #6b7280; background: #fff; }
-  62%, 72% { opacity: 1; transform: translateY(0); border-color: rgba(16, 185, 129, 0.35); color: #065f46; background: #f0fdf4; }
-  78%, 100% { opacity: 0; transform: translateY(4px); }
+  62%, 78% { opacity: 1; transform: translateY(0); border-color: rgba(16, 185, 129, 0.35); color: #065f46; background: #f0fdf4; }
+  84%, 100% { opacity: 0; transform: translateY(4px); }
 }
 
 @keyframes jcpStoryChipHide {
@@ -950,6 +952,23 @@
 .jcp-story-phone.is-paused .jcp-story-outcome__pulse,
 .jcp-story-phone.is-paused .jcp-story-outcome__lead {
   animation-play-state: paused !important;
+}
+
+/* Hard-reset keyframes to t=0 so JS scene windows and CSS beats stay aligned. */
+.jcp-story-phone.is-anim-reset .jcp-story-phone__glow,
+.jcp-story-phone.is-anim-reset .jcp-story-chip,
+.jcp-story-phone.is-anim-reset .jcp-story-hint,
+.jcp-story-phone.is-anim-reset .jcp-story-fab,
+.jcp-story-phone.is-anim-reset .jcp-story-camera__img,
+.jcp-story-phone.is-anim-reset .jcp-story-camera__flash,
+.jcp-story-phone.is-anim-reset .jcp-story-camera__shutter span,
+.jcp-story-phone.is-anim-reset .jcp-story-process__title,
+.jcp-story-phone.is-anim-reset .jcp-story-checkin-card,
+.jcp-story-phone.is-anim-reset .jcp-story-checkin-card__badge,
+.jcp-story-phone.is-anim-reset .jcp-story-channels-list li,
+.jcp-story-phone.is-anim-reset .jcp-story-outcome__pulse,
+.jcp-story-phone.is-anim-reset .jcp-story-outcome__lead {
+  animation: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

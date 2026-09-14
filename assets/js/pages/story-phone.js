@@ -131,6 +131,11 @@
     setActiveScene(root, startScene);
     elapsed = startProgress * LOOP_MS;
     start = performance.now() - elapsed;
+    // Freeze + reset CSS keyframes so the 18s timeline matches JS from t=0
+    // (CSS otherwise starts on paint and can drift ahead of IntersectionObserver).
+    root.classList.add('is-paused', 'is-anim-reset');
+    void root.offsetWidth;
+    root.classList.remove('is-anim-reset');
     if (caption && captions.length) {
       lastCaption = captionIndex(startProgress);
       setCaption(caption, captions[lastCaption] || captions[0]);
