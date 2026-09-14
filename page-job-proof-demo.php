@@ -62,11 +62,11 @@ $photo_fallback = function_exists( 'jcp_job_proof_demo_asset_url' )
 			/>
 		</a>
 		<a
-			class="jpd-brandbar__trial"
+			class="btn btn-primary jpd-brandbar__trial"
 			href="<?php echo esc_url( $trial_href ); ?>"
 			data-jpd-trial
 			data-jpd-source="brandbar"
-		><?php esc_html_e( 'Start Free Trial', 'jcp-core' ); ?></a>
+		><?php esc_html_e( 'Start free trial', 'jcp-core' ); ?></a>
 	</div>
 </header>
 

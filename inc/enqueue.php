@@ -143,7 +143,12 @@ function jcp_core_enqueue_assets(): void {
 
     // /job-proof-demo/: standalone paid proof funnel (not /demo/).
     if ( function_exists( 'jcp_job_proof_demo_is_current' ) && jcp_job_proof_demo_is_current() ) {
-        jcp_core_enqueue_style( 'jcp-core-job-proof-demo', 'css/pages/job-proof-demo.css' );
+        jcp_core_enqueue_style( 'jcp-core-base', 'css/base.css' );
+        jcp_core_enqueue_style( 'jcp-core-layout', 'css/layout.css', [ 'jcp-core-base' ] );
+        jcp_core_enqueue_style( 'jcp-core-buttons', 'css/buttons.css', [ 'jcp-core-layout' ] );
+        jcp_core_enqueue_style( 'jcp-core-components', 'css/components.css', [ 'jcp-core-buttons' ] );
+        jcp_core_enqueue_style( 'jcp-core-story-moments', 'css/components/story-moments.css', [ 'jcp-core-components' ] );
+        jcp_core_enqueue_style( 'jcp-core-job-proof-demo', 'css/pages/job-proof-demo.css', [ 'jcp-core-components', 'jcp-core-story-moments' ] );
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
         jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );
         jcp_core_enqueue_script( 'jcp-core-job-proof-demo', 'js/pages/job-proof-demo.js', [ 'jcp-core-attribution', 'jcp-core-onboarding-handoff' ] );

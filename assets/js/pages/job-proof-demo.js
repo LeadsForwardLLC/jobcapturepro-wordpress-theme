@@ -1,5 +1,5 @@
 /**
- * Job Proof Demo — ungated 3-moment product proof + trial handoff.
+ * Job Proof Demo — ungated morphing product proof + trial handoff.
  * Analytics: single dataLayer emission path only (no posthog.capture).
  */
 (function () {
@@ -42,7 +42,6 @@
         payload[k] = extra[k];
       });
     }
-    // Explicitly never attach PII keys even if present elsewhere.
     delete payload.email;
     delete payload.phone;
     delete payload.first_name;
@@ -68,10 +67,6 @@
     return String(value || '') === def;
   }
 
-  /**
-   * Build trial URL: paid acquisition UTMs overwrite marketing defaults.
-   * Surface attribution stored separately as jcp_surface.
-   */
   function buildTrialUrl(surface) {
     var base =
       (window.JCP_ONBOARDING && window.JCP_ONBOARDING.url) ||
@@ -86,12 +81,10 @@
     var attr = attrPayload();
     var paidKeys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'lp_variant'];
 
-    // Fill missing with website defaults first.
     Object.keys(MARKETING_DEFAULTS).forEach(function (k) {
       if (!u.searchParams.get(k)) u.searchParams.set(k, MARKETING_DEFAULTS[k]);
     });
 
-    // Paid acquisition wins over marketing defaults.
     paidKeys.forEach(function (k) {
       var val = attr[k];
       if (!val) return;
@@ -101,7 +94,6 @@
       }
     });
 
-    // Always stamp lp_variant for this LP if missing.
     if (!u.searchParams.get('lp_variant')) {
       u.searchParams.set('lp_variant', attr.lp_variant || LP_VARIANT);
     }
@@ -110,8 +102,6 @@
       u.searchParams.set('jcp_surface', String(surface));
     }
 
-    // If paid utm_content was applied, keep surface separate (already jcp_surface).
-    // If no paid utm_content, allow surface as utm_content fallback only when still default-ish.
     if (surface && !attr.utm_content) {
       var content = u.searchParams.get('utm_content') || '';
       if (!content || content.indexOf('job_proof_demo') === 0 || content === 'onboarding') {
@@ -144,30 +134,30 @@
     });
   }
 
-  var state = { moment: 1, started: false, checkinReady: false };
+  var state = { moment: 1, started: false, checkinReady: false, checkinTimer: 0 };
 
-  function setProgress(n) {
-    var el = document.getElementById('jpdProofProgress');
-    if (el) el.textContent = 'Moment ' + n + ' of 3';
-  }
-
-  function showMoment(n) {
+  function showMoment(n, opts) {
+    opts = opts || {};
     state.moment = n;
+    var stage = document.querySelector('[data-jpd-stage]');
+    if (stage) stage.setAttribute('data-active-moment', String(n));
+
     document.querySelectorAll('[data-jpd-moment]').forEach(function (el) {
       var id = Number(el.getAttribute('data-jpd-moment'));
       var on = id === n;
       el.hidden = !on;
       el.classList.toggle('is-active', on);
     });
-    setProgress(n);
 
     try {
       history.replaceState({ jpdMoment: n }, '', n === 1 ? '#proof' : '#proof-m' + n);
     } catch (e) {}
 
-    var proof = document.getElementById('proof');
-    if (proof) {
-      proof.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!opts.skipScroll && n > 1) {
+      var top = document.getElementById('proof');
+      if (top) {
+        top.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
 
     if (n === 1) {
@@ -187,15 +177,20 @@
       state.started = true;
       trackProof('proof_demo_started', { source: source || 'cta' });
     }
-    showMoment(1);
+    // One click starts transformation (skip dwelling on finished-job as a second gate).
+    showMoment(2);
   }
 
   function runCheckinSequence() {
     var status = document.getElementById('jpdCheckinStatus');
     var card = document.getElementById('jpdCheckinCard');
-    var next = document.getElementById('jpdRevealOutputs');
-    if (next) next.hidden = true;
     if (card) card.classList.remove('is-ready');
+    state.checkinReady = false;
+
+    if (state.checkinTimer) {
+      window.clearTimeout(state.checkinTimer);
+      state.checkinTimer = 0;
+    }
 
     var lines = [
       'Creating job proof…',
@@ -209,19 +204,18 @@
       i += 1;
       if (i < lines.length) {
         if (status) status.textContent = lines[i];
-        window.setTimeout(tick, 420);
+        state.checkinTimer = window.setTimeout(tick, 380);
         return;
       }
       if (status) status.textContent = 'Check-in ready';
       if (card) card.classList.add('is-ready');
       state.checkinReady = true;
       trackProof('proof_checkin_created');
-      // Auto-advance to final moment — no extra click required for tracking.
-      window.setTimeout(function () {
+      state.checkinTimer = window.setTimeout(function () {
         showMoment(3);
-      }, 500);
+      }, 650);
     }
-    window.setTimeout(tick, 420);
+    state.checkinTimer = window.setTimeout(tick, 380);
   }
 
   function onClick(e) {
@@ -231,12 +225,12 @@
     var start = t.closest('[data-jpd-start]');
     if (start) {
       e.preventDefault();
-      startProof(start.textContent.trim().slice(0, 40));
+      startProof((start.textContent || '').trim().slice(0, 40));
       return;
     }
 
     var next = t.closest('[data-jpd-next]');
-    if (next) {
+    if (next && !t.closest('[data-jpd-start]')) {
       e.preventDefault();
       var n = Number(next.getAttribute('data-jpd-next') || '0');
       if (n === 2 || n === 3) showMoment(n);
@@ -248,7 +242,6 @@
       var source = trial.getAttribute('data-jpd-source') || 'trial';
       trial.setAttribute('href', buildTrialUrl('job_proof_demo_' + source));
       trackProof('proof_trial_cta_clicked', { source: source });
-      // Allow navigation; do not preventDefault.
       return;
     }
 
@@ -268,14 +261,14 @@
     if (n > 1 && !state.started) {
       state.started = true;
     }
-    showMoment(n);
+    showMoment(n, { skipScroll: true });
   }
 
   function init() {
     trackProof('proof_lp_viewed');
+    trackProof('proof_job_viewed');
     decorateTrialLinks();
     decorateExpertLinks();
-    // Re-decorate after attribution capture settles.
     window.setTimeout(decorateTrialLinks, 200);
     window.setTimeout(decorateExpertLinks, 200);
 
@@ -292,11 +285,14 @@
     document.addEventListener('click', onClick, true);
     window.addEventListener('popstate', onPopState);
 
-    if (/#proof/.test(location.hash)) {
-      startProof('hash');
+    if (/#proof-m3/.test(location.hash)) {
+      state.started = true;
+      showMoment(3, { skipScroll: true });
+    } else if (/#proof-m2/.test(location.hash)) {
+      state.started = true;
+      showMoment(2, { skipScroll: true });
     }
 
-    // Expose for QA.
     window.JCPJobProofDemo = {
       buildTrialUrl: buildTrialUrl,
       trackProof: trackProof,
