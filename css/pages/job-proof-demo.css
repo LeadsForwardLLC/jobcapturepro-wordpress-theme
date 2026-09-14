@@ -627,10 +627,6 @@ body.jcp-job-proof-demo {
   }
   .jpd-stage {
     padding-top: 14px;
-    min-height: auto;
-  }
-  .jpd-hero-grid {
-    min-height: auto;
   }
 }
 
