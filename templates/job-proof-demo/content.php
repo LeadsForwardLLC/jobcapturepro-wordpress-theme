@@ -24,19 +24,28 @@ if ( function_exists( 'jcp_case_study_spots_remaining' ) ) {
 	$show_case = jcp_case_study_spots_remaining() > 0;
 }
 
+// Prefer contractor/customer proof over agency intermediaries.
 $reviews = [];
 if ( function_exists( 'jcp_sales_tool_default_reviews' ) ) {
-	$all = jcp_sales_tool_default_reviews();
-	foreach ( $all as $review ) {
+	$prefer = [ 'brian-hardy', 'trent-ellison', 'heriberto-eddie-roman' ];
+	$by_id  = [];
+	foreach ( jcp_sales_tool_default_reviews() as $review ) {
 		if ( ! is_array( $review ) ) {
 			continue;
 		}
 		$id = (string) ( $review['id'] ?? '' );
-		if ( $id === 'peter-bonk' || $id === 'brian-hardy' ) {
-			$reviews[] = $review;
+		if ( $id !== '' ) {
+			$by_id[ $id ] = $review;
 		}
 	}
-	$reviews = array_slice( $reviews, 0, 2 );
+	foreach ( $prefer as $id ) {
+		if ( isset( $by_id[ $id ] ) ) {
+			$reviews[] = $by_id[ $id ];
+		}
+		if ( count( $reviews ) >= 2 ) {
+			break;
+		}
+	}
 }
 
 $service_label = __( 'Water heater replacement', 'jcp-core' );
@@ -52,43 +61,44 @@ $desc_label    = __( 'Installed a high-efficiency water heater, verified venting
 	data-jpd-proof
 >
 	<div class="jpd-shell">
-		<!-- State A: Finished job (above the fold) -->
+		<!-- State A: Finished job (desktop: copy left / card right) -->
 		<div class="jpd-state is-active" data-jpd-moment="1" id="jpdMoment1">
-			<div class="jpd-stage__intro">
-				<p class="jpd-eyebrow"><?php esc_html_e( 'Your best jobs shouldn’t die in the camera roll', 'jcp-core' ); ?></p>
-				<h1 id="jpd-hero-title" class="jpd-stage__title"><?php esc_html_e( 'One finished job should keep working after the crew leaves.', 'jcp-core' ); ?></h1>
-				<p class="jpd-stage__sub"><?php esc_html_e( 'Your crew already creates the proof. Watch JobCapturePro turn one completed job into marketing assets customers can actually find.', 'jcp-core' ); ?></p>
-			</div>
-
-			<article class="jpd-job-card">
-				<div class="jpd-job-card__media">
-					<img
-						src="<?php echo esc_url( $photo_url ); ?>"
-						alt="<?php esc_attr_e( 'Completed water heater replacement job photo', 'jcp-core' ); ?>"
-						width="640"
-						height="420"
-						loading="eager"
-						decoding="async"
-						data-no-lazy
-						data-fallback="<?php echo esc_url( $photo_fallback ); ?>"
-					/>
-					<span class="jpd-job-card__badge"><?php esc_html_e( 'Completed', 'jcp-core' ); ?></span>
+			<div class="jpd-hero-grid">
+				<div class="jpd-hero-grid__copy">
+					<p class="jpd-eyebrow"><?php esc_html_e( 'Your best jobs shouldn’t die in the camera roll', 'jcp-core' ); ?></p>
+					<h1 id="jpd-hero-title" class="jpd-stage__title"><?php esc_html_e( 'One finished job should keep working after the crew leaves.', 'jcp-core' ); ?></h1>
+					<p class="jpd-stage__sub"><?php esc_html_e( 'Your crew already creates the proof. Watch JobCapturePro turn one completed job into marketing assets customers can actually find.', 'jcp-core' ); ?></p>
+					<div class="jpd-stage__actions">
+						<button type="button" class="btn btn-primary" data-jpd-start data-jpd-next="2">
+							<?php esc_html_e( 'Put this job to work →', 'jcp-core' ); ?>
+						</button>
+						<p class="jpd-stage__micro"><?php esc_html_e( 'Free · Takes about 60 seconds · No signup required', 'jcp-core' ); ?></p>
+						<p class="jpd-stage__skip">
+							<a href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="hero_skip"><?php esc_html_e( 'Already get it? Start free trial →', 'jcp-core' ); ?></a>
+						</p>
+					</div>
 				</div>
-				<div class="jpd-job-card__body">
-					<h2 class="jpd-job-card__service"><?php echo esc_html( $service_label ); ?></h2>
-					<p class="jpd-job-card__meta"><?php echo esc_html( $city_label ); ?> · <?php esc_html_e( 'Home services', 'jcp-core' ); ?></p>
-					<p class="jpd-job-card__note"><?php esc_html_e( 'Normally, this is where the marketing stops.', 'jcp-core' ); ?></p>
-				</div>
-			</article>
 
-			<div class="jpd-stage__actions">
-				<button type="button" class="btn btn-primary" data-jpd-start data-jpd-next="2">
-					<?php esc_html_e( 'Put this job to work →', 'jcp-core' ); ?>
-				</button>
-				<p class="jpd-stage__micro"><?php esc_html_e( 'Free · Takes about 60 seconds · No signup required', 'jcp-core' ); ?></p>
-				<p class="jpd-stage__skip">
-					<a href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="hero_skip"><?php esc_html_e( 'Already get it? Start free trial →', 'jcp-core' ); ?></a>
-				</p>
+				<article class="jpd-job-card">
+					<div class="jpd-job-card__media">
+						<img
+							src="<?php echo esc_url( $photo_url ); ?>"
+							alt="<?php esc_attr_e( 'Completed water heater replacement job photo', 'jcp-core' ); ?>"
+							width="640"
+							height="420"
+							loading="eager"
+							decoding="async"
+							data-no-lazy
+							data-fallback="<?php echo esc_url( $photo_fallback ); ?>"
+						/>
+						<span class="jpd-job-card__badge"><?php esc_html_e( 'Completed', 'jcp-core' ); ?></span>
+					</div>
+					<div class="jpd-job-card__body">
+						<h2 class="jpd-job-card__service"><?php echo esc_html( $service_label ); ?></h2>
+						<p class="jpd-job-card__meta"><?php echo esc_html( $city_label ); ?> · <?php esc_html_e( 'Home services', 'jcp-core' ); ?></p>
+						<p class="jpd-job-card__note"><?php esc_html_e( 'Normally, this is where the marketing stops.', 'jcp-core' ); ?></p>
+					</div>
+				</article>
 			</div>
 		</div>
 
@@ -119,15 +129,14 @@ $desc_label    = __( 'Installed a high-efficiency water heater, verified venting
 			</div>
 		</div>
 
-		<!-- State C: Outputs + convert (same state) -->
+		<!-- State C: Outputs + convert (full-width) -->
 		<div class="jpd-state" data-jpd-moment="3" id="jpdMoment3" hidden>
-			<div class="jpd-stage__intro">
+			<div class="jpd-stage__intro jpd-stage__intro--result">
 				<h2 class="jpd-stage__title jpd-stage__title--sm"><?php esc_html_e( 'One job. Now working in more places.', 'jcp-core' ); ?></h2>
-				<p class="jpd-stage__sub"><?php esc_html_e( 'Instead of disappearing into a camera roll, the finished job becomes reusable proof across your marketing.', 'jcp-core' ); ?></p>
 			</div>
 
 			<div class="jpd-outputs" role="list">
-				<article class="jpd-output" role="listitem">
+				<article class="jpd-output jpd-output--primary" role="listitem">
 					<div class="jpd-output__meta">
 						<p class="jpd-output__channel"><?php esc_html_e( 'Website', 'jcp-core' ); ?></p>
 						<p class="jpd-output__status"><?php esc_html_e( 'Ready for your website', 'jcp-core' ); ?></p>
@@ -151,7 +160,7 @@ $desc_label    = __( 'Installed a high-efficiency water heater, verified venting
 					</div>
 				</article>
 
-				<article class="jpd-output" role="listitem">
+				<article class="jpd-output jpd-output--primary" role="listitem">
 					<div class="jpd-output__meta">
 						<p class="jpd-output__channel"><?php esc_html_e( 'Google', 'jcp-core' ); ?></p>
 						<p class="jpd-output__status"><?php esc_html_e( 'Prepared for Google', 'jcp-core' ); ?></p>
@@ -175,7 +184,7 @@ $desc_label    = __( 'Installed a high-efficiency water heater, verified venting
 					</div>
 				</article>
 
-				<article class="jpd-output" role="listitem">
+				<article class="jpd-output jpd-output--primary" role="listitem">
 					<div class="jpd-output__meta">
 						<p class="jpd-output__channel"><?php esc_html_e( 'Social', 'jcp-core' ); ?></p>
 						<p class="jpd-output__status"><?php esc_html_e( 'Social post created', 'jcp-core' ); ?></p>
@@ -197,84 +206,35 @@ $desc_label    = __( 'Installed a high-efficiency water heater, verified venting
 						</div>
 					</div>
 				</article>
-
-				<article class="jpd-output" role="listitem">
-					<div class="jpd-output__meta">
-						<p class="jpd-output__channel"><?php esc_html_e( 'Review', 'jcp-core' ); ?></p>
-						<p class="jpd-output__status"><?php esc_html_e( 'Review opportunity ready', 'jcp-core' ); ?></p>
-					</div>
-					<div class="jpd-review-ask jpd-preview">
-						<div class="jpd-review-ask__qr" aria-hidden="true">
-							<?php if ( $icon( 'qr-code' ) ) : ?>
-								<img src="<?php echo esc_url( $icon( 'qr-code' ) ); ?>" alt="" width="56" height="56" />
-							<?php endif; ?>
-							<span><?php esc_html_e( 'Scan to review', 'jcp-core' ); ?></span>
-						</div>
-						<div class="jpd-review-ask__copy">
-							<p class="jpd-review-ask__title"><?php esc_html_e( 'Ask while the job is fresh', 'jcp-core' ); ?></p>
-							<p class="jpd-review-ask__body"><?php esc_html_e( 'Show the customer a QR or send a link before the truck leaves.', 'jcp-core' ); ?></p>
-						</div>
-					</div>
-				</article>
-
-				<article class="jpd-output jpd-output--wide" role="listitem">
-					<div class="jpd-output__meta">
-						<p class="jpd-output__channel"><?php esc_html_e( 'Local proof', 'jcp-core' ); ?></p>
-						<p class="jpd-output__status"><?php esc_html_e( 'Job proof added', 'jcp-core' ); ?></p>
-					</div>
-					<div class="jcp-sm-directory jpd-preview">
-						<p class="jcp-sm-directory__label"><?php esc_html_e( 'JobCapturePro public proof', 'jcp-core' ); ?></p>
-						<div class="jcp-sm-directory__card" role="article">
-							<div class="jcp-sm-directory__head">
-								<img class="jcp-sm-directory__avatar" src="<?php echo esc_url( $photo_url ); ?>" alt="" width="40" height="40" loading="lazy" decoding="async" />
-								<div>
-									<strong><?php esc_html_e( 'Your business', 'jcp-core' ); ?></strong>
-									<span>
-										<?php if ( $icon( 'map-pin' ) ) : ?>
-											<img src="<?php echo esc_url( $icon( 'map-pin' ) ); ?>" alt="" width="12" height="12" />
-										<?php endif; ?>
-										<?php echo esc_html( $city_label ); ?>
-									</span>
-								</div>
-							</div>
-							<div class="jcp-sm-directory__proof">
-								<img src="<?php echo esc_url( $photo_url ); ?>" alt="" width="80" height="60" loading="lazy" decoding="async" />
-								<div>
-									<strong><?php esc_html_e( 'Latest: Water heater replacement', 'jcp-core' ); ?></strong>
-									<span><?php esc_html_e( 'Added from today’s completed job', 'jcp-core' ); ?></span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</article>
 			</div>
 
-			<div class="jpd-bridge">
-				<h3 class="jpd-bridge__title"><?php esc_html_e( 'Now imagine this happening after every finished job.', 'jcp-core' ); ?></h3>
-				<p class="jpd-bridge__copy"><?php esc_html_e( 'Your crews are already doing the expensive part — completing the work. JobCapturePro helps make that work visible after the truck leaves.', 'jcp-core' ); ?></p>
-				<div class="jpd-compare" aria-label="<?php esc_attr_e( 'Comparison', 'jcp-core' ); ?>">
-					<div>
-						<p class="jpd-compare__label"><?php esc_html_e( 'Without JCP', 'jcp-core' ); ?></p>
-						<ul>
-							<li><?php esc_html_e( 'Jobs happen.', 'jcp-core' ); ?></li>
-							<li><?php esc_html_e( 'Photos pile up.', 'jcp-core' ); ?></li>
-							<li><?php esc_html_e( 'Proof disappears.', 'jcp-core' ); ?></li>
-						</ul>
+			<div class="jpd-outputs-secondary" role="list">
+				<article class="jpd-output-compact" role="listitem">
+					<p class="jpd-output__channel"><?php esc_html_e( 'Review', 'jcp-core' ); ?></p>
+					<div class="jpd-output-compact__row">
+						<?php if ( $icon( 'qr-code' ) ) : ?>
+							<img class="jpd-output-compact__icon" src="<?php echo esc_url( $icon( 'qr-code' ) ); ?>" alt="" width="28" height="28" />
+						<?php endif; ?>
+						<div>
+							<p class="jpd-output-compact__status"><?php esc_html_e( 'Review opportunity ready', 'jcp-core' ); ?></p>
+							<p class="jpd-output-compact__hint"><?php esc_html_e( 'Ask on-site with a QR or link while the job is fresh.', 'jcp-core' ); ?></p>
+						</div>
 					</div>
-					<div>
-						<p class="jpd-compare__label jpd-compare__label--good"><?php esc_html_e( 'With JCP', 'jcp-core' ); ?></p>
-						<ul>
-							<li><?php esc_html_e( 'Jobs happen.', 'jcp-core' ); ?></li>
-							<li><?php esc_html_e( 'Proof gets captured.', 'jcp-core' ); ?></li>
-							<li><?php esc_html_e( 'Marketing keeps getting fresh evidence of the work.', 'jcp-core' ); ?></li>
-						</ul>
+				</article>
+				<article class="jpd-output-compact" role="listitem">
+					<p class="jpd-output__channel"><?php esc_html_e( 'Local proof', 'jcp-core' ); ?></p>
+					<div class="jpd-output-compact__row">
+						<img class="jpd-output-compact__thumb" src="<?php echo esc_url( $photo_url ); ?>" alt="" width="40" height="40" loading="lazy" decoding="async" />
+						<div>
+							<p class="jpd-output-compact__status"><?php esc_html_e( 'Job proof added', 'jcp-core' ); ?></p>
+							<p class="jpd-output-compact__hint"><?php esc_html_e( 'Public JCP check-in for your service area.', 'jcp-core' ); ?></p>
+						</div>
 					</div>
-				</div>
+				</article>
 			</div>
 
 			<div class="jpd-convert" id="jpdConvert">
-				<p class="jpd-eyebrow"><?php esc_html_e( 'Put your next job to work', 'jcp-core' ); ?></p>
-				<h3 class="jpd-convert__title"><?php esc_html_e( 'Ready to do this with your own jobs?', 'jcp-core' ); ?></h3>
+				<p class="jpd-bridge-line"><?php esc_html_e( 'One finished job. Five pieces of proof working after the crew leaves.', 'jcp-core' ); ?></p>
 				<a
 					class="btn btn-primary"
 					href="<?php echo esc_url( $trial_href ); ?>"
@@ -285,13 +245,12 @@ $desc_label    = __( 'Installed a high-efficiency water heater, verified venting
 				<p class="jpd-convert__note"><?php esc_html_e( 'No credit card required.', 'jcp-core' ); ?></p>
 			</div>
 
-			<aside class="jpd-credibility" aria-label="<?php esc_attr_e( 'Built by LeadsForward', 'jcp-core' ); ?>">
-				<p class="jpd-credibility__eyebrow"><?php esc_html_e( 'Built by LeadsForward', 'jcp-core' ); ?></p>
-				<p class="jpd-credibility__copy"><?php esc_html_e( 'A decade helping contractors grow. Then we built the missing piece: turning finished-job proof into marketing customers can find.', 'jcp-core' ); ?></p>
-				<ul class="jpd-credibility__stats">
-					<li><strong>10</strong> <span><?php esc_html_e( 'years helping contractors grow', 'jcp-core' ); ?></span></li>
-					<li><strong>250K+</strong> <span><?php esc_html_e( 'leads generated for contractor clients', 'jcp-core' ); ?></span></li>
-					<li><strong>$150M+</strong> <span><?php esc_html_e( 'revenue booked from those leads', 'jcp-core' ); ?></span></li>
+			<aside class="jpd-trust" aria-label="<?php esc_attr_e( 'Built by LeadsForward', 'jcp-core' ); ?>">
+				<p class="jpd-trust__label"><?php esc_html_e( 'Built by LeadsForward', 'jcp-core' ); ?></p>
+				<ul class="jpd-trust__stats">
+					<li><strong>10</strong> <?php esc_html_e( 'years', 'jcp-core' ); ?></li>
+					<li><strong>250K+</strong> <?php esc_html_e( 'leads', 'jcp-core' ); ?></li>
+					<li><strong>$150M+</strong> <?php esc_html_e( 'booked', 'jcp-core' ); ?></li>
 				</ul>
 			</aside>
 
@@ -302,7 +261,7 @@ $desc_label    = __( 'Installed a high-efficiency water heater, verified venting
 						<blockquote><?php echo esc_html( (string) ( $review['quote'] ?? '' ) ); ?></blockquote>
 						<figcaption>
 							<?php if ( ! empty( $review['avatar'] ) ) : ?>
-								<img src="<?php echo esc_url( (string) $review['avatar'] ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
+								<img src="<?php echo esc_url( (string) $review['avatar'] ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
 							<?php endif; ?>
 							<span>
 								<strong><?php echo esc_html( (string) ( $review['name'] ?? '' ) ); ?></strong>
@@ -316,14 +275,12 @@ $desc_label    = __( 'Installed a high-efficiency water heater, verified venting
 			</div>
 			<?php endif; ?>
 
-			<p class="jpd-convert__secondary">
-				<a href="<?php echo esc_url( $expert_href ); ?>" data-jpd-expert><?php esc_html_e( 'Talk to a JCP expert', 'jcp-core' ); ?></a>
-			</p>
-			<?php if ( $show_case ) : ?>
-			<p class="jpd-convert__tertiary">
-				<a href="<?php echo esc_url( $case_href ); ?>"><?php esc_html_e( 'Or apply for the 90-day case study', 'jcp-core' ); ?></a>
-			</p>
-			<?php endif; ?>
+			<nav class="jpd-secondary-links" aria-label="<?php esc_attr_e( 'Other options', 'jcp-core' ); ?>">
+				<a href="<?php echo esc_url( $expert_href ); ?>" data-jpd-expert><?php esc_html_e( 'Talk to a JCP expert →', 'jcp-core' ); ?></a>
+				<?php if ( $show_case ) : ?>
+					<a class="jpd-secondary-links__tertiary" href="<?php echo esc_url( $case_href ); ?>"><?php esc_html_e( 'Apply for the 90-day case study →', 'jcp-core' ); ?></a>
+				<?php endif; ?>
+			</nav>
 		</div>
 	</div>
 </section>
