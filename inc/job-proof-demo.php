@@ -1,3 +1,4 @@
+<?php
 /**
  * Job Proof Demo paid LP — seed, detection, enqueue helpers.
  *
