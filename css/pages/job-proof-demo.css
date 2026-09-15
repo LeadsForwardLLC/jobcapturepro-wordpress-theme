@@ -2461,11 +2461,13 @@ body.jcp-job-proof-demo .jpd-logo-row li {
   border-radius: 0.55rem;
   background: rgba(255, 255, 255, 0.96);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-height: 2.85rem;
   flex: 1 1 8.5rem;
   max-width: 11rem;
+  text-align: center;
 }
 
 @media (min-width: 720px) {
@@ -2480,13 +2482,16 @@ body.jcp-job-proof-demo .jpd-logo-row img {
   height: 1.15rem;
   width: auto;
   max-width: 100%;
+  margin: 0 auto;
   object-fit: contain;
 }
 
 body.jcp-job-proof-demo .jpd-logo-mark {
   display: inline-flex;
   align-items: baseline;
+  justify-content: center;
   gap: 0.28em;
+  margin: 0 auto;
   white-space: nowrap;
   font-size: 0.92rem;
   font-weight: 700;
