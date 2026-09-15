@@ -1350,28 +1350,52 @@
     });
   }
 
-  function setupTransformReveal() {
-    var root = document.querySelector('[data-jpd-xform]');
+  function setupHeroTheater() {
+    var root = document.querySelector('[data-jpd-theater]');
     if (!root) return;
-    var steps = root.querySelectorAll('[data-xform-step]');
+    var resolve = root.querySelectorAll('[data-resolve]');
+    var previews = root.querySelectorAll('[data-preview]');
     var reduce = false;
     try {
       reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     } catch (e) {}
-    function play() {
-      root.classList.add('is-live');
-      if (reduce) {
-        steps.forEach(function (el) {
-          el.classList.add('is-on');
-        });
-        return;
-      }
-      steps.forEach(function (el, i) {
-        window.setTimeout(function () {
-          el.classList.add('is-on');
-        }, 350 + i * 420);
+
+    function finish() {
+      root.classList.add('is-sourced', 'is-engine', 'is-wired');
+      resolve.forEach(function (el) {
+        el.classList.add('is-on');
+      });
+      previews.forEach(function (el) {
+        el.classList.add('is-on');
       });
     }
+
+    function play() {
+      if (root.getAttribute('data-theater-played') === '1') return;
+      root.setAttribute('data-theater-played', '1');
+      if (reduce) {
+        finish();
+        return;
+      }
+      root.classList.add('is-sourced');
+      window.setTimeout(function () {
+        root.classList.add('is-engine');
+      }, 450);
+      resolve.forEach(function (el, i) {
+        window.setTimeout(function () {
+          el.classList.add('is-on');
+        }, 750 + i * 380);
+      });
+      window.setTimeout(function () {
+        root.classList.add('is-wired');
+      }, 1600);
+      previews.forEach(function (el, i) {
+        window.setTimeout(function () {
+          el.classList.add('is-on');
+        }, 1950 + i * 320);
+      });
+    }
+
     if (!('IntersectionObserver' in window)) {
       play();
       return;
@@ -1386,6 +1410,38 @@
           });
         },
         { threshold: 0.35 }
+      );
+      io.observe(root);
+    } catch (err) {
+      play();
+    }
+  }
+
+  function setupTransformReveal() {
+    var root = document.querySelector('[data-jpd-showcase]');
+    if (!root) return;
+    var reduce = false;
+    try {
+      reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+    function play() {
+      root.classList.add('is-live');
+      if (reduce) return;
+    }
+    if (!('IntersectionObserver' in window)) {
+      play();
+      return;
+    }
+    try {
+      var io = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            play();
+            io.disconnect();
+          });
+        },
+        { threshold: 0.28 }
       );
       io.observe(root);
     } catch (err) {
@@ -1430,6 +1486,7 @@
     observeOptin();
     observeTrackedViews();
     setupFormStarted();
+    setupHeroTheater();
     setupTransformReveal();
 
     var form = document.getElementById('jpdOptinForm');
