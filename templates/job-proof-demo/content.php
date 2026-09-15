@@ -32,7 +32,8 @@ $integrations_uri = trailingslashit( get_template_directory_uri() ) . 'assets/in
 $integrations     = [
 	[
 		'name' => 'Housecall Pro',
-		'logo' => $integrations_uri . 'housecall-pro.svg',
+		'logo' => '',
+		'mark' => 'housecall',
 	],
 	[
 		'name' => 'CompanyCam',
@@ -167,7 +168,11 @@ $rest = array_slice( $rest, 0, 3 );
 			<ul class="jpd-logo-row" aria-label="<?php esc_attr_e( 'Supported integrations', 'jcp-core' ); ?>">
 				<?php foreach ( $integrations as $integration ) : ?>
 					<li>
-						<img src="<?php echo esc_url( $integration['logo'] ); ?>" alt="<?php echo esc_attr( $integration['name'] ); ?>" width="140" height="28" loading="lazy" decoding="async" />
+						<?php if ( ( $integration['mark'] ?? '' ) === 'housecall' ) : ?>
+							<span class="jpd-logo-mark jpd-logo-mark--hcp" aria-label="<?php echo esc_attr( $integration['name'] ); ?>"><em>Housecall</em> Pro</span>
+						<?php else : ?>
+							<img src="<?php echo esc_url( $integration['logo'] ); ?>" alt="<?php echo esc_attr( $integration['name'] ); ?>" width="140" height="28" loading="lazy" decoding="async" />
+						<?php endif; ?>
 					</li>
 				<?php endforeach; ?>
 			</ul>

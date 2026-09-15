@@ -2483,6 +2483,24 @@ body.jcp-job-proof-demo .jpd-logo-row img {
   object-fit: contain;
 }
 
+body.jcp-job-proof-demo .jpd-logo-mark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.28em;
+  white-space: nowrap;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: #0f172a;
+  line-height: 1;
+}
+
+body.jcp-job-proof-demo .jpd-logo-mark--hcp em {
+  font-style: normal;
+  font-weight: 800;
+  color: #ff503e;
+}
+
 /* ---- Workflow ---- */
 body.jcp-job-proof-demo .jpd-workflow {
   background: linear-gradient(180deg, #f8fafc 0%, #fff 50%);
