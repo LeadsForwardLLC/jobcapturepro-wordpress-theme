@@ -2,7 +2,8 @@
 /**
  * Template Name: Job Proof Demo
  * Locked paid-traffic funnel: /job-proof-demo/
- * Ungated product proof → trial. Does not use /demo/.
+ * Teaser (ungated) → email+trade opt-in → personalized demo on same page → trial.
+ * Does not modify /demo/.
  *
  * @package JCP_Core
  */
@@ -11,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$logo_url = 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png';
+$logo_url = get_template_directory_uri() . '/assets/brand/jcp-logo-dark-320.webp';
 if ( function_exists( 'jcp_form_landing_logo_url' ) ) {
 	$maybe = jcp_form_landing_logo_url( [] );
 	if ( is_string( $maybe ) && $maybe !== '' ) {
@@ -42,7 +43,6 @@ $photo_fallback = function_exists( 'jcp_job_proof_demo_asset_url' )
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 	<style id="jpd-hide-chat">
-		/* Early hide for GTM/GHL chat launchers before page CSS loads */
 		#chat-widget-container, #lc_text-widget, .lc_text-widget,
 		[id*="chat-widget"], [class*="chat-widget"],
 		iframe[src*="leadconnector"], iframe[src*="msgsndr"],
@@ -52,26 +52,27 @@ $photo_fallback = function_exists( 'jcp_job_proof_demo_asset_url' )
 	</style>
 	<?php wp_head(); ?>
 </head>
-<body <?php body_class( 'jcp-job-proof-demo jcp-landing-chrome-hidden' ); ?> data-jcp-lp-variant="job_proof_demo">
+<body <?php body_class( 'jcp-job-proof-demo jcp-landing-chrome-hidden jcp-marketing jcp-page-campaign' ); ?> data-jcp-lp-variant="job_proof_demo">
 <?php wp_body_open(); ?>
 
-<a class="jpd-skip" href="#jpd-main"><?php esc_html_e( 'Skip to content', 'jcp-core' ); ?></a>
+<a class="skip-link screen-reader-text" href="#jpd-main"><?php esc_html_e( 'Skip to content', 'jcp-core' ); ?></a>
 
-<header class="jpd-brandbar" role="banner">
-	<div class="jpd-brandbar__inner">
-		<a class="jpd-brandbar__logo-link" href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="<?php esc_attr_e( 'JobCapturePro home', 'jcp-core' ); ?>">
+<header class="jcp-landing-brandbar" role="banner" data-jcp-landing-brandbar>
+	<div class="jcp-landing-brandbar__inner">
+		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="jcp-landing-brandbar__link" aria-label="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>">
 			<img
-				class="jpd-brandbar__logo"
 				src="<?php echo esc_url( $logo_url ); ?>"
 				alt="JobCapturePro"
+				class="jcp-landing-brandbar__logo"
 				width="160"
 				height="36"
 				decoding="async"
+				fetchpriority="high"
 				data-no-lazy
 			/>
 		</a>
 		<a
-			class="btn btn-primary jpd-brandbar__trial"
+			class="btn btn-primary"
 			href="<?php echo esc_url( $trial_href ); ?>"
 			data-jpd-trial
 			data-jpd-source="brandbar"
@@ -79,20 +80,20 @@ $photo_fallback = function_exists( 'jcp_job_proof_demo_asset_url' )
 	</div>
 </header>
 
-<main id="jpd-main" class="jpd">
+<main id="jpd-main" class="jcp-marketing jcp-niche jcp-page-marketing jcp-page-campaign">
 	<?php
 	require get_template_directory() . '/templates/job-proof-demo/content.php';
 	?>
 </main>
 
-<footer class="jpd-footer" role="contentinfo">
-	<div class="jpd-footer__inner">
-		<p class="jpd-footer__links">
+<footer class="jcp-footer jcp-footer--landing-minimal" role="contentinfo">
+	<div class="jcp-container">
+		<p class="jcp-footer__links">
 			<a href="<?php echo esc_url( home_url( '/privacy-policy/' ) ); ?>"><?php esc_html_e( 'Privacy', 'jcp-core' ); ?></a>
 			<span aria-hidden="true">·</span>
 			<a href="<?php echo esc_url( home_url( '/terms/' ) ); ?>"><?php esc_html_e( 'Terms', 'jcp-core' ); ?></a>
 		</p>
-		<p class="jpd-footer__copy">&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> JobCapturePro</p>
+		<p class="jcp-footer__copy">&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> JobCapturePro</p>
 	</div>
 </footer>
 
