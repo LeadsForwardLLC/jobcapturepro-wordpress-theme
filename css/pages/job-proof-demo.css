@@ -2532,13 +2532,14 @@ body.jcp-job-proof-demo .jpd-workflow__head .jpd-punch {
 body.jcp-job-proof-demo .jpd-workflow__stage {
   display: grid;
   gap: 1.25rem;
-  align-items: stretch;
+  align-items: start;
 }
 
 @media (min-width: 960px) {
   body.jcp-job-proof-demo .jpd-workflow__stage {
     grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.15fr);
     gap: 1.5rem;
+    align-items: center;
   }
 }
 
@@ -2575,8 +2576,9 @@ body.jcp-job-proof-demo .jpd-workflow__integrations {
 .jpd-compare {
   display: grid;
   gap: 0.65rem;
-  align-content: stretch;
-  height: 100%;
+  align-items: start;
+  align-content: start;
+  height: auto;
 }
 
 @media (min-width: 640px) {
@@ -2609,32 +2611,37 @@ body.jcp-job-proof-demo .jpd-workflow__integrations {
 
 .jpd-compare__side {
   margin: 0;
-  padding: 1.25rem 1.2rem;
-  border: 1px solid var(--jpd-line);
+  padding: 1.1rem 1.05rem;
   border-radius: 1rem;
-  background: #f1f5f9;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: auto;
+}
+
+.jpd-compare__side--without {
+  background: transparent;
+  border: 1px dashed rgba(100, 116, 139, 0.35);
+  box-shadow: none;
 }
 
 .jpd-compare__side--with {
-  border-color: rgba(255, 80, 62, 0.45);
+  border: 1px solid rgba(255, 80, 62, 0.45);
   background: #fff;
   box-shadow: 0 12px 32px rgba(255, 80, 62, 0.1);
 }
 
 .jpd-compare__label {
-  margin: 0 0 0.85rem;
-  font-size: 0.72rem;
-  font-weight: 800;
+  margin: 0 0 0.75rem;
+  font-size: 0.7rem;
+  font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .jpd-compare__side--with .jpd-compare__label {
   color: var(--jpd-orange);
+  font-weight: 800;
 }
 
 .jpd-compare ol {
@@ -2642,7 +2649,7 @@ body.jcp-job-proof-demo .jpd-workflow__integrations {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.7rem;
+  gap: 0.65rem;
   flex: 1;
   align-content: start;
 }
@@ -2650,9 +2657,14 @@ body.jcp-job-proof-demo .jpd-workflow__integrations {
 .jpd-compare li {
   position: relative;
   padding-left: 1.05rem;
-  font-size: 0.98rem;
-  font-weight: 650;
+  font-size: 0.95rem;
+  font-weight: 500;
   line-height: 1.35;
+  color: #94a3b8;
+}
+
+.jpd-compare__side--with li {
+  font-weight: 650;
   color: var(--jpd-navy);
 }
 
@@ -2661,10 +2673,10 @@ body.jcp-job-proof-demo .jpd-workflow__integrations {
   position: absolute;
   left: 0;
   top: 0.45em;
-  width: 0.4rem;
-  height: 0.4rem;
+  width: 0.35rem;
+  height: 0.35rem;
   border-radius: 999px;
-  background: #94a3b8;
+  background: #cbd5e1;
 }
 
 .jpd-compare__side--with li::before {
@@ -2672,8 +2684,8 @@ body.jcp-job-proof-demo .jpd-workflow__integrations {
 }
 
 .jpd-compare li.is-dead {
-  color: #94a3b8;
-  font-weight: 600;
+  color: #cbd5e1;
+  font-weight: 500;
 }
 
 .jpd-compare li.is-live {
@@ -2697,9 +2709,10 @@ body.jcp-job-proof-demo .jpd-workflow__integrations {
 }
 
 .jpd-transform__head .jcp-section-headline {
-  max-width: 18ch;
+  max-width: 22rem;
   margin-left: auto;
   margin-right: auto;
+  line-height: 1.2;
 }
 
 .jpd-transform__head p {
@@ -2918,6 +2931,26 @@ body.jcp-job-proof-demo .jpd-workflow__integrations {
   font-size: 0.88rem;
 }
 
+.jpd-channel__brand {
+  margin: 0 0 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--jpd-navy);
+}
+
+.jpd-channel__dir-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-bottom: 0.15rem;
+}
+
+.jpd-channel__dir-head .card-name {
+  margin: 0;
+  font-size: 1rem;
+}
+
 .jpd-channel__body--review {
   display: flex;
   align-items: center;
@@ -3016,8 +3049,9 @@ body.jcp-job-proof-demo .jpd-section-cta__trial {
 }
 
 .jpd-convert__copy .jcp-section-headline {
-  max-width: 16ch;
-  font-size: clamp(1.75rem, 3vw, 2.45rem);
+  max-width: 18rem;
+  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  line-height: 1.2;
 }
 
 .jpd-convert__copy > p {
@@ -3118,29 +3152,17 @@ body.jcp-job-proof-demo .jpd-trust {
   background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
 }
 
-body.jcp-job-proof-demo .jpd-trust__grid {
+body.jcp-job-proof-demo .jpd-trust__band {
   display: grid;
-  gap: 2rem;
+  gap: 1.5rem;
+  margin-bottom: 2.25rem;
+  align-items: center;
 }
 
-@media (min-width: 1000px) {
-  body.jcp-job-proof-demo .jpd-trust__grid {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.95fr);
+@media (min-width: 900px) {
+  body.jcp-job-proof-demo .jpd-trust__band {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
     gap: 2.5rem;
-    align-items: start;
-  }
-}
-
-body.jcp-job-proof-demo .jpd-trust__story {
-  display: grid;
-  gap: 1.25rem;
-}
-
-@media (min-width: 720px) {
-  body.jcp-job-proof-demo .jpd-trust__story {
-    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-    gap: 1.5rem;
-    align-items: center;
   }
 }
 
@@ -3161,9 +3183,9 @@ body.jcp-job-proof-demo .jpd-trust__media > img:first-child {
 
 body.jcp-job-proof-demo .jpd-trust__media-proof {
   position: absolute;
-  right: 0.75rem;
-  bottom: 0.75rem;
-  width: min(42%, 9.5rem);
+  right: 0.85rem;
+  bottom: 0.85rem;
+  width: min(38%, 10rem);
   aspect-ratio: 4 / 3;
   object-fit: cover;
   border-radius: 0.65rem;
@@ -3172,26 +3194,27 @@ body.jcp-job-proof-demo .jpd-trust__media-proof {
 }
 
 body.jcp-job-proof-demo .jpd-trust__copy .jcp-section-headline {
-  max-width: 18ch;
-  font-size: clamp(1.55rem, 2.6vw, 2.15rem);
+  max-width: 20rem;
+  font-size: clamp(1.65rem, 2.8vw, 2.25rem);
+  line-height: 1.2;
 }
 
 body.jcp-job-proof-demo .jpd-trust__copy p {
-  margin: 0.6rem 0 0;
-  max-width: 34rem;
-  line-height: 1.5;
+  margin: 0.7rem 0 0;
+  max-width: 36rem;
+  line-height: 1.55;
   color: #64748b;
 }
 
 body.jcp-job-proof-demo .jpd-trust__mini-stats {
-  margin-top: 0.85rem !important;
+  margin-top: 0.95rem !important;
   font-size: 0.95rem;
   font-weight: 650;
   color: var(--jpd-navy) !important;
 }
 
 body.jcp-job-proof-demo .jpd-trust__case {
-  margin-top: 0.85rem !important;
+  margin-top: 0.95rem !important;
 }
 
 body.jcp-job-proof-demo .jpd-trust__case a {
@@ -3202,11 +3225,17 @@ body.jcp-job-proof-demo .jpd-trust__case a {
   text-underline-offset: 0.15em;
 }
 
+body.jcp-job-proof-demo .jpd-trust__reviews {
+  padding-top: 0.25rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
 body.jcp-job-proof-demo .jpd-trust__reviews-title {
-  margin: 0 0 0.85rem;
-  font-size: 1.05rem;
+  margin: 0 0 1rem;
+  font-size: clamp(1.15rem, 2vw, 1.4rem);
   font-weight: 800;
   color: var(--jpd-navy);
+  line-height: 1.25;
 }
 
 @media (max-width: 719px) {
@@ -3216,12 +3245,19 @@ body.jcp-job-proof-demo .jpd-trust__reviews-title {
   }
 
   body.jcp-job-proof-demo .jpd-trust__media-proof {
-    width: min(46%, 8.25rem);
+    width: min(42%, 8.5rem);
   }
 
   body.jcp-job-proof-demo .jpd-section-cta {
     flex-direction: column;
   }
+}
+
+body.jcp-job-proof-demo .jcp-section-headline {
+  line-height: 1.2;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: manual;
 }
 
 body.jcp-job-proof-demo .jpd-trust__mini-stats {
