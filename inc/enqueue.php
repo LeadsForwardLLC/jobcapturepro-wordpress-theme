@@ -72,6 +72,14 @@ function jcp_core_enqueue_assets(): void {
         );
         wp_localize_script(
             'jcp-core-job-proof-demo',
+            'JCP_JPD',
+            [
+                'campaignBase' => trailingslashit( get_template_directory_uri() ) . 'assets/campaign/',
+                'lpVariant'    => 'job_proof_demo',
+            ]
+        );
+        wp_localize_script(
+            'jcp-core-job-proof-demo',
             'JCP_DEMO_SURVEY',
             [
                 'rest_url'        => rest_url( 'jcp/v1/demo-survey-submit' ),

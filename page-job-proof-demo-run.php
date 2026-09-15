@@ -92,6 +92,7 @@ if ( function_exists( 'jcp_case_study_spots_remaining' ) ) {
 	data-jpd-case-active="<?php echo $case_active ? '1' : '0'; ?>"
 	data-jpd-case-url="<?php echo esc_attr( $case_href ); ?>"
 	data-jpd-lp-url="<?php echo esc_attr( $lp_href ); ?>"
+	data-jpd-campaign-base="<?php echo esc_attr( trailingslashit( get_template_directory_uri() ) . 'assets/campaign/' ); ?>"
 >
 <?php wp_body_open(); ?>
 

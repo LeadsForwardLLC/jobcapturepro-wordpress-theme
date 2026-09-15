@@ -16,20 +16,133 @@
   var HERO_DONE_KEY = 'jcp_jpd_hero_done';
 
   var TRADE_JOBS = {
-    plumbing: { label: 'plumbing', title: 'Water heater replacement', city: 'Austin, TX' },
-    hvac: { label: 'HVAC', title: 'AC system replacement', city: 'Austin, TX' },
-    electrical: { label: 'electrical', title: 'Electrical panel upgrade', city: 'Austin, TX' },
-    roofing: { label: 'roofing', title: 'Asphalt shingle roof replacement', city: 'Austin, TX' },
-    remodeling: { label: 'remodeling', title: 'Kitchen remodel', city: 'Austin, TX' },
-    painting: { label: 'painting', title: 'Exterior home painting', city: 'Austin, TX' },
-    landscaping: { label: 'landscaping', title: 'Landscape installation', city: 'Austin, TX' },
-    outdoor: { label: 'outdoor', title: 'Landscape installation', city: 'Austin, TX' },
-    'garage-door': { label: 'garage door', title: 'Garage door replacement', city: 'Austin, TX' },
-    'pest-control': { label: 'pest control', title: 'Treatment/service job', city: 'Austin, TX' },
-    'tree-service': { label: 'tree service', title: 'Tree removal', city: 'Austin, TX' },
-    cleaning: { label: 'power washing', title: 'Driveway cleaning', city: 'Austin, TX' },
-    default: { label: 'service', title: 'Completed service job', city: 'Austin, TX' },
+    plumbing: {
+      label: 'Plumbing',
+      title: 'Water heater replacement',
+      city: 'Austin, TX',
+      photo: 'campaign:jcp-campaign-job-proof-640.webp',
+      fallback: 'campaign:jcp-campaign-job-proof.jpg',
+      desc: 'Completed water heater replacement with geotagged job proof from the site.',
+    },
+    hvac: {
+      label: 'HVAC',
+      title: 'AC system replacement',
+      city: 'Austin, TX',
+      photo: 'campaign:jcp-campaign-hvac-capture-640.webp',
+      fallback: 'campaign:jcp-campaign-hvac-capture.jpg',
+      desc: 'New outdoor unit set, lineset connected, and system commissioned for cooling.',
+    },
+    electrical: {
+      label: 'Electrical',
+      title: 'Electrical panel upgrade',
+      city: 'Austin, TX',
+      photo: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&h=600&fit=crop&q=75',
+      fallback: '',
+      desc: 'New breaker layout, labeled circuits, and safety check completed.',
+    },
+    roofing: {
+      label: 'Roofing',
+      title: 'Roof replacement',
+      city: 'Austin, TX',
+      photo: 'https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=800&h=600&fit=crop&q=75',
+      fallback: '',
+      desc: 'Tear-off complete, new underlayment and shingles installed, flashing sealed.',
+    },
+    remodeling: {
+      label: 'Remodeling',
+      title: 'Kitchen remodel',
+      city: 'Austin, TX',
+      photo: 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop&q=75',
+      fallback: '',
+      desc: 'Kitchen remodel finished with clean installs and job-site proof.',
+    },
+    painting: {
+      label: 'Painting',
+      title: 'Exterior home painting',
+      city: 'Austin, TX',
+      photo: 'https://images.unsplash.com/photo-1562259929-b4e1fd3aef09?w=800&h=600&fit=crop&q=75',
+      fallback: '',
+      desc: 'Exterior paint job completed with crisp lines and a clean site.',
+    },
+    landscaping: {
+      label: 'Landscaping',
+      title: 'Landscape installation',
+      city: 'Austin, TX',
+      photo: 'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800&h=600&fit=crop&q=75',
+      fallback: '',
+      desc: 'Landscape installation completed and documented on site.',
+    },
+    outdoor: {
+      label: 'Outdoor',
+      title: 'Landscape installation',
+      city: 'Austin, TX',
+      photo: 'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800&h=600&fit=crop&q=75',
+      fallback: '',
+      desc: 'Outdoor project completed with clear job-site proof.',
+    },
+    'garage-door': {
+      label: 'Garage door',
+      title: 'Garage door replacement',
+      city: 'Austin, TX',
+      photo: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop&q=75',
+      fallback: '',
+      desc: 'Garage door replacement installed and tested.',
+    },
+    'pest-control': {
+      label: 'Pest control',
+      title: 'Treatment / service job',
+      city: 'Austin, TX',
+      photo: 'campaign:jcp-campaign-crew-review-640.webp',
+      fallback: 'campaign:jcp-campaign-crew-review.jpg',
+      desc: 'Service completed and documented for the property.',
+    },
+    'tree-service': {
+      label: 'Tree service',
+      title: 'Tree removal',
+      city: 'Austin, TX',
+      photo: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800&h=600&fit=crop&q=75',
+      fallback: '',
+      desc: 'Tree work completed with a clean property and job proof.',
+    },
+    cleaning: {
+      label: 'Cleaning',
+      title: 'Driveway cleaning',
+      city: 'Austin, TX',
+      photo: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop&q=75',
+      fallback: '',
+      desc: 'Cleaning service finished with clear before/after proof.',
+    },
+    default: {
+      label: 'Home service',
+      title: 'Completed service job',
+      city: 'Austin, TX',
+      photo: 'campaign:jcp-campaign-job-proof-640.webp',
+      fallback: 'campaign:jcp-campaign-job-proof.jpg',
+      desc: 'Completed service job with geotagged proof from the site.',
+    },
   };
+
+  function campaignAsset(name) {
+    var base =
+      (window.JCP_JPD && window.JCP_JPD.campaignBase) ||
+      (document.body && document.body.getAttribute('data-jpd-campaign-base')) ||
+      '';
+    if (!base) {
+      try {
+        base = location.origin + '/wp-content/themes/jobcapturepro-core/assets/campaign/';
+      } catch (e) {
+        base = '/wp-content/themes/jobcapturepro-core/assets/campaign/';
+      }
+    }
+    return String(base).replace(/\/?$/, '/') + String(name || '').replace(/^campaign:/, '');
+  }
+
+  function resolvePhoto(ref) {
+    var s = String(ref || '');
+    if (!s) return '';
+    if (s.indexOf('campaign:') === 0) return campaignAsset(s.slice(9));
+    return s;
+  }
 
   var state = {
     heroDone: false,
@@ -296,22 +409,45 @@
   function applyJobPersona(nicheRaw, label) {
     var key = normalizeNiche(nicheRaw || label);
     var job = TRADE_JOBS[key] || TRADE_JOBS.default;
-    var tradeWord = label || job.label || key;
+    var tradeWord = job.label || 'Home service';
+    state.niche = key;
     state.nicheLabel = tradeWord;
+
+    var photo = resolvePhoto(job.photo);
+    var fallback = resolvePhoto(job.fallback);
+
     document.querySelectorAll('[data-jpd-job-title]').forEach(function (el) {
       el.textContent = job.title;
     });
     document.querySelectorAll('[data-jpd-job-city]').forEach(function (el) {
       el.textContent = job.city;
     });
+    document.querySelectorAll('[data-jpd-job-photo]').forEach(function (el) {
+      if (!photo) return;
+      el.setAttribute('src', photo);
+      if (fallback) el.setAttribute('data-fallback', fallback);
+      else el.removeAttribute('data-fallback');
+    });
+    document.querySelectorAll('[data-jpd-trade-label]').forEach(function (el) {
+      el.textContent = tradeWord;
+    });
+    document.querySelectorAll('[data-jpd-job-desc]').forEach(function (el) {
+      el.textContent = job.desc || '';
+    });
+
     var heading = document.querySelector('[data-jpd-full-heading]');
     if (heading) {
-      heading.textContent = 'Here’s what one ' + String(tradeWord).toLowerCase() + ' job can become.';
+      heading.textContent = 'Here’s what one ' + tradeWord + ' job can become.';
     }
     var gbp = document.querySelector('[data-jpd-gbp-headline]');
-    if (gbp) gbp.textContent = 'Just finished another ' + job.title.toLowerCase() + ' in Austin';
+    if (gbp) {
+      gbp.textContent = 'Just finished another ' + job.title.toLowerCase() + ' in Austin';
+    }
     var social = document.querySelector('[data-jpd-social-copy]');
-    if (social) social.textContent = 'Another job wrapped. ' + job.title + ' done right — proof from the field.';
+    if (social) {
+      social.textContent =
+        'Another job wrapped. ' + job.title + ' done right — proof from the field.';
+    }
     var dir = document.querySelector('[data-jpd-directory-latest]');
     if (dir) dir.textContent = job.title;
   }
@@ -456,7 +592,7 @@
     clearTimer();
     state.engaged = true;
     state.animating = true;
-    track('proof_hero_sample_started', { section: 'hero', source: 'hero_sample_job' });
+    track('DemoCTA', { section: 'hero', source: 'hero_sample_job', cta_source: 'hero_sample_job' });
 
     var canvas = document.querySelector('[data-jpd-canvas]');
     var idle = document.querySelector('[data-jpd-canvas-idle]');
@@ -549,7 +685,7 @@
       try {
         sessionStorage.setItem(HERO_DONE_KEY, '1');
       } catch (e) {}
-      track('proof_hero_transform_completed', { section: 'hero', source: 'hero_canvas' });
+      track('HeroTransformCompleted', { section: 'hero', source: 'hero_canvas', cta_source: 'hero_canvas' });
     }
 
     steps.forEach(function (s) {
@@ -567,7 +703,7 @@
   }
 
   function pushDemoFormViewed() {
-    track('form_viewed', { section: 'optin', source: 'optin' });
+    track('DemoFormViewed', { section: 'optin', source: 'optin', cta_source: 'optin' });
   }
 
   /* ---- Opt-in / GHL ---- */
@@ -652,12 +788,12 @@
     var tradeLabel = getBusinessTypeLabel(prefix);
     var errId = isExit ? 'jpdExitOptinError' : 'jpdOptinError';
     var btnId = isExit ? 'jpdExitOptinSubmit' : 'jpdOptinSubmit';
-    var defaultBtn = isExit ? 'Send my demo →' : 'See my personalized demo →';
+    var defaultBtn = isExit ? 'Send me my demo →' : 'Show me my demo →';
 
     showOptinError('', errId);
     if (!validEmail(email)) {
       showOptinError('Enter a valid work email.', errId);
-      track('form_submit_failed', { section: 'optin', source: source, reason: 'invalid_email' });
+      track('DemoFormFailed', { section: 'optin', source: source, reason: 'invalid_email', cta_source: source });
       if (emailEl) {
         emailEl.classList.add('is-error');
         emailEl.focus();
@@ -666,7 +802,7 @@
     }
     if (!String(trade || '').trim()) {
       showOptinError('Select or enter your trade.', errId);
-      track('form_submit_failed', { section: 'optin', source: source, reason: 'missing_trade' });
+      track('DemoFormFailed', { section: 'optin', source: source, reason: 'missing_trade', cta_source: source });
       if (nicheSearch) {
         nicheSearch.classList.add('is-error');
         nicheSearch.focus();
@@ -674,7 +810,7 @@
       return Promise.resolve(false);
     }
 
-    track('form_submit_attempted', { section: 'optin', source: source, trade: trade });
+    track('DemoFormAttempted', { section: 'optin', source: source, trade: trade, cta_source: source });
 
     var btn = document.getElementById(btnId);
     if (btn) {
@@ -733,7 +869,7 @@
             btn.disabled = false;
             btn.textContent = defaultBtn;
           }
-          track('form_submit_failed', { section: 'optin', source: source, trade: trade, crm_saved: false });
+          track('DemoFormFailed', { section: 'optin', source: source, trade: trade, crm_saved: false, cta_source: source });
           // Soft-continue still lands on personalized demo; CRM may retry server-side.
           return false;
         }
@@ -741,9 +877,9 @@
         persistOptIn(email, trade, tradeLabel);
         state.contactSaved = true;
         pushDemoOptInDataLayer(trade);
-        track('form_submit_succeeded', { section: 'optin', source: source, trade: trade, crm_saved: true });
+        track('DemoFormSubmitted', { section: 'optin', source: source, trade: trade, crm_saved: true, cta_source: source });
         if (isExit) {
-          track('proof_exit_intent_submitted', { section: 'exit', source: 'exit', trade: trade });
+          track('ExitIntentSubmitted', { section: 'exit', source: 'exit', trade: trade, cta_source: 'exit' });
         }
         if (btn) {
           btn.disabled = false;
@@ -756,7 +892,7 @@
       .catch(function () {
         if (attempt < 2) return submitOptIn(attempt + 1, source);
         showOptinError('Network error. Please try again.', errId);
-        track('form_submit_failed', { section: 'optin', source: source, reason: 'network' });
+        track('DemoFormFailed', { section: 'optin', source: source, reason: 'network', cta_source: source });
         if (btn) {
           btn.disabled = false;
           btn.textContent = defaultBtn;
@@ -791,7 +927,7 @@
   function runPersonalizedSequence() {
     clearTimer();
     state.animating = true;
-    track('proof_demo_started', { section: 'demo_run', source: 'demo_run' });
+    track('PersonalizedDemoStarted', { section: 'demo_run', source: 'demo_run', cta_source: 'demo_run' });
     postDemoEvent('demo_run_started');
 
     var status = document.getElementById('jpdFullStatus');
@@ -801,7 +937,7 @@
     if (results) results.hidden = true;
     if (progress) progress.hidden = false;
 
-    var stepKeys = ['photo', 'checkin', 'ai', 'context', 'publish'];
+    var stepKeys = ['photo', 'checkin', 'context', 'publish'];
     function markRunStep(name) {
       document.querySelectorAll('[data-run-step]').forEach(function (el) {
         var key = el.getAttribute('data-run-step');
@@ -811,13 +947,12 @@
     }
 
     var lines = [
-      { t: 0, text: 'Photo received…', step: 'photo' },
-      { t: 1200, text: 'Creating your check-in…', step: 'checkin' },
-      { t: 2600, text: 'Writing AI description…', step: 'ai' },
-      { t: 4000, text: 'Attaching service + location context…', step: 'context' },
-      { t: 5400, text: 'Publishing across connected channels…', step: 'publish' },
+      { t: 0, text: 'Completed job received…', step: 'photo' },
+      { t: 900, text: 'Creating your check-in…', step: 'checkin' },
+      { t: 2200, text: 'Adding service + location context…', step: 'context' },
+      { t: 3600, text: 'Publishing across connected channels…', step: 'publish' },
       {
-        t: 7000,
+        t: 5200,
         text: '',
         fn: function () {
           if (progress) {
@@ -831,8 +966,7 @@
           try {
             sessionStorage.setItem(DEMO_DONE_KEY, '1');
           } catch (eDone) {}
-          track('proof_demo_completed', { section: 'demo_run', source: 'demo_run' });
-          track('proof_outputs_viewed', { section: 'results', source: 'demo_run' });
+          track('DemoResultsViewed', { section: 'results', source: 'demo_run', cta_source: 'demo_run' });
           postDemoEvent('demo_publish_completed');
           if (results) results.scrollIntoView({ behavior: 'smooth', block: 'start' });
         },
@@ -920,8 +1054,7 @@
     applyJobPersona(state.niche, state.nicheLabel);
     decorateTrialLinks();
 
-    track('proof_demo_viewed', { section: 'demo_run', source: 'demo_run' });
-    track('proof_job_viewed', { section: 'demo_run', source: 'demo_run' });
+    track('PersonalizedDemoViewed', { section: 'demo_run', source: 'demo_run', cta_source: 'demo_run' });
     postDemoViewed();
 
     var done = false;
@@ -1002,7 +1135,7 @@
       var source = trial.getAttribute('data-jpd-source') || 'trial';
       trial.setAttribute('href', buildTrialUrl('job_proof_demo_' + source));
       state.trialClicked = true;
-      track('proof_trial_cta_clicked', { section: 'trial', source: source });
+      track('TrialCTAClicked', { section: 'trial', source: source, cta_source: source });
       if (state.optedIn) {
         postDemoEvent('demo_converted', { cta: 'start_free_trial', source: source });
       }
@@ -1010,18 +1143,18 @@
     }
 
     if (t.closest('[data-jpd-expert]')) {
-      track('proof_expert_cta_clicked', { section: 'expert', source: 'expert' });
+      track('ExpertCTAClicked', { section: 'expert', source: 'expert', cta_source: 'expert' });
     }
 
     if (t.closest('[data-jpd-exit-dismiss]')) {
-      track('proof_exit_intent_dismissed', { section: 'exit', source: 'dismiss' });
+      track('ExitIntentDismissed', { section: 'exit', source: 'dismiss', cta_source: 'dismiss' });
       closeExit(true);
       return;
     }
 
     var caseCta = t.closest('#jpdExitCaseCta');
     if (caseCta) {
-      track('proof_case_study_exit_clicked', { section: 'exit', source: 'exit_case' });
+      track('CaseStudyExitClicked', { section: 'exit', source: 'exit_case', cta_source: 'exit_case' });
       try {
         sessionStorage.setItem(EXIT_DISMISS_KEY, '1');
       } catch (eCase) {}
@@ -1070,30 +1203,20 @@
     if (active && /^(INPUT|TEXTAREA|SELECT)$/i.test(active.tagName)) return true;
     if (isRunPage) {
       if (!state.demoCompleted) return true;
-      if (state.trialClicked || !caseStudyActive()) return true;
+      if (state.trialClicked) return true;
       return false;
     }
-    // LP: opted-in + demo incomplete → resume; otherwise opt-in capture.
-    if (state.optedIn || hasOptInSession()) {
-      try {
-        if (sessionStorage.getItem(DEMO_DONE_KEY) === '1') return true;
-      } catch (eDone) {}
-      return false;
-    }
+    // LP: after opt-in, no exit lead popup.
+    if (state.optedIn || hasOptInSession()) return true;
     return false;
   }
 
   function resolveExitMode() {
     if (isRunPage) {
-      if (state.demoCompleted && !state.trialClicked && caseStudyActive()) return 'case';
+      if (state.demoCompleted && !state.trialClicked) return 'case';
       return '';
     }
-    if (state.optedIn || hasOptInSession()) {
-      try {
-        if (sessionStorage.getItem(DEMO_DONE_KEY) !== '1') return 'resume';
-      } catch (e) {}
-      return '';
-    }
+    if (state.optedIn || hasOptInSession()) return '';
     return 'optin';
   }
 
@@ -1131,7 +1254,7 @@
     root.classList.add('is-open');
     root.setAttribute('aria-hidden', 'false');
     document.body.classList.add('jcp-case-exit-open');
-    track('proof_exit_intent_viewed', { mode: mode, section: 'exit', source: source || 'mouseleave' });
+    track('ExitIntentViewed', { mode: mode, section: 'exit', source: source || 'mouseleave', cta_source: source || 'mouseleave' });
     return true;
   }
 
@@ -1217,7 +1340,7 @@
     function markStarted() {
       if (fired) return;
       fired = true;
-      track('form_started', { section: 'optin', source: 'optin' });
+      track('DemoFormStarted', { section: 'optin', source: 'optin', cta_source: 'optin' });
     }
     ['jpd-email', 'jpd-nicheSearch', 'jpd-exit-email', 'jpd-exit-nicheSearch'].forEach(function (id) {
       var el = document.getElementById(id);
@@ -1258,7 +1381,7 @@
   }
 
   function initLp() {
-    track('proof_lp_viewed', { section: 'lp', source: 'lp' });
+    track('PaidLandingView', { section: 'lp', source: 'lp', cta_source: 'lp' });
     setupCombobox('jpd');
     setupCombobox('jpd-exit');
     observeOptin();
