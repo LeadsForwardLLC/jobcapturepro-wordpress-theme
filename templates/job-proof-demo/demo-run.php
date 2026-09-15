@@ -169,14 +169,11 @@ $default_city    = __( 'Austin, TX', 'jcp-core' );
 	</div>
 </section>
 
-<!-- Gate: returning visitor without opt-in session -->
+<!-- Direct-visit fallback: never show a second email/trade gate. JS redirects to LP. -->
 <section class="jcp-section rankings-section jpd-run-gate" id="jpdRunGate" data-jpd-run-gate hidden>
 	<div class="jcp-container">
-		<div class="jpd-optin__card survey-step active">
-			<h2 class="survey-title"><?php esc_html_e( 'Start your personalized demo', 'jcp-core' ); ?></h2>
-			<p class="survey-subtitle"><?php esc_html_e( 'Enter your work email and trade to continue.', 'jcp-core' ); ?></p>
-			<p><a class="btn btn-primary" href="<?php echo esc_url( $lp_href ); ?>#jpd-optin"><?php esc_html_e( 'Go to the demo form →', 'jcp-core' ); ?></a></p>
-		</div>
+		<p class="rankings-subtitle"><?php esc_html_e( 'Taking you to the demo form…', 'jcp-core' ); ?></p>
+		<p><a class="btn btn-primary" href="<?php echo esc_url( $lp_href ); ?>#jpd-optin"><?php esc_html_e( 'Continue to the personalized demo form →', 'jcp-core' ); ?></a></p>
 	</div>
 </section>
 

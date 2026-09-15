@@ -412,7 +412,17 @@
   function demoRunUrl() {
     var fromBody = document.body.getAttribute('data-jpd-demo-run-url');
     var fromCfg = window.JCP_DEMO_SURVEY && window.JCP_DEMO_SURVEY.demo_run_url;
-    return fromBody || fromCfg || '/job-proof-demo/demo/';
+    var raw = fromBody || fromCfg || '/job-proof-demo/demo/';
+    try {
+      var u = new URL(raw, location.origin);
+      // Keep same host as the LP so sessionStorage survives the handoff
+      // (Local/WP home_url can be localhost while the visitor uses *.local).
+      u.protocol = location.protocol;
+      u.host = location.host;
+      return u.pathname.replace(/\/?$/, '/') + u.search + u.hash;
+    } catch (e) {
+      return '/job-proof-demo/demo/';
+    }
   }
 
   /* ---- Hero canvas transformation (LP) ---- */
@@ -559,6 +569,15 @@
     state.optedIn = true;
     try {
       sessionStorage.setItem(OPTIN_SESSION_KEY, '1');
+      sessionStorage.setItem(
+        'jcp_jpd_demo_state',
+        JSON.stringify({
+          niche: trade,
+          nicheLabel: state.nicheLabel,
+          optedIn: true,
+          at: Date.now(),
+        })
+      );
     } catch (e) {}
     try {
       localStorage.setItem(
@@ -570,19 +589,30 @@
           businessName: '',
           goals: [],
           nicheLabel: state.nicheLabel,
+          source: 'job_proof_demo',
         })
       );
     } catch (e2) {}
   }
 
   function goToPersonalizedDemo() {
+    // Persist synchronously before navigation — one gate only.
+    try {
+      sessionStorage.setItem(OPTIN_SESSION_KEY, '1');
+    } catch (e) {}
     var url = demoRunUrl();
     try {
       var u = new URL(url, location.origin);
       if (state.niche) u.searchParams.set('niche', state.niche);
+      // Carry non-PII attribution into the child route.
+      var attr = attrPayload();
+      ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'lp_variant'].forEach(function (k) {
+        if (attr[k] && !u.searchParams.get(k)) u.searchParams.set(k, String(attr[k]));
+      });
+      if (!u.searchParams.get('lp_variant')) u.searchParams.set('lp_variant', LP_VARIANT);
       url = u.toString();
-    } catch (e) {}
-    window.location.href = url;
+    } catch (err) {}
+    window.location.replace(url);
   }
 
   function submitOptIn(attempt, source) {
@@ -674,12 +704,7 @@
             btn.disabled = false;
             btn.textContent = defaultBtn;
           }
-          // Soft continue without Meta Lead.
-          persistOptIn(email, trade, tradeLabel);
-          state.contactSaved = false;
           track('DemoFormSubmitted', { trade: trade, crm_saved: false, cta_source: source });
-          if (isExit) closeExit(true);
-          goToPersonalizedDemo();
           return false;
         }
 
@@ -796,12 +821,41 @@
     }
   }
 
+  function loadDemoState() {
+    try {
+      return JSON.parse(sessionStorage.getItem('jcp_jpd_demo_state') || 'null');
+    } catch (e) {
+      return null;
+    }
+  }
+
   function hasOptInSession() {
     try {
       if (sessionStorage.getItem(OPTIN_SESSION_KEY) === '1') return true;
     } catch (e) {}
+    var demoState = loadDemoState();
+    if (demoState && demoState.optedIn && demoState.niche) return true;
     var user = loadDemoUser();
-    return !!(user && user.email && user.niche);
+    return !!(user && user.email && user.niche && user.source === 'job_proof_demo');
+  }
+
+  function redirectToLpOptIn() {
+    var raw = document.body.getAttribute('data-jpd-lp-url') || '/job-proof-demo/';
+    try {
+      var u = new URL(raw, location.origin);
+      u.protocol = location.protocol;
+      u.host = location.host;
+      u.hash = 'jpd-optin';
+      var cur = new URLSearchParams(location.search);
+      ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'lp_variant'].forEach(function (k) {
+        var v = cur.get(k);
+        if (v && !u.searchParams.get(k)) u.searchParams.set(k, v);
+      });
+      if (!u.searchParams.get('lp_variant')) u.searchParams.set('lp_variant', LP_VARIANT);
+      window.location.replace(u.pathname.replace(/\/?$/, '/') + u.search + u.hash);
+    } catch (e) {
+      window.location.replace('/job-proof-demo/#jpd-optin');
+    }
   }
 
   function startRunOrGate() {
@@ -812,16 +866,22 @@
     if (!hasOptInSession()) {
       if (hero) hero.hidden = true;
       if (results) results.hidden = true;
-      if (gate) gate.hidden = false;
+      if (gate) gate.hidden = true;
+      redirectToLpOptIn();
       return;
     }
 
     if (gate) gate.hidden = true;
     var user = loadDemoUser() || {};
+    var demoState = loadDemoState() || {};
     state.optedIn = true;
     state.email = user.email || state.email;
-    state.niche = user.niche || state.niche || (new URLSearchParams(location.search).get('niche') || '');
-    state.nicheLabel = user.nicheLabel || state.niche;
+    state.niche =
+      user.niche ||
+      demoState.niche ||
+      state.niche ||
+      (new URLSearchParams(location.search).get('niche') || '');
+    state.nicheLabel = user.nicheLabel || demoState.nicheLabel || state.niche;
     applyJobPersona(state.niche, state.nicheLabel);
     decorateTrialLinks();
 

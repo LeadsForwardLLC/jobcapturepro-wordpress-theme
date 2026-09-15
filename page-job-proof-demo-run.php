@@ -55,6 +55,35 @@ if ( function_exists( 'jcp_case_study_spots_remaining' ) ) {
 			display: none !important; visibility: hidden !important; pointer-events: none !important;
 		}
 	</style>
+	<script>
+	/* Early ungated redirect — one email+trade gate on the LP only. */
+	(function () {
+		try {
+			var opted = sessionStorage.getItem('jcp_jpd_opted_in') === '1';
+			if (!opted) {
+				var st = JSON.parse(sessionStorage.getItem('jcp_jpd_demo_state') || 'null');
+				opted = !!(st && st.optedIn && st.niche);
+			}
+			if (!opted) {
+				var u = JSON.parse(localStorage.getItem('demoUser') || 'null');
+				opted = !!(u && u.email && u.niche && u.source === 'job_proof_demo');
+			}
+			if (!opted) {
+				var lp = <?php echo wp_json_encode( $lp_href ); ?>;
+				var target = new URL(lp || '/job-proof-demo/', window.location.origin);
+				target.protocol = window.location.protocol;
+				target.host = window.location.host;
+				target.hash = 'jpd-optin';
+				var cur = new URLSearchParams(window.location.search);
+				['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','lp_variant'].forEach(function (k) {
+					var v = cur.get(k);
+					if (v && !target.searchParams.get(k)) target.searchParams.set(k, v);
+				});
+				window.location.replace(target.pathname.replace(/\/?$/, '/') + target.search + target.hash);
+			}
+		} catch (e) {}
+	})();
+	</script>
 	<?php wp_head(); ?>
 </head>
 <body

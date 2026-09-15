@@ -6,6 +6,9 @@
  * - /job-proof-demo/       → product-led landing (page-job-proof-demo.php)
  * - /job-proof-demo/demo/  → personalized demo run (page-job-proof-demo-run.php)
  *
+ * IMPORTANT: child slug is also "demo", same as organic /demo/. WordPress can
+ * resolve the hierarchical URL to the top-level demo page — we force the child.
+ *
  * @package JCP_Core
  */
 
@@ -16,12 +19,106 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'JCP_JOB_PROOF_DEMO_SLUG', 'job-proof-demo' );
 define( 'JCP_JOB_PROOF_DEMO_RUN_SLUG', 'demo' );
 define( 'JCP_JOB_PROOF_DEMO_VARIANT', 'job_proof_demo' );
-define( 'JCP_JOB_PROOF_DEMO_SEED_VERSION', '3' );
+define( 'JCP_JOB_PROOF_DEMO_SEED_VERSION', '4' );
+
+/**
+ * Request path without leading/trailing slashes.
+ */
+function jcp_job_proof_demo_request_path(): string {
+	return trim( (string) parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH ), '/' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+}
+
+/**
+ * Whether the raw request path is the paid personalized-demo child route.
+ */
+function jcp_job_proof_demo_is_run_path(): bool {
+	return jcp_job_proof_demo_request_path() === JCP_JOB_PROOF_DEMO_SLUG . '/' . JCP_JOB_PROOF_DEMO_RUN_SLUG;
+}
+
+/**
+ * Whether the raw request path is the paid LP (exact).
+ */
+function jcp_job_proof_demo_is_lp_path(): bool {
+	return jcp_job_proof_demo_request_path() === JCP_JOB_PROOF_DEMO_SLUG;
+}
+
+/**
+ * Published child page for /job-proof-demo/demo/, if any.
+ */
+function jcp_job_proof_demo_get_run_page(): ?WP_Post {
+	$child = get_page_by_path( JCP_JOB_PROOF_DEMO_SLUG . '/' . JCP_JOB_PROOF_DEMO_RUN_SLUG );
+	if ( $child instanceof WP_Post && $child->post_status === 'publish' ) {
+		return $child;
+	}
+	return null;
+}
+
+/**
+ * Force hierarchical child page when slug "demo" collides with organic /demo/.
+ *
+ * @param array<string, mixed> $query_vars Query vars.
+ * @return array<string, mixed>
+ */
+function jcp_job_proof_demo_force_child_query( array $query_vars ): array {
+	if ( ! jcp_job_proof_demo_is_run_path() ) {
+		return $query_vars;
+	}
+	$child = jcp_job_proof_demo_get_run_page();
+	if ( ! $child ) {
+		return $query_vars;
+	}
+	$query_vars['page_id'] = (int) $child->ID;
+	unset( $query_vars['pagename'], $query_vars['name'], $query_vars['attachment'], $query_vars['error'] );
+	return $query_vars;
+}
+add_filter( 'request', 'jcp_job_proof_demo_force_child_query', 1 );
+
+/**
+ * Never canonical-redirect the paid child onto organic /demo/.
+ *
+ * @param string|false $redirect_url  Redirect target.
+ * @param string       $requested_url Requested URL.
+ * @return string|false
+ */
+function jcp_job_proof_demo_preserve_child_canonical( $redirect_url, $requested_url ) {
+	$path = trim( (string) parse_url( (string) $requested_url, PHP_URL_PATH ), '/' );
+	if ( $path === JCP_JOB_PROOF_DEMO_SLUG . '/' . JCP_JOB_PROOF_DEMO_RUN_SLUG ) {
+		return false;
+	}
+	if ( is_string( $redirect_url ) && $redirect_url !== '' ) {
+		$dest = trim( (string) parse_url( $redirect_url, PHP_URL_PATH ), '/' );
+		if ( $path === JCP_JOB_PROOF_DEMO_SLUG . '/' . JCP_JOB_PROOF_DEMO_RUN_SLUG && $dest === 'demo' ) {
+			return false;
+		}
+	}
+	return $redirect_url;
+}
+add_filter( 'redirect_canonical', 'jcp_job_proof_demo_preserve_child_canonical', 5, 2 );
+
+/**
+ * Hard-load run template if path matches even when query object is wrong.
+ *
+ * @param string $template Template path.
+ */
+function jcp_job_proof_demo_force_run_template( string $template ): string {
+	if ( ! jcp_job_proof_demo_is_run_path() ) {
+		return $template;
+	}
+	$custom = trailingslashit( get_template_directory() ) . 'page-job-proof-demo-run.php';
+	return is_readable( $custom ) ? $custom : $template;
+}
+add_filter( 'template_include', 'jcp_job_proof_demo_force_run_template', 99 );
 
 /**
  * Whether the current request is the job-proof-demo landing page (not the child demo).
  */
 function jcp_job_proof_demo_is_current(): bool {
+	if ( jcp_job_proof_demo_is_run_path() ) {
+		return false;
+	}
+	if ( jcp_job_proof_demo_is_lp_path() ) {
+		return true;
+	}
 	if ( ! is_singular( 'page' ) ) {
 		return false;
 	}
@@ -40,6 +137,9 @@ function jcp_job_proof_demo_is_current(): bool {
  * Whether the current request is /job-proof-demo/demo/.
  */
 function jcp_job_proof_demo_run_is_current(): bool {
+	if ( jcp_job_proof_demo_is_run_path() ) {
+		return true;
+	}
 	if ( ! is_singular( 'page' ) ) {
 		return false;
 	}
@@ -142,6 +242,9 @@ function jcp_job_proof_demo_maybe_seed(): void {
 		}
 	}
 
+	if ( $ver !== JCP_JOB_PROOF_DEMO_SEED_VERSION ) {
+		flush_rewrite_rules( false );
+	}
 	update_option( 'jcp_job_proof_demo_seed_version', JCP_JOB_PROOF_DEMO_SEED_VERSION, false );
 }
 add_action( 'init', 'jcp_job_proof_demo_maybe_seed', 26 );

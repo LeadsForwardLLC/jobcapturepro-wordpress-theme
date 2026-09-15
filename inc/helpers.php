@@ -152,6 +152,9 @@ function jcp_core_demo_run_query_args(): array {
  * @return bool
  */
 function jcp_core_is_demo_run_request(): bool {
+    if ( function_exists( 'jcp_job_proof_demo_run_is_current' ) && jcp_job_proof_demo_run_is_current() ) {
+        return false;
+    }
     if ( ! isset( $_GET['mode'] ) || $_GET['mode'] !== 'run' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         return false;
     }
@@ -168,6 +171,9 @@ function jcp_core_is_demo_run_request(): bool {
  * @return bool
  */
 function jcp_core_is_demo_survey_request(): bool {
+    if ( function_exists( 'jcp_job_proof_demo_run_is_current' ) && jcp_job_proof_demo_run_is_current() ) {
+        return false;
+    }
     if ( isset( $_GET['mode'] ) && $_GET['mode'] === 'run' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         return false;
     }
@@ -194,7 +200,7 @@ function jcp_core_get_page_detection(): array {
         'is_demo'         => ( ! function_exists( 'jcp_job_proof_demo_run_is_current' ) || ! jcp_job_proof_demo_run_is_current() )
             && (
                 is_page_template( 'page-demo.php' )
-                || is_page( 'demo' )
+                || ( is_page( 'demo' ) && ( ! function_exists( 'jcp_job_proof_demo_is_run_path' ) || ! jcp_job_proof_demo_is_run_path() ) )
                 || $path === 'demo'
                 || get_query_var( 'jcp_route', '' ) === 'demo'
             ),
