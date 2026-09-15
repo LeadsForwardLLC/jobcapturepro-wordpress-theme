@@ -30,12 +30,22 @@
     teaserDone: false,
     optedIn: false,
     contactSaved: false,
+    demoCompleted: false,
+    trialClicked: false,
+    animating: false,
+    engaged: false,
     email: '',
     niche: '',
     nicheLabel: '',
     timer: 0,
     sessionId: '',
+    startedAt: Date.now(),
   };
+
+  var EXIT_SHOWN_KEY = 'jcp_jpd_exit_shown';
+  var EXIT_DISMISS_KEY = 'jcp_jpd_exit_dismissed';
+  var OPTIN_SESSION_KEY = 'jcp_jpd_opted_in';
+  var DEMO_DONE_KEY = 'jcp_jpd_demo_done';
 
   function attrPayload() {
     try {
@@ -318,16 +328,17 @@
     }
   }
 
-  function getBusinessTypeValue() {
-    var niche = (document.getElementById('jpd-niche') || {}).value || '';
-    var other = (document.getElementById('jpd-nicheOther') || {}).value || '';
+  function getBusinessTypeValue(prefix) {
+    prefix = prefix || 'jpd';
+    var niche = (document.getElementById(prefix + '-niche') || {}).value || '';
+    var other = (document.getElementById(prefix + '-nicheOther') || {}).value || '';
     if (niche && niche !== 'other') return niche;
     if (other) return other;
-    return (document.getElementById('jpd-nicheSearch') || {}).value || '';
+    return (document.getElementById(prefix + '-nicheSearch') || {}).value || '';
   }
 
-  function getBusinessTypeLabel() {
-    var val = getBusinessTypeValue();
+  function getBusinessTypeLabel(prefix) {
+    var val = getBusinessTypeValue(prefix);
     for (var i = 0; i < nicheOptions.length; i++) {
       if (String(nicheOptions[i].value) === String(val) || String(nicheOptions[i].label) === String(val)) {
         return nicheOptions[i].label;
@@ -336,9 +347,10 @@
     return val;
   }
 
-  function closeNicheList() {
-    var list = document.getElementById('jpd-nicheListbox');
-    var input = document.getElementById('jpd-nicheSearch');
+  function closeNicheList(prefix) {
+    prefix = prefix || 'jpd';
+    var list = document.getElementById(prefix + '-nicheListbox');
+    var input = document.getElementById(prefix + '-nicheSearch');
     if (list) list.hidden = true;
     if (input) {
       input.setAttribute('aria-expanded', 'false');
@@ -347,9 +359,10 @@
     nicheActive = -1;
   }
 
-  function openNicheList(query) {
-    var list = document.getElementById('jpd-nicheListbox');
-    var input = document.getElementById('jpd-nicheSearch');
+  function openNicheList(query, prefix) {
+    prefix = prefix || 'jpd';
+    var list = document.getElementById(prefix + '-nicheListbox');
+    var input = document.getElementById(prefix + '-nicheSearch');
     if (!list || !input) return;
     var q = String(query || '').toLowerCase().trim();
     var matches = nicheOptions.filter(function (opt) {
@@ -360,12 +373,12 @@
     matches.forEach(function (opt, idx) {
       var li = document.createElement('li');
       li.className = 'survey-combobox__option';
-      li.id = 'jpd-niche-opt-' + idx;
+      li.id = prefix + '-niche-opt-' + idx;
       li.setAttribute('role', 'option');
       li.textContent = opt.label;
       li.addEventListener('mousedown', function (e) {
         e.preventDefault();
-        selectNiche(opt);
+        selectNiche(opt, prefix);
       });
       list.appendChild(li);
     });
@@ -374,33 +387,37 @@
     nicheActive = -1;
   }
 
-  function selectNiche(opt) {
-    var input = document.getElementById('jpd-nicheSearch');
-    var niche = document.getElementById('jpd-niche');
-    var other = document.getElementById('jpd-nicheOther');
+  function selectNiche(opt, prefix) {
+    prefix = prefix || 'jpd';
+    var input = document.getElementById(prefix + '-nicheSearch');
+    var niche = document.getElementById(prefix + '-niche');
+    var other = document.getElementById(prefix + '-nicheOther');
     if (input) input.value = opt.label;
     if (niche) niche.value = opt.value || '';
     if (other) other.value = '';
-    closeNicheList();
+    closeNicheList(prefix);
   }
 
-  function setupCombobox() {
+  function setupCombobox(prefix) {
+    prefix = prefix || 'jpd';
     loadNicheOptions();
-    var input = document.getElementById('jpd-nicheSearch');
+    var input = document.getElementById(prefix + '-nicheSearch');
     if (!input) return;
     input.addEventListener('input', function () {
       input.classList.remove('is-error');
-      var niche = document.getElementById('jpd-niche');
-      var other = document.getElementById('jpd-nicheOther');
+      var niche = document.getElementById(prefix + '-niche');
+      var other = document.getElementById(prefix + '-nicheOther');
       if (niche) niche.value = '';
       if (other) other.value = input.value.trim();
-      openNicheList(input.value);
+      openNicheList(input.value, prefix);
     });
     input.addEventListener('focus', function () {
-      openNicheList(input.value);
+      openNicheList(input.value, prefix);
     });
     input.addEventListener('blur', function () {
-      window.setTimeout(closeNicheList, 150);
+      window.setTimeout(function () {
+        closeNicheList(prefix);
+      }, 150);
     });
   }
 
@@ -414,6 +431,8 @@
 
   function runTeaser() {
     clearTimer();
+    state.engaged = true;
+    state.animating = true;
     trackProof('proof_demo_started', { source: 'teaser' });
     trackProof('proof_job_viewed');
 
@@ -478,6 +497,7 @@
 
   function finishTeaser() {
     state.teaserDone = true;
+    state.animating = false;
     var status = document.getElementById('jpdTeaserStatus');
     if (status) status.textContent = 'One finished job is ready to work across your presence.';
     revealOptin();
@@ -498,28 +518,22 @@
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim());
   }
 
-  function showOptinError(msg) {
-    var el = document.getElementById('jpdOptinError');
-    if (!el) return;
-    if (!msg) {
-      el.hidden = true;
-      el.textContent = '';
-      return;
-    }
-    el.hidden = false;
-    el.textContent = msg;
-  }
-
-  function submitOptIn(attempt) {
+  function submitOptIn(attempt, source) {
     attempt = attempt || 1;
-    var emailEl = document.getElementById('jpd-email');
-    var nicheSearch = document.getElementById('jpd-nicheSearch');
+    source = source || 'inline';
+    var isExit = source === 'exit';
+    var prefix = isExit ? 'jpd-exit' : 'jpd';
+    var emailEl = document.getElementById(prefix + '-email');
+    var nicheSearch = document.getElementById(prefix + '-nicheSearch');
     var email = emailEl ? emailEl.value.trim() : '';
-    var trade = getBusinessTypeValue();
+    var trade = getBusinessTypeValue(prefix);
+    var errId = isExit ? 'jpdExitOptinError' : 'jpdOptinError';
+    var btnId = isExit ? 'jpdExitOptinSubmit' : 'jpdOptinSubmit';
+    var defaultBtn = isExit ? 'Send me my personalized demo →' : 'Personalize my demo →';
 
-    showOptinError('');
+    showOptinError('', errId);
     if (!validEmail(email)) {
-      showOptinError('Enter a valid work email.');
+      showOptinError('Enter a valid work email.', errId);
       if (emailEl) {
         emailEl.classList.add('is-error');
         emailEl.focus();
@@ -527,7 +541,7 @@
       return Promise.resolve(false);
     }
     if (!String(trade || '').trim()) {
-      showOptinError('Select or enter your trade.');
+      showOptinError('Select or enter your trade.', errId);
       if (nicheSearch) {
         nicheSearch.classList.add('is-error');
         nicheSearch.focus();
@@ -535,7 +549,7 @@
       return Promise.resolve(false);
     }
 
-    var btn = document.getElementById('jpdOptinSubmit');
+    var btn = document.getElementById(btnId);
     if (btn) {
       btn.disabled = true;
       btn.textContent = 'Personalizing…';
@@ -559,7 +573,7 @@
       utm_source: attr.utm_source || '',
       utm_medium: attr.utm_medium || '',
       utm_campaign: attr.utm_campaign || '',
-      utm_content: attr.utm_content || '',
+      utm_content: attr.utm_content || (isExit ? 'exit_intent_optin' : ''),
       utm_term: attr.utm_term || '',
       fbclid: attr.fbclid || '',
       referrer: attr.referrer || document.referrer || '',
@@ -580,22 +594,30 @@
       .then(function (result) {
         if (!result.ok) {
           if (attempt < 2) {
-            return submitOptIn(attempt + 1);
+            return submitOptIn(attempt + 1, source);
           }
           showOptinError(
             (result.json && result.json.message) ||
-              'We couldn’t save your info right now. You can still continue the demo, or try again.'
+              'We couldn’t save your info right now. You can still continue the demo, or try again.',
+            errId
           );
           if (btn) {
             btn.disabled = false;
-            btn.textContent = 'Personalize my demo →';
+            btn.textContent = defaultBtn;
           }
           // Allow continue without claiming CRM success / without Meta Lead.
           state.email = email;
           state.niche = trade;
           state.contactSaved = false;
           state.optedIn = true;
-          trackProof('proof_optin_submitted', { trade: trade, crm_saved: false });
+          try {
+            sessionStorage.setItem(OPTIN_SESSION_KEY, '1');
+          } catch (eFail) {}
+          trackProof('proof_optin_submitted', { trade: trade, crm_saved: false, source: source });
+          if (isExit) {
+            trackProof('proof_exit_intent_submitted', { crm_saved: false });
+            closeExit(true);
+          }
           startFullDemo(false);
           return false;
         }
@@ -604,8 +626,14 @@
         state.niche = trade;
         state.contactSaved = true;
         state.optedIn = true;
+        try {
+          sessionStorage.setItem(OPTIN_SESSION_KEY, '1');
+        } catch (e0) {}
         pushDemoOptInDataLayer(trade);
-        trackProof('proof_optin_submitted', { trade: trade, crm_saved: true });
+        trackProof('proof_optin_submitted', { trade: trade, crm_saved: true, source: source });
+        if (isExit) {
+          trackProof('proof_exit_intent_submitted', { crm_saved: true });
+        }
 
         try {
           localStorage.setItem(
@@ -622,31 +650,54 @@
 
         if (btn) {
           btn.disabled = false;
-          btn.textContent = 'Personalize my demo →';
+          btn.textContent = defaultBtn;
         }
+        if (isExit) closeExit(true);
         startFullDemo(true);
         return true;
       })
       .catch(function () {
-        if (attempt < 2) return submitOptIn(attempt + 1);
-        showOptinError('Network error. You can still continue the demo.');
+        if (attempt < 2) return submitOptIn(attempt + 1, source);
+        showOptinError('Network error. You can still continue the demo.', errId);
         if (btn) {
           btn.disabled = false;
-          btn.textContent = 'Personalize my demo →';
+          btn.textContent = defaultBtn;
         }
         state.email = email;
         state.niche = trade;
         state.contactSaved = false;
         state.optedIn = true;
-        trackProof('proof_optin_submitted', { trade: trade, crm_saved: false });
+        try {
+          sessionStorage.setItem(OPTIN_SESSION_KEY, '1');
+        } catch (eNet) {}
+        trackProof('proof_optin_submitted', { trade: trade, crm_saved: false, source: source });
+        if (isExit) {
+          trackProof('proof_exit_intent_submitted', { crm_saved: false });
+          closeExit(true);
+        }
         startFullDemo(false);
         return false;
       });
   }
 
+  function showOptinError(msg, errId) {
+    var el = document.getElementById(errId || 'jpdOptinError');
+    if (!el) return;
+    if (!msg) {
+      el.hidden = true;
+      el.textContent = '';
+      return;
+    }
+    el.hidden = false;
+    el.textContent = msg;
+  }
+
   function startFullDemo(crmOk) {
-    applyJobPersona(state.niche, getBusinessTypeLabel());
+    var tradeLabel = getBusinessTypeLabel('jpd') || getBusinessTypeLabel('jpd-exit') || state.nicheLabel || state.niche;
+    state.nicheLabel = tradeLabel;
+    applyJobPersona(state.niche, tradeLabel);
     decorateTrialLinks();
+    state.animating = true;
 
     var full = document.querySelector('[data-jpd-full]');
     var optin = document.querySelector('[data-jpd-optin]');
@@ -710,6 +761,11 @@
         fn: function () {
           if (progress) progress.hidden = true;
           if (results) results.hidden = false;
+          state.animating = false;
+          state.demoCompleted = true;
+          try {
+            sessionStorage.setItem(DEMO_DONE_KEY, '1');
+          } catch (eDone) {}
           trackProof('proof_outputs_viewed');
           trackProof('proof_demo_completed');
           postDemoEvent('demo_publish_completed');
@@ -778,6 +834,7 @@
     if (trial) {
       var source = trial.getAttribute('data-jpd-source') || 'trial';
       trial.setAttribute('href', buildTrialUrl('job_proof_demo_' + source));
+      state.trialClicked = true;
       trackProof('proof_trial_cta_clicked', { source: source });
       if (state.optedIn) {
         postDemoEvent('demo_converted', { cta: 'start_free_trial', source: source });
@@ -788,13 +845,225 @@
     if (t.closest('[data-jpd-expert]')) {
       trackProof('proof_expert_cta_clicked');
     }
+
+    if (t.closest('[data-jpd-exit-dismiss]')) {
+      closeExit(true);
+      return;
+    }
+
+    var caseCta = t.closest('#jpdExitCaseCta');
+    if (caseCta) {
+      trackProof('proof_case_study_exit_clicked');
+      try {
+        sessionStorage.setItem(EXIT_DISMISS_KEY, '1');
+      } catch (eCase) {}
+    }
+  }
+
+  /* ---- Exit intent (desktop only, state-aware) ---- */
+  function isDesktopExit() {
+    return window.matchMedia && window.matchMedia('(min-width: 1024px)').matches;
+  }
+
+  function alreadyKey(key) {
+    try {
+      return Boolean(sessionStorage.getItem(key));
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function onceKey(key) {
+    try {
+      if (sessionStorage.getItem(key)) return false;
+      sessionStorage.setItem(key, '1');
+      return true;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  function caseStudyActive() {
+    return document.body.getAttribute('data-jpd-case-active') === '1';
+  }
+
+  function meaningfulEngagement() {
+    if (state.engaged || state.teaserDone) return true;
+    return Date.now() - state.startedAt >= 20000;
+  }
+
+  function exitBlocked() {
+    if (!isDesktopExit()) return true;
+    if (alreadyKey(EXIT_DISMISS_KEY) || alreadyKey(EXIT_SHOWN_KEY)) return true;
+    if (state.trialClicked) return true;
+    if (state.animating) return true;
+    if (!meaningfulEngagement()) return true;
+    var active = document.activeElement;
+    if (active && /^(INPUT|TEXTAREA|SELECT)$/i.test(active.tagName)) return true;
+    // State B: opted in but demo not finished — let GHL recover, no modal.
+    if (state.optedIn && !state.demoCompleted) return true;
+    // State C only if case study still active.
+    if (state.optedIn && state.demoCompleted && !caseStudyActive()) return true;
+    return false;
+  }
+
+  function resolveExitMode() {
+    if (!state.optedIn) return 'optin';
+    if (state.optedIn && state.demoCompleted && !state.trialClicked && caseStudyActive()) return 'case';
+    return '';
+  }
+
+  function closeExit(dismissed) {
+    var root = document.getElementById('jpdExitRoot');
+    if (!root) return;
+    root.classList.remove('is-open');
+    root.hidden = true;
+    root.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('jcp-case-exit-open');
+    if (dismissed) {
+      try {
+        sessionStorage.setItem(EXIT_DISMISS_KEY, '1');
+      } catch (e) {}
+    }
+  }
+
+  function openExit(source) {
+    if (exitBlocked()) return false;
+    var mode = resolveExitMode();
+    if (!mode) return false;
+    if (!onceKey(EXIT_SHOWN_KEY)) return false;
+
+    var root = document.getElementById('jpdExitRoot');
+    if (!root) return false;
+    root.querySelectorAll('[data-jpd-exit-panel]').forEach(function (panel) {
+      panel.hidden = panel.getAttribute('data-jpd-exit-panel') !== mode;
+    });
+    if (mode === 'case') {
+      var caseUrl = document.body.getAttribute('data-jpd-case-url') || '/case-study/';
+      var caseCta = document.getElementById('jpdExitCaseCta');
+      if (caseCta) caseCta.setAttribute('href', caseUrl);
+    }
+    root.hidden = false;
+    root.classList.add('is-open');
+    root.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('jcp-case-exit-open');
+    trackProof('proof_exit_intent_viewed', { mode: mode, source: source || 'mouseleave' });
+    return true;
+  }
+
+  function setupExitIntent() {
+    var armed = false;
+    window.setTimeout(function () {
+      armed = true;
+    }, 8000);
+
+    document.addEventListener('mouseout', function (e) {
+      if (!armed || exitBlocked()) return;
+      if (e.relatedTarget || e.toElement) return;
+      if (typeof e.clientY === 'number' && e.clientY > 12) return;
+      openExit('mouseleave');
+    });
+
+    document.addEventListener(
+      'keydown',
+      function (e) {
+        if (e.key === 'Escape') closeExit(true);
+      },
+      true
+    );
+
+    var exitForm = document.getElementById('jpdExitOptinForm');
+    if (exitForm) {
+      exitForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        submitOptIn(1, 'exit');
+      });
+    }
+  }
+
+  /* ---- Resume opted-in visitors in same browser session ---- */
+  function tryResumeSession() {
+    var opted = false;
+    try {
+      opted = sessionStorage.getItem(OPTIN_SESSION_KEY) === '1' || sessionStorage.getItem(DEMO_DONE_KEY) === '1';
+    } catch (e) {}
+
+    var demoUser = null;
+    try {
+      demoUser = JSON.parse(localStorage.getItem('demoUser') || 'null');
+    } catch (e2) {
+      demoUser = null;
+    }
+
+    if (!opted && !(demoUser && demoUser.email && demoUser.niche)) return false;
+    // Only resume when this session already opted in on this funnel (avoid cross-page demoUser hijack).
+    try {
+      if (sessionStorage.getItem(OPTIN_SESSION_KEY) !== '1' && sessionStorage.getItem(DEMO_DONE_KEY) !== '1') {
+        return false;
+      }
+    } catch (e3) {
+      return false;
+    }
+
+    state.optedIn = true;
+    state.email = (demoUser && demoUser.email) || state.email;
+    state.niche = (demoUser && demoUser.niche) || state.niche;
+    state.engaged = true;
+    state.teaserDone = true;
+
+    var done = false;
+    try {
+      done = sessionStorage.getItem(DEMO_DONE_KEY) === '1';
+    } catch (e4) {}
+
+    if (done) {
+      state.demoCompleted = true;
+      applyJobPersona(state.niche, state.niche);
+      var teaser = document.querySelector('[data-jpd-teaser]');
+      var optin = document.querySelector('[data-jpd-optin]');
+      var full = document.querySelector('[data-jpd-full]');
+      var progress = document.getElementById('jpdFullProgress');
+      var results = document.getElementById('jpdFullResults');
+      if (teaser) {
+        var actions = teaser.querySelector('[data-jpd-teaser-actions]');
+        if (actions) actions.hidden = true;
+      }
+      if (optin) optin.hidden = true;
+      if (full) full.hidden = false;
+      if (progress) progress.hidden = true;
+      if (results) results.hidden = false;
+      window.setTimeout(function () {
+        if (full) full.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 150);
+      return true;
+    }
+
+    startFullDemo(true);
+    return true;
+  }
+
+  function markMidPageEngagement() {
+    var teaser = document.getElementById('jpd-teaser');
+    if (!teaser || !('IntersectionObserver' in window)) return;
+    try {
+      var io = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) state.engaged = true;
+          });
+        },
+        { threshold: 0.25 }
+      );
+      io.observe(teaser);
+    } catch (e) {}
   }
 
   function init() {
     trackProof('proof_lp_viewed');
     decorateTrialLinks();
     window.setTimeout(decorateTrialLinks, 300);
-    setupCombobox();
+    setupCombobox('jpd');
+    setupCombobox('jpd-exit');
     hideChatWidgets();
     [500, 2000, 5000].forEach(function (ms) {
       window.setTimeout(hideChatWidgets, ms);
@@ -819,20 +1088,25 @@
     if (form) {
       form.addEventListener('submit', function (e) {
         e.preventDefault();
-        submitOptIn(1);
+        submitOptIn(1, 'inline');
       });
     }
 
     document.addEventListener('click', onClick, true);
+    markMidPageEngagement();
+    setupExitIntent();
 
     // Make brandbar CTA always visible on this page (trial path).
     var bar = document.querySelector('[data-jcp-landing-brandbar]');
     if (bar) bar.classList.add('is-compact');
 
+    tryResumeSession();
+
     window.JCPJobProofDemo = {
       buildTrialUrl: buildTrialUrl,
       trackProof: trackProof,
       runTeaser: runTeaser,
+      openExit: openExit,
     };
   }
 

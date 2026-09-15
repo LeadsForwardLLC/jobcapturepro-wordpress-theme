@@ -166,6 +166,10 @@ function jcp_case_study_should_load_exit_intent(): bool {
 	if ( jcp_case_study_is_current_page() ) {
 		return false;
 	}
+	// /job-proof-demo/ owns its own state-aware exit intent.
+	if ( function_exists( 'jcp_job_proof_demo_is_current' ) && jcp_job_proof_demo_is_current() ) {
+		return false;
+	}
 	$pages = function_exists( 'jcp_core_get_page_detection' ) ? jcp_core_get_page_detection() : [];
 	if ( function_exists( 'jcp_core_is_demo_survey_request' ) && jcp_core_is_demo_survey_request() ) {
 		return false;
