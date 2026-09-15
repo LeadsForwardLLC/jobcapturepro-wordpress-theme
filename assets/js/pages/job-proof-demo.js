@@ -429,11 +429,13 @@
     var status = document.getElementById('jpdCanvasStatus');
     var destinations = document.querySelector('[data-jpd-destinations]');
     var payoff = document.querySelector('[data-jpd-payoff]');
-    var stage = canvas && canvas.querySelector('.jpd-canvas');
+    var stage = canvas && (canvas.querySelector('.jpd-stage') || canvas.querySelector('.jpd-canvas'));
+    var aiPanel = document.querySelector('[data-jpd-ai-panel]');
 
     if (idle) idle.hidden = true;
     if (run) run.hidden = false;
     if (stage) stage.setAttribute('data-jpd-canvas-stage', 'running');
+    if (aiPanel) aiPanel.classList.add('is-live');
     if (payoff) payoff.hidden = true;
     if (destinations) {
       destinations.querySelectorAll('[data-dest]').forEach(function (el) {
@@ -488,6 +490,7 @@
         finishHero();
         return;
       }
+      if (stage) stage.classList.add('is-publishing');
       var items = destinations.querySelectorAll('[data-dest]');
       var i = 0;
       function next() {
