@@ -454,7 +454,7 @@ $rest = array_slice( $rest, 0, 3 );
 		<button type="button" class="jcp-case-exit__close" aria-label="<?php esc_attr_e( 'Close', 'jcp-core' ); ?>" data-jpd-exit-dismiss>×</button>
 		<div class="jpd-exit__panel" data-jpd-exit-panel="optin" hidden>
 			<p class="jcp-case-exit__wait"><?php esc_html_e( 'BEFORE YOU GO', 'jcp-core' ); ?></p>
-			<h2 class="jcp-case-exit__title" id="jpdExitTitle"><?php esc_html_e( 'Before you bail — want the 60-second version for your trade?', 'jcp-core' ); ?></h2>
+			<h2 class="jcp-case-exit__title" id="jpdExitTitle"><?php esc_html_e( 'Before you bail, want the 60 second version for your trade?', 'jcp-core' ); ?></h2>
 			<form id="jpdExitOptinForm" class="jpd-exit__form survey-step active" novalidate>
 				<div class="survey-field">
 					<label for="jpd-exit-email"><?php esc_html_e( 'Work email', 'jcp-core' ); ?> <span class="survey-required">*</span></label>
@@ -476,7 +476,7 @@ $rest = array_slice( $rest, 0, 3 );
 		</div>
 		<div class="jpd-exit__panel" data-jpd-exit-panel="case" hidden>
 			<p class="jcp-case-exit__wait jpd-exit__eyebrow"><?php esc_html_e( 'Not ready for a trial?', 'jcp-core' ); ?></p>
-			<h2 class="jcp-case-exit__title"><?php esc_html_e( 'Talk to a JCP expert — or see if you qualify for the 90-day case study.', 'jcp-core' ); ?></h2>
+			<h2 class="jcp-case-exit__title"><?php esc_html_e( 'Talk to a JCP expert, or see if you qualify for the 90 day case study.', 'jcp-core' ); ?></h2>
 			<div class="jcp-case-exit__actions">
 				<a class="jcp-case-exit__primary" href="<?php echo esc_url( $expert_href ); ?>" data-jpd-expert><?php esc_html_e( 'Talk to a JCP expert →', 'jcp-core' ); ?></a>
 				<?php if ( $case_active ) : ?>

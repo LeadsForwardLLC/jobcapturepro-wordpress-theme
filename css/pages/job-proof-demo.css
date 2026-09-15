@@ -3345,6 +3345,10 @@ body.jcp-job-proof-demo .jpd-trust__mini-stats {
   margin-bottom: 0.65rem;
 }
 
+.jpd-quote-grid--compact .jpd-quote footer {
+  margin-top: auto;
+}
+
 /* ---- Final CTA ---- */
 body.jcp-job-proof-demo .jpd-final-cta {
   padding-top: clamp(2rem, 3.5vw, 3rem);
