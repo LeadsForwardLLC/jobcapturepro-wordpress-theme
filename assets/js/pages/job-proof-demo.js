@@ -759,7 +759,10 @@
         t: 6500,
         text: '',
         fn: function () {
-          if (progress) progress.hidden = true;
+          if (progress) {
+            progress.hidden = true;
+            progress.style.display = 'none';
+          }
           if (results) results.hidden = false;
           state.animating = false;
           state.demoCompleted = true;
