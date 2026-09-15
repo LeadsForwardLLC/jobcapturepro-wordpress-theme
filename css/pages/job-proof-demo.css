@@ -2454,6 +2454,7 @@ body.jcp-job-proof-demo .jpd-workflow__copy p {
 }
 
 body.jcp-job-proof-demo .jpd-workflow__integrations {
+  display: block;
   margin: 0.85rem 0 0;
   padding: 0;
   list-style: none;
