@@ -67,6 +67,10 @@ function jcp_admin_minimal_page_templates( array $templates ): array {
 		$out['page-job-proof-demo.php'] = $templates['page-job-proof-demo.php'];
 	}
 
+	if ( isset( $templates['page-job-proof-demo-run.php'] ) ) {
+		$out['page-job-proof-demo-run.php'] = $templates['page-job-proof-demo-run.php'];
+	}
+
 	if ( isset( $templates['page-sales-tool.php'] ) ) {
 		$out['page-sales-tool.php'] = $templates['page-sales-tool.php'];
 	}

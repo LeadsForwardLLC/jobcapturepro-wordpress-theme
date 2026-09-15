@@ -1,75 +1,87 @@
 /**
- * Job Proof Demo — interactive mid-funnel only.
- * Visual shell comes from niche-landing.css + home.css + sections.css.
+ * Job Proof Demo — product canvas + funnel chrome.
+ * Visual shell: niche-landing.css + home.css + story-moments.css + survey.css.
  */
 
-/* Brandbar trial always visible on this funnel */
+/* Brandbar trial always visible */
 body.jcp-job-proof-demo .jcp-landing-brandbar.is-compact .jcp-landing-brandbar__cta,
-body.jcp-job-proof-demo .jcp-landing-brandbar .jcp-landing-brandbar__cta {
+body.jcp-job-proof-demo .jcp-landing-brandbar .jcp-landing-brandbar__cta,
+body.jcp-job-proof-demo-run .jcp-landing-brandbar.is-compact .jcp-landing-brandbar__cta,
+body.jcp-job-proof-demo-run .jcp-landing-brandbar .jcp-landing-brandbar__cta {
   opacity: 1 !important;
   pointer-events: auto !important;
   transform: none !important;
 }
 
-body.jcp-job-proof-demo .jpd-hero-secondary {
+.jpd-hero-line {
+  margin: 0.75rem 0 1rem;
+  font-size: clamp(1.05rem, 1.5vw, 1.25rem);
+  font-weight: 800;
+  color: var(--jcp-color-text, #0f172a);
+}
+
+.jpd-hero-secondary {
   margin: 0.75rem 0 0;
   width: 100%;
 }
 
-body.jcp-job-proof-demo .jpd-hero-secondary a {
+.jpd-hero-secondary a {
   font-weight: 700;
   color: var(--jcp-color-text, #0f172a);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-/* Hero mechanism uses campaign job-flow; constrain density */
-.jpd-hero-flow-wrap {
+.jpd-trust-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.5rem;
+  margin: 1.15rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--jcp-color-text-muted, #64748b);
+}
+
+/* Hero product canvas */
+.jpd-canvas {
   margin: 0;
-  padding: 0;
+  padding: 1.25rem;
+  background: #fff;
+  border: 1px solid var(--jcp-color-border, #e2e8f0);
+  border-radius: 1.1rem;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.1);
 }
 
-.jpd-hero-job-flow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+.jpd-canvas__eyebrow {
+  margin: 0 0 0.85rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--jcp-color-primary, #ff503e);
 }
 
-.jpd-hero-job-flow .jcp-job-flow__step--capture {
-  grid-column: 1 / -1;
-}
-
-.jpd-hero-job-flow .jcp-job-flow__copy {
-  display: none;
-}
-
-.jpd-hero-job-flow .jcp-job-flow__num {
-  display: none;
-}
-
-/* Teaser canvas */
-.jpd-teaser__canvas {
-  max-width: 40rem;
-  margin: 0 auto 1.5rem;
-}
-
-.jpd-job-card {
+.jpd-canvas__job {
   overflow: hidden;
   margin: 0 0 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid var(--jcp-color-border, #e2e8f0);
+  background: #f8fafc;
 }
 
-.jpd-job-card__media {
+.jpd-canvas__media {
   position: relative;
 }
 
-.jpd-job-card__media img {
+.jpd-canvas__media img,
+.jpd-run__job-media img {
   display: block;
   width: 100%;
   aspect-ratio: 16 / 10;
   object-fit: cover;
 }
 
-.jpd-job-card__badge {
+.jpd-canvas__badge {
   position: absolute;
   top: 0.75rem;
   left: 0.75rem;
@@ -81,107 +93,241 @@ body.jcp-job-proof-demo .jpd-hero-secondary a {
   font-weight: 800;
 }
 
-.jpd-job-card__body {
-  padding: 1rem 1.15rem 1.15rem;
+.jpd-canvas__meta,
+.jpd-run__job-body {
+  padding: 0.9rem 1rem 1rem;
+  display: grid;
+  gap: 0.2rem;
 }
 
-.jpd-job-card__service {
-  margin: 0 0 0.25rem;
-  font-size: 1.25rem;
+.jpd-canvas__meta strong,
+.jpd-run__job-body strong {
+  font-size: 1.1rem;
   font-weight: 800;
 }
 
-.jpd-job-card__meta {
-  margin: 0;
+.jpd-canvas__meta span,
+.jpd-run__job-body span {
   color: var(--jcp-color-text-muted, #64748b);
+  font-size: 0.95rem;
 }
 
-.jpd-job-card.is-dimmed {
-  opacity: 0.55;
+.jpd-canvas__primary {
+  width: 100%;
 }
 
-.jpd-teaser__status {
+.jpd-canvas__note {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: var(--jcp-color-text-muted, #64748b);
+  text-align: center;
+}
+
+.jpd-canvas__status,
+.jpd-full__status {
   margin: 0 0 1rem;
   text-align: center;
   font-size: 1.05rem;
   font-weight: 700;
 }
 
-.jpd-teaser__checkin {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
+.jpd-canvas__pipeline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
   margin: 0 0 1rem;
-  padding: 1rem;
 }
 
-.jpd-teaser__checkin img {
-  width: 7.5rem;
-  height: 5.5rem;
-  object-fit: cover;
+.jpd-canvas__step {
+  padding: 0.55rem 0.35rem;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 700;
   border-radius: 0.65rem;
-  flex-shrink: 0;
-}
-
-.jpd-teaser__checkin-title {
-  margin: 0 0 0.15rem;
-  font-size: 1.05rem;
-  font-weight: 800;
-}
-
-.jpd-teaser__checkin-meta {
-  margin: 0 0 0.4rem;
+  border: 1px solid var(--jcp-color-border, #e2e8f0);
   color: var(--jcp-color-text-muted, #64748b);
+  background: #fff;
+  opacity: 0.45;
+  transition: opacity 0.35s ease, border-color 0.35s ease, background 0.35s ease, color 0.35s ease;
 }
 
-.jpd-teaser__checkin-badge {
-  display: inline-block;
-  padding: 0.25rem 0.55rem;
-  border-radius: 999px;
-  background: #ecfdf5;
-  color: #047857;
-  font-size: 0.75rem;
-  font-weight: 800;
+.jpd-canvas__step.is-active,
+.jpd-canvas__step.is-done {
+  opacity: 1;
 }
 
-.jpd-teaser__channels {
+.jpd-canvas__step.is-active {
+  border-color: rgba(255, 80, 62, 0.45);
+  background: #fff5f5;
+  color: var(--jcp-color-text, #0f172a);
+}
+
+.jpd-canvas__destinations {
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-  gap: 0.65rem;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.5rem;
 }
 
-.jpd-teaser__channels li {
+.jpd-dest-card {
   margin: 0;
-  padding: 0.85rem 0.75rem;
+  padding: 0.55rem 0.4rem 0.7rem;
   text-align: center;
-  font-size: 0.9rem;
-  font-weight: 700;
   border: 1px solid var(--jcp-color-border, #e2e8f0);
-  border-radius: 0.85rem;
+  border-radius: 0.75rem;
   background: #fff;
-  color: var(--jcp-color-text-muted, #64748b);
-  opacity: 0.35;
-  transform: translateY(0.35rem);
-  transition: opacity 0.35s ease, transform 0.35s ease, border-color 0.35s ease, color 0.35s ease, background 0.35s ease;
+  opacity: 0.3;
+  transform: translateY(0.4rem);
+  transition: opacity 0.4s ease, transform 0.4s ease, border-color 0.4s ease, background 0.4s ease;
 }
 
-.jpd-teaser__channels li.is-lit {
+.jpd-dest-card img {
+  display: block;
+  width: 100%;
+  height: 3.25rem;
+  object-fit: cover;
+  border-radius: 0.45rem;
+  margin: 0 auto 0.4rem;
+}
+
+.jpd-dest-card strong {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.jpd-dest-card.is-lit {
   opacity: 1;
   transform: none;
-  color: var(--jcp-color-text, #0f172a);
   border-color: rgba(255, 80, 62, 0.35);
   background: #fff5f5;
 }
 
-.jpd-teaser__actions {
+.jpd-canvas__payoff {
+  margin-top: 1.15rem;
   text-align: center;
+  animation: jpd-fade-up 0.45s ease both;
 }
 
-.jpd-teaser__actions .btn-primary {
-  min-width: min(100%, 22rem);
+.jpd-canvas__payoff-line {
+  margin: 0 0 1rem;
+  font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+@keyframes jpd-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Integrations */
+.jpd-integrations__line {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  max-width: 42rem;
+}
+
+.jpd-integrations__note {
+  margin: 0;
+  color: var(--jcp-color-text-muted, #64748b);
+  font-size: 0.95rem;
+  max-width: 40rem;
+}
+
+/* Differentiator */
+.jpd-diff__grid {
+  display: grid;
+  gap: 1rem;
+  margin: 0 0 1.25rem;
+}
+
+@media (min-width: 900px) {
+  .jpd-diff__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.jpd-diff__label {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.jpd-diff__card--generic {
+  opacity: 0.85;
+}
+
+.jpd-diff__card--real {
+  border-color: rgba(255, 80, 62, 0.35);
+  background: linear-gradient(180deg, #fff 0%, #fff5f5 100%);
+}
+
+.jpd-diff__card ul {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.jpd-diff__card li {
+  margin: 0 0 0.45rem;
+}
+
+.jpd-diff__outcome {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+/* AI flow */
+.jpd-ai__flow {
+  display: grid;
+  gap: 0.75rem;
+  align-items: stretch;
+}
+
+@media (min-width: 960px) {
+  .jpd-ai__flow {
+    grid-template-columns: 1fr auto 1.1fr auto 1fr;
+    align-items: center;
+  }
+}
+
+.jpd-ai__col-label {
+  margin: 0 0 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--jcp-color-primary, #ff503e);
+}
+
+.jpd-ai__col ul {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.jpd-ai__col--jcp {
+  border-color: rgba(255, 80, 62, 0.35);
+  background: #fff5f5;
+}
+
+.jpd-ai__mid {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--jcp-color-text-muted, #64748b);
 }
 
 /* Opt-in */
@@ -214,18 +360,128 @@ body.jcp-job-proof-demo .jpd-hero-secondary a {
   border-color: #ef4444 !important;
 }
 
-/* Full demo */
-.jpd-full__progress {
-  max-width: 36rem;
-  margin: 0 auto 1.5rem;
-  padding: 1.15rem;
-  text-align: center;
+/* Founder */
+.jpd-founder__grid {
+  display: grid;
+  gap: 1.5rem;
+  align-items: center;
 }
 
-.jpd-full__status {
-  margin: 0;
+@media (min-width: 900px) {
+  .jpd-founder__grid {
+    grid-template-columns: 1.05fr 1fr;
+  }
+}
+
+.jpd-founder__thumb {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+}
+
+.jpd-founder__thumb img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.jpd-founder__play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(15, 23, 42, 0.82);
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+.jpd-founder__stats {
+  list-style: none;
+  margin: 1rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.jpd-founder__stats li {
+  font-size: 0.95rem;
+  color: var(--jcp-color-text-muted, #64748b);
+}
+
+.jpd-founder__stats strong {
+  color: var(--jcp-color-text, #0f172a);
   font-size: 1.15rem;
+  margin-right: 0.25rem;
+}
+
+.jpd-founder__by {
+  margin: 0 0 1rem;
   font-weight: 700;
+}
+
+.jpd-seo-close {
+  margin-top: 1.25rem;
+}
+
+/* Demo run */
+.jpd-run__job {
+  overflow: hidden;
+  max-width: 36rem;
+  margin: 0 auto 1.25rem;
+  border-radius: 1rem;
+  border: 1px solid var(--jcp-color-border, #e2e8f0);
+  background: #fff;
+}
+
+.jpd-run__job-media {
+  position: relative;
+}
+
+.jpd-run__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: center;
+}
+
+.jpd-run__steps li {
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--jcp-color-border, #e2e8f0);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--jcp-color-text-muted, #64748b);
+  opacity: 0.45;
+  transition: opacity 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+}
+
+.jpd-run__steps li.is-active,
+.jpd-run__steps li.is-done {
+  opacity: 1;
+}
+
+.jpd-run__steps li.is-active {
+  background: #fff5f5;
+  border-color: rgba(255, 80, 62, 0.4);
+  color: var(--jcp-color-text, #0f172a);
+}
+
+.jpd-run__progress {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 1rem;
+  text-align: center;
 }
 
 .jpd-outcome {
@@ -329,18 +585,7 @@ body.jcp-job-proof-demo .jpd-hero-secondary a {
   margin-top: 0.5rem;
 }
 
-.jpd-back-demo {
-  padding-bottom: 2.5rem;
-  font-weight: 700;
-}
-
-.jpd-back-demo a {
-  color: var(--jcp-color-text, #0f172a);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-/* Exit-intent form fields inside case-exit card */
+/* Exit */
 .jpd-exit__form {
   display: grid;
   gap: 0.75rem;
@@ -378,39 +623,6 @@ body.jcp-job-proof-demo .jpd-hero-secondary a {
   color: var(--jcp-color-primary, #ff503e);
 }
 
-.jcp-case-exit__form {
-  display: grid;
-  gap: 0.75rem;
-  margin: 1rem 0;
-  text-align: left;
-}
-
-.jcp-case-exit__form label {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-
-.jcp-case-exit__form .survey-input {
-  width: 100%;
-}
-
-.jcp-case-exit__eyebrow {
-  margin: 0 0 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--jcp-color-primary, #ff503e);
-}
-
-.jcp-case-exit__error {
-  margin: 0;
-  color: #991b1b;
-  font-size: 0.85rem;
-}
-
 /* Chat hide */
 body.jcp-job-proof-demo #chat-widget-container,
 body.jcp-job-proof-demo #lc_text-widget,
@@ -422,16 +634,45 @@ body.jcp-job-proof-demo iframe[src*="msgsndr"],
 body.jcp-job-proof-demo button[aria-label="Open chat"],
 body.jcp-job-proof-demo .leadconnector-chat,
 body.jcp-job-proof-demo #leadconnector-chat,
-body.jcp-job-proof-demo .ghl-chat-widget {
+body.jcp-job-proof-demo .ghl-chat-widget,
+body.jcp-job-proof-demo-run #chat-widget-container,
+body.jcp-job-proof-demo-run #lc_text-widget,
+body.jcp-job-proof-demo-run .lc_text-widget,
+body.jcp-job-proof-demo-run [id*="chat-widget"],
+body.jcp-job-proof-demo-run [class*="chat-widget"],
+body.jcp-job-proof-demo-run iframe[src*="leadconnector"],
+body.jcp-job-proof-demo-run iframe[src*="msgsndr"],
+body.jcp-job-proof-demo-run button[aria-label="Open chat"],
+body.jcp-job-proof-demo-run .leadconnector-chat,
+body.jcp-job-proof-demo-run #leadconnector-chat,
+body.jcp-job-proof-demo-run .ghl-chat-widget {
   display: none !important;
   visibility: hidden !important;
   pointer-events: none !important;
   opacity: 0 !important;
 }
 
+@media (max-width: 900px) {
+  .jpd-canvas__destinations {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .jpd-canvas__pipeline {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 640px) {
-  .jpd-hero-job-flow {
-    grid-template-columns: 1fr;
+  .jpd-canvas {
+    padding: 1rem;
+  }
+
+  .jpd-canvas__destinations {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .jpd-dest-card:last-child {
+    grid-column: 1 / -1;
   }
 
   .jpd-result-card__title {
@@ -440,5 +681,9 @@ body.jcp-job-proof-demo .ghl-chat-widget {
 
   .jpd-optin__card {
     padding: 1.35rem 1rem;
+  }
+
+  .jpd-ai__mid {
+    transform: rotate(90deg);
   }
 }

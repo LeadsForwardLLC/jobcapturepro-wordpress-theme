@@ -191,7 +191,13 @@ function jcp_core_get_page_detection(): array {
     return [
         'is_home'         => is_front_page() || $path === '' || $path === 'home',
         'is_prototype'    => is_page_template( 'page-prototype.php' ) || is_page( 'prototype' ) || $is_prototype_path,
-        'is_demo'         => is_page_template( 'page-demo.php' ) || is_page( 'demo' ) || $path === 'demo' || get_query_var( 'jcp_route', '' ) === 'demo',
+        'is_demo'         => ( ! function_exists( 'jcp_job_proof_demo_run_is_current' ) || ! jcp_job_proof_demo_run_is_current() )
+            && (
+                is_page_template( 'page-demo.php' )
+                || is_page( 'demo' )
+                || $path === 'demo'
+                || get_query_var( 'jcp_route', '' ) === 'demo'
+            ),
         'is_pricing'      => is_page_template( 'page-pricing.php' ) || is_page( 'pricing' ) || $path === 'pricing',
         'is_contact'      => is_page_template( 'page-support.php' ) || is_page_template( 'page-contact.php' ) || is_page( 'support' ) || is_page( 'contact' ) || $path === 'support' || $path === 'contact',
         'is_contact_success' => $path === 'contact-success',

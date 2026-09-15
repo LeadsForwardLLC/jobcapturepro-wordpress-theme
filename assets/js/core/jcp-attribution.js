@@ -28,7 +28,10 @@
   function readLpVariantFromPath() {
     try {
       const path = String(window.location.pathname || '').replace(/\/+$/, '') || '/';
-      return PATH_VARIANT_MAP[path] || '';
+      if (PATH_VARIANT_MAP[path]) return PATH_VARIANT_MAP[path];
+      // Child routes (e.g. /job-proof-demo/demo) inherit parent LP variant.
+      if (path.indexOf('/job-proof-demo') === 0) return 'job_proof_demo';
+      return '';
     } catch (e) {
       return '';
     }
