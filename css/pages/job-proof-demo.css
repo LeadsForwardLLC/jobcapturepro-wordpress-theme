@@ -2119,11 +2119,11 @@ body.jcp-job-proof-demo .jpd-punch {
 /* ---- Hero Product Theater ---- */
 .jpd-theater {
   position: relative;
-  min-height: 26rem;
+  min-height: 28rem;
   border: 1px solid var(--jpd-line);
   border-radius: 1.35rem;
   background:
-    radial-gradient(90% 70% at 70% 30%, rgba(255, 80, 62, 0.08), transparent 50%),
+    radial-gradient(90% 70% at 70% 30%, rgba(255, 80, 62, 0.1), transparent 50%),
     linear-gradient(165deg, #0f172a 0%, #1e293b 55%, #0f172a 100%);
   overflow: hidden;
   box-shadow: 0 22px 50px rgba(15, 23, 42, 0.18);
@@ -2143,28 +2143,37 @@ body.jcp-job-proof-demo .jpd-punch {
   stroke-width: 1.6;
   stroke-linecap: round;
   stroke-dasharray: 4 5;
-  opacity: 0;
+  opacity: 0.55;
   transition: opacity 0.45s ease;
 }
 
+.jpd-theater.is-boot .jpd-theater__wire {
+  opacity: 0;
+}
+
 .jpd-theater.is-wired .jpd-theater__wire {
-  opacity: 0.75;
+  opacity: 0.85;
 }
 
 .jpd-theater__source {
   position: absolute;
-  left: 4%;
-  top: 10%;
-  width: min(46%, 17.5rem);
+  left: 3.5%;
+  top: 9%;
+  width: min(52%, 19rem);
   z-index: 3;
   border-radius: 1rem;
   overflow: hidden;
   background: #fff;
   border: 1px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.jpd-theater.is-boot .jpd-theater__source {
   opacity: 0;
   transform: translateX(-0.75rem) scale(0.98);
-  transition: opacity 0.55s ease, transform 0.55s ease;
 }
 
 .jpd-theater.is-sourced .jpd-theater__source {
@@ -2204,18 +2213,23 @@ body.jcp-job-proof-demo .jpd-punch {
 
 .jpd-theater__engine {
   position: absolute;
-  left: 44%;
-  top: 36%;
+  left: 49%;
+  top: 34%;
   z-index: 5;
-  width: 7.5rem;
+  width: 7.75rem;
   padding: 0.75rem 0.7rem 0.8rem;
   border-radius: 1rem;
   background: #fff;
-  border: 1px solid rgba(255, 80, 62, 0.35);
-  box-shadow: 0 14px 32px rgba(255, 80, 62, 0.22);
+  border: 1px solid rgba(255, 80, 62, 0.4);
+  box-shadow: 0 14px 32px rgba(255, 80, 62, 0.28);
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.jpd-theater.is-boot .jpd-theater__engine {
   opacity: 0;
   transform: scale(0.86);
-  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 .jpd-theater.is-engine .jpd-theater__engine {
@@ -2257,6 +2271,7 @@ body.jcp-job-proof-demo .jpd-punch {
   transition: color 0.3s ease, background 0.3s ease, border-color 0.3s ease;
 }
 
+.jpd-theater:not(.is-boot) .jpd-theater__resolve li,
 .jpd-theater__resolve li.is-on {
   color: var(--jpd-navy);
   border-color: rgba(255, 80, 62, 0.35);
@@ -2265,10 +2280,10 @@ body.jcp-job-proof-demo .jpd-punch {
 
 .jpd-theater__dest {
   position: absolute;
-  right: 3.5%;
+  right: 3%;
   top: 7%;
   bottom: 7%;
-  width: min(40%, 14.5rem);
+  width: min(36%, 13.75rem);
   z-index: 4;
   display: flex;
   flex-direction: column;
@@ -2280,11 +2295,16 @@ body.jcp-job-proof-demo .jpd-punch {
   margin: 0;
   padding: 0.4rem 0.45rem;
   border-radius: 0.7rem;
-  background: rgba(255, 255, 255, 0.96);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.jpd-theater.is-boot .jpd-theater__preview {
   opacity: 0;
   transform: translateX(0.65rem);
-  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
 .jpd-theater__preview.is-on {
@@ -2406,24 +2426,19 @@ body.jcp-job-proof-demo .jpd-punch {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .jpd-theater.is-boot .jpd-theater__source,
+  .jpd-theater.is-boot .jpd-theater__engine,
+  .jpd-theater.is-boot .jpd-theater__preview,
+  .jpd-theater.is-boot .jpd-theater__wire {
+    opacity: 1 !important;
+    transform: none !important;
+  }
   .jpd-theater__source,
   .jpd-theater__engine,
   .jpd-theater__preview,
   .jpd-theater__wire,
   .jpd-theater__resolve li {
     transition: none !important;
-  }
-  .jpd-theater .jpd-theater__source,
-  .jpd-theater .jpd-theater__engine,
-  .jpd-theater .jpd-theater__preview,
-  .jpd-theater .jpd-theater__wire {
-    opacity: 1;
-    transform: none;
-  }
-  .jpd-theater__resolve li {
-    color: var(--jpd-navy);
-    border-color: rgba(255, 80, 62, 0.35);
-    background: #fff7f5;
   }
 }
 

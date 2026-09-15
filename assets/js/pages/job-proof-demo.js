@@ -1361,6 +1361,7 @@
     } catch (e) {}
 
     function finish() {
+      root.classList.remove('is-boot');
       root.classList.add('is-sourced', 'is-engine', 'is-wired');
       resolve.forEach(function (el) {
         el.classList.add('is-on');
@@ -1377,22 +1378,30 @@
         finish();
         return;
       }
-      root.classList.add('is-sourced');
-      window.setTimeout(function () {
-        root.classList.add('is-engine');
-      }, 450);
-      resolve.forEach(function (el, i) {
+      root.classList.add('is-boot');
+      // Force reflow so boot opacity applies before sequence.
+      void root.offsetWidth;
+      window.requestAnimationFrame(function () {
+        root.classList.add('is-sourced');
         window.setTimeout(function () {
-          el.classList.add('is-on');
-        }, 750 + i * 380);
-      });
-      window.setTimeout(function () {
-        root.classList.add('is-wired');
-      }, 1600);
-      previews.forEach(function (el, i) {
+          root.classList.add('is-engine');
+        }, 450);
+        resolve.forEach(function (el, i) {
+          window.setTimeout(function () {
+            el.classList.add('is-on');
+          }, 750 + i * 380);
+        });
         window.setTimeout(function () {
-          el.classList.add('is-on');
-        }, 1950 + i * 320);
+          root.classList.add('is-wired');
+        }, 1600);
+        previews.forEach(function (el, i) {
+          window.setTimeout(function () {
+            el.classList.add('is-on');
+            if (i === previews.length - 1) {
+              root.classList.remove('is-boot');
+            }
+          }, 1950 + i * 320);
+        });
       });
     }
 
@@ -1409,7 +1418,7 @@
             io.disconnect();
           });
         },
-        { threshold: 0.35 }
+        { threshold: 0.2 }
       );
       io.observe(root);
     } catch (err) {
