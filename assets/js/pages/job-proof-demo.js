@@ -788,7 +788,7 @@
     var tradeLabel = getBusinessTypeLabel(prefix);
     var errId = isExit ? 'jpdExitOptinError' : 'jpdOptinError';
     var btnId = isExit ? 'jpdExitOptinSubmit' : 'jpdOptinSubmit';
-    var defaultBtn = isExit ? 'Send me my demo →' : 'Show me my demo →';
+    var defaultBtn = isExit ? 'Send me my demo →' : 'Show me my personalized demo →';
 
     showOptinError('', errId);
     if (!validEmail(email)) {
@@ -1350,6 +1350,49 @@
     });
   }
 
+  function setupTransformReveal() {
+    var root = document.querySelector('[data-jpd-xform]');
+    if (!root) return;
+    var steps = root.querySelectorAll('[data-xform-step]');
+    var reduce = false;
+    try {
+      reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+    function play() {
+      root.classList.add('is-live');
+      if (reduce) {
+        steps.forEach(function (el) {
+          el.classList.add('is-on');
+        });
+        return;
+      }
+      steps.forEach(function (el, i) {
+        window.setTimeout(function () {
+          el.classList.add('is-on');
+        }, 350 + i * 420);
+      });
+    }
+    if (!('IntersectionObserver' in window)) {
+      play();
+      return;
+    }
+    try {
+      var io = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            play();
+            io.disconnect();
+          });
+        },
+        { threshold: 0.35 }
+      );
+      io.observe(root);
+    } catch (err) {
+      play();
+    }
+  }
+
   function initShared() {
     decorateTrialLinks();
     window.setTimeout(decorateTrialLinks, 300);
@@ -1387,6 +1430,7 @@
     observeOptin();
     observeTrackedViews();
     setupFormStarted();
+    setupTransformReveal();
 
     var form = document.getElementById('jpdOptinForm');
     if (form) {
