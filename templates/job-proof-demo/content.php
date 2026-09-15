@@ -93,74 +93,49 @@ $rest = array_slice( $rest, 0, 3 );
 
 			<div class="jcp-hero-visual-column jcp-split-col jcp-split-col--media" aria-hidden="true">
 				<div class="jpd-theater" data-jpd-theater>
-					<svg class="jpd-theater__wires" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-						<path class="jpd-theater__wire jpd-theater__wire--in" d="M38 48 C48 48, 48 50, 52 50" fill="none" />
-						<path class="jpd-theater__wire jpd-theater__wire--out" d="M62 42 C70 36, 74 28, 78 22" fill="none" />
-						<path class="jpd-theater__wire jpd-theater__wire--out" d="M62 48 C70 48, 74 48, 78 48" fill="none" />
-						<path class="jpd-theater__wire jpd-theater__wire--out" d="M62 54 C70 58, 74 64, 78 70" fill="none" />
-						<path class="jpd-theater__wire jpd-theater__wire--out" d="M62 58 C68 68, 72 78, 78 86" fill="none" />
-					</svg>
+					<div class="jpd-theater__grid">
+						<article class="jpd-theater__source" data-theater="source">
+							<div class="jpd-theater__source-media">
+								<img src="<?php echo esc_url( $photo_url ); ?>" alt="" width="640" height="420" decoding="async" data-no-lazy data-fallback="<?php echo esc_url( $photo_fallback ); ?>" />
+								<span class="jpd-canvas__badge"><?php esc_html_e( 'Completed job', 'jcp-core' ); ?></span>
+							</div>
+							<div class="jpd-theater__source-meta">
+								<strong><?php echo esc_html( $default_service ); ?></strong>
+								<span><?php echo esc_html( $default_city ); ?></span>
+							</div>
+						</article>
 
-					<article class="jpd-theater__source" data-theater="source">
-						<div class="jpd-theater__source-media">
-							<img src="<?php echo esc_url( $photo_url ); ?>" alt="" width="640" height="420" decoding="async" data-no-lazy data-fallback="<?php echo esc_url( $photo_fallback ); ?>" />
-							<span class="jpd-canvas__badge"><?php esc_html_e( 'Completed job', 'jcp-core' ); ?></span>
+						<div class="jpd-theater__bridge" data-theater="engine">
+							<span class="jpd-theater__mark" aria-hidden="true"><?php esc_html_e( 'JCP', 'jcp-core' ); ?></span>
+							<ul class="jpd-theater__resolve">
+								<li data-resolve="1"><?php esc_html_e( 'Check-in', 'jcp-core' ); ?></li>
+								<li data-resolve="2"><?php esc_html_e( 'Service', 'jcp-core' ); ?></li>
+								<li data-resolve="3"><?php esc_html_e( 'Location', 'jcp-core' ); ?></li>
+							</ul>
 						</div>
-						<div class="jpd-theater__source-meta">
-							<strong><?php echo esc_html( $default_service ); ?></strong>
-							<span><?php echo esc_html( $default_city ); ?></span>
-						</div>
-					</article>
 
-					<div class="jpd-theater__engine" data-theater="engine">
-						<span class="jpd-theater__mark"><?php esc_html_e( 'JCP', 'jcp-core' ); ?></span>
-						<ul class="jpd-theater__resolve">
-							<li data-resolve="1"><?php esc_html_e( 'Check-in', 'jcp-core' ); ?></li>
-							<li data-resolve="2"><?php esc_html_e( 'Service', 'jcp-core' ); ?></li>
-							<li data-resolve="3"><?php esc_html_e( 'Location', 'jcp-core' ); ?></li>
+						<ul class="jpd-theater__channels" data-theater="dest">
+							<li class="jpd-theater__channel" data-preview="1">
+								<strong><?php esc_html_e( 'Website', 'jcp-core' ); ?></strong>
+								<span><?php esc_html_e( 'Job map + check-in', 'jcp-core' ); ?></span>
+							</li>
+							<li class="jpd-theater__channel" data-preview="2">
+								<strong><?php esc_html_e( 'Google', 'jcp-core' ); ?></strong>
+								<span><?php esc_html_e( 'Fresh job post', 'jcp-core' ); ?></span>
+							</li>
+							<li class="jpd-theater__channel" data-preview="3">
+								<strong><?php esc_html_e( 'Social', 'jcp-core' ); ?></strong>
+								<span><?php esc_html_e( 'Proof from the field', 'jcp-core' ); ?></span>
+							</li>
+							<li class="jpd-theater__channel" data-preview="4">
+								<strong><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></strong>
+								<span><?php esc_html_e( 'Ask while fresh', 'jcp-core' ); ?></span>
+							</li>
+							<li class="jpd-theater__channel" data-preview="5">
+								<strong><?php esc_html_e( 'Directory', 'jcp-core' ); ?></strong>
+								<span><?php esc_html_e( 'Verified job proof', 'jcp-core' ); ?></span>
+							</li>
 						</ul>
-					</div>
-
-					<div class="jpd-theater__dest" data-theater="dest">
-						<div class="jpd-theater__preview jpd-theater__preview--web" data-preview="1">
-							<span class="jpd-theater__channel"><?php esc_html_e( 'Website', 'jcp-core' ); ?></span>
-							<div class="jpd-theater__preview-map">
-								<img src="<?php echo esc_url( $map_url ); ?>" alt="" width="220" height="90" loading="lazy" decoding="async" />
-								<span class="jpd-plugin__pin jpd-plugin__pin--active" style="left:44%;top:48%;"></span>
-							</div>
-							<div class="jpd-theater__preview-row">
-								<img src="<?php echo esc_url( $photo_url ); ?>" alt="" width="40" height="30" loading="lazy" />
-								<em><?php echo esc_html( $default_service ); ?></em>
-							</div>
-						</div>
-						<div class="jpd-theater__preview jpd-theater__preview--gbp" data-preview="2">
-							<span class="jpd-theater__channel"><?php esc_html_e( 'Google', 'jcp-core' ); ?></span>
-							<img src="<?php echo esc_url( $photo_url ); ?>" alt="" width="200" height="72" loading="lazy" />
-							<strong><?php esc_html_e( 'Just finished in Austin', 'jcp-core' ); ?></strong>
-						</div>
-						<div class="jpd-theater__preview jpd-theater__preview--social" data-preview="3">
-							<span class="jpd-theater__channel"><?php esc_html_e( 'Social', 'jcp-core' ); ?></span>
-							<div class="jpd-theater__preview-row">
-								<span class="jpd-social-avatar" aria-hidden="true">YB</span>
-								<em><?php esc_html_e( 'Another job wrapped', 'jcp-core' ); ?></em>
-							</div>
-						</div>
-						<div class="jpd-theater__preview jpd-theater__preview--review" data-preview="4">
-							<span class="jpd-theater__channel"><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></span>
-							<div class="jpd-theater__preview-row">
-								<?php if ( $icon( 'qr-code' ) ) : ?>
-									<img src="<?php echo esc_url( $icon( 'qr-code' ) ); ?>" alt="" width="36" height="36" />
-								<?php endif; ?>
-								<em><?php esc_html_e( 'Ask while fresh', 'jcp-core' ); ?></em>
-							</div>
-						</div>
-						<div class="jpd-theater__preview jpd-theater__preview--dir" data-preview="5">
-							<span class="jpd-theater__channel"><?php esc_html_e( 'Directory', 'jcp-core' ); ?></span>
-							<div class="jpd-theater__preview-row">
-								<span class="directory-badge verified"><?php esc_html_e( 'Verified', 'jcp-core' ); ?></span>
-								<em><?php esc_html_e( 'Your Business', 'jcp-core' ); ?></em>
-							</div>
-						</div>
 					</div>
 				</div>
 			</div>
