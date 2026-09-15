@@ -279,18 +279,20 @@ $rest = array_slice( $rest, 0, 3 );
 			</div>
 		</div>
 
-		<p class="jpd-transform-line"><?php esc_html_e( 'Same job. Five places working harder for you.', 'jcp-core' ); ?></p>
-		<p class="jpd-transform-sub"><?php esc_html_e( 'The work your crew already did becomes fresh proof across the places customers check before they call.', 'jcp-core' ); ?></p>
+		<div class="jpd-transform__payoff">
+			<p class="jpd-transform-line"><?php esc_html_e( 'Same job. Five places working harder for you.', 'jcp-core' ); ?></p>
+			<p class="jpd-transform-sub"><?php esc_html_e( 'The work your crew already did becomes fresh proof across the places customers check before they call.', 'jcp-core' ); ?></p>
 
-		<ul class="jpd-chips" aria-label="<?php esc_attr_e( 'What this creates', 'jcp-core' ); ?>">
-			<li><strong><?php esc_html_e( 'Freshness', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Recent completed work', 'jcp-core' ); ?></span></li>
-			<li><strong><?php esc_html_e( 'Local relevance', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Real service + location', 'jcp-core' ); ?></span></li>
-			<li><strong><?php esc_html_e( 'Trust', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Evidence you do the work', 'jcp-core' ); ?></span></li>
-		</ul>
+			<ul class="jpd-chips" aria-label="<?php esc_attr_e( 'What this creates', 'jcp-core' ); ?>">
+				<li><strong><?php esc_html_e( 'Freshness', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Recent completed work', 'jcp-core' ); ?></span></li>
+				<li><strong><?php esc_html_e( 'Local relevance', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Real service + location', 'jcp-core' ); ?></span></li>
+				<li><strong><?php esc_html_e( 'Trust', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Evidence you do the work', 'jcp-core' ); ?></span></li>
+			</ul>
 
-		<p class="jpd-section-cta">
-			<a class="btn btn-primary" href="#jpd-optin" data-jpd-scroll-optin data-jpd-track="DemoCTA" data-jpd-section="transform" data-jpd-source="transform"><?php esc_html_e( 'See what this looks like for my trade →', 'jcp-core' ); ?></a>
-		</p>
+			<p class="jpd-section-cta">
+				<a class="btn btn-primary" href="#jpd-optin" data-jpd-scroll-optin data-jpd-track="DemoCTA" data-jpd-section="transform" data-jpd-source="transform"><?php esc_html_e( 'See what this looks like for my trade →', 'jcp-core' ); ?></a>
+			</p>
+		</div>
 	</div>
 </section>
 

@@ -1575,16 +1575,29 @@ body.jcp-job-proof-demo .jpd-founder__play {
   color: #fff;
 }
 
-body.jcp-job-proof-demo .jpd-hero-secondary a {
+body.jcp-job-proof-demo .jpd-hero-secondary a,
+body.jcp-job-proof-demo .jpd-hero-secondary a:link,
+body.jcp-job-proof-demo .jpd-hero-secondary a:visited {
   font-size: 0.92rem;
   font-weight: 600;
-  color: var(--jcp-color-text-muted, #64748b);
+  color: #64748b !important;
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
 
-body.jcp-job-proof-demo .jpd-hero-secondary a:hover {
-  color: var(--jcp-color-text, #0f172a);
+body.jcp-job-proof-demo .jpd-hero-secondary a:hover,
+body.jcp-job-proof-demo .jpd-hero-secondary a:focus-visible {
+  color: #0f172a !important;
+}
+
+body.jcp-job-proof-demo .jpd-final-cta .cta-secondary-link a,
+body.jcp-job-proof-demo .jpd-final-cta .cta-secondary-link a:link,
+body.jcp-job-proof-demo .jpd-final-cta .cta-secondary-link a:visited {
+  color: rgba(255, 255, 255, 0.88) !important;
+}
+
+body.jcp-job-proof-demo .jpd-final-cta .cta-secondary-link a:hover {
+  color: #fff !important;
 }
 
 body.jcp-job-proof-demo .jcp-niche-final .rankings-cta,
@@ -1887,7 +1900,7 @@ body.jcp-job-proof-demo-run .ghl-chat-widget {
 }
 .jpd-transform-line {
   margin: 1.25rem 0 0;
-  text-align: center;
+  text-align: left;
   font-size: 1.05rem;
   font-weight: 750;
 }
@@ -1898,16 +1911,10 @@ body.jcp-job-proof-demo-run .ghl-chat-widget {
   padding-bottom: 2.5rem;
 }
 .jpd-trust__founder {
-  display: grid;
-  gap: 1.35rem;
-  margin-bottom: 2rem;
-}
-@media (min-width: 900px) {
-  .jpd-trust__founder {
-    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
-    gap: 1.75rem;
-    align-items: start;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 0;
 }
 .jpd-trust .jpd-founder__thumb {
   display: block;
@@ -2077,11 +2084,15 @@ body.jcp-job-proof-demo .jpd-punch {
   font-weight: 750;
 }
 
-/* Hero product canvas */
+/* Hero product canvas — readable 3-col story (job → JCP → outs) */
 .jpd-hero-canvas {
   position: relative;
-  min-height: 28rem;
-  padding: 0.75rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) auto minmax(0, 1fr);
+  gap: 0.65rem 0.55rem;
+  align-items: center;
+  min-height: 0;
+  padding: 0.85rem;
   border: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 1.25rem;
   background:
@@ -2093,8 +2104,8 @@ body.jcp-job-proof-demo .jpd-punch {
 
 .jpd-hero-job {
   position: relative;
-  z-index: 3;
-  width: min(100%, 17.5rem);
+  z-index: 1;
+  width: 100%;
   border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 1rem;
   overflow: hidden;
@@ -2131,11 +2142,10 @@ body.jcp-job-proof-demo .jpd-punch {
 }
 
 .jpd-hero-bridge {
-  position: absolute;
-  left: 15.5rem;
-  top: 42%;
-  z-index: 4;
+  position: static;
+  z-index: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 0.35rem;
 }
@@ -2151,27 +2161,27 @@ body.jcp-job-proof-demo .jpd-punch {
   font-size: 0.72rem;
   font-weight: 900;
   letter-spacing: 0.02em;
+  box-shadow: 0 8px 18px rgba(255, 80, 62, 0.35);
 }
 
 .jpd-hero-bridge__line {
-  width: 1.6rem;
-  height: 2px;
-  background: linear-gradient(90deg, rgba(255, 80, 62, 0.8), rgba(255, 80, 62, 0.15));
+  width: 2px;
+  height: 1.75rem;
+  background: linear-gradient(180deg, rgba(255, 80, 62, 0.85), rgba(255, 80, 62, 0.12));
 }
 
 .jpd-hero-outs {
-  position: absolute;
-  inset: 0.85rem 0.75rem 0.75rem auto;
-  width: min(58%, 15.5rem);
+  position: static;
+  width: 100%;
   display: grid;
-  gap: 0.45rem;
-  align-content: start;
-  z-index: 2;
+  gap: 0.4rem;
+  align-content: center;
+  z-index: 1;
 }
 
 .jpd-hero-out {
   margin: 0;
-  padding: 0.45rem;
+  padding: 0.4rem;
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 0.75rem;
   background: #fff;
@@ -2179,10 +2189,10 @@ body.jcp-job-proof-demo .jpd-punch {
 
 .jpd-hero-out--web .jpd-hero-out__map {
   position: relative;
-  height: 3.5rem;
+  height: 2.85rem;
   border-radius: 0.45rem;
   overflow: hidden;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.3rem;
 }
 
 .jpd-hero-out--web .jpd-hero-out__map img {
@@ -2200,8 +2210,8 @@ body.jcp-job-proof-demo .jpd-punch {
 }
 
 .jpd-hero-out__row img {
-  width: 2.4rem;
-  height: 1.7rem;
+  width: 2.2rem;
+  height: 1.55rem;
   object-fit: cover;
   border-radius: 0.3rem;
 }
@@ -2213,7 +2223,7 @@ body.jcp-job-proof-demo .jpd-punch {
 }
 
 .jpd-hero-out--gbp .jpd-hero-out__kicker {
-  margin: 0 0 0.25rem;
+  margin: 0 0 0.2rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -2224,17 +2234,17 @@ body.jcp-job-proof-demo .jpd-punch {
 .jpd-hero-out--social img {
   display: block;
   width: 100%;
-  height: 3.1rem;
+  height: 2.4rem;
   object-fit: cover;
   border-radius: 0.35rem;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.25rem;
 }
 
 .jpd-hero-out--social .jpd-hero-out__social-head {
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.25rem;
 }
 
 .jpd-hero-out--social em {
@@ -2253,12 +2263,12 @@ body.jcp-job-proof-demo .jpd-punch {
 
 .jpd-hero-out--dir {
   pointer-events: none;
-  padding: 0.55rem 0.6rem 0.65rem;
+  padding: 0.5rem 0.55rem 0.55rem;
 }
 
 .jpd-hero-out--dir .card-header {
   gap: 0.45rem;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.3rem;
 }
 
 .jpd-hero-out--dir .company-avatar {
@@ -2278,20 +2288,19 @@ body.jcp-job-proof-demo .jpd-punch {
 
 @media (max-width: 960px) {
   .jpd-hero-canvas {
-    min-height: 0;
-    display: grid;
+    grid-template-columns: 1fr;
     gap: 0.85rem;
   }
-  .jpd-hero-job {
-    width: 100%;
-  }
   .jpd-hero-bridge {
-    position: static;
+    flex-direction: row;
     justify-content: center;
   }
+  .jpd-hero-bridge__line {
+    width: 1.6rem;
+    height: 2px;
+    background: linear-gradient(90deg, rgba(255, 80, 62, 0.85), rgba(255, 80, 62, 0.12));
+  }
   .jpd-hero-outs {
-    position: static;
-    width: 100%;
     grid-template-columns: 1fr 1fr;
   }
   .jpd-hero-out--web,
@@ -2384,7 +2393,7 @@ body.jcp-job-proof-demo .jpd-workflow__copy p {
   color: var(--jcp-color-text-muted, #64748b);
 }
 
-/* Transformation canvas */
+/* Transformation canvas — contained stage, compact outs, payoff below */
 .jpd-transform {
   background: #f4f6f8;
 }
@@ -2402,11 +2411,18 @@ body.jcp-job-proof-demo .jpd-workflow__copy p {
   display: grid;
   gap: 1rem;
   align-items: start;
+  isolation: isolate;
+  padding: 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 1.15rem;
+  background: #fff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
 }
 @media (min-width: 1100px) {
   .jpd-xform {
-    grid-template-columns: 0.95fr 0.75fr 1.35fr;
-    gap: 1.15rem;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 0.8fr) minmax(0, 1.25fr);
+    gap: 1rem;
   }
 }
 .jpd-xform__job {
@@ -2465,17 +2481,22 @@ body.jcp-job-proof-demo .jpd-workflow__copy p {
 }
 .jpd-xform__outs {
   display: grid;
-  gap: 0.65rem;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  align-content: start;
 }
 .jpd-xform__out {
   margin: 0;
-  padding: 0.75rem;
+  padding: 0.65rem;
   border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 0.9rem;
+  border-radius: 0.85rem;
   background: #fff;
   opacity: 0;
   transform: translateY(0.5rem);
   transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.jpd-xform__out:first-child {
+  grid-column: 1 / -1;
 }
 .jpd-xform.is-live .jpd-xform__out {
   opacity: 1;
@@ -2487,10 +2508,10 @@ body.jcp-job-proof-demo .jpd-workflow__copy p {
 .jpd-xform.is-live .jpd-xform__out:nth-child(5) { transition-delay: 0.32s; }
 .jpd-xform__map {
   position: relative;
-  height: 7rem;
+  height: 5.25rem;
   border-radius: 0.55rem;
   overflow: hidden;
-  margin-bottom: 0.55rem;
+  margin-bottom: 0.45rem;
 }
 .jpd-xform__map img {
   width: 100%;
@@ -2499,34 +2520,42 @@ body.jcp-job-proof-demo .jpd-workflow__copy p {
 }
 .jpd-xform__checkin {
   display: grid;
-  grid-template-columns: 3.5rem 1fr;
-  gap: 0.55rem;
+  grid-template-columns: 3.25rem 1fr;
+  gap: 0.5rem;
   align-items: center;
 }
 .jpd-xform__checkin img {
-  width: 3.5rem;
-  height: 2.6rem;
+  width: 3.25rem;
+  height: 2.4rem;
   object-fit: cover;
   border-radius: 0.35rem;
 }
 .jpd-xform__out .jcp-sm-gbp__photo,
 .jpd-xform__out .jcp-sm-social__photo {
   width: 100%;
-  height: 6.5rem;
+  height: 4.25rem;
   object-fit: cover;
-  border-radius: 0.45rem;
+  border-radius: 0.4rem;
 }
 .jpd-xform__out--review {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.65rem;
   font-weight: 750;
+  font-size: 0.9rem;
 }
 .jpd-xform__out--dir {
   pointer-events: none;
 }
+.jpd-transform__payoff {
+  clear: both;
+  position: relative;
+  z-index: 1;
+  margin-top: 1.75rem;
+  max-width: 44rem;
+}
 .jpd-transform-line {
-  margin: 1.5rem 0 0.35rem;
+  margin: 0 0 0.35rem;
   font-size: clamp(1.25rem, 2.2vw, 1.65rem);
   font-weight: 800;
   text-align: left;
@@ -2566,6 +2595,15 @@ body.jcp-job-proof-demo .jpd-workflow__copy p {
 body.jcp-job-proof-demo .jpd-section-cta {
   text-align: left;
   margin-top: 0.25rem;
+}
+
+@media (max-width: 700px) {
+  .jpd-xform__outs {
+    grid-template-columns: 1fr;
+  }
+  .jpd-xform__out:first-child {
+    grid-column: auto;
+  }
 }
 
 /* Conversion / form hero moment */
@@ -2650,35 +2688,49 @@ body.jcp-job-proof-demo .jpd-convert .survey-btn {
   font-size: 1.05rem;
 }
 
-/* Trust asymmetric */
-.jpd-trust__grid {
+/* Trust asymmetric — single-column founder stack (no 2-col text wrap) */
+body.jcp-job-proof-demo .jpd-trust__grid {
   display: grid;
   gap: 2rem;
 }
 @media (min-width: 1000px) {
-  .jpd-trust__grid {
+  body.jcp-job-proof-demo .jpd-trust__grid {
     grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr);
     gap: 2.5rem;
     align-items: start;
   }
 }
-.jpd-trust__photo {
+body.jcp-job-proof-demo .jpd-trust__founder {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  margin-bottom: 0;
+}
+body.jcp-job-proof-demo .jpd-trust__photo {
   display: block;
+  float: none;
   width: 100%;
   max-width: 22rem;
   aspect-ratio: 4 / 3;
   object-fit: cover;
   border-radius: 1rem;
   border: 1px solid rgba(15, 23, 42, 0.1);
-  margin-bottom: 1.15rem;
+  margin: 0 0 1.15rem;
 }
-.jpd-trust__founder p {
+body.jcp-job-proof-demo .jpd-trust__founder > .jpd-eyebrow {
+  margin: 0 0 0.55rem;
+}
+body.jcp-job-proof-demo .jpd-trust__founder > .jcp-section-headline {
+  margin: 0 0 0.35rem;
+}
+body.jcp-job-proof-demo .jpd-trust__founder p {
   margin: 0.65rem 0 0;
   max-width: 34rem;
   line-height: 1.5;
   color: var(--jcp-color-text-muted, #64748b);
 }
-.jpd-trust__mini-stats {
+body.jcp-job-proof-demo .jpd-trust__mini-stats {
   margin-top: 1rem !important;
   font-size: 0.95rem;
   color: var(--jcp-color-text, #0f172a) !important;
