@@ -1,6 +1,6 @@
 <?php
 /**
- * Job Proof Demo LP — product-led campaign shell.
+ * Job Proof Demo LP — conversion-first paid funnel shell.
  *
  * @package JCP_Core
  *
@@ -26,37 +26,38 @@ $reviews  = function_exists( 'jcp_sales_tool_default_reviews' ) ? jcp_sales_tool
 $business_type_options = function_exists( 'jcp_core_business_type_flat_options' )
 	? jcp_core_business_type_flat_options()
 	: [];
+$integrations = function_exists( 'jcp_core_demo_field_software_integrations' )
+	? jcp_core_demo_field_software_integrations()
+	: [ 'Housecall Pro', 'Jobber', 'ServiceTitan', 'CompanyCam' ];
 $default_service = __( 'Water heater replacement', 'jcp-core' );
 $default_city    = __( 'Austin, TX', 'jcp-core' );
 $capture_photo   = $campaign . 'jcp-campaign-hvac-capture-640.webp';
 $founder_thumb   = $campaign . 'jcp-campaign-face-owner-640.webp';
 $why_href        = home_url( '/why-we-built-jcp/' );
+$cta_primary     = __( 'See my personalized demo', 'jcp-core' );
 ?>
 
-<!-- 1. Hero: Give JCP a job -->
-<section class="jcp-section jcp-hero jcp-niche-hero jcp-hero-variant-split jcp-layout-align-left jcp-hero-has-visual jpd-hero" id="proof" aria-labelledby="jpd-hero-title">
+<!-- 2. Hero -->
+<section class="jcp-section jcp-hero jcp-niche-hero jcp-hero-variant-split jcp-layout-align-left jcp-hero-has-visual jpd-hero" id="proof" aria-labelledby="jpd-hero-title" data-jpd-track-view="proof_lp_hero">
 	<div class="jcp-container">
 		<div class="jcp-hero-grid jcp-split-layout">
 			<div class="jcp-hero-copy hero-copy jcp-split-col jcp-split-col--copy">
-				<p class="jcp-hero-eyebrow demo-badge"><?php esc_html_e( 'The job is done. Now put the proof to work.', 'jcp-core' ); ?></p>
-				<h1 id="jpd-hero-title" class="jcp-hero-title"><?php esc_html_e( 'Turn one finished job into marketing everywhere customers look.', 'jcp-core' ); ?></h1>
-				<p class="jcp-hero-subtitle"><?php esc_html_e( 'Your crew already takes the photos. JobCapturePro turns real completed work into fresh website content, Google activity, social proof, review opportunities and JCP Directory proof — automatically across connected channels.', 'jcp-core' ); ?></p>
-				<p class="jpd-hero-line"><?php esc_html_e( 'Your tech does the job. JCP does the marketing.', 'jcp-core' ); ?></p>
+				<p class="jcp-hero-eyebrow demo-badge"><?php esc_html_e( 'Built for home-service crews', 'jcp-core' ); ?></p>
+				<h1 id="jpd-hero-title" class="jcp-hero-title"><?php esc_html_e( 'Your crew already takes the photos. JobCapturePro turns finished jobs into marketing proof.', 'jcp-core' ); ?></h1>
+				<p class="jcp-hero-subtitle"><?php esc_html_e( 'Fresh, local, trust-building proof across your website, Google, social, reviews, and the JCP Directory — automatically — without creating another marketing job.', 'jcp-core' ); ?></p>
 				<div class="jcp-actions directory-cta-row">
 					<div class="jcp-hero-primary-cta">
-						<a class="btn btn-primary jcp-hero-cta-stacked" href="#jpd-canvas" data-jpd-scroll-canvas>
-							<span class="jcp-hero-cta-label"><?php esc_html_e( 'Show me with a real job →', 'jcp-core' ); ?></span>
-							<span class="jcp-hero-cta-microcopy jcp-niche-trust-line"><?php esc_html_e( 'Free personalized demo · About 60 seconds · No phone call required', 'jcp-core' ); ?></span>
+						<a class="btn btn-primary jcp-hero-cta-stacked" href="#jpd-optin" data-jpd-scroll-optin data-jpd-track="hero_primary_cta_clicked" data-jpd-section="hero">
+							<span class="jcp-hero-cta-label"><?php echo esc_html( $cta_primary ); ?> →</span>
+							<span class="jcp-hero-cta-microcopy jcp-niche-trust-line"><?php esc_html_e( 'Free · About 60 seconds · No phone call · No credit card', 'jcp-core' ); ?></span>
 						</a>
 					</div>
 					<p class="jpd-hero-secondary">
-						<a href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="hero_skip"><?php esc_html_e( 'Start free trial →', 'jcp-core' ); ?></a>
+						<a href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="hero_skip" data-jpd-track="hero_secondary_cta_clicked" data-jpd-section="hero"><?php esc_html_e( 'Already know you want it? Start free trial', 'jcp-core' ); ?></a>
 					</p>
 				</div>
-				<p class="jpd-trust-strip" role="note">
-					<span><?php esc_html_e( 'Built by LeadsForward', 'jcp-core' ); ?></span>
-					<span aria-hidden="true">·</span>
-					<span><?php esc_html_e( '10 years · 250K+ leads · $150M+ booked', 'jcp-core' ); ?></span>
+				<p class="jpd-compat-line" role="note">
+					<?php esc_html_e( 'Works with your existing workflow — including ServiceTitan, Housecall Pro, Jobber, CompanyCam and more.', 'jcp-core' ); ?>
 				</p>
 			</div>
 
@@ -129,8 +130,6 @@ $why_href        = home_url( '/why-we-built-jcp/' );
 								<div class="jpd-out__qr" aria-hidden="true">
 									<?php if ( $icon( 'qr-code' ) ) : ?>
 										<img src="<?php echo esc_url( $icon( 'qr-code' ) ); ?>" alt="" width="40" height="40" />
-									<?php else : ?>
-										<svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true"><rect x="4" y="4" width="12" height="12" fill="currentColor"/><rect x="24" y="4" width="12" height="12" fill="currentColor"/><rect x="4" y="24" width="12" height="12" fill="currentColor"/><rect x="22" y="22" width="6" height="6" fill="currentColor"/><rect x="30" y="30" width="6" height="6" fill="currentColor"/></svg>
 									<?php endif; ?>
 								</div>
 								<div class="jpd-out__body">
@@ -150,16 +149,16 @@ $why_href        = home_url( '/why-we-built-jcp/' );
 
 					<div class="jpd-stage__controls" data-jpd-canvas-idle>
 						<button type="button" class="btn btn-primary jpd-stage__primary" data-jpd-use-sample>
-							<?php esc_html_e( 'Use this sample job →', 'jcp-core' ); ?>
+							<?php esc_html_e( 'Watch one job become proof →', 'jcp-core' ); ?>
 						</button>
-						<p class="jpd-canvas__note"><?php esc_html_e( 'Personalize the full demo to your trade in the next step.', 'jcp-core' ); ?></p>
+						<p class="jpd-canvas__note"><?php esc_html_e( 'Then personalize the full demo to your trade.', 'jcp-core' ); ?></p>
 					</div>
 
 					<div class="jpd-stage__controls jpd-stage__controls--run" data-jpd-canvas-run hidden>
 						<p class="jpd-canvas__status" id="jpdCanvasStatus"><?php esc_html_e( 'Job photo received…', 'jcp-core' ); ?></p>
 						<div class="jpd-canvas__payoff" data-jpd-payoff hidden>
 							<p class="jpd-canvas__payoff-line"><?php esc_html_e( 'Your crew took one photo.', 'jcp-core' ); ?><br /><?php esc_html_e( 'JCP just turned it into a marketing system.', 'jcp-core' ); ?></p>
-							<a class="btn btn-primary" href="#jpd-optin" data-jpd-scroll-optin><?php esc_html_e( 'See this for my business →', 'jcp-core' ); ?></a>
+							<a class="btn btn-primary" href="#jpd-optin" data-jpd-scroll-optin data-jpd-track="hero_primary_cta_clicked" data-jpd-section="hero_payoff"><?php echo esc_html( $cta_primary ); ?> →</a>
 						</div>
 					</div>
 				</div>
@@ -168,63 +167,106 @@ $why_href        = home_url( '/why-we-built-jcp/' );
 	</div>
 </section>
 
-<!-- 2. Keep current field software -->
-<section class="jcp-section rankings-section jpd-integrations jpd-band jpd-band--tint" id="integrations" aria-labelledby="jpd-integrations-title">
+<!-- 3. Immediate proof / credibility -->
+<?php
+if ( function_exists( 'jcp_niche_render_authority' ) ) {
+	jcp_niche_render_authority(
+		[
+			'variant'      => 'scoreboard',
+			'section_id'   => 'jpd-authority',
+			'eyebrow'      => __( 'Built by LeadsForward', 'jcp-core' ),
+			'headline'     => __( 'A decade helping contractors turn attention into booked work.', 'jcp-core' ),
+			'body'         => __( 'JobCapturePro comes from the same team that has spent years generating contractor leads — and saw finished jobs disappear into camera rolls instead of becoming public proof.', 'jcp-core' ),
+			'show_eyebrow' => true,
+			'show_body'    => true,
+			'show_stats'   => true,
+			'show_cta'     => false,
+			'stats'        => [
+				[
+					'value'  => '10',
+					'label'  => __( 'years', 'jcp-core' ),
+					'detail' => __( 'helping contractors grow', 'jcp-core' ),
+				],
+				[
+					'value'  => '250K+',
+					'label'  => __( 'leads', 'jcp-core' ),
+					'detail' => __( 'generated for home-service companies', 'jcp-core' ),
+				],
+				[
+					'value'  => '$150M+',
+					'label'  => __( 'booked', 'jcp-core' ),
+					'detail' => __( 'revenue from those leads', 'jcp-core' ),
+				],
+			],
+		],
+		'job_proof_demo'
+	);
+}
+?>
+
+<!-- 4. Integrations / compatibility -->
+<section class="jcp-section rankings-section jpd-integrations" id="integrations" aria-labelledby="jpd-integrations-title" data-jpd-track-view="integration_section_viewed">
 	<div class="jcp-container">
 		<div class="rankings-header">
-			<h2 id="jpd-integrations-title" class="jcp-section-headline"><?php esc_html_e( 'Your crew doesn’t need another marketing job.', 'jcp-core' ); ?></h2>
-			<p class="rankings-subtitle"><?php esc_html_e( 'If your team already captures consistent job photos in software you use today, JobCapturePro can work from that existing proof through supported integrations.', 'jcp-core' ); ?></p>
+			<h2 id="jpd-integrations-title" class="jcp-section-headline"><?php esc_html_e( 'JCP works with the photos and workflow you already have.', 'jcp-core' ); ?></h2>
+			<p class="rankings-subtitle"><?php esc_html_e( 'If your crews already take photos in another system, they do not need to switch their daily behavior just to get value from JobCapturePro.', 'jcp-core' ); ?></p>
 		</div>
-		<p class="jpd-integrations__line"><?php esc_html_e( 'Keep the workflow your crew already knows. Let JCP handle what happens after the photo.', 'jcp-core' ); ?></p>
+		<ul class="jpd-integrations__list" aria-label="<?php esc_attr_e( 'Compatible field systems', 'jcp-core' ); ?>">
+			<?php foreach ( $integrations as $name ) : ?>
+				<li class="jpd-integrations__item"><?php echo esc_html( $name ); ?></li>
+			<?php endforeach; ?>
+			<li class="jpd-integrations__item jpd-integrations__item--more"><?php esc_html_e( 'and more', 'jcp-core' ); ?></li>
+		</ul>
+		<p class="jpd-integrations__line"><?php esc_html_e( 'Your crew doesn’t need another marketing job. Keep the workflow they already know — let JCP handle what happens after the photo.', 'jcp-core' ); ?></p>
 		<p class="jpd-integrations__note"><?php esc_html_e( 'Supported integrations and workflows vary by setup. JobCapturePro works from completed-job proof your team already captures — in the JCP app or through connected field systems when available.', 'jcp-core' ); ?></p>
 	</div>
 </section>
 
-<!-- 3. Core differentiator -->
-<section class="jcp-section rankings-section jpd-diff" id="differentiator" aria-labelledby="jpd-diff-title">
+<!-- 5. Problem / solution -->
+<section class="jcp-section rankings-section jpd-diff jpd-band jpd-band--tint" id="differentiator" aria-labelledby="jpd-diff-title">
 	<div class="jcp-container">
 		<div class="rankings-header">
-			<h2 id="jpd-diff-title" class="jcp-section-headline"><?php esc_html_e( 'JCP doesn’t create generic marketing. It markets the work you actually did.', 'jcp-core' ); ?></h2>
+			<h2 id="jpd-diff-title" class="jcp-section-headline"><?php esc_html_e( 'Your crew doesn’t need another marketing job.', 'jcp-core' ); ?></h2>
+			<p class="rankings-subtitle"><?php esc_html_e( 'JCP doesn’t create generic marketing. It markets the work you already did.', 'jcp-core' ); ?></p>
 		</div>
 		<div class="jpd-diff__grid">
-			<article class="ranking-factor-card jpd-diff__card jpd-diff__card--generic">
-				<p class="jpd-diff__label"><?php esc_html_e( 'Generic contractor marketing', 'jcp-core' ); ?></p>
+			<article class="jpd-diff__card jpd-diff__card--generic">
+				<p class="jpd-diff__label"><?php esc_html_e( 'What normally happens', 'jcp-core' ); ?></p>
 				<ul>
-					<li><?php esc_html_e( 'Stock content', 'jcp-core' ); ?></li>
-					<li><?php esc_html_e( 'Generic city pages', 'jcp-core' ); ?></li>
-					<li><?php esc_html_e( 'Recycled social posts', 'jcp-core' ); ?></li>
-					<li><?php esc_html_e( 'Stale Google profile', 'jcp-core' ); ?></li>
-					<li><?php esc_html_e( 'Claims anyone can make', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'Job photos stay buried in phones and CRMs', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'Nobody posts them after a long day', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'No fresh proof for homeowners to see', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'No local signal from real completed work', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'No review ask while the job is still fresh', 'jcp-core' ); ?></li>
 				</ul>
 			</article>
-			<article class="ranking-factor-card jpd-diff__card jpd-diff__card--real">
-				<p class="jpd-diff__label"><?php esc_html_e( 'Real job proof with JCP', 'jcp-core' ); ?></p>
+			<article class="jpd-diff__card jpd-diff__card--real">
+				<p class="jpd-diff__label"><?php esc_html_e( 'What happens with JCP', 'jcp-core' ); ?></p>
 				<ul>
-					<li><?php esc_html_e( 'Actual completed jobs', 'jcp-core' ); ?></li>
-					<li><?php esc_html_e( 'Actual job photos', 'jcp-core' ); ?></li>
-					<li><?php esc_html_e( 'Actual service + location context', 'jcp-core' ); ?></li>
-					<li><?php esc_html_e( 'Recent activity', 'jcp-core' ); ?></li>
-					<li><?php esc_html_e( 'Real review opportunity', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'Finished jobs become usable marketing proof', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'Website content with real service + location', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'Google Business Profile activity', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'Social proof from the field', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'Directory presence + review opportunity', 'jcp-core' ); ?></li>
 				</ul>
 			</article>
 		</div>
-		<p class="jpd-diff__outcome"><?php esc_html_e( 'Real work creates proof competitors can’t manufacture.', 'jcp-core' ); ?></p>
 	</div>
 </section>
 
-<!-- 4. AI transformation -->
-<section class="jcp-section rankings-section jpd-ai jpd-band jpd-band--tint" id="ai-transform" aria-labelledby="jpd-ai-title">
+<!-- 6. See what one finished job becomes -->
+<section class="jcp-section rankings-section jpd-ai" id="ai-transform" aria-labelledby="jpd-ai-title" data-jpd-track-view="outputs_preview_viewed">
 	<div class="jcp-container">
 		<div class="rankings-header">
-			<h2 id="jpd-ai-title" class="jcp-section-headline"><?php esc_html_e( 'A normal job photo becomes useful marketing.', 'jcp-core' ); ?></h2>
-			<p class="rankings-subtitle"><?php esc_html_e( 'Turn ordinary job photos into optimized job content — AI-written check-in descriptions with service and location context, ready to publish across connected channels.', 'jcp-core' ); ?></p>
+			<h2 id="jpd-ai-title" class="jcp-section-headline"><?php esc_html_e( 'See what one finished job becomes.', 'jcp-core' ); ?></h2>
+			<p class="rankings-subtitle"><?php esc_html_e( 'One ordinary completed-job photo becomes multiple pieces of useful marketing proof — without your office rewriting captions after hours.', 'jcp-core' ); ?></p>
 		</div>
 		<div class="jpd-ai__story">
 			<div class="jpd-ai__node jpd-ai__node--in">
-				<p class="jpd-ai__col-label"><?php esc_html_e( 'Input', 'jcp-core' ); ?></p>
+				<p class="jpd-ai__col-label"><?php esc_html_e( 'Finished job', 'jcp-core' ); ?></p>
 				<img src="<?php echo esc_url( $photo_url ); ?>" alt="" width="320" height="220" loading="lazy" decoding="async" />
 				<ul>
-					<li><?php esc_html_e( 'Ordinary job photo', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'Crew photo from the site', 'jcp-core' ); ?></li>
 					<li><?php esc_html_e( 'Trade / service', 'jcp-core' ); ?></li>
 					<li><?php esc_html_e( 'Location context', 'jcp-core' ); ?></li>
 				</ul>
@@ -235,16 +277,16 @@ $why_href        = home_url( '/why-we-built-jcp/' );
 			<div class="jpd-ai__node jpd-ai__node--jcp">
 				<p class="jpd-ai__col-label"><?php esc_html_e( 'JobCapturePro', 'jcp-core' ); ?></p>
 				<ul class="jpd-ai__checks">
-					<li><?php esc_html_e( 'AI-generated check-in description', 'jcp-core' ); ?></li>
-					<li><?php esc_html_e( 'Service + location context', 'jcp-core' ); ?></li>
-					<li><?php esc_html_e( 'Optimized publishing content', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'AI-written check-in description', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'Service + location attached', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'Ready to publish where connected', 'jcp-core' ); ?></li>
 				</ul>
 			</div>
 			<div class="jpd-ai__arrow" aria-hidden="true">
 				<svg viewBox="0 0 80 24" width="80" height="24"><path d="M2 12h68M58 4l12 8-12 8" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
 			</div>
 			<div class="jpd-ai__node jpd-ai__node--out">
-				<p class="jpd-ai__col-label"><?php esc_html_e( 'Output', 'jcp-core' ); ?></p>
+				<p class="jpd-ai__col-label"><?php esc_html_e( 'Proof everywhere', 'jcp-core' ); ?></p>
 				<ul class="jpd-ai__channels">
 					<li><?php esc_html_e( 'Website', 'jcp-core' ); ?></li>
 					<li><?php esc_html_e( 'Google', 'jcp-core' ); ?></li>
@@ -254,38 +296,20 @@ $why_href        = home_url( '/why-we-built-jcp/' );
 				</ul>
 			</div>
 		</div>
+		<p class="jpd-section-cta">
+			<a class="btn btn-primary" href="#jpd-optin" data-jpd-scroll-optin data-jpd-track="hero_primary_cta_clicked" data-jpd-section="outputs_preview"><?php echo esc_html( $cta_primary ); ?> →</a>
+		</p>
 	</div>
 </section>
 
-<!-- Credibility band -->
-<section class="jcp-section jpd-credibility" aria-label="<?php esc_attr_e( 'Built by LeadsForward', 'jcp-core' ); ?>">
-	<div class="jcp-container">
-		<p class="jpd-credibility__by"><?php esc_html_e( 'Built by LeadsForward', 'jcp-core' ); ?></p>
-		<ul class="jpd-credibility__stats">
-			<li>
-				<strong>10</strong>
-				<span><?php esc_html_e( 'years helping contractors grow', 'jcp-core' ); ?></span>
-			</li>
-			<li>
-				<strong>250K+</strong>
-				<span><?php esc_html_e( 'leads generated', 'jcp-core' ); ?></span>
-			</li>
-			<li>
-				<strong>$150M+</strong>
-				<span><?php esc_html_e( 'revenue booked from those leads', 'jcp-core' ); ?></span>
-			</li>
-		</ul>
-	</div>
-</section>
-
-<!-- 5. Personalized demo opt-in -->
-<section class="jcp-section rankings-section jpd-optin" id="jpd-optin" data-jpd-optin aria-labelledby="jpd-optin-title">
+<!-- 7. Opt-in -->
+<section class="jcp-section rankings-section jpd-optin" id="jpd-optin" data-jpd-optin aria-labelledby="jpd-optin-title" data-jpd-track-view="form_viewed">
 	<div class="jcp-container">
 		<div class="jpd-optin__card survey-step active">
 			<header class="survey-head">
 				<p class="demo-badge"><?php esc_html_e( 'Free personalized demo', 'jcp-core' ); ?></p>
-				<h2 id="jpd-optin-title" class="survey-title"><?php esc_html_e( 'See what JCP would do with the jobs your business already completes.', 'jcp-core' ); ?></h2>
-				<p class="survey-subtitle"><?php esc_html_e( 'Choose your trade and we’ll show you a real example built around the kind of work your crew does every week.', 'jcp-core' ); ?></p>
+				<h2 id="jpd-optin-title" class="survey-title"><?php esc_html_e( 'See what this looks like for your trade.', 'jcp-core' ); ?></h2>
+				<p class="survey-subtitle"><?php esc_html_e( 'Enter your work email and trade. We’ll show a real completed-job example personalized to the kind of work your crew does — no phone call required.', 'jcp-core' ); ?></p>
 			</header>
 
 			<form class="survey-form survey-form--gate" id="jpdOptinForm" autocomplete="on" novalidate>
@@ -314,8 +338,9 @@ $why_href        = home_url( '/why-we-built-jcp/' );
 					</div>
 					<script type="application/json" id="jcpBusinessTypeOptions"><?php echo wp_json_encode( $business_type_options ); ?></script>
 				</div>
+				<p class="jpd-optin__hint"><?php esc_html_e( 'Your demo is personalized to the type of work you actually do.', 'jcp-core' ); ?></p>
 				<p class="jpd-optin__error" id="jpdOptinError" role="alert" hidden></p>
-				<button type="submit" class="btn btn-primary survey-btn" id="jpdOptinSubmit"><?php esc_html_e( 'Build my personalized demo →', 'jcp-core' ); ?></button>
+				<button type="submit" class="btn btn-primary survey-btn" id="jpdOptinSubmit"><?php echo esc_html( $cta_primary ); ?> →</button>
 				<p class="survey-microcopy jcp-niche-trust-line"><?php esc_html_e( 'Free · About 60 seconds · No phone number · No credit card', 'jcp-core' ); ?></p>
 				<p class="survey-legal"><?php esc_html_e( 'By continuing you agree to receive the demo and relevant updates by email. Unsubscribe anytime.', 'jcp-core' ); ?></p>
 			</form>
@@ -323,73 +348,49 @@ $why_href        = home_url( '/why-we-built-jcp/' );
 	</div>
 </section>
 
-<?php
-// Directory
-if ( function_exists( 'jcp_niche_render_directory_preview' ) ) {
-	jcp_niche_render_directory_preview(
-		[
-			'eyebrow'     => '',
-			'headline'    => __( 'Your finished work builds a public footprint in the JCP Directory.', 'jcp-core' ),
-			'body'        => __( 'Your completed jobs do more than feed other platforms. They also build a public history of real work inside JobCapturePro — showing the services you actually perform and the areas your business serves. Consistently documenting real work builds a richer, more current public footprint.', 'jcp-core' ),
-			'bullets'     => [
-				__( 'Public completed-job proof', 'jcp-core' ),
-				__( 'Services you actually perform', 'jcp-core' ),
-				__( 'Job and service-area context', 'jcp-core' ),
-				__( 'Business visibility inside the JCP ecosystem', 'jcp-core' ),
-			],
-			'section_id'  => 'jpd-directory',
-			'show_cta'    => false,
-		],
-		'job_proof_demo'
-	);
-}
-?>
-
-<!-- Local signals -->
+<!-- 8. Outputs value -->
 <section class="jcp-section rankings-section jpd-band jpd-band--tint" id="local-signals" aria-labelledby="jpd-seo-title">
 	<div class="jcp-container">
 		<div class="rankings-header">
-			<h2 id="jpd-seo-title" class="jcp-section-headline"><?php esc_html_e( 'Every finished job creates another local signal.', 'jcp-core' ); ?></h2>
+			<h2 id="jpd-seo-title" class="jcp-section-headline"><?php esc_html_e( 'What one finished job creates', 'jcp-core' ); ?></h2>
+			<p class="rankings-subtitle"><?php esc_html_e( 'Every completed job can leave fresh proof, local relevance, and more reasons to get chosen.', 'jcp-core' ); ?></p>
 		</div>
-		<div class="jcp-niche-benefits jcp-niche-benefits--cards">
-			<article class="ranking-factor-card">
-				<h3 class="jcp-section-subhead"><?php esc_html_e( 'Recency', 'jcp-core' ); ?></h3>
-				<p><?php esc_html_e( 'Show customers—and connected platforms—that your business is actively completing work.', 'jcp-core' ); ?></p>
+		<div class="jpd-value-grid">
+			<article class="jpd-value-card">
+				<h3 class="jcp-section-subhead"><?php esc_html_e( 'Fresh proof', 'jcp-core' ); ?></h3>
+				<p><?php esc_html_e( 'Show customers — and connected platforms — that your business is actively completing real work.', 'jcp-core' ); ?></p>
 			</article>
-			<article class="ranking-factor-card">
-				<h3 class="jcp-section-subhead"><?php esc_html_e( 'Relevance', 'jcp-core' ); ?></h3>
-				<p><?php esc_html_e( 'Pair real services with real job/location context.', 'jcp-core' ); ?></p>
+			<article class="jpd-value-card">
+				<h3 class="jcp-section-subhead"><?php esc_html_e( 'Local relevance', 'jcp-core' ); ?></h3>
+				<p><?php esc_html_e( 'Pair real services with real job and location context homeowners actually care about.', 'jcp-core' ); ?></p>
 			</article>
-			<article class="ranking-factor-card">
-				<h3 class="jcp-section-subhead"><?php esc_html_e( 'Trust', 'jcp-core' ); ?></h3>
-				<p><?php esc_html_e( 'Give prospects visible evidence that you actually perform the work you advertise.', 'jcp-core' ); ?></p>
+			<article class="jpd-value-card">
+				<h3 class="jcp-section-subhead"><?php esc_html_e( 'More trust', 'jcp-core' ); ?></h3>
+				<p><?php esc_html_e( 'Give prospects visible evidence that you perform the work you advertise — before they call.', 'jcp-core' ); ?></p>
 			</article>
 		</div>
-		<p class="rankings-subtitle jpd-seo-close"><?php esc_html_e( 'JCP helps turn completed work into fresh, location-relevant proof that can support stronger local visibility over time.', 'jcp-core' ); ?></p>
 	</div>
 </section>
 
-<!-- Founder / why we built (no autoplay video asset in theme — thumbnail + link) -->
+<!-- 9. Founder -->
 <section class="jcp-section rankings-section jpd-founder" id="why-jcp" aria-labelledby="jpd-founder-title">
 	<div class="jcp-container jpd-founder__grid">
-		<a class="jpd-founder__thumb ranking-factor-card" href="<?php echo esc_url( $why_href ); ?>" data-jpd-founder>
+		<a class="jpd-founder__thumb" href="<?php echo esc_url( $why_href ); ?>" data-jpd-founder data-jpd-track="founder_video_played" data-jpd-section="founder">
 			<img src="<?php echo esc_url( $founder_thumb ); ?>" alt="<?php esc_attr_e( 'Why we built JobCapturePro', 'jcp-core' ); ?>" width="640" height="400" loading="lazy" decoding="async" />
-			<span class="jpd-founder__play" aria-hidden="true">▶</span>
+			<span class="jpd-founder__play" aria-hidden="true">
+				<svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+			</span>
 		</a>
 		<div class="jpd-founder__copy">
 			<h2 id="jpd-founder-title" class="jcp-section-headline"><?php esc_html_e( 'Why we built JobCapturePro', 'jcp-core' ); ?></h2>
-			<p><?php esc_html_e( 'We’ve spent 10 years helping contractors generate leads. We kept seeing the same thing: contractors were doing great work every day, but almost none of that real work was becoming useful marketing. JobCapturePro was built so the jobs you already complete can keep working after the crew leaves.', 'jcp-core' ); ?></p>
-			<ul class="jpd-founder__stats">
-				<li><strong>10</strong> <?php esc_html_e( 'years helping contractors grow', 'jcp-core' ); ?></li>
-				<li><strong>250K+</strong> <?php esc_html_e( 'leads generated', 'jcp-core' ); ?></li>
-				<li><strong>$150M+</strong> <?php esc_html_e( 'revenue booked from those leads', 'jcp-core' ); ?></li>
-			</ul>
+			<p><?php esc_html_e( 'LeadsForward has spent years helping contractors grow. We kept seeing the same gap: crews were finishing great jobs every day, but almost none of that real work became public marketing proof. JobCapturePro was built so the jobs you already complete can keep working after the truck leaves.', 'jcp-core' ); ?></p>
 			<p class="jpd-founder__by"><?php esc_html_e( 'Built by LeadsForward', 'jcp-core' ); ?></p>
-			<a class="btn btn-primary" href="#jpd-optin" data-jpd-scroll-optin><?php esc_html_e( 'See it on my business →', 'jcp-core' ); ?></a>
+			<a class="btn btn-primary" href="#jpd-optin" data-jpd-scroll-optin data-jpd-track="hero_primary_cta_clicked" data-jpd-section="founder"><?php echo esc_html( $cta_primary ); ?> →</a>
 		</div>
 	</div>
 </section>
 
+<!-- 10. Testimonials -->
 <?php
 if ( function_exists( 'jcp_niche_render_testimonials' ) && $reviews !== [] ) {
 	$normalized = [];
@@ -399,48 +400,50 @@ if ( function_exists( 'jcp_niche_render_testimonials' ) && $reviews !== [] ) {
 			'name'   => (string) ( $r['name'] ?? '' ),
 			'role'   => (string) ( $r['role'] ?? $r['title'] ?? '' ),
 			'avatar' => (string) ( $r['avatar'] ?? $r['image'] ?? '' ),
-			'stars'  => 5,
+			'rating' => 5,
 		];
 	}
+	echo '<div data-jpd-track-view="testimonials_viewed">';
 	jcp_niche_render_testimonials(
 		[
-			'headline'         => __( 'What people using JobCapturePro are saying', 'jcp-core' ),
-			'show_headline'    => true,
-			'section_id'       => 'testimonials',
-			'reviews'          => $normalized,
+			'headline'      => __( 'Real crews. Real completed jobs. Real proof.', 'jcp-core' ),
+			'show_headline' => true,
+			'section_id'    => 'testimonials',
+			'reviews'       => $normalized,
 		]
 	);
+	echo '</div>';
 }
 ?>
 
-<!-- Final CTA -->
-<section class="jcp-section rankings-section jcp-niche-final">
+<!-- 11. Final CTA -->
+<section class="jcp-section rankings-section jcp-niche-final jpd-final-cta" data-jpd-track-view="final_cta_viewed">
 	<div class="jcp-container">
 		<div class="rankings-cta">
 			<div class="cta-content">
 				<h2 class="jcp-section-headline"><?php esc_html_e( 'Stop letting finished jobs disappear into the camera roll.', 'jcp-core' ); ?></h2>
-				<p class="cta-paragraph"><?php esc_html_e( 'Let the next job your crew finishes start building proof for the one after it.', 'jcp-core' ); ?></p>
+				<p class="cta-paragraph"><?php esc_html_e( 'See what one of your jobs can become — then decide if you want every job to work this hard.', 'jcp-core' ); ?></p>
 			</div>
 			<div class="cta-button-wrapper">
-				<a class="btn btn-primary rankings-cta-btn" href="#jpd-optin" data-jpd-scroll-optin><?php esc_html_e( 'Build my personalized demo →', 'jcp-core' ); ?></a>
+				<a class="btn btn-primary rankings-cta-btn" href="#jpd-optin" data-jpd-scroll-optin data-jpd-track="final_cta_clicked" data-jpd-section="final"><?php echo esc_html( $cta_primary ); ?> →</a>
 				<p class="cta-note"><?php esc_html_e( 'Free · About 60 seconds · No phone call required', 'jcp-core' ); ?></p>
 				<p class="cta-note cta-secondary-link">
-					<a href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="final"><?php esc_html_e( 'Start free trial →', 'jcp-core' ); ?></a>
+					<a href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="final"><?php esc_html_e( 'Already know you want it? Start free trial', 'jcp-core' ); ?></a>
 				</p>
 			</div>
 		</div>
 	</div>
 </section>
 
-<!-- Exit intent State A -->
+<!-- Exit intent -->
 <div class="jcp-case-exit jpd-exit" id="jpdExitRoot" hidden aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="jpdExitTitle">
 	<div class="jcp-case-exit__backdrop" data-jpd-exit-dismiss></div>
 	<div class="jcp-case-exit__card">
 		<button type="button" class="jcp-case-exit__close" aria-label="<?php esc_attr_e( 'Close', 'jcp-core' ); ?>" data-jpd-exit-dismiss>×</button>
 		<div class="jpd-exit__panel" data-jpd-exit-panel="optin" hidden>
 			<p class="jcp-case-exit__wait"><?php esc_html_e( 'BEFORE YOU GO', 'jcp-core' ); ?></p>
-			<h2 class="jcp-case-exit__title" id="jpdExitTitle"><?php esc_html_e( 'Want me to send you your personalized demo?', 'jcp-core' ); ?></h2>
-			<p class="jcp-case-exit__body"><?php esc_html_e( 'Enter your work email and trade and we’ll send you the demo so you can come back when you have a minute.', 'jcp-core' ); ?></p>
+			<h2 class="jcp-case-exit__title" id="jpdExitTitle"><?php esc_html_e( 'Want us to personalize this to your trade and send it to your inbox?', 'jcp-core' ); ?></h2>
+			<p class="jcp-case-exit__body"><?php esc_html_e( 'Enter your work email and trade — we’ll send your personalized demo so you can come back when you have a minute.', 'jcp-core' ); ?></p>
 			<form id="jpdExitOptinForm" class="jpd-exit__form survey-step active" novalidate>
 				<div class="survey-field">
 					<label for="jpd-exit-email"><?php esc_html_e( 'Work email', 'jcp-core' ); ?> <span class="survey-required">*</span></label>
@@ -465,8 +468,17 @@ if ( function_exists( 'jcp_niche_render_testimonials' ) && $reviews !== [] ) {
 			<h2 class="jcp-case-exit__title" id="jpdExitCaseTitle"><?php esc_html_e( 'Want to be considered for the 90-day JobCapturePro case study?', 'jcp-core' ); ?></h2>
 			<p class="jcp-case-exit__body"><?php esc_html_e( 'We’re selecting a limited number of qualifying home-service companies to use JobCapturePro as part of our case-study program.', 'jcp-core' ); ?></p>
 			<div class="jcp-case-exit__actions">
-				<a class="jcp-case-exit__primary" id="jpdExitCaseCta" href="<?php echo esc_url( $case_href ); ?>"><?php esc_html_e( 'See if I qualify →', 'jcp-core' ); ?></a>
+				<a class="jcp-case-exit__primary" id="jpdExitCaseCta" href="<?php echo esc_url( $case_href ); ?>" data-jpd-track="proof_case_study_exit_clicked"><?php esc_html_e( 'See if I qualify →', 'jcp-core' ); ?></a>
 				<button type="button" class="jcp-case-exit__dismiss" data-jpd-exit-dismiss><?php esc_html_e( 'Go back', 'jcp-core' ); ?></button>
+			</div>
+		</div>
+		<div class="jpd-exit__panel" data-jpd-exit-panel="resume" hidden>
+			<p class="jcp-case-exit__wait"><?php esc_html_e( 'PICK UP WHERE YOU LEFT OFF', 'jcp-core' ); ?></p>
+			<h2 class="jcp-case-exit__title"><?php esc_html_e( 'Your personalized demo is ready.', 'jcp-core' ); ?></h2>
+			<p class="jcp-case-exit__body"><?php esc_html_e( 'You already opted in — jump back into the demo built around your trade.', 'jcp-core' ); ?></p>
+			<div class="jcp-case-exit__actions">
+				<a class="jcp-case-exit__primary" href="<?php echo esc_url( $demo_run_url ); ?>"><?php esc_html_e( 'Continue my demo →', 'jcp-core' ); ?></a>
+				<button type="button" class="jcp-case-exit__dismiss" data-jpd-exit-dismiss><?php esc_html_e( 'Not now', 'jcp-core' ); ?></button>
 			</div>
 		</div>
 	</div>

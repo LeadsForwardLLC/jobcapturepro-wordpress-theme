@@ -66,31 +66,44 @@
     return 'desktop';
   }
 
-  /** Fire once per session per event name. */
+  /** Fire once per session per event name (unless extra.force). */
   function track(eventName, extra) {
+    var force = !!(extra && extra.force);
+    if (extra && Object.prototype.hasOwnProperty.call(extra, 'force')) {
+      try {
+        delete extra.force;
+      } catch (eForce) {}
+    }
     try {
       var key = STORAGE_PREFIX + eventName;
-      if (sessionStorage.getItem(key)) return;
+      if (!force && sessionStorage.getItem(key)) return;
       sessionStorage.setItem(key, '1');
     } catch (e) {}
 
     var attr = attrPayload();
+    var page = isRunPage ? 'job_proof_demo_run' : 'job_proof_demo';
     var payload = {
       event: eventName,
       lp_variant: attr.lp_variant || LP_VARIANT,
+      page: page,
       page_path: location.pathname,
       device: deviceType(),
       referrer: attr.referrer || document.referrer || '',
+      session_id: getDemoSessionId(),
+      opted_in: !!(state.optedIn || hasOptInSessionSafe()),
+      demo_completed: !!state.demoCompleted,
     };
     ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid'].forEach(function (k) {
       if (attr[k]) payload[k] = attr[k];
     });
     if (state.niche) payload.trade = state.niche;
+    if (state.nicheLabel) payload.trade_label = state.nicheLabel;
     if (extra && typeof extra === 'object') {
       Object.keys(extra).forEach(function (k) {
         payload[k] = extra[k];
       });
     }
+    if (!payload.source) payload.source = page;
     delete payload.email;
     delete payload.phone;
     delete payload.first_name;
@@ -101,7 +114,19 @@
     try {
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push(payload);
+      if (window.JCP_JPD_DEBUG || /[?&]jpd_debug=1/.test(location.search)) {
+        // eslint-disable-next-line no-console
+        console.info('[JPD]', eventName, payload);
+      }
     } catch (err) {}
+  }
+
+  function hasOptInSessionSafe() {
+    try {
+      return sessionStorage.getItem(OPTIN_SESSION_KEY) === '1';
+    } catch (e) {
+      return false;
+    }
   }
 
   function getDemoSessionId() {
@@ -288,7 +313,7 @@
     var social = document.querySelector('[data-jpd-social-copy]');
     if (social) social.textContent = 'Another job wrapped. ' + job.title + ' done right — proof from the field.';
     var dir = document.querySelector('[data-jpd-directory-latest]');
-    if (dir) dir.textContent = 'Latest: ' + job.title;
+    if (dir) dir.textContent = job.title;
   }
 
   /* ---- Trade combobox ---- */
@@ -431,7 +456,7 @@
     clearTimer();
     state.engaged = true;
     state.animating = true;
-    track('HeroDemoStarted', { cta_source: 'hero_sample_job' });
+    track('proof_hero_sample_started', { section: 'hero', source: 'hero_sample_job' });
 
     var canvas = document.querySelector('[data-jpd-canvas]');
     var idle = document.querySelector('[data-jpd-canvas-idle]');
@@ -524,7 +549,7 @@
       try {
         sessionStorage.setItem(HERO_DONE_KEY, '1');
       } catch (e) {}
-      track('HeroTransformationCompleted', { cta_source: 'hero_canvas' });
+      track('proof_hero_transform_completed', { section: 'hero', source: 'hero_canvas' });
     }
 
     steps.forEach(function (s) {
@@ -542,7 +567,7 @@
   }
 
   function pushDemoFormViewed() {
-    track('DemoFormViewed', { source: 'job_proof_demo', cta_source: 'optin' });
+    track('form_viewed', { section: 'optin', source: 'optin' });
   }
 
   /* ---- Opt-in / GHL ---- */
@@ -627,11 +652,12 @@
     var tradeLabel = getBusinessTypeLabel(prefix);
     var errId = isExit ? 'jpdExitOptinError' : 'jpdOptinError';
     var btnId = isExit ? 'jpdExitOptinSubmit' : 'jpdOptinSubmit';
-    var defaultBtn = isExit ? 'Send my demo →' : 'Build my personalized demo →';
+    var defaultBtn = isExit ? 'Send my demo →' : 'See my personalized demo →';
 
     showOptinError('', errId);
     if (!validEmail(email)) {
       showOptinError('Enter a valid work email.', errId);
+      track('form_submit_failed', { section: 'optin', source: source, reason: 'invalid_email' });
       if (emailEl) {
         emailEl.classList.add('is-error');
         emailEl.focus();
@@ -640,12 +666,15 @@
     }
     if (!String(trade || '').trim()) {
       showOptinError('Select or enter your trade.', errId);
+      track('form_submit_failed', { section: 'optin', source: source, reason: 'missing_trade' });
       if (nicheSearch) {
         nicheSearch.classList.add('is-error');
         nicheSearch.focus();
       }
       return Promise.resolve(false);
     }
+
+    track('form_submit_attempted', { section: 'optin', source: source, trade: trade });
 
     var btn = document.getElementById(btnId);
     if (btn) {
@@ -704,14 +733,18 @@
             btn.disabled = false;
             btn.textContent = defaultBtn;
           }
-          track('DemoFormSubmitted', { trade: trade, crm_saved: false, cta_source: source });
+          track('form_submit_failed', { section: 'optin', source: source, trade: trade, crm_saved: false });
+          // Soft-continue still lands on personalized demo; CRM may retry server-side.
           return false;
         }
 
         persistOptIn(email, trade, tradeLabel);
         state.contactSaved = true;
         pushDemoOptInDataLayer(trade);
-        track('DemoFormSubmitted', { trade: trade, crm_saved: true, cta_source: source });
+        track('form_submit_succeeded', { section: 'optin', source: source, trade: trade, crm_saved: true });
+        if (isExit) {
+          track('proof_exit_intent_submitted', { section: 'exit', source: 'exit', trade: trade });
+        }
         if (btn) {
           btn.disabled = false;
           btn.textContent = defaultBtn;
@@ -723,6 +756,7 @@
       .catch(function () {
         if (attempt < 2) return submitOptIn(attempt + 1, source);
         showOptinError('Network error. Please try again.', errId);
+        track('form_submit_failed', { section: 'optin', source: source, reason: 'network' });
         if (btn) {
           btn.disabled = false;
           btn.textContent = defaultBtn;
@@ -757,7 +791,7 @@
   function runPersonalizedSequence() {
     clearTimer();
     state.animating = true;
-    track('PersonalizedDemoStarted', { cta_source: 'demo_run' });
+    track('proof_demo_started', { section: 'demo_run', source: 'demo_run' });
     postDemoEvent('demo_run_started');
 
     var status = document.getElementById('jpdFullStatus');
@@ -797,7 +831,8 @@
           try {
             sessionStorage.setItem(DEMO_DONE_KEY, '1');
           } catch (eDone) {}
-          track('PersonalizedDemoResultsViewed', { cta_source: 'demo_run' });
+          track('proof_demo_completed', { section: 'demo_run', source: 'demo_run' });
+          track('proof_outputs_viewed', { section: 'results', source: 'demo_run' });
           postDemoEvent('demo_publish_completed');
           if (results) results.scrollIntoView({ behavior: 'smooth', block: 'start' });
         },
@@ -885,7 +920,8 @@
     applyJobPersona(state.niche, state.nicheLabel);
     decorateTrialLinks();
 
-    track('PersonalizedDemoViewed', { cta_source: 'demo_run' });
+    track('proof_demo_viewed', { section: 'demo_run', source: 'demo_run' });
+    track('proof_job_viewed', { section: 'demo_run', source: 'demo_run' });
     postDemoViewed();
 
     var done = false;
@@ -931,6 +967,17 @@
     var t = e.target;
     if (!(t instanceof Element)) return;
 
+    var tracked = t.closest('[data-jpd-track]');
+    if (tracked) {
+      var evt = tracked.getAttribute('data-jpd-track') || '';
+      if (evt) {
+        track(evt, {
+          section: tracked.getAttribute('data-jpd-section') || '',
+          source: tracked.getAttribute('data-jpd-source') || tracked.getAttribute('data-jpd-section') || evt,
+        });
+      }
+    }
+
     if (t.closest('[data-jpd-scroll-canvas]')) {
       e.preventDefault();
       var canvas = document.getElementById('jpd-canvas');
@@ -955,7 +1002,7 @@
       var source = trial.getAttribute('data-jpd-source') || 'trial';
       trial.setAttribute('href', buildTrialUrl('job_proof_demo_' + source));
       state.trialClicked = true;
-      track('TrialCTAClicked', { cta_source: source });
+      track('proof_trial_cta_clicked', { section: 'trial', source: source });
       if (state.optedIn) {
         postDemoEvent('demo_converted', { cta: 'start_free_trial', source: source });
       }
@@ -963,17 +1010,18 @@
     }
 
     if (t.closest('[data-jpd-expert]')) {
-      track('ExpertCTAClicked', { cta_source: 'expert' });
+      track('proof_expert_cta_clicked', { section: 'expert', source: 'expert' });
     }
 
     if (t.closest('[data-jpd-exit-dismiss]')) {
+      track('proof_exit_intent_dismissed', { section: 'exit', source: 'dismiss' });
       closeExit(true);
       return;
     }
 
     var caseCta = t.closest('#jpdExitCaseCta');
     if (caseCta) {
-      track('CaseStudyExitClicked', { cta_source: 'exit_case' });
+      track('proof_case_study_exit_clicked', { section: 'exit', source: 'exit_case' });
       try {
         sessionStorage.setItem(EXIT_DISMISS_KEY, '1');
       } catch (eCase) {}
@@ -1025,8 +1073,13 @@
       if (state.trialClicked || !caseStudyActive()) return true;
       return false;
     }
-    // LP: post-opt-in = no lead popup (redirect handles demo).
-    if (state.optedIn) return true;
+    // LP: opted-in + demo incomplete → resume; otherwise opt-in capture.
+    if (state.optedIn || hasOptInSession()) {
+      try {
+        if (sessionStorage.getItem(DEMO_DONE_KEY) === '1') return true;
+      } catch (eDone) {}
+      return false;
+    }
     return false;
   }
 
@@ -1035,8 +1088,13 @@
       if (state.demoCompleted && !state.trialClicked && caseStudyActive()) return 'case';
       return '';
     }
-    if (!state.optedIn) return 'optin';
-    return '';
+    if (state.optedIn || hasOptInSession()) {
+      try {
+        if (sessionStorage.getItem(DEMO_DONE_KEY) !== '1') return 'resume';
+      } catch (e) {}
+      return '';
+    }
+    return 'optin';
   }
 
   function closeExit(dismissed) {
@@ -1073,7 +1131,7 @@
     root.classList.add('is-open');
     root.setAttribute('aria-hidden', 'false');
     document.body.classList.add('jcp-case-exit-open');
-    track('ExitIntentViewed', { mode: mode, cta_source: source || 'mouseleave' });
+    track('proof_exit_intent_viewed', { mode: mode, section: 'exit', source: source || 'mouseleave' });
     return true;
   }
 
@@ -1127,6 +1185,48 @@
     } catch (e) {}
   }
 
+  function observeTrackedViews() {
+    if (!('IntersectionObserver' in window)) return;
+    var nodes = document.querySelectorAll('[data-jpd-track-view]');
+    if (!nodes.length) return;
+    try {
+      var io = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            var el = entry.target;
+            var evt = el.getAttribute('data-jpd-track-view');
+            if (!evt) return;
+            track(evt, {
+              section: el.getAttribute('data-jpd-section') || el.id || evt,
+              source: 'viewport',
+            });
+            io.unobserve(el);
+          });
+        },
+        { threshold: 0.4 }
+      );
+      nodes.forEach(function (n) {
+        io.observe(n);
+      });
+    } catch (e) {}
+  }
+
+  function setupFormStarted() {
+    var fired = false;
+    function markStarted() {
+      if (fired) return;
+      fired = true;
+      track('form_started', { section: 'optin', source: 'optin' });
+    }
+    ['jpd-email', 'jpd-nicheSearch', 'jpd-exit-email', 'jpd-exit-nicheSearch'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener('focus', markStarted, { once: true });
+      el.addEventListener('input', markStarted, { once: true });
+    });
+  }
+
   function initShared() {
     decorateTrialLinks();
     window.setTimeout(decorateTrialLinks, 300);
@@ -1158,11 +1258,12 @@
   }
 
   function initLp() {
-    // Stage 1 — reuse PaidLandingView (same semantic as PaidLandingViewed on other LPs).
-    track('PaidLandingView', { cta_source: 'lp' });
+    track('proof_lp_viewed', { section: 'lp', source: 'lp' });
     setupCombobox('jpd');
     setupCombobox('jpd-exit');
     observeOptin();
+    observeTrackedViews();
+    setupFormStarted();
 
     var form = document.getElementById('jpdOptinForm');
     if (form) {
@@ -1180,6 +1281,7 @@
   }
 
   function initRun() {
+    observeTrackedViews();
     startRunOrGate();
   }
 

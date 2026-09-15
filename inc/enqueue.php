@@ -52,9 +52,11 @@ function jcp_core_enqueue_assets(): void {
 
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
         jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );
-        if ( $jpd_lp ) {
+        if ( $jpd_lp || $jpd_run ) {
             jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
             jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [] );
+        }
+        if ( $jpd_lp ) {
             jcp_core_enqueue_script( 'jcp-core-campaign', 'js/pages/campaign.js', [] );
         }
         jcp_core_enqueue_script( 'jcp-core-job-proof-demo', 'js/pages/job-proof-demo.js', [ 'jcp-core-attribution', 'jcp-core-onboarding-handoff' ] );
