@@ -577,31 +577,26 @@ if ( function_exists( 'jcp_niche_render_testimonials' ) && $reviews !== [] ) {
 }
 ?>
 
-<?php
-// 27. Final CTA.
-if ( function_exists( 'jcp_niche_render_final_cta' ) ) {
-	$footnote = __( 'See the free personalized demo →', 'jcp-core' );
-	jcp_niche_render_final_cta(
-		[
-			'final_cta' => [
-				'headline'      => __( 'Stop letting finished jobs disappear into the camera roll.', 'jcp-core' ),
-				'subheadline'   => __( 'Let the next job your crew finishes start building proof for the one after it.', 'jcp-core' ),
-				'cta_primary'   => [
-					'label' => __( 'Start my free 14-day trial →', 'jcp-core' ),
-					'url'   => $trial_href,
-				],
-				'cta_secondary' => [
-					'label' => __( 'Talk to a JCP expert →', 'jcp-core' ),
-					'url'   => $expert_href,
-				],
-				'cta_note'      => __( 'No credit card required.', 'jcp-core' ),
-				'show_cta_note' => true,
-			],
-		],
-		'job_proof_demo'
-	);
-}
-?>
+<!-- 27. Final CTA -->
+<section class="jcp-section rankings-section jcp-niche-final">
+	<div class="jcp-container">
+		<div class="rankings-cta">
+			<div class="cta-content">
+				<h2 class="jcp-section-headline"><?php esc_html_e( 'Stop letting finished jobs disappear into the camera roll.', 'jcp-core' ); ?></h2>
+				<p class="cta-paragraph"><?php esc_html_e( 'Let the next job your crew finishes start building proof for the one after it.', 'jcp-core' ); ?></p>
+			</div>
+			<div class="cta-button-wrapper">
+				<a class="btn btn-primary rankings-cta-btn" href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="final">
+					<?php esc_html_e( 'Start my free 14-day trial →', 'jcp-core' ); ?>
+				</a>
+				<p class="cta-note"><?php esc_html_e( 'No credit card required.', 'jcp-core' ); ?></p>
+				<p class="cta-note cta-secondary-link">
+					<a href="<?php echo esc_url( $expert_href ); ?>" data-jpd-expert><?php esc_html_e( 'Talk to a JCP expert →', 'jcp-core' ); ?></a>
+				</p>
+			</div>
+		</div>
+	</div>
+</section>
 
 <p class="jpd-final-demo-link jcp-container">
 	<a href="#jpd-teaser" data-jpd-scroll-teaser><?php esc_html_e( 'See the free personalized demo →', 'jcp-core' ); ?></a>
