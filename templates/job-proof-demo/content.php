@@ -28,10 +28,29 @@ $reviews    = function_exists( 'jcp_sales_tool_default_reviews' ) ? jcp_sales_to
 $business_type_options = function_exists( 'jcp_core_business_type_flat_options' )
 	? jcp_core_business_type_flat_options()
 	: [];
-$integrations = [ 'HouseCall Pro', 'CompanyCam', 'Workiz', 'QuickBooks' ];
+$integrations_uri = trailingslashit( get_template_directory_uri() ) . 'assets/integrations/';
+$integrations     = [
+	[
+		'name' => 'Housecall Pro',
+		'logo' => $integrations_uri . 'housecall-pro.svg',
+	],
+	[
+		'name' => 'CompanyCam',
+		'logo' => $integrations_uri . 'companycam.svg',
+	],
+	[
+		'name' => 'Workiz',
+		'logo' => $integrations_uri . 'workiz.svg',
+	],
+	[
+		'name' => 'QuickBooks',
+		'logo' => $integrations_uri . 'quickbooks.svg',
+	],
+];
 $default_service = __( 'Water heater replacement', 'jcp-core' );
 $default_city    = __( 'Austin, TX', 'jcp-core' );
-$founder_thumb   = $campaign . 'jcp-campaign-face-owner-640.webp';
+$founder_thumb   = $campaign . 'jcp-campaign-face-operator-640.webp';
+$field_photo     = $campaign . 'jcp-campaign-hvac-capture-640.webp';
 $map_url         = get_template_directory_uri() . '/assets/map-3c5b675f-f28d-41a5-ba3a-972b4c189f10.png';
 $cta_primary     = __( 'See my free personalized demo', 'jcp-core' );
 
@@ -149,24 +168,36 @@ $rest = array_slice( $rest, 0, 3 );
 	</div>
 </section>
 
-<!-- 2. Compact credibility -->
+<!-- 2. Credibility + works-with -->
 <section class="jpd-cred-strip" id="jpd-authority" aria-label="<?php esc_attr_e( 'Built by LeadsForward', 'jcp-core' ); ?>">
-	<div class="jcp-container jpd-cred-strip__inner">
-		<p class="jpd-cred-strip__by"><?php esc_html_e( 'Built by LeadsForward', 'jcp-core' ); ?></p>
-		<ul class="jpd-cred-strip__stats">
-			<li>
-				<strong class="jcp-count-up" data-count-to="10" data-count-prefix="" data-count-suffix="" data-count-format="plain" data-count-decimals="0" data-count-ms="1200">0</strong>
-				<span><?php esc_html_e( 'years helping contractors grow', 'jcp-core' ); ?></span>
-			</li>
-			<li>
-				<strong class="jcp-count-up" data-count-to="250" data-count-prefix="" data-count-suffix="K+" data-count-format="plain" data-count-decimals="0" data-count-ms="1200">0</strong>
-				<span><?php esc_html_e( 'leads generated', 'jcp-core' ); ?></span>
-			</li>
-			<li>
-				<strong class="jcp-count-up" data-count-to="150" data-count-prefix="$" data-count-suffix="M+" data-count-format="plain" data-count-decimals="0" data-count-ms="1200">0</strong>
-				<span><?php esc_html_e( 'revenue booked from those leads', 'jcp-core' ); ?></span>
-			</li>
-		</ul>
+	<div class="jcp-container">
+		<div class="jpd-cred-strip__inner">
+			<p class="jpd-cred-strip__by"><?php esc_html_e( 'Built by LeadsForward', 'jcp-core' ); ?></p>
+			<ul class="jpd-cred-strip__stats">
+				<li>
+					<strong class="jcp-count-up" data-count-to="10" data-count-prefix="" data-count-suffix="" data-count-format="plain" data-count-decimals="0" data-count-ms="1200">0</strong>
+					<span><?php esc_html_e( 'years helping contractors grow', 'jcp-core' ); ?></span>
+				</li>
+				<li>
+					<strong class="jcp-count-up" data-count-to="250" data-count-prefix="" data-count-suffix="K+" data-count-format="plain" data-count-decimals="0" data-count-ms="1200">0</strong>
+					<span><?php esc_html_e( 'leads generated', 'jcp-core' ); ?></span>
+				</li>
+				<li>
+					<strong class="jcp-count-up" data-count-to="150" data-count-prefix="$" data-count-suffix="M+" data-count-format="plain" data-count-decimals="0" data-count-ms="1200">0</strong>
+					<span><?php esc_html_e( 'revenue booked from those leads', 'jcp-core' ); ?></span>
+				</li>
+			</ul>
+		</div>
+		<div class="jpd-cred-strip__works">
+			<p class="jpd-cred-strip__works-label"><?php esc_html_e( 'Works with the tools your crew already uses', 'jcp-core' ); ?></p>
+			<ul class="jpd-logo-row" aria-label="<?php esc_attr_e( 'Supported integrations', 'jcp-core' ); ?>">
+				<?php foreach ( $integrations as $integration ) : ?>
+					<li>
+						<img src="<?php echo esc_url( $integration['logo'] ); ?>" alt="<?php echo esc_attr( $integration['name'] ); ?>" width="140" height="28" loading="lazy" decoding="async" />
+					</li>
+				<?php endforeach; ?>
+			</ul>
+		</div>
 	</div>
 </section>
 
@@ -179,9 +210,10 @@ $rest = array_slice( $rest, 0, 3 );
 				<h2 id="jpd-workflow-title" class="jcp-section-headline"><?php esc_html_e( 'Your tech has a job. “Marketing assistant” isn’t it.', 'jcp-core' ); ?></h2>
 				<p><?php esc_html_e( 'If your team already takes job photos, you already have the raw material. Capture in JCP — or keep using workflows you know.', 'jcp-core' ); ?></p>
 				<p class="jpd-punch"><?php esc_html_e( 'JCP handles what happens after the photo.', 'jcp-core' ); ?></p>
-				<p class="jpd-workflow__integrations" aria-label="<?php esc_attr_e( 'Supported integrations', 'jcp-core' ); ?>">
-					<?php echo esc_html( implode( ' · ', $integrations ) ); ?>
-				</p>
+				<figure class="jpd-workflow__field">
+					<img src="<?php echo esc_url( $field_photo ); ?>" alt="<?php esc_attr_e( 'Technician photographing completed HVAC work on site', 'jcp-core' ); ?>" width="640" height="420" loading="lazy" decoding="async" />
+					<figcaption><?php esc_html_e( 'Your guys already shoot the proof. JCP ships it.', 'jcp-core' ); ?></figcaption>
+				</figure>
 			</div>
 
 			<div class="jpd-compare" aria-label="<?php esc_attr_e( 'Without JCP vs with JCP', 'jcp-core' ); ?>">
@@ -351,7 +383,7 @@ $rest = array_slice( $rest, 0, 3 );
 	<div class="jcp-container">
 		<div class="jpd-trust__grid">
 			<div class="jpd-trust__founder">
-				<img class="jpd-trust__photo" src="<?php echo esc_url( $founder_thumb ); ?>" alt="<?php esc_attr_e( 'Why we built JobCapturePro', 'jcp-core' ); ?>" width="640" height="400" loading="lazy" decoding="async" />
+				<img class="jpd-trust__photo" src="<?php echo esc_url( $founder_thumb ); ?>" alt="<?php esc_attr_e( 'Home-service operator on a job site', 'jcp-core' ); ?>" width="640" height="400" loading="lazy" decoding="async" />
 				<p class="jpd-eyebrow"><?php esc_html_e( 'Why we built JCP', 'jcp-core' ); ?></p>
 				<h2 id="jpd-founder-title" class="jcp-section-headline"><?php esc_html_e( 'Contractor marketing has a proof problem.', 'jcp-core' ); ?></h2>
 				<p><?php esc_html_e( 'For 10 years, we’ve helped home-service companies generate leads — and watched great proof die in camera rolls.', 'jcp-core' ); ?></p>

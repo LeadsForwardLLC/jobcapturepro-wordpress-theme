@@ -2442,22 +2442,143 @@ body.jcp-job-proof-demo .jpd-punch {
   }
 }
 
-/* ---- Cred strip ---- */
+/* ---- Cred strip (premium authority band) ---- */
 body.jcp-job-proof-demo .jpd-cred-strip {
-  padding: 1.15rem 0;
+  padding: 0;
   min-height: 0;
-  background: var(--jpd-navy);
+  background:
+    linear-gradient(180deg, rgba(255, 80, 62, 0.12), transparent 40%),
+    linear-gradient(135deg, #0b1220 0%, #152033 45%, #0f172a 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+body.jcp-job-proof-demo .jpd-cred-strip > .jcp-container {
+  padding-top: clamp(1.75rem, 3.2vw, 2.5rem);
+  padding-bottom: clamp(1.5rem, 2.8vw, 2.15rem);
 }
 
 body.jcp-job-proof-demo .jpd-cred-strip__inner {
-  gap: 1rem 1.5rem;
+  display: grid;
+  gap: 1.35rem 2rem;
+  align-items: end;
+}
+
+@media (min-width: 900px) {
+  body.jcp-job-proof-demo .jpd-cred-strip__inner {
+    grid-template-columns: minmax(9rem, 0.7fr) minmax(0, 2.4fr);
+    gap: 2rem 2.75rem;
+    align-items: end;
+  }
+}
+
+body.jcp-job-proof-demo .jpd-cred-strip__by {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ff7a6a;
+  line-height: 1.35;
+}
+
+body.jcp-job-proof-demo .jpd-cred-strip__stats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1.15rem 1.5rem;
+}
+
+@media (min-width: 720px) {
+  body.jcp-job-proof-demo .jpd-cred-strip__stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem 2rem;
+  }
+}
+
+body.jcp-job-proof-demo .jpd-cred-strip__stats li {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+@media (min-width: 720px) {
+  body.jcp-job-proof-demo .jpd-cred-strip__stats li + li {
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+    padding-left: 1.5rem;
+  }
+}
+
+body.jcp-job-proof-demo .jpd-cred-strip__stats strong {
+  display: block;
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.85rem, 3.2vw, 2.55rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: #fff;
+}
+
+body.jcp-job-proof-demo .jpd-cred-strip__stats span {
+  display: block;
+  max-width: 12rem;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 500;
+}
+
+body.jcp-job-proof-demo .jpd-cred-strip__works {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: grid;
+  gap: 0.85rem;
+}
+
+body.jcp-job-proof-demo .jpd-cred-strip__works-label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+body.jcp-job-proof-demo .jpd-logo-row {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1.15rem;
+}
+
+body.jcp-job-proof-demo .jpd-logo-row li {
+  margin: 0;
+  padding: 0.55rem 0.8rem;
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: grid;
+  place-items: center;
+  min-height: 2.65rem;
+}
+
+body.jcp-job-proof-demo .jpd-logo-row img {
+  display: block;
+  height: 1.15rem;
+  width: auto;
+  max-width: 8.5rem;
 }
 
 /* ---- Workflow ---- */
 body.jcp-job-proof-demo .jpd-workflow {
-  background: #fff;
-  padding-top: clamp(2rem, 3.5vw, 3rem);
-  padding-bottom: clamp(2rem, 3.5vw, 3rem);
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 42%);
+  padding-top: clamp(2.25rem, 4vw, 3.25rem);
+  padding-bottom: clamp(2.25rem, 4vw, 3.25rem);
 }
 
 body.jcp-job-proof-demo .jpd-workflow__copy p {
@@ -2465,18 +2586,33 @@ body.jcp-job-proof-demo .jpd-workflow__copy p {
   max-width: 34rem;
   font-size: 1.02rem;
   line-height: 1.5;
+  color: #475569;
+}
+
+body.jcp-job-proof-demo .jpd-workflow__field {
+  margin: 1.15rem 0 0;
+  max-width: 26rem;
+}
+
+body.jcp-job-proof-demo .jpd-workflow__field img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  object-fit: cover;
+  border-radius: 0.85rem;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.1);
+}
+
+body.jcp-job-proof-demo .jpd-workflow__field figcaption {
+  margin-top: 0.55rem;
+  font-size: 0.9rem;
+  font-weight: 650;
   color: #64748b;
 }
 
 body.jcp-job-proof-demo .jpd-workflow__integrations {
-  display: block;
-  margin: 0.85rem 0 0;
-  padding: 0;
-  list-style: none;
-  font-size: 0.88rem;
-  font-weight: 650;
-  color: #64748b;
-  letter-spacing: 0.01em;
+  display: none;
 }
 
 .jpd-compare {
@@ -2490,14 +2626,15 @@ body.jcp-job-proof-demo .jpd-workflow__integrations {
 }
 .jpd-compare__side {
   margin: 0;
-  padding: 1rem 1.05rem;
+  padding: 1.15rem 1.15rem;
   border: 1px solid var(--jpd-line);
   border-radius: 0.95rem;
-  background: #f8fafc;
+  background: #f1f5f9;
 }
 .jpd-compare__side--with {
-  border-color: rgba(255, 80, 62, 0.35);
+  border-color: rgba(255, 80, 62, 0.4);
   background: #fff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
 }
 .jpd-compare__label {
   margin: 0 0 0.7rem;
@@ -2515,7 +2652,7 @@ body.jcp-job-proof-demo .jpd-workflow__integrations {
   margin: 0;
   padding: 0;
   display: grid;
-  gap: 0.5rem;
+  gap: 0.55rem;
 }
 .jpd-compare li {
   position: relative;
@@ -2852,12 +2989,14 @@ body.jcp-job-proof-demo .jpd-trust__photo {
   display: block;
   float: none;
   width: 100%;
-  max-width: 20rem;
-  aspect-ratio: 4 / 3;
+  max-width: 22rem;
+  aspect-ratio: 5 / 4;
   object-fit: cover;
-  border-radius: 1rem;
+  object-position: center top;
+  border-radius: 0.85rem;
   border: 1px solid var(--jpd-line);
   margin: 0 0 1rem;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12);
 }
 
 body.jcp-job-proof-demo .jpd-trust__founder p {
