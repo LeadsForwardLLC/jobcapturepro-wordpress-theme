@@ -171,7 +171,7 @@ if ( function_exists( 'jcp_niche_render_authority' ) ) {
 <!-- 9. Micro opt-in -->
 <section class="jcp-section jpd-optin" id="jpd-optin" data-jpd-optin hidden aria-labelledby="jpd-optin-title">
 	<div class="jcp-container">
-		<div class="jpd-optin__card survey-step">
+		<div class="jpd-optin__card survey-step active">
 			<header class="survey-head">
 				<h2 id="jpd-optin-title" class="survey-title"><?php esc_html_e( 'Want to see this for your trade?', 'jcp-core' ); ?></h2>
 				<p class="survey-subtitle"><?php esc_html_e( 'Enter your work email and trade. We’ll personalize the full demo to the kind of jobs your business actually completes — and your demo follow-up can reach your inbox if you get pulled away.', 'jcp-core' ); ?></p>
