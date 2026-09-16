@@ -2606,11 +2606,13 @@ body.jcp-proof-sprint .ps-mock-qr {
 }
 
 body.jcp-proof-sprint .ps-mock-qr__img {
-  display: block;
-  width: 7rem;
-  height: 7rem;
+  display: block !important;
+  width: 7.5rem !important;
+  height: 7.5rem !important;
+  max-width: none !important;
   border-radius: 0.35rem;
   background: #fff;
+  image-rendering: pixelated;
 }
 
 body.jcp-proof-sprint .ps-mock-qr__svg,
