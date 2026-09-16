@@ -178,12 +178,12 @@ body.jcp-proof-sprint .ps-theater {
 
 body.jcp-proof-sprint .ps-theater__stage {
   position: relative;
-  min-height: 26rem;
-  padding: 1.5rem 1rem 1.25rem;
+  min-height: 28rem;
+  padding: 1.35rem 1rem 5.5rem;
   border-radius: 1.35rem;
   border: 1px solid rgba(15, 23, 42, 0.08);
   background:
-    radial-gradient(48% 42% at 50% 48%, rgba(255, 80, 62, 0.14), transparent 68%),
+    radial-gradient(48% 42% at 50% 58%, rgba(255, 80, 62, 0.14), transparent 68%),
     linear-gradient(165deg, #ffffff 0%, #f8fafc 55%, #eef2f7 100%);
   box-shadow:
     0 24px 56px rgba(15, 23, 42, 0.1),
@@ -194,7 +194,7 @@ body.jcp-proof-sprint .ps-theater__stage {
 body.jcp-proof-sprint .ps-theater__pulse {
   position: absolute;
   left: 50%;
-  top: 58%;
+  top: 68%;
   width: 7.5rem;
   height: 7.5rem;
   margin: -3.75rem 0 0 -3.75rem;
@@ -230,8 +230,8 @@ body.jcp-proof-sprint .ps-theater__job {
 }
 
 body.jcp-proof-sprint .ps-theater.is-live .ps-theater__job {
-  transform: scale(0.96);
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
+  transform: none;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.14);
 }
 
 body.jcp-proof-sprint .ps-theater__job-media {
@@ -299,7 +299,7 @@ body.jcp-proof-sprint .ps-theater__job-meta span {
 body.jcp-proof-sprint .ps-theater__hub {
   position: absolute;
   left: 50%;
-  top: 58%;
+  top: 68%;
   z-index: 4;
   display: grid;
   justify-items: center;
@@ -396,28 +396,28 @@ body.jcp-proof-sprint .ps-theater__outputs li.is-on span {
 }
 
 body.jcp-proof-sprint .ps-theater__outputs li[data-out="website"] {
-  left: 4%;
-  top: 42%;
+  left: 3%;
+  top: 48%;
 }
 
 body.jcp-proof-sprint .ps-theater__outputs li[data-out="google"] {
-  right: 4%;
-  top: 38%;
+  right: 3%;
+  top: 44%;
 }
 
 body.jcp-proof-sprint .ps-theater__outputs li[data-out="review"] {
-  left: 6%;
-  bottom: 1.1rem;
+  left: 5%;
+  bottom: 1.35rem;
 }
 
 body.jcp-proof-sprint .ps-theater__outputs li[data-out="social"] {
-  right: 6%;
-  bottom: 1.1rem;
+  right: 5%;
+  bottom: 1.35rem;
 }
 
 body.jcp-proof-sprint .ps-theater__outputs li[data-out="local"] {
   left: 50%;
-  bottom: 0.65rem;
+  bottom: 0.85rem;
   transform: translateX(-50%) scale(0.92);
 }
 
@@ -456,7 +456,7 @@ body.jcp-proof-sprint .ps-theater__outputs li[data-out="local"].is-on {
   }
 
   body.jcp-proof-sprint .ps-theater__hub {
-    top: 62%;
+    top: 58%;
   }
 }
 
