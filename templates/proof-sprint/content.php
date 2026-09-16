@@ -77,7 +77,7 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 						<li data-out="google"><strong><?php esc_html_e( 'Google', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'GBP update', 'jcp-core' ); ?></span></li>
 						<li data-out="review"><strong><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Ask on site', 'jcp-core' ); ?></span></li>
 						<li data-out="social"><strong><?php esc_html_e( 'Social', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Ready to post', 'jcp-core' ); ?></span></li>
-						<li data-out="local"><strong><?php esc_html_e( 'Local', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Area proof', 'jcp-core' ); ?></span></li>
+						<li data-out="local"><strong><?php esc_html_e( 'Directory', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Verified listing', 'jcp-core' ); ?></span></li>
 					</ul>
 				</div>
 			</div>
@@ -247,7 +247,7 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 					<li><?php esc_html_e( 'Google', 'jcp-core' ); ?></li>
 					<li><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></li>
 					<li><?php esc_html_e( 'Social', 'jcp-core' ); ?></li>
-					<li><?php esc_html_e( 'Local proof', 'jcp-core' ); ?></li>
+					<li><?php esc_html_e( 'Directory', 'jcp-core' ); ?></li>
 				</ul>
 			</div>
 		</div>
@@ -267,7 +267,7 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 			<div class="ps-demo-progress" id="psDemoProgress" aria-hidden="true"></div>
 			<div class="ps-demo-layout">
 				<div class="ps-demo-copy">
-					<p class="ps-demo-step-label" id="psDemoStepLabel"><?php esc_html_e( 'Step 1 of 7', 'jcp-core' ); ?></p>
+					<p class="ps-demo-step-label" id="psDemoStepLabel"><?php esc_html_e( 'Step 1 of 8', 'jcp-core' ); ?></p>
 					<h3 id="psDemoTitle"><?php esc_html_e( 'The job is finished.', 'jcp-core' ); ?></h3>
 					<p id="psDemoBody"><?php esc_html_e( 'Without JCP, this is where the marketing often stops.', 'jcp-core' ); ?></p>
 					<p class="ps-demo-detail"><span><?php esc_html_e( 'Source', 'jcp-core' ); ?></span> <strong id="psDemoSource"><?php esc_html_e( 'JCP App or connected workflow', 'jcp-core' ); ?></strong></p>

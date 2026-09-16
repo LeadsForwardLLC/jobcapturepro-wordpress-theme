@@ -371,6 +371,38 @@
     updateAssessmentUI();
   }
 
+  function esc(str) {
+    return String(str == null ? '' : str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function brandPersona() {
+    var brands = {
+      hvac: { name: 'Lone Star Comfort', slug: 'lonestarcomfort', initial: 'L' },
+      plumbing: { name: 'Summit Plumbing Co.', slug: 'summitplumbing', initial: 'S' },
+      roofing: { name: 'Summit Roofing', slug: 'summitroofing', initial: 'S' },
+      electrical: { name: 'BrightLine Electric', slug: 'brightlineelectric', initial: 'B' },
+      foundation: { name: 'SolidBase Repair', slug: 'solidbaserepair', initial: 'S' },
+      landscaping: { name: 'GreenCrest Outdoor', slug: 'greencrest', initial: 'G' },
+      remodeling: { name: 'Craft & Co. Remodel', slug: 'craftandco', initial: 'C' },
+      other: { name: 'Summit Home Services', slug: 'summithomeservices', initial: 'S' },
+    };
+    return brands[state.trade] || brands.plumbing;
+  }
+
+  function socialCopy(job) {
+    return (
+      'Another job wrapped in ' +
+      job.city +
+      '. ' +
+      job.title +
+      ' done right. Documented from the field.'
+    );
+  }
+
   /* ---- Demo ---- */
   var DEMO_EVENTS = [
     'demo_job_capture_viewed',
@@ -379,6 +411,7 @@
     'demo_gbp_viewed',
     'demo_review_viewed',
     'demo_social_viewed',
+    'demo_directory_viewed',
     'demo_completed',
   ];
 
@@ -442,81 +475,187 @@
         event: DEMO_EVENTS[5],
         type: 'social',
       },
+      {
+        title: 'And a living directory listing.',
+        body: 'Verified job activity shows up where homeowners look for proof that you actually do the work.',
+        detail: 'Directory + local proof',
+        event: DEMO_EVENTS[6],
+        type: 'directory',
+      },
     ];
   }
 
   function renderDemoCanvas(type) {
     var job = jobPersona();
+    var brand = brandPersona();
     var url = photoUrl(job.photo);
     var c = document.getElementById('psDemoCanvas');
     if (!c) return;
+    var title = esc(job.title);
+    var city = esc(job.city);
+    var desc = esc(job.desc);
+    var biz = esc(brand.name);
+    var slug = esc(brand.slug);
+    var initial = esc(brand.initial);
+    var photo =
+      '<img class="ps-mock__photo" src="' +
+      esc(url) +
+      '" alt="" width="640" height="400" loading="lazy" data-ps-job-photo />';
+
     if (type === 'job' || type === 'capture') {
       c.innerHTML =
-        '<div class="ps-canvas"><div class="ps-canvas__head"><span>Completed job</span><span>Today</span></div>' +
-        '<img class="ps-canvas__photo" src="' +
-        url +
-        '" alt="" width="640" height="400" loading="lazy" data-ps-job-photo />' +
-        '<div class="ps-canvas__meta"><span>' +
-        job.title +
-        '</span><span>' +
-        job.city +
-        '</span><span>Job complete ✓</span></div></div>';
+        '<div class="ps-mock ps-mock--job">' +
+        '<div class="ps-mock__chip-row"><span class="ps-mock__chip is-good">Completed job</span><span class="ps-mock__chip">Just now</span></div>' +
+        '<div class="ps-mock__media">' +
+        photo +
+        '<span class="ps-mock__geo">' +
+        city +
+        '</span></div>' +
+        '<div class="ps-mock__job-foot"><div><strong>' +
+        title +
+        '</strong><span>' +
+        city +
+        '</span></div><em>Ready for JCP</em></div></div>';
       return;
     }
+
     if (type === 'checkin') {
       c.innerHTML =
-        '<div class="ps-canvas"><div class="ps-canvas__head"><span>JobCapturePro</span><span>Creating check-in…</span></div>' +
-        '<img class="ps-canvas__photo" src="' +
-        url +
-        '" alt="" width="640" height="400" loading="lazy" data-ps-job-photo />' +
-        '<ul class="ps-canvas__list"><li class="is-done">Photos received</li><li class="is-done">Service identified</li><li class="is-done">Location attached</li><li class="is-done">Channel-ready copy</li><li class="is-done">Job proof created</li></ul></div>';
+        '<div class="ps-mock ps-mock--checkin">' +
+        '<div class="ps-mock__checkin-head"><span class="ps-mock__logo">JCP</span><div><strong>Creating check-in</strong><span>' +
+        title +
+        ' · ' +
+        city +
+        '</span></div></div>' +
+        '<div class="ps-mock__checkin-grid">' +
+        '<div class="ps-mock__media ps-mock__media--sm">' +
+        photo +
+        '</div>' +
+        '<ul class="ps-mock__checklist">' +
+        '<li class="is-done">Photos received</li>' +
+        '<li class="is-done">Service identified</li>' +
+        '<li class="is-done">Location attached</li>' +
+        '<li class="is-done">Channel-ready copy</li>' +
+        '<li class="is-on">Publishing channels…</li>' +
+        '</ul></div></div>';
       return;
     }
+
     if (type === 'web') {
       c.innerHTML =
-        '<div class="ps-canvas"><div class="ps-canvas__head"><span>Your website</span><span>Recent jobs</span></div>' +
-        '<img class="ps-canvas__photo" src="' +
-        url +
-        '" alt="" width="640" height="400" loading="lazy" data-ps-job-photo />' +
-        '<div class="ps-canvas__meta"><span>' +
-        job.title +
-        '</span><span>' +
-        job.city +
-        '</span><span>Just completed</span></div>' +
-        '<p style="margin:0;font-size:0.88rem;color:#64748b">Live on map + recent jobs. Powered by JobCapturePro.</p></div>';
+        '<div class="ps-mock ps-mock--browser">' +
+        '<div class="ps-mock-browser__bar"><span></span><span></span><span></span>' +
+        '<div class="ps-mock-browser__url">' +
+        slug +
+        '.com/recent-jobs</div></div>' +
+        '<div class="ps-mock-browser__body">' +
+        '<p class="ps-mock-browser__kicker">Recent work</p>' +
+        '<h4>Jobs completed by ' +
+        biz +
+        '</h4>' +
+        '<article class="ps-mock-jobcard">' +
+        photo +
+        '<div><strong>' +
+        title +
+        '</strong><span>' +
+        city +
+        '</span><p>' +
+        desc +
+        '</p><em>Published just now · Powered by JobCapturePro</em></div>' +
+        '</article></div></div>';
       return;
     }
+
     if (type === 'google') {
       c.innerHTML =
-        '<div class="ps-canvas"><div class="ps-canvas__head"><span>Google Business Profile</span><span>Posted just now</span></div>' +
-        '<img class="ps-canvas__photo" src="' +
-        url +
-        '" alt="" width="640" height="400" loading="lazy" data-ps-job-photo />' +
-        '<p style="margin:0;font-weight:800">' +
-        job.title +
+        '<div class="ps-mock ps-mock--gbp">' +
+        '<div class="ps-mock-gbp__brand">' +
+        '<span class="ps-mock-gbp__g" aria-hidden="true">G</span>' +
+        '<div><strong>' +
+        biz +
+        '</strong><span>Google Business Profile · Update</span></div>' +
+        '<em>Posted</em></div>' +
+        '<div class="ps-mock__media">' +
+        photo +
+        '</div>' +
+        '<div class="ps-mock-gbp__copy"><strong>Just finished: ' +
+        title +
         ' in ' +
-        job.city +
-        '</p><p style="margin:0;font-size:0.9rem;color:#64748b">' +
-        job.desc +
-        '</p></div>';
+        city +
+        '</strong><p>' +
+        desc +
+        ' Real work. Real photos. Posted from JobCapturePro.</p></div>' +
+        '<div class="ps-mock-gbp__actions"><span>Share</span><span>Call</span><span>Directions</span></div>' +
+        '<p class="ps-mock__meta">Prepared automatically · Verified job details</p></div>';
       return;
     }
+
     if (type === 'review') {
       c.innerHTML =
-        '<div class="ps-canvas"><div class="ps-canvas__head"><span>Review opportunity</span><span>On site</span></div>' +
-        '<div class="ps-canvas__meta"><span>Send review link</span><span>Show QR</span></div>' +
-        '<p style="margin:0;font-size:0.92rem;color:#64748b;line-height:1.5">Text it before you leave the driveway, while trust is highest. Customer chooses whether to review.</p></div>';
+        '<div class="ps-mock ps-mock--review">' +
+        '<div class="ps-mock-phone">' +
+        '<div class="ps-mock-phone__notch"></div>' +
+        '<div class="ps-mock-sms">' +
+        '<p class="ps-mock-sms__label">Messages · Customer</p>' +
+        '<div class="ps-mock-sms__bubble">Thanks again for choosing ' +
+        biz +
+        '. If we earned it, you can leave a quick review here:</div>' +
+        '<div class="ps-mock-sms__bubble is-link">review.jobcapturepro.com/' +
+        slug +
+        '</div></div></div>' +
+        '<div class="ps-mock-qr">' +
+        '<div class="ps-mock-qr__code" aria-hidden="true"></div>' +
+        '<strong>Or show QR on site</strong>' +
+        '<span>Customer chooses whether to review. No gating.</span></div></div>';
       return;
     }
+
     if (type === 'social') {
       c.innerHTML =
-        '<div class="ps-canvas"><div class="ps-canvas__head"><span>Social</span><span>Ready to post</span></div>' +
-        '<img class="ps-canvas__photo" src="' +
-        url +
-        '" alt="" width="640" height="400" loading="lazy" data-ps-job-photo />' +
-        '<p style="margin:0;font-size:0.92rem;line-height:1.45">Another job wrapped. ' +
-        job.title +
-        ' done right. Proof from the field.</p></div>';
+        '<div class="ps-mock ps-mock--social">' +
+        '<div class="ps-mock-social__head">' +
+        '<span class="ps-mock-social__avatar">' +
+        initial +
+        '</span>' +
+        '<div><strong>' +
+        biz +
+        '</strong><span>Prepared just now · ' +
+        city +
+        '</span></div></div>' +
+        '<p class="ps-mock-social__copy">' +
+        esc(socialCopy(job)) +
+        '</p>' +
+        '<div class="ps-mock__media">' +
+        photo +
+        '</div>' +
+        '<div class="ps-mock-social__reactions"><span>Like</span><span>Comment</span><span>Share</span></div></div>';
+      return;
+    }
+
+    if (type === 'directory') {
+      c.innerHTML =
+        '<div class="ps-mock ps-mock--directory">' +
+        '<p class="ps-mock-dir__label">JobCapturePro Directory</p>' +
+        '<article class="ps-mock-dir__card">' +
+        '<span class="ps-mock-dir__verified">Verified</span>' +
+        '<div class="ps-mock-dir__head">' +
+        '<span class="ps-mock-dir__avatar">' +
+        initial +
+        '</span>' +
+        '<div><strong>' +
+        biz +
+        '</strong><span>' +
+        esc(job.label) +
+        ' · ' +
+        city +
+        '</span></div></div>' +
+        '<div class="ps-mock-dir__latest">' +
+        photo +
+        '<div><em>Latest completed job</em><strong>' +
+        title +
+        '</strong><span>Documented on site · Just published</span></div></div>' +
+        '<div class="ps-mock-dir__meta"><span>12 jobs</span><span>·</span><span>Active this week</span><span>·</span><span>★★★★★</span></div>' +
+        '</article></div>';
     }
   }
 
@@ -541,10 +680,11 @@
     if (next) next.textContent = state.demoStep === steps.length - 1 ? 'See the payoff →' : 'Next →';
 
     if (progress) {
-      if (!progress.children.length) {
-        for (var i = 0; i < steps.length; i++) {
-          progress.appendChild(document.createElement('span'));
-        }
+      while (progress.children.length < steps.length) {
+        progress.appendChild(document.createElement('span'));
+      }
+      while (progress.children.length > steps.length) {
+        progress.removeChild(progress.lastChild);
       }
       Array.prototype.forEach.call(progress.children, function (el, i) {
         el.classList.toggle('is-done', i <= state.demoStep);
@@ -562,6 +702,9 @@
     var jobsLine = document.getElementById('psDemoPayoffJobs');
     var annual = state.annual || Math.round((state.jobs || 20) * 52);
     var weekly = state.jobs || 20;
+    var job = jobPersona();
+    var brand = brandPersona();
+    var url = photoUrl(job.photo);
     if (jobsLine) {
       jobsLine.textContent =
         'You told us you complete approximately ' +
@@ -581,8 +724,21 @@
     var c = document.getElementById('psDemoCanvas');
     if (c) {
       c.innerHTML =
-        '<div class="ps-canvas"><div class="ps-canvas__head"><span>One completed job</span><span>→ Multiple assets</span></div>' +
-        '<div class="ps-canvas-fan"><div><strong>Website proof</strong><span>Real job content</span></div><div><strong>Google activity</strong><span>Fresh GBP update</span></div><div><strong>Review opportunity</strong><span>QR or link</span></div><div><strong>Social content</strong><span>Ready to post</span></div><div><strong>Local proof</strong><span>Service-area visibility</span></div><div><strong>Directory</strong><span>Verified activity</span></div></div></div>';
+        '<div class="ps-mock ps-mock--payoff">' +
+        '<p class="ps-mock-payoff__label">One completed job → a full proof system</p>' +
+        '<div class="ps-mock-payoff__grid">' +
+        '<div class="ps-mock-payoff__tile is-web"><span>Website</span><strong>' +
+        esc(job.title) +
+        '</strong></div>' +
+        '<div class="ps-mock-payoff__tile is-gbp"><span>Google</span><strong>GBP update live</strong></div>' +
+        '<div class="ps-mock-payoff__tile is-social"><span>Social</span><strong>Post ready</strong></div>' +
+        '<div class="ps-mock-payoff__tile is-dir"><span>Directory</span><strong>' +
+        esc(brand.name) +
+        '</strong></div>' +
+        '<div class="ps-mock-payoff__hero"><img src="' +
+        esc(url) +
+        '" alt="" width="320" height="200" loading="lazy" data-ps-job-photo /><em>Review ask sent</em></div>' +
+        '</div></div>';
     }
     track('demo_completed', { annual: annual, trade: state.trade });
   }
