@@ -854,6 +854,11 @@ body.jcp-proof-sprint .ps-demo-copy {
   display: flex;
   flex-direction: column;
   min-height: 100%;
+  height: 100%;
+}
+
+body.jcp-proof-sprint .ps-demo-canvas {
+  height: 100%;
 }
 
 body.jcp-proof-sprint .ps-demo-controls {
@@ -2016,11 +2021,11 @@ body.jcp-proof-sprint .company-mark .ps-mock-mark {
 
 body.jcp-proof-sprint .ps-mock-mark__svg {
   display: block;
-  width: 0.9rem;
-  height: 0.9rem;
+  width: 0.95rem;
+  height: 0.95rem;
 }
 
-body.jcp-proof-sprint .ps-mock-mark__svg text {
+body.jcp-proof-sprint .ps-mock-mark__svg path {
   fill: #ffffff !important;
 }
 
