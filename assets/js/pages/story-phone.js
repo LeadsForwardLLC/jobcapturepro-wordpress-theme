@@ -63,7 +63,8 @@
   }
 
   function initStoryPhone(root) {
-    if (!root || root.getAttribute('data-jcp-story-ready') === '1') return;
+    if (!root || root.getAttribute('data-jpd-run-phone-manual') === '1') return;
+    if (root.getAttribute('data-jcp-story-ready') === '1') return;
     root.setAttribute('data-jcp-story-ready', '1');
 
     var caption = root.querySelector('[data-jcp-story-caption]');

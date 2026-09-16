@@ -243,8 +243,9 @@ function jcp_component_hero_home_visual( string $demo_url = '', string $photo_ur
  *
  * @param string $demo_url Demo URL.
  * @param string $photo_url Optional job photo for the capture beat.
+ * @param bool   $manual   Demo-run mode: JS-driven scenes (no story-phone loop).
  */
-function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url = '' ): void {
+function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url = '', bool $manual = false ): void {
 	$demo_url  = $demo_url !== '' ? $demo_url : home_url( '/demo/' );
 	$photo_url = $photo_url !== '' ? $photo_url : ( function_exists( 'jcp_media_default_phone_image' ) ? jcp_media_default_phone_image() : '' );
 	// Always start on home so JS scene timing stays in sync with the 18s CSS keyframes
@@ -258,8 +259,12 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 		__( '5. More visibility → more reasons to call', 'jcp-core' ),
 	];
 	?>
-	<div class="jcp-story-phone" data-jcp-story-phone data-start-scene="<?php echo esc_attr( $start_scene ); ?>">
+	<div
+		class="jcp-story-phone<?php echo $manual ? ' jpd-run-phone is-manual is-paused' : ''; ?>"
+		<?php echo $manual ? 'data-jpd-run-phone data-jpd-run-phone-manual="1" data-active-scene="home"' : 'data-jcp-story-phone data-start-scene="' . esc_attr( $start_scene ) . '"'; ?>
+	>
 		<div class="jcp-story-phone__glow" aria-hidden="true"></div>
+		<?php if ( ! $manual ) : ?>
 		<div class="jcp-story-phone__orbit" aria-hidden="true">
 			<span class="jcp-story-chip jcp-story-chip--maps" data-story-chip="maps">
 				<img src="<?php echo esc_url( jcp_core_icon( 'map-pin' ) ); ?>" alt="" width="14" height="14" />
@@ -282,7 +287,12 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 				<?php esc_html_e( 'More jobs', 'jcp-core' ); ?>
 			</span>
 		</div>
+		<?php endif; ?>
+		<?php if ( $manual ) : ?>
+		<div class="demo-phone-mockup demo-app-phone-mockup demo-preview-phone-mockup hero-phone-mockup jcp-story-phone__device" role="img" aria-label="<?php esc_attr_e( 'JobCapturePro mobile app', 'jcp-core' ); ?>">
+		<?php else : ?>
 		<a href="<?php echo esc_url( $demo_url ); ?>" class="demo-phone-mockup demo-app-phone-mockup demo-preview-phone-mockup hero-phone-mockup jcp-story-phone__device" aria-label="<?php esc_attr_e( 'Open the interactive demo', 'jcp-core' ); ?>">
+		<?php endif; ?>
 			<div class="phone-frame hero-phone-frame">
 				<div class="phone-screen demo-phone-screen">
 					<div class="phone-content demo-phone-content">
@@ -348,7 +358,7 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 									</div>
 									<div class="jcp-story-camera__view">
 										<?php if ( $photo_url !== '' ) : ?>
-										<img src="<?php echo esc_url( $photo_url ); ?>" alt="" class="jcp-story-camera__img" width="360" height="240" loading="lazy" decoding="async" fetchpriority="low" />
+										<img src="<?php echo esc_url( $photo_url ); ?>" alt="" class="jcp-story-camera__img" width="360" height="240" loading="lazy" decoding="async" fetchpriority="low" data-jpd-job-photo />
 										<?php endif; ?>
 										<span class="jcp-story-camera__reticle"></span>
 										<span class="jcp-story-camera__flash"></span>
@@ -437,9 +447,12 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 					</div>
 				</div>
 			</div>
-		</a>
-		<p class="jcp-story-phone__caption" data-jcp-story-caption data-captions="<?php echo esc_attr( wp_json_encode( array_values( $captions ) ) ); ?>">
-			<?php echo esc_html( $captions[0] ); ?>
+		<?php echo $manual ? '</div>' : '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static tag. ?>
+		<p
+			class="jcp-story-phone__caption<?php echo $manual ? ' jpd-run-phone-caption' : ''; ?>"
+			<?php echo $manual ? 'id="jpdRunPhoneCaption" data-jpd-run-caption' : 'data-jcp-story-caption data-captions="' . esc_attr( wp_json_encode( array_values( $captions ) ) ) . '"'; ?>
+		>
+			<?php echo esc_html( $manual ? __( 'Your tech opens JCP in the field…', 'jcp-core' ) : $captions[0] ); ?>
 		</p>
 	</div>
 	<?php

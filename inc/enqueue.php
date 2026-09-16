@@ -48,7 +48,12 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-survey-shared', 'assets/shared/assets/survey.css', [ 'jcp-core-base' ] );
         jcp_core_enqueue_style( 'jcp-core-survey', 'css/pages/survey.css', [ 'jcp-core-survey-shared' ] );
         jcp_core_enqueue_style( 'jcp-core-case-study-cohort', 'css/components/case-study-cohort.css', [ 'jcp-core-base' ] );
-        jcp_core_enqueue_style( 'jcp-core-job-proof-demo', 'css/pages/job-proof-demo.css', [ 'jcp-core-home', 'jcp-core-story-moments', 'jcp-core-survey', 'jcp-core-case-study-cohort' ] );
+        $jpd_style_deps = [ 'jcp-core-home', 'jcp-core-story-moments', 'jcp-core-survey', 'jcp-core-case-study-cohort' ];
+        if ( $jpd_run ) {
+            jcp_core_enqueue_style( 'jcp-core-demo-app-phone', 'css/components/demo-app-phone.css', [ 'jcp-core-sections' ] );
+            $jpd_style_deps[] = 'jcp-core-demo-app-phone';
+        }
+        jcp_core_enqueue_style( 'jcp-core-job-proof-demo', 'css/pages/job-proof-demo.css', $jpd_style_deps );
 
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
         jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );
