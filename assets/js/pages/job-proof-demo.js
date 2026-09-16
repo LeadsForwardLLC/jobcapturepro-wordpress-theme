@@ -964,8 +964,7 @@
   function showGrowthPanel() {
     var growth = document.getElementById('jpdCinemaGrowth');
     if (!growth) return;
-    growth.hidden = false;
-    growth.classList.add('is-live');
+    growth.classList.add('is-in', 'is-live');
   }
 
   function animateGrowthOutcomes() {
@@ -979,6 +978,60 @@
         el.classList.add('is-in');
       }, i * 420);
     });
+    document.querySelectorAll('[data-payoff]').forEach(function (el, i) {
+      window.setTimeout(function () {
+        el.classList.add('is-in');
+      }, 200 + i * 180);
+    });
+  }
+
+  function revealChapter(el) {
+    if (!el || el.classList.contains('is-in')) return;
+    el.classList.add('is-in');
+    var key = el.getAttribute('data-jpd-chapter') || el.getAttribute('data-jpd-output') || '';
+    if (key === 'growth') {
+      showGrowthPanel();
+      animateGrowthOutcomes();
+    }
+    if (JPD_PIPELINE_ORDER.indexOf(key) >= 0) {
+      setPipelineProgress(key);
+    }
+  }
+
+  function setupDeckChapters() {
+    var nodes = document.querySelectorAll('[data-jpd-chapter], [data-jpd-output], [data-jpd-trial-bridge]');
+    if (!nodes.length) return;
+    var reduce = false;
+    try {
+      reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {}
+    if (reduce || !('IntersectionObserver' in window)) {
+      nodes.forEach(function (el) {
+        revealChapter(el);
+      });
+      return;
+    }
+    var io = new IntersectionObserver(
+      function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          revealChapter(entry.target);
+          io.unobserve(entry.target);
+        });
+      },
+      { threshold: 0.28, rootMargin: '0px 0px -8% 0px' }
+    );
+    nodes.forEach(function (el) {
+      io.observe(el);
+    });
+  }
+
+  function revealAllDeckChapters() {
+    document.querySelectorAll('[data-jpd-chapter], [data-jpd-output], [data-jpd-trial-bridge]').forEach(function (el) {
+      el.classList.add('is-in');
+    });
+    showGrowthPanel();
+    animateGrowthOutcomes();
   }
 
   function dismissCinemaLoader() {
@@ -1018,8 +1071,6 @@
     var stage = document.querySelector('[data-jpd-run-stage]');
     var theater = document.querySelector('[data-jpd-run-theater]');
     var meter = document.getElementById('jpdRunMeter');
-    var outputs = document.querySelectorAll('[data-jpd-output]');
-    var payoffs = document.querySelectorAll('[data-payoff]');
     var bridge = document.querySelector('[data-jpd-trial-bridge]');
     var loader = document.getElementById('jpdCinemaLoader');
     var reduce = false;
@@ -1038,11 +1089,10 @@
       results.hidden = true;
       results.classList.remove('is-live');
     }
-    var growth = document.getElementById('jpdCinemaGrowth');
-    if (growth) {
-      growth.hidden = true;
-      growth.classList.remove('is-live');
-    }
+    document.querySelectorAll('[data-jpd-chapter], [data-jpd-output], [data-jpd-trial-bridge]').forEach(function (el) {
+      el.classList.remove('is-in', 'is-live');
+    });
+    if (bridge) bridge.classList.remove('is-in');
     if (progress) {
       progress.hidden = false;
       progress.style.display = '';
@@ -1051,13 +1101,6 @@
       theater.classList.remove('is-done');
       theater.classList.add('is-running');
     }
-    outputs.forEach(function (el) {
-      el.classList.remove('is-in');
-    });
-    payoffs.forEach(function (el) {
-      el.classList.remove('is-in');
-    });
-    if (bridge) bridge.classList.remove('is-in');
     if (meter) meter.style.width = '0%';
     document.querySelectorAll('[data-pipeline-channel]').forEach(function (el) {
       el.classList.remove('is-live');
@@ -1069,6 +1112,9 @@
     });
     document.querySelectorAll('[data-jpd-leads] [data-lead]').forEach(function (el) {
       el.hidden = true;
+      el.classList.remove('is-in');
+    });
+    document.querySelectorAll('[data-payoff]').forEach(function (el) {
       el.classList.remove('is-in');
     });
     var vis = document.querySelector('[data-jpd-vis-meter]');
@@ -1092,7 +1138,7 @@
       if (meter) meter.style.width = pct + '%';
     }
 
-    function finishAllVisible() {
+    function openDeck() {
       dismissCinemaLoader();
       if (progress) {
         progress.hidden = true;
@@ -1104,22 +1150,23 @@
         theater.classList.add('is-done');
       }
       setRunPhoneScene('outcome');
+      setRunPhoneCaption('Proof is live. Scroll to see every channel.');
       setPipelineProgress('review');
       if (pipeline) pipeline.classList.add('is-on', 'is-publishing');
+      setPipelineCaption('Live across connected channels.');
       if (results) {
         results.hidden = false;
         results.classList.add('is-live');
+        try {
+          results.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+        } catch (eScroll) {
+          results.scrollIntoView(true);
+        }
       }
-      showGrowthPanel();
-      animateGrowthOutcomes();
-      outputs.forEach(function (el) {
-        el.classList.add('is-in');
-      });
-      payoffs.forEach(function (el) {
-        el.classList.add('is-in');
-      });
-      if (bridge) bridge.classList.add('is-in');
+      setupDeckChapters();
       setMeter(100);
+      markRunStep('grow');
+      if (status) status.textContent = 'Your marketing loop is running. Scroll the deck.';
       state.animating = false;
       state.demoCompleted = true;
       try {
@@ -1127,6 +1174,12 @@
       } catch (eDone) {}
       track('DemoResultsViewed', { section: 'results', source: 'demo_run', cta_source: 'demo_run' });
       postDemoEvent('demo_publish_completed');
+    }
+
+    function finishAllVisible() {
+      openDeck();
+      revealAllDeckChapters();
+      if (bridge) bridge.classList.add('is-in');
     }
 
     if (reduce) {
@@ -1156,7 +1209,7 @@
       {
         t: 1500,
         fn: function () {
-          setLoaderProgress(68, 'Preparing your five channel outputs…', 'channels');
+          setLoaderProgress(68, 'Preparing your five channel story…', 'channels');
         },
       },
       {
@@ -1173,7 +1226,7 @@
           setRunPhoneCaption('Your tech opens JCP at the job site…');
           if (status) status.textContent = 'Starting check-in in the field…';
           markRunStep('capture');
-          setMeter(8);
+          setMeter(10);
         },
       },
       {
@@ -1182,7 +1235,7 @@
           setRunPhoneScene('camera');
           setRunPhoneCaption('One tap. Finished job photo captured.');
           if (status) status.textContent = 'Photo captured on site…';
-          setMeter(18);
+          setMeter(22);
         },
       },
       {
@@ -1194,7 +1247,7 @@
           if (status) status.textContent = 'Building proof from your photo…';
           if (pipeline) pipeline.classList.add('is-on');
           setPipelineCaption('Turning one photo into usable marketing…');
-          setMeter(32);
+          setMeter(40);
         },
       },
       {
@@ -1206,107 +1259,44 @@
           if (status) status.textContent = 'Publishing across connected channels…';
           if (pipeline) pipeline.classList.add('is-publishing');
           setPipelineCaption('Sending proof to every connected channel…');
-          setMeter(46);
-        },
-      },
-      {
-        t: 5900,
-        fn: function () {
-          if (results) {
-            results.hidden = false;
-            results.classList.add('is-live');
-            try {
-              results.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            } catch (eScroll) {
-              results.scrollIntoView(true);
-            }
-          }
-          showGrowthPanel();
-          var web = document.querySelector('[data-jpd-output="website"]');
-          if (web) web.classList.add('is-in');
           setPipelineProgress('website');
-          setMeter(54);
+          setMeter(58);
         },
       },
       {
-        t: 6500,
+        t: 5800,
         fn: function () {
-          var el = document.querySelector('[data-jpd-output="google"]');
-          if (el) el.classList.add('is-in');
           setPipelineProgress('google');
-          setMeter(62);
+          setMeter(68);
         },
       },
       {
-        t: 7100,
+        t: 6200,
         fn: function () {
-          var el = document.querySelector('[data-jpd-output="social"]');
-          if (el) el.classList.add('is-in');
           setPipelineProgress('social');
-          setMeter(70);
+          setMeter(76);
         },
       },
       {
-        t: 7700,
+        t: 6600,
         fn: function () {
-          var el = document.querySelector('[data-jpd-output="directory"]');
-          if (el) el.classList.add('is-in');
           setPipelineProgress('directory');
-          setMeter(78);
+          setMeter(84);
         },
       },
       {
-        t: 8300,
+        t: 7000,
         fn: function () {
-          var el = document.querySelector('[data-jpd-output="review"]');
-          if (el) el.classList.add('is-in');
           setPipelineProgress('review');
           setRunPhoneScene('outcome');
-          setRunPhoneCaption('Proof is live. Homeowners have more reasons to call.');
-          setMeter(86);
-          track('DemoResultsViewed', { section: 'results', source: 'demo_run', cta_source: 'demo_run' });
-          postDemoEvent('demo_publish_completed');
+          setRunPhoneCaption('Proof is live. Scroll to see every channel.');
+          setMeter(92);
         },
       },
       {
-        t: 8900,
+        t: 7600,
         fn: function () {
-          markRunStep('grow');
-          if (status) status.textContent = 'Visibility and inbound interest start to stack…';
-          animateGrowthOutcomes();
-          setMeter(94);
-        },
-      },
-      {
-        t: 9600,
-        text: 'Your marketing loop is running.',
-        meter: 100,
-        fn: function () {
-          payoffs.forEach(function (el, i) {
-            window.setTimeout(function () {
-              el.classList.add('is-in');
-            }, i * 160);
-          });
-          window.setTimeout(function () {
-            if (bridge) bridge.classList.add('is-in');
-          }, 480);
-          if (progress) {
-            window.setTimeout(function () {
-              if (progress) {
-                progress.hidden = true;
-                progress.style.display = 'none';
-              }
-            }, 900);
-          }
-          if (theater) {
-            theater.classList.remove('is-running');
-            theater.classList.add('is-done');
-          }
-          state.animating = false;
-          state.demoCompleted = true;
-          try {
-            sessionStorage.setItem(DEMO_DONE_KEY, '1');
-          } catch (eDone2) {}
+          openDeck();
         },
       },
     ];
@@ -1412,15 +1402,11 @@
         results.hidden = false;
         results.classList.add('is-live');
       }
-      document.querySelectorAll('[data-jpd-output], [data-payoff], [data-jpd-trial-bridge]').forEach(function (el) {
-        el.classList.add('is-in');
-      });
       setRunPhoneScene('outcome');
       setPipelineProgress('review');
       var pipelineDone = document.querySelector('[data-jpd-pipeline]');
       if (pipelineDone) pipelineDone.classList.add('is-on', 'is-publishing');
-      showGrowthPanel();
-      animateGrowthOutcomes();
+      revealAllDeckChapters();
       var theaterDone = document.querySelector('[data-jpd-run-theater]');
       if (theaterDone) theaterDone.classList.add('is-done');
       return;
