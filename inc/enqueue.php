@@ -35,6 +35,7 @@ function jcp_core_enqueue_assets(): void {
     // the child route slug is also "demo" and would otherwise load survey.js.
     $jpd_lp  = function_exists( 'jcp_job_proof_demo_is_current' ) && jcp_job_proof_demo_is_current();
     $jpd_run = function_exists( 'jcp_job_proof_demo_run_is_current' ) && jcp_job_proof_demo_run_is_current();
+    $ps_lp   = function_exists( 'jcp_proof_sprint_is_current' ) && jcp_proof_sprint_is_current();
     if ( $jpd_lp || $jpd_run ) {
         jcp_core_enqueue_style( 'jcp-core-base', 'css/base.css' );
         jcp_core_enqueue_style( 'jcp-core-layout', 'css/layout.css', [ 'jcp-core-base' ] );
@@ -112,6 +113,53 @@ function jcp_core_enqueue_assets(): void {
             ];
             wp_add_inline_script(
                 'jcp-core-job-proof-demo',
+                'window.JCP_ONBOARDING = window.JCP_ONBOARDING || ' . wp_json_encode( $onb ) . ';',
+                'before'
+            );
+        }
+        return;
+    }
+
+    // /proof-sprint/ paid acquisition funnel — standalone conversion chrome.
+    if ( $ps_lp ) {
+        jcp_core_enqueue_style( 'jcp-core-base', 'css/base.css' );
+        jcp_core_enqueue_style( 'jcp-core-layout', 'css/layout.css', [ 'jcp-core-base' ] );
+        jcp_core_enqueue_style( 'jcp-core-buttons', 'css/buttons.css', [ 'jcp-core-layout' ] );
+        jcp_core_enqueue_style( 'jcp-core-components', 'css/components.css', [ 'jcp-core-buttons' ] );
+        jcp_core_enqueue_style( 'jcp-core-utilities', 'css/utilities.css', [ 'jcp-core-components' ] );
+        jcp_core_enqueue_style( 'jcp-core-sections', 'css/sections.css', [ 'jcp-core-components' ] );
+        jcp_core_enqueue_style( 'jcp-core-niche-landing', 'css/pages/niche-landing.css', [ 'jcp-core-sections' ] );
+        jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-niche-landing' ] );
+        jcp_core_enqueue_style( 'jcp-core-story-moments', 'css/components/story-moments.css', [ 'jcp-core-components' ] );
+        jcp_core_enqueue_style( 'jcp-core-proof-sprint', 'css/pages/proof-sprint.css', [ 'jcp-core-home', 'jcp-core-story-moments', 'jcp-core-niche-landing' ] );
+
+        jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
+        jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );
+        jcp_core_enqueue_script( 'jcp-core-proof-sprint', 'js/pages/proof-sprint.js', [ 'jcp-core-attribution', 'jcp-core-onboarding-handoff' ] );
+
+        wp_add_inline_script(
+            'jcp-core-proof-sprint',
+            'window.JCP_CONFIG=window.JCP_CONFIG||{env:"live",baseUrl:' . wp_json_encode( site_url() ) . '};',
+            'before'
+        );
+        wp_localize_script(
+            'jcp-core-proof-sprint',
+            'JCP_PS',
+            [
+                'campaignBase' => trailingslashit( get_template_directory_uri() ) . 'assets/campaign/',
+                'lpVariant'    => 'proof_sprint',
+            ]
+        );
+        if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {
+            $onb = [
+                'url'         => jcp_core_onboarding_app_url_raw(
+                    function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults( 'proof_sprint_trial' ) : []
+                ),
+                'sessionId'   => jcp_core_onboarding_hardcoded_session_id(),
+                'utmDefaults' => function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : [],
+            ];
+            wp_add_inline_script(
+                'jcp-core-proof-sprint',
                 'window.JCP_ONBOARDING = window.JCP_ONBOARDING || ' . wp_json_encode( $onb ) . ';',
                 'before'
             );
@@ -359,12 +407,12 @@ function jcp_core_enqueue_assets(): void {
             // Lightweight paid LP view signal for GTM/Meta (maps to PaidLandingView).
             wp_add_inline_script(
                 'jcp-core-attribution',
-                "(function(){try{window.dataLayer=window.dataLayer||[];var map={'/contractor-demo':'contractor_demo','/contractor-formula':'formula','/contractor-nature':'nature_doc','/job-proof':'proof_waste','/why-we-built-jcp':'founder','/job-proof-demo':'job_proof_demo'};var path=(location.pathname||'').replace(/\\/+$/,'')||'/';var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||map[path]||'';if(v&&document.body&&!document.body.getAttribute('data-jcp-lp-variant')){document.body.setAttribute('data-jcp-lp-variant',v);document.documentElement.setAttribute('data-jcp-lp-variant',v);}window.dataLayer.push({event:'PaidLandingView',page_path:location.pathname,lp_variant:v||'default'});}catch(e){}})();",
+                "(function(){try{window.dataLayer=window.dataLayer||[];var map={'/contractor-demo':'contractor_demo','/contractor-formula':'formula','/contractor-nature':'nature_doc','/job-proof':'proof_waste','/why-we-built-jcp':'founder','/job-proof-demo':'job_proof_demo','/proof-sprint':'proof_sprint'};var path=(location.pathname||'').replace(/\\/+$/,'')||'/';var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||map[path]||'';if(v&&document.body&&!document.body.getAttribute('data-jcp-lp-variant')){document.body.setAttribute('data-jcp-lp-variant',v);document.documentElement.setAttribute('data-jcp-lp-variant',v);}window.dataLayer.push({event:'PaidLandingView',page_path:location.pathname,lp_variant:v||'default'});}catch(e){}})();",
                 'after'
             );
             wp_add_inline_script(
                 'jcp-core-attribution',
-                "document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[href*=\"/demo\"]'):null;if(!a)return;try{if(window.__jcpDemoCtaFired)return;window.__jcpDemoCtaFired=1;window.dataLayer=window.dataLayer||[];var map={'/contractor-demo':'contractor_demo','/contractor-formula':'formula','/contractor-nature':'nature_doc','/job-proof':'proof_waste','/why-we-built-jcp':'founder','/job-proof-demo':'job_proof_demo'};var path=(location.pathname||'').replace(/\\/+$/,'')||'/';var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||map[path]||'';window.dataLayer.push({event:'DemoCTA',cta_label:(a.textContent||'').trim().slice(0,80),href:a.href,lp_variant:v||'default'});}catch(err){}});",
+                "document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[href*=\"/demo\"]'):null;if(!a)return;try{if(window.__jcpDemoCtaFired)return;window.__jcpDemoCtaFired=1;window.dataLayer=window.dataLayer||[];var map={'/contractor-demo':'contractor_demo','/contractor-formula':'formula','/contractor-nature':'nature_doc','/job-proof':'proof_waste','/why-we-built-jcp':'founder','/job-proof-demo':'job_proof_demo','/proof-sprint':'proof_sprint'};var path=(location.pathname||'').replace(/\\/+$/,'')||'/';var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||map[path]||'';window.dataLayer.push({event:'DemoCTA',cta_label:(a.textContent||'').trim().slice(0,80),href:a.href,lp_variant:v||'default'});}catch(err){}});",
                 'after'
             );
         }

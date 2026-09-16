@@ -30,6 +30,10 @@ if ( is_readable( $jcp_job_proof_demo_inc ) ) {
 		require_once $jcp_job_proof_demo_inc;
 	}
 }
+$jcp_proof_sprint_inc = get_template_directory() . '/inc/proof-sprint.php';
+if ( is_readable( $jcp_proof_sprint_inc ) ) {
+	require_once $jcp_proof_sprint_inc;
+}
 require_once get_template_directory() . '/inc/pricing-plans.php';
 require_once get_template_directory() . '/inc/sales-tool/bootstrap.php';
 require_once get_template_directory() . '/inc/nav-mega-menu.php';

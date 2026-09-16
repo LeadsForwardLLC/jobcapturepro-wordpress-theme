@@ -23,6 +23,7 @@
     '/job-proof': 'proof_waste',
     '/why-we-built-jcp': 'founder',
     '/job-proof-demo': 'job_proof_demo',
+    '/proof-sprint': 'proof_sprint',
   };
 
   function readLpVariantFromPath() {

@@ -97,7 +97,7 @@ add_filter( 'rocket_exclude_js', 'jcp_core_rocket_exclude_js' );
  * Bump $bust when critical front-end assets change and anonymous CSS must refresh.
  */
 function jcp_core_rocket_bust_stale_minify(): void {
-	$bust = '2026-09-16-job-proof-demo-deck-v20';
+	$bust = '2026-09-16-proof-sprint-v1';
 	if ( get_option( 'jcp_core_rocket_bust' ) === $bust ) {
 		return;
 	}
@@ -120,6 +120,8 @@ function jcp_core_rocket_bust_stale_minify(): void {
 				home_url( '/job-proof/' ),
 				home_url( '/job-proof-demo/' ),
 				home_url( '/job-proof-demo/demo/' ),
+				home_url( '/proof-sprint/' ),
+				home_url( '/proof-sprint' ),
 				home_url( '/why-we-built-jcp/' ),
 				home_url( '/demo/' ),
 				home_url( '/demo' ),
