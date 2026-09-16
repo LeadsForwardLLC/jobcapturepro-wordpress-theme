@@ -446,7 +446,7 @@
     var social = document.querySelector('[data-jpd-social-copy]');
     if (social) {
       social.textContent =
-        'Another job wrapped. ' + job.title + ' done right — proof from the field.';
+        'Another job wrapped. ' + job.title + ' done right. Proof from the field.';
     }
     var dir = document.querySelector('[data-jpd-directory-latest]');
     if (dir) dir.textContent = job.title;
@@ -934,8 +934,44 @@
     var results = document.getElementById('jpdFullResults');
     var progress = document.getElementById('jpdFullProgress');
     var stage = document.querySelector('[data-jpd-run-stage]');
-    if (results) results.hidden = true;
-    if (progress) progress.hidden = false;
+    var theater = document.querySelector('[data-jpd-run-theater]');
+    var engine = document.querySelector('[data-jpd-run-engine]');
+    var meter = document.getElementById('jpdRunMeter');
+    var outputs = document.querySelectorAll('[data-jpd-output]');
+    var payoffs = document.querySelectorAll('[data-payoff]');
+    var bridge = document.querySelector('[data-jpd-trial-bridge]');
+    var reduce = false;
+    try {
+      reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (eReduce) {}
+
+    if (results) {
+      results.hidden = true;
+      results.classList.remove('is-live');
+    }
+    if (progress) {
+      progress.hidden = false;
+      progress.style.display = '';
+    }
+    if (theater) theater.classList.add('is-running');
+    if (engine) {
+      engine.setAttribute('aria-hidden', 'true');
+      engine.classList.remove('is-on');
+    }
+    outputs.forEach(function (el) {
+      el.classList.remove('is-in');
+    });
+    payoffs.forEach(function (el) {
+      el.classList.remove('is-in');
+    });
+    if (bridge) bridge.classList.remove('is-in');
+    if (meter) meter.style.width = '0%';
+    document.querySelectorAll('[data-run-resolve]').forEach(function (el) {
+      el.classList.remove('is-on');
+    });
+    document.querySelectorAll('[data-run-step]').forEach(function (el) {
+      el.classList.remove('is-active', 'is-done');
+    });
 
     var stepKeys = ['photo', 'checkin', 'context', 'publish'];
     function markRunStep(name) {
@@ -943,32 +979,182 @@
         var key = el.getAttribute('data-run-step');
         el.classList.toggle('is-active', key === name);
         if (stepKeys.indexOf(key) < stepKeys.indexOf(name)) el.classList.add('is-done');
+        if (key === name) el.classList.remove('is-done');
       });
     }
 
+    function setMeter(pct) {
+      if (meter) meter.style.width = pct + '%';
+    }
+
+    function finishAllVisible() {
+      if (progress) {
+        progress.hidden = true;
+        progress.style.display = 'none';
+      }
+      if (stage) {
+        stage.classList.remove('is-scanning');
+        stage.classList.add('is-complete');
+      }
+      if (theater) {
+        theater.classList.remove('is-running');
+        theater.classList.add('is-done');
+      }
+      if (engine) {
+        engine.classList.add('is-on');
+        engine.setAttribute('aria-hidden', 'false');
+        document.querySelectorAll('[data-run-resolve]').forEach(function (el) {
+          el.classList.add('is-on');
+        });
+      }
+      if (results) {
+        results.hidden = false;
+        results.classList.add('is-live');
+      }
+      outputs.forEach(function (el) {
+        el.classList.add('is-in');
+      });
+      payoffs.forEach(function (el) {
+        el.classList.add('is-in');
+      });
+      if (bridge) bridge.classList.add('is-in');
+      setMeter(100);
+      state.animating = false;
+      state.demoCompleted = true;
+      try {
+        sessionStorage.setItem(DEMO_DONE_KEY, '1');
+      } catch (eDone) {}
+      track('DemoResultsViewed', { section: 'results', source: 'demo_run', cta_source: 'demo_run' });
+      postDemoEvent('demo_publish_completed');
+    }
+
+    if (reduce) {
+      finishAllVisible();
+      return;
+    }
+
     var lines = [
-      { t: 0, text: 'Completed job received…', step: 'photo' },
-      { t: 900, text: 'Creating your check-in…', step: 'checkin' },
-      { t: 2200, text: 'Adding service + location context…', step: 'context' },
-      { t: 3600, text: 'Publishing across connected channels…', step: 'publish' },
       {
-        t: 5200,
-        text: '',
+        t: 0,
+        text: 'Completed job received…',
+        step: 'photo',
+        meter: 12,
+        fn: function () {
+          if (stage) stage.classList.add('is-scanning');
+        },
+      },
+      {
+        t: 900,
+        text: 'Building your check-in…',
+        step: 'checkin',
+        meter: 32,
+        fn: function () {
+          if (engine) {
+            engine.classList.add('is-on');
+            engine.setAttribute('aria-hidden', 'false');
+          }
+          var r1 = document.querySelector('[data-run-resolve="1"]');
+          if (r1) r1.classList.add('is-on');
+        },
+      },
+      {
+        t: 2000,
+        text: 'Adding service and location…',
+        step: 'context',
+        meter: 55,
+        fn: function () {
+          document.querySelectorAll('[data-run-resolve]').forEach(function (el) {
+            el.classList.add('is-on');
+          });
+        },
+      },
+      {
+        t: 3200,
+        text: 'Publishing across channels…',
+        step: 'publish',
+        meter: 72,
+        fn: function () {
+          if (stage) stage.classList.remove('is-scanning');
+          if (stage) stage.classList.add('is-complete');
+          if (results) {
+            results.hidden = false;
+            results.classList.add('is-live');
+            results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        },
+      },
+      {
+        t: 3800,
+        meter: 80,
+        fn: function () {
+          var el = document.querySelector('[data-jpd-output="website"]');
+          if (el) el.classList.add('is-in');
+        },
+      },
+      {
+        t: 4400,
+        meter: 86,
+        fn: function () {
+          var el = document.querySelector('[data-jpd-output="google"]');
+          if (el) el.classList.add('is-in');
+        },
+      },
+      {
+        t: 5000,
+        meter: 90,
+        fn: function () {
+          var el = document.querySelector('[data-jpd-output="social"]');
+          if (el) el.classList.add('is-in');
+        },
+      },
+      {
+        t: 5600,
+        meter: 94,
+        fn: function () {
+          var el = document.querySelector('[data-jpd-output="directory"]');
+          if (el) el.classList.add('is-in');
+        },
+      },
+      {
+        t: 6200,
+        meter: 98,
+        fn: function () {
+          var el = document.querySelector('[data-jpd-output="review"]');
+          if (el) el.classList.add('is-in');
+          track('DemoResultsViewed', { section: 'results', source: 'demo_run', cta_source: 'demo_run' });
+          postDemoEvent('demo_publish_completed');
+        },
+      },
+      {
+        t: 6800,
+        text: 'Done. Your marketing is live.',
+        meter: 100,
         fn: function () {
           if (progress) {
-            progress.hidden = true;
-            progress.style.display = 'none';
+            window.setTimeout(function () {
+              if (progress) {
+                progress.hidden = true;
+                progress.style.display = 'none';
+              }
+            }, 700);
           }
-          if (stage) stage.classList.add('is-complete');
-          if (results) results.hidden = false;
+          if (theater) {
+            theater.classList.remove('is-running');
+            theater.classList.add('is-done');
+          }
+          payoffs.forEach(function (el, i) {
+            window.setTimeout(function () {
+              el.classList.add('is-in');
+            }, i * 180);
+          });
+          window.setTimeout(function () {
+            if (bridge) bridge.classList.add('is-in');
+          }, 500);
           state.animating = false;
           state.demoCompleted = true;
           try {
             sessionStorage.setItem(DEMO_DONE_KEY, '1');
-          } catch (eDone) {}
-          track('DemoResultsViewed', { section: 'results', source: 'demo_run', cta_source: 'demo_run' });
-          postDemoEvent('demo_publish_completed');
-          if (results) results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          } catch (eDone2) {}
         },
       },
     ];
@@ -977,6 +1163,7 @@
       window.setTimeout(function () {
         if (step.text && status) status.textContent = step.text;
         if (step.step) markRunStep(step.step);
+        if (typeof step.meter === 'number') setMeter(step.meter);
         if (step.fn) step.fn();
       }, step.t);
     });
@@ -1066,7 +1253,23 @@
       state.demoCompleted = true;
       var progress = document.getElementById('jpdFullProgress');
       if (progress) progress.hidden = true;
-      if (results) results.hidden = false;
+      if (results) {
+        results.hidden = false;
+        results.classList.add('is-live');
+      }
+      document.querySelectorAll('[data-jpd-output], [data-payoff], [data-jpd-trial-bridge]').forEach(function (el) {
+        el.classList.add('is-in');
+      });
+      var engineDone = document.querySelector('[data-jpd-run-engine]');
+      if (engineDone) {
+        engineDone.classList.add('is-on');
+        engineDone.setAttribute('aria-hidden', 'false');
+      }
+      document.querySelectorAll('[data-run-resolve]').forEach(function (el) {
+        el.classList.add('is-on');
+      });
+      var theaterDone = document.querySelector('[data-jpd-run-theater]');
+      if (theaterDone) theaterDone.classList.add('is-done');
       return;
     }
 

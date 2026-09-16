@@ -1148,38 +1148,74 @@ body.jcp-job-proof-demo .rankings-cta-btn {
   color: var(--jcp-color-text-muted, #64748b);
 }
 
-/* ---- Run hero (no giant bland box) ---- */
+/* ---- Run hero (product theater) ---- */
 .jpd-run-hero {
-  padding-top: 2.25rem;
-  padding-bottom: 1.25rem;
+  padding-top: clamp(2rem, 4vw, 3rem);
+  padding-bottom: 1.5rem;
+  background:
+    radial-gradient(70% 50% at 50% 0%, rgba(255, 80, 62, 0.07), transparent 55%),
+    linear-gradient(180deg, #fff 0%, #f8fafc 100%);
 }
 
 .jpd-run-hero__header {
-  max-width: 42rem;
-  margin: 0 auto 1.5rem;
+  max-width: 40rem;
+  margin: 0 auto 1.75rem;
   text-align: center;
 }
 
+.jpd-run-hero__header .jcp-section-headline {
+  line-height: 1.2;
+  max-width: 22rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .jpd-run-hero__sub {
-  margin: 0.65rem 0 0;
+  margin: 0.75rem auto 0;
+  max-width: 34rem;
   color: var(--jcp-color-text-muted, #64748b);
   font-size: 1.05rem;
   line-height: 1.5;
 }
 
-.jpd-run__job {
-  max-width: 28rem;
+.jpd-run-stage {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+  align-items: center;
+  max-width: 40rem;
   margin: 0 auto;
+}
+
+@media (min-width: 720px) {
+  .jpd-run-stage {
+    grid-template-columns: minmax(0, 1.2fr) auto;
+    gap: 1.15rem;
+  }
+}
+
+.jpd-run__job {
+  width: 100%;
+  max-width: 28rem;
+  margin: 0;
   border: 1px solid rgba(15, 23, 42, 0.12);
   border-radius: 1rem;
   overflow: hidden;
   background: #fff;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.1);
+  transition: transform 0.45s ease, box-shadow 0.45s ease;
+}
+
+.jpd-run__job.is-scanning,
+.jpd-run-hero.is-running .jpd-run__job {
+  box-shadow: 0 16px 40px rgba(255, 80, 62, 0.18);
 }
 
 .jpd-run__job-media {
   position: relative;
   aspect-ratio: 16 / 11;
   background: #0f172a;
+  overflow: hidden;
 }
 
 .jpd-run__job-media img {
@@ -1187,6 +1223,28 @@ body.jcp-job-proof-demo .rankings-cta-btn {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.jpd-run__scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -30%;
+  height: 35%;
+  background: linear-gradient(180deg, transparent, rgba(255, 80, 62, 0.28), transparent);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.jpd-run__job.is-scanning .jpd-run__scan,
+.jpd-run-hero.is-running .jpd-run__job.is-scanning .jpd-run__scan {
+  opacity: 1;
+  animation: jpd-run-scan 1.4s ease-in-out infinite;
+}
+
+@keyframes jpd-run-scan {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(320%); }
 }
 
 .jpd-run__job-body {
@@ -1205,10 +1263,91 @@ body.jcp-job-proof-demo .rankings-cta-btn {
   font-size: 0.95rem;
 }
 
+.jpd-run__engine {
+  width: min(100%, 8.5rem);
+  padding: 0.85rem 0.75rem;
+  border-radius: 1rem;
+  background: #fff;
+  border: 1px solid rgba(255, 80, 62, 0.35);
+  box-shadow: 0 10px 28px rgba(255, 80, 62, 0.14);
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.jpd-run__engine.is-on {
+  opacity: 1;
+  transform: none;
+}
+
+.jpd-run__engine-mark {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0 auto 0.55rem;
+  border-radius: 999px;
+  background: var(--jcp-color-primary, #ff503e);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.jpd-run__resolve {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.jpd-run__resolve li {
+  padding: 0.28rem 0.4rem;
+  border-radius: 0.4rem;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #f8fafc;
+  font-size: 0.68rem;
+  font-weight: 750;
+  text-align: center;
+  color: #94a3b8;
+  transition: color 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+}
+
+.jpd-run__resolve li.is-on {
+  color: #0f172a;
+  border-color: rgba(255, 80, 62, 0.35);
+  background: #fff7f5;
+}
+
 .jpd-run__progress {
   max-width: 36rem;
-  margin: 1.25rem auto 0;
+  margin: 1.5rem auto 0;
   text-align: center;
+}
+
+.jpd-run__meter {
+  height: 0.35rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  margin: 0 auto 0.85rem;
+  max-width: 20rem;
+}
+
+.jpd-run__meter-bar {
+  display: block;
+  height: 100%;
+  width: 0%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff503e, #ff7a6a);
+  transition: width 0.55s ease;
+}
+
+.jpd-full__status {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
 }
 
 .jpd-run__steps {
@@ -1229,6 +1368,7 @@ body.jcp-job-proof-demo .rankings-cta-btn {
   font-size: 0.78rem;
   font-weight: 700;
   color: var(--jcp-color-text-muted, #64748b);
+  transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease;
 }
 
 .jpd-run__steps li.is-active {
@@ -1244,20 +1384,77 @@ body.jcp-job-proof-demo .rankings-cta-btn {
 }
 
 .jpd-run-results {
-  padding-top: 1.5rem;
+  padding-top: 1.75rem;
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 30%);
 }
 
 .jpd-run-results__header {
-  max-width: 44rem;
-  margin: 0 auto 1.75rem;
+  max-width: 42rem;
+  margin: 0 auto 1.5rem;
   text-align: center;
 }
 
+.jpd-run-results__header .jcp-section-headline {
+  line-height: 1.2;
+  max-width: 22rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .jpd-run-results__sub {
-  margin: 0.65rem 0 0;
+  margin: 0.65rem auto 0;
+  max-width: 34rem;
   color: var(--jcp-color-text-muted, #64748b);
   font-size: 1.02rem;
   line-height: 1.5;
+}
+
+.jpd-run-payoffs {
+  list-style: none;
+  margin: 0 auto 1.75rem;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+  max-width: 56rem;
+}
+
+@media (min-width: 720px) {
+  .jpd-run-payoffs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+.jpd-run-payoffs li {
+  margin: 0;
+  padding: 1rem 1.05rem;
+  border-radius: 0.95rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+  opacity: 0;
+  transform: translateY(0.5rem);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+}
+
+.jpd-run-payoffs li.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.jpd-run-payoffs strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.jpd-run-payoffs span {
+  display: block;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: #64748b;
 }
 
 /* ---- Outputs grid ---- */
@@ -1282,6 +1479,19 @@ body.jcp-job-proof-demo .rankings-cta-btn {
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 1rem;
   background: #fff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+  opacity: 0;
+  transform: translateY(0.75rem) scale(0.985);
+  transition: opacity 0.5s ease, transform 0.5s ease, box-shadow 0.4s ease;
+}
+
+.jpd-output.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.jpd-run-results.is-live .jpd-output.is-in {
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08);
 }
 
 .jpd-output__channel {
@@ -1298,6 +1508,79 @@ body.jcp-job-proof-demo .rankings-cta-btn {
   font-size: 1.12rem;
   font-weight: 800;
   line-height: 1.3;
+}
+
+.jpd-run-brand {
+  margin: 0 0 0.45rem;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.jpd-trial-bridge {
+  opacity: 0;
+  transform: translateY(0.6rem);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.jpd-trial-bridge.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.jpd-run-quotes {
+  margin-top: 1.75rem;
+  max-width: 52rem;
+  margin-left: auto;
+  margin-right: auto;
+  display: grid;
+  gap: 0.85rem;
+}
+
+@media (min-width: 720px) {
+  .jpd-run-quotes {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.jpd-run-quotes .jpd-quote--compact {
+  padding: 1rem 1.05rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 0.9rem;
+  background: #fff;
+}
+
+.jpd-run-quotes .jpd-quote footer {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.jpd-run-quotes .jpd-quote footer img {
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.jpd-run-quotes .jpd-quote footer em {
+  font-style: normal;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jpd-run__scan,
+  .jpd-run__job,
+  .jpd-run__engine,
+  .jpd-output,
+  .jpd-run-payoffs li,
+  .jpd-trial-bridge {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
 
 /* Plugin website mock */
@@ -1970,10 +2253,6 @@ body.jcp-job-proof-demo-run .ghl-chat-widget {
   border-top: 1px solid rgba(15, 23, 42, 0.08);
   border-radius: 0;
   background: transparent;
-}
-.jpd-run-quotes {
-  margin-top: 1.5rem;
-  max-width: 42rem;
 }
 
 /* ---- Outputs hierarchy ---- */
