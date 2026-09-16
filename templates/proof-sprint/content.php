@@ -17,9 +17,12 @@ $icon = static function ( string $name ): string {
 
 $campaign   = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/';
 $integ      = trailingslashit( get_template_directory_uri() ) . 'assets/integrations/';
+$home_v2    = trailingslashit( get_template_directory_uri() ) . 'assets/home-v2/';
 $photo_hvac = function_exists( 'jcp_proof_sprint_asset_url' ) ? jcp_proof_sprint_asset_url( 'jcp-campaign-job-proof-640.webp' ) : $campaign . 'jcp-campaign-job-proof-640.webp';
 $photo_job  = function_exists( 'jcp_proof_sprint_asset_url' ) ? jcp_proof_sprint_asset_url( 'jcp-campaign-job-proof-640.webp' ) : $campaign . 'jcp-campaign-job-proof-640.webp';
 $photo_crew = function_exists( 'jcp_proof_sprint_asset_url' ) ? jcp_proof_sprint_asset_url( 'jcp-campaign-job-proof-640.webp' ) : $campaign . 'jcp-campaign-job-proof-640.webp';
+$photo_why  = $home_v2 . 'lf-triadelphia-scans.webp';
+$photo_final = $home_v2 . 'lf-triadelphia-preview.webp';
 $map_url    = get_template_directory_uri() . '/assets/map-3c5b675f-f28d-41a5-ba3a-972b4c189f10.png';
 
 $reviews = function_exists( 'jcp_sales_tool_default_reviews' ) ? jcp_sales_tool_default_reviews() : [];
@@ -282,10 +285,22 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 
 		<div class="ps-demo-payoff" id="psDemoPayoff" hidden>
 			<div class="ps-demo-payoff__card">
-				<p class="ps-demo-payoff__kicker" id="psDemoPayoffJobs"></p>
-				<h3><?php esc_html_e( 'One job is useful. Hundreds become a system.', 'jcp-core' ); ?></h3>
-				<p class="ps-demo-payoff__body"><?php esc_html_e( 'Put your next completed jobs through JobCapturePro and watch website proof, Google activity, reviews, social and directory updates stack up from work you already do.', 'jcp-core' ); ?></p>
-				<a class="btn btn-primary ps-btn-xl" href="<?php echo esc_url( $trial_href ); ?>" data-ps-trial data-ps-source="demo_payoff" data-ps-track="trial_cta_clicked"><?php esc_html_e( 'Put My Next Job Through JobCapturePro →', 'jcp-core' ); ?></a>
+				<div class="ps-demo-payoff__visual" aria-hidden="true">
+					<img src="<?php echo esc_url( $photo_job ); ?>" alt="" width="480" height="320" loading="lazy" decoding="async" />
+					<ul class="ps-demo-payoff__channels">
+						<li><?php esc_html_e( 'Website', 'jcp-core' ); ?></li>
+						<li><?php esc_html_e( 'Google', 'jcp-core' ); ?></li>
+						<li><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></li>
+						<li><?php esc_html_e( 'Social', 'jcp-core' ); ?></li>
+						<li><?php esc_html_e( 'Directory', 'jcp-core' ); ?></li>
+					</ul>
+				</div>
+				<div class="ps-demo-payoff__copy">
+					<p class="ps-demo-payoff__kicker" id="psDemoPayoffJobs"></p>
+					<h3><?php esc_html_e( 'One job is useful. Hundreds become a system.', 'jcp-core' ); ?></h3>
+					<p class="ps-demo-payoff__body"><?php esc_html_e( 'Put your next completed jobs through JobCapturePro and watch website proof, Google activity, reviews, social and directory updates stack up from work you already do.', 'jcp-core' ); ?></p>
+					<a class="btn btn-primary ps-btn-xl" href="<?php echo esc_url( $trial_href ); ?>" data-ps-trial data-ps-source="demo_payoff" data-ps-track="trial_cta_clicked"><?php esc_html_e( 'Put My Next Job Through JobCapturePro →', 'jcp-core' ); ?></a>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -325,7 +340,8 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 			</ul>
 		</div>
 		<div class="ps-why__visual">
-			<img src="<?php echo esc_url( $photo_job ); ?>" alt="" width="560" height="420" loading="lazy" decoding="async" />
+			<img src="<?php echo esc_url( $photo_why ); ?>" alt="" width="720" height="520" loading="lazy" decoding="async" />
+			<p class="ps-why__visual-caption"><?php esc_html_e( 'Real tracked local visibility — jobs turned into measurable map coverage.', 'jcp-core' ); ?></p>
 		</div>
 	</div>
 </section>
@@ -441,7 +457,7 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 <!-- FINAL CTA -->
 <section class="jcp-section ps-final" data-ps-reveal>
 	<div class="ps-final__bg" aria-hidden="true">
-		<img src="<?php echo esc_url( $photo_job ); ?>" alt="" width="1600" height="900" loading="lazy" decoding="async" />
+		<img src="<?php echo esc_url( $photo_final ); ?>" alt="" width="1600" height="900" loading="lazy" decoding="async" />
 	</div>
 	<div class="jcp-container ps-final__inner">
 		<h2 class="ps-final__title"><?php esc_html_e( 'You already paid to do the job. Make it help win the next one.', 'jcp-core' ); ?></h2>

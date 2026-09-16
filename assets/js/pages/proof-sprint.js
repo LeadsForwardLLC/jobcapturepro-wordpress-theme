@@ -394,18 +394,21 @@
   }
 
   function brandMark() {
-    return '<span class="ps-mock-mark" aria-hidden="true">L</span>';
+    return (
+      '<span class="ps-mock-mark" aria-hidden="true">' +
+      '<svg class="ps-mock-mark__svg" viewBox="0 0 24 24" width="14" height="14" focusable="false">' +
+      '<text x="12" y="17.5" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="800" font-family="Arial, Helvetica, sans-serif">L</text>' +
+      '</svg></span>'
+    );
   }
 
   function qrMarkup() {
+    var base =
+      (typeof JCP_PS !== 'undefined' && JCP_PS.campaignBase) || campaignBase || '';
     return (
-      '<svg class="ps-mock-qr__svg" viewBox="0 0 33 33" width="96" height="96" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">' +
-      '<rect width="33" height="33" fill="#fff"/>' +
-      '<path fill="#0f172a" d="M2 2h11v11H2zm2 2v7h7V4zm13-2h4v2h-2v2h2v2h-4V8h2V6h-2zm6 0h6v2h-2v2h2v2h-2v2h-2v-2h-2V8h2V6h-2zm-6 8h2v2h-2zm4 0h2v2h2v2h-4zm6 0h2v4h-2zm-16 5h2v2H9zm4 0h2v2h-2zm4 0h2v2h-2zm4 0h2v2h2v2h-2v2h-2v-4zm4 0h2v2h-2zM2 20h11v11H2zm2 2v7h7v-7zm13 0h2v2h-2zm4 0h2v2h2v2h-4zm6 0h2v2h-2zm-10 4h2v2h-2zm4 0h4v2h-2v2h-2zm6 0h2v4h-2zm-6 4h2v2h-2zm4 2h2v2h-2z"/>' +
-      '<rect x="4" y="4" width="3" height="3" fill="#0f172a"/>' +
-      '<rect x="20" y="4" width="3" height="3" fill="#0f172a"/>' +
-      '<rect x="4" y="22" width="3" height="3" fill="#0f172a"/>' +
-      '</svg>'
+      '<img class="ps-mock-qr__img" src="' +
+      esc(base + 'ps-dummy-qr.png') +
+      '" alt="" width="112" height="112" loading="lazy" decoding="async" />'
     );
   }
 
@@ -449,7 +452,8 @@
     return [
       {
         title: 'The job is finished.',
-        body: 'Without JCP, this is where the marketing often stops.',
+        body:
+          'Your crew already did the hard part. They completed the work and the job photos usually already exist on a phone or in your field app. Without JobCapturePro, that proof often dies in a camera roll.',
         detail: 'Completed job on site',
         event: DEMO_EVENTS[0],
         type: 'job',
@@ -457,14 +461,17 @@
       {
         title: 'Your tech just snaps the photo.',
         body:
-          'They take one job photo in the JCP app or your existing system. JobCapturePro handles the rest automatically.',
+          'One photo from the driveway is enough. Capture it in the JCP mobile app or your existing workflow (' +
+          source +
+          '). JobCapturePro handles structuring, writing, and publishing from there.',
         detail: source,
         event: DEMO_EVENTS[0],
         type: 'capture',
       },
       {
         title: 'JCP creates the check-in.',
-        body: 'Photos, service context and location become a structured, channel-ready check-in.',
+        body:
+          'We turn those job photos plus service type and location into a structured check-in: channel-ready copy, geotags, and assets your marketing channels can use immediately.',
         detail: job.label + ' job structured',
         event: DEMO_EVENTS[1],
         type: 'checkin',
@@ -472,35 +479,39 @@
       {
         title: 'Published to your website. Location included.',
         body:
-          'Jobs appear on recent-work pages and auto-post to that service-area location page with the JCP website plugin. Powerful for local SEO and rankings.',
+          'The same completed job can land on your recent-work feed and auto-post to the matching service-area location page through the JCP website plugin. Real local pages. Real job proof. Built for SEO.',
         detail: 'Website plugin · location page',
         event: DEMO_EVENTS[2],
         type: 'web',
       },
       {
         title: 'Fresh Google activity. Automatically.',
-        body: 'The same job can keep your Google Business Profile active with real work, not another generic promo.',
+        body:
+          'Instead of another generic promo, your Google Business Profile can stay active with real completed work from the field — photos and details pulled from the same job check-in.',
         detail: 'Google Business Profile',
         event: DEMO_EVENTS[3],
         type: 'google',
       },
       {
         title: 'Ask while they still remember your name.',
-        body: 'Send a review link or show a QR before you leave the driveway. No review gating. No guaranteed five-star claims.',
+        body:
+          'Before you leave the driveway, send a review SMS or show a QR. The customer chooses whether to review. No review gating. No guaranteed five-star claims.',
         detail: 'Review opportunity',
         event: DEMO_EVENTS[4],
         type: 'review',
       },
       {
         title: 'Social content your tech never had to write.',
-        body: 'Your marketing content came from work your crew already completed.',
+        body:
+          'Ready-to-post social content is generated from work your crew already finished. No asking techs to become marketers after a long day.',
         detail: 'Social post ready',
         event: DEMO_EVENTS[5],
         type: 'social',
       },
       {
         title: 'And a living directory listing.',
-        body: 'Verified job activity shows up where homeowners look for proof that you actually do the work.',
+        body:
+          'Your JobCapturePro Directory listing stays alive with verified jobs, ratings, and recent work — so homeowners see proof you actually do the job in their area.',
         detail: 'JobCapturePro Directory',
         event: DEMO_EVENTS[6],
         type: 'directory',
@@ -642,8 +653,9 @@
     if (type === 'review') {
       c.innerHTML =
         '<div class="ps-mock ps-mock--review">' +
+        '<div class="ps-mock-review__row">' +
         '<div class="ps-mock-imessage">' +
-        '<div class="ps-mock-imessage__bar"><span></span><strong>Customer</strong><span></span></div>' +
+        '<div class="ps-mock-imessage__bar"><strong>Messages</strong><span>Customer</span></div>' +
         '<div class="ps-mock-imessage__thread">' +
         '<div class="ps-mock-imessage__bubble is-out">Thanks again for choosing ' +
         biz +
@@ -656,7 +668,8 @@
         '<div class="ps-mock-qr">' +
         qrMarkup() +
         '<strong>Or show QR on site</strong>' +
-        '<span>Customer chooses whether to review. No gating.</span></div></div>';
+        '<span>Customer chooses whether to review. No gating.</span></div>' +
+        '</div></div>';
       return;
     }
 
@@ -685,23 +698,31 @@
         '<div class="ps-mock ps-mock--directory">' +
         '<p class="ps-mock-dir__label">JobCapturePro Directory</p>' +
         '<article class="directory-card directory-card-highlight ps-mock-dir__card">' +
-        '<div class="ps-mock-dir__head">' +
+        '<span class="directory-badge verified">Verified</span>' +
+        '<div class="card-header">' +
+        '<div class="company-mark">' +
         mark +
-        '<div class="ps-mock-dir__identity"><strong class="card-name">' +
+        '</div>' +
+        '<div class="card-header-content"><h3 class="card-name">' +
         biz +
-        '</strong><span class="directory-badge verified">Verified</span></div></div>' +
-        '<p class="ps-mock-dir__trade">' +
-        esc(job.label) +
-        '</p>' +
+        '</h3></div></div>' +
         '<div class="card-location"><span>' +
+        esc(job.label) +
+        ' · ' +
         city +
         '</span></div>' +
         '<div class="card-meta-row"><span class="meta-inline">12 jobs documented</span><span class="meta-divider">·</span><span class="meta-inline">Active today</span></div>' +
+        '<div class="card-rating"><div class="stars" aria-hidden="true">★★★★★</div><span class="rating-text">4.9 · 128 reviews</span></div>' +
+        '<div class="ps-mock-dir__reviews">' +
+        '<blockquote>“Showed up, finished the job clean, and I could see other local work they had done.”</blockquote>' +
+        '<blockquote>“Photos of real installs in my area made it easy to trust them.”</blockquote>' +
+        '</div>' +
         '<div class="ps-mock-dir__latest">' +
         thumb +
         '<div><p class="ps-mock-dir__latest-label">Latest completed job</p><strong>' +
         title +
         '</strong><span>Documented on site · Just published</span></div></div>' +
+        '<div class="card-footer"><span class="view-profile">View activity</span></div>' +
         '</article></div>';
     }
   }

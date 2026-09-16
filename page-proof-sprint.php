@@ -57,7 +57,7 @@ $login_href = function_exists( 'jcp_core_app_login_url_raw' )
 
 <header class="jcp-landing-brandbar is-compact ps-brandbar" role="banner">
 	<div class="jcp-landing-brandbar__inner">
-		<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="jcp-landing-brandbar__link" aria-label="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>">
+		<span class="jcp-landing-brandbar__link ps-brandbar__logo" aria-label="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>">
 			<img
 				src="<?php echo esc_url( $logo_url ); ?>"
 				alt="JobCapturePro"
@@ -68,9 +68,8 @@ $login_href = function_exists( 'jcp_core_app_login_url_raw' )
 				fetchpriority="high"
 				data-no-lazy
 			/>
-		</a>
+		</span>
 		<div class="ps-brandbar__actions">
-			<a class="ps-brandbar__signin" href="<?php echo esc_url( $login_href ); ?>"><?php esc_html_e( 'Sign In', 'jcp-core' ); ?></a>
 			<a
 				class="jcp-landing-brandbar__cta"
 				href="<?php echo esc_url( $trial_href ); ?>"
@@ -89,15 +88,14 @@ $login_href = function_exists( 'jcp_core_app_login_url_raw' )
 </main>
 
 <footer class="jcp-footer jcp-footer--landing-minimal ps-footer" role="contentinfo">
-	<div class="jcp-container jcp-footer-bottom-inner">
+	<div class="jcp-container ps-footer__inner">
 		<p class="ps-footer__built"><?php esc_html_e( 'Built by the team behind LeadsForward', 'jcp-core' ); ?></p>
-		<nav class="jcp-footer-legal" aria-label="<?php esc_attr_e( 'Legal', 'jcp-core' ); ?>">
+		<nav class="jcp-footer-legal ps-footer__nav" aria-label="<?php esc_attr_e( 'Legal', 'jcp-core' ); ?>">
 			<a href="<?php echo esc_url( home_url( '/privacy-policy/' ) ); ?>"><?php esc_html_e( 'Privacy', 'jcp-core' ); ?></a>
 			<a href="<?php echo esc_url( home_url( '/terms/' ) ); ?>"><?php esc_html_e( 'Terms', 'jcp-core' ); ?></a>
 			<a href="<?php echo esc_url( home_url( '/support/' ) ); ?>"><?php esc_html_e( 'Contact', 'jcp-core' ); ?></a>
-			<a href="<?php echo esc_url( $login_href ); ?>"><?php esc_html_e( 'Sign In', 'jcp-core' ); ?></a>
 		</nav>
-		<p class="jcp-footer-landing-copy">&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> JobCapturePro</p>
+		<p class="jcp-footer-landing-copy ps-footer__copy">&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> JobCapturePro</p>
 	</div>
 </footer>
 
