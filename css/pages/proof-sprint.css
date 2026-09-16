@@ -2799,14 +2799,12 @@ body.jcp-proof-sprint .ps-why__stats li {
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
 }
 
-/* Final CTA denser overlay */
-body.jcp-proof-sprint .ps-final__bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(8, 12, 22, 0.55), rgba(8, 12, 22, 0.78)),
-    radial-gradient(60% 50% at 50% 40%, rgba(255, 80, 62, 0.2), transparent 70%);
+/* Final CTA denser overlay + kill white band before footer */
+body.jcp-proof-sprint .ps-final.jcp-section,
+body.jcp-proof-sprint section.ps-final {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #0b1220;
 }
 
 body.jcp-proof-sprint .ps-final__bg {
@@ -2814,11 +2812,32 @@ body.jcp-proof-sprint .ps-final__bg {
   inset: 0;
 }
 
-body.jcp-proof-sprint .ps-final {
-  margin-bottom: 0 !important;
+body.jcp-proof-sprint .ps-final__bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8, 12, 22, 0.55), rgba(8, 12, 22, 0.88)),
+    radial-gradient(60% 50% at 50% 40%, rgba(255, 80, 62, 0.2), transparent 70%);
 }
 
-/* Footer alignment */
+body.jcp-proof-sprint .ps-final__inner {
+  padding-block: clamp(3.5rem, 8vw, 5.5rem);
+}
+
+body.jcp-proof-sprint .ps-main,
+body.jcp-proof-sprint main#ps-main {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  background: transparent;
+}
+
+body.jcp-proof-sprint,
+body.jcp-proof-sprint body {
+  background: #fff;
+}
+
+/* Footer flush against final CTA — same ink, no seam */
 body.jcp-proof-sprint .ps-footer {
   margin-top: 0 !important;
   border-top: 0 !important;
@@ -2859,6 +2878,16 @@ body.jcp-proof-sprint .ps-brandbar__logo {
   pointer-events: none;
   cursor: default;
   text-decoration: none;
+}
+
+
+body.jcp-proof-sprint .ps-final[data-ps-reveal] {
+  transform: none !important;
+}
+
+body.jcp-proof-sprint .ps-final + .ps-footer,
+body.jcp-proof-sprint .ps-main + .ps-footer {
+  margin-top: -1px !important;
 }
 
 /* Reveal */
