@@ -523,21 +523,28 @@ body.jcp-proof-sprint .ps-case {
 }
 
 body.jcp-proof-sprint .ps-case .jcp-lf-case__locations {
-  gap: 2rem;
+  grid-template-columns: 1fr !important;
+  gap: 2.25rem;
+  max-width: 52rem;
+  margin-inline: auto;
+}
+
+body.jcp-proof-sprint .ps-case .jcp-lf-case__location {
+  padding: 1.35rem 1.25rem;
 }
 
 body.jcp-proof-sprint .ps-case .jcp-lf-case__compare {
-  gap: 1rem;
+  gap: 1.15rem;
 }
 
 @media (min-width: 700px) {
   body.jcp-proof-sprint .ps-case .jcp-lf-case__compare {
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
 }
 
 body.jcp-proof-sprint .ps-case .jcp-maps-scan {
-  max-width: none !important;
+  max-width: 22rem !important;
   width: 100%;
   aspect-ratio: 1;
   min-height: 0;
