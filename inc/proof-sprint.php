@@ -132,22 +132,6 @@ function jcp_proof_sprint_case_study_props(): array {
 							'pattern' => 'after_fr_wv',
 						],
 					],
-					[
-						'keyword'    => __( 'basement waterproofing', 'jcp-core' ),
-						'grid_label' => __( 'Google Maps coverage', 'jcp-core' ),
-						'before'     => [
-							'date'    => __( 'March', 'jcp-core' ),
-							'solv'    => '0%',
-							'summary' => __( 'Not showing up', 'jcp-core' ),
-							'pattern' => 'before_blank',
-						],
-						'after'      => [
-							'date'    => __( 'June', 'jcp-core' ),
-							'solv'    => '100%',
-							'summary' => __( 'Showing up #1–#3', 'jcp-core' ),
-							'pattern' => 'after_bw_wv',
-						],
-					],
 				],
 			],
 			[
@@ -170,22 +154,6 @@ function jcp_proof_sprint_case_study_props(): array {
 							'solv'    => '84%',
 							'summary' => __( 'Showing up across town', 'jcp-core' ),
 							'pattern' => 'after_fr_mi',
-						],
-					],
-					[
-						'keyword'    => __( 'basement waterproofing', 'jcp-core' ),
-						'grid_label' => __( 'Google Maps coverage', 'jcp-core' ),
-						'before'     => [
-							'date'    => __( 'March', 'jcp-core' ),
-							'solv'    => '0%',
-							'summary' => __( 'Not showing up', 'jcp-core' ),
-							'pattern' => 'before_blank',
-						],
-						'after'      => [
-							'date'    => __( 'June', 'jcp-core' ),
-							'solv'    => '96%',
-							'summary' => __( 'Showing up #1–#3', 'jcp-core' ),
-							'pattern' => 'after_bw_mi',
 						],
 					],
 				],

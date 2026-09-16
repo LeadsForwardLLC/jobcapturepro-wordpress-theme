@@ -304,6 +304,7 @@
         if (field === 'trade') {
           state.trade = value;
           applyJobPersonaToDom();
+          renderDemo();
         } else if (field === 'jobs') {
           state.jobs = Number(value) || 0;
           state.jobsLabel = btn.getAttribute('data-ps-label') || value;
@@ -415,14 +416,14 @@
       },
       {
         title: 'One completed job becomes website proof.',
-        body: 'Fresh proof on your site — map context, recent jobs, and real photos homeowners can trust.',
+        body: 'Fresh proof on your site: map context, recent jobs, and real photos homeowners can trust.',
         detail: 'Website proof for ' + job.label,
         event: DEMO_EVENTS[2],
         type: 'web',
       },
       {
         title: 'Fresh Google activity. Automatically.',
-        body: 'The same job can keep your Google Business Profile active with real work — not another generic promo.',
+        body: 'The same job can keep your Google Business Profile active with real work, not another generic promo.',
         detail: 'Google Business Profile update',
         event: DEMO_EVENTS[3],
         type: 'google',
@@ -454,7 +455,7 @@
         '<div class="ps-canvas"><div class="ps-canvas__head"><span>Completed job</span><span>Today</span></div>' +
         '<img class="ps-canvas__photo" src="' +
         url +
-        '" alt="" width="640" height="400" loading="lazy" />' +
+        '" alt="" width="640" height="400" loading="lazy" data-ps-job-photo />' +
         '<div class="ps-canvas__meta"><span>' +
         job.title +
         '</span><span>' +
@@ -467,7 +468,7 @@
         '<div class="ps-canvas"><div class="ps-canvas__head"><span>JobCapturePro</span><span>Creating check-in…</span></div>' +
         '<img class="ps-canvas__photo" src="' +
         url +
-        '" alt="" width="640" height="400" loading="lazy" />' +
+        '" alt="" width="640" height="400" loading="lazy" data-ps-job-photo />' +
         '<ul class="ps-canvas__list"><li class="is-done">Photos received</li><li class="is-done">Service identified</li><li class="is-done">Location attached</li><li class="is-done">Channel-ready copy</li><li class="is-done">Job proof created</li></ul></div>';
       return;
     }
@@ -476,7 +477,7 @@
         '<div class="ps-canvas"><div class="ps-canvas__head"><span>Your website</span><span>Recent jobs</span></div>' +
         '<img class="ps-canvas__photo" src="' +
         url +
-        '" alt="" width="640" height="400" loading="lazy" />' +
+        '" alt="" width="640" height="400" loading="lazy" data-ps-job-photo />' +
         '<div class="ps-canvas__meta"><span>' +
         job.title +
         '</span><span>' +
@@ -490,7 +491,7 @@
         '<div class="ps-canvas"><div class="ps-canvas__head"><span>Google Business Profile</span><span>Posted just now</span></div>' +
         '<img class="ps-canvas__photo" src="' +
         url +
-        '" alt="" width="640" height="400" loading="lazy" />' +
+        '" alt="" width="640" height="400" loading="lazy" data-ps-job-photo />' +
         '<p style="margin:0;font-weight:800">' +
         job.title +
         ' in ' +
@@ -504,7 +505,7 @@
       c.innerHTML =
         '<div class="ps-canvas"><div class="ps-canvas__head"><span>Review opportunity</span><span>On site</span></div>' +
         '<div class="ps-canvas__meta"><span>Send review link</span><span>Show QR</span></div>' +
-        '<p style="margin:0;font-size:0.92rem;color:#64748b;line-height:1.5">Text it before you leave the driveway — while trust is highest. Customer chooses whether to review.</p></div>';
+        '<p style="margin:0;font-size:0.92rem;color:#64748b;line-height:1.5">Text it before you leave the driveway, while trust is highest. Customer chooses whether to review.</p></div>';
       return;
     }
     if (type === 'social') {
@@ -512,7 +513,7 @@
         '<div class="ps-canvas"><div class="ps-canvas__head"><span>Social</span><span>Ready to post</span></div>' +
         '<img class="ps-canvas__photo" src="' +
         url +
-        '" alt="" width="640" height="400" loading="lazy" />' +
+        '" alt="" width="640" height="400" loading="lazy" data-ps-job-photo />' +
         '<p style="margin:0;font-size:0.92rem;line-height:1.45">Another job wrapped. ' +
         job.title +
         ' done right. Proof from the field.</p></div>';

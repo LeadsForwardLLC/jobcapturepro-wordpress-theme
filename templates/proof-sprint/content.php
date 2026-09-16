@@ -33,7 +33,7 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 ?>
 
 <!-- 1. HERO -->
-<section class="jcp-section ps-hero" id="ps-hero" aria-labelledby="ps-hero-title" data-ps-reveal>
+<section class="jcp-section ps-hero" id="ps-hero" aria-labelledby="ps-hero-title">
 	<div class="jcp-container ps-hero__grid">
 		<div class="ps-hero__copy">
 			<p class="ps-eyebrow ps-eyebrow--accent"><?php esc_html_e( 'For home-service companies doing real work every week', 'jcp-core' ); ?></p>
@@ -41,7 +41,7 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 				<?php esc_html_e( 'Your crew is already creating your marketing.', 'jcp-core' ); ?>
 				<span class="ps-hero__accent"><?php esc_html_e( 'JobCapturePro puts it to work.', 'jcp-core' ); ?></span>
 			</h1>
-			<p class="ps-hero__sub"><?php esc_html_e( 'Turn completed jobs into website proof, Google Business Profile content, review opportunities, social content and local visibility — without adding another marketing task to your day.', 'jcp-core' ); ?></p>
+			<p class="ps-hero__sub"><?php esc_html_e( 'Turn completed jobs into website proof, Google Business Profile content, review opportunities, social content and local visibility, without adding another marketing task to your day.', 'jcp-core' ); ?></p>
 			<div class="ps-hero__actions">
 				<a class="btn btn-primary ps-btn-xl" href="#ps-assessment" data-ps-track="proof_assessment_cta" data-ps-source="hero"><?php esc_html_e( 'See What My Jobs Could Become →', 'jcp-core' ); ?></a>
 				<a class="ps-link-secondary" href="#ps-demo" data-ps-track="demo_jump" data-ps-source="hero">
@@ -55,27 +55,31 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 		</div>
 		<div class="ps-hero__visual" data-ps-theater aria-hidden="false">
 			<div class="ps-theater">
-				<article class="ps-theater__job is-on" data-theater-job>
-					<div class="ps-theater__job-media">
-						<img src="<?php echo esc_url( $photo_job ); ?>" alt="" width="480" height="320" decoding="async" fetchpriority="high" data-no-lazy data-ps-job-photo />
-						<span class="ps-badge"><?php esc_html_e( 'Completed job', 'jcp-core' ); ?></span>
-						<span class="ps-theater__scan" aria-hidden="true"></span>
+				<div class="ps-theater__stage">
+					<span class="ps-theater__pulse" aria-hidden="true"></span>
+					<article class="ps-theater__job is-on" data-theater-job>
+						<div class="ps-theater__job-media">
+							<img src="<?php echo esc_url( $photo_job ); ?>" alt="" width="480" height="320" decoding="async" fetchpriority="high" data-no-lazy data-ps-job-photo />
+							<span class="ps-badge"><?php esc_html_e( 'Completed job', 'jcp-core' ); ?></span>
+							<span class="ps-theater__scan" aria-hidden="true"></span>
+						</div>
+						<div class="ps-theater__job-meta">
+							<strong data-ps-job-title><?php esc_html_e( 'Water heater replacement', 'jcp-core' ); ?></strong>
+							<span data-ps-job-city><?php esc_html_e( 'Austin, TX', 'jcp-core' ); ?></span>
+						</div>
+					</article>
+					<div class="ps-theater__hub" data-theater-hub>
+						<span class="ps-theater__core">JCP</span>
+						<span class="ps-theater__hub-label"><?php esc_html_e( 'Publishes', 'jcp-core' ); ?></span>
 					</div>
-					<div class="ps-theater__job-meta">
-						<strong data-ps-job-title><?php esc_html_e( 'Water heater replacement', 'jcp-core' ); ?></strong>
-						<span data-ps-job-city><?php esc_html_e( 'Austin, TX', 'jcp-core' ); ?></span>
-					</div>
-				</article>
-				<div class="ps-theater__hub" data-theater-hub>
-					<span class="ps-theater__core">JCP</span>
+					<ul class="ps-theater__outputs" data-theater-outputs>
+						<li data-out="website"><strong><?php esc_html_e( 'Website', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Job proof live', 'jcp-core' ); ?></span></li>
+						<li data-out="google"><strong><?php esc_html_e( 'Google', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'GBP update', 'jcp-core' ); ?></span></li>
+						<li data-out="review"><strong><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Ask on site', 'jcp-core' ); ?></span></li>
+						<li data-out="social"><strong><?php esc_html_e( 'Social', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Ready to post', 'jcp-core' ); ?></span></li>
+						<li data-out="local"><strong><?php esc_html_e( 'Local', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Area proof', 'jcp-core' ); ?></span></li>
+					</ul>
 				</div>
-				<ul class="ps-theater__outputs" data-theater-outputs>
-					<li data-out="website"><?php esc_html_e( 'Website proof', 'jcp-core' ); ?></li>
-					<li data-out="google"><?php esc_html_e( 'Google / GBP', 'jcp-core' ); ?></li>
-					<li data-out="review"><?php esc_html_e( 'Review ask', 'jcp-core' ); ?></li>
-					<li data-out="social"><?php esc_html_e( 'Social content', 'jcp-core' ); ?></li>
-					<li data-out="local"><?php esc_html_e( 'Local proof', 'jcp-core' ); ?></li>
-				</ul>
 			</div>
 		</div>
 	</div>
@@ -88,8 +92,8 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 		<ul class="ps-authority__stats">
 			<?php foreach ( $auth_stats as $stat ) : ?>
 				<li>
-					<strong><?php echo esc_html( (string) ( $stat['value'] ?? '' ) ); ?></strong>
-					<span><?php echo esc_html( (string) ( $stat['detail'] ?? $stat['label'] ?? '' ) ); ?></span>
+					<strong><?php echo esc_html( (string) ( $stat['value'] ?? '' ) ); ?><?php if ( ! empty( $stat['label'] ) ) : ?><em><?php echo esc_html( (string) $stat['label'] ); ?></em><?php endif; ?></strong>
+					<span><?php echo esc_html( (string) ( $stat['detail'] ?? '' ) ); ?></span>
 				</li>
 			<?php endforeach; ?>
 		</ul>
@@ -190,7 +194,7 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 
 				<div class="ps-q" data-ps-step="4" hidden>
 					<p class="ps-q__label"><?php esc_html_e( 'How many completed jobs currently become public marketing proof each week?', 'jcp-core' ); ?></p>
-					<p class="ps-q__hint"><?php esc_html_e( 'Website projects, Google updates, reviews, social posts or service-area proof — count any job that actually gets used publicly.', 'jcp-core' ); ?></p>
+					<p class="ps-q__hint"><?php esc_html_e( 'Website projects, Google updates, reviews, social posts or service-area proof. Count any job that actually gets used publicly.', 'jcp-core' ); ?></p>
 					<div class="ps-choices ps-choices--compact" role="group">
 						<?php
 						$used = [
@@ -431,7 +435,7 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 				],
 				[
 					'q' => __( 'I already use CompanyCam or Housecall Pro. Why would I need JCP?', 'jcp-core' ),
-					'a' => __( 'Those systems are excellent for capturing and storing job information operationally. JobCapturePro is built to turn completed-job proof into public marketing — website updates, Google activity, review opportunities, social content and local visibility.', 'jcp-core' ),
+					'a' => __( 'Those systems are excellent for capturing and storing job information operationally. JobCapturePro is built to turn completed-job proof into public marketing: website updates, Google activity, review opportunities, social content and local visibility.', 'jcp-core' ),
 				],
 				[
 					'q' => __( 'Does JobCapturePro guarantee Google rankings?', 'jcp-core' ),
@@ -439,7 +443,7 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 				],
 				[
 					'q' => __( 'What happens after the 14 days?', 'jcp-core' ),
-					'a' => __( 'You can continue on a paid plan if JobCapturePro is a fit, or cancel. During the trial we focus on getting a real workflow live with your jobs so you can evaluate the product with actual work — not a sandbox.', 'jcp-core' ),
+					'a' => __( 'You can continue on a paid plan if JobCapturePro is a fit, or cancel. During the trial we focus on getting a real workflow live with your jobs so you can evaluate the product with actual work, not a sandbox.', 'jcp-core' ),
 				],
 				[
 					'q' => __( 'What if my website isn’t WordPress?', 'jcp-core' ),
