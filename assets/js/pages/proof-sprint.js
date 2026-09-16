@@ -396,8 +396,8 @@
   function brandMark() {
     return (
       '<span class="ps-mock-mark" aria-hidden="true">' +
-      '<svg class="ps-mock-mark__svg" viewBox="0 0 24 24" width="14" height="14" focusable="false">' +
-      '<text x="12" y="17.5" text-anchor="middle" fill="#ffffff" font-size="15" font-weight="800" font-family="Arial, Helvetica, sans-serif">L</text>' +
+      '<svg class="ps-mock-mark__svg" viewBox="0 0 16 16" width="16" height="16" focusable="false">' +
+      '<path fill="#ffffff" d="M3.2 2.2h2.35v9.1H12.8V13.8H3.2z"/>' +
       '</svg></span>'
     );
   }
