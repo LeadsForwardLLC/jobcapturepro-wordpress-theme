@@ -17,9 +17,9 @@ $icon = static function ( string $name ): string {
 
 $campaign   = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/';
 $integ      = trailingslashit( get_template_directory_uri() ) . 'assets/integrations/';
-$photo_hvac = function_exists( 'jcp_proof_sprint_asset_url' ) ? jcp_proof_sprint_asset_url( 'jcp-campaign-hvac-capture-640.webp' ) : $campaign . 'jcp-campaign-hvac-capture-640.webp';
+$photo_hvac = function_exists( 'jcp_proof_sprint_asset_url' ) ? jcp_proof_sprint_asset_url( 'jcp-campaign-job-proof-640.webp' ) : $campaign . 'jcp-campaign-job-proof-640.webp';
 $photo_job  = function_exists( 'jcp_proof_sprint_asset_url' ) ? jcp_proof_sprint_asset_url( 'jcp-campaign-job-proof-640.webp' ) : $campaign . 'jcp-campaign-job-proof-640.webp';
-$photo_crew = function_exists( 'jcp_proof_sprint_asset_url' ) ? jcp_proof_sprint_asset_url( 'jcp-campaign-crew-review-640.webp' ) : $campaign . 'jcp-campaign-crew-review-640.webp';
+$photo_crew = function_exists( 'jcp_proof_sprint_asset_url' ) ? jcp_proof_sprint_asset_url( 'jcp-campaign-job-proof-640.webp' ) : $campaign . 'jcp-campaign-job-proof-640.webp';
 $map_url    = get_template_directory_uri() . '/assets/map-3c5b675f-f28d-41a5-ba3a-972b4c189f10.png';
 
 $reviews = function_exists( 'jcp_sales_tool_default_reviews' ) ? jcp_sales_tool_default_reviews() : [];
@@ -270,7 +270,7 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 					<p class="ps-demo-step-label" id="psDemoStepLabel"><?php esc_html_e( 'Step 1 of 8', 'jcp-core' ); ?></p>
 					<h3 id="psDemoTitle"><?php esc_html_e( 'The job is finished.', 'jcp-core' ); ?></h3>
 					<p id="psDemoBody"><?php esc_html_e( 'Without JCP, this is where the marketing often stops.', 'jcp-core' ); ?></p>
-					<p class="ps-demo-detail"><span><?php esc_html_e( 'Source', 'jcp-core' ); ?></span> <strong id="psDemoSource"><?php esc_html_e( 'JCP App or connected workflow', 'jcp-core' ); ?></strong></p>
+					<p class="ps-demo-detail"><span class="ps-demo-detail__label"><?php esc_html_e( 'Source', 'jcp-core' ); ?></span><strong id="psDemoSource"><?php esc_html_e( 'Completed job on site', 'jcp-core' ); ?></strong></p>
 					<div class="ps-demo-controls">
 						<button type="button" class="btn btn-secondary" id="psDemoPrev" disabled><?php esc_html_e( '← Previous', 'jcp-core' ); ?></button>
 						<button type="button" class="btn btn-primary" id="psDemoNext"><?php esc_html_e( 'Next →', 'jcp-core' ); ?></button>
@@ -281,9 +281,12 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 		</div>
 
 		<div class="ps-demo-payoff" id="psDemoPayoff" hidden>
-			<p class="ps-demo-payoff__kicker" id="psDemoPayoffJobs"></p>
-			<h3><?php esc_html_e( 'One job is useful. Hundreds become a system.', 'jcp-core' ); ?></h3>
-			<a class="btn btn-primary ps-btn-xl" href="<?php echo esc_url( $trial_href ); ?>" data-ps-trial data-ps-source="demo_payoff" data-ps-track="trial_cta_clicked"><?php esc_html_e( 'Put My Next Job Through JobCapturePro →', 'jcp-core' ); ?></a>
+			<div class="ps-demo-payoff__card">
+				<p class="ps-demo-payoff__kicker" id="psDemoPayoffJobs"></p>
+				<h3><?php esc_html_e( 'One job is useful. Hundreds become a system.', 'jcp-core' ); ?></h3>
+				<p class="ps-demo-payoff__body"><?php esc_html_e( 'Put your next completed jobs through JobCapturePro and watch website proof, Google activity, reviews, social and directory updates stack up from work you already do.', 'jcp-core' ); ?></p>
+				<a class="btn btn-primary ps-btn-xl" href="<?php echo esc_url( $trial_href ); ?>" data-ps-trial data-ps-source="demo_payoff" data-ps-track="trial_cta_clicked"><?php esc_html_e( 'Put My Next Job Through JobCapturePro →', 'jcp-core' ); ?></a>
+			</div>
 		</div>
 	</div>
 </section>
@@ -312,16 +315,17 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 		<div class="ps-why__copy">
 			<p class="ps-eyebrow"><?php esc_html_e( 'Why we built JobCapturePro', 'jcp-core' ); ?></p>
 			<h2 class="ps-section-title"><?php esc_html_e( 'We spent 10 years generating contractor leads. We kept seeing the same waste.', 'jcp-core' ); ?></h2>
-			<p><?php esc_html_e( 'Contractors were spending thousands on websites, SEO, advertising, social media and reputation management while some of their best marketing material was disappearing into camera rolls, text threads and CRM records.', 'jcp-core' ); ?></p>
-			<p><?php esc_html_e( 'Real jobs. Real photos. Real neighborhoods. Real customers. Real outcomes.', 'jcp-core' ); ?></p>
-			<p><?php esc_html_e( 'JobCapturePro exists to connect the work contractors already do with the proof future customers want to see.', 'jcp-core' ); ?></p>
+			<div class="ps-why__body">
+				<p><?php esc_html_e( 'Contractors spent thousands on websites, SEO, ads, social and reputation tools while their best marketing material disappeared into camera rolls, text threads and CRM records.', 'jcp-core' ); ?></p>
+				<p><?php esc_html_e( 'JobCapturePro connects the work crews already do with the proof future customers want to see: real jobs, real photos, real neighborhoods.', 'jcp-core' ); ?></p>
+			</div>
 			<ul class="ps-why__stats">
 				<li><strong>250K+</strong> <span><?php esc_html_e( 'contractor leads generated', 'jcp-core' ); ?></span></li>
 				<li><strong>$150M+</strong> <span><?php esc_html_e( 'client revenue booked from those leads', 'jcp-core' ); ?></span></li>
 			</ul>
 		</div>
 		<div class="ps-why__visual">
-			<img src="<?php echo esc_url( $photo_crew ); ?>" alt="" width="560" height="420" loading="lazy" decoding="async" />
+			<img src="<?php echo esc_url( $photo_job ); ?>" alt="" width="560" height="420" loading="lazy" decoding="async" />
 		</div>
 	</div>
 </section>
@@ -365,68 +369,37 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 	</div>
 </section>
 
-<!-- 10. COMPACT PROOF REMINDER -->
-<section class="jcp-section ps-proof-reminder" data-ps-reveal>
-	<div class="jcp-container ps-proof-reminder__inner">
-		<p class="ps-eyebrow"><?php esc_html_e( 'Real jobs → real proof → measurable change', 'jcp-core' ); ?></p>
-		<div class="ps-proof-reminder__grids">
-			<?php
-			if ( function_exists( 'jcp_lf_case_render_grid' ) && function_exists( 'jcp_lf_case_grid_pattern' ) ) {
-				$tri_map = $campaign . 'lf-map-triadelphia.jpg';
-				$mon_map = $campaign . 'lf-map-monroe.jpg';
-				?>
-				<figure>
-					<span><?php esc_html_e( 'Triadelphia · Before', 'jcp-core' ); ?></span>
-					<?php jcp_lf_case_render_grid( jcp_lf_case_grid_pattern( 'before_blank' ), __( 'Triadelphia before', 'jcp-core' ), $tri_map ); ?>
-				</figure>
-				<figure>
-					<span><?php esc_html_e( 'Triadelphia · After', 'jcp-core' ); ?></span>
-					<?php jcp_lf_case_render_grid( jcp_lf_case_grid_pattern( 'after_fr_wv' ), __( 'Triadelphia after', 'jcp-core' ), $tri_map ); ?>
-				</figure>
-				<figure>
-					<span><?php esc_html_e( 'Monroe · Before', 'jcp-core' ); ?></span>
-					<?php jcp_lf_case_render_grid( jcp_lf_case_grid_pattern( 'before_blank' ), __( 'Monroe before', 'jcp-core' ), $mon_map ); ?>
-				</figure>
-				<figure>
-					<span><?php esc_html_e( 'Monroe · After', 'jcp-core' ); ?></span>
-					<?php jcp_lf_case_render_grid( jcp_lf_case_grid_pattern( 'after_fr_mi' ), __( 'Monroe after', 'jcp-core' ), $mon_map ); ?>
-				</figure>
-				<?php
-			}
-			?>
-		</div>
-		<!-- Placeholder: link to public case-study narrative if a dedicated public Acculevel page is published later. -->
-		<a class="ps-link-secondary" href="<?php echo esc_url( home_url( '/#case-study' ) ); ?>" target="_blank" rel="noopener" data-ps-track="case_study_viewed" data-ps-source="reminder"><?php esc_html_e( 'See the full case study →', 'jcp-core' ); ?></a>
-	</div>
-</section>
-
-<!-- 11. TRIAL -->
+<!-- 10. TRIAL -->
 <section class="jcp-section ps-trial" id="ps-trial" data-ps-reveal>
-	<div class="jcp-container ps-trial__inner">
-		<p class="ps-eyebrow ps-eyebrow--light"><?php esc_html_e( 'The 14-day JobCapturePro Proof Sprint', 'jcp-core' ); ?></p>
-		<h2 class="ps-trial__title"><?php esc_html_e( 'Your next 14 days are already full of marketing. Don’t let those jobs disappear too.', 'jcp-core' ); ?></h2>
-		<p class="ps-trial__sub"><?php esc_html_e( 'Start with the jobs your company is already completing. We’ll help you get your first real JobCapturePro workflow live during the trial.', 'jcp-core' ); ?></p>
-		<ul class="ps-trial__benefits">
-			<li><?php esc_html_e( '14-day trial', 'jcp-core' ); ?></li>
-			<li><?php esc_html_e( 'No credit card required', 'jcp-core' ); ?></li>
-			<li><?php esc_html_e( 'Guided activation', 'jcp-core' ); ?></li>
-			<li><?php esc_html_e( 'Connect your existing workflow where supported', 'jcp-core' ); ?></li>
-			<li><?php esc_html_e( 'Or use the JCP mobile app', 'jcp-core' ); ?></li>
-			<li><?php esc_html_e( 'Publish your first proof', 'jcp-core' ); ?></li>
-			<li><?php esc_html_e( 'See the product working with your actual jobs', 'jcp-core' ); ?></li>
-		</ul>
-		<a class="btn btn-primary ps-btn-xl ps-btn-light" href="<?php echo esc_url( $trial_href ); ?>" data-ps-trial data-ps-source="trial_section" data-ps-track="trial_cta_clicked"><?php esc_html_e( 'Start My 14-Day Proof Sprint →', 'jcp-core' ); ?></a>
-		<p class="ps-micro ps-micro--light"><?php esc_html_e( 'No credit card · Guided setup · Cancel anytime', 'jcp-core' ); ?></p>
+	<div class="jcp-container ps-trial__layout">
+		<div class="ps-trial__copy">
+			<p class="ps-eyebrow ps-eyebrow--light"><?php esc_html_e( 'The 14-day JobCapturePro Proof Sprint', 'jcp-core' ); ?></p>
+			<h2 class="ps-trial__title"><?php esc_html_e( 'Your next 14 days are already full of marketing. Don’t let those jobs disappear too.', 'jcp-core' ); ?></h2>
+			<p class="ps-trial__sub"><?php esc_html_e( 'Start with the jobs your company is already completing. We’ll help you get your first real JobCapturePro workflow live during the trial.', 'jcp-core' ); ?></p>
+		</div>
+		<div class="ps-trial__panel">
+			<ul class="ps-trial__benefits">
+				<li><?php esc_html_e( '14-day trial', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'No credit card required', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Guided activation', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Connect your existing workflow where supported', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Or use the JCP mobile app', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'Publish your first proof', 'jcp-core' ); ?></li>
+				<li><?php esc_html_e( 'See the product working with your actual jobs', 'jcp-core' ); ?></li>
+			</ul>
+			<a class="btn btn-primary ps-btn-xl ps-btn-light" href="<?php echo esc_url( $trial_href ); ?>" data-ps-trial data-ps-source="trial_section" data-ps-track="trial_cta_clicked"><?php esc_html_e( 'Start My 14-Day Proof Sprint →', 'jcp-core' ); ?></a>
+			<p class="ps-micro ps-micro--light"><?php esc_html_e( 'No credit card · Guided setup · Cancel anytime', 'jcp-core' ); ?></p>
+		</div>
 	</div>
 </section>
 
-<!-- 12. FAQ -->
-<section class="jcp-section ps-faq" id="ps-faq" data-ps-reveal>
-	<div class="jcp-container ps-faq__inner">
+<!-- 11. FAQ -->
+<section class="jcp-section rankings-section faq-section ps-faq" id="ps-faq" data-ps-reveal>
+	<div class="jcp-container">
 		<header class="ps-section-head">
 			<h2 class="ps-section-title"><?php esc_html_e( 'Clear answers before you start.', 'jcp-core' ); ?></h2>
 		</header>
-		<div class="ps-faq-list">
+		<div class="faq-grid">
 			<?php
 			$faqs = [
 				[
@@ -456,7 +429,7 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 			];
 			foreach ( $faqs as $i => $faq ) :
 				?>
-				<details class="ps-faq-item"<?php echo $i === 0 ? ' open' : ''; ?>>
+				<details class="faq-item"<?php echo $i === 0 ? ' open' : ''; ?>>
 					<summary><?php echo esc_html( $faq['q'] ); ?></summary>
 					<p><?php echo esc_html( $faq['a'] ); ?></p>
 				</details>
@@ -468,7 +441,7 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 <!-- FINAL CTA -->
 <section class="jcp-section ps-final" data-ps-reveal>
 	<div class="ps-final__bg" aria-hidden="true">
-		<img src="<?php echo esc_url( $photo_hvac ); ?>" alt="" width="1600" height="900" loading="lazy" decoding="async" />
+		<img src="<?php echo esc_url( $photo_job ); ?>" alt="" width="1600" height="900" loading="lazy" decoding="async" />
 	</div>
 	<div class="jcp-container ps-final__inner">
 		<h2 class="ps-final__title"><?php esc_html_e( 'You already paid to do the job. Make it help win the next one.', 'jcp-core' ); ?></h2>

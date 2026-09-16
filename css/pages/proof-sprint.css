@@ -537,48 +537,40 @@ body.jcp-proof-sprint .ps-authority__stats span {
   color: var(--ps-muted);
 }
 
-/* Case study: enlarge grids inside this funnel */
+/* Case study: same Local Falcon heatmaps as homepage */
+body.jcp-proof-sprint .ps-case,
+body.jcp-proof-sprint .jcp-block-lf-case {
+  --jcp-lf-top: #16a34a;
+  --jcp-lf-top-deep: #15803d;
+  --jcp-lf-mid: #f59e0b;
+  --jcp-lf-low: #ea580c;
+  --jcp-lf-out: #b91c1c;
+  --jcp-lf-out-deep: #7f1d1d;
+  --jcp-lf-panel: #0f172a;
+  --jcp-lf-panel-soft: #1e293b;
+  --jcp-lf-ink: #f8fafc;
+  --jcp-lf-muted: #94a3b8;
+}
+
 body.jcp-proof-sprint .ps-case {
   padding-top: clamp(3rem, 6vw, 5rem);
   padding-bottom: clamp(3rem, 6vw, 5rem);
 }
 
-body.jcp-proof-sprint .ps-case .jcp-lf-case__locations {
-  grid-template-columns: 1fr !important;
-  gap: 2.25rem;
-  max-width: 52rem;
-  margin-inline: auto;
+body.jcp-proof-sprint .ps-case .jcp-maps-scan__pin.is-rank-top {
+  background: radial-gradient(circle at 35% 30%, #4ade80, var(--jcp-lf-top) 55%, var(--jcp-lf-top-deep));
 }
 
-body.jcp-proof-sprint .ps-case .jcp-lf-case__location {
-  padding: 1.35rem 1.25rem;
+body.jcp-proof-sprint .ps-case .jcp-maps-scan__pin.is-rank-mid {
+  background: radial-gradient(circle at 35% 30%, #fcd34d, var(--jcp-lf-mid) 60%, #d97706);
 }
 
-body.jcp-proof-sprint .ps-case .jcp-lf-case__compare {
-  gap: 1.15rem;
+body.jcp-proof-sprint .ps-case .jcp-maps-scan__pin.is-rank-low {
+  background: radial-gradient(circle at 35% 30%, #fb923c, var(--jcp-lf-low) 60%, #c2410c);
 }
 
-@media (min-width: 700px) {
-  body.jcp-proof-sprint .ps-case .jcp-lf-case__compare {
-    gap: 1.5rem;
-  }
-}
-
-body.jcp-proof-sprint .ps-case .jcp-maps-scan {
-  max-width: 22rem !important;
-  width: 100%;
-  aspect-ratio: 1;
-  min-height: 0;
-  border-radius: 12px;
-  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.14);
-}
-
-body.jcp-proof-sprint .ps-case .jcp-lf-case__stat-value {
-  font-size: clamp(1.15rem, 2.4vw, 1.55rem);
-}
-
-body.jcp-proof-sprint .ps-case .jcp-lf-case__headline {
-  max-width: 22ch;
+body.jcp-proof-sprint .ps-case .jcp-maps-scan__pin.is-rank-out {
+  background: radial-gradient(circle at 35% 30%, #f87171, var(--jcp-lf-out) 55%, var(--jcp-lf-out-deep));
 }
 
 /* Assessment */
@@ -1124,18 +1116,17 @@ body.jcp-proof-sprint .ps-mock-browser__body h4 {
 }
 
 body.jcp-proof-sprint .ps-mock-jobcard {
-  display: grid;
-  grid-template-columns: 7.5rem 1fr;
-  gap: 0.75rem;
-  padding: 0.65rem;
+  display: flex;
+  gap: 0.85rem;
+  align-items: stretch;
+  padding: 0.75rem;
   border-radius: 0.75rem;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
 }
 
 body.jcp-proof-sprint .ps-mock-jobcard .ps-mock__photo {
-  aspect-ratio: 1.15;
-  border-radius: 0.55rem;
+  display: none;
 }
 
 body.jcp-proof-sprint .ps-mock-jobcard strong {
@@ -1167,7 +1158,7 @@ body.jcp-proof-sprint .ps-mock-jobcard em {
 
 @media (max-width: 520px) {
   body.jcp-proof-sprint .ps-mock-jobcard {
-    grid-template-columns: 1fr;
+    flex-direction: column;
   }
 }
 
@@ -1642,12 +1633,26 @@ body.jcp-proof-sprint .ps-why__grid {
   }
 }
 
-body.jcp-proof-sprint .ps-why__copy p {
-  margin: 0 0 1rem;
+body.jcp-proof-sprint .ps-why__copy .ps-eyebrow {
+  margin-bottom: 0.55rem;
+}
+
+body.jcp-proof-sprint .ps-why__copy .ps-section-title {
+  margin-top: 0;
+  margin-bottom: 1.15rem;
+}
+
+body.jcp-proof-sprint .ps-why__body p {
+  margin: 0;
   font-size: 1.02rem;
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--ps-muted);
   max-width: 36rem;
+}
+
+body.jcp-proof-sprint .ps-why__body {
+  display: grid;
+  gap: 0.85rem;
 }
 
 body.jcp-proof-sprint .ps-why__stats {
@@ -1952,6 +1957,492 @@ body.jcp-proof-sprint.has-sticky-cta {
   padding-bottom: 4.5rem;
 }
 
+/* Consistent brand mark */
+body.jcp-proof-sprint .ps-mock-mark {
+  display: grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 50%;
+  background: var(--ps-accent);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  flex-shrink: 0;
+  box-shadow: 0 8px 18px rgba(255, 80, 62, 0.28);
+}
+
+body.jcp-proof-sprint .ps-mock__thumb {
+  display: block;
+  width: 7.5rem;
+  height: 5.75rem;
+  object-fit: cover;
+  border-radius: 0.55rem;
+  background: #0f172a;
+  flex-shrink: 0;
+}
+
+body.jcp-proof-sprint .ps-mock-jobcard {
+  display: flex;
+  gap: 0.85rem;
+  align-items: stretch;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+body.jcp-proof-sprint .ps-mock-jobcard .ps-mock__photo {
+  display: none;
+}
+
+body.jcp-proof-sprint .ps-mock-browser__topline {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.35rem;
+}
+
+body.jcp-proof-sprint .ps-mock-browser__topline h4 {
+  margin: 0.1rem 0 0;
+}
+
+body.jcp-proof-sprint .ps-demo-detail {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 1rem 0 0;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  font-size: 0.88rem;
+}
+
+body.jcp-proof-sprint .ps-demo-detail__label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+body.jcp-proof-sprint .ps-demo-detail strong {
+  color: var(--ps-ink);
+  font-weight: 750;
+}
+
+body.jcp-proof-sprint .ps-mock--capture {
+  grid-template-columns: 0.85fr 1.15fr;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  body.jcp-proof-sprint .ps-mock--capture {
+    grid-template-columns: 1fr;
+  }
+}
+
+body.jcp-proof-sprint .ps-mock-capture__phone {
+  border-radius: 1.35rem;
+  padding: 0.55rem;
+  background: #0f172a;
+}
+
+body.jcp-proof-sprint .ps-mock-capture__notch {
+  width: 3rem;
+  height: 0.3rem;
+  margin: 0.2rem auto 0.45rem;
+  border-radius: 999px;
+  background: #334155;
+}
+
+body.jcp-proof-sprint .ps-mock-capture__screen {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.85rem;
+}
+
+body.jcp-proof-sprint .ps-mock-capture__shutter {
+  position: absolute;
+  left: 50%;
+  bottom: 0.65rem;
+  width: 2.4rem;
+  height: 2.4rem;
+  margin-left: -1.2rem;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+body.jcp-proof-sprint .ps-mock-capture__copy strong {
+  display: block;
+  font-size: 1.05rem;
+  margin-bottom: 0.45rem;
+}
+
+body.jcp-proof-sprint .ps-mock-capture__copy p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+
+body.jcp-proof-sprint .ps-mock__logo {
+  display: none;
+}
+
+body.jcp-proof-sprint .ps-mock-imessage {
+  border-radius: 1.15rem;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  min-height: 14rem;
+}
+
+body.jcp-proof-sprint .ps-mock-imessage__bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0.85rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+body.jcp-proof-sprint .ps-mock-imessage__thread {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.9rem;
+  background: #fff;
+}
+
+body.jcp-proof-sprint .ps-mock-imessage__bubble {
+  justify-self: end;
+  max-width: 92%;
+  padding: 0.65rem 0.8rem;
+  border-radius: 1.1rem 1.1rem 0.35rem 1.1rem;
+  background: #0a84ff;
+  color: #fff;
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+body.jcp-proof-sprint .ps-mock-imessage__bubble.is-link {
+  background: #0071e3;
+  font-weight: 750;
+  word-break: break-all;
+}
+
+body.jcp-proof-sprint .ps-mock-imessage__time {
+  justify-self: end;
+  font-size: 0.68rem;
+  color: #94a3b8;
+  font-weight: 650;
+}
+
+body.jcp-proof-sprint .ps-mock-qr__svg {
+  display: block;
+  width: 5.75rem;
+  height: 5.75rem;
+  border-radius: 0.45rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+body.jcp-proof-sprint .ps-mock-qr__code {
+  display: none;
+}
+
+body.jcp-proof-sprint .ps-mock-social__avatar {
+  display: none;
+}
+
+body.jcp-proof-sprint .ps-mock-dir__avatar {
+  display: none;
+}
+
+body.jcp-proof-sprint .ps-mock-dir__card {
+  position: relative;
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem !important;
+  border-radius: 0.95rem !important;
+}
+
+body.jcp-proof-sprint .ps-mock-dir__head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+body.jcp-proof-sprint .ps-mock-dir__identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+}
+
+body.jcp-proof-sprint .ps-mock-dir__trade {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+body.jcp-proof-sprint .ps-mock-dir__latest {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem;
+  border-radius: 0.7rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+body.jcp-proof-sprint .ps-mock-dir__latest .ps-mock__thumb {
+  width: 4.75rem;
+  height: 4.75rem;
+}
+
+body.jcp-proof-sprint .ps-mock-dir__latest .ps-mock__photo {
+  display: none;
+}
+
+body.jcp-proof-sprint .ps-mock-dir__latest-label {
+  margin: 0;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ps-accent);
+}
+
+body.jcp-proof-sprint .ps-demo-payoff {
+  max-width: 46rem;
+  margin: 2.75rem auto 0;
+}
+
+body.jcp-proof-sprint .ps-demo-payoff__card {
+  padding: clamp(1.5rem, 3vw, 2.15rem);
+  border-radius: 1.15rem;
+  background:
+    radial-gradient(70% 80% at 100% 0%, rgba(255, 80, 62, 0.1), transparent 55%),
+    linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08);
+  text-align: center;
+}
+
+body.jcp-proof-sprint .ps-demo-payoff__body {
+  margin: 0 auto 1.35rem;
+  max-width: 34rem;
+  color: var(--ps-muted);
+  line-height: 1.55;
+}
+
+body.jcp-proof-sprint .ps-why__copy .ps-section-title {
+  margin-top: 0.35rem;
+  margin-bottom: 1.15rem;
+}
+
+body.jcp-proof-sprint .ps-why__body {
+  display: grid;
+  gap: 0.85rem;
+  max-width: 36rem;
+}
+
+body.jcp-proof-sprint .ps-why__body p {
+  margin: 0;
+  color: var(--ps-muted);
+  line-height: 1.6;
+  font-size: 1.02rem;
+}
+
+body.jcp-proof-sprint .ps-why__stats {
+  margin-top: 1.5rem;
+}
+
+body.jcp-proof-sprint .ps-trial {
+  color: #fff;
+  text-align: left;
+}
+
+body.jcp-proof-sprint .ps-trial__layout {
+  display: grid;
+  gap: 1.75rem;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  body.jcp-proof-sprint .ps-trial__layout {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 2.5rem;
+  }
+}
+
+body.jcp-proof-sprint .ps-trial__title {
+  color: #fff !important;
+  max-width: 18ch;
+  margin-left: 0;
+  margin-right: 0;
+  text-align: left;
+}
+
+body.jcp-proof-sprint .ps-trial__sub {
+  text-align: left;
+  margin-left: 0;
+}
+
+body.jcp-proof-sprint .ps-trial__panel {
+  padding: 1.35rem 1.25rem 1.5rem;
+  border-radius: 1.1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+body.jcp-proof-sprint .ps-trial__benefits {
+  text-align: left;
+  margin: 0 0 1.25rem;
+}
+
+body.jcp-proof-sprint .ps-final {
+  margin-bottom: 0;
+}
+
+body.jcp-proof-sprint .ps-final__title {
+  color: #fff !important;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.35);
+}
+
+body.jcp-proof-sprint .ps-footer,
+body.jcp-proof-sprint .jcp-footer {
+  margin-top: 0;
+  border-top: 0;
+  background: #fff;
+}
+
+body.jcp-proof-sprint .ps-faq .faq-item p {
+  padding: 0 1.25rem 1.1rem;
+  margin: 0;
+  color: var(--ps-muted);
+  line-height: 1.55;
+}
+
+
+body.jcp-proof-sprint .ps-final + .jcp-footer,
+body.jcp-proof-sprint .ps-final + footer,
+body.jcp-proof-sprint main + .jcp-footer,
+body.jcp-proof-sprint #content + .jcp-footer {
+  margin-top: 0 !important;
+  padding-top: 1.25rem;
+  border-top: 0;
+}
+
+body.jcp-proof-sprint .site-content,
+body.jcp-proof-sprint #content,
+body.jcp-proof-sprint .jcp-main {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+body.jcp-proof-sprint .ps-faq .faq-grid {
+  max-width: 52rem;
+  margin-inline: auto;
+}
+
+body.jcp-proof-sprint .ps-faq .faq-item {
+  background: #fff;
+}
+
+
+body.jcp-proof-sprint .ps-mock-gbp__brand,
+body.jcp-proof-sprint .ps-mock-social__head,
+body.jcp-proof-sprint .ps-mock__checkin-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+body.jcp-proof-sprint .ps-mock-gbp__brand > div,
+body.jcp-proof-sprint .ps-mock-social__head > div,
+body.jcp-proof-sprint .ps-mock__checkin-head > div {
+  min-width: 0;
+  flex: 1;
+}
+
+body.jcp-proof-sprint .ps-mock-gbp__brand em {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+body.jcp-proof-sprint .ps-mock-qr {
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 0.55rem;
+  padding: 1rem 0.85rem;
+  border-radius: 1rem;
+  border: 1px dashed #cbd5e1;
+  background: #fff;
+  text-align: center;
+}
+
+body.jcp-proof-sprint .ps-mock-qr strong {
+  font-size: 0.88rem;
+}
+
+body.jcp-proof-sprint .ps-mock-qr span {
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+body.jcp-proof-sprint .ps-mock-social__reactions {
+  display: flex;
+  gap: 1rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid #e2e8f0;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+body.jcp-proof-sprint .ps-mock-dir__label {
+  margin: 0 0 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+body.jcp-proof-sprint .ps-mock--directory {
+  background: linear-gradient(180deg, #f8fafc, #fff);
+}
+
+body.jcp-proof-sprint .ps-demo-payoff[hidden] {
+  display: none !important;
+}
+
+body.jcp-proof-sprint .ps-demo-shell.is-payoff-hidden {
+  display: none;
+}
+
+body.jcp-proof-sprint .ps-trial__title,
+body.jcp-proof-sprint .ps-trial__title * {
+  color: #fff !important;
+  background: none !important;
+  box-shadow: none !important;
+}
+
+body.jcp-proof-sprint .ps-final__title,
+body.jcp-proof-sprint .ps-final__title * {
+  color: #fff !important;
+}
+
 /* Reveal */
 body.jcp-proof-sprint [data-ps-reveal] {
   opacity: 0;
@@ -1969,7 +2460,8 @@ body.jcp-proof-sprint [data-ps-reveal].is-in {
   body.jcp-proof-sprint .ps-theater__pulse,
   body.jcp-proof-sprint .ps-theater__core,
   body.jcp-proof-sprint [data-ps-reveal],
-  body.jcp-proof-sprint .ps-theater__outputs li {
+  body.jcp-proof-sprint .ps-theater__outputs li,
+  body.jcp-proof-sprint .ps-mock {
     animation: none !important;
     transition: none !important;
     opacity: 1 !important;

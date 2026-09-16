@@ -15,7 +15,7 @@
       label: 'HVAC',
       title: 'AC system replacement',
       city: 'Austin, TX',
-      photo: 'jcp-campaign-hvac-capture-640.webp',
+      photo: 'jcp-campaign-job-proof-640.webp',
       desc: 'New outdoor unit set and system commissioned for cooling.',
     },
     plumbing: {
@@ -36,7 +36,7 @@
       label: 'Electrical',
       title: 'Electrical panel upgrade',
       city: 'Austin, TX',
-      photo: 'jcp-campaign-hvac-capture-640.webp',
+      photo: 'jcp-campaign-job-proof-640.webp',
       desc: 'New breaker layout and safety check completed.',
     },
     foundation: {
@@ -50,14 +50,14 @@
       label: 'Landscaping',
       title: 'Landscape install',
       city: 'Austin, TX',
-      photo: 'jcp-campaign-crew-review-640.webp',
+      photo: 'jcp-campaign-job-proof-640.webp',
       desc: 'Completed landscape project with before-and-after photos.',
     },
     remodeling: {
       label: 'Remodeling',
       title: 'Interior remodel',
       city: 'Austin, TX',
-      photo: 'jcp-campaign-crew-review-640.webp',
+      photo: 'jcp-campaign-job-proof-640.webp',
       desc: 'Finished remodel documented for the homeowner.',
     },
     other: {
@@ -381,16 +381,32 @@
 
   function brandPersona() {
     var brands = {
-      hvac: { name: 'Lone Star Comfort', slug: 'lonestarcomfort', initial: 'L' },
-      plumbing: { name: 'Summit Plumbing Co.', slug: 'summitplumbing', initial: 'S' },
-      roofing: { name: 'Summit Roofing', slug: 'summitroofing', initial: 'S' },
-      electrical: { name: 'BrightLine Electric', slug: 'brightlineelectric', initial: 'B' },
-      foundation: { name: 'SolidBase Repair', slug: 'solidbaserepair', initial: 'S' },
-      landscaping: { name: 'GreenCrest Outdoor', slug: 'greencrest', initial: 'G' },
-      remodeling: { name: 'Craft & Co. Remodel', slug: 'craftandco', initial: 'C' },
-      other: { name: 'Summit Home Services', slug: 'summithomeservices', initial: 'S' },
+      hvac: { name: 'Lone Star Comfort', slug: 'lonestarcomfort' },
+      plumbing: { name: 'Lone Star Comfort', slug: 'lonestarcomfort' },
+      roofing: { name: 'Lone Star Comfort', slug: 'lonestarcomfort' },
+      electrical: { name: 'Lone Star Comfort', slug: 'lonestarcomfort' },
+      foundation: { name: 'Lone Star Comfort', slug: 'lonestarcomfort' },
+      landscaping: { name: 'Lone Star Comfort', slug: 'lonestarcomfort' },
+      remodeling: { name: 'Lone Star Comfort', slug: 'lonestarcomfort' },
+      other: { name: 'Lone Star Comfort', slug: 'lonestarcomfort' },
     };
     return brands[state.trade] || brands.plumbing;
+  }
+
+  function brandMark() {
+    return '<span class="ps-mock-mark" aria-hidden="true">L</span>';
+  }
+
+  function qrMarkup() {
+    return (
+      '<svg class="ps-mock-qr__svg" viewBox="0 0 33 33" width="96" height="96" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">' +
+      '<rect width="33" height="33" fill="#fff"/>' +
+      '<path fill="#0f172a" d="M2 2h11v11H2zm2 2v7h7V4zm13-2h4v2h-2v2h2v2h-4V8h2V6h-2zm6 0h6v2h-2v2h2v2h-2v2h-2v-2h-2V8h2V6h-2zm-6 8h2v2h-2zm4 0h2v2h2v2h-4zm6 0h2v4h-2zm-16 5h2v2H9zm4 0h2v2h-2zm4 0h2v2h-2zm4 0h2v2h2v2h-2v2h-2v-4zm4 0h2v2h-2zM2 20h11v11H2zm2 2v7h7v-7zm13 0h2v2h-2zm4 0h2v2h2v2h-4zm6 0h2v2h-2zm-10 4h2v2h-2zm4 0h4v2h-2v2h-2zm6 0h2v4h-2zm-6 4h2v2h-2zm4 2h2v2h-2z"/>' +
+      '<rect x="4" y="4" width="3" height="3" fill="#0f172a"/>' +
+      '<rect x="20" y="4" width="3" height="3" fill="#0f172a"/>' +
+      '<rect x="4" y="22" width="3" height="3" fill="#0f172a"/>' +
+      '</svg>'
+    );
   }
 
   function socialCopy(job) {
@@ -401,6 +417,18 @@
       job.title +
       ' done right. Documented from the field.'
     );
+  }
+
+  function captureSourceLabel() {
+    var source = state.source || 'JCP mobile app';
+    if (source.indexOf('Housecall') >= 0) return 'Housecall Pro photo';
+    if (source.indexOf('CompanyCam') >= 0) return 'CompanyCam photo';
+    if (source.indexOf('Workiz') >= 0) return 'Workiz photo';
+    if (source.indexOf('camera') >= 0 || source.indexOf('Camera') >= 0 || source.indexOf('Phones') >= 0) {
+      return 'Phone camera roll';
+    }
+    if (source.indexOf('JCP') >= 0) return 'JCP mobile app';
+    return 'Connected workflow';
   }
 
   /* ---- Demo ---- */
@@ -417,68 +445,63 @@
 
   function demoSteps() {
     var job = jobPersona();
-    var source = state.source || 'JCP mobile app';
+    var source = captureSourceLabel();
     return [
       {
         title: 'The job is finished.',
         body: 'Without JCP, this is where the marketing often stops.',
-        detail: source + ' → JobCapturePro',
+        detail: 'Completed job on site',
         event: DEMO_EVENTS[0],
         type: 'job',
       },
       {
-        title: 'JCP captures the completed work.',
+        title: 'Your tech just snaps the photo.',
         body:
-          source.indexOf('Housecall') >= 0
-            ? 'Job completed in Housecall Pro. Photos and job context flow into JobCapturePro within your connected workflow.'
-            : source.indexOf('CompanyCam') >= 0
-              ? 'Your crew keeps taking photos in CompanyCam. JCP uses those photos within the configured workflow.'
-              : source.indexOf('camera') >= 0 || source.indexOf('Camera') >= 0
-                ? 'Photos from the field upload into JCP. No need to turn technicians into marketers.'
-                : 'JobCapturePro receives the completed job from your workflow or the JCP mobile app.',
-        detail: source + ' → JobCapturePro',
+          'They take one job photo in the JCP app or your existing system. JobCapturePro handles the rest automatically.',
+        detail: source,
         event: DEMO_EVENTS[0],
         type: 'capture',
       },
       {
         title: 'JCP creates the check-in.',
         body: 'Photos, service context and location become a structured, channel-ready check-in.',
-        detail: 'Real ' + job.label + ' work → structured proof',
+        detail: job.label + ' job structured',
         event: DEMO_EVENTS[1],
         type: 'checkin',
       },
       {
-        title: 'One completed job becomes website proof.',
-        body: 'Fresh proof on your site: map context, recent jobs, and real photos homeowners can trust.',
-        detail: 'Website proof for ' + job.label,
+        title: 'Published to your website. Location included.',
+        body:
+          'Jobs appear on recent-work pages and auto-post to that service-area location page with the JCP website plugin. Powerful for local SEO and rankings.',
+        detail: 'Website plugin · location page',
         event: DEMO_EVENTS[2],
         type: 'web',
       },
       {
         title: 'Fresh Google activity. Automatically.',
         body: 'The same job can keep your Google Business Profile active with real work, not another generic promo.',
-        detail: 'Google Business Profile update',
+        detail: 'Google Business Profile',
         event: DEMO_EVENTS[3],
         type: 'google',
       },
       {
         title: 'Ask while they still remember your name.',
         body: 'Send a review link or show a QR before you leave the driveway. No review gating. No guaranteed five-star claims.',
-        detail: 'Completed job → review opportunity',
+        detail: 'Review opportunity',
         event: DEMO_EVENTS[4],
         type: 'review',
       },
       {
         title: 'Social content your tech never had to write.',
         body: 'Your marketing content came from work your crew already completed.',
-        detail: 'Ready-to-use social proof',
+        detail: 'Social post ready',
         event: DEMO_EVENTS[5],
         type: 'social',
       },
       {
         title: 'And a living directory listing.',
         body: 'Verified job activity shows up where homeowners look for proof that you actually do the work.',
-        detail: 'Directory + local proof',
+        detail: 'JobCapturePro Directory',
         event: DEMO_EVENTS[6],
         type: 'directory',
       },
@@ -496,13 +519,17 @@
     var desc = esc(job.desc);
     var biz = esc(brand.name);
     var slug = esc(brand.slug);
-    var initial = esc(brand.initial);
+    var mark = brandMark();
     var photo =
       '<img class="ps-mock__photo" src="' +
       esc(url) +
       '" alt="" width="640" height="400" loading="lazy" data-ps-job-photo />';
+    var thumb =
+      '<img class="ps-mock__thumb" src="' +
+      esc(url) +
+      '" alt="" width="160" height="120" loading="lazy" data-ps-job-photo />';
 
-    if (type === 'job' || type === 'capture') {
+    if (type === 'job') {
       c.innerHTML =
         '<div class="ps-mock ps-mock--job">' +
         '<div class="ps-mock__chip-row"><span class="ps-mock__chip is-good">Completed job</span><span class="ps-mock__chip">Just now</span></div>' +
@@ -519,10 +546,30 @@
       return;
     }
 
+    if (type === 'capture') {
+      c.innerHTML =
+        '<div class="ps-mock ps-mock--capture">' +
+        '<div class="ps-mock-capture__phone">' +
+        '<div class="ps-mock-capture__notch"></div>' +
+        '<div class="ps-mock-capture__screen">' +
+        photo +
+        '<div class="ps-mock-capture__shutter" aria-hidden="true"></div>' +
+        '</div></div>' +
+        '<div class="ps-mock-capture__copy">' +
+        '<strong>One snap. That\'s it.</strong>' +
+        '<p>Tech captures the finished job in ' +
+        esc(captureSourceLabel()) +
+        '. JCP turns it into website proof, Google activity, reviews, social and directory updates.</p>' +
+        '</div></div>';
+      return;
+    }
+
     if (type === 'checkin') {
       c.innerHTML =
         '<div class="ps-mock ps-mock--checkin">' +
-        '<div class="ps-mock__checkin-head"><span class="ps-mock__logo">JCP</span><div><strong>Creating check-in</strong><span>' +
+        '<div class="ps-mock__checkin-head">' +
+        mark +
+        '<div><strong>Creating check-in</strong><span>' +
         title +
         ' · ' +
         city +
@@ -547,22 +594,24 @@
         '<div class="ps-mock-browser__bar"><span></span><span></span><span></span>' +
         '<div class="ps-mock-browser__url">' +
         slug +
-        '.com/recent-jobs</div></div>' +
+        '.com/locations/austin-tx</div></div>' +
         '<div class="ps-mock-browser__body">' +
-        '<p class="ps-mock-browser__kicker">Recent work</p>' +
-        '<h4>Jobs completed by ' +
-        biz +
-        '</h4>' +
+        '<div class="ps-mock-browser__topline">' +
+        mark +
+        '<div><p class="ps-mock-browser__kicker">Austin, TX service area</p>' +
+        '<h4>Recent jobs near you</h4></div></div>' +
         '<article class="ps-mock-jobcard">' +
-        photo +
+        thumb +
         '<div><strong>' +
         title +
         '</strong><span>' +
         city +
-        '</span><p>' +
+        ' · Location page</span><p>' +
         desc +
-        '</p><em>Published just now · Powered by JobCapturePro</em></div>' +
-        '</article></div></div>';
+        '</p><em>Auto-posted by JCP website plugin</em></div>' +
+        '</article>' +
+        '<p class="ps-mock__meta">Live on map + location pages. Built for local SEO.</p>' +
+        '</div></div>';
       return;
     }
 
@@ -570,7 +619,7 @@
       c.innerHTML =
         '<div class="ps-mock ps-mock--gbp">' +
         '<div class="ps-mock-gbp__brand">' +
-        '<span class="ps-mock-gbp__g" aria-hidden="true">G</span>' +
+        mark +
         '<div><strong>' +
         biz +
         '</strong><span>Google Business Profile · Update</span></div>' +
@@ -593,18 +642,19 @@
     if (type === 'review') {
       c.innerHTML =
         '<div class="ps-mock ps-mock--review">' +
-        '<div class="ps-mock-phone">' +
-        '<div class="ps-mock-phone__notch"></div>' +
-        '<div class="ps-mock-sms">' +
-        '<p class="ps-mock-sms__label">Messages · Customer</p>' +
-        '<div class="ps-mock-sms__bubble">Thanks again for choosing ' +
+        '<div class="ps-mock-imessage">' +
+        '<div class="ps-mock-imessage__bar"><span></span><strong>Customer</strong><span></span></div>' +
+        '<div class="ps-mock-imessage__thread">' +
+        '<div class="ps-mock-imessage__bubble is-out">Thanks again for choosing ' +
         biz +
         '. If we earned it, you can leave a quick review here:</div>' +
-        '<div class="ps-mock-sms__bubble is-link">review.jobcapturepro.com/' +
+        '<div class="ps-mock-imessage__bubble is-out is-link">review.jobcapturepro.com/' +
         slug +
-        '</div></div></div>' +
+        '</div>' +
+        '<div class="ps-mock-imessage__time">Delivered · Just now</div>' +
+        '</div></div>' +
         '<div class="ps-mock-qr">' +
-        '<div class="ps-mock-qr__code" aria-hidden="true"></div>' +
+        qrMarkup() +
         '<strong>Or show QR on site</strong>' +
         '<span>Customer chooses whether to review. No gating.</span></div></div>';
       return;
@@ -614,9 +664,7 @@
       c.innerHTML =
         '<div class="ps-mock ps-mock--social">' +
         '<div class="ps-mock-social__head">' +
-        '<span class="ps-mock-social__avatar">' +
-        initial +
-        '</span>' +
+        mark +
         '<div><strong>' +
         biz +
         '</strong><span>Prepared just now · ' +
@@ -628,7 +676,7 @@
         '<div class="ps-mock__media">' +
         photo +
         '</div>' +
-        '<div class="ps-mock-social__reactions"><span>Like</span><span>Comment</span><span>Share</span></div></div>';
+        '<div class="ps-mock-social__reactions"><span>👍 Like</span><span>💬 Comment</span><span>↗ Share</span></div></div>';
       return;
     }
 
@@ -636,25 +684,24 @@
       c.innerHTML =
         '<div class="ps-mock ps-mock--directory">' +
         '<p class="ps-mock-dir__label">JobCapturePro Directory</p>' +
-        '<article class="ps-mock-dir__card">' +
-        '<span class="ps-mock-dir__verified">Verified</span>' +
+        '<article class="directory-card directory-card-highlight ps-mock-dir__card">' +
         '<div class="ps-mock-dir__head">' +
-        '<span class="ps-mock-dir__avatar">' +
-        initial +
-        '</span>' +
-        '<div><strong>' +
+        mark +
+        '<div class="ps-mock-dir__identity"><strong class="card-name">' +
         biz +
-        '</strong><span>' +
+        '</strong><span class="directory-badge verified">Verified</span></div></div>' +
+        '<p class="ps-mock-dir__trade">' +
         esc(job.label) +
-        ' · ' +
+        '</p>' +
+        '<div class="card-location"><span>' +
         city +
-        '</span></div></div>' +
+        '</span></div>' +
+        '<div class="card-meta-row"><span class="meta-inline">12 jobs documented</span><span class="meta-divider">·</span><span class="meta-inline">Active today</span></div>' +
         '<div class="ps-mock-dir__latest">' +
-        photo +
-        '<div><em>Latest completed job</em><strong>' +
+        thumb +
+        '<div><p class="ps-mock-dir__latest-label">Latest completed job</p><strong>' +
         title +
         '</strong><span>Documented on site · Just published</span></div></div>' +
-        '<div class="ps-mock-dir__meta"><span>12 jobs</span><span>·</span><span>Active this week</span><span>·</span><span>★★★★★</span></div>' +
         '</article></div>';
     }
   }
@@ -695,16 +742,16 @@
     if (d.event) track(d.event, { step: state.demoStep + 1, trade: state.trade });
 
     if (payoff) payoff.hidden = true;
+    var shell = document.querySelector('.ps-demo-shell');
+    if (shell) shell.hidden = false;
   }
 
   function showDemoPayoff() {
     var payoff = document.getElementById('psDemoPayoff');
     var jobsLine = document.getElementById('psDemoPayoffJobs');
+    var shell = document.querySelector('.ps-demo-shell');
     var annual = state.annual || Math.round((state.jobs || 20) * 52);
     var weekly = state.jobs || 20;
-    var job = jobPersona();
-    var brand = brandPersona();
-    var url = photoUrl(job.photo);
     if (jobsLine) {
       jobsLine.textContent =
         'You told us you complete approximately ' +
@@ -713,6 +760,7 @@
         annual.toLocaleString() +
         ' opportunities each year.';
     }
+    if (shell) shell.hidden = true;
     if (payoff) {
       payoff.hidden = false;
       try {
@@ -720,25 +768,6 @@
       } catch (e) {
         payoff.scrollIntoView(true);
       }
-    }
-    var c = document.getElementById('psDemoCanvas');
-    if (c) {
-      c.innerHTML =
-        '<div class="ps-mock ps-mock--payoff">' +
-        '<p class="ps-mock-payoff__label">One completed job → a full proof system</p>' +
-        '<div class="ps-mock-payoff__grid">' +
-        '<div class="ps-mock-payoff__tile is-web"><span>Website</span><strong>' +
-        esc(job.title) +
-        '</strong></div>' +
-        '<div class="ps-mock-payoff__tile is-gbp"><span>Google</span><strong>GBP update live</strong></div>' +
-        '<div class="ps-mock-payoff__tile is-social"><span>Social</span><strong>Post ready</strong></div>' +
-        '<div class="ps-mock-payoff__tile is-dir"><span>Directory</span><strong>' +
-        esc(brand.name) +
-        '</strong></div>' +
-        '<div class="ps-mock-payoff__hero"><img src="' +
-        esc(url) +
-        '" alt="" width="320" height="200" loading="lazy" data-ps-job-photo /><em>Review ask sent</em></div>' +
-        '</div></div>';
     }
     track('demo_completed', { annual: annual, trade: state.trade });
   }
