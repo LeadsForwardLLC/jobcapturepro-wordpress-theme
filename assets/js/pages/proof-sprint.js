@@ -511,7 +511,7 @@
       {
         title: 'And a living directory listing.',
         body:
-          'Your JobCapturePro Directory listing stays alive with verified jobs, ratings, and recent work — so homeowners see proof you actually do the job in their area.',
+          'Your JobCapturePro Directory profile is powered by real check-ins and verified job activity — not paid placement. Homeowners see live proof you actually work in their area: completed jobs, ratings, and recent field activity that keeps updating as your crew finishes work.',
         detail: 'JobCapturePro Directory',
         event: DEMO_EVENTS[6],
         type: 'directory',
@@ -653,23 +653,21 @@
     if (type === 'review') {
       c.innerHTML =
         '<div class="ps-mock ps-mock--review">' +
-        '<div class="ps-mock-review__row">' +
-        '<div class="ps-mock-imessage">' +
-        '<div class="ps-mock-imessage__bar"><strong>Messages</strong><span>Customer</span></div>' +
-        '<div class="ps-mock-imessage__thread">' +
-        '<div class="ps-mock-imessage__bubble is-out">Thanks again for choosing ' +
+        '<div class="ps-mock-review__phone">' +
+        '<div class="ps-mock-review__phone-bar"><span>Messages</span><strong>Customer</strong></div>' +
+        '<div class="ps-mock-review__thread">' +
+        '<div class="ps-mock-review__bubble">Thanks again for choosing ' +
         biz +
-        '. If we earned it, you can leave a quick review here:</div>' +
-        '<div class="ps-mock-imessage__bubble is-out is-link">review.jobcapturepro.com/' +
+        '. If we earned it, leave a quick review:</div>' +
+        '<div class="ps-mock-review__bubble is-link">review.jobcapturepro.com/' +
         slug +
         '</div>' +
-        '<div class="ps-mock-imessage__time">Delivered · Just now</div>' +
+        '<p class="ps-mock-review__time">Delivered · Just now</p>' +
         '</div></div>' +
         '<div class="ps-mock-qr">' +
         qrMarkup() +
         '<strong>Or show QR on site</strong>' +
-        '<span>Customer chooses whether to review. No gating.</span></div>' +
-        '</div></div>';
+        '<span>Customer chooses whether to review. No gating.</span></div></div>';
       return;
     }
 
@@ -713,10 +711,6 @@
         '</span></div>' +
         '<div class="card-meta-row"><span class="meta-inline">12 jobs documented</span><span class="meta-divider">·</span><span class="meta-inline">Active today</span></div>' +
         '<div class="card-rating"><div class="stars" aria-hidden="true">★★★★★</div><span class="rating-text">4.9 · 128 reviews</span></div>' +
-        '<div class="ps-mock-dir__reviews">' +
-        '<blockquote>“Showed up, finished the job clean, and I could see other local work they had done.”</blockquote>' +
-        '<blockquote>“Photos of real installs in my area made it easy to trust them.”</blockquote>' +
-        '</div>' +
         '<div class="ps-mock-dir__latest">' +
         thumb +
         '<div><p class="ps-mock-dir__latest-label">Latest completed job</p><strong>' +
