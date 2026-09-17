@@ -1214,6 +1214,7 @@
           email: email,
           firstName: deriveFirstName(email),
           lastName: '',
+          niche: tradeInfo.business_type || tradeInfo.trade || '',
           industry: tradeInfo.trade || '',
           businessType: tradeInfo.business_type || '',
         })
