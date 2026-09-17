@@ -19,10 +19,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$icon = static function ( string $name ): string {
-	return function_exists( 'jcp_core_icon' ) ? jcp_core_icon( $name ) : '';
-};
-
 $campaign   = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/';
 $reviews    = function_exists( 'jcp_sales_tool_default_reviews' ) ? jcp_sales_tool_default_reviews() : [];
 $business_type_options = function_exists( 'jcp_core_business_type_flat_options' )
