@@ -178,6 +178,16 @@ function jcp_demo_ghl_attribution_rest_args(): array {
             'type'              => 'string',
             'sanitize_callback' => 'sanitize_text_field',
         ],
+        'lp_variant'   => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'funnel_surface' => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
         'referrer'     => [
             'required'          => false,
             'type'              => 'string',
@@ -187,6 +197,11 @@ function jcp_demo_ghl_attribution_rest_args(): array {
             'required'          => false,
             'type'              => 'string',
             'sanitize_callback' => 'jcp_demo_ghl_sanitize_contact_id',
+        ],
+        'event_id'     => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
         ],
     ];
 }
@@ -226,7 +241,7 @@ function jcp_demo_ghl_merge_attribution_from_request( array $params, \WP_REST_Re
  * Normalize demo contact fields for GHL webhook payloads.
  *
  * @param array<string, mixed> $params Request params.
- * @return array{first_name: string, last_name: string, email: string, phone: string, company: string, business_type: string, service_area: string, use_case: string, referral_source: string, utm_source: string, utm_medium: string, utm_campaign: string, utm_content: string, utm_term: string, fbclid: string, landing_page: string, referrer: string, contact_id: string}
+ * @return array{first_name: string, last_name: string, email: string, phone: string, company: string, business_type: string, service_area: string, use_case: string, referral_source: string, utm_source: string, utm_medium: string, utm_campaign: string, utm_content: string, utm_term: string, fbclid: string, landing_page: string, lp_variant: string, funnel_surface: string, referrer: string, contact_id: string}
  */
 function jcp_demo_ghl_normalize_contact_params( array $params ): array {
     $first_name    = isset( $params['first_name'] ) ? trim( (string) $params['first_name'] ) : '';
@@ -270,6 +285,8 @@ function jcp_demo_ghl_normalize_contact_params( array $params ): array {
         'utm_term'         => isset( $params['utm_term'] ) ? trim( (string) $params['utm_term'] ) : '',
         'fbclid'           => isset( $params['fbclid'] ) ? trim( (string) $params['fbclid'] ) : '',
         'landing_page'     => isset( $params['landing_page'] ) ? trim( (string) $params['landing_page'] ) : '',
+        'lp_variant'       => isset( $params['lp_variant'] ) ? trim( (string) $params['lp_variant'] ) : '',
+        'funnel_surface'   => isset( $params['funnel_surface'] ) ? trim( (string) $params['funnel_surface'] ) : '',
         'referrer'         => isset( $params['referrer'] ) ? trim( (string) $params['referrer'] ) : '',
         'contact_id'       => function_exists( 'jcp_demo_ghl_sanitize_contact_id' )
             ? jcp_demo_ghl_sanitize_contact_id( $params['contact_id'] ?? '' )
@@ -305,6 +322,12 @@ function jcp_demo_ghl_build_webhook_body( string $event, array $params, array $t
         JCP_GHL_KEY_LANDING_PAGE  => $contact['landing_page'],
         JCP_GHL_KEY_REFERRER      => $contact['referrer'],
     ];
+    if ( $contact['lp_variant'] !== '' && defined( 'JCP_GHL_KEY_LP_VARIANT' ) ) {
+        $scalar[ JCP_GHL_KEY_LP_VARIANT ] = $contact['lp_variant'];
+    }
+    if ( $contact['funnel_surface'] !== '' && defined( 'JCP_GHL_KEY_FUNNEL_SURFACE' ) ) {
+        $scalar[ JCP_GHL_KEY_FUNNEL_SURFACE ] = $contact['funnel_surface'];
+    }
     // When present, GHL workflows should Find/Update this contact instead of creating a duplicate.
     if ( $contact['contact_id'] !== '' && defined( 'JCP_GHL_KEY_CONTACT_ID' ) ) {
         $scalar[ JCP_GHL_KEY_CONTACT_ID ] = $contact['contact_id'];
@@ -402,6 +425,19 @@ function jcp_demo_lead_new_event_id(): string {
 		return wp_generate_uuid4();
 	}
 	return 'jcp_' . bin2hex( random_bytes( 16 ) );
+}
+
+/**
+ * Accept a client-supplied Meta event_id when valid; otherwise mint one.
+ *
+ * @param mixed $raw Raw request value.
+ */
+function jcp_demo_lead_resolve_event_id( $raw ): string {
+	$id = trim( sanitize_text_field( (string) $raw ) );
+	if ( $id !== '' && preg_match( '/^[A-Za-z0-9_-]{8,64}$/', $id ) ) {
+		return $id;
+	}
+	return jcp_demo_lead_new_event_id();
 }
 
 /**
@@ -696,7 +732,11 @@ function jcp_core_demo_survey_submit_handler( \WP_REST_Request $request ): \WP_R
     );
 
     $body_string = jcp_core_build_demo_survey_ghl_body( $params );
-    $event_id    = jcp_demo_lead_new_event_id();
+    $event_id    = jcp_demo_lead_resolve_event_id( $request->get_param( 'event_id' ) );
+    // Persist Meta event_id on the GHL webhook body for CAPI workflows that map Event Id.
+    if ( defined( 'JCP_GHL_KEY_EVENT_ID' ) && $event_id !== '' ) {
+        $body_string .= '&' . rawurlencode( JCP_GHL_KEY_EVENT_ID ) . '=' . rawurlencode( $event_id );
+    }
     $lead_id     = jcp_demo_lead_queue_insert( $params, $body_string, $event_id );
 
     if ( ! $lead_id ) {

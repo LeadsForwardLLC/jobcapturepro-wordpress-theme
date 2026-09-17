@@ -6,9 +6,196 @@
 
   var LP_VARIANT = 'proof_sprint';
   var STORAGE_KEY = 'jcp_ps_state';
+  var DEMO_SESSION_KEY = 'jcp_ps_demo_session_id';
+  var LEAD_EVENT_ID_KEY = 'jcp_ps_lead_event_id';
   var campaignBase =
     (document.body && document.body.getAttribute('data-ps-campaign-base')) ||
     '';
+
+  function isQaMode() {
+    try {
+      var q = new URLSearchParams(location.search);
+      return q.get('jcp_qa') === '1' || q.get('qa') === '1';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function qaLog(msg, extra) {
+    if (!isQaMode()) return;
+    try {
+      if (extra !== undefined) console.info('[jcp_qa]', msg, extra);
+      else console.info('[jcp_qa]', msg);
+    } catch (e) {}
+  }
+
+  function newEventId() {
+    try {
+      if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+        return window.crypto.randomUUID();
+      }
+    } catch (e) {}
+    return 'jcp_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 12);
+  }
+
+  function getOrCreateLeadEventId() {
+    try {
+      var existing = sessionStorage.getItem(LEAD_EVENT_ID_KEY);
+      if (existing) return existing;
+    } catch (e) {}
+    var id = newEventId();
+    try {
+      sessionStorage.setItem(LEAD_EVENT_ID_KEY, id);
+    } catch (e2) {}
+    return id;
+  }
+
+  function getPsDemoSessionId() {
+    try {
+      var id = sessionStorage.getItem(DEMO_SESSION_KEY);
+      if (!id) {
+        id = 'ps_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+        sessionStorage.setItem(DEMO_SESSION_KEY, id);
+      }
+      return id;
+    } catch (e) {
+      return 'ps_' + Date.now();
+    }
+  }
+
+  function ghlContactBody() {
+    var attr = attrPayload();
+    var email = state.email || '';
+    return {
+      first_name: deriveFirstName(email),
+      last_name: '',
+      email: email,
+      company: '',
+      business_type: state.trade || '',
+      demo_goals: [],
+      landing_page: location.href,
+      lp_variant: attr.lp_variant || LP_VARIANT,
+      funnel_surface: 'proof_sprint',
+      utm_source: attr.utm_source || '',
+      utm_medium: attr.utm_medium || '',
+      utm_campaign: attr.utm_campaign || '',
+      utm_content: attr.utm_content || '',
+      utm_term: attr.utm_term || '',
+      fbclid: attr.fbclid || '',
+      referrer: attr.referrer || document.referrer || '',
+      contact_id: attr.contact_id || '',
+    };
+  }
+
+  /** Same /demo/ CRM path: demo-viewed-submit + demo-event milestones (session-deduped server-side). */
+  function postGhlViewed() {
+    try {
+      if (sessionStorage.getItem('jcp_ps_ghl_viewed')) return;
+      sessionStorage.setItem('jcp_ps_ghl_viewed', '1');
+    } catch (e) {}
+    var url =
+      (window.JCP_DEMO_SURVEY && window.JCP_DEMO_SURVEY.rest_viewed_url) ||
+      '/wp-json/jcp/v1/demo-viewed-submit';
+    var body = ghlContactBody();
+    if (!body.email) return;
+    try {
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        keepalive: true,
+      }).catch(function () {});
+      qaLog('ghl demo-viewed submitted');
+    } catch (err) {}
+  }
+
+  function postDemoEvent(eventType, metadata, options) {
+    var url =
+      (window.JCP_DEMO_EVENT && window.JCP_DEMO_EVENT.rest_url) ||
+      (window.JCP_DEMO_SURVEY && window.JCP_DEMO_SURVEY.rest_event_url) ||
+      '/wp-json/jcp/v1/demo-event';
+    var contact = ghlContactBody();
+    if (!contact.email) return;
+    var body = {
+      session_id: getPsDemoSessionId(),
+      event_type: eventType,
+      metadata: metadata || undefined,
+      first_name: contact.first_name,
+      last_name: contact.last_name,
+      email: contact.email,
+      company: contact.company,
+      business_type: contact.business_type,
+      landing_page: contact.landing_page,
+      lp_variant: contact.lp_variant,
+      funnel_surface: contact.funnel_surface,
+      utm_source: contact.utm_source,
+      utm_medium: contact.utm_medium,
+      utm_campaign: contact.utm_campaign,
+      utm_content: contact.utm_content,
+      utm_term: contact.utm_term,
+      fbclid: contact.fbclid,
+      referrer: contact.referrer,
+      contact_id: contact.contact_id,
+    };
+    try {
+      var payload = JSON.stringify(body);
+      var keepalive = !!(options && options.keepalive);
+      if (keepalive && typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+        try {
+          var blob = new Blob([payload], { type: 'application/json' });
+          if (navigator.sendBeacon(url, blob)) {
+            qaLog('ghl milestone beacon', eventType);
+            return;
+          }
+        } catch (eBeacon) {}
+      }
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: payload,
+        keepalive: keepalive,
+      }).catch(function () {});
+      qaLog('ghl milestone', eventType);
+    } catch (e) {}
+  }
+
+  function fireDemoLifecycleStart() {
+    try {
+      if (sessionStorage.getItem('jcp_ps_lifecycle_start')) return;
+      sessionStorage.setItem('jcp_ps_lifecycle_start', '1');
+    } catch (e) {}
+    postGhlViewed();
+    postDemoEvent('demo_run_started');
+    try {
+      if (!sessionStorage.getItem('jcp_ps_PersonalizedDemoViewed')) {
+        sessionStorage.setItem('jcp_ps_PersonalizedDemoViewed', '1');
+        track('PersonalizedDemoViewed', { trade: state.trade, cta_source: 'optin' });
+      }
+    } catch (e2) {
+      track('PersonalizedDemoViewed', { trade: state.trade, cta_source: 'optin' });
+    }
+  }
+
+  function fireDemoLifecycleResults() {
+    try {
+      if (sessionStorage.getItem('jcp_ps_lifecycle_results')) return;
+      sessionStorage.setItem('jcp_ps_lifecycle_results', '1');
+    } catch (e) {}
+    postDemoEvent('demo_publish_completed');
+    postDemoEvent('post_demo_modal_shown');
+  }
+
+  function fireDemoLifecycleConverted(ctaSource) {
+    try {
+      if (sessionStorage.getItem('jcp_ps_lifecycle_converted')) return;
+      sessionStorage.setItem('jcp_ps_lifecycle_converted', '1');
+    } catch (e) {}
+    postDemoEvent(
+      'demo_converted',
+      { cta: 'get_started_free', source: ctaSource || 'trial' },
+      { keepalive: true }
+    );
+  }
 
   var TRADE_JOBS = {
     hvac: {
@@ -220,11 +407,17 @@
         a.href = u.toString();
       } catch (e) {}
       a.addEventListener('click', function () {
+        var src = a.getAttribute('data-ps-source') || 'trial';
         track('trial_cta_clicked', {
-          source: a.getAttribute('data-ps-source') || 'trial',
-          cta_source: a.getAttribute('data-ps-source') || 'trial',
+          source: src,
+          cta_source: src,
         });
-        track('trial_signup_started', { source: a.getAttribute('data-ps-source') || 'trial' });
+        track('TrialCTAClicked', {
+          source: src,
+          cta_source: src,
+        });
+        track('trial_signup_started', { source: src });
+        fireDemoLifecycleConverted(src);
       });
     });
   }
@@ -1017,6 +1210,7 @@
     } catch (eDone) {
       track('demo_completed', { annual: annual, trade: state.trade });
     }
+    fireDemoLifecycleResults();
   }
 
   function restartDemo() {
@@ -1225,6 +1419,7 @@
     unlockDemo();
     renderDemo();
     scrollToDemo();
+    fireDemoLifecycleStart();
     track('DemoFormSubmitted', {
       section: 'optin',
       source: ctaSource || 'optin',
@@ -1261,6 +1456,12 @@
       }
       window.dataLayer.push(payload);
       sessionStorage.setItem('jcp_datalayer_demo_opt_in', '1');
+      qaLog('demo_opt_in event_id', eventId || '(none)');
+      if (isQaMode() && eventId) {
+        try {
+          document.documentElement.setAttribute('data-jcp-qa-event-id', eventId);
+        } catch (eAttr) {}
+      }
     } catch (err) {}
   }
 
@@ -1304,6 +1505,8 @@
       (window.JCP_DEMO_SURVEY && window.JCP_DEMO_SURVEY.rest_url) ||
       '/wp-json/jcp/v1/demo-survey-submit';
     var attr = attrPayload();
+    var eventId = getOrCreateLeadEventId();
+    qaLog('lead event_id (pre-submit)', eventId);
     var body = {
       first_name: deriveFirstName(email),
       last_name: '',
@@ -1314,7 +1517,10 @@
       demo_goals: [],
       referral_source: '',
       event: 'demo-opt-in',
+      event_id: eventId,
       landing_page: location.href,
+      lp_variant: attr.lp_variant || LP_VARIANT,
+      funnel_surface: 'proof_sprint',
       utm_source: attr.utm_source || '',
       utm_medium: attr.utm_medium || '',
       utm_campaign: attr.utm_campaign || '',
@@ -1334,10 +1540,14 @@
           .json()
           .then(function (json) {
             var captured = !!(json && (json.captured === true || json.success === true));
+            var returnedId = json && json.event_id ? String(json.event_id) : eventId;
+            try {
+              if (returnedId) sessionStorage.setItem(LEAD_EVENT_ID_KEY, returnedId);
+            } catch (eId) {}
             return {
               ok: res.ok && captured,
               delivered: !!(json && json.delivered),
-              eventId: json && json.event_id ? String(json.event_id) : '',
+              eventId: returnedId,
               json: json,
             };
           })
@@ -1714,6 +1924,7 @@
     if (state.optedIn) {
       unlockDemo();
       renderDemo();
+      fireDemoLifecycleStart();
     }
 
     if (state.annual > 0) {

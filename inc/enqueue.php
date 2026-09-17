@@ -156,7 +156,16 @@ function jcp_core_enqueue_assets(): void {
             'jcp-core-proof-sprint',
             'JCP_DEMO_SURVEY',
             [
-                'rest_url' => rest_url( 'jcp/v1/demo-survey-submit' ),
+                'rest_url'        => rest_url( 'jcp/v1/demo-survey-submit' ),
+                'rest_viewed_url' => rest_url( 'jcp/v1/demo-viewed-submit' ),
+                'rest_event_url'  => rest_url( 'jcp/v1/demo-event' ),
+            ]
+        );
+        wp_localize_script(
+            'jcp-core-proof-sprint',
+            'JCP_DEMO_EVENT',
+            [
+                'rest_url' => rest_url( 'jcp/v1/demo-event' ),
             ]
         );
         if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {
