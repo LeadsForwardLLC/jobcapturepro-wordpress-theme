@@ -18,24 +18,42 @@ $icon = static function ( string $name ): string {
 $campaign   = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/';
 $integ      = trailingslashit( get_template_directory_uri() ) . 'assets/integrations/';
 $photo_job  = function_exists( 'jcp_proof_sprint_asset_url' ) ? jcp_proof_sprint_asset_url( 'jcp-campaign-job-proof-640.webp' ) : $campaign . 'jcp-campaign-job-proof-640.webp';
-$photo_why  = $campaign . 'jcp-campaign-face-owner-640.webp';
+$photo_why  = function_exists( 'jcp_proof_sprint_asset_url' ) ? jcp_proof_sprint_asset_url( 'jcp-campaign-face-operator-640.webp' ) : $campaign . 'jcp-campaign-face-operator-640.webp';
 $map_url    = get_template_directory_uri() . '/assets/map-3c5b675f-f28d-41a5-ba3a-972b4c189f10.png';
 
 $reviews = function_exists( 'jcp_sales_tool_default_reviews' ) ? jcp_sales_tool_default_reviews() : [];
 $featured_review = null;
-$other_reviews   = [];
+$by_id           = [];
 foreach ( $reviews as $r ) {
-	if ( ! $featured_review && ( (string) ( $r['id'] ?? '' ) === 'brian-hardy' || stripos( (string) ( $r['name'] ?? '' ), 'Brian' ) === 0 ) ) {
-		$featured_review = $r;
-		continue;
+	$id = (string) ( $r['id'] ?? '' );
+	if ( $id !== '' ) {
+		$by_id[ $id ] = $r;
 	}
-	$other_reviews[] = $r;
+	if ( ! $featured_review && ( $id === 'brian-hardy' || stripos( (string) ( $r['name'] ?? '' ), 'Brian' ) === 0 ) ) {
+		$featured_review = $r;
+	}
 }
 if ( ! $featured_review && $reviews !== [] ) {
 	$featured_review = $reviews[0];
-	$other_reviews   = array_slice( $reviews, 1 );
 }
-$other_reviews = array_slice( $other_reviews, 0, 3 );
+$secondary_order = [ 'trent-ellison', 'heriberto-eddie-roman', 'peter-bonk' ];
+$other_reviews   = [];
+foreach ( $secondary_order as $sid ) {
+	if ( isset( $by_id[ $sid ] ) ) {
+		$other_reviews[] = $by_id[ $sid ];
+	}
+}
+if ( $other_reviews === [] ) {
+	foreach ( $reviews as $r ) {
+		if ( $featured_review && ( (string) ( $r['id'] ?? '' ) === (string) ( $featured_review['id'] ?? '' ) ) ) {
+			continue;
+		}
+		$other_reviews[] = $r;
+		if ( count( $other_reviews ) >= 3 ) {
+			break;
+		}
+	}
+}
 
 $case_props = function_exists( 'jcp_proof_sprint_case_study_props' ) ? jcp_proof_sprint_case_study_props() : [];
 
@@ -65,8 +83,10 @@ $cta_primary = __( 'See it on my business', 'jcp-core' );
 				</a>
 			</div>
 			<p class="ps-micro"><?php esc_html_e( 'Work email + trade · About 60 seconds · No credit card', 'jcp-core' ); ?></p>
-			<p class="ps-hero__trial-link">
-				<a href="<?php echo esc_url( $trial_href ); ?>" data-ps-trial data-ps-source="hero_trial"><?php esc_html_e( 'Start free 14-day trial →', 'jcp-core' ); ?></a>
+			<p class="ps-hero__value-line" aria-label="<?php esc_attr_e( 'One completed job becomes website, Google, reviews, social and JCP Directory proof', 'jcp-core' ); ?>">
+				<span class="ps-hero__value-start"><?php esc_html_e( 'One completed job', 'jcp-core' ); ?></span>
+				<span class="ps-hero__value-arrow" aria-hidden="true">→</span>
+				<span class="ps-hero__value-outs"><?php esc_html_e( 'Website · Google · Reviews · Social · JCP Directory', 'jcp-core' ); ?></span>
 			</p>
 		</div>
 		<div class="ps-hero__visual" data-ps-theater aria-hidden="false">
@@ -108,15 +128,15 @@ $cta_primary = __( 'See it on my business', 'jcp-core' );
 		<ul class="ps-authority__stats">
 			<li>
 				<strong class="jcp-count-up" data-count-to="10" data-count-prefix="" data-count-suffix="" data-count-format="plain" data-count-decimals="0" data-count-ms="1200">0</strong>
-				<span><?php esc_html_e( 'years helping contractors grow', 'jcp-core' ); ?></span>
+				<span><?php esc_html_e( 'years', 'jcp-core' ); ?></span>
 			</li>
 			<li>
 				<strong class="jcp-count-up" data-count-to="250" data-count-prefix="" data-count-suffix="K+" data-count-format="plain" data-count-decimals="0" data-count-ms="1200">0</strong>
-				<span><?php esc_html_e( 'leads generated', 'jcp-core' ); ?></span>
+				<span><?php esc_html_e( 'leads', 'jcp-core' ); ?></span>
 			</li>
 			<li>
 				<strong class="jcp-count-up" data-count-to="150" data-count-prefix="$" data-count-suffix="M+" data-count-format="plain" data-count-decimals="0" data-count-ms="1200">0</strong>
-				<span><?php esc_html_e( 'revenue booked from those leads', 'jcp-core' ); ?></span>
+				<span><?php esc_html_e( 'revenue booked', 'jcp-core' ); ?></span>
 			</li>
 		</ul>
 	</div>
@@ -201,9 +221,12 @@ $cta_primary = __( 'See it on my business', 'jcp-core' );
 	<div class="jcp-container ps-result__grid">
 		<div class="ps-result__copy">
 			<p class="ps-eyebrow ps-eyebrow--light"><?php esc_html_e( 'Your proof potential', 'jcp-core' ); ?></p>
-			<h2 class="ps-result__title"><?php esc_html_e( 'You complete roughly', 'jcp-core' ); ?> <span id="psAnnualJobs">416</span> <?php esc_html_e( 'jobs per year.', 'jcp-core' ); ?></h2>
-			<p class="ps-result__loss"><?php esc_html_e( 'About', 'jcp-core' ); ?> <strong id="psUnusedJobs">396</strong> <?php esc_html_e( 'may never become public proof.', 'jcp-core' ); ?></p>
-			<p class="ps-result__body" id="psResultSentence"><?php esc_html_e( 'You already paid to create the proof. JCP helps you keep using it.', 'jcp-core' ); ?></p>
+			<p class="ps-result__lead"><?php esc_html_e( 'You complete roughly', 'jcp-core' ); ?></p>
+			<p class="ps-result__number" id="psAnnualJobs">156</p>
+			<p class="ps-result__unit"><?php esc_html_e( 'jobs per year.', 'jcp-core' ); ?></p>
+			<p class="ps-result__chances"><span id="psAnnualChances">156</span> <?php esc_html_e( 'chances to create fresh proof every year.', 'jcp-core' ); ?></p>
+			<p class="ps-result__body" id="psResultSentence"><?php esc_html_e( 'If those jobs stay buried in phones and CRMs, neither Google nor your next customer gets to see them.', 'jcp-core' ); ?></p>
+			<p class="ps-result__close"><?php esc_html_e( 'You already paid to create the proof. JCP helps you keep using it.', 'jcp-core' ); ?></p>
 			<a class="btn btn-primary ps-btn-xl" href="#ps-optin" id="psResultCta" data-ps-scroll-optin data-ps-track="DemoCTA" data-ps-source="assessment_demo"><?php esc_html_e( 'See what one of those jobs becomes →', 'jcp-core' ); ?></a>
 		</div>
 		<div class="ps-result__visual" aria-hidden="true">
@@ -230,8 +253,8 @@ $cta_primary = __( 'See it on my business', 'jcp-core' );
 		<div class="ps-optin__grid">
 			<div class="ps-optin__copy">
 				<p class="ps-eyebrow"><?php esc_html_e( 'Free personalized demo', 'jcp-core' ); ?></p>
-				<h2 id="ps-optin-title" class="ps-section-title"><?php esc_html_e( 'See what JCP would do with the jobs your business already completes.', 'jcp-core' ); ?></h2>
-				<p><?php esc_html_e( 'Tell us your trade and we’ll show you the kind of finished job your crew handles every week — and what JobCapturePro can turn it into.', 'jcp-core' ); ?></p>
+				<h2 id="ps-optin-title" class="ps-section-title"><?php esc_html_e( 'See what JCP could do with the jobs your business already completes.', 'jcp-core' ); ?></h2>
+				<p><?php esc_html_e( 'We’ll personalize the demo to your trade and show what one finished job can become.', 'jcp-core' ); ?></p>
 			</div>
 			<div class="ps-optin__card">
 				<form id="psOptinForm" novalidate>
@@ -254,8 +277,8 @@ $cta_primary = __( 'See it on my business', 'jcp-core' );
 						</select>
 					</div>
 					<p class="ps-optin__error" id="psOptinError" role="alert" hidden></p>
-					<button type="submit" class="btn btn-primary ps-btn-xl" id="psOptinSubmit"><?php esc_html_e( 'Show me my demo →', 'jcp-core' ); ?></button>
-					<p class="ps-micro"><?php esc_html_e( 'Free · About 60 seconds · No phone number · No credit card', 'jcp-core' ); ?></p>
+					<button type="submit" class="btn btn-primary ps-btn-xl" id="psOptinSubmit"><?php esc_html_e( 'Show me my personalized demo →', 'jcp-core' ); ?></button>
+					<p class="ps-micro"><?php esc_html_e( 'Free · About 60 seconds · No phone call required', 'jcp-core' ); ?></p>
 					<p class="ps-optin__legal"><?php esc_html_e( 'By continuing you agree to receive the demo and relevant updates by email. Unsubscribe anytime.', 'jcp-core' ); ?></p>
 				</form>
 			</div>
@@ -310,8 +333,8 @@ $cta_primary = __( 'See it on my business', 'jcp-core' );
 				</div>
 				<div class="ps-demo-payoff__copy">
 					<p class="ps-demo-payoff__kicker" id="psDemoPayoffJobs"></p>
-					<h3><?php esc_html_e( 'One job is useful. Hundreds become a system.', 'jcp-core' ); ?></h3>
-					<p class="ps-demo-payoff__body"><?php esc_html_e( 'Put your completed jobs through JCP and your website proof, Google activity, reviews, social content and Directory footprint keep growing from work your crew already does.', 'jcp-core' ); ?></p>
+					<h3><?php esc_html_e( 'One job is useful.', 'jcp-core' ); ?><br /><?php esc_html_e( 'Hundreds become a system.', 'jcp-core' ); ?></h3>
+					<p class="ps-demo-payoff__body"><?php esc_html_e( 'Every completed job can keep adding fresh website proof, Google activity, reviews, social content and Directory activity.', 'jcp-core' ); ?></p>
 					<a class="btn btn-primary ps-btn-xl" href="<?php echo esc_url( $trial_href ); ?>" data-ps-trial data-ps-source="demo_trial" data-ps-track="trial_cta_clicked"><?php esc_html_e( 'Start my free 14-day trial →', 'jcp-core' ); ?></a>
 					<button type="button" class="ps-demo-payoff__restart" id="psDemoRestart"><?php esc_html_e( 'Replay the transformation', 'jcp-core' ); ?></button>
 				</div>
@@ -326,7 +349,7 @@ $cta_primary = __( 'See it on my business', 'jcp-core' );
 		<header class="ps-section-head">
 			<p class="ps-eyebrow"><?php esc_html_e( 'It works with the way you already work', 'jcp-core' ); ?></p>
 			<h2 class="ps-section-title"><?php esc_html_e( 'Already use a CRM or photo app? Good.', 'jcp-core' ); ?></h2>
-			<p class="ps-section-sub"><?php esc_html_e( 'If your team already captures consistent job information and photos, JCP does not need to replace a workflow that is already working. Connect a supported system — or use JCP directly.', 'jcp-core' ); ?></p>
+			<p class="ps-section-sub"><?php esc_html_e( 'If your team already captures consistent job information and photos, JCP doesn’t need to replace a workflow that’s already working. Connect a supported system — or use JCP directly.', 'jcp-core' ); ?></p>
 		</header>
 		<div class="ps-integ-groups">
 			<div class="ps-integ-group">
@@ -355,7 +378,7 @@ $cta_primary = __( 'See it on my business', 'jcp-core' );
 			<h2 class="ps-section-title"><?php esc_html_e( 'We spent 10 years generating contractor leads. We kept seeing the same waste.', 'jcp-core' ); ?></h2>
 			<div class="ps-why__body">
 				<p><?php esc_html_e( 'Contractors spend thousands on websites, SEO, ads, social and reputation tools — while some of their best marketing material disappears into camera rolls, text threads and CRM records.', 'jcp-core' ); ?></p>
-				<p><?php esc_html_e( 'JobCapturePro connects the work crews already do with the proof future customers want to see: real jobs, real photos, real locations, real customers.', 'jcp-core' ); ?></p>
+				<p><?php esc_html_e( 'JobCapturePro connects the work crews already do with the proof future customers want to see.', 'jcp-core' ); ?></p>
 			</div>
 			<ul class="ps-why__stats">
 				<li><strong>250K+</strong> <span><?php esc_html_e( 'contractor leads generated', 'jcp-core' ); ?></span></li>
@@ -363,8 +386,11 @@ $cta_primary = __( 'See it on my business', 'jcp-core' );
 			</ul>
 		</div>
 		<div class="ps-why__visual">
-			<img src="<?php echo esc_url( $photo_why ); ?>" alt="<?php esc_attr_e( 'Home-service operator credibility', 'jcp-core' ); ?>" width="640" height="480" loading="lazy" decoding="async" />
-			<p class="ps-why__visual-caption"><?php esc_html_e( 'Built by the team behind LeadsForward — for contractors who already do the work.', 'jcp-core' ); ?></p>
+			<img src="<?php echo esc_url( $photo_why ); ?>" alt="<?php esc_attr_e( 'Trevor Eddy, Founder of JobCapturePro', 'jcp-core' ); ?>" width="640" height="640" loading="lazy" decoding="async" />
+			<p class="ps-why__person">
+				<strong><?php esc_html_e( 'Trevor Eddy', 'jcp-core' ); ?></strong>
+				<span><?php esc_html_e( 'Founder, JobCapturePro · CEO, LeadsForward', 'jcp-core' ); ?></span>
+			</p>
 		</div>
 	</div>
 </section>
@@ -419,7 +445,7 @@ $cta_primary = __( 'See it on my business', 'jcp-core' );
 		<div class="ps-trial__copy">
 			<p class="ps-eyebrow ps-eyebrow--light"><?php esc_html_e( 'The 14-day JobCapturePro Proof Sprint', 'jcp-core' ); ?></p>
 			<h2 class="ps-trial__title"><?php esc_html_e( 'Your next 14 days are already full of marketing. Don’t let those jobs disappear too.', 'jcp-core' ); ?></h2>
-			<p class="ps-trial__sub"><?php esc_html_e( 'Get your first real completed jobs working through JCP during the trial.', 'jcp-core' ); ?></p>
+			<p class="ps-trial__sub"><?php esc_html_e( 'Start with the jobs your company is already completing. We’ll help you get your first real JCP workflow live during the trial.', 'jcp-core' ); ?></p>
 		</div>
 		<div class="ps-trial__panel">
 			<ul class="ps-trial__benefits">
@@ -479,6 +505,7 @@ $cta_primary = __( 'See it on my business', 'jcp-core' );
 <section class="jcp-section ps-final ps-final--navy" data-ps-reveal>
 	<div class="jcp-container ps-final__inner">
 		<h2 class="ps-final__title"><?php esc_html_e( 'You already paid to do the job. Make it help win the next one.', 'jcp-core' ); ?></h2>
+		<p class="ps-final__sub"><?php esc_html_e( 'Start with the jobs your crew is already completing. No credit card. We’ll help you get your first proof live.', 'jcp-core' ); ?></p>
 		<div class="ps-final__actions">
 			<a class="btn btn-primary ps-btn-xl" href="<?php echo esc_url( $trial_href ); ?>" data-ps-trial data-ps-source="final_trial" data-ps-track="trial_cta_clicked"><?php esc_html_e( 'Start my free 14-day trial →', 'jcp-core' ); ?></a>
 			<p class="ps-micro ps-micro--light"><?php esc_html_e( 'No credit card · Guided activation', 'jcp-core' ); ?></p>

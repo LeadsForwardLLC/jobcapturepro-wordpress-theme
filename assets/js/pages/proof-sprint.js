@@ -546,21 +546,16 @@
     applyJobPersonaToDom();
 
     var annualEl = document.getElementById('psAnnualJobs');
+    var chancesEl = document.getElementById('psAnnualChances');
     var unusedEl = document.getElementById('psUnusedJobs');
     var sentence = document.getElementById('psResultSentence');
-    if (annualEl) annualEl.textContent = annual.toLocaleString();
+    var annualLabel = annual.toLocaleString();
+    if (annualEl) annualEl.textContent = annualLabel;
+    if (chancesEl) chancesEl.textContent = annualLabel;
     if (unusedEl) unusedEl.textContent = unused.toLocaleString();
-    var pct = annual ? Math.round((unused / annual) * 100) : 0;
     if (sentence) {
-      if (pct >= 50) {
-        sentence.textContent =
-          'Roughly ' +
-          pct +
-          '% of your completed jobs likely vanish after the invoice — photos buried in phones, CRMs, and camera rolls instead of becoming proof that keeps selling. JobCapturePro turns more of that finished work into public assets that stay working after the truck leaves.';
-      } else {
-        sentence.textContent =
-          'Even when some jobs become proof, most finished work still disappears after the invoice — stuck in camera rolls instead of fueling your website, Google, reviews, and social. JobCapturePro helps you keep more of that proof working for the next customer.';
-      }
+      sentence.textContent =
+        'If those jobs stay buried in phones and CRMs, neither Google nor your next customer gets to see them.';
     }
     updateResultCta();
 
@@ -1182,16 +1177,13 @@
     var shell = document.querySelector('.ps-demo-shell');
     var annual = state.annual || Math.round((state.jobs || 20) * 52);
     var weekly = state.jobs || 20;
-    var unused = state.unused || Math.max(0, annual - Math.round(Math.max(0, state.used) * 52));
     if (jobsLine) {
       jobsLine.textContent =
-        'You complete about ' +
+        'You told us you complete around ' +
         weekly +
-        ' jobs every week — roughly ' +
+        ' jobs each week. That’s roughly ' +
         annual.toLocaleString() +
-        ' per year — and an estimated ' +
-        unused.toLocaleString() +
-        ' may never become proof that keeps working.';
+        ' jobs every year.';
     }
     if (shell) shell.hidden = true;
     if (payoff) {
@@ -1558,7 +1550,7 @@
       .then(function (result) {
         if (btn) {
           btn.disabled = false;
-          btn.textContent = defaultLabel || 'Show me my demo →';
+          btn.textContent = defaultLabel || 'Show me my personalized demo →';
         }
         if (!result.ok) {
           if (attempt < 2) return submitPsOptin(attempt + 1, ctaSource);
@@ -1587,7 +1579,7 @@
         if (attempt < 2) return submitPsOptin(attempt + 1, ctaSource);
         if (btn) {
           btn.disabled = false;
-          btn.textContent = defaultLabel || 'Show me my demo →';
+          btn.textContent = defaultLabel || 'Show me my personalized demo →';
         }
         showPsOptinError('Network error — unlocking your demo anyway.');
         track('DemoFormFailed', { section: 'optin', source: ctaSource, reason: 'network', cta_source: ctaSource });

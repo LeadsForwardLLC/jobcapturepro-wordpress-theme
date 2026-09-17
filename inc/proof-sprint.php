@@ -159,7 +159,7 @@ function jcp_proof_sprint_case_study_props(): array {
 				],
 			],
 		],
-		'footnote'      => __( 'SoLV = percentage of tracked Local Falcon grid points where the business appeared in the Google Maps 3-Pack across the measured service area. Past performance does not guarantee future rankings.', 'jcp-core' ),
+		'footnote'      => __( 'Methodology: SoLV = share of tracked Local Falcon grid points where the business appeared in the Google Maps 3-Pack. Past performance does not guarantee future rankings.', 'jcp-core' ),
 		'cta_secondary' => [
 			'label' => '',
 			'url'   => '',

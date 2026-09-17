@@ -3229,3 +3229,484 @@ body.jcp-proof-sprint .ps-authority__stats li {
 body.jcp-proof-sprint .ps-authority__stats span {
   display: block;
 }
+
+/* ---- FINAL VISUAL / CRO POLISH ---- */
+body.jcp-proof-sprint .jcp-section {
+  padding-top: clamp(2.75rem, 5.5vw, 4.25rem);
+  padding-bottom: clamp(2.75rem, 5.5vw, 4.25rem);
+}
+
+body.jcp-proof-sprint .ps-hero {
+  padding-top: clamp(2rem, 4vw, 3.25rem);
+  padding-bottom: clamp(2rem, 4vw, 3.25rem);
+}
+
+body.jcp-proof-sprint .ps-hero__title {
+  font-size: clamp(1.85rem, 3.8vw, 3rem);
+}
+
+@media (max-width: 430px) {
+  body.jcp-proof-sprint .ps-hero__title {
+    font-size: clamp(1.65rem, 7.2vw, 2rem);
+  }
+
+  body.jcp-proof-sprint .ps-hero__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  body.jcp-proof-sprint .ps-hero__actions .btn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  body.jcp-proof-sprint .ps-hero__actions .ps-link-secondary {
+    justify-content: center;
+    min-height: 2.75rem;
+  }
+}
+
+body.jcp-proof-sprint .ps-hero__value-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.5rem;
+  margin: 1.15rem 0 0;
+  max-width: 34rem;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: #64748b;
+}
+
+body.jcp-proof-sprint .ps-hero__value-start {
+  font-weight: 750;
+  color: #334155;
+}
+
+body.jcp-proof-sprint .ps-hero__value-arrow {
+  color: var(--ps-accent);
+  font-weight: 800;
+}
+
+body.jcp-proof-sprint .ps-hero__value-outs {
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+body.jcp-proof-sprint .ps-hero__trial-link {
+  display: none !important;
+}
+
+/* Theater balance */
+body.jcp-proof-sprint .ps-theater__stage {
+  min-height: 26rem;
+  padding: 1.25rem 1rem 4.75rem;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.07);
+}
+
+body.jcp-proof-sprint .ps-theater__outputs li {
+  box-shadow: none;
+  min-width: 6.5rem;
+  padding: 0.55rem 0.7rem;
+}
+
+@media (min-width: 960px) {
+  body.jcp-proof-sprint .ps-theater__stage {
+    display: grid;
+    align-content: center;
+  }
+}
+
+/* Authority compact labels */
+body.jcp-proof-sprint .ps-authority {
+  padding: 1.15rem 0;
+}
+
+body.jcp-proof-sprint .ps-authority__stats strong {
+  font-size: 1.55rem;
+}
+
+body.jcp-proof-sprint .ps-authority__stats span {
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+/* Case / map polish */
+body.jcp-proof-sprint .ps-case {
+  padding-top: clamp(2.5rem, 5vw, 3.75rem);
+  padding-bottom: clamp(2.25rem, 4.5vw, 3.5rem);
+}
+
+body.jcp-proof-sprint .ps-case .jcp-lf-case__body,
+body.jcp-proof-sprint .ps-case .jcp-lf-case__footnote {
+  font-size: 0.98rem;
+  line-height: 1.55;
+  max-width: 46rem;
+}
+
+body.jcp-proof-sprint .ps-case .jcp-lf-case__footnote {
+  margin-top: 1rem;
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+body.jcp-proof-sprint .ps-case .jcp-lf-case__stat {
+  min-height: 5.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0.35rem;
+}
+
+body.jcp-proof-sprint .ps-case .jcp-lf-case__stat-value {
+  font-size: clamp(1.35rem, 2.4vw, 1.75rem);
+  line-height: 1.1;
+}
+
+body.jcp-proof-sprint .ps-case .jcp-lf-case__stat-label {
+  font-size: 0.86rem;
+  line-height: 1.35;
+}
+
+/* Assessment presence */
+body.jcp-proof-sprint .ps-assessment {
+  padding-top: clamp(2.25rem, 4.5vw, 3.5rem);
+  padding-bottom: clamp(2.25rem, 4.5vw, 3.5rem);
+}
+
+body.jcp-proof-sprint .ps-assessment .ps-section-head {
+  margin-bottom: 1.5rem;
+}
+
+body.jcp-proof-sprint .ps-assess-card {
+  max-width: 48rem;
+  padding: clamp(1.6rem, 3.5vw, 2.35rem);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.06);
+}
+
+body.jcp-proof-sprint .ps-q__label {
+  font-size: clamp(1.15rem, 2.2vw, 1.35rem);
+}
+
+body.jcp-proof-sprint .ps-choice {
+  min-height: 3rem;
+  padding: 0.95rem 1rem;
+  font-size: 1rem;
+}
+
+/* Result hierarchy */
+body.jcp-proof-sprint .ps-result {
+  padding-top: clamp(2.75rem, 5.5vw, 4.25rem);
+  padding-bottom: clamp(2.75rem, 5.5vw, 4.25rem);
+}
+
+body.jcp-proof-sprint .ps-result__lead,
+body.jcp-proof-sprint .ps-result__unit {
+  margin: 0;
+  font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.35;
+}
+
+body.jcp-proof-sprint .ps-result__lead {
+  margin-top: 0.35rem;
+}
+
+body.jcp-proof-sprint .ps-result__number {
+  margin: 0.35rem 0;
+  font-size: clamp(4rem, 10vw, 6.5rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  color: #fff;
+}
+
+body.jcp-proof-sprint .ps-result__chances {
+  margin: 1rem 0 0;
+  font-size: clamp(1.05rem, 2vw, 1.25rem);
+  font-weight: 750;
+  color: #ffb4a8;
+  line-height: 1.4;
+  max-width: 28rem;
+}
+
+body.jcp-proof-sprint .ps-result__body {
+  margin: 1rem 0 0;
+}
+
+body.jcp-proof-sprint .ps-result__close {
+  margin: 0.85rem 0 1.5rem;
+  max-width: 30rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+body.jcp-proof-sprint .ps-result-fan {
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.22);
+}
+
+/* Opt-in module */
+body.jcp-proof-sprint .ps-optin {
+  padding-top: clamp(2.5rem, 5vw, 3.75rem);
+  padding-bottom: clamp(2.5rem, 5vw, 3.75rem);
+}
+
+body.jcp-proof-sprint .ps-optin__copy p {
+  margin: 0.85rem 0 0;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--ps-muted);
+  max-width: 32rem;
+}
+
+body.jcp-proof-sprint .ps-optin__card {
+  max-width: 28rem;
+  margin-left: auto;
+  padding: clamp(1.5rem, 3vw, 2rem);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.07);
+}
+
+body.jcp-proof-sprint .ps-optin__field input,
+body.jcp-proof-sprint .ps-optin__field select {
+  min-height: 3.15rem;
+  border-radius: 0.65rem;
+  font-size: 1rem;
+}
+
+body.jcp-proof-sprint .ps-optin__field input:focus,
+body.jcp-proof-sprint .ps-optin__field select:focus {
+  outline: none;
+  border-color: rgba(255, 80, 62, 0.55);
+  box-shadow: 0 0 0 3px rgba(255, 80, 62, 0.15);
+}
+
+body.jcp-proof-sprint .ps-optin__card .btn {
+  width: 100%;
+  min-height: 3.15rem;
+  justify-content: center;
+}
+
+/* Payoff number hierarchy */
+body.jcp-proof-sprint .ps-demo-payoff {
+  max-width: 64rem;
+  margin-top: 2rem;
+  text-align: left;
+}
+
+body.jcp-proof-sprint .ps-demo-payoff__kicker {
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: #334155;
+}
+
+body.jcp-proof-sprint .ps-demo-payoff h3 {
+  margin-bottom: 0.85rem;
+  font-size: clamp(1.55rem, 3vw, 2.15rem);
+}
+
+body.jcp-proof-sprint .ps-demo-payoff__body {
+  margin: 0 0 1.35rem;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--ps-muted);
+  max-width: 34rem;
+}
+
+body.jcp-proof-sprint .ps-demo-payoff__restart {
+  display: block;
+  margin-top: 0.85rem;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 650;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Integrations row density */
+body.jcp-proof-sprint .ps-integrations {
+  padding-top: clamp(2.25rem, 4.5vw, 3.5rem);
+  padding-bottom: clamp(2.25rem, 4.5vw, 3.5rem);
+}
+
+body.jcp-proof-sprint .ps-integ-groups {
+  max-width: 48rem;
+  margin: 0 auto;
+  gap: 1.5rem;
+}
+
+body.jcp-proof-sprint .ps-logo-row {
+  gap: 1.15rem 1.75rem;
+  padding: 1rem 1.15rem;
+  border-radius: 0.95rem;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+body.jcp-proof-sprint .ps-logo-row img {
+  height: 2.25rem;
+  opacity: 1;
+}
+
+body.jcp-proof-sprint .ps-logo-mark--hcp span {
+  font-size: 1.12rem;
+}
+
+/* Founder / why */
+body.jcp-proof-sprint .ps-why {
+  padding-top: clamp(2.5rem, 5vw, 3.75rem);
+  padding-bottom: clamp(2.5rem, 5vw, 3.75rem);
+}
+
+body.jcp-proof-sprint .ps-why__visual img {
+  aspect-ratio: 1;
+  object-position: center top;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.1);
+}
+
+body.jcp-proof-sprint .ps-why__person {
+  margin: 0.85rem 0 0;
+  display: grid;
+  gap: 0.15rem;
+}
+
+body.jcp-proof-sprint .ps-why__person strong {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--ps-ink);
+}
+
+body.jcp-proof-sprint .ps-why__person span {
+  font-size: 0.92rem;
+  color: var(--ps-muted);
+  font-weight: 650;
+}
+
+body.jcp-proof-sprint .ps-why__visual-caption {
+  display: none;
+}
+
+@media (max-width: 899px) {
+  body.jcp-proof-sprint .ps-why__grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  body.jcp-proof-sprint .ps-why__visual {
+    order: -1;
+    max-width: 22rem;
+  }
+}
+
+/* Testimonials polish */
+body.jcp-proof-sprint .ps-reviews {
+  padding-top: clamp(2.5rem, 5vw, 3.75rem);
+  padding-bottom: clamp(2.5rem, 5vw, 3.75rem);
+}
+
+body.jcp-proof-sprint .ps-review-featured {
+  max-width: 40rem;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+}
+
+body.jcp-proof-sprint .ps-review-featured p {
+  font-size: clamp(1.15rem, 2.2vw, 1.35rem);
+  max-width: 34rem;
+}
+
+body.jcp-proof-sprint .ps-stars {
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+}
+
+body.jcp-proof-sprint .ps-review-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  height: 100%;
+}
+
+body.jcp-proof-sprint .ps-review-card p {
+  flex: 1;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+body.jcp-proof-sprint .ps-review-card footer img {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+/* Trial */
+body.jcp-proof-sprint .ps-trial {
+  padding-top: clamp(2.75rem, 5.5vw, 4rem);
+  padding-bottom: clamp(2.75rem, 5.5vw, 4rem);
+}
+
+body.jcp-proof-sprint .ps-trial__panel {
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+body.jcp-proof-sprint .ps-trial__panel .btn {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Final CTA support line */
+body.jcp-proof-sprint .ps-final__sub {
+  margin: 0 auto 1.5rem;
+  max-width: 34rem;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+body.jcp-proof-sprint .ps-final__actions {
+  flex-direction: column;
+  align-items: center;
+}
+
+body.jcp-proof-sprint .ps-final__actions .btn {
+  min-width: min(100%, 22rem);
+  justify-content: center;
+}
+
+body.jcp-proof-sprint .ps-final__inner {
+  padding-block: clamp(2.75rem, 6vw, 4.5rem);
+}
+
+/* FAQ tap targets */
+body.jcp-proof-sprint .ps-faq .faq-item summary,
+body.jcp-proof-sprint .ps-faq .faq-grid details summary {
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 767px) {
+  body.jcp-proof-sprint .ps-assess-card,
+  body.jcp-proof-sprint .ps-optin__card {
+    max-width: none;
+  }
+
+  body.jcp-proof-sprint .ps-result__number {
+    font-size: clamp(3.5rem, 18vw, 5rem);
+  }
+
+  body.jcp-proof-sprint .ps-logo-row {
+    justify-content: flex-start;
+  }
+}
+
