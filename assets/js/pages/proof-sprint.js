@@ -208,6 +208,12 @@
         Object.keys(params).forEach(function (k) {
           if (!u.searchParams.get(k)) u.searchParams.set(k, params[k]);
         });
+        if (state.email && !u.searchParams.get('email')) {
+          u.searchParams.set('email', state.email);
+        }
+        if (state.trade && !u.searchParams.get('industry') && !u.searchParams.get('trade')) {
+          u.searchParams.set('industry', state.trade);
+        }
         var source = a.getAttribute('data-ps-source') || 'trial';
         u.searchParams.set('jcp_surface', 'proof_sprint_' + source);
         if (!u.searchParams.get('utm_content')) u.searchParams.set('utm_content', 'proof_sprint_' + source);
@@ -584,7 +590,7 @@
       {
         title: 'Fresh Google activity.\nWithout writing another post.',
         body:
-          'Your Google Business Profile can stay active with real completed work from the field — photos and details pulled from the same job check-in, ready to publish.',
+          'Automatically posted when connected and enabled — photos and details from the same job check-in keep your Google Business Profile active. Available with automated publishing plans.',
         detailLabel: 'PUBLISHED TO',
         detail: 'Google Business Profile',
         event: DEMO_EVENTS[3],
@@ -593,7 +599,7 @@
       {
         title: 'Ask while they still remember your name.',
         body:
-          'Before you leave the driveway, send a review SMS or show a QR. The customer chooses whether to review. No review gating. No guaranteed five-star claims.',
+          'QR/link from the JCP app, or automated request through supported CRM workflows. The customer chooses whether to review. No review gating. No guaranteed five-star claims.',
         detailLabel: 'CREATED',
         detail: 'Review opportunity',
         event: DEMO_EVENTS[4],
@@ -601,7 +607,8 @@
       },
       {
         title: 'Social content your tech never had to write.',
-        body: 'Ready-to-post social content from work your crew already finished — no asking techs to become marketers after a long day.',
+        body:
+          'Automatically posted when connected and enabled — posts built from work your crew already finished. Available with automated publishing plans.',
         detailLabel: 'PUBLISHED TO',
         detail: 'Social',
         event: DEMO_EVENTS[5],
@@ -753,7 +760,7 @@
         '<div><strong>' +
         biz +
         '</strong><span>Google Business Profile · Update</span></div>' +
-        '<em>Ready to publish</em></div>' +
+        '<em>Posted when connected</em></div>' +
         '<div class="ps-mock__media">' +
         photo +
         '</div>' +
@@ -785,7 +792,7 @@
         '<div class="ps-mock-qr">' +
         qrMarkup() +
         '<strong>Or show QR on site</strong>' +
-        '<span>Customer chooses whether to review. No gating.</span></div></div>';
+        '<span>QR/link from the app · CRM automation when enabled</span></div></div>';
       return;
     }
 
@@ -796,7 +803,7 @@
         mark +
         '<div><strong>' +
         biz +
-        '</strong><span>Ready to post · ' +
+        '</strong><span>Posted when connected · ' +
         city +
         '</span></div></div>' +
         '<p class="ps-mock-social__copy">' +
@@ -937,14 +944,38 @@
     }
 
     renderDemoCanvas(d.type);
-    track('DemoStepViewed', {
-      step_index: state.demoStep,
-      step_name: d.type,
-      auto_or_manual: state.demoAutoRunning && !state.demoPaused ? 'auto' : 'manual',
-      trade: state.trade,
-      lp_variant: LP_VARIANT,
-    });
-    if (d.event) track(d.event, { step: state.demoStep + 1, trade: state.trade });
+    try {
+      var viewedKey = 'jcp_ps_DemoStepViewed_' + state.demoStep;
+      if (!sessionStorage.getItem(viewedKey)) {
+        sessionStorage.setItem(viewedKey, '1');
+        track('DemoStepViewed', {
+          step_index: state.demoStep,
+          step_name: d.type,
+          auto_or_manual: state.demoAutoRunning && !state.demoPaused ? 'auto' : 'manual',
+          trade: state.trade,
+          lp_variant: LP_VARIANT,
+        });
+      }
+    } catch (eViewed) {
+      track('DemoStepViewed', {
+        step_index: state.demoStep,
+        step_name: d.type,
+        auto_or_manual: state.demoAutoRunning && !state.demoPaused ? 'auto' : 'manual',
+        trade: state.trade,
+        lp_variant: LP_VARIANT,
+      });
+    }
+    if (d.event) {
+      try {
+        var stepKey = 'jcp_ps_step_' + d.event + '_' + state.demoStep;
+        if (!sessionStorage.getItem(stepKey)) {
+          sessionStorage.setItem(stepKey, '1');
+          track(d.event, { step: state.demoStep + 1, trade: state.trade });
+        }
+      } catch (eStep) {
+        track(d.event, { step: state.demoStep + 1, trade: state.trade });
+      }
+    }
 
     if (payoff) payoff.hidden = true;
     var shell = document.querySelector('.ps-demo-shell');
@@ -978,7 +1009,14 @@
         payoff.scrollIntoView(true);
       }
     }
-    track('demo_completed', { annual: annual, trade: state.trade });
+    try {
+      if (!sessionStorage.getItem('jcp_ps_demo_completed')) {
+        sessionStorage.setItem('jcp_ps_demo_completed', '1');
+        track('demo_completed', { annual: annual, trade: state.trade });
+      }
+    } catch (eDone) {
+      track('demo_completed', { annual: annual, trade: state.trade });
+    }
   }
 
   function restartDemo() {
@@ -1164,12 +1202,25 @@
     el.textContent = msg;
   }
 
-  function finishOptinSuccess(email, tradeInfo, crmSaved, ctaSource) {
+  function finishOptinSuccess(email, tradeInfo, crmSaved, ctaSource, eventId) {
     state.optedIn = true;
     state.email = email;
     if (tradeInfo.trade) state.trade = tradeInfo.trade;
     saveState();
+    try {
+      localStorage.setItem(
+        'demoUser',
+        JSON.stringify({
+          email: email,
+          firstName: deriveFirstName(email),
+          lastName: '',
+          industry: tradeInfo.trade || '',
+          businessType: tradeInfo.business_type || '',
+        })
+      );
+    } catch (eUser) {}
     applyJobPersonaToDom();
+    decorateTrialLinks();
     unlockDemo();
     renderDemo();
     scrollToDemo();
@@ -1180,6 +1231,36 @@
       crm_saved: !!crmSaved,
       cta_source: ctaSource || 'optin',
     });
+    if (crmSaved) {
+      pushDemoOptIn(tradeInfo.business_type || tradeInfo.trade, eventId || '');
+    }
+  }
+
+  function pushDemoOptIn(bizType, eventId) {
+    try {
+      if (sessionStorage.getItem('jcp_datalayer_demo_opt_in')) return;
+      window.dataLayer = window.dataLayer || [];
+      var attr = attrPayload();
+      var payload = {
+        event: 'demo_opt_in',
+        lead_type: 'demo',
+        source: 'proof_sprint',
+        business_type: bizType || '',
+        trade: bizType || '',
+        utm_source: attr.utm_source || '',
+        utm_medium: attr.utm_medium || '',
+        utm_campaign: attr.utm_campaign || '',
+        utm_content: attr.utm_content || '',
+        lp_variant: attr.lp_variant || LP_VARIANT,
+        fbclid: attr.fbclid || '',
+      };
+      if (eventId) {
+        payload.event_id = eventId;
+        payload.eventID = eventId;
+      }
+      window.dataLayer.push(payload);
+      sessionStorage.setItem('jcp_datalayer_demo_opt_in', '1');
+    } catch (err) {}
   }
 
   function submitPsOptin(attempt, ctaSource) {
@@ -1251,10 +1332,16 @@
         return res
           .json()
           .then(function (json) {
-            return { ok: res.ok && json && json.success !== false, json: json };
+            var captured = !!(json && (json.captured === true || json.success === true));
+            return {
+              ok: res.ok && captured,
+              delivered: !!(json && json.delivered),
+              eventId: json && json.event_id ? String(json.event_id) : '',
+              json: json,
+            };
           })
           .catch(function () {
-            return { ok: res.ok, json: null };
+            return { ok: res.ok, delivered: res.ok, eventId: '', json: null };
           });
       })
       .then(function (result) {
@@ -1275,10 +1362,14 @@
             crm_saved: false,
             cta_source: ctaSource,
           });
-          finishOptinSuccess(email, tradeInfo, false, ctaSource);
+          // Soft-continue UX only — server should have queued; do not treat as CRM-saved.
+          finishOptinSuccess(email, tradeInfo, false, ctaSource, '');
           return false;
         }
-        finishOptinSuccess(email, tradeInfo, true, ctaSource);
+        if (!result.delivered) {
+          showPsOptinError('Saved — CRM sync will retry in the background.');
+        }
+        finishOptinSuccess(email, tradeInfo, true, ctaSource, result.eventId);
         return true;
       })
       .catch(function () {
@@ -1289,7 +1380,7 @@
         }
         showPsOptinError('Network error — unlocking your demo anyway.');
         track('DemoFormFailed', { section: 'optin', source: ctaSource, reason: 'network', cta_source: ctaSource });
-        finishOptinSuccess(email, tradeInfo, false, ctaSource);
+        finishOptinSuccess(email, tradeInfo, false, ctaSource, '');
         return false;
       });
   }
@@ -1338,6 +1429,27 @@
     if (state.email) {
       var emailEl = document.getElementById('ps-email');
       if (emailEl) emailEl.value = state.email;
+    }
+
+    var optinSec = document.getElementById('ps-optin');
+    if (optinSec && 'IntersectionObserver' in window) {
+      var formViewed = false;
+      var formIo = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting || formViewed) return;
+            formViewed = true;
+            try {
+              if (sessionStorage.getItem('jcp_ps_DemoFormViewed')) return;
+              sessionStorage.setItem('jcp_ps_DemoFormViewed', '1');
+            } catch (e) {}
+            track('DemoFormViewed', { section: 'optin', source: 'optin', cta_source: 'optin' });
+            formIo.unobserve(optinSec);
+          });
+        },
+        { threshold: 0.2 }
+      );
+      formIo.observe(optinSec);
     }
   }
 
@@ -1550,6 +1662,7 @@
         if (!t) return;
         track(t.getAttribute('data-ps-track') || 'cta_click', {
           source: t.getAttribute('data-ps-source') || '',
+          cta_source: t.getAttribute('data-ps-source') || '',
         });
       },
       true
@@ -1587,7 +1700,14 @@
     setupTrackedClicks();
     hideChat();
     runHeroTheater();
-    track('PaidLandingView', { section: 'proof_sprint' });
+    try {
+      if (!sessionStorage.getItem('jcp_ps_PaidLandingView')) {
+        sessionStorage.setItem('jcp_ps_PaidLandingView', '1');
+        track('PaidLandingView', { section: 'proof_sprint' });
+      }
+    } catch (eView) {
+      track('PaidLandingView', { section: 'proof_sprint' });
+    }
 
     updateResultCta();
     if (state.optedIn) {

@@ -355,8 +355,309 @@ function jcp_core_build_demo_survey_ghl_body( array $params ): string {
     return jcp_demo_ghl_build_webhook_body( $event, $params, $allowed[ $event ] );
 }
 
+/** Durable lead queue table (without $wpdb prefix). */
+define( 'JCP_DEMO_LEAD_QUEUE_TABLE', 'jcp_demo_lead_queue' );
+
+/** Max automatic GHL delivery attempts before permanent failure. */
+define( 'JCP_DEMO_LEAD_QUEUE_MAX_ATTEMPTS', 8 );
+
 /**
- * Handle Demo Survey form POST: build GHL payload and forward to Demo Survey webhook.
+ * Create durable demo-lead queue table if missing.
+ */
+function jcp_demo_lead_queue_maybe_create_table(): void {
+	global $wpdb;
+	$table   = $wpdb->prefix . JCP_DEMO_LEAD_QUEUE_TABLE;
+	$charset = $wpdb->get_charset_collate();
+
+	$sql = "CREATE TABLE IF NOT EXISTS $table (
+		id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+		email varchar(255) NOT NULL,
+		business_type varchar(255) DEFAULT NULL,
+		event_name varchar(64) NOT NULL DEFAULT 'demo-opt-in',
+		event_id varchar(64) NOT NULL DEFAULT '',
+		payload longtext NOT NULL,
+		status varchar(20) NOT NULL DEFAULT 'pending',
+		attempts int(11) NOT NULL DEFAULT 0,
+		last_error text DEFAULT NULL,
+		last_http_code int(11) DEFAULT NULL,
+		created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		updated_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		delivered_at datetime DEFAULT NULL,
+		next_attempt_at datetime DEFAULT NULL,
+		PRIMARY KEY (id),
+		KEY status_next (status, next_attempt_at),
+		KEY email (email),
+		KEY event_id (event_id)
+	) $charset;";
+
+	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+	dbDelta( $sql );
+}
+
+/**
+ * Generate a stable Meta/GTM event id for Lead dedup.
+ */
+function jcp_demo_lead_new_event_id(): string {
+	if ( function_exists( 'wp_generate_uuid4' ) ) {
+		return wp_generate_uuid4();
+	}
+	return 'jcp_' . bin2hex( random_bytes( 16 ) );
+}
+
+/**
+ * Persist a demo survey lead before CRM delivery is considered safe.
+ *
+ * @param array<string, mixed> $params Normalized request params.
+ * @param string               $body   GHL form-urlencoded body.
+ * @param string               $event_id Meta event id.
+ * @return int|false Insert id or false.
+ */
+function jcp_demo_lead_queue_insert( array $params, string $body, string $event_id ) {
+	global $wpdb;
+	jcp_demo_lead_queue_maybe_create_table();
+	$table = $wpdb->prefix . JCP_DEMO_LEAD_QUEUE_TABLE;
+
+	$contact = jcp_demo_ghl_normalize_contact_params( $params );
+	$event   = isset( $params['event'] ) ? sanitize_text_field( (string) $params['event'] ) : 'demo-opt-in';
+	$allowed = jcp_demo_survey_allowed_events();
+	if ( ! isset( $allowed[ $event ] ) ) {
+		$event = 'demo-opt-in';
+	}
+
+	$now = current_time( 'mysql' );
+	$ok  = $wpdb->insert(
+		$table,
+		[
+			'email'          => $contact['email'],
+			'business_type'  => $contact['business_type'],
+			'event_name'     => $event,
+			'event_id'       => $event_id,
+			'payload'        => $body,
+			'status'         => 'pending',
+			'attempts'       => 0,
+			'created_at'     => $now,
+			'updated_at'     => $now,
+			'next_attempt_at'=> $now,
+		],
+		[ '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s' ]
+	);
+
+	if ( ! $ok ) {
+		error_log( 'JCP demo lead queue insert failed: ' . (string) $wpdb->last_error );
+		return false;
+	}
+	return (int) $wpdb->insert_id;
+}
+
+/**
+ * POST a queued payload to the Demo Survey GHL webhook.
+ *
+ * @return array{ok:bool,code:int,error:string}
+ */
+function jcp_demo_lead_queue_deliver_body( string $body ): array {
+	$response = wp_remote_post(
+		JCP_GHL_DEMO_SURVEY_WEBHOOK_URL,
+		[
+			'timeout' => 15,
+			'headers' => [
+				'Content-Type' => 'application/x-www-form-urlencoded',
+			],
+			'body'    => $body,
+		]
+	);
+
+	if ( is_wp_error( $response ) ) {
+		return [
+			'ok'    => false,
+			'code'  => 0,
+			'error' => $response->get_error_message(),
+		];
+	}
+
+	$code = (int) wp_remote_retrieve_response_code( $response );
+	$ok   = $code >= 200 && $code < 300;
+	$err  = '';
+	if ( ! $ok ) {
+		$res_body = wp_remote_retrieve_body( $response );
+		$decoded  = json_decode( $res_body, true );
+		if ( is_array( $decoded ) && isset( $decoded['message'] ) && is_string( $decoded['message'] ) ) {
+			$err = $decoded['message'];
+		} else {
+			$err = $res_body !== '' ? substr( $res_body, 0, 500 ) : ( 'HTTP ' . $code );
+		}
+	}
+
+	return [
+		'ok'    => $ok,
+		'code'  => $code,
+		'error' => $err,
+	];
+}
+
+/**
+ * Mark a queue row delivered or schedule the next retry / permanent failure.
+ *
+ * @param int                  $id      Queue row id.
+ * @param array{ok:bool,code:int,error:string} $result Delivery result.
+ * @param int                  $attempts Attempts after this try.
+ */
+function jcp_demo_lead_queue_mark_result( int $id, array $result, int $attempts ): void {
+	global $wpdb;
+	$table = $wpdb->prefix . JCP_DEMO_LEAD_QUEUE_TABLE;
+	$now   = current_time( 'mysql' );
+
+	if ( ! empty( $result['ok'] ) ) {
+		$wpdb->update(
+			$table,
+			[
+				'status'         => 'delivered',
+				'attempts'       => $attempts,
+				'last_error'     => null,
+				'last_http_code' => (int) $result['code'],
+				'updated_at'     => $now,
+				'delivered_at'   => $now,
+				'next_attempt_at'=> null,
+			],
+			[ 'id' => $id ],
+			[ '%s', '%d', '%s', '%d', '%s', '%s', '%s' ],
+			[ '%d' ]
+		);
+		return;
+	}
+
+	$max = (int) JCP_DEMO_LEAD_QUEUE_MAX_ATTEMPTS;
+	if ( $attempts >= $max ) {
+		$wpdb->update(
+			$table,
+			[
+				'status'         => 'failed',
+				'attempts'       => $attempts,
+				'last_error'     => (string) $result['error'],
+				'last_http_code' => (int) $result['code'],
+				'updated_at'     => $now,
+				'next_attempt_at'=> null,
+			],
+			[ 'id' => $id ],
+			[ '%s', '%d', '%s', '%d', '%s', '%s' ],
+			[ '%d' ]
+		);
+		error_log(
+			'JCP demo lead PERMANENT FAIL id=' . $id
+			. ' http=' . (int) $result['code']
+			. ' err=' . (string) $result['error']
+		);
+		$failed = get_option( 'jcp_demo_lead_permanent_failures', [] );
+		if ( ! is_array( $failed ) ) {
+			$failed = [];
+		}
+		$failed[] = [
+			'id'        => $id,
+			'at'        => $now,
+			'http_code' => (int) $result['code'],
+			'error'     => (string) $result['error'],
+		];
+		update_option( 'jcp_demo_lead_permanent_failures', array_slice( $failed, -50 ), false );
+		return;
+	}
+
+	// Backoff: 2, 5, 15, 30, 60, 120, 240 minutes.
+	$delays = [ 2, 5, 15, 30, 60, 120, 240 ];
+	$mins   = $delays[ min( $attempts - 1, count( $delays ) - 1 ) ];
+	$next   = gmdate( 'Y-m-d H:i:s', time() + ( $mins * MINUTE_IN_SECONDS ) );
+	// Store in site local time for WP cron comparisons via current_time.
+	$next_local = get_date_from_gmt( $next );
+
+	$wpdb->update(
+		$table,
+		[
+			'status'         => 'pending',
+			'attempts'       => $attempts,
+			'last_error'     => (string) $result['error'],
+			'last_http_code' => (int) $result['code'],
+			'updated_at'     => $now,
+			'next_attempt_at'=> $next_local,
+		],
+		[ 'id' => $id ],
+		[ '%s', '%d', '%s', '%d', '%s', '%s' ],
+		[ '%d' ]
+	);
+}
+
+/**
+ * Attempt GHL delivery for one queue row and update status.
+ *
+ * @param object $row Queue row.
+ * @return bool True when delivered.
+ */
+function jcp_demo_lead_queue_attempt_row( $row ): bool {
+	global $wpdb;
+	if ( ! $row || empty( $row->id ) || empty( $row->payload ) ) {
+		return false;
+	}
+	$result   = jcp_demo_lead_queue_deliver_body( (string) $row->payload );
+	$attempts = (int) $row->attempts + 1;
+	jcp_demo_lead_queue_mark_result( (int) $row->id, $result, $attempts );
+	return ! empty( $result['ok'] );
+}
+
+/**
+ * Cron: retry pending demo leads that are due.
+ */
+function jcp_demo_lead_queue_cron_retry(): void {
+	global $wpdb;
+	jcp_demo_lead_queue_maybe_create_table();
+	$table = $wpdb->prefix . JCP_DEMO_LEAD_QUEUE_TABLE;
+	$now   = current_time( 'mysql' );
+
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$rows = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT * FROM $table WHERE status = 'pending' AND (next_attempt_at IS NULL OR next_attempt_at <= %s) ORDER BY id ASC LIMIT 25",
+			$now
+		)
+	);
+	if ( ! is_array( $rows ) ) {
+		return;
+	}
+	foreach ( $rows as $row ) {
+		jcp_demo_lead_queue_attempt_row( $row );
+	}
+}
+
+/**
+ * Schedule lead-queue retry cron (every 5 minutes).
+ */
+function jcp_demo_lead_queue_schedule_cron(): void {
+	if ( ! wp_next_scheduled( 'jcp_demo_lead_queue_retry' ) ) {
+		wp_schedule_event( time() + 60, 'five_minutes', 'jcp_demo_lead_queue_retry' );
+	}
+}
+
+/**
+ * Register a five_minutes cron schedule.
+ *
+ * @param array<string, array{interval:int,display:string}> $schedules Schedules.
+ * @return array<string, array{interval:int,display:string}>
+ */
+function jcp_demo_lead_queue_cron_schedules( array $schedules ): array {
+	if ( ! isset( $schedules['five_minutes'] ) ) {
+		$schedules['five_minutes'] = [
+			'interval' => 5 * MINUTE_IN_SECONDS,
+			'display'  => 'Every five minutes',
+		];
+	}
+	return $schedules;
+}
+
+add_filter( 'cron_schedules', 'jcp_demo_lead_queue_cron_schedules' );
+add_action( 'jcp_demo_lead_queue_retry', 'jcp_demo_lead_queue_cron_retry' );
+add_action( 'init', 'jcp_demo_lead_queue_schedule_cron' );
+add_action( 'after_switch_theme', 'jcp_demo_lead_queue_maybe_create_table' );
+add_action( 'after_switch_theme', 'jcp_demo_lead_queue_schedule_cron' );
+
+/**
+ * Handle Demo Survey form POST: persist lead, attempt GHL, queue retry on failure.
+ * Soft-continue UX is client-side; this endpoint never silently discards a valid lead.
  *
  * @param \WP_REST_Request $request Request.
  * @return \WP_REST_Response
@@ -395,35 +696,36 @@ function jcp_core_demo_survey_submit_handler( \WP_REST_Request $request ): \WP_R
     );
 
     $body_string = jcp_core_build_demo_survey_ghl_body( $params );
+    $event_id    = jcp_demo_lead_new_event_id();
+    $lead_id     = jcp_demo_lead_queue_insert( $params, $body_string, $event_id );
 
-    $response = wp_remote_post(
-        JCP_GHL_DEMO_SURVEY_WEBHOOK_URL,
-        [
-            'timeout' => 15,
-            'headers' => [
-                'Content-Type' => 'application/x-www-form-urlencoded',
+    if ( ! $lead_id ) {
+        return new \WP_REST_Response(
+            [
+                'success'  => false,
+                'captured' => false,
+                'message'  => __( 'Could not save your info. Please try again.', 'jcp-core' ),
             ],
-            'body'    => $body_string,
-        ]
+            500
+        );
+    }
+
+    global $wpdb;
+    $table = $wpdb->prefix . JCP_DEMO_LEAD_QUEUE_TABLE;
+    $row   = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE id = %d", $lead_id ) );
+    $delivered = $row ? jcp_demo_lead_queue_attempt_row( $row ) : false;
+
+    return new \WP_REST_Response(
+        [
+            'success'   => true,
+            'captured'  => true,
+            'delivered' => (bool) $delivered,
+            'queued'    => ! $delivered,
+            'lead_id'   => (int) $lead_id,
+            'event_id'  => $event_id,
+        ],
+        200
     );
-
-    $code = wp_remote_retrieve_response_code( $response );
-    $res_body = wp_remote_retrieve_body( $response );
-    $ok = $code >= 200 && $code < 300;
-
-    if ( $ok ) {
-        return new \WP_REST_Response( [ 'success' => true ], 200 );
-    }
-
-    $msg = __( 'Something went wrong. Please try again.', 'jcp-core' );
-    if ( $res_body !== '' ) {
-        $decoded = json_decode( $res_body, true );
-        if ( is_array( $decoded ) && isset( $decoded['message'] ) && is_string( $decoded['message'] ) ) {
-            $msg = $decoded['message'];
-        }
-    }
-
-    return new \WP_REST_Response( [ 'success' => false, 'message' => $msg ], 400 );
 }
 
 /**

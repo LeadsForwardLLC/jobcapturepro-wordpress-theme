@@ -90,9 +90,9 @@ $cta_primary = __( 'See it on my business', 'jcp-core' );
 					</div>
 					<ul class="ps-theater__outputs" data-theater-outputs>
 						<li data-out="website"><strong><?php esc_html_e( 'Website', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Map + check-ins', 'jcp-core' ); ?></span></li>
-						<li data-out="google"><strong><?php esc_html_e( 'Google', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'GBP update', 'jcp-core' ); ?></span></li>
-						<li data-out="review"><strong><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Ask on site', 'jcp-core' ); ?></span></li>
-						<li data-out="social"><strong><?php esc_html_e( 'Social', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Ready to post', 'jcp-core' ); ?></span></li>
+						<li data-out="google"><strong><?php esc_html_e( 'Google', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'When connected', 'jcp-core' ); ?></span></li>
+						<li data-out="review"><strong><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'QR / link', 'jcp-core' ); ?></span></li>
+						<li data-out="social"><strong><?php esc_html_e( 'Social', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'When connected', 'jcp-core' ); ?></span></li>
 						<li data-out="local"><strong><?php esc_html_e( 'Directory', 'jcp-core' ); ?></strong><span><?php esc_html_e( 'Live job proof', 'jcp-core' ); ?></span></li>
 					</ul>
 				</div>
