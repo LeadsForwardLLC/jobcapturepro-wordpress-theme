@@ -90,7 +90,7 @@ function jcp_proof_sprint_case_study_props(): array {
 	return [
 		'eyebrow'       => __( 'Real Google Maps visibility', 'jcp-core' ),
 		'headline'      => __( 'From invisible across the map to showing up across the market.', 'jcp-core' ),
-		'body'          => __( 'A multi-location foundation company used JobCapturePro to turn completed jobs into real public proof. Over approximately 12 weeks, tracked local visibility changed dramatically across two markets.', 'jcp-core' ),
+		'body'          => __( 'During a roughly 12-week period using real completed-job proof as part of a multi-location foundation company’s local-search strategy (LeadsForward + JobCapturePro), tracked visibility improved substantially across two markets.', 'jcp-core' ),
 		'stats'         => [
 			[
 				'value' => '0% → 90%',
@@ -118,17 +118,17 @@ function jcp_proof_sprint_case_study_props(): array {
 				'scans'   => [
 					[
 						'keyword'    => __( 'foundation repair', 'jcp-core' ),
-						'grid_label' => __( 'Google Maps coverage', 'jcp-core' ),
+						'grid_label' => __( 'Share of Local Voice (SoLV)', 'jcp-core' ),
 						'before'     => [
 							'date'    => __( 'March', 'jcp-core' ),
 							'solv'    => '0%',
-							'summary' => __( 'Not showing up', 'jcp-core' ),
+							'summary' => __( 'Not showing prominently', 'jcp-core' ),
 							'pattern' => 'before_blank',
 						],
 						'after'      => [
 							'date'    => __( 'June', 'jcp-core' ),
 							'solv'    => '90%',
-							'summary' => __( 'Showing up across town', 'jcp-core' ),
+							'summary' => __( 'Showing across more of the tracked market', 'jcp-core' ),
 							'pattern' => 'after_fr_wv',
 						],
 					],
@@ -142,24 +142,24 @@ function jcp_proof_sprint_case_study_props(): array {
 				'scans'   => [
 					[
 						'keyword'    => __( 'foundation repair', 'jcp-core' ),
-						'grid_label' => __( 'Google Maps coverage', 'jcp-core' ),
+						'grid_label' => __( 'Share of Local Voice (SoLV)', 'jcp-core' ),
 						'before'     => [
 							'date'    => __( 'March', 'jcp-core' ),
 							'solv'    => '0%',
-							'summary' => __( 'Not showing up', 'jcp-core' ),
+							'summary' => __( 'Not showing prominently', 'jcp-core' ),
 							'pattern' => 'before_blank',
 						],
 						'after'      => [
 							'date'    => __( 'June', 'jcp-core' ),
 							'solv'    => '84%',
-							'summary' => __( 'Showing up across town', 'jcp-core' ),
+							'summary' => __( 'Showing across more of the tracked market', 'jcp-core' ),
 							'pattern' => 'after_fr_mi',
 						],
 					],
 				],
 			],
 		],
-		'footnote'      => __( 'Actual tracked visibility. Past performance does not guarantee future rankings.', 'jcp-core' ),
+		'footnote'      => __( 'SoLV = percentage of tracked Local Falcon grid points where the business appeared in the Google Maps 3-Pack across the measured service area. Past performance does not guarantee future rankings.', 'jcp-core' ),
 		'cta_secondary' => [
 			'label' => '',
 			'url'   => '',

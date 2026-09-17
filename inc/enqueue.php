@@ -135,7 +135,8 @@ function jcp_core_enqueue_assets(): void {
 
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
         jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );
-        jcp_core_enqueue_script( 'jcp-core-proof-sprint', 'js/pages/proof-sprint.js', [ 'jcp-core-attribution', 'jcp-core-onboarding-handoff' ] );
+        jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
+        jcp_core_enqueue_script( 'jcp-core-proof-sprint', 'js/pages/proof-sprint.js', [ 'jcp-core-attribution', 'jcp-core-onboarding-handoff', 'jcp-core-authority' ] );
 
         wp_add_inline_script(
             'jcp-core-proof-sprint',
@@ -148,6 +149,14 @@ function jcp_core_enqueue_assets(): void {
             [
                 'campaignBase' => trailingslashit( get_template_directory_uri() ) . 'assets/campaign/',
                 'lpVariant'    => 'proof_sprint',
+                'mapUrl'       => get_template_directory_uri() . '/assets/map-3c5b675f-f28d-41a5-ba3a-972b4c189f10.png',
+            ]
+        );
+        wp_localize_script(
+            'jcp-core-proof-sprint',
+            'JCP_DEMO_SURVEY',
+            [
+                'rest_url' => rest_url( 'jcp/v1/demo-survey-submit' ),
             ]
         );
         if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {

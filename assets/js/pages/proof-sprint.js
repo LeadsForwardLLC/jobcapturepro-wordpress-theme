@@ -80,6 +80,11 @@
     demoStep: 0,
     annual: 0,
     unused: 0,
+    email: '',
+    optedIn: false,
+    demoAutoTimer: null,
+    demoPaused: false,
+    demoAutoRunning: false,
   };
 
   function photoUrl(file) {
@@ -125,6 +130,55 @@
         });
       }
     } catch (e) {}
+    state.demoAutoTimer = null;
+    state.demoAutoRunning = false;
+    state.demoPaused = false;
+  }
+
+  function attrPayload() {
+    try {
+      if (window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function') {
+        return window.JCPLeadAttribution.getPayload() || {};
+      }
+    } catch (e) {}
+    try {
+      if (window.JCPAttribution && typeof window.JCPAttribution.getPayload === 'function') {
+        return window.JCPAttribution.getPayload() || {};
+      }
+    } catch (e2) {}
+    try {
+      var raw = sessionStorage.getItem('jcp_attr') || sessionStorage.getItem('jcp_lead_attribution');
+      if (raw) return JSON.parse(raw) || {};
+    } catch (e3) {}
+    return {};
+  }
+
+  function deriveFirstName(email) {
+    var local = String(email || '').split('@')[0] || '';
+    local = local.replace(/[._-]+/g, ' ').trim();
+    if (!local) return 'there';
+    return local.charAt(0).toUpperCase() + local.slice(1, 40);
+  }
+
+  function validEmail(v) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v || '').trim());
+  }
+
+  function prefersReducedMotion() {
+    try {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function mapAssetUrl() {
+    var fromDom = document.querySelector('[data-ps-map-url]');
+    if (fromDom && fromDom.getAttribute('data-ps-map-url')) {
+      return fromDom.getAttribute('data-ps-map-url');
+    }
+    if (typeof JCP_PS !== 'undefined' && JCP_PS.mapUrl) return JCP_PS.mapUrl;
+    return '/wp-content/themes/jobcapturepro-core/assets/map-3c5b675f-f28d-41a5-ba3a-972b4c189f10.png';
   }
 
   function attrParams() {
@@ -218,11 +272,18 @@
   }
 
   /* ---- Assessment ---- */
+  function assessmentQuestionEl(logicalStep) {
+    var field = logicalStep === 1 ? 'jobs' : 'used';
+    var steps = document.querySelectorAll('[data-ps-step]');
+    for (var i = 0; i < steps.length; i++) {
+      if (steps[i].querySelector('[data-ps-field="' + field + '"]')) return steps[i];
+    }
+    return document.querySelector('[data-ps-step="' + logicalStep + '"]');
+  }
+
   function stepReady() {
-    if (state.step === 1) return !!state.trade;
-    if (state.step === 2) return state.jobs > 0;
-    if (state.step === 3) return !!state.source;
-    if (state.step === 4) {
+    if (state.step === 1) return state.jobs > 0;
+    if (state.step === 2) {
       var custom = document.getElementById('psUsedCustom');
       if (custom && custom.value !== '') return Number(custom.value) >= 0;
       return !!document.querySelector('.ps-choice[data-ps-field="used"].is-selected');
@@ -231,14 +292,20 @@
   }
 
   function updateAssessmentUI() {
+    var jobsEl = assessmentQuestionEl(1);
+    var usedEl = assessmentQuestionEl(2);
     document.querySelectorAll('[data-ps-step]').forEach(function (el) {
-      var n = Number(el.getAttribute('data-ps-step'));
-      var on = n === state.step;
+      var on = el === (state.step === 1 ? jobsEl : usedEl);
       el.hidden = !on;
       el.classList.toggle('is-active', on);
     });
     document.querySelectorAll('[data-stepper]').forEach(function (el) {
       var n = Number(el.getAttribute('data-stepper'));
+      if (n > 2) {
+        el.hidden = true;
+        return;
+      }
+      el.hidden = false;
       el.classList.toggle('is-on', n <= state.step);
     });
     var back = document.getElementById('psBackBtn');
@@ -246,10 +313,28 @@
     if (back) back.disabled = state.step === 1;
     if (next) {
       next.disabled = !stepReady();
-      next.textContent = state.step === 4 ? 'Show My Proof Potential →' : 'Next →';
+      next.textContent = state.step === 2 ? 'Show My Proof Potential →' : 'Next →';
     }
     var msg = document.getElementById('psFormMsg');
     if (msg) msg.textContent = '';
+  }
+
+  function advanceAssessment() {
+    if (!stepReady()) {
+      var msg = document.getElementById('psFormMsg');
+      if (msg) msg.textContent = 'Choose one option to continue.';
+      return;
+    }
+    if (state.step === 1) track('proof_assessment_step_1', { jobs: state.jobs });
+    if (state.step === 2) track('proof_assessment_step_2', { used: state.used });
+    if (state.step < 2) {
+      if (state.step === 1) track('proof_assessment_started', { jobs: state.jobs });
+      state.step += 1;
+      saveState();
+      updateAssessmentUI();
+      return;
+    }
+    showResult();
   }
 
   function showResult() {
@@ -268,11 +353,17 @@
     if (unusedEl) unusedEl.textContent = unused.toLocaleString();
     var pct = annual ? Math.round((unused / annual) * 100) : 0;
     if (sentence) {
-      sentence.textContent =
-        pct >= 80
-          ? 'About ' + pct + '% of your completed jobs may be disappearing instead of becoming public proof.'
-          : 'The work already happened. The photos may already exist. JobCapturePro helps turn more of those completed jobs into assets that keep working after the truck leaves.';
+      if (pct >= 50) {
+        sentence.textContent =
+          'Roughly ' +
+          pct +
+          '% of your completed jobs likely vanish after the invoice — photos buried in phones, CRMs, and camera rolls instead of becoming proof that keeps selling. JobCapturePro turns more of that finished work into public assets that stay working after the truck leaves.';
+      } else {
+        sentence.textContent =
+          'Even when some jobs become proof, most finished work still disappears after the invoice — stuck in camera rolls instead of fueling your website, Google, reviews, and social. JobCapturePro helps you keep more of that proof working for the next customer.';
+      }
     }
+    updateResultCta();
 
     var result = document.getElementById('ps-result');
     if (result) {
@@ -313,12 +404,26 @@
         } else if (field === 'source') {
           state.source = value;
         } else if (field === 'used') {
-          state.used = Number(value) || 0;
+          var ratio = btn.getAttribute('data-ps-ratio');
+          if (ratio !== null && ratio !== '') {
+            state.used = Math.round(state.jobs * Number(ratio));
+          } else {
+            state.used = Number(value) || 0;
+          }
           state.usedLabel = btn.getAttribute('data-ps-label') || value;
           var uc = document.getElementById('psUsedCustom');
           if (uc) uc.value = '';
         }
+        saveState();
         updateAssessmentUI();
+        if (field === 'jobs' || field === 'used') {
+          window.setTimeout(function () {
+            var active = document.activeElement;
+            if (active && active.getAttribute && active.getAttribute('data-ps-custom')) return;
+            if (!stepReady()) return;
+            advanceAssessment();
+          }, 280);
+        }
       });
     });
 
@@ -339,6 +444,7 @@
           state.used = n;
           state.usedLabel = String(n);
         }
+        saveState();
         updateAssessmentUI();
       });
     });
@@ -346,26 +452,13 @@
     back.addEventListener('click', function () {
       if (state.step > 1) {
         state.step -= 1;
+        saveState();
         updateAssessmentUI();
       }
     });
 
     next.addEventListener('click', function () {
-      if (!stepReady()) {
-        var msg = document.getElementById('psFormMsg');
-        if (msg) msg.textContent = 'Choose one option to continue.';
-        return;
-      }
-      if (state.step === 1) track('proof_assessment_step_1', { trade: state.trade });
-      if (state.step === 2) track('proof_assessment_step_2', { jobs: state.jobs });
-      if (state.step === 3) track('proof_assessment_step_3', { source: state.source });
-      if (state.step < 4) {
-        if (state.step === 1) track('proof_assessment_started', { trade: state.trade });
-        state.step += 1;
-        updateAssessmentUI();
-        return;
-      }
-      showResult();
+      advanceAssessment();
     });
 
     updateAssessmentUI();
@@ -423,7 +516,8 @@
   }
 
   function captureSourceLabel() {
-    var source = state.source || 'JCP mobile app';
+    var source = state.source || '';
+    if (!source) return 'Job photo';
     if (source.indexOf('Housecall') >= 0) return 'Housecall Pro photo';
     if (source.indexOf('CompanyCam') >= 0) return 'CompanyCam photo';
     if (source.indexOf('Workiz') >= 0) return 'Workiz photo';
@@ -431,7 +525,7 @@
       return 'Phone camera roll';
     }
     if (source.indexOf('JCP') >= 0) return 'JCP mobile app';
-    return 'Connected workflow';
+    return 'Existing workflow';
   }
 
   /* ---- Demo ---- */
@@ -449,45 +543,49 @@
   function demoSteps() {
     var job = jobPersona();
     var source = captureSourceLabel();
+    var captureDetail = state.source ? source : source === 'Job photo' ? 'Job photo' : 'Existing workflow';
     return [
       {
         title: 'The job is finished.',
         body:
-          'Your crew already did the hard part. They completed the work and the job photos usually already exist on a phone or in your field app. Without JobCapturePro, that proof often dies in a camera roll.',
-        detail: 'Completed job on site',
+          'Your crew already did the expensive part — the work is done and the proof usually already exists on a phone or in your CRM photo app. Without JobCapturePro, that finished job rarely becomes marketing.',
+        detailLabel: 'INPUT',
+        detail: 'Completed job',
         event: DEMO_EVENTS[0],
         type: 'job',
       },
       {
-        title: 'Your tech just snaps the photo.',
+        title: 'Your tech snaps the photo.',
         body:
-          'One photo from the driveway is enough. Capture it in the JCP mobile app or your existing workflow (' +
-          source +
-          '). JobCapturePro handles structuring, writing, and publishing from there.',
-        detail: source,
+          'One finished-job photo is enough. Capture it in JobCapturePro or your supported workflow — JobCapturePro handles structuring, writing, and publishing from there.',
+        detailLabel: 'INPUT',
+        detail: captureDetail,
         event: DEMO_EVENTS[0],
         type: 'capture',
       },
       {
-        title: 'JCP creates the check-in.',
+        title: 'JCP turns the job into structured proof.',
         body:
-          'We turn those job photos plus service type and location into a structured check-in: channel-ready copy, geotags, and assets your marketing channels can use immediately.',
-        detail: job.label + ' job structured',
+          'JobCapturePro combines photos, service type, and location into a structured check-in — channel-ready copy, geotags, and assets your marketing channels can use immediately.',
+        detailLabel: 'INPUT',
+        detail: 'Job details',
         event: DEMO_EVENTS[1],
         type: 'checkin',
       },
       {
-        title: 'Published to your website. Location included.',
+        title: 'Published to your website.\nLocation included.',
         body:
-          'The same completed job can land on your recent-work feed and auto-post to the matching service-area location page through the JCP website plugin. Real local pages. Real job proof. Built for SEO.',
-        detail: 'Website plugin · location page',
+          'Your newest completed job joins your map and recent-work feed — real local pages with real job proof, built for SEO.',
+        detailLabel: 'PUBLISHED TO',
+        detail: 'Website',
         event: DEMO_EVENTS[2],
         type: 'web',
       },
       {
-        title: 'Fresh Google activity. Automatically.',
+        title: 'Fresh Google activity.\nWithout writing another post.',
         body:
-          'Instead of another generic promo, your Google Business Profile can stay active with real completed work from the field — photos and details pulled from the same job check-in.',
+          'Your Google Business Profile can stay active with real completed work from the field — photos and details pulled from the same job check-in, ready to publish.',
+        detailLabel: 'PUBLISHED TO',
         detail: 'Google Business Profile',
         event: DEMO_EVENTS[3],
         type: 'google',
@@ -496,23 +594,25 @@
         title: 'Ask while they still remember your name.',
         body:
           'Before you leave the driveway, send a review SMS or show a QR. The customer chooses whether to review. No review gating. No guaranteed five-star claims.',
+        detailLabel: 'CREATED',
         detail: 'Review opportunity',
         event: DEMO_EVENTS[4],
         type: 'review',
       },
       {
         title: 'Social content your tech never had to write.',
-        body:
-          'Ready-to-post social content is generated from work your crew already finished. No asking techs to become marketers after a long day.',
-        detail: 'Social post ready',
+        body: 'Ready-to-post social content from work your crew already finished — no asking techs to become marketers after a long day.',
+        detailLabel: 'PUBLISHED TO',
+        detail: 'Social',
         event: DEMO_EVENTS[5],
         type: 'social',
       },
       {
-        title: 'And a living directory listing.',
+        title: 'Live on the JobCapturePro Directory.',
         body:
-          'Your JobCapturePro Directory profile is powered by real check-ins and verified job activity — not paid placement. Homeowners see live proof you actually work in their area: completed jobs, ratings, and recent field activity that keeps updating as your crew finishes work.',
-        detail: 'JobCapturePro Directory',
+          'Your demo business listing shows the latest completed job in your trade and city — real check-in proof updating as your crew finishes work, not paid placement or fake ratings.',
+        detailLabel: 'PUBLISHED TO',
+        detail: 'JCP Directory',
         event: DEMO_EVENTS[6],
         type: 'directory',
       },
@@ -600,6 +700,7 @@
     }
 
     if (type === 'web') {
+      var mapUrl = esc(mapAssetUrl());
       c.innerHTML =
         '<div class="ps-mock ps-mock--browser">' +
         '<div class="ps-mock-browser__bar"><span></span><span></span><span></span>' +
@@ -610,19 +711,37 @@
         '<div class="ps-mock-browser__topline">' +
         mark +
         '<div><p class="ps-mock-browser__kicker">Austin, TX service area</p>' +
-        '<h4>Recent jobs near you</h4></div></div>' +
-        '<article class="ps-mock-jobcard">' +
+        '<h4>Recent check-ins</h4></div></div>' +
+        '<div class="ps-mock-map" style="position:relative;margin:0 0 12px;border-radius:12px;overflow:hidden;">' +
+        '<img src="' +
+        mapUrl +
+        '" alt="" width="640" height="280" loading="lazy" style="width:100%;height:auto;display:block;" />' +
+        '<span class="ps-mock-map__pin is-active" style="position:absolute;left:52%;top:42%;width:12px;height:12px;border-radius:50%;background:#e85d04;box-shadow:0 0 0 4px rgba(232,93,4,.35);"></span>' +
+        '<span class="ps-mock-map__pin" style="position:absolute;left:34%;top:58%;width:10px;height:10px;border-radius:50%;background:#64748b;opacity:.85;"></span>' +
+        '<span class="ps-mock-map__pin" style="position:absolute;left:68%;top:55%;width:10px;height:10px;border-radius:50%;background:#64748b;opacity:.85;"></span>' +
+        '<span class="ps-mock-map__pin" style="position:absolute;left:44%;top:28%;width:10px;height:10px;border-radius:50%;background:#64748b;opacity:.85;"></span>' +
+        '</div>' +
+        '<div class="ps-mock-checkin-row" style="display:flex;gap:10px;overflow:auto;">' +
+        '<article class="ps-mock-jobcard is-active" style="min-width:58%;flex:0 0 auto;">' +
         thumb +
         '<div><strong>' +
         title +
         '</strong><span>' +
         city +
-        ' · Location page</span><p>' +
+        ' · Just published</span><p>' +
         desc +
-        '</p><em>Auto-posted by JCP website plugin</em></div>' +
-        '</article>' +
-        '<p class="ps-mock__meta">Live on map + location pages. Built for local SEO.</p>' +
-        '</div></div>';
+        '</p></div></article>' +
+        '<article class="ps-mock-jobcard ps-mock-jobcard--placeholder" style="min-width:42%;flex:0 0 auto;opacity:.72;">' +
+        '<div class="ps-mock__thumb" style="background:#e2e8f0;min-height:72px;border-radius:8px;"></div>' +
+        '<div><strong>Earlier job</strong><span>' +
+        city +
+        '</span></div></article>' +
+        '<article class="ps-mock-jobcard ps-mock-jobcard--placeholder" style="min-width:42%;flex:0 0 auto;opacity:.72;">' +
+        '<div class="ps-mock__thumb" style="background:#e2e8f0;min-height:72px;border-radius:8px;"></div>' +
+        '<div><strong>Earlier job</strong><span>' +
+        city +
+        '</span></div></article>' +
+        '</div></div></div>';
       return;
     }
 
@@ -634,7 +753,7 @@
         '<div><strong>' +
         biz +
         '</strong><span>Google Business Profile · Update</span></div>' +
-        '<em>Posted</em></div>' +
+        '<em>Ready to publish</em></div>' +
         '<div class="ps-mock__media">' +
         photo +
         '</div>' +
@@ -644,9 +763,8 @@
         city +
         '</strong><p>' +
         desc +
-        ' Real work. Real photos. Posted from JobCapturePro.</p></div>' +
-        '<div class="ps-mock-gbp__actions"><span>Share</span><span>Call</span><span>Directions</span></div>' +
-        '<p class="ps-mock__meta">Prepared automatically · Verified job details</p></div>';
+        ' Real work. Real photos from the field.</p></div>' +
+        '<div class="ps-mock-gbp__actions"><span>Share</span><span>Call</span><span>Directions</span></div></div>';
       return;
     }
 
@@ -678,7 +796,7 @@
         mark +
         '<div><strong>' +
         biz +
-        '</strong><span>Prepared just now · ' +
+        '</strong><span>Ready to post · ' +
         city +
         '</span></div></div>' +
         '<p class="ps-mock-social__copy">' +
@@ -696,7 +814,7 @@
         '<div class="ps-mock ps-mock--directory">' +
         '<p class="ps-mock-dir__label">JobCapturePro Directory</p>' +
         '<article class="directory-card directory-card-highlight ps-mock-dir__card">' +
-        '<span class="directory-badge verified">Verified</span>' +
+        '<span class="directory-badge">Demo</span>' +
         '<div class="card-header">' +
         '<div class="company-mark">' +
         mark +
@@ -709,8 +827,6 @@
         ' · ' +
         city +
         '</span></div>' +
-        '<div class="card-meta-row"><span class="meta-inline">12 jobs documented</span><span class="meta-divider">·</span><span class="meta-inline">Active today</span></div>' +
-        '<div class="card-rating"><div class="stars" aria-hidden="true">★★★★★</div><span class="rating-text">4.9 · 128 reviews</span></div>' +
         '<div class="ps-mock-dir__latest">' +
         thumb +
         '<div><p class="ps-mock-dir__latest-label">Latest completed job</p><strong>' +
@@ -721,6 +837,52 @@
     }
   }
 
+  function stopDemoAuto() {
+    if (state.demoAutoTimer) {
+      window.clearInterval(state.demoAutoTimer);
+      state.demoAutoTimer = null;
+    }
+    state.demoAutoRunning = false;
+    state.demoPaused = false;
+  }
+
+  function autoRunDemo() {
+    stopDemoAuto();
+    state.demoAutoRunning = true;
+    state.demoPaused = false;
+    var tickMs = prefersReducedMotion() ? 380 : 2000;
+    renderDemo();
+    state.demoAutoTimer = window.setInterval(function () {
+      if (state.demoPaused) return;
+      var steps = demoSteps();
+      if (state.demoStep >= steps.length - 1) {
+        stopDemoAuto();
+        showDemoPayoff();
+        return;
+      }
+      state.demoStep += 1;
+      saveState();
+      renderDemo();
+      if (state.demoStep >= steps.length - 1) {
+        window.setTimeout(function () {
+          stopDemoAuto();
+          showDemoPayoff();
+        }, tickMs);
+      }
+    }, tickMs);
+  }
+
+  function pauseDemoAuto() {
+    if (!state.demoAutoRunning) return;
+    if (state.demoAutoTimer) {
+      window.clearInterval(state.demoAutoTimer);
+      state.demoAutoTimer = null;
+    }
+    state.demoAutoRunning = false;
+    state.demoPaused = false;
+    renderDemo();
+  }
+
   function renderDemo() {
     var steps = demoSteps();
     if (state.demoStep >= steps.length) state.demoStep = steps.length - 1;
@@ -729,17 +891,38 @@
     var title = document.getElementById('psDemoTitle');
     var body = document.getElementById('psDemoBody');
     var source = document.getElementById('psDemoSource');
+    var detailLabelEl = document.getElementById('psDemoDetailLabel');
     var prev = document.getElementById('psDemoPrev');
     var next = document.getElementById('psDemoNext');
+    var pauseBtn = document.getElementById('psDemoPause');
     var progress = document.getElementById('psDemoProgress');
     var payoff = document.getElementById('psDemoPayoff');
 
     if (label) label.textContent = 'Step ' + (state.demoStep + 1) + ' of ' + steps.length;
     if (title) title.textContent = d.title;
-    if (body) body.textContent = d.body;
+    if (body) body.textContent = d.body.replace(/\n/g, ' ');
     if (source) source.textContent = d.detail;
-    if (prev) prev.disabled = state.demoStep === 0;
-    if (next) next.textContent = state.demoStep === steps.length - 1 ? 'See the payoff →' : 'Next →';
+    if (detailLabelEl) detailLabelEl.textContent = d.detailLabel || 'Source';
+    document.querySelectorAll('.ps-demo-detail__label').forEach(function (el) {
+      if (el.id === 'psDemoDetailLabel') return;
+      el.textContent = d.detailLabel || 'Source';
+    });
+    if (prev) prev.disabled = state.demoStep === 0 || (state.demoAutoRunning && !state.demoPaused);
+
+    if (next) {
+      if (state.demoAutoRunning && !state.demoPaused) {
+        next.hidden = true;
+      } else {
+        next.hidden = false;
+        if (state.demoStep === 0) next.textContent = 'See what happens →';
+        else if (state.demoStep === 1) next.textContent = 'Let JCP take it from here →';
+        else if (state.demoStep >= steps.length - 1) next.textContent = 'See the payoff →';
+        else next.textContent = 'Next →';
+      }
+    }
+    if (pauseBtn) {
+      pauseBtn.hidden = !(state.demoAutoRunning && !state.demoPaused);
+    }
 
     if (progress) {
       while (progress.children.length < steps.length) {
@@ -754,26 +937,37 @@
     }
 
     renderDemoCanvas(d.type);
+    track('DemoStepViewed', {
+      step_index: state.demoStep,
+      step_name: d.type,
+      auto_or_manual: state.demoAutoRunning && !state.demoPaused ? 'auto' : 'manual',
+      trade: state.trade,
+      lp_variant: LP_VARIANT,
+    });
     if (d.event) track(d.event, { step: state.demoStep + 1, trade: state.trade });
 
     if (payoff) payoff.hidden = true;
     var shell = document.querySelector('.ps-demo-shell');
-    if (shell) shell.hidden = false;
+    if (shell && state.optedIn) shell.hidden = false;
   }
 
   function showDemoPayoff() {
+    stopDemoAuto();
     var payoff = document.getElementById('psDemoPayoff');
     var jobsLine = document.getElementById('psDemoPayoffJobs');
     var shell = document.querySelector('.ps-demo-shell');
     var annual = state.annual || Math.round((state.jobs || 20) * 52);
     var weekly = state.jobs || 20;
+    var unused = state.unused || Math.max(0, annual - Math.round(Math.max(0, state.used) * 52));
     if (jobsLine) {
       jobsLine.textContent =
-        'You told us you complete approximately ' +
+        'You complete about ' +
         weekly +
-        ' jobs every week. That’s roughly ' +
+        ' jobs every week — roughly ' +
         annual.toLocaleString() +
-        ' opportunities each year.';
+        ' per year — and an estimated ' +
+        unused.toLocaleString() +
+        ' may never become proof that keeps working.';
     }
     if (shell) shell.hidden = true;
     if (payoff) {
@@ -788,6 +982,7 @@
   }
 
   function restartDemo() {
+    stopDemoAuto();
     state.demoStep = 0;
     saveState();
     var payoff = document.getElementById('psDemoPayoff');
@@ -806,34 +1001,445 @@
     track('demo_restarted', { trade: state.trade });
   }
 
+  function demoAdvanceManual() {
+    var steps = demoSteps();
+    var from = state.demoStep;
+    if (state.demoStep < steps.length - 1) {
+      state.demoStep += 1;
+      saveState();
+      renderDemo();
+      if (from === 1 && state.demoStep === 2) autoRunDemo();
+    } else {
+      showDemoPayoff();
+    }
+  }
+
   function setupDemo() {
     var prev = document.getElementById('psDemoPrev');
     var next = document.getElementById('psDemoNext');
     var restart = document.getElementById('psDemoRestart');
+    var pauseBtn = document.getElementById('psDemoPause');
+    var skipBtn = document.getElementById('psDemoSkip');
     if (!prev || !next) return;
     prev.addEventListener('click', function () {
+      if (state.demoAutoRunning && !state.demoPaused) return;
       if (state.demoStep > 0) {
+        stopDemoAuto();
         state.demoStep -= 1;
         saveState();
         renderDemo();
       }
     });
     next.addEventListener('click', function () {
-      var steps = demoSteps();
-      if (state.demoStep < steps.length - 1) {
-        state.demoStep += 1;
-        saveState();
-        renderDemo();
-      } else {
-        showDemoPayoff();
-      }
+      if (state.demoAutoRunning && !state.demoPaused) return;
+      stopDemoAuto();
+      demoAdvanceManual();
     });
+    if (pauseBtn) {
+      pauseBtn.addEventListener('click', function () {
+        pauseDemoAuto();
+      });
+    }
+    if (skipBtn) {
+      skipBtn.addEventListener('click', function () {
+        stopDemoAuto();
+        showDemoPayoff();
+        track('demo_skipped_to_payoff', { trade: state.trade });
+      });
+    }
     if (restart) {
       restart.addEventListener('click', function () {
         restartDemo();
       });
     }
+    var finalReplay = document.getElementById('psFinalReplay');
+    if (finalReplay) {
+      finalReplay.addEventListener('click', function () {
+        if (!state.optedIn) {
+          scrollToOptin();
+          return;
+        }
+        restartDemo();
+      });
+    }
+    if (state.optedIn) renderDemo();
+  }
+
+  function updateResultCta() {
+    var cta = document.getElementById('psResultCta');
+    if (!cta) return;
+    if (state.optedIn) {
+      cta.setAttribute('href', '#ps-demo');
+      cta.removeAttribute('data-ps-scroll-optin');
+    } else {
+      cta.setAttribute('href', '#ps-optin');
+      cta.setAttribute('data-ps-scroll-optin', '1');
+    }
+  }
+
+  function unlockDemo() {
+    var demo = document.getElementById('ps-demo');
+    var shell = document.querySelector('.ps-demo-shell');
+    var gate = document.getElementById('psDemoGate');
+    if (demo) {
+      demo.classList.remove('is-locked', 'is-hidden');
+      demo.removeAttribute('hidden');
+    }
+    if (shell) {
+      shell.classList.remove('is-locked', 'is-hidden');
+      shell.hidden = false;
+    }
+    if (gate) gate.hidden = true;
+    updateResultCta();
+    updateStickyCtaLink();
+  }
+
+  function scrollToDemo() {
+    var demo = document.getElementById('ps-demo');
+    if (!demo) return;
+    try {
+      demo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      demo.scrollIntoView(true);
+    }
+  }
+
+  function scrollToOptin() {
+    var optin = document.getElementById('ps-optin');
+    if (!optin) return;
+    try {
+      optin.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (e) {
+      optin.scrollIntoView(true);
+    }
+  }
+
+  function normalizeOptinTrade(raw) {
+    var slug = String(raw || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '');
+    var map = {
+      hvac: 'hvac',
+      plumbing: 'plumbing',
+      roofing: 'roofing',
+      electrical: 'electrical',
+      foundation: 'foundation',
+      landscaping: 'landscaping',
+      remodeling: 'remodeling',
+      other: 'other',
+    };
+    return map[slug] || (slug ? slug : 'plumbing');
+  }
+
+  function readOptinTrade() {
+    var sel = document.getElementById('ps-niche');
+    var other = document.getElementById('ps-nicheOther');
+    if (sel) {
+      var val = sel.value;
+      if (val === 'other' && other && other.value.trim()) {
+        return { trade: 'other', business_type: other.value.trim(), label: other.value.trim() };
+      }
+      if (val) {
+        var label = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : val;
+        return { trade: normalizeOptinTrade(val), business_type: val, label: label };
+      }
+    }
+    var search = document.getElementById('ps-nicheSearch');
+    if (search && search.value.trim()) {
+      return { trade: normalizeOptinTrade(search.value), business_type: search.value.trim(), label: search.value.trim() };
+    }
+    return { trade: '', business_type: '', label: '' };
+  }
+
+  function showPsOptinError(msg) {
+    var el = document.getElementById('psOptinError');
+    if (!el) return;
+    if (!msg) {
+      el.hidden = true;
+      el.textContent = '';
+      return;
+    }
+    el.hidden = false;
+    el.textContent = msg;
+  }
+
+  function finishOptinSuccess(email, tradeInfo, crmSaved, ctaSource) {
+    state.optedIn = true;
+    state.email = email;
+    if (tradeInfo.trade) state.trade = tradeInfo.trade;
+    saveState();
+    applyJobPersonaToDom();
+    unlockDemo();
     renderDemo();
+    scrollToDemo();
+    track('DemoFormSubmitted', {
+      section: 'optin',
+      source: ctaSource || 'optin',
+      trade: tradeInfo.business_type || tradeInfo.trade,
+      crm_saved: !!crmSaved,
+      cta_source: ctaSource || 'optin',
+    });
+  }
+
+  function submitPsOptin(attempt, ctaSource) {
+    attempt = attempt || 1;
+    ctaSource = ctaSource || 'optin';
+    var emailEl = document.getElementById('ps-email');
+    var email = emailEl ? emailEl.value.trim() : '';
+    var tradeInfo = readOptinTrade();
+    var btn = document.querySelector('#psOptinForm [type="submit"], #psOptinSubmit');
+
+    showPsOptinError('');
+    if (!validEmail(email)) {
+      showPsOptinError('Enter a valid work email.');
+      track('DemoFormFailed', { section: 'optin', source: ctaSource, reason: 'invalid_email', cta_source: ctaSource });
+      if (emailEl) emailEl.focus();
+      return Promise.resolve(false);
+    }
+    if (!String(tradeInfo.business_type || '').trim()) {
+      showPsOptinError('Select or enter your trade.');
+      track('DemoFormFailed', { section: 'optin', source: ctaSource, reason: 'missing_trade', cta_source: ctaSource });
+      var niche = document.getElementById('ps-niche') || document.getElementById('ps-nicheSearch');
+      if (niche) niche.focus();
+      return Promise.resolve(false);
+    }
+
+    track('DemoFormAttempted', {
+      section: 'optin',
+      source: ctaSource,
+      trade: tradeInfo.business_type,
+      cta_source: ctaSource,
+    });
+
+    var defaultLabel = btn ? btn.textContent : '';
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = 'Building…';
+    }
+
+    var restUrl =
+      (window.JCP_DEMO_SURVEY && window.JCP_DEMO_SURVEY.rest_url) ||
+      '/wp-json/jcp/v1/demo-survey-submit';
+    var attr = attrPayload();
+    var body = {
+      first_name: deriveFirstName(email),
+      last_name: '',
+      email: email,
+      phone: '',
+      company: '',
+      business_type: tradeInfo.business_type,
+      demo_goals: [],
+      referral_source: '',
+      event: 'demo-opt-in',
+      landing_page: location.href,
+      utm_source: attr.utm_source || '',
+      utm_medium: attr.utm_medium || '',
+      utm_campaign: attr.utm_campaign || '',
+      utm_content: attr.utm_content || '',
+      utm_term: attr.utm_term || '',
+      fbclid: attr.fbclid || '',
+      referrer: attr.referrer || document.referrer || '',
+    };
+
+    return fetch(restUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+      .then(function (res) {
+        return res
+          .json()
+          .then(function (json) {
+            return { ok: res.ok && json && json.success !== false, json: json };
+          })
+          .catch(function () {
+            return { ok: res.ok, json: null };
+          });
+      })
+      .then(function (result) {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = defaultLabel || 'Show me my demo →';
+        }
+        if (!result.ok) {
+          if (attempt < 2) return submitPsOptin(attempt + 1, ctaSource);
+          showPsOptinError(
+            (result.json && result.json.message) ||
+              'We couldn’t save your info right now — unlocking your demo anyway.'
+          );
+          track('DemoFormFailed', {
+            section: 'optin',
+            source: ctaSource,
+            trade: tradeInfo.business_type,
+            crm_saved: false,
+            cta_source: ctaSource,
+          });
+          finishOptinSuccess(email, tradeInfo, false, ctaSource);
+          return false;
+        }
+        finishOptinSuccess(email, tradeInfo, true, ctaSource);
+        return true;
+      })
+      .catch(function () {
+        if (attempt < 2) return submitPsOptin(attempt + 1, ctaSource);
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = defaultLabel || 'Show me my demo →';
+        }
+        showPsOptinError('Network error — unlocking your demo anyway.');
+        track('DemoFormFailed', { section: 'optin', source: ctaSource, reason: 'network', cta_source: ctaSource });
+        finishOptinSuccess(email, tradeInfo, false, ctaSource);
+        return false;
+      });
+  }
+
+  function setupOptin() {
+    var form = document.getElementById('psOptinForm');
+    if (!form) return;
+
+    var sel = document.getElementById('ps-niche');
+    if (sel && !sel.options.length) {
+      [
+        ['', 'Select your trade'],
+        ['hvac', 'HVAC'],
+        ['plumbing', 'Plumbing'],
+        ['roofing', 'Roofing'],
+        ['electrical', 'Electrical'],
+        ['foundation', 'Foundation'],
+        ['landscaping', 'Landscaping'],
+        ['remodeling', 'Remodeling'],
+        ['other', 'Other'],
+      ].forEach(function (pair) {
+        var opt = document.createElement('option');
+        opt.value = pair[0];
+        opt.textContent = pair[1];
+        sel.appendChild(opt);
+      });
+    }
+
+    var otherWrap = document.getElementById('ps-nicheOtherWrap');
+    if (sel && otherWrap) {
+      sel.addEventListener('change', function () {
+        otherWrap.hidden = sel.value !== 'other';
+      });
+      otherWrap.hidden = sel.value !== 'other';
+    }
+
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var source = form.getAttribute('data-ps-source') || 'optin';
+      submitPsOptin(1, source);
+    });
+
+    if (state.trade && sel) {
+      sel.value = state.trade;
+    }
+    if (state.email) {
+      var emailEl = document.getElementById('ps-email');
+      if (emailEl) emailEl.value = state.email;
+    }
+  }
+
+  function setupDemoScrollGate() {
+    document.addEventListener(
+      'click',
+      function (e) {
+        if (state.optedIn) return;
+        var t = e.target && e.target.closest ? e.target.closest('a[href="#ps-demo"], [data-ps-scroll-optin]') : null;
+        if (!t) return;
+        e.preventDefault();
+        scrollToOptin();
+        track('demo_gate_optin_redirect', { source: t.getAttribute('data-ps-source') || '' });
+      },
+      true
+    );
+  }
+
+  function setupMapTabs() {
+    var root = document.querySelector('#ps-proof .jcp-lf-case__locations');
+    if (!root) return;
+    var locations = root.querySelectorAll('.jcp-lf-case__location');
+    if (locations.length < 2) return;
+
+    var tabs = document.createElement('div');
+    tabs.className = 'ps-map-tabs';
+    tabs.setAttribute('role', 'tablist');
+    tabs.setAttribute('aria-label', 'Locations');
+
+    function isMobile() {
+      try {
+        return window.matchMedia('(max-width: 767px)').matches;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    function syncView(activeIndex) {
+      locations.forEach(function (loc, i) {
+        var on = !isMobile() || i === activeIndex;
+        loc.hidden = !on;
+        loc.classList.toggle('is-tab-active', on);
+      });
+      Array.prototype.forEach.call(tabs.children, function (btn, i) {
+        btn.classList.toggle('is-active', i === activeIndex);
+        btn.setAttribute('aria-selected', i === activeIndex ? 'true' : 'false');
+      });
+    }
+
+    locations.forEach(function (loc, i) {
+      var nameEl = loc.querySelector('.jcp-lf-case__location-name');
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'ps-map-tab';
+      btn.setAttribute('role', 'tab');
+      btn.textContent = nameEl ? nameEl.textContent.trim() : 'Location ' + (i + 1);
+      btn.addEventListener('click', function () {
+        syncView(i);
+      });
+      tabs.appendChild(btn);
+    });
+
+    root.parentNode.insertBefore(tabs, root);
+    syncView(0);
+
+    window.addEventListener('resize', function () {
+      var active = 0;
+      Array.prototype.forEach.call(tabs.children, function (btn, i) {
+        if (btn.classList.contains('is-active')) active = i;
+      });
+      syncView(active);
+    });
+  }
+
+  function updateStickyCtaLink() {
+    var sticky = document.getElementById('psStickyCta');
+    if (!sticky) return;
+    var a = sticky.querySelector('a');
+    if (!a) return;
+    if (state.optedIn) {
+      var base =
+        (window.JCP_ONBOARDING && window.JCP_ONBOARDING.url) ||
+        'https://app.jobcapturepro.com/onboarding';
+      a.setAttribute('href', base);
+      a.textContent = 'Start free 14-day trial →';
+      a.setAttribute('data-ps-trial', '');
+      a.setAttribute('data-ps-source', 'sticky_mobile');
+      try {
+        var params = attrParams();
+        var u = new URL(a.getAttribute('href') || base, location.origin);
+        Object.keys(params).forEach(function (k) {
+          if (!u.searchParams.get(k)) u.searchParams.set(k, params[k]);
+        });
+        u.searchParams.set('jcp_surface', 'proof_sprint_sticky_mobile');
+        if (!u.searchParams.get('utm_content')) u.searchParams.set('utm_content', 'proof_sprint_sticky_mobile');
+        a.href = u.toString();
+      } catch (eHref) {}
+    } else {
+      a.setAttribute('href', '#ps-optin');
+      a.removeAttribute('data-ps-trial');
+      a.textContent = 'See it on my business →';
+    }
   }
 
   function setupReveals() {
@@ -869,19 +1475,71 @@
   function setupStickyCta() {
     var sticky = document.getElementById('psStickyCta');
     var hero = document.getElementById('ps-hero');
-    if (!sticky || !hero || !('IntersectionObserver' in window)) return;
+    if (!sticky || !hero) return;
     if (window.matchMedia && window.matchMedia('(min-width: 768px)').matches) return;
-    var io = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          var show = !entry.isIntersecting;
-          sticky.hidden = !show;
-          document.body.classList.toggle('has-sticky-cta', show);
-        });
+
+    updateStickyCtaLink();
+
+    var hideReasons = { hero: false, optin: false, focus: false };
+    function refreshSticky() {
+      var hide = hideReasons.hero || hideReasons.optin || hideReasons.focus;
+      sticky.hidden = hide;
+      document.body.classList.toggle('has-sticky-cta', !hide);
+    }
+
+    if ('IntersectionObserver' in window) {
+      var heroIo = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            hideReasons.hero = entry.isIntersecting;
+            refreshSticky();
+          });
+        },
+        { threshold: 0.05 }
+      );
+      heroIo.observe(hero);
+
+      var optin = document.getElementById('ps-optin');
+      if (optin) {
+        var optinIo = new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              hideReasons.optin = entry.isIntersecting;
+              refreshSticky();
+            });
+          },
+          { threshold: 0.08 }
+        );
+        optinIo.observe(optin);
+      }
+    }
+
+    document.addEventListener(
+      'focusin',
+      function (e) {
+        var t = e.target;
+        var inOptin = t && t.closest && t.closest('#ps-optin, #psOptinForm');
+        var inDemoForm = t && t.closest && t.closest('#ps-demo form, #psDemoGate form');
+        hideReasons.focus = !!(inOptin || (state.optedIn && inDemoForm));
+        refreshSticky();
       },
-      { threshold: 0.05 }
+      true
     );
-    io.observe(hero);
+    document.addEventListener(
+      'focusout',
+      function () {
+        window.setTimeout(function () {
+          var active = document.activeElement;
+          var inOptin = active && active.closest && active.closest('#ps-optin, #psOptinForm');
+          var inDemoForm = active && active.closest && active.closest('#ps-demo form, #psDemoGate form');
+          hideReasons.focus = !!(inOptin || (state.optedIn && inDemoForm));
+          refreshSticky();
+        }, 0);
+      },
+      true
+    );
+
+    refreshSticky();
   }
 
   function setupTrackedClicks() {
@@ -916,16 +1574,26 @@
   function boot() {
     if (!document.body || !document.body.classList.contains('jcp-proof-sprint')) return;
     loadState();
+    if (!state.trade) state.trade = 'plumbing';
     applyJobPersonaToDom();
     decorateTrialLinks();
     setupAssessment();
+    setupOptin();
+    setupDemoScrollGate();
     setupDemo();
+    setupMapTabs();
     setupReveals();
     setupStickyCta();
     setupTrackedClicks();
     hideChat();
     runHeroTheater();
     track('PaidLandingView', { section: 'proof_sprint' });
+
+    updateResultCta();
+    if (state.optedIn) {
+      unlockDemo();
+      renderDemo();
+    }
 
     if (state.annual > 0) {
       var result = document.getElementById('ps-result');
@@ -934,6 +1602,7 @@
       var unusedEl = document.getElementById('psUnusedJobs');
       if (annualEl) annualEl.textContent = state.annual.toLocaleString();
       if (unusedEl) unusedEl.textContent = state.unused.toLocaleString();
+      updateResultCta();
     }
   }
 

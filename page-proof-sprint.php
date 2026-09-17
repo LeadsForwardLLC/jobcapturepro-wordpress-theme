@@ -75,7 +75,7 @@ $login_href = function_exists( 'jcp_core_app_login_url_raw' )
 				href="<?php echo esc_url( $trial_href ); ?>"
 				data-ps-trial
 				data-ps-source="brandbar"
-			><?php esc_html_e( 'Start 14-Day Trial', 'jcp-core' ); ?></a>
+			><?php esc_html_e( 'Start free 14-day trial', 'jcp-core' ); ?></a>
 		</div>
 	</div>
 </header>
@@ -100,7 +100,7 @@ $login_href = function_exists( 'jcp_core_app_login_url_raw' )
 </footer>
 
 <div class="ps-sticky-cta" id="psStickyCta" hidden>
-	<a class="btn btn-primary" href="<?php echo esc_url( $trial_href ); ?>" data-ps-trial data-ps-source="sticky_mobile"><?php esc_html_e( 'Start 14-Day Trial', 'jcp-core' ); ?></a>
+	<a class="btn btn-primary" href="#ps-optin" data-ps-scroll-optin data-ps-track="DemoCTA" data-ps-source="mobile_sticky"><?php esc_html_e( 'See it on my business →', 'jcp-core' ); ?></a>
 </div>
 
 <?php wp_footer(); ?>
