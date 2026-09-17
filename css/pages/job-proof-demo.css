@@ -55,10 +55,12 @@ body.jcp-job-proof-demo .rankings-cta-btn {
 }
 
 .jpd-hero-line {
-  margin: 0.85rem 0 1.15rem;
-  font-size: clamp(1.1rem, 1.6vw, 1.35rem);
-  font-weight: 800;
-  color: var(--jcp-color-text, #0f172a);
+  margin: 0.75rem 0 0;
+  max-width: 28rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: #64748b;
 }
 
 .jpd-hero-secondary {
@@ -3157,9 +3159,9 @@ body.jcp-job-proof-demo .jpd-punch {
 
 .jpd-theater__channel {
   display: flex;
-  flex-direction: column;
-  gap: 0.05rem;
-  padding: 0.42rem 0.35rem 0.42rem 0.55rem;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.35rem 0.4rem 0.45rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   border-left: 3px solid transparent;
   opacity: 1;
@@ -3183,6 +3185,48 @@ body.jcp-job-proof-demo .jpd-punch {
   background: rgba(255, 255, 255, 0.06);
 }
 
+.jpd-theater__channel-thumb {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 2.15rem;
+  height: 1.65rem;
+  border-radius: 0.28rem;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.jpd-theater__channel-thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.jpd-theater__channel-thumb--gbp {
+  background: #4285f4;
+}
+
+.jpd-theater__channel-thumb--star {
+  background: #f59e0b;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+.jpd-theater__channel-thumb--dir {
+  background: var(--jpd-orange);
+}
+
+.jpd-theater__channel-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
 .jpd-theater__channel strong {
   font-size: 0.72rem;
   font-weight: 800;
@@ -3191,7 +3235,7 @@ body.jcp-job-proof-demo .jpd-punch {
   color: #f8fafc;
 }
 
-.jpd-theater__channel span {
+.jpd-theater__channel-copy > span {
   font-size: 0.68rem;
   font-weight: 600;
   color: #94a3b8;
@@ -3305,12 +3349,7 @@ body.jcp-job-proof-demo .jpd-cred-strip__stats span {
 }
 
 body.jcp-job-proof-demo .jpd-cred-strip__works {
-  margin: 1.5rem auto 0;
-  padding-top: 1.25rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  display: grid;
-  gap: 0.85rem;
-  max-width: 48rem;
+  display: none;
 }
 
 body.jcp-job-proof-demo .jpd-cred-strip__works-label {
@@ -3456,7 +3495,33 @@ body.jcp-job-proof-demo .jpd-workflow__field figcaption {
 }
 
 body.jcp-job-proof-demo .jpd-workflow__integrations {
-  display: none;
+  display: grid;
+  gap: 0.85rem;
+  align-content: start;
+  padding: 1.15rem 1.1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: #fff;
+}
+
+body.jcp-job-proof-demo .jpd-workflow__integ-label {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+body.jcp-job-proof-demo .jpd-logo-row--light {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 0.65rem;
+}
+
+body.jcp-job-proof-demo .jpd-logo-row--light li {
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 .jpd-compare {
@@ -4535,5 +4600,507 @@ body.jcp-job-proof-demo .jpd-final-cta .cta-secondary-link a:hover {
     transition: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+}
+
+/* ---- CRO refinement: map / calc / trial / FAQ / sticky ---- */
+body.jcp-job-proof-demo .jpd-map {
+  background: #f8fafc;
+}
+
+body.jcp-job-proof-demo .jpd-map__head {
+  max-width: 46rem;
+  margin: 0 auto 1.5rem;
+  text-align: center;
+  display: grid;
+  gap: 0.65rem;
+}
+
+body.jcp-job-proof-demo .jpd-map__lead {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: #475569;
+}
+
+body.jcp-job-proof-demo .jpd-map__source {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+body.jcp-job-proof-demo .jpd-map__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+}
+
+body.jcp-job-proof-demo .jpd-map__tab {
+  appearance: none;
+  border: 1px solid rgba(15, 23, 42, 0.14);
+  background: #fff;
+  color: #334155;
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+body.jcp-job-proof-demo .jpd-map__tab.is-active,
+body.jcp-job-proof-demo .jpd-map__tab[aria-selected="true"] {
+  border-color: rgba(255, 80, 62, 0.45);
+  background: #fff7f5;
+  color: var(--jpd-navy, #0f172a);
+}
+
+body.jcp-job-proof-demo .jpd-map__legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  margin: 0 0 1.15rem;
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: #475569;
+}
+
+body.jcp-job-proof-demo .jpd-map__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+body.jcp-job-proof-demo .jpd-map__legend-item i {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+body.jcp-job-proof-demo .jpd-map__legend-item--red i {
+  background: #ef4444;
+}
+
+body.jcp-job-proof-demo .jpd-map__legend-item--green i {
+  background: #22c55e;
+}
+
+body.jcp-job-proof-demo .jpd-map__market {
+  display: none;
+}
+
+body.jcp-job-proof-demo .jpd-map__market.is-active {
+  display: grid;
+  gap: 0.85rem;
+}
+
+body.jcp-job-proof-demo .jpd-map__market-meta {
+  display: grid;
+  gap: 0.15rem;
+  text-align: center;
+}
+
+body.jcp-job-proof-demo .jpd-map__market-meta strong {
+  font-size: 1.1rem;
+  color: var(--jpd-navy, #0f172a);
+}
+
+body.jcp-job-proof-demo .jpd-map__market-meta span {
+  font-size: 0.9rem;
+  color: #64748b;
+}
+
+body.jcp-job-proof-demo .jpd-map__compare {
+  display: grid;
+  gap: 0.85rem;
+  max-width: 52rem;
+  margin: 0 auto;
+}
+
+@media (min-width: 720px) {
+  body.jcp-job-proof-demo .jpd-map__compare {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+body.jcp-job-proof-demo .jpd-map__panel {
+  border-radius: 1rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+}
+
+body.jcp-job-proof-demo .jpd-map__panel-head {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.85rem 1rem 0.7rem;
+}
+
+body.jcp-job-proof-demo .jpd-map__phase {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+body.jcp-job-proof-demo .jpd-map__panel--before .jpd-map__phase {
+  color: #ef4444;
+}
+
+body.jcp-job-proof-demo .jpd-map__panel--after .jpd-map__phase {
+  color: #16a34a;
+}
+
+body.jcp-job-proof-demo .jpd-map__solv {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--jpd-navy, #0f172a);
+}
+
+body.jcp-job-proof-demo .jpd-map__summary {
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+body.jcp-job-proof-demo .jpd-map__grid-wrap {
+  position: relative;
+  aspect-ratio: 1;
+  max-width: 280px;
+  margin: 0 auto 1rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.08), rgba(15, 23, 42, 0.18)),
+    var(--jpd-map-bg) center / cover no-repeat;
+}
+
+body.jcp-job-proof-demo .jpd-map__geo {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2.5px;
+  padding: 0.55rem;
+  box-sizing: border-box;
+}
+
+body.jcp-job-proof-demo .jpd-map__cell {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.28), inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  background: radial-gradient(circle at 35% 30%, #f87171, #ef4444 55%, #b91c1c);
+}
+
+body.jcp-job-proof-demo .jpd-map__cell[data-rank="1"],
+body.jcp-job-proof-demo .jpd-map__cell[data-rank="2"],
+body.jcp-job-proof-demo .jpd-map__cell[data-rank="3"] {
+  background: radial-gradient(circle at 35% 30%, #4ade80, #22c55e 55%, #15803d);
+}
+
+body.jcp-job-proof-demo .jpd-map__cell[data-rank="4"],
+body.jcp-job-proof-demo .jpd-map__cell[data-rank="5"],
+body.jcp-job-proof-demo .jpd-map__cell[data-rank="6"],
+body.jcp-job-proof-demo .jpd-map__cell[data-rank="7"],
+body.jcp-job-proof-demo .jpd-map__cell[data-rank="8"],
+body.jcp-job-proof-demo .jpd-map__cell[data-rank="9"],
+body.jcp-job-proof-demo .jpd-map__cell[data-rank="10"] {
+  background: radial-gradient(circle at 35% 30%, #fcd34d, #f59e0b 60%, #d97706);
+}
+
+body.jcp-job-proof-demo .jpd-map__takeaways {
+  list-style: none;
+  margin: 1.5rem auto 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+  max-width: 48rem;
+}
+
+@media (min-width: 800px) {
+  body.jcp-job-proof-demo .jpd-map__takeaways {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+body.jcp-job-proof-demo .jpd-map__takeaways li {
+  margin: 0;
+  padding: 1rem 1.05rem;
+  border-radius: 0.85rem;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  display: grid;
+  gap: 0.35rem;
+}
+
+body.jcp-job-proof-demo .jpd-map__takeaways strong {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--jpd-orange, #ff503e);
+}
+
+body.jcp-job-proof-demo .jpd-map__takeaways span {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #334155;
+}
+
+body.jcp-job-proof-demo .jpd-calc {
+  background: #fff;
+}
+
+body.jcp-job-proof-demo .jpd-calc__head {
+  max-width: 40rem;
+  margin: 0 auto 1.25rem;
+  text-align: center;
+  display: grid;
+  gap: 0.55rem;
+}
+
+body.jcp-job-proof-demo .jpd-calc__card {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border-radius: 1.15rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: #f8fafc;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.05);
+}
+
+body.jcp-job-proof-demo .jpd-calc__fields {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+body.jcp-job-proof-demo .jpd-calc__field {
+  display: grid;
+  gap: 0.45rem;
+  font-size: 0.98rem;
+  font-weight: 650;
+  color: var(--jpd-navy, #0f172a);
+}
+
+body.jcp-job-proof-demo .jpd-calc__field input {
+  width: 100%;
+  min-height: 3rem;
+  border-radius: 0.65rem;
+  border: 1px solid rgba(15, 23, 42, 0.16);
+  padding: 0.65rem 0.85rem;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  background: #fff;
+}
+
+body.jcp-job-proof-demo .jpd-calc__result {
+  margin-top: 1.25rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.1);
+  display: grid;
+  gap: 0.65rem;
+}
+
+body.jcp-job-proof-demo .jpd-calc__kicker {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--jpd-orange, #ff503e);
+}
+
+body.jcp-job-proof-demo .jpd-calc__result-title {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.4vw, 1.55rem);
+  line-height: 1.25;
+  color: var(--jpd-navy, #0f172a);
+}
+
+body.jcp-job-proof-demo .jpd-calc__result-body,
+body.jcp-job-proof-demo .jpd-calc__result-note {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #475569;
+}
+
+body.jcp-job-proof-demo .jpd-calc__skip {
+  margin: 1rem 0 0;
+  text-align: center;
+}
+
+body.jcp-job-proof-demo .jpd-calc__skip a {
+  font-weight: 750;
+  color: var(--jpd-orange, #ff503e);
+}
+
+body.jcp-job-proof-demo .jpd-trial {
+  padding: clamp(2.5rem, 5vw, 4rem) 0;
+  background:
+    linear-gradient(180deg, rgba(255, 80, 62, 0.12), transparent 35%),
+    linear-gradient(135deg, #0b1220 0%, #152033 48%, #0f172a 100%);
+  color: #fff;
+}
+
+body.jcp-job-proof-demo .jpd-trial__layout {
+  display: grid;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+@media (min-width: 900px) {
+  body.jcp-job-proof-demo .jpd-trial__layout {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 2rem;
+  }
+}
+
+body.jcp-job-proof-demo .jpd-eyebrow--on-dark {
+  color: #ff7a6a;
+}
+
+body.jcp-job-proof-demo .jpd-trial__title {
+  margin: 0.5rem 0 0.75rem;
+  font-size: clamp(1.55rem, 3vw, 2.15rem);
+  line-height: 1.15;
+  color: #fff;
+}
+
+body.jcp-job-proof-demo .jpd-trial__sub {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+body.jcp-job-proof-demo .jpd-trial__panel {
+  padding: 1.35rem 1.25rem;
+  border-radius: 1.1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: grid;
+  gap: 1rem;
+}
+
+body.jcp-job-proof-demo .jpd-trial__benefits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+
+body.jcp-job-proof-demo .jpd-trial__benefits li {
+  position: relative;
+  padding-left: 1.45rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+body.jcp-job-proof-demo .jpd-trial__benefits li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #4ade80;
+  font-weight: 800;
+}
+
+body.jcp-job-proof-demo .jpd-trial__cta {
+  justify-self: start;
+}
+
+body.jcp-job-proof-demo .jpd-trial__micro {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+body.jcp-job-proof-demo .jpd-faq__head {
+  max-width: 36rem;
+  margin: 0 auto 1.25rem;
+  text-align: center;
+}
+
+body.jcp-job-proof-demo .jpd-faq__list {
+  max-width: 44rem;
+  margin: 0 auto;
+  display: grid;
+  gap: 0.65rem;
+}
+
+body.jcp-job-proof-demo .jpd-faq__item {
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 0.85rem;
+  background: #fff;
+  padding: 0.85rem 1rem;
+}
+
+body.jcp-job-proof-demo .jpd-faq__item summary {
+  cursor: pointer;
+  font-weight: 750;
+  color: var(--jpd-navy, #0f172a);
+  list-style: none;
+}
+
+body.jcp-job-proof-demo .jpd-faq__item summary::-webkit-details-marker {
+  display: none;
+}
+
+body.jcp-job-proof-demo .jpd-faq__item p {
+  margin: 0.65rem 0 0;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  color: #475569;
+}
+
+body.jcp-job-proof-demo .jpd-trust__reviews-title {
+  text-align: center;
+  max-width: 28rem;
+  margin: 0 auto 1.35rem;
+}
+
+body.jcp-job-proof-demo .jpd-sticky-cta {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  body.jcp-job-proof-demo .jpd-sticky-cta {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1040;
+    display: none;
+    padding: 0.65rem 0.85rem calc(0.65rem + env(safe-area-inset-bottom, 0px));
+    background: rgba(255, 255, 255, 0.96);
+    border-top: 1px solid rgba(15, 23, 42, 0.1);
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  body.jcp-job-proof-demo .jpd-sticky-cta.is-visible {
+    display: block;
+  }
+
+  body.jcp-job-proof-demo .jpd-sticky-cta .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  body.jcp-job-proof-demo.has-jpd-sticky {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
   }
 }

@@ -698,7 +698,21 @@
     if (!optin) return;
     pushDemoFormViewed();
     window.setTimeout(function () {
-      optin.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      try {
+        optin.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (e) {
+        optin.scrollIntoView(true);
+      }
+      var email = document.getElementById('jpd-email');
+      if (email) {
+        window.setTimeout(function () {
+          try {
+            email.focus({ preventScroll: true });
+          } catch (err) {
+            email.focus();
+          }
+        }, 420);
+      }
     }, 80);
   }
 
@@ -728,6 +742,9 @@
     state.niche = trade;
     state.nicheLabel = label || trade;
     state.optedIn = true;
+    try {
+      document.dispatchEvent(new CustomEvent('jpd:optedin'));
+    } catch (eOpt) {}
     try {
       sessionStorage.setItem(OPTIN_SESSION_KEY, '1');
       sessionStorage.setItem(
@@ -788,7 +805,7 @@
     var tradeLabel = getBusinessTypeLabel(prefix);
     var errId = isExit ? 'jpdExitOptinError' : 'jpdOptinError';
     var btnId = isExit ? 'jpdExitOptinSubmit' : 'jpdOptinSubmit';
-    var defaultBtn = isExit ? 'Send me my demo →' : 'Show me my personalized demo →';
+    var defaultBtn = isExit ? 'Send me my demo →' : 'Show me my demo →';
 
     showOptinError('', errId);
     if (!validEmail(email)) {
@@ -1446,9 +1463,12 @@
     if (tracked) {
       var evt = tracked.getAttribute('data-jpd-track') || '';
       if (evt) {
+        var src = tracked.getAttribute('data-jpd-source') || tracked.getAttribute('data-jpd-section') || evt;
         track(evt, {
           section: tracked.getAttribute('data-jpd-section') || '',
-          source: tracked.getAttribute('data-jpd-source') || tracked.getAttribute('data-jpd-section') || evt,
+          source: src,
+          cta_source: src,
+          force: evt === 'DemoCTA',
         });
       }
     }
@@ -1800,6 +1820,144 @@
     }
   }
 
+  function setupMapTabs() {
+    var tabs = document.querySelectorAll('[data-jpd-map-tab]');
+    if (!tabs.length) return;
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        var id = tab.getAttribute('data-jpd-map-tab');
+        if (!id) return;
+        tabs.forEach(function (btn) {
+          var on = btn.getAttribute('data-jpd-map-tab') === id;
+          btn.classList.toggle('is-active', on);
+          btn.setAttribute('aria-selected', on ? 'true' : 'false');
+        });
+        document.querySelectorAll('[data-jpd-map-panel]').forEach(function (panel) {
+          var on = panel.getAttribute('data-jpd-map-panel') === id;
+          panel.classList.toggle('is-active', on);
+          panel.hidden = !on;
+        });
+      });
+    });
+  }
+
+  function setupCalculator() {
+    var form = document.getElementById('jpdCalcForm');
+    var result = document.getElementById('jpdCalcResult');
+    if (!form || !result) return;
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var jobsEl = document.getElementById('jpdCalcJobs');
+      var usedEl = document.getElementById('jpdCalcUsed');
+      var jobs = Math.max(0, parseInt(jobsEl && jobsEl.value, 10) || 0);
+      var used = Math.max(0, parseInt(usedEl && usedEl.value, 10) || 0);
+      if (used > jobs) used = jobs;
+      var annual = jobs * 52;
+      var usedAnnual = used * 52;
+      var unused = Math.max(0, annual - usedAnnual);
+      var annualEl = document.getElementById('jpdCalcAnnual');
+      var sentence = document.getElementById('jpdCalcSentence');
+      if (annualEl) annualEl.textContent = String(annual);
+      if (sentence) {
+        sentence.textContent =
+          'If only ' +
+          usedAnnual +
+          ' make it online, that means roughly ' +
+          unused +
+          ' completed jobs disappear after the invoice gets paid.';
+      }
+      result.hidden = false;
+      try {
+        result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      } catch (err) {}
+    });
+  }
+
+  function setupStickyCta() {
+    if (isRunPage) return;
+    var sticky = document.getElementById('jpdStickyCta');
+    var hero = document.getElementById('proof');
+    var optin = document.getElementById('jpd-optin');
+    if (!sticky || !hero) return;
+
+    var heroOut = false;
+    var optinIn = false;
+    var inputFocused = false;
+    var mq = null;
+    try {
+      mq = window.matchMedia('(max-width: 767px)');
+    } catch (e) {}
+
+    function refresh() {
+      var mobile = mq ? mq.matches : window.innerWidth <= 767;
+      var show =
+        mobile &&
+        heroOut &&
+        !optinIn &&
+        !inputFocused &&
+        !state.optedIn &&
+        !hasOptInSessionSafe();
+      sticky.classList.toggle('is-visible', show);
+      sticky.hidden = !show;
+      document.body.classList.toggle('has-jpd-sticky', show);
+    }
+
+    if ('IntersectionObserver' in window) {
+      try {
+        new IntersectionObserver(
+          function (entries) {
+            entries.forEach(function (entry) {
+              heroOut = !entry.isIntersecting;
+              refresh();
+            });
+          },
+          { threshold: 0.08 }
+        ).observe(hero);
+      } catch (eHero) {}
+      if (optin) {
+        try {
+          new IntersectionObserver(
+            function (entries) {
+              entries.forEach(function (entry) {
+                optinIn = entry.isIntersecting;
+                refresh();
+              });
+            },
+            { threshold: 0.2 }
+          ).observe(optin);
+        } catch (eOpt) {}
+      }
+    }
+
+    document.addEventListener(
+      'focusin',
+      function (e) {
+        var t = e.target;
+        if (t && /^(INPUT|TEXTAREA|SELECT)$/i.test(t.tagName)) {
+          inputFocused = true;
+          refresh();
+        }
+      },
+      true
+    );
+    document.addEventListener(
+      'focusout',
+      function () {
+        window.setTimeout(function () {
+          var active = document.activeElement;
+          inputFocused = !!(active && /^(INPUT|TEXTAREA|SELECT)$/i.test(active.tagName));
+          refresh();
+        }, 0);
+      },
+      true
+    );
+
+    if (mq && mq.addEventListener) {
+      mq.addEventListener('change', refresh);
+    }
+    refresh();
+  }
+
   function initShared() {
     decorateTrialLinks();
     window.setTimeout(decorateTrialLinks, 300);
@@ -1839,6 +1997,9 @@
     setupFormStarted();
     setupHeroTheater();
     setupTransformReveal();
+    setupMapTabs();
+    setupCalculator();
+    setupStickyCta();
 
     var form = document.getElementById('jpdOptinForm');
     if (form) {
