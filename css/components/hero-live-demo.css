@@ -262,22 +262,29 @@
   }
 }
 
-/* Live demo phone is desktop-only (interactive prototype). Keep visible while editing. */
+/* Old photo+cards visual is hero-desktop only; story phone stays visible on mobile everywhere. */
 @media (max-width: 768px) {
-  .jcp-hero-visual-column:has(.hero-phone-mockup),
-  .jcp-hero-visual:has(.hero-phone-mockup),
-  .hero-visual-stack:has(.hero-phone-mockup) {
+  .jcp-hero .jcp-hero-visual-column:has(.hero-visual-stack),
+  .jcp-hero .jcp-hero-visual:has(.hero-visual-stack),
+  .jcp-hero .hero-visual-stack {
     display: none !important;
   }
 
-  body.jcp-inline-editing .jcp-hero-visual-column:has(.hero-phone-mockup),
-  body.jcp-inline-editing .jcp-hero-visual:has(.hero-phone-mockup),
-  body.jcp-inline-editing .hero-visual-stack:has(.hero-phone-mockup) {
+  body.jcp-inline-editing .jcp-hero .jcp-hero-visual-column:has(.hero-visual-stack),
+  body.jcp-inline-editing .jcp-hero .jcp-hero-visual:has(.hero-visual-stack),
+  body.jcp-inline-editing .jcp-hero .hero-visual-stack {
     display: flex !important;
   }
 
-  body.jcp-inline-editing .jcp-hero-visual-column:has(.hero-phone-mockup) {
+  body.jcp-inline-editing .jcp-hero .jcp-hero-visual-column:has(.hero-visual-stack) {
     display: block !important;
+  }
+
+  .jcp-hero .jcp-hero-visual-column:has(.jcp-story-phone),
+  .jcp-hero .jcp-hero-visual:has(.jcp-story-phone),
+  .jcp-hero .jcp-story-phone {
+    display: flex !important;
+    justify-content: center;
   }
 
   .hero-visual-stack {

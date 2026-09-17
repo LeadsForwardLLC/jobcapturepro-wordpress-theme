@@ -29,25 +29,51 @@ $body_classes = ( $hide_site_chrome ? 'jcp-landing-chrome-hidden' : 'jcp-global-
   <?php wp_head(); ?>
 </head>
 <body <?php body_class( $body_classes ); ?>>
+  <?php
+  if ( function_exists( 'wp_body_open' ) ) {
+    wp_body_open();
+  }
+  ?>
   <div class="jcp-header-stack" id="jcpHeaderStack">
   <?php if ( $hide_site_chrome ) : ?>
-    <header class="jcp-landing-brandbar" role="banner">
-      <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="jcp-landing-brandbar__link" aria-label="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>">
-        <img
-          src="https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png"
-          alt="JobCapturePro"
-          class="jcp-landing-brandbar__logo"
-          width="160"
-          height="36"
-        />
-      </a>
+    <?php
+    $landing_demo_url = function_exists( 'home_url' ) ? home_url( '/demo/' ) : '/demo/';
+    if ( function_exists( 'jcp_campaign_current_variant_key' ) ) {
+      $lp_variant = jcp_campaign_current_variant_key();
+      if ( $lp_variant !== '' ) {
+        $landing_demo_url = add_query_arg( 'lp_variant', $lp_variant, $landing_demo_url );
+      }
+    }
+    ?>
+    <header class="jcp-landing-brandbar" role="banner" data-jcp-landing-brandbar>
+      <div class="jcp-landing-brandbar__inner">
+        <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="jcp-landing-brandbar__link" aria-label="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>">
+          <img
+            src="<?php echo esc_url( get_template_directory_uri() . '/assets/brand/jcp-logo-dark-320.webp' ); ?>"
+            alt="JobCapturePro"
+            class="jcp-landing-brandbar__logo"
+            width="160"
+            height="36"
+            decoding="async"
+            fetchpriority="high"
+            data-no-lazy=""
+            data-skip-lazy=""
+          />
+        </a>
+        <a
+          class="jcp-landing-brandbar__cta"
+          href="<?php echo esc_url( $landing_demo_url ); ?>"
+          data-cta="See it on my business"
+          data-cta-location="landing_sticky_bar"
+        ><?php esc_html_e( 'See it on my business', 'jcp-core' ); ?></a>
+      </div>
     </header>
   <?php else : ?>
   <?php if ( $show_top_banner ) : ?>
     <?php
     $banner      = function_exists( 'jcp_global_settings' ) ? ( jcp_global_settings()['banner'] ?? [] ) : [];
     $banner_url  = function_exists( 'jcp_global_banner_cta_url' ) ? jcp_global_banner_cta_url( $banner ) : home_url( '/pricing' );
-    $headline    = (string) ( $banner['headline'] ?? 'Early Bird:' );
+    $headline    = (string) ( $banner['headline'] ?? 'Start Free Trial:' );
     $message     = (string) ( $banner['text'] ?? '' );
     $code        = trim( (string) ( $banner['code'] ?? '' ) );
     $cta_label   = (string) ( $banner['cta_label'] ?? 'Claim offer' );
@@ -106,4 +132,9 @@ $body_classes = ( $hide_site_chrome ? 'jcp-landing-chrome-hidden' : 'jcp-global-
     }
   })();
   </script>
+  <?php
+  if ( function_exists( 'jcp_case_study_is_current_page' ) && jcp_case_study_is_current_page() && function_exists( 'jcp_case_study_print_capacity_on_page' ) ) {
+    jcp_case_study_print_capacity_on_page();
+  }
+  ?>
   <div class="jcp-shell">

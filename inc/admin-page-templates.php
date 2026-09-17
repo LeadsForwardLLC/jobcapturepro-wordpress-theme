@@ -22,13 +22,16 @@ function jcp_admin_special_page_templates(): array {
 		'pricing'             => 'page-pricing.php',
 		'demo'                => 'page-demo.php',
 		'directory'           => 'page-directory.php',
-		'contact'             => 'page-contact.php',
+		'support'             => 'page-support.php',
+		'contact'             => 'page-support.php',
 		'contact-success'     => 'page-contact-success.php',
 		'help'                => 'page-help.php',
 		'referral-program'    => 'page-referral-program.php',
 		'estimate'            => 'page-estimate.php',
 		'prototype'           => 'page-prototype.php',
 		'company'             => 'page-company.php',
+		'job-proof-demo'      => 'page-job-proof-demo.php',
+		'proof-sprint'        => 'page-proof-sprint.php',
 		'wp-plugin-prototype' => 'page-wp-plugin-prototype.php',
 		'ui-library'          => 'page-ui-library.php',
 	];
@@ -59,6 +62,22 @@ function jcp_admin_minimal_page_templates( array $templates ): array {
 
 	if ( isset( $templates['page-form-landing.php'] ) ) {
 		$out['page-form-landing.php'] = $templates['page-form-landing.php'];
+	}
+
+	if ( isset( $templates['page-job-proof-demo.php'] ) ) {
+		$out['page-job-proof-demo.php'] = $templates['page-job-proof-demo.php'];
+	}
+
+	if ( isset( $templates['page-job-proof-demo-run.php'] ) ) {
+		$out['page-job-proof-demo-run.php'] = $templates['page-job-proof-demo-run.php'];
+	}
+
+	if ( isset( $templates['page-proof-sprint.php'] ) ) {
+		$out['page-proof-sprint.php'] = $templates['page-proof-sprint.php'];
+	}
+
+	if ( isset( $templates['page-sales-tool.php'] ) ) {
+		$out['page-sales-tool.php'] = $templates['page-sales-tool.php'];
 	}
 
 	return $out !== [] ? $out : $templates;

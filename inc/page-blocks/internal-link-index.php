@@ -79,7 +79,7 @@ function jcp_internal_link_is_valid_target( string $path ): bool {
 
 	// Social-style single-segment paths (e.g. /jobcapturepro, /@handle).
 	$segments = array_values( array_filter( explode( '/', trim( $path, '/' ) ) ) );
-	if ( count( $segments ) === 1 && preg_match( '/^@?[a-z0-9_-]{3,}$/i', $segments[0] ) && ! in_array( $segments[0], [ 'demo', 'pricing', 'blog', 'contact', 'features', 'industries', 'resources', 'directory' ], true ) ) {
+	if ( count( $segments ) === 1 && preg_match( '/^@?[a-z0-9_-]{3,}$/i', $segments[0] ) && ! in_array( $segments[0], [ 'demo', 'pricing', 'blog', 'contact', 'support', 'features', 'industries', 'resources', 'directory' ], true ) ) {
 		return false;
 	}
 
@@ -201,7 +201,7 @@ function jcp_internal_link_hub_for_path( string $path, string $post_type ): stri
 	if ( str_starts_with( $path, '/features' ) ) {
 		return 'feature';
 	}
-	if ( in_array( $path, [ '/pricing', '/demo', '/contact' ], true ) ) {
+	if ( in_array( $path, [ '/pricing', '/demo', '/contact', '/support' ], true ) ) {
 		return 'conversion';
 	}
 	if ( str_starts_with( $path, '/blog' ) || str_starts_with( $path, '/resources' ) ) {
@@ -324,10 +324,10 @@ function jcp_internal_link_static_pages(): array {
 			'keywords' => [ 'demo', 'interactive', 'trial' ],
 		],
 		[
-			'path'     => '/contact',
-			'label'    => __( 'Contact', 'jcp-core' ),
+			'path'     => '/support',
+			'label'    => __( 'Support', 'jcp-core' ),
 			'hub'      => 'conversion',
-			'keywords' => [ 'contact', 'sales' ],
+			'keywords' => [ 'support', 'contact', 'help', 'sales' ],
 		],
 		[
 			'path'     => '/blog',
