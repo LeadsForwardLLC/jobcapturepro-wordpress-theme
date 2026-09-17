@@ -787,9 +787,29 @@
     track('demo_completed', { annual: annual, trade: state.trade });
   }
 
+  function restartDemo() {
+    state.demoStep = 0;
+    saveState();
+    var payoff = document.getElementById('psDemoPayoff');
+    var shell = document.querySelector('.ps-demo-shell');
+    if (payoff) payoff.hidden = true;
+    if (shell) shell.hidden = false;
+    renderDemo();
+    var demo = document.getElementById('ps-demo');
+    if (demo) {
+      try {
+        demo.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (e) {
+        demo.scrollIntoView(true);
+      }
+    }
+    track('demo_restarted', { trade: state.trade });
+  }
+
   function setupDemo() {
     var prev = document.getElementById('psDemoPrev');
     var next = document.getElementById('psDemoNext');
+    var restart = document.getElementById('psDemoRestart');
     if (!prev || !next) return;
     prev.addEventListener('click', function () {
       if (state.demoStep > 0) {
@@ -808,6 +828,11 @@
         showDemoPayoff();
       }
     });
+    if (restart) {
+      restart.addEventListener('click', function () {
+        restartDemo();
+      });
+    }
     renderDemo();
   }
 

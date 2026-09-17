@@ -300,6 +300,7 @@ $auth_stats = is_array( $auth['stats'] ?? null ) ? $auth['stats'] : [];
 					<h3><?php esc_html_e( 'One job is useful. Hundreds become a system.', 'jcp-core' ); ?></h3>
 					<p class="ps-demo-payoff__body"><?php esc_html_e( 'Put your next completed jobs through JobCapturePro and watch website proof, Google activity, reviews, social and directory updates stack up from work you already do.', 'jcp-core' ); ?></p>
 					<a class="btn btn-primary ps-btn-xl" href="<?php echo esc_url( $trial_href ); ?>" data-ps-trial data-ps-source="demo_payoff" data-ps-track="trial_cta_clicked"><?php esc_html_e( 'Put My Next Job Through JobCapturePro →', 'jcp-core' ); ?></a>
+					<button type="button" class="ps-demo-payoff__restart" id="psDemoRestart"><?php esc_html_e( '← Replay one job transform', 'jcp-core' ); ?></button>
 				</div>
 			</div>
 		</div>
