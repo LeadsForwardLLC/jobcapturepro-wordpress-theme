@@ -47,7 +47,7 @@ $trial_base = function_exists( 'jcp_core_onboarding_app_url_raw' )
 	<?php body_class(); ?>
 	data-jcp-lp-variant="proof_gap_survey_v1"
 	data-pg-survey-id="proof_gap_survey_v1"
-	data-pg-survey-version="1"
+	data-pg-survey-version="2"
 >
 <?php wp_body_open(); ?>
 
@@ -71,7 +71,7 @@ $trial_base = function_exists( 'jcp_core_onboarding_app_url_raw' )
 				<?php esc_html_e( 'Back', 'jcp-core' ); ?>
 			</button>
 		</div>
-		<div class="pg-progress" id="pgProgress" aria-label="<?php esc_attr_e( 'Survey progress', 'jcp-core' ); ?>">
+		<div class="pg-progress" id="pgProgress" hidden aria-label="<?php esc_attr_e( 'Survey progress', 'jcp-core' ); ?>">
 			<div class="pg-progress__phases" role="list">
 				<span class="pg-progress__phase is-active" data-phase="work" role="listitem"><?php esc_html_e( 'Your work', 'jcp-core' ); ?></span>
 				<span class="pg-progress__phase" data-phase="gap" role="listitem"><?php esc_html_e( 'Your proof gap', 'jcp-core' ); ?></span>

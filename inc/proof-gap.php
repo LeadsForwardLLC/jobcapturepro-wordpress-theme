@@ -14,8 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'JCP_PROOF_GAP_SLUG', 'proof-gap' );
 define( 'JCP_PROOF_GAP_VARIANT', 'proof_gap_survey_v1' );
 define( 'JCP_PROOF_GAP_SURVEY_ID', 'proof_gap_survey_v1' );
-define( 'JCP_PROOF_GAP_SURVEY_VERSION', '1' );
-define( 'JCP_PROOF_GAP_SEED_VERSION', '1' );
+define( 'JCP_PROOF_GAP_SURVEY_VERSION', '2' );
+define( 'JCP_PROOF_GAP_SEED_VERSION', '2' );
 
 /**
  * Request path without leading/trailing slashes.
@@ -175,8 +175,9 @@ function jcp_proof_gap_workflow_options(): array {
 
 /**
  * Jobs-per-week buckets → annual range.
+ * 50+ has a floor only (no invented upper bound).
  *
- * @return array<string, array{label:string,weekly_label:string,min:int,max:int}>
+ * @return array<string, array{label:string,weekly_label:string,min:int,max:?int}>
  */
 function jcp_proof_gap_jobs_buckets(): array {
 	return [
@@ -185,23 +186,78 @@ function jcp_proof_gap_jobs_buckets(): array {
 		'11_20'   => [ 'label' => '11–20', 'weekly_label' => '11–20', 'min' => 572, 'max' => 1040 ],
 		'21_35'   => [ 'label' => '21–35', 'weekly_label' => '21–35', 'min' => 1092, 'max' => 1820 ],
 		'36_50'   => [ 'label' => '36–50', 'weekly_label' => '36–50', 'min' => 1872, 'max' => 2600 ],
-		'50_plus' => [ 'label' => '50+', 'weekly_label' => '50+', 'min' => 2600, 'max' => 5200 ],
+		'50_plus' => [ 'label' => '50+', 'weekly_label' => '50+', 'min' => 2600, 'max' => null ],
 	];
 }
 
 /**
- * Public proof percentage bands.
+ * Public proof frequency options (display + band + fraction bounds).
  *
- * @return array<string, string>
+ * @return array<string, array{label:string,band:string,title:string,min:?float,max:?float}>
  */
 function jcp_proof_gap_proof_percentage_options(): array {
 	return [
-		'0_10'    => '0–10%',
-		'11_25'   => '11–25%',
-		'26_50'   => '26–50%',
-		'51_75'   => '51–75%',
-		'76_100'  => '76–100%',
-		'unknown' => __( 'Not sure', 'jcp-core' ),
+		'0_10' => [
+			'label' => __( 'Almost none', 'jcp-core' ),
+			'title' => 'Almost none',
+			'band'  => '0–10%',
+			'min'   => 0.0,
+			'max'   => 0.10,
+		],
+		'11_25' => [
+			'label' => __( 'A few', 'jcp-core' ),
+			'title' => 'A few',
+			'band'  => '11–25%',
+			'min'   => 0.11,
+			'max'   => 0.25,
+		],
+		'26_50' => [
+			'label' => __( 'About half', 'jcp-core' ),
+			'title' => 'About half',
+			'band'  => '26–50%',
+			'min'   => 0.26,
+			'max'   => 0.50,
+		],
+		'51_75' => [
+			'label' => __( 'Most jobs', 'jcp-core' ),
+			'title' => 'Most jobs',
+			'band'  => '51–75%',
+			'min'   => 0.51,
+			'max'   => 0.75,
+		],
+		'76_100' => [
+			'label' => __( 'Nearly every job', 'jcp-core' ),
+			'title' => 'Nearly every job',
+			'band'  => '76–100%',
+			'min'   => 0.76,
+			'max'   => 1.0,
+		],
+		'unknown' => [
+			'label' => __( 'Honestly, I’m not sure', 'jcp-core' ),
+			'title' => 'Honestly, I’m not sure',
+			'band'  => __( 'Not sure', 'jcp-core' ),
+			'min'   => null,
+			'max'   => null,
+		],
+	];
+}
+
+/**
+ * Two distinct approved reviews for email + trial slots.
+ *
+ * @return array{email:?array<string,mixed>,trial:?array<string,mixed>}
+ */
+function jcp_proof_gap_review_slots(): array {
+	$reviews = function_exists( 'jcp_sales_tool_default_reviews' ) ? jcp_sales_tool_default_reviews() : [];
+	$by_id   = [];
+	foreach ( $reviews as $r ) {
+		if ( is_array( $r ) && ! empty( $r['id'] ) ) {
+			$by_id[ (string) $r['id'] ] = $r;
+		}
+	}
+	return [
+		'email' => $by_id['brian-hardy'] ?? ( $reviews[1] ?? null ),
+		'trial' => $by_id['trent-ellison'] ?? ( $reviews[2] ?? null ),
 	];
 }
 
