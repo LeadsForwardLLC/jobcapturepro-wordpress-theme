@@ -355,11 +355,17 @@ function jcp_demo_ghl_build_webhook_body( string $event, array $params, array $t
  * @return array<string, string[]> Map of event => tags.
  */
 function jcp_demo_survey_allowed_events(): array {
-    return [
+    $events = [
         'demo-opt-in'         => [ 'demo-completed', 'demo-interest' ],
         'demo-phone-entered'  => [ 'demo-phone-entered' ],
         'demo-company-enrich' => [ 'demo-company-enrich' ],
     ];
+    /**
+     * Filter allowed demo-survey GHL Event overrides (event => tags).
+     *
+     * @param array<string, list<string>> $events Map.
+     */
+    return apply_filters( 'jcp_demo_survey_allowed_events', $events );
 }
 
 /**

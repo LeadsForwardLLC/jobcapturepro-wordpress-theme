@@ -36,6 +36,7 @@ function jcp_core_enqueue_assets(): void {
     $jpd_lp  = function_exists( 'jcp_job_proof_demo_is_current' ) && jcp_job_proof_demo_is_current();
     $jpd_run = function_exists( 'jcp_job_proof_demo_run_is_current' ) && jcp_job_proof_demo_run_is_current();
     $ps_lp   = function_exists( 'jcp_proof_sprint_is_current' ) && jcp_proof_sprint_is_current();
+    $pg_lp   = function_exists( 'jcp_proof_gap_is_current' ) && jcp_proof_gap_is_current();
     if ( $jpd_lp || $jpd_run ) {
         jcp_core_enqueue_style( 'jcp-core-base', 'css/base.css' );
         jcp_core_enqueue_style( 'jcp-core-layout', 'css/layout.css', [ 'jcp-core-base' ] );
@@ -178,6 +179,41 @@ function jcp_core_enqueue_assets(): void {
             ];
             wp_add_inline_script(
                 'jcp-core-proof-sprint',
+                'window.JCP_ONBOARDING = window.JCP_ONBOARDING || ' . wp_json_encode( $onb ) . ';',
+                'before'
+            );
+        }
+        return;
+    }
+
+    // /proof-gap/ paid acquisition survey — isolated app shell (Phase 1 foundation).
+    if ( $pg_lp ) {
+        jcp_core_enqueue_style( 'jcp-core-base', 'css/base.css' );
+        jcp_core_enqueue_style( 'jcp-core-layout', 'css/layout.css', [ 'jcp-core-base' ] );
+        jcp_core_enqueue_style( 'jcp-core-buttons', 'css/buttons.css', [ 'jcp-core-layout' ] );
+        jcp_core_enqueue_style( 'jcp-core-components', 'css/components.css', [ 'jcp-core-buttons' ] );
+        jcp_core_enqueue_style( 'jcp-core-utilities', 'css/utilities.css', [ 'jcp-core-components' ] );
+        jcp_core_enqueue_style( 'jcp-core-proof-gap', 'css/pages/proof-gap.css', [ 'jcp-core-buttons', 'jcp-core-components' ] );
+
+        jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
+        jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );
+        jcp_core_enqueue_script( 'jcp-core-proof-gap', 'js/pages/proof-gap.js', [ 'jcp-core-attribution', 'jcp-core-onboarding-handoff' ] );
+
+        wp_add_inline_script(
+            'jcp-core-proof-gap',
+            'window.JCP_CONFIG=window.JCP_CONFIG||{env:"live",baseUrl:' . wp_json_encode( site_url() ) . '};',
+            'before'
+        );
+        if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {
+            $onb = [
+                'url'         => jcp_core_onboarding_app_url_raw(
+                    function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults( 'proof_gap_survey_trial' ) : []
+                ),
+                'sessionId'   => jcp_core_onboarding_hardcoded_session_id(),
+                'utmDefaults' => function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults() : [],
+            ];
+            wp_add_inline_script(
+                'jcp-core-proof-gap',
                 'window.JCP_ONBOARDING = window.JCP_ONBOARDING || ' . wp_json_encode( $onb ) . ';',
                 'before'
             );

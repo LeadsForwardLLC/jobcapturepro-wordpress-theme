@@ -32,6 +32,7 @@ function jcp_admin_special_page_templates(): array {
 		'company'             => 'page-company.php',
 		'job-proof-demo'      => 'page-job-proof-demo.php',
 		'proof-sprint'        => 'page-proof-sprint.php',
+		'proof-gap'           => 'page-proof-gap.php',
 		'wp-plugin-prototype' => 'page-wp-plugin-prototype.php',
 		'ui-library'          => 'page-ui-library.php',
 	];
@@ -74,6 +75,10 @@ function jcp_admin_minimal_page_templates( array $templates ): array {
 
 	if ( isset( $templates['page-proof-sprint.php'] ) ) {
 		$out['page-proof-sprint.php'] = $templates['page-proof-sprint.php'];
+	}
+
+	if ( isset( $templates['page-proof-gap.php'] ) ) {
+		$out['page-proof-gap.php'] = $templates['page-proof-gap.php'];
 	}
 
 	if ( isset( $templates['page-sales-tool.php'] ) ) {

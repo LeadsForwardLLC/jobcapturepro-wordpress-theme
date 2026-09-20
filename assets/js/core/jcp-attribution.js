@@ -24,6 +24,7 @@
     '/why-we-built-jcp': 'founder',
     '/job-proof-demo': 'job_proof_demo',
     '/proof-sprint': 'proof_sprint',
+    '/proof-gap': 'proof_gap_survey_v1',
   };
 
   function readLpVariantFromPath() {

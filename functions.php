@@ -34,6 +34,10 @@ $jcp_proof_sprint_inc = get_template_directory() . '/inc/proof-sprint.php';
 if ( is_readable( $jcp_proof_sprint_inc ) ) {
 	require_once $jcp_proof_sprint_inc;
 }
+$jcp_proof_gap_inc = get_template_directory() . '/inc/proof-gap.php';
+if ( is_readable( $jcp_proof_gap_inc ) ) {
+	require_once $jcp_proof_gap_inc;
+}
 require_once get_template_directory() . '/inc/pricing-plans.php';
 require_once get_template_directory() . '/inc/sales-tool/bootstrap.php';
 require_once get_template_directory() . '/inc/nav-mega-menu.php';
@@ -114,6 +118,10 @@ require_once get_template_directory() . '/inc/form-fields.php';
 
 // REST: Demo Survey form → GHL webhook
 require_once get_template_directory() . '/inc/rest-demo-survey.php';
+$jcp_proof_gap_rest = get_template_directory() . '/inc/rest-proof-gap-survey.php';
+if ( is_readable( $jcp_proof_gap_rest ) ) {
+	require_once $jcp_proof_gap_rest;
+}
 
 // Demo analytics: DB table + REST endpoint
 require_once get_template_directory() . '/inc/demo-analytics.php';
