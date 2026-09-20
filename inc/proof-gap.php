@@ -14,8 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'JCP_PROOF_GAP_SLUG', 'proof-gap' );
 define( 'JCP_PROOF_GAP_VARIANT', 'proof_gap_survey_v1' );
 define( 'JCP_PROOF_GAP_SURVEY_ID', 'proof_gap_survey_v1' );
-define( 'JCP_PROOF_GAP_SURVEY_VERSION', '2' );
-define( 'JCP_PROOF_GAP_SEED_VERSION', '2' );
+define( 'JCP_PROOF_GAP_SURVEY_VERSION', '3' );
+define( 'JCP_PROOF_GAP_SEED_VERSION', '3' );
 
 /**
  * Request path without leading/trailing slashes.
@@ -259,6 +259,50 @@ function jcp_proof_gap_review_slots(): array {
 		'email' => $by_id['brian-hardy'] ?? ( $reviews[1] ?? null ),
 		'trial' => $by_id['trent-ellison'] ?? ( $reviews[2] ?? null ),
 	];
+}
+
+/**
+ * Trade → approved campaign job image map.
+ * Only maps trades with verified matching photography — never a mismatched image.
+ *
+ * @return array<string, array{title:string,photo:?string,neutral:bool}>
+ */
+function jcp_proof_gap_trade_job_assets(): array {
+	$base = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/';
+	$hvac = $base . 'jcp-campaign-hvac-capture-360.webp';
+	$plumb = $base . 'jcp-campaign-job-proof-360.webp'; // water heater = plumbing-appropriate
+
+	$neutral = static function ( string $title ): array {
+		return [
+			'title'   => $title,
+			'photo'   => null,
+			'neutral' => true,
+		];
+	};
+
+	return [
+		'hvac'          => [ 'title' => 'HVAC service call', 'photo' => $hvac, 'neutral' => false ],
+		'plumbing'      => [ 'title' => 'Water heater replacement', 'photo' => $plumb, 'neutral' => false ],
+		'electrical'    => $neutral( 'Electrical panel / field job' ),
+		'roofing'       => $neutral( 'Roofing project' ),
+		'remodeling'    => $neutral( 'Remodel finish' ),
+		'painting'      => $neutral( 'Paint job' ),
+		'landscaping'   => $neutral( 'Landscaping job' ),
+		'garage_door'   => $neutral( 'Garage door service' ),
+		'pest_control'  => $neutral( 'Pest control visit' ),
+		'tree_service'  => $neutral( 'Tree service job' ),
+		'power_washing' => $neutral( 'Power washing job' ),
+		'other'         => $neutral( 'Finished field job' ),
+	];
+}
+
+/**
+ * Whitelisted creative_concept values for ad→funnel continuity.
+ *
+ * @return list<string>
+ */
+function jcp_proof_gap_creative_concepts(): array {
+	return [ 'default', 'empty_window', 'concept_02', 'concept_03' ];
 }
 
 /**

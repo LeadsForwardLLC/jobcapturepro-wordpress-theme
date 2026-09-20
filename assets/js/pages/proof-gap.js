@@ -392,11 +392,66 @@
   function syncQuestionUI(stateId) {
     var field = stateId;
     if (['current_workflow', 'jobs_per_week', 'public_proof_percentage'].indexOf(stateId) === -1) return;
-    var ans = answerForState(stateId === 'jobs_per_week' ? 'jobs_per_week' : stateId);
-    if (ans) {
-      collapseChoiceList(field, summaryValueText(field, ans));
-    } else {
+    var ans = answerForState(stateId);
+    if (!ans) {
       expandChoiceList(field);
+      return;
+    }
+    collapseChoiceList(field, summaryValueText(field, ans));
+    if (stateId === 'current_workflow' && !state.jobs_per_week_bucket) {
+      showInsight('workflow', WORKFLOW_INSIGHTS[ans] || WORKFLOW_INSIGHTS.scattered, 'jobs_per_week', 'Continue →');
+    } else if (stateId === 'jobs_per_week' && !state.public_proof_percentage) {
+      var highVol = ans === '21_35' || ans === '36_50' || ans === '50_plus';
+      showInsight(
+        'jobs',
+        {
+          headline: 'That’s roughly ' + formatAnnualRange() + ' completed jobs every year.',
+          body: highVol
+            ? 'Your team is already creating an enormous amount of real-world marketing material.'
+            : 'You probably don’t have a content-creation problem.',
+          body2: highVol
+            ? 'The question is what happens to it after the job.'
+            : 'Your company is already producing the raw material every week.',
+          extraHtml: typeof buildJobsStackHtml === 'function' ? buildJobsStackHtml() : '',
+        },
+        'public_proof_percentage',
+        'Continue →'
+      );
+    } else if (stateId === 'public_proof_percentage' && state.completed_states.indexOf('proof_gap_result') === -1) {
+      computeUnusedRange();
+      var tier = proofTier(ans);
+      var insight = {
+        headline: '',
+        body: '',
+        body2: '',
+        extraHtml: typeof buildProofGridHtml === 'function' ? buildProofGridHtml(ans) : '',
+      };
+      if (tier === 'low') {
+        insight.headline = 'That means a lot of work may disappear from public view.';
+        insight.body =
+          'Not because the work wasn’t done. Because nobody turned the finished job into proof after it was completed.';
+        if (state.unused_jobs_min != null) {
+          var rangeTxt =
+            state.unused_jobs_max == null
+              ? state.unused_jobs_min.toLocaleString() + '+'
+              : formatUnusedRange();
+          insight.body2 =
+            'Based on your answers: approximately ' + rangeTxt + ' completed jobs/year may not become public proof.';
+        }
+      } else if (tier === 'mid') {
+        insight.headline = 'You’re creating more proof than you’re putting to work.';
+        insight.body =
+          'The opportunity is making the process consistent without adding another manual marketing task.';
+      } else if (tier === 'high') {
+        insight.headline = 'You’re already doing the hard part.';
+        insight.body =
+          'Your opportunity may be less about creating more proof and more about eliminating the manual work required to distribute it.';
+      } else {
+        insight.headline = 'Not knowing is useful information too.';
+        insight.body =
+          'If it is hard to tell what happens to a finished job after the crew leaves, the process probably is not as visible or repeatable as it could be.';
+      }
+      showInsight('proof', insight, 'proof_gap_result', 'See My Proof Gap →');
     }
   }
 

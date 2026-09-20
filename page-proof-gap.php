@@ -47,7 +47,7 @@ $trial_base = function_exists( 'jcp_core_onboarding_app_url_raw' )
 	<?php body_class(); ?>
 	data-jcp-lp-variant="proof_gap_survey_v1"
 	data-pg-survey-id="proof_gap_survey_v1"
-	data-pg-survey-version="2"
+	data-pg-survey-version="3"
 >
 <?php wp_body_open(); ?>
 
@@ -60,8 +60,8 @@ $trial_base = function_exists( 'jcp_core_onboarding_app_url_raw' )
 				<img
 					src="<?php echo esc_url( $logo_url ); ?>"
 					alt="JobCapturePro"
-					width="140"
-					height="32"
+					width="120"
+					height="28"
 					decoding="async"
 					fetchpriority="high"
 					data-no-lazy
@@ -92,15 +92,18 @@ $trial_base = function_exists( 'jcp_core_onboarding_app_url_raw' )
 <?php
 echo wp_json_encode(
 	[
-		'surveyId'      => JCP_PROOF_GAP_SURVEY_ID,
-		'surveyVersion' => JCP_PROOF_GAP_SURVEY_VERSION,
-		'lpVariant'     => JCP_PROOF_GAP_VARIANT,
-		'restUrl'       => rest_url( 'jcp/v1/proof-gap-survey-submit' ),
-		'trialBase'     => $trial_base,
-		'trades'        => function_exists( 'jcp_proof_gap_trade_options' ) ? jcp_proof_gap_trade_options() : [],
-		'workflows'     => function_exists( 'jcp_proof_gap_workflow_options' ) ? jcp_proof_gap_workflow_options() : [],
-		'jobsBuckets'   => function_exists( 'jcp_proof_gap_jobs_buckets' ) ? jcp_proof_gap_jobs_buckets() : [],
-		'proofPct'      => function_exists( 'jcp_proof_gap_proof_percentage_options' ) ? jcp_proof_gap_proof_percentage_options() : [],
+		'surveyId'          => JCP_PROOF_GAP_SURVEY_ID,
+		'surveyVersion'     => JCP_PROOF_GAP_SURVEY_VERSION,
+		'lpVariant'         => JCP_PROOF_GAP_VARIANT,
+		'restUrl'           => rest_url( 'jcp/v1/proof-gap-survey-submit' ),
+		'trialBase'         => $trial_base,
+		'campaignBase'      => trailingslashit( get_template_directory_uri() ) . 'assets/campaign/',
+		'trades'            => function_exists( 'jcp_proof_gap_trade_options' ) ? jcp_proof_gap_trade_options() : [],
+		'workflows'         => function_exists( 'jcp_proof_gap_workflow_options' ) ? jcp_proof_gap_workflow_options() : [],
+		'jobsBuckets'       => function_exists( 'jcp_proof_gap_jobs_buckets' ) ? jcp_proof_gap_jobs_buckets() : [],
+		'proofPct'          => function_exists( 'jcp_proof_gap_proof_percentage_options' ) ? jcp_proof_gap_proof_percentage_options() : [],
+		'tradeAssets'       => function_exists( 'jcp_proof_gap_trade_job_assets' ) ? jcp_proof_gap_trade_job_assets() : [],
+		'creativeConcepts'  => function_exists( 'jcp_proof_gap_creative_concepts' ) ? jcp_proof_gap_creative_concepts() : [ 'default' ],
 	]
 );
 ?>
