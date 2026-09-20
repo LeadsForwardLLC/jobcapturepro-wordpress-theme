@@ -126,6 +126,9 @@ if ( is_readable( $jcp_proof_gap_rest ) ) {
 // Demo analytics: DB table + REST endpoint
 require_once get_template_directory() . '/inc/demo-analytics.php';
 
+// Funnel analytics: first-party events (no PII) + REST ingest + report helper
+require_once get_template_directory() . '/inc/funnel-analytics.php';
+
 // Migrate /contact → /support + 301
 require_once get_template_directory() . '/inc/support-page-migrate.php';
 
@@ -136,6 +139,7 @@ if ( is_admin() ) {
     require_once get_template_directory() . '/inc/admin-theme-docs.php';
     require_once get_template_directory() . '/inc/admin-block-library.php';
     require_once get_template_directory() . '/inc/admin-demo-analytics.php';
+    require_once get_template_directory() . '/inc/admin-funnel-analytics.php';
     require_once get_template_directory() . '/inc/admin-global-settings.php';
 }
 
