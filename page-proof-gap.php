@@ -96,6 +96,7 @@ echo wp_json_encode(
 		'surveyVersion'     => JCP_PROOF_GAP_SURVEY_VERSION,
 		'lpVariant'         => JCP_PROOF_GAP_VARIANT,
 		'restUrl'           => rest_url( 'jcp/v1/proof-gap-survey-submit' ),
+		'funnelEventUrl'    => rest_url( 'jcp/v1/funnel-event' ),
 		'trialBase'         => $trial_base,
 		'campaignBase'      => trailingslashit( get_template_directory_uri() ) . 'assets/campaign/',
 		'trades'            => function_exists( 'jcp_proof_gap_trade_options' ) ? jcp_proof_gap_trade_options() : [],

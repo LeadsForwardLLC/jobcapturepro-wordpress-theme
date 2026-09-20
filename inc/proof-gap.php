@@ -14,8 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'JCP_PROOF_GAP_SLUG', 'proof-gap' );
 define( 'JCP_PROOF_GAP_VARIANT', 'proof_gap_survey_v1' );
 define( 'JCP_PROOF_GAP_SURVEY_ID', 'proof_gap_survey_v1' );
-define( 'JCP_PROOF_GAP_SURVEY_VERSION', '5' );
-define( 'JCP_PROOF_GAP_SEED_VERSION', '5' );
+define( 'JCP_PROOF_GAP_SURVEY_VERSION', '6' );
+define( 'JCP_PROOF_GAP_SEED_VERSION', '6' );
 
 /**
  * Request path without leading/trailing slashes.

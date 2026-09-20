@@ -1,9 +1,13 @@
 <?php
 /**
- * Funnel Analytics: first-party events table, REST ingest, report helper.
- * No PII columns (no email/name/phone/business_name).
+ * First-party Funnel Analytics — shared non-PII event layer + reporting helpers.
  *
- * For proof-gap.js (other agent): funnelEventUrl = rest_url( 'jcp/v1/funnel-event' )
+ * Storage: {$wpdb->prefix}jcp_funnel_events
+ * Ingest:  POST /wp-json/jcp/v1/funnel-event
+ * Admin:   JCP → Funnel Analytics
+ *
+ * Retention: raw events purged after 120 days (aggregates are computed live).
+ * Demo funnel reports can adapt from existing jcp_demo_events (no PII columns used).
  *
  * @package JCP_Core
  */
@@ -12,140 +16,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-/** Table name (without prefix). */
 define( 'JCP_FUNNEL_EVENTS_TABLE', 'jcp_funnel_events' );
-
-/** Retention days for funnel events. */
-define( 'JCP_FUNNEL_EVENTS_RETENTION_DAYS', 120 );
-
-/** Cron hook for retention cleanup. */
-define( 'JCP_FUNNEL_ANALYTICS_RETENTION_CRON', 'jcp_funnel_analytics_retention' );
-
-/** Max public POSTs per IP per minute (rate-safe ingest). */
-define( 'JCP_FUNNEL_EVENT_RATE_LIMIT', 60 );
+define( 'JCP_FUNNEL_ANALYTICS_RETENTION_DAYS', 120 );
+define( 'JCP_FUNNEL_ANALYTICS_META_OPTION', 'jcp_funnel_analytics_meta' );
 
 /**
- * Allowed funnel event names for REST ingest.
- *
- * @return string[]
- */
-function jcp_funnel_analytics_allowed_event_names(): array {
-	return [
-		'SurveyLandingViewed',
-		'SurveyStarted',
-		'SurveyQuestionAnswered',
-		'SurveyResultViewed',
-		'EmailCaptureViewed',
-		'EmailSubmitted',
-		'ProductRevealStarted',
-		'ProductRevealCompleted',
-		'TrialCTAViewed',
-		'TrialCTAClicked',
-		'SurveyResumed',
-		'SurveyExited',
-	];
-}
-
-/**
- * Stage definitions for proof_gap unique-session funnel.
- * SurveyQuestionAnswered stages are scoped by question_id.
- *
- * @return array<int, array{key: string, label: string, event_name: string, question_id?: string}>
- */
-function jcp_funnel_analytics_proof_gap_stages(): array {
-	return [
-		[
-			'key'        => 'landing_viewed',
-			'label'      => 'SurveyLandingViewed',
-			'event_name' => 'SurveyLandingViewed',
-		],
-		[
-			'key'        => 'survey_started',
-			'label'      => 'SurveyStarted',
-			'event_name' => 'SurveyStarted',
-		],
-		[
-			'key'          => 'answered_trade',
-			'label'        => 'SurveyQuestionAnswered(trade)',
-			'event_name'   => 'SurveyQuestionAnswered',
-			'question_id'  => 'trade',
-		],
-		[
-			'key'          => 'answered_workflow',
-			'label'        => 'SurveyQuestionAnswered(current_workflow)',
-			'event_name'   => 'SurveyQuestionAnswered',
-			'question_id'  => 'current_workflow',
-		],
-		[
-			'key'          => 'answered_jobs',
-			'label'        => 'SurveyQuestionAnswered(jobs_per_week)',
-			'event_name'   => 'SurveyQuestionAnswered',
-			'question_id'  => 'jobs_per_week',
-		],
-		[
-			'key'          => 'answered_proof',
-			'label'        => 'SurveyQuestionAnswered(public_proof_percentage)',
-			'event_name'   => 'SurveyQuestionAnswered',
-			'question_id'  => 'public_proof_percentage',
-		],
-		[
-			'key'        => 'result_viewed',
-			'label'      => 'SurveyResultViewed',
-			'event_name' => 'SurveyResultViewed',
-		],
-		[
-			'key'        => 'email_capture_viewed',
-			'label'      => 'EmailCaptureViewed',
-			'event_name' => 'EmailCaptureViewed',
-		],
-		[
-			'key'        => 'email_submitted',
-			'label'      => 'EmailSubmitted',
-			'event_name' => 'EmailSubmitted',
-		],
-		[
-			'key'        => 'product_reveal_started',
-			'label'      => 'ProductRevealStarted',
-			'event_name' => 'ProductRevealStarted',
-		],
-		[
-			'key'        => 'product_reveal_completed',
-			'label'      => 'ProductRevealCompleted',
-			'event_name' => 'ProductRevealCompleted',
-		],
-		[
-			'key'        => 'trial_cta_viewed',
-			'label'      => 'TrialCTAViewed',
-			'event_name' => 'TrialCTAViewed',
-		],
-		[
-			'key'        => 'trial_cta_clicked',
-			'label'      => 'TrialCTAClicked',
-			'event_name' => 'TrialCTAClicked',
-		],
-	];
-}
-
-/**
- * Create funnel events table if it doesn't exist.
+ * Create funnel events table if needed.
  */
 function jcp_funnel_analytics_maybe_create_table(): void {
 	global $wpdb;
 	$table   = $wpdb->prefix . JCP_FUNNEL_EVENTS_TABLE;
 	$charset = $wpdb->get_charset_collate();
 
-	$sql = "CREATE TABLE $table (
+	$sql = "CREATE TABLE IF NOT EXISTS $table (
 		id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 		event_uuid varchar(64) NOT NULL,
 		session_id varchar(64) NOT NULL,
-		funnel_id varchar(64) NOT NULL DEFAULT 'proof_gap',
+		anonymous_visitor_id varchar(64) DEFAULT NULL,
+		funnel_id varchar(64) NOT NULL,
 		funnel_version varchar(32) DEFAULT NULL,
-		lp_variant varchar(64) DEFAULT NULL,
-		event_name varchar(64) NOT NULL,
-		screen_state varchar(64) DEFAULT NULL,
+		lp_variant varchar(128) DEFAULT NULL,
+		event_name varchar(96) NOT NULL,
+		screen varchar(96) DEFAULT NULL,
 		question_index int(11) DEFAULT NULL,
 		question_id varchar(64) DEFAULT NULL,
-		answer_key varchar(128) DEFAULT NULL,
+		answer_value varchar(128) DEFAULT NULL,
 		trade varchar(64) DEFAULT NULL,
 		jobs_per_week_bucket varchar(64) DEFAULT NULL,
 		proof_gap_band varchar(64) DEFAULT NULL,
@@ -157,98 +52,30 @@ function jcp_funnel_analytics_maybe_create_table(): void {
 		utm_term varchar(255) DEFAULT NULL,
 		has_fbclid tinyint(1) NOT NULL DEFAULT 0,
 		has_ttclid tinyint(1) NOT NULL DEFAULT 0,
-		device_class varchar(32) DEFAULT NULL,
-		referrer_host varchar(255) DEFAULT NULL,
-		creative_concept varchar(128) DEFAULT NULL,
+		device_category varchar(32) DEFAULT NULL,
+		referrer varchar(512) DEFAULT NULL,
+		metadata longtext DEFAULT NULL,
 		created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		PRIMARY KEY  (id),
+		PRIMARY KEY (id),
 		UNIQUE KEY event_uuid (event_uuid),
 		KEY session_id (session_id),
 		KEY funnel_id (funnel_id),
 		KEY event_name (event_name),
 		KEY created_at (created_at),
 		KEY funnel_created (funnel_id, created_at),
-		KEY question_id (question_id),
-		KEY utm_source (utm_source(191)),
-		KEY utm_campaign (utm_campaign(191))
+		KEY question_id (question_id)
 	) $charset;";
 
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 	dbDelta( $sql );
 }
+add_action( 'after_switch_theme', 'jcp_funnel_analytics_maybe_create_table' );
+add_action( 'init', 'jcp_funnel_analytics_maybe_create_table', 5 );
 
 /**
- * Schedule daily retention cron if not already scheduled.
+ * Register REST ingest endpoint (public, non-PII only).
  */
-function jcp_funnel_analytics_schedule_retention(): void {
-	if ( ! wp_next_scheduled( JCP_FUNNEL_ANALYTICS_RETENTION_CRON ) ) {
-		wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', JCP_FUNNEL_ANALYTICS_RETENTION_CRON );
-	}
-}
-
-/**
- * Delete funnel events older than retention window.
- */
-function jcp_funnel_analytics_run_retention(): void {
-	global $wpdb;
-	jcp_funnel_analytics_maybe_create_table();
-	$table = $wpdb->prefix . JCP_FUNNEL_EVENTS_TABLE;
-	$days  = (int) JCP_FUNNEL_EVENTS_RETENTION_DAYS;
-	$wpdb->query(
-		$wpdb->prepare(
-			"DELETE FROM $table WHERE created_at < ( NOW() - INTERVAL %d DAY )",
-			$days
-		)
-	);
-}
-
-/**
- * Simple IP-based rate limit for public ingest. Returns true if allowed.
- */
-function jcp_funnel_analytics_rate_limit_ok(): bool {
-	$ip = '';
-	if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) && is_string( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-		$parts = explode( ',', wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) );
-		$ip    = trim( (string) $parts[0] );
-	} elseif ( ! empty( $_SERVER['REMOTE_ADDR'] ) && is_string( $_SERVER['REMOTE_ADDR'] ) ) {
-		$ip = wp_unslash( $_SERVER['REMOTE_ADDR'] );
-	}
-	$ip = sanitize_text_field( $ip );
-	if ( $ip === '' ) {
-		$ip = 'unknown';
-	}
-	$key   = 'jcp_funnel_rl_' . md5( $ip );
-	$count = (int) get_transient( $key );
-	if ( $count >= (int) JCP_FUNNEL_EVENT_RATE_LIMIT ) {
-		return false;
-	}
-	set_transient( $key, $count + 1, MINUTE_IN_SECONDS );
-	return true;
-}
-
-/**
- * Truncate a sanitized string to max length, or null if empty.
- *
- * @param mixed $value Raw value.
- * @param int   $max   Max length.
- * @return string|null
- */
-function jcp_funnel_analytics_nullable_str( $value, int $max ): ?string {
-	if ( ! is_string( $value ) && ! is_numeric( $value ) ) {
-		return null;
-	}
-	$s = sanitize_text_field( (string) $value );
-	$s = trim( $s );
-	if ( $s === '' ) {
-		return null;
-	}
-	return substr( $s, 0, $max );
-}
-
-/**
- * Register REST route for funnel events.
- */
-function jcp_funnel_analytics_register_rest_route(): void {
+function jcp_funnel_analytics_register_rest(): void {
 	register_rest_route(
 		'jcp/v1',
 		'/funnel-event',
@@ -256,605 +83,696 @@ function jcp_funnel_analytics_register_rest_route(): void {
 			'methods'             => 'POST',
 			'permission_callback' => '__return_true',
 			'callback'            => 'jcp_funnel_analytics_handle_event',
-			'args'                => [
-				'event_uuid'           => [
-					'required'          => true,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-					'validate_callback' => static function ( $v ) {
-						return is_string( $v ) && strlen( $v ) >= 8 && strlen( $v ) <= 64;
-					},
-				],
-				'session_id'           => [
-					'required'          => true,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-					'validate_callback' => static function ( $v ) {
-						return is_string( $v ) && strlen( $v ) >= 1 && strlen( $v ) <= 64;
-					},
-				],
-				'funnel_id'            => [
-					'required'          => false,
-					'type'              => 'string',
-					'default'           => 'proof_gap',
-					'sanitize_callback' => 'sanitize_key',
-				],
-				'funnel_version'       => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'lp_variant'           => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'event_name'           => [
-					'required'          => true,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-					'validate_callback' => static function ( $v ) {
-						return is_string( $v ) && in_array( $v, jcp_funnel_analytics_allowed_event_names(), true );
-					},
-				],
-				'screen_state'         => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'question_index'       => [
-					'required' => false,
-					'type'     => 'integer',
-				],
-				'question_id'          => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_key',
-				],
-				'answer_key'           => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'trade'                => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'jobs_per_week_bucket' => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'proof_gap_band'       => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'workflow'             => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'utm_source'           => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'utm_medium'           => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'utm_campaign'         => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'utm_content'          => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'utm_term'             => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'has_fbclid'           => [
-					'required' => false,
-					'type'     => 'boolean',
-				],
-				'has_ttclid'           => [
-					'required' => false,
-					'type'     => 'boolean',
-				],
-				'device_class'         => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_key',
-				],
-				'referrer_host'        => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-				'creative_concept'     => [
-					'required'          => false,
-					'type'              => 'string',
-					'sanitize_callback' => 'sanitize_text_field',
-				],
-			],
 		]
 	);
 }
+add_action( 'rest_api_init', 'jcp_funnel_analytics_register_rest' );
 
 /**
- * REST handler: rate-limit, dedupe on event_uuid, insert (no PII).
+ * Strip any accidental PII keys from payload arrays.
  *
- * @param \WP_REST_Request $request Request.
- * @return \WP_REST_Response|\WP_Error
+ * @param array $data Raw input.
+ * @return array
  */
-function jcp_funnel_analytics_handle_event( \WP_REST_Request $request ) {
-	if ( ! jcp_funnel_analytics_rate_limit_ok() ) {
-		return new \WP_Error(
-			'jcp_funnel_rate_limited',
-			__( 'Too many requests. Try again shortly.', 'jcp-core' ),
-			[ 'status' => 429 ]
-		);
+function jcp_funnel_analytics_strip_pii( array $data ): array {
+	$blocked = [
+		'email',
+		'phone',
+		'first_name',
+		'last_name',
+		'name',
+		'business_name',
+		'company',
+		'password',
+		'contact_name',
+		'contact_email',
+		'fbclid',
+		'ttclid',
+		'gclid',
+	];
+	foreach ( $blocked as $key ) {
+		unset( $data[ $key ] );
 	}
+	return $data;
+}
 
+/**
+ * Handle funnel event ingest.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return WP_REST_Response|WP_Error
+ */
+function jcp_funnel_analytics_handle_event( WP_REST_Request $request ) {
 	jcp_funnel_analytics_maybe_create_table();
-
 	global $wpdb;
+
+	$params = $request->get_json_params();
+	if ( ! is_array( $params ) ) {
+		$params = $request->get_params();
+	}
+	if ( ! is_array( $params ) ) {
+		return new WP_Error( 'invalid_body', 'Invalid JSON body', [ 'status' => 400 ] );
+	}
+	$params = jcp_funnel_analytics_strip_pii( $params );
+
+	$event_uuid = sanitize_text_field( (string) ( $params['event_uuid'] ?? '' ) );
+	$session_id = sanitize_text_field( (string) ( $params['session_id'] ?? '' ) );
+	$funnel_id  = sanitize_key( (string) ( $params['funnel_id'] ?? '' ) );
+	$event_name = sanitize_text_field( (string) ( $params['event_name'] ?? $params['event'] ?? '' ) );
+
+	if ( $event_uuid === '' || strlen( $event_uuid ) > 64 ) {
+		return new WP_Error( 'missing_uuid', 'event_uuid required', [ 'status' => 400 ] );
+	}
+	if ( $session_id === '' || strlen( $session_id ) > 64 ) {
+		return new WP_Error( 'missing_session', 'session_id required', [ 'status' => 400 ] );
+	}
+	if ( $funnel_id === '' ) {
+		return new WP_Error( 'missing_funnel', 'funnel_id required', [ 'status' => 400 ] );
+	}
+	if ( $event_name === '' || strlen( $event_name ) > 96 ) {
+		return new WP_Error( 'missing_event', 'event_name required', [ 'status' => 400 ] );
+	}
+
 	$table = $wpdb->prefix . JCP_FUNNEL_EVENTS_TABLE;
-
-	$event_uuid = (string) $request->get_param( 'event_uuid' );
-	$session_id = (string) $request->get_param( 'session_id' );
-	$event_name = (string) $request->get_param( 'event_name' );
-
 	$exists = (int) $wpdb->get_var(
-		$wpdb->prepare(
-			"SELECT 1 FROM $table WHERE event_uuid = %s LIMIT 1",
-			$event_uuid
-		)
+		$wpdb->prepare( "SELECT COUNT(1) FROM $table WHERE event_uuid = %s", $event_uuid )
 	);
-	if ( $exists ) {
-		return new \WP_REST_Response( [ 'ok' => true, 'deduped' => true ], 200 );
+	if ( $exists > 0 ) {
+		jcp_funnel_analytics_bump_meta( 'duplicate_rejected', 1 );
+		return rest_ensure_response( [ 'ok' => true, 'deduped' => true ] );
 	}
 
-	$funnel_id = jcp_funnel_analytics_nullable_str( $request->get_param( 'funnel_id' ), 64 );
-	if ( $funnel_id === null ) {
-		$funnel_id = 'proof_gap';
+	$meta = $params['metadata'] ?? null;
+	if ( is_array( $meta ) ) {
+		$meta = jcp_funnel_analytics_strip_pii( $meta );
+		$meta_json = wp_json_encode( $meta );
+	} else {
+		$meta_json = null;
 	}
-
-	$question_index = $request->get_param( 'question_index' );
-	$qi_val         = null;
-	if ( is_numeric( $question_index ) ) {
-		$qi_val = (int) $question_index;
-	}
-
-	$has_fbclid = $request->get_param( 'has_fbclid' ) ? 1 : 0;
-	$has_ttclid = $request->get_param( 'has_ttclid' ) ? 1 : 0;
 
 	$row = [
 		'event_uuid'           => $event_uuid,
 		'session_id'           => $session_id,
+		'anonymous_visitor_id' => sanitize_text_field( (string) ( $params['anonymous_visitor_id'] ?? '' ) ) ?: null,
 		'funnel_id'            => $funnel_id,
-		'funnel_version'       => jcp_funnel_analytics_nullable_str( $request->get_param( 'funnel_version' ), 32 ),
-		'lp_variant'           => jcp_funnel_analytics_nullable_str( $request->get_param( 'lp_variant' ), 64 ),
+		'funnel_version'       => sanitize_text_field( (string) ( $params['funnel_version'] ?? '' ) ) ?: null,
+		'lp_variant'           => sanitize_text_field( (string) ( $params['lp_variant'] ?? '' ) ) ?: null,
 		'event_name'           => $event_name,
-		'screen_state'         => jcp_funnel_analytics_nullable_str( $request->get_param( 'screen_state' ), 64 ),
-		'question_index'       => $qi_val,
-		'question_id'          => jcp_funnel_analytics_nullable_str( $request->get_param( 'question_id' ), 64 ),
-		'answer_key'           => jcp_funnel_analytics_nullable_str( $request->get_param( 'answer_key' ), 128 ),
-		'trade'                => jcp_funnel_analytics_nullable_str( $request->get_param( 'trade' ), 64 ),
-		'jobs_per_week_bucket' => jcp_funnel_analytics_nullable_str( $request->get_param( 'jobs_per_week_bucket' ), 64 ),
-		'proof_gap_band'       => jcp_funnel_analytics_nullable_str( $request->get_param( 'proof_gap_band' ), 64 ),
-		'workflow'             => jcp_funnel_analytics_nullable_str( $request->get_param( 'workflow' ), 64 ),
-		'utm_source'           => jcp_funnel_analytics_nullable_str( $request->get_param( 'utm_source' ), 255 ),
-		'utm_medium'           => jcp_funnel_analytics_nullable_str( $request->get_param( 'utm_medium' ), 255 ),
-		'utm_campaign'         => jcp_funnel_analytics_nullable_str( $request->get_param( 'utm_campaign' ), 255 ),
-		'utm_content'          => jcp_funnel_analytics_nullable_str( $request->get_param( 'utm_content' ), 255 ),
-		'utm_term'             => jcp_funnel_analytics_nullable_str( $request->get_param( 'utm_term' ), 255 ),
-		'has_fbclid'           => $has_fbclid,
-		'has_ttclid'           => $has_ttclid,
-		'device_class'         => jcp_funnel_analytics_nullable_str( $request->get_param( 'device_class' ), 32 ),
-		'referrer_host'        => jcp_funnel_analytics_nullable_str( $request->get_param( 'referrer_host' ), 255 ),
-		'creative_concept'     => jcp_funnel_analytics_nullable_str( $request->get_param( 'creative_concept' ), 128 ),
+		'screen'               => sanitize_text_field( (string) ( $params['screen'] ?? '' ) ) ?: null,
+		'question_index'       => isset( $params['question_index'] ) && $params['question_index'] !== '' && $params['question_index'] !== null
+			? (int) $params['question_index']
+			: null,
+		'question_id'          => sanitize_text_field( (string) ( $params['question_id'] ?? '' ) ) ?: null,
+		'answer_value'         => sanitize_text_field( (string) ( $params['answer_value'] ?? '' ) ) ?: null,
+		'trade'                => sanitize_text_field( (string) ( $params['trade'] ?? '' ) ) ?: null,
+		'jobs_per_week_bucket' => sanitize_text_field( (string) ( $params['jobs_per_week_bucket'] ?? '' ) ) ?: null,
+		'proof_gap_band'       => sanitize_text_field( (string) ( $params['proof_gap_band'] ?? '' ) ) ?: null,
+		'workflow'             => sanitize_text_field( (string) ( $params['workflow'] ?? '' ) ) ?: null,
+		'utm_source'           => sanitize_text_field( (string) ( $params['utm_source'] ?? '' ) ) ?: null,
+		'utm_medium'           => sanitize_text_field( (string) ( $params['utm_medium'] ?? '' ) ) ?: null,
+		'utm_campaign'         => sanitize_text_field( (string) ( $params['utm_campaign'] ?? '' ) ) ?: null,
+		'utm_content'          => sanitize_text_field( (string) ( $params['utm_content'] ?? '' ) ) ?: null,
+		'utm_term'             => sanitize_text_field( (string) ( $params['utm_term'] ?? '' ) ) ?: null,
+		'has_fbclid'           => ! empty( $params['has_fbclid'] ) ? 1 : 0,
+		'has_ttclid'           => ! empty( $params['has_ttclid'] ) ? 1 : 0,
+		'device_category'      => sanitize_text_field( (string) ( $params['device_category'] ?? $params['device_class'] ?? '' ) ) ?: null,
+		'referrer'             => esc_url_raw( (string) ( $params['referrer'] ?? '' ) ) ?: null,
+		'metadata'             => $meta_json,
 		'created_at'           => current_time( 'mysql' ),
 	];
 
-	$formats = [
-		'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s',
-		'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d',
-		'%d', '%s', '%s', '%s', '%s',
-	];
-
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- intentional first-party analytics insert.
-	$inserted = $wpdb->insert( $table, $row, $formats );
-
-	if ( $inserted === false ) {
-		// Race on unique event_uuid: treat as success (deduped).
-		$again = (int) $wpdb->get_var(
-			$wpdb->prepare(
-				"SELECT 1 FROM $table WHERE event_uuid = %s LIMIT 1",
-				$event_uuid
-			)
-		);
-		if ( $again ) {
-			return new \WP_REST_Response( [ 'ok' => true, 'deduped' => true ], 200 );
-		}
-		return new \WP_REST_Response( [ 'ok' => true ], 200 );
+	$inserted = $wpdb->insert( $table, $row );
+	if ( false === $inserted ) {
+		jcp_funnel_analytics_bump_meta( 'insert_failures', 1 );
+		return new WP_Error( 'insert_failed', 'Could not store event', [ 'status' => 500 ] );
 	}
 
-	return new \WP_REST_Response( [ 'ok' => true ], 200 );
+	jcp_funnel_analytics_bump_meta( 'last_event_at', current_time( 'mysql' ), false );
+	jcp_funnel_analytics_bump_meta( 'events_24h_hint', 1 );
+
+	return rest_ensure_response( [ 'ok' => true, 'deduped' => false ] );
 }
 
 /**
- * Build WHERE clause fragments for report filters.
+ * Update diagnostics meta option.
  *
- * @param array<string, mixed> $args Report args.
- * @return array{sql: string, params: array<int, mixed>}
+ * @param string $key   Meta key.
+ * @param mixed  $value Value or increment.
+ * @param bool   $incr  Whether to increment.
  */
-function jcp_funnel_analytics_report_where( array $args ): array {
-	$funnel_id    = isset( $args['funnel_id'] ) ? sanitize_key( (string) $args['funnel_id'] ) : 'proof_gap';
-	$date_from    = isset( $args['date_from'] ) ? sanitize_text_field( (string) $args['date_from'] ) : '';
-	$date_to      = isset( $args['date_to'] ) ? sanitize_text_field( (string) $args['date_to'] ) : '';
-	$utm_source   = isset( $args['utm_source'] ) ? sanitize_text_field( (string) $args['utm_source'] ) : '';
-	$utm_campaign = isset( $args['utm_campaign'] ) ? sanitize_text_field( (string) $args['utm_campaign'] ) : '';
+function jcp_funnel_analytics_bump_meta( string $key, $value = 1, bool $incr = true ): void {
+	$meta = get_option( JCP_FUNNEL_ANALYTICS_META_OPTION, [] );
+	if ( ! is_array( $meta ) ) {
+		$meta = [];
+	}
+	if ( $incr ) {
+		$meta[ $key ] = (int) ( $meta[ $key ] ?? 0 ) + (int) $value;
+	} else {
+		$meta[ $key ] = $value;
+	}
+	update_option( JCP_FUNNEL_ANALYTICS_META_OPTION, $meta, false );
+}
 
-	$clauses = [ 'funnel_id = %s' ];
-	$params  = [ $funnel_id ];
-
-	if ( $date_from !== '' && preg_match( '/^\d{4}-\d{2}-\d{2}/', $date_from ) ) {
-		$clauses[] = 'created_at >= %s';
-		$params[]  = substr( $date_from, 0, 10 ) . ' 00:00:00';
-	}
-	if ( $date_to !== '' && preg_match( '/^\d{4}-\d{2}-\d{2}/', $date_to ) ) {
-		$clauses[] = 'created_at <= %s';
-		$params[]  = substr( $date_to, 0, 10 ) . ' 23:59:59';
-	}
-	if ( $utm_source !== '' ) {
-		$clauses[] = 'utm_source = %s';
-		$params[]  = $utm_source;
-	}
-	if ( $utm_campaign !== '' ) {
-		$clauses[] = 'utm_campaign = %s';
-		$params[]  = $utm_campaign;
-	}
-
+/**
+ * Known funnels for admin UI.
+ *
+ * @return array<string,string>
+ */
+function jcp_funnel_analytics_funnels(): array {
 	return [
-		'sql'    => implode( ' AND ', $clauses ),
-		'params' => $params,
+		'proof_gap'    => __( 'Proof Gap', 'jcp-core' ),
+		'demo'         => __( 'Demo', 'jcp-core' ),
+		'proof_sprint' => __( 'Proof Sprint', 'jcp-core' ),
 	];
 }
 
 /**
- * Count distinct sessions for a stage definition under filters.
+ * Canonical stage sequence for Proof Gap (unique-session funnel).
  *
- * @param string               $where_sql Where SQL (placeholders).
- * @param array<int, mixed>    $params    Prepare params.
- * @param array<string, mixed> $stage     Stage def.
- * @return int
+ * @return array<int,array{key:string,label:string,events:string[],lifecycle?:bool}>
  */
-function jcp_funnel_analytics_count_stage_sessions( string $where_sql, array $params, array $stage ): int {
+function jcp_funnel_analytics_proof_gap_stages(): array {
+	return [
+		[ 'key' => 'landing', 'label' => __( 'Landing', 'jcp-core' ), 'events' => [ 'SurveyLandingViewed' ] ],
+		[ 'key' => 'started', 'label' => __( 'Survey started', 'jcp-core' ), 'events' => [ 'SurveyStarted' ] ],
+		[ 'key' => 'trade', 'label' => __( 'Trade answered', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'trade' ],
+		[ 'key' => 'workflow', 'label' => __( 'Workflow answered', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'current_workflow' ],
+		[ 'key' => 'jobs', 'label' => __( 'Jobs answered', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'jobs_per_week' ],
+		[ 'key' => 'proof', 'label' => __( 'Proof answered', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'public_proof_percentage' ],
+		[ 'key' => 'result', 'label' => __( 'Result viewed', 'jcp-core' ), 'events' => [ 'SurveyResultViewed' ] ],
+		[ 'key' => 'email', 'label' => __( 'Email submitted', 'jcp-core' ), 'events' => [ 'EmailSubmitted' ] ],
+		[ 'key' => 'reveal', 'label' => __( 'Product reveal completed', 'jcp-core' ), 'events' => [ 'ProductRevealCompleted' ] ],
+		[ 'key' => 'trial_cta', 'label' => __( 'Trial CTA clicked', 'jcp-core' ), 'events' => [ 'TrialCTAClicked' ] ],
+		[ 'key' => 'trial_started', 'label' => __( 'Trial started', 'jcp-core' ), 'events' => [ 'TrialStarted' ], 'lifecycle' => true ],
+		[ 'key' => 'activated', 'label' => __( 'Activated', 'jcp-core' ), 'events' => [ 'ActivatedTrial' ], 'lifecycle' => true ],
+		[ 'key' => 'paid', 'label' => __( 'Paid', 'jcp-core' ), 'events' => [ 'PaidCustomer' ], 'lifecycle' => true ],
+	];
+}
+
+/**
+ * Parse admin filters from request.
+ *
+ * @return array<string,mixed>
+ */
+function jcp_funnel_analytics_parse_filters(): array {
+	$funnel = sanitize_key( (string) ( $_GET['funnel'] ?? 'proof_gap' ) );
+	if ( ! isset( jcp_funnel_analytics_funnels()[ $funnel ] ) ) {
+		$funnel = 'proof_gap';
+	}
+	$days = (int) ( $_GET['days'] ?? 30 );
+	if ( ! in_array( $days, [ 7, 14, 30, 90 ], true ) ) {
+		$days = 30;
+	}
+	return [
+		'funnel'       => $funnel,
+		'days'         => $days,
+		'utm_source'   => sanitize_text_field( (string) ( $_GET['utm_source'] ?? '' ) ),
+		'utm_campaign' => sanitize_text_field( (string) ( $_GET['utm_campaign'] ?? '' ) ),
+		'utm_content'  => sanitize_text_field( (string) ( $_GET['utm_content'] ?? '' ) ),
+		'lp_variant'   => sanitize_text_field( (string) ( $_GET['lp_variant'] ?? '' ) ),
+		'trade'        => sanitize_text_field( (string) ( $_GET['trade'] ?? '' ) ),
+		'device'       => sanitize_text_field( (string) ( $_GET['device'] ?? '' ) ),
+	];
+}
+
+/**
+ * Count unique sessions for a Proof Gap stage within filter window.
+ *
+ * Sessions are included if their first funnel event in-window qualifies as cohort start
+ * (SurveyLandingViewed or SurveyStarted). Downstream lifecycle stages may attach later
+ * outside the window when session_id matches a cohort session.
+ *
+ * @param array $filters Filters.
+ * @return array{stages:array,summary:array,questions:array,traffic:array,diagnostics:array,lifecycle_connected:bool}
+ */
+function jcp_funnel_analytics_report( array $filters ): array {
+	if ( $filters['funnel'] === 'demo' ) {
+		return jcp_funnel_analytics_demo_adapter_report( $filters );
+	}
+	if ( $filters['funnel'] === 'proof_sprint' ) {
+		return jcp_funnel_analytics_proof_sprint_adapter_report( $filters );
+	}
+	return jcp_funnel_analytics_proof_gap_report( $filters );
+}
+
+/**
+ * @param array $filters Filters.
+ * @return array
+ */
+function jcp_funnel_analytics_proof_gap_report( array $filters ): array {
 	global $wpdb;
+	jcp_funnel_analytics_maybe_create_table();
 	$table = $wpdb->prefix . JCP_FUNNEL_EVENTS_TABLE;
 
-	$extra  = ' AND event_name = %s';
-	$params = array_merge( $params, [ $stage['event_name'] ] );
-	if ( ! empty( $stage['question_id'] ) ) {
-		$extra   .= ' AND question_id = %s';
-		$params[] = $stage['question_id'];
+	$since = gmdate( 'Y-m-d H:i:s', time() - ( (int) $filters['days'] * DAY_IN_SECONDS ) );
+	$where = [ 'funnel_id = %s', 'created_at >= %s' ];
+	$args  = [ 'proof_gap', $since ];
+
+	foreach ( [ 'utm_source', 'utm_campaign', 'utm_content', 'lp_variant', 'trade' ] as $col ) {
+		if ( ! empty( $filters[ $col ] ) ) {
+			$where[] = "$col = %s";
+			$args[]  = $filters[ $col ];
+		}
+	}
+	if ( ! empty( $filters['device'] ) ) {
+		$where[] = 'device_category = %s';
+		$args[]  = $filters['device'];
+	}
+	$where_sql = implode( ' AND ', $where );
+
+	// Cohort: sessions with landing or start in window.
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$cohort_sql = $wpdb->prepare(
+		"SELECT DISTINCT session_id FROM $table WHERE $where_sql AND event_name IN ('SurveyLandingViewed','SurveyStarted')",
+		$args
+	);
+	$cohort = $wpdb->get_col( $cohort_sql );
+	$cohort = array_values( array_filter( array_map( 'strval', $cohort ?: [] ) ) );
+
+	$stages_def = jcp_funnel_analytics_proof_gap_stages();
+	$stage_rows = [];
+	$prev_count = 0;
+	$landing    = 0;
+
+	foreach ( $stages_def as $i => $stage ) {
+		$lifecycle = ! empty( $stage['lifecycle'] );
+		if ( empty( $cohort ) ) {
+			$count = 0;
+		} elseif ( $lifecycle ) {
+			// Lifecycle not connected in theme yet — report as not connected.
+			$count = null;
+		} else {
+			$count = jcp_funnel_analytics_count_stage_sessions( $table, $cohort, $stage );
+		}
+
+		if ( $i === 0 ) {
+			$landing = is_int( $count ) ? $count : 0;
+		}
+
+		$from_prev = null;
+		$drop      = null;
+		$drop_pct  = null;
+		$from_land = null;
+		if ( is_int( $count ) ) {
+			if ( $i === 0 ) {
+				$from_prev = 100.0;
+				$drop      = 0;
+				$drop_pct  = 0.0;
+			} else {
+				$from_prev = $prev_count > 0 ? round( ( $count / $prev_count ) * 100, 1 ) : 0.0;
+				$drop      = max( 0, $prev_count - $count );
+				$drop_pct  = $prev_count > 0 ? round( ( $drop / $prev_count ) * 100, 1 ) : 0.0;
+			}
+			$from_land = $landing > 0 ? round( ( $count / $landing ) * 100, 1 ) : 0.0;
+			$prev_count = $count;
+		}
+
+		$stage_rows[] = [
+			'key'            => $stage['key'],
+			'label'          => $stage['label'],
+			'sessions'       => $count,
+			'from_previous'  => $from_prev,
+			'drop'           => $drop,
+			'drop_pct'       => $drop_pct,
+			'from_landing'   => $from_land,
+			'not_connected'  => $lifecycle,
+		];
 	}
 
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table + where built from fixed fragments.
-	$sql = $wpdb->prepare(
-		"SELECT COUNT(DISTINCT session_id) FROM $table WHERE $where_sql$extra",
-		...$params
-	);
+	$summary = [
+		'visitors'          => $stage_rows[0]['sessions'] ?? 0,
+		'survey_starts'     => $stage_rows[1]['sessions'] ?? 0,
+		'survey_completion' => $stage_rows[6]['sessions'] ?? 0,
+		'emails_captured'   => $stage_rows[7]['sessions'] ?? 0,
+		'trial_cta_clicks'  => $stage_rows[9]['sessions'] ?? 0,
+		'trials_started'    => null,
+		'activated_trials'  => null,
+		'paid_customers'    => null,
+	];
 
+	return [
+		'stages'              => $stage_rows,
+		'summary'             => $summary,
+		'questions'           => jcp_funnel_analytics_question_stats( $table, $cohort, $since ),
+		'traffic'             => jcp_funnel_analytics_traffic_stats( $table, $cohort, $since ),
+		'diagnostics'         => jcp_funnel_analytics_diagnostics( $table ),
+		'lifecycle_connected' => false,
+		'cohort_size'         => count( $cohort ),
+		'calculation_note'    => __( 'Stage funnel uses unique session_ids whose SurveyLandingViewed or SurveyStarted occurred in the selected window. Conversion % is previous-stage and landing-relative, not raw event counts. Trial/activation/paid require cross-domain lifecycle wiring (shown as Not connected).', 'jcp-core' ),
+	];
+}
+
+/**
+ * @param string $table Table.
+ * @param array  $cohort Session IDs.
+ * @param array  $stage Stage def.
+ * @return int
+ */
+function jcp_funnel_analytics_count_stage_sessions( string $table, array $cohort, array $stage ): int {
+	global $wpdb;
+	if ( empty( $cohort ) ) {
+		return 0;
+	}
+	$placeholders = implode( ',', array_fill( 0, count( $cohort ), '%s' ) );
+	$events       = $stage['events'];
+	$event_ph     = implode( ',', array_fill( 0, count( $events ), '%s' ) );
+	$args         = array_merge( $cohort, $events );
+	$extra        = '';
+	if ( ! empty( $stage['question_id'] ) ) {
+		$extra  = ' AND question_id = %s';
+		$args[] = $stage['question_id'];
+	}
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$sql = $wpdb->prepare(
+		"SELECT COUNT(DISTINCT session_id) FROM $table WHERE session_id IN ($placeholders) AND event_name IN ($event_ph)$extra",
+		$args
+	);
 	return (int) $wpdb->get_var( $sql );
 }
 
 /**
- * Question answer distribution for SurveyQuestionAnswered events.
- *
- * @param string            $where_sql Where SQL.
- * @param array<int, mixed> $params    Prepare params.
- * @return array<int, array{question_id: string, answer_key: string, sessions: int, pct: float}>
+ * @param string $table Table.
+ * @param array  $cohort Sessions.
+ * @param string $since Since datetime.
+ * @return array
  */
-function jcp_funnel_analytics_question_stats( string $where_sql, array $params ): array {
+function jcp_funnel_analytics_question_stats( string $table, array $cohort, string $since ): array {
 	global $wpdb;
-	$table = $wpdb->prefix . JCP_FUNNEL_EVENTS_TABLE;
-
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$sql = $wpdb->prepare(
-		"SELECT question_id, answer_key, COUNT(DISTINCT session_id) AS sessions
-		 FROM $table
-		 WHERE $where_sql
-		   AND event_name = 'SurveyQuestionAnswered'
-		   AND question_id IS NOT NULL AND question_id != ''
-		   AND answer_key IS NOT NULL AND answer_key != ''
-		 GROUP BY question_id, answer_key
-		 ORDER BY question_id ASC, sessions DESC",
-		...$params
-	);
-
-	$rows = $wpdb->get_results( $sql, ARRAY_A );
-	if ( ! is_array( $rows ) || empty( $rows ) ) {
-		return [];
-	}
-
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$tot_sql = $wpdb->prepare(
-		"SELECT question_id, COUNT(DISTINCT session_id) AS sessions
-		 FROM $table
-		 WHERE $where_sql
-		   AND event_name = 'SurveyQuestionAnswered'
-		   AND question_id IS NOT NULL AND question_id != ''
-		 GROUP BY question_id",
-		...$params
-	);
-	$tot_rows = $wpdb->get_results( $tot_sql, ARRAY_A );
-	$totals   = [];
-	if ( is_array( $tot_rows ) ) {
-		foreach ( $tot_rows as $trow ) {
-			$totals[ (string) ( $trow['question_id'] ?? '' ) ] = (int) ( $trow['sessions'] ?? 0 );
+	$questions = [
+		'trade'                   => __( 'Trade', 'jcp-core' ),
+		'current_workflow'        => __( 'Workflow', 'jcp-core' ),
+		'jobs_per_week'           => __( 'Jobs/week', 'jcp-core' ),
+		'public_proof_percentage' => __( 'Public proof', 'jcp-core' ),
+	];
+	$rows = [];
+	foreach ( $questions as $qid => $label ) {
+		if ( empty( $cohort ) ) {
+			$rows[] = [
+				'question'       => $label,
+				'viewed'         => 0,
+				'answered'       => 0,
+				'answer_rate'    => 0,
+				'drop_after_view'=> 0,
+				'median_ms'      => null,
+				'top_answers'    => [],
+			];
+			continue;
 		}
-	}
-
-	$out = [];
-	foreach ( $rows as $row ) {
-		$qid = (string) ( $row['question_id'] ?? '' );
-		$cnt = (int) ( $row['sessions'] ?? 0 );
-		$tot = (int) ( $totals[ $qid ] ?? 0 );
-		$out[] = [
-			'question_id' => $qid,
-			'answer_key'  => (string) ( $row['answer_key'] ?? '' ),
-			'sessions'    => $cnt,
-			'pct'         => $tot > 0 ? round( ( $cnt / $tot ) * 100, 1 ) : 0.0,
+		$placeholders = implode( ',', array_fill( 0, count( $cohort ), '%s' ) );
+		$args_base    = array_merge( $cohort, [ $qid ] );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$viewed = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(DISTINCT session_id) FROM $table WHERE session_id IN ($placeholders) AND event_name = 'SurveyQuestionViewed' AND question_id = %s",
+				$args_base
+			)
+		);
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$answered = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(DISTINCT session_id) FROM $table WHERE session_id IN ($placeholders) AND event_name = 'SurveyQuestionAnswered' AND question_id = %s",
+				$args_base
+			)
+		);
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$top = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT answer_value AS a, COUNT(DISTINCT session_id) AS c FROM $table WHERE session_id IN ($placeholders) AND event_name = 'SurveyQuestionAnswered' AND question_id = %s AND answer_value IS NOT NULL AND answer_value <> '' GROUP BY answer_value ORDER BY c DESC LIMIT 5",
+				$args_base
+			),
+			ARRAY_A
+		);
+		$rate = $viewed > 0 ? round( ( $answered / $viewed ) * 100, 1 ) : ( $answered > 0 ? 100.0 : 0.0 );
+		$rows[] = [
+			'question'        => $label,
+			'viewed'          => $viewed,
+			'answered'        => $answered,
+			'answer_rate'     => $rate,
+			'drop_after_view' => max( 0, $viewed - $answered ),
+			'median_ms'       => null,
+			'top_answers'     => array_map(
+				static function ( $r ) {
+					return [ 'value' => (string) ( $r['a'] ?? '' ), 'count' => (int) ( $r['c'] ?? 0 ) ];
+				},
+				$top ?: []
+			),
 		];
 	}
-	return $out;
+	return $rows;
 }
 
 /**
- * Traffic / source breakdown (utm_source × utm_campaign).
- *
- * @param string            $where_sql Where SQL.
- * @param array<int, mixed> $params    Prepare params.
- * @return array<int, array{utm_source: string, utm_campaign: string, sessions: int, pct: float}>
+ * @param string $table Table.
+ * @param array  $cohort Sessions.
+ * @param string $since Since.
+ * @return array
  */
-function jcp_funnel_analytics_source_breakdown( string $where_sql, array $params ): array {
+function jcp_funnel_analytics_traffic_stats( string $table, array $cohort, string $since ): array {
 	global $wpdb;
-	$table = $wpdb->prefix . JCP_FUNNEL_EVENTS_TABLE;
-
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$sql = $wpdb->prepare(
-		"SELECT
-			COALESCE(NULLIF(TRIM(utm_source), ''), '') AS utm_source,
-			COALESCE(NULLIF(TRIM(utm_campaign), ''), '') AS utm_campaign,
-			COUNT(DISTINCT session_id) AS sessions
-		 FROM $table
-		 WHERE $where_sql
-		 GROUP BY COALESCE(NULLIF(TRIM(utm_source), ''), ''), COALESCE(NULLIF(TRIM(utm_campaign), ''), '')
-		 ORDER BY sessions DESC
-		 LIMIT 50",
-		...$params
-	);
-
-	$rows = $wpdb->get_results( $sql, ARRAY_A );
-	if ( ! is_array( $rows ) || empty( $rows ) ) {
+	if ( empty( $cohort ) ) {
 		return [];
 	}
-
-	$total = 0;
-	foreach ( $rows as $row ) {
-		$total += (int) ( $row['sessions'] ?? 0 );
-	}
+	$placeholders = implode( ',', array_fill( 0, count( $cohort ), '%s' ) );
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$sources = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT COALESCE(NULLIF(utm_source,''),'(none)') AS source,
+				COALESCE(NULLIF(utm_campaign,''),'(none)') AS campaign,
+				COALESCE(NULLIF(utm_content,''),'(none)') AS content,
+				COUNT(DISTINCT session_id) AS landing_sessions
+			FROM $table
+			WHERE session_id IN ($placeholders)
+			AND event_name IN ('SurveyLandingViewed','SurveyStarted')
+			GROUP BY source, campaign, content
+			ORDER BY landing_sessions DESC
+			LIMIT 40",
+			$cohort
+		),
+		ARRAY_A
+	);
 
 	$out = [];
-	foreach ( $rows as $row ) {
-		$cnt = (int) ( $row['sessions'] ?? 0 );
-		$out[] = [
-			'utm_source'   => (string) ( $row['utm_source'] ?? '' ),
-			'utm_campaign' => (string) ( $row['utm_campaign'] ?? '' ),
-			'sessions'     => $cnt,
-			'pct'          => $total > 0 ? round( ( $cnt / $total ) * 100, 1 ) : 0.0,
+	foreach ( $sources ?: [] as $row ) {
+		// Approximate conversions among sessions that match this source combo via any event.
+		$src = (string) $row['source'];
+		$cmp = (string) $row['campaign'];
+		$ct  = (string) $row['content'];
+		$sess_sql_parts = [ "session_id IN ($placeholders)" ];
+		$args           = $cohort;
+		if ( $src === '(none)' ) {
+			$sess_sql_parts[] = "(utm_source IS NULL OR utm_source = '')";
+		} else {
+			$sess_sql_parts[] = 'utm_source = %s';
+			$args[]           = $src;
+		}
+		if ( $cmp === '(none)' ) {
+			$sess_sql_parts[] = "(utm_campaign IS NULL OR utm_campaign = '')";
+		} else {
+			$sess_sql_parts[] = 'utm_campaign = %s';
+			$args[]           = $cmp;
+		}
+		if ( $ct === '(none)' ) {
+			$sess_sql_parts[] = "(utm_content IS NULL OR utm_content = '')";
+		} else {
+			$sess_sql_parts[] = 'utm_content = %s';
+			$args[]           = $ct;
+		}
+		$where = implode( ' AND ', $sess_sql_parts );
+		$metric = static function ( string $event ) use ( $wpdb, $table, $where, $args ): int {
+			$a = array_merge( $args, [ $event ] );
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			return (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(DISTINCT session_id) FROM $table WHERE $where AND event_name = %s",
+					$a
+				)
+			);
+		};
+		$landing = (int) $row['landing_sessions'];
+		$starts  = $metric( 'SurveyStarted' );
+		$result  = $metric( 'SurveyResultViewed' );
+		$email   = $metric( 'EmailSubmitted' );
+		$cta     = $metric( 'TrialCTAClicked' );
+		$out[]   = [
+			'source'             => $src,
+			'campaign'           => $cmp,
+			'content'            => $ct,
+			'landing_sessions'   => $landing,
+			'starts'             => $starts,
+			'survey_completion'  => $landing ? round( ( $result / $landing ) * 100, 1 ) : 0,
+			'email_pct'          => $landing ? round( ( $email / $landing ) * 100, 1 ) : 0,
+			'trial_cta_pct'      => $landing ? round( ( $cta / $landing ) * 100, 1 ) : 0,
+			'trial_start_pct'    => null,
+			'activation_pct'     => null,
+			'paid_pct'           => null,
 		];
 	}
 	return $out;
 }
 
 /**
- * Data quality metrics for the filtered window.
- *
- * @param string            $where_sql Where SQL.
- * @param array<int, mixed> $params    Prepare params.
- * @return array<string, mixed>
+ * @param string $table Table.
+ * @return array
  */
-function jcp_funnel_analytics_data_quality( string $where_sql, array $params ): array {
+function jcp_funnel_analytics_diagnostics( string $table ): array {
 	global $wpdb;
-	$table = $wpdb->prefix . JCP_FUNNEL_EVENTS_TABLE;
-
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$total_events = (int) $wpdb->get_var(
-		$wpdb->prepare( "SELECT COUNT(*) FROM $table WHERE $where_sql", ...$params )
+	$meta = get_option( JCP_FUNNEL_ANALYTICS_META_OPTION, [] );
+	if ( ! is_array( $meta ) ) {
+		$meta = [];
+	}
+	$since_24h = gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS );
+	$events_24h = (int) $wpdb->get_var(
+		$wpdb->prepare( "SELECT COUNT(1) FROM $table WHERE created_at >= %s", $since_24h )
 	);
-
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$total_sessions = (int) $wpdb->get_var(
-		$wpdb->prepare( "SELECT COUNT(DISTINCT session_id) FROM $table WHERE $where_sql", ...$params )
+	$missing_source = (int) $wpdb->get_var(
+		"SELECT COUNT(DISTINCT session_id) FROM $table WHERE (utm_source IS NULL OR utm_source = '') AND created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY)"
 	);
-
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$with_utm = (int) $wpdb->get_var(
-		$wpdb->prepare(
-			"SELECT COUNT(DISTINCT session_id) FROM $table WHERE $where_sql AND utm_source IS NOT NULL AND TRIM(utm_source) != ''",
-			...$params
-		)
+	$missing_campaign = (int) $wpdb->get_var(
+		"SELECT COUNT(DISTINCT session_id) FROM $table WHERE (utm_campaign IS NULL OR utm_campaign = '') AND created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY)"
 	);
-
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$with_device = (int) $wpdb->get_var(
-		$wpdb->prepare(
-			"SELECT COUNT(DISTINCT session_id) FROM $table WHERE $where_sql AND device_class IS NOT NULL AND TRIM(device_class) != ''",
-			...$params
-		)
+	$missing_funnel = (int) $wpdb->get_var(
+		"SELECT COUNT(1) FROM $table WHERE funnel_id IS NULL OR funnel_id = ''"
 	);
-
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$with_click_id = (int) $wpdb->get_var(
-		$wpdb->prepare(
-			"SELECT COUNT(DISTINCT session_id) FROM $table WHERE $where_sql AND (has_fbclid = 1 OR has_ttclid = 1)",
-			...$params
-		)
+	$missing_session = (int) $wpdb->get_var(
+		"SELECT COUNT(1) FROM $table WHERE session_id IS NULL OR session_id = ''"
 	);
-
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$oldest = $wpdb->get_var(
-		$wpdb->prepare( "SELECT MIN(created_at) FROM $table WHERE $where_sql", ...$params )
-	);
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$newest = $wpdb->get_var(
-		$wpdb->prepare( "SELECT MAX(created_at) FROM $table WHERE $where_sql", ...$params )
-	);
+	$last = $wpdb->get_var( "SELECT created_at FROM $table ORDER BY id DESC LIMIT 1" );
 
 	return [
-		'total_events'           => $total_events,
-		'total_sessions'         => $total_sessions,
-		'sessions_with_utm'      => $with_utm,
-		'sessions_with_device'   => $with_device,
-		'sessions_with_click_id' => $with_click_id,
-		'utm_coverage_pct'       => $total_sessions > 0 ? round( ( $with_utm / $total_sessions ) * 100, 1 ) : 0.0,
-		'oldest_event'           => $oldest ? (string) $oldest : null,
-		'newest_event'           => $newest ? (string) $newest : null,
-		'retention_days'         => (int) JCP_FUNNEL_EVENTS_RETENTION_DAYS,
-		'pii_columns'            => false,
+		'missing_source_sessions'   => $missing_source,
+		'missing_campaign_sessions' => $missing_campaign,
+		'duplicate_rejected'        => (int) ( $meta['duplicate_rejected'] ?? 0 ),
+		'missing_funnel_id'         => $missing_funnel,
+		'missing_session_id'        => $missing_session,
+		'last_event_received'       => $last ? (string) $last : (string) ( $meta['last_event_at'] ?? '' ),
+		'events_last_24h'           => $events_24h,
+		'endpoint_status'           => rest_url( 'jcp/v1/funnel-event' ),
+		'retention_days'            => JCP_FUNNEL_ANALYTICS_RETENTION_DAYS,
 	];
 }
 
 /**
- * Unique-session stage funnel report for a funnel_id.
+ * Demo adapter — unique sessions from existing demo analytics tables (no PII displayed).
  *
- * Activation / Paid stages return status `not_connected` (not fake zeros).
- * Demo funnel_id returns a stub adapter response.
- *
- * @param array<string, mixed> $args {
- *     @type string $funnel_id    Default proof_gap. Use `demo` for adapter stub.
- *     @type string $date_from    Y-m-d inclusive.
- *     @type string $date_to      Y-m-d inclusive.
- *     @type string $utm_source   Optional filter.
- *     @type string $utm_campaign Optional filter.
- * }
- * @return array<string, mixed>
+ * @param array $filters Filters.
+ * @return array
  */
-function jcp_funnel_analytics_get_report( array $args = [] ): array {
-	$funnel_id = isset( $args['funnel_id'] ) ? sanitize_key( (string) $args['funnel_id'] ) : 'proof_gap';
-	if ( $funnel_id === '' ) {
-		$funnel_id = 'proof_gap';
+function jcp_funnel_analytics_demo_adapter_report( array $filters ): array {
+	global $wpdb;
+	$events = $wpdb->prefix . 'jcp_demo_events';
+	$exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $events ) );
+	if ( $exists !== $events ) {
+		return jcp_funnel_analytics_empty_adapter( __( 'Demo events table not found.', 'jcp-core' ) );
 	}
-
-	// Demo adapter stub — does not read demo analytics tables.
-	if ( $funnel_id === 'demo' ) {
-		return [
-			'funnel_id'        => 'demo',
-			'status'           => 'adapter_stub',
-			'message'          => __( 'Demo funnel adapter is not connected to this report yet. Use Demo Analytics for /demo/ metrics.', 'jcp-core' ),
-			'stages'           => [],
-			'question_stats'   => [],
-			'source_breakdown' => [],
-			'summary'          => [
-				'total_sessions' => 0,
-				'started'        => 0,
-				'email_submitted'=> 0,
-				'trial_clicked'  => 0,
-			],
-			'activation'       => [ 'status' => 'not_connected' ],
-			'paid'             => [ 'status' => 'not_connected' ],
-			'data_quality'     => [],
+	$since = gmdate( 'Y-m-d H:i:s', time() - ( (int) $filters['days'] * DAY_IN_SECONDS ) );
+	$map   = [
+		[ 'label' => __( 'Landing / demo viewed', 'jcp-core' ), 'types' => [ 'demo_viewed', 'landing_viewed', 'DemoLandingViewed' ] ],
+		[ 'label' => __( 'Demo started', 'jcp-core' ), 'types' => [ 'demo_started', 'demo_run_started' ] ],
+		[ 'label' => __( 'Demo completed', 'jcp-core' ), 'types' => [ 'demo_completed' ] ],
+		[ 'label' => __( 'Converted (early access)', 'jcp-core' ), 'types' => [ 'demo_converted' ] ],
+	];
+	$stages = [];
+	$prev   = 0;
+	$land   = 0;
+	foreach ( $map as $i => $stage ) {
+		$ph   = implode( ',', array_fill( 0, count( $stage['types'] ), '%s' ) );
+		$args = array_merge( [ $since ], $stage['types'] );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$count = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(DISTINCT session_id) FROM $events WHERE created_at >= %s AND event_type IN ($ph)",
+				$args
+			)
+		);
+		if ( $i === 0 ) {
+			$land = $count;
+		}
+		$from_prev = $i === 0 ? 100.0 : ( $prev > 0 ? round( ( $count / $prev ) * 100, 1 ) : 0.0 );
+		$drop      = $i === 0 ? 0 : max( 0, $prev - $count );
+		$stages[]  = [
+			'key'           => 'demo_' . $i,
+			'label'         => $stage['label'],
+			'sessions'      => $count,
+			'from_previous' => $from_prev,
+			'drop'          => $drop,
+			'drop_pct'      => $i === 0 ? 0.0 : ( $prev > 0 ? round( ( $drop / $prev ) * 100, 1 ) : 0.0 ),
+			'from_landing'  => $land > 0 ? round( ( $count / $land ) * 100, 1 ) : 0.0,
+			'not_connected' => false,
 		];
+		$prev = $count;
 	}
+	return [
+		'stages'              => $stages,
+		'summary'             => [
+			'visitors'          => $stages[0]['sessions'] ?? 0,
+			'survey_starts'     => $stages[1]['sessions'] ?? 0,
+			'survey_completion' => $stages[2]['sessions'] ?? 0,
+			'emails_captured'   => null,
+			'trial_cta_clicks'  => null,
+			'trials_started'    => null,
+			'activated_trials'  => null,
+			'paid_customers'    => $stages[3]['sessions'] ?? 0,
+		],
+		'questions'           => [],
+		'traffic'             => [],
+		'diagnostics'         => jcp_funnel_analytics_diagnostics( $wpdb->prefix . JCP_FUNNEL_EVENTS_TABLE ),
+		'lifecycle_connected' => false,
+		'cohort_size'         => $stages[0]['sessions'] ?? 0,
+		'calculation_note'    => __( 'Demo adapter reads existing jcp_demo_events using unique session_id counts. Legacy Demo Analytics page remains unchanged.', 'jcp-core' ),
+	];
+}
 
+/**
+ * @param array $filters Filters.
+ * @return array
+ */
+function jcp_funnel_analytics_proof_sprint_adapter_report( array $filters ): array {
+	// Proof Sprint currently posts milestones into demo-event when email is known.
+	$report = jcp_funnel_analytics_demo_adapter_report( $filters );
+	$report['calculation_note'] = __( 'Proof Sprint shares demo-event milestones when a contact email is present. Dedicated first-party Proof Sprint stages will appear here as instrumentation expands. Downstream trial/activation/paid remain Not connected unless lifecycle wiring exists.', 'jcp-core' );
+	return $report;
+}
+
+/**
+ * @param string $note Note.
+ * @return array
+ */
+function jcp_funnel_analytics_empty_adapter( string $note ): array {
+	return [
+		'stages'              => [],
+		'summary'             => [],
+		'questions'           => [],
+		'traffic'             => [],
+		'diagnostics'         => [],
+		'lifecycle_connected' => false,
+		'cohort_size'         => 0,
+		'calculation_note'    => $note,
+	];
+}
+
+/**
+ * Retention purge cron.
+ */
+function jcp_funnel_analytics_schedule_retention(): void {
+	if ( ! wp_next_scheduled( 'jcp_funnel_analytics_retention_purge' ) ) {
+		wp_schedule_event( time() + HOUR_IN_SECONDS, 'daily', 'jcp_funnel_analytics_retention_purge' );
+	}
+}
+add_action( 'init', 'jcp_funnel_analytics_schedule_retention', 20 );
+
+/**
+ * Purge raw events older than retention window.
+ */
+function jcp_funnel_analytics_retention_purge(): void {
+	global $wpdb;
 	jcp_funnel_analytics_maybe_create_table();
-
-	$args['funnel_id'] = $funnel_id;
-	$where             = jcp_funnel_analytics_report_where( $args );
-	$where_sql         = $where['sql'];
-	$params            = $where['params'];
-
-	$stage_defs    = ( $funnel_id === 'proof_gap' ) ? jcp_funnel_analytics_proof_gap_stages() : [];
-	$stages        = [];
-	$prev_count    = null;
-	$landing_count = 0;
-
-	foreach ( $stage_defs as $def ) {
-		$count = jcp_funnel_analytics_count_stage_sessions( $where_sql, $params, $def );
-		if ( empty( $stages ) ) {
-			$landing_count = $count;
-		}
-		$pct     = $landing_count > 0 ? round( ( $count / $landing_count ) * 100, 1 ) : 0.0;
-		$dropoff = ( $prev_count !== null && $prev_count > 0 )
-			? round( ( ( $prev_count - $count ) / $prev_count ) * 100, 1 )
-			: 0.0;
-		$stages[] = [
-			'key'      => $def['key'],
-			'label'    => $def['label'],
-			'sessions' => $count,
-			'pct'      => $pct,
-			'dropoff'  => $dropoff,
-		];
-		$prev_count = $count;
-	}
-
-	$landing   = (int) ( $stages[0]['sessions'] ?? 0 );
-	$started   = 0;
-	$email_sub = 0;
-	$trial_clk = 0;
-	foreach ( $stages as $s ) {
-		if ( $s['key'] === 'survey_started' ) {
-			$started = (int) $s['sessions'];
-		}
-		if ( $s['key'] === 'email_submitted' ) {
-			$email_sub = (int) $s['sessions'];
-		}
-		if ( $s['key'] === 'trial_cta_clicked' ) {
-			$trial_clk = (int) $s['sessions'];
-		}
-	}
-
-	return [
-		'funnel_id'        => $funnel_id,
-		'status'           => 'ok',
-		'stages'           => $stages,
-		'question_stats'   => jcp_funnel_analytics_question_stats( $where_sql, $params ),
-		'source_breakdown' => jcp_funnel_analytics_source_breakdown( $where_sql, $params ),
-		'summary'          => [
-			'total_sessions'  => $landing,
-			'started'         => $started,
-			'email_submitted' => $email_sub,
-			'trial_clicked'   => $trial_clk,
-			'start_rate'      => $landing > 0 ? round( ( $started / $landing ) * 100, 1 ) : 0.0,
-			'email_rate'      => $started > 0 ? round( ( $email_sub / $started ) * 100, 1 ) : 0.0,
-			'trial_rate'      => $email_sub > 0 ? round( ( $trial_clk / $email_sub ) * 100, 1 ) : 0.0,
-		],
-		'activation'       => [ 'status' => 'not_connected' ],
-		'paid'             => [ 'status' => 'not_connected' ],
-		'data_quality'     => jcp_funnel_analytics_data_quality( $where_sql, $params ),
-		'filters'          => [
-			'funnel_id'    => $funnel_id,
-			'date_from'    => $args['date_from'] ?? '',
-			'date_to'      => $args['date_to'] ?? '',
-			'utm_source'   => $args['utm_source'] ?? '',
-			'utm_campaign' => $args['utm_campaign'] ?? '',
-		],
-	];
+	$table = $wpdb->prefix . JCP_FUNNEL_EVENTS_TABLE;
+	$days  = (int) JCP_FUNNEL_ANALYTICS_RETENTION_DAYS;
+	$wpdb->query(
+		$wpdb->prepare(
+			"DELETE FROM $table WHERE created_at < DATE_SUB(UTC_TIMESTAMP(), INTERVAL %d DAY)",
+			$days
+		)
+	);
 }
-
-add_action( 'rest_api_init', 'jcp_funnel_analytics_register_rest_route' );
-add_action( 'after_switch_theme', 'jcp_funnel_analytics_maybe_create_table' );
-add_action( 'after_switch_theme', 'jcp_funnel_analytics_schedule_retention' );
-add_action( 'init', 'jcp_funnel_analytics_schedule_retention' );
-add_action( JCP_FUNNEL_ANALYTICS_RETENTION_CRON, 'jcp_funnel_analytics_run_retention' );
+add_action( 'jcp_funnel_analytics_retention_purge', 'jcp_funnel_analytics_retention_purge' );

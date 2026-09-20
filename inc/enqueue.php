@@ -194,6 +194,7 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-components', 'css/components.css', [ 'jcp-core-buttons' ] );
         jcp_core_enqueue_style( 'jcp-core-utilities', 'css/utilities.css', [ 'jcp-core-components' ] );
         jcp_core_enqueue_style( 'jcp-core-proof-gap', 'css/pages/proof-gap.css', [ 'jcp-core-buttons', 'jcp-core-components' ] );
+        jcp_core_enqueue_style( 'jcp-core-proof-gap-mocks', 'css/pages/proof-gap-mocks.css', [ 'jcp-core-proof-gap' ] );
 
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
         jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );

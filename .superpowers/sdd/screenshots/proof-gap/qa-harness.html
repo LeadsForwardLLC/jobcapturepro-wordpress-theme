@@ -7,12 +7,13 @@
 <link rel="stylesheet" href="../../../../css/base.css"/>
 <link rel="stylesheet" href="../../../../css/buttons.css"/>
 <link rel="stylesheet" href="../../../../css/pages/proof-gap.css"/>
+<link rel="stylesheet" href="../../../../css/pages/proof-gap-mocks.css"/>
 <style>
 :root{--jcp-color-text-primary:#111827;--jcp-color-text-secondary:#6b7280;--jcp-color-primary:#ff5036;--jcp-color-bg-secondary:#f9fafb}
 html,body{margin:0;height:100%;height:100dvh;overflow:hidden;font-family:system-ui,sans-serif}
 </style>
 </head>
-<body class="jcp-proof-gap" data-jcp-lp-variant="proof_gap_survey_v1" data-pg-survey-id="proof_gap_survey_v1" data-pg-survey-version="4">
+<body class="jcp-proof-gap" data-jcp-lp-variant="proof_gap_survey_v1" data-pg-survey-id="proof_gap_survey_v1" data-pg-survey-version="6">
 <div class="pg-shell" id="pg-shell">
 <header class="pg-chrome" role="banner">
 <div class="pg-chrome__bar">
@@ -39,24 +40,35 @@ html,body{margin:0;height:100%;height:100dvh;overflow:hidden;font-family:system-
 				<p class="pg-sub">Your crew already creates the proof.</p>
 				<p class="pg-sub pg-sub--tight">Answer 4 quick questions and see how much may be going unused — and what one finished job could become with JobCapturePro.</p>
 
-				<div class="pg-welcome-visual" data-pg-welcome-visual data-creative="default" aria-hidden="true">
-					<div class="pg-welcome-visual__flow">
-						<span class="pg-welcome-visual__node">Completed job</span>
-						<span class="pg-welcome-visual__arrow" aria-hidden="true">→</span>
-						<span class="pg-welcome-visual__node pg-welcome-visual__node--stamp">
-							<svg viewBox="0 0 32 32" width="18" height="18" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 16l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-							Proof stamp
-						</span>
-						<span class="pg-welcome-visual__arrow" aria-hidden="true">→</span>
-						<span class="pg-welcome-visual__outs">
-							<em>Website</em>
-							<em>Google</em>
-							<em>Reviews</em>
-							<em>Social</em>
-							<em>Directory</em>
-						</span>
+				<div class="pg-welcome-product" data-pg-welcome-visual data-creative="default" aria-hidden="true">
+					<article class="pg-welcome-job ps-mock ps-mock--job">
+						<div class="ps-mock__chip-row">
+							<span class="ps-mock__chip is-good">Completed job</span>
+							<span class="ps-mock__chip">Field photos</span>
+						</div>
+						<div class="ps-mock__media">
+							<img class="ps-mock__photo" src="../../../../assets/campaign/jcp-campaign-hvac-capture-360.webp" alt="" width="640" height="360" decoding="async" fetchpriority="high" data-no-lazy />
+							<span class="ps-mock__geo">Service area</span>
+						</div>
+						<div class="ps-mock__job-foot">
+							<div>
+								<strong>HVAC service call</strong>
+								<span>Ready for JobCapturePro</span>
+							</div>
+							<em>Proof ready</em>
+						</div>
+					</article>
+					<div class="pg-welcome-product__bridge" aria-hidden="true">
+						<span class="pg-welcome-product__jcp">JCP</span>
 					</div>
-					<p class="pg-welcome-visual__tagline">The work is already done. JCP puts it to work.</p>
+					<ul class="pg-welcome-dests">
+						<li>Website</li>
+						<li>Google</li>
+						<li>Reviews</li>
+						<li>Social</li>
+						<li>Directory</li>
+					</ul>
+					<p class="pg-welcome-product__tagline">The work is already done. JCP puts it to work.</p>
 				</div>
 			</div>
 		</section>

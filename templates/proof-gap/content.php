@@ -68,24 +68,44 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 				<p class="pg-sub"><?php esc_html_e( 'Your crew already creates the proof.', 'jcp-core' ); ?></p>
 				<p class="pg-sub pg-sub--tight"><?php esc_html_e( 'Answer 4 quick questions and see how much may be going unused — and what one finished job could become with JobCapturePro.', 'jcp-core' ); ?></p>
 
-				<div class="pg-welcome-visual" data-pg-welcome-visual data-creative="default" aria-hidden="true">
-					<div class="pg-welcome-visual__flow">
-						<span class="pg-welcome-visual__node"><?php esc_html_e( 'Completed job', 'jcp-core' ); ?></span>
-						<span class="pg-welcome-visual__arrow" aria-hidden="true">→</span>
-						<span class="pg-welcome-visual__node pg-welcome-visual__node--stamp">
-							<svg viewBox="0 0 32 32" width="18" height="18" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 16l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-							<?php esc_html_e( 'Proof stamp', 'jcp-core' ); ?>
-						</span>
-						<span class="pg-welcome-visual__arrow" aria-hidden="true">→</span>
-						<span class="pg-welcome-visual__outs">
-							<em><?php esc_html_e( 'Website', 'jcp-core' ); ?></em>
-							<em><?php esc_html_e( 'Google', 'jcp-core' ); ?></em>
-							<em><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></em>
-							<em><?php esc_html_e( 'Social', 'jcp-core' ); ?></em>
-							<em><?php esc_html_e( 'Directory', 'jcp-core' ); ?></em>
-						</span>
+				<div class="pg-welcome-product" data-pg-welcome-visual data-creative="default" aria-hidden="true">
+					<article class="pg-welcome-job ps-mock ps-mock--job">
+						<div class="ps-mock__chip-row">
+							<span class="ps-mock__chip is-good"><?php esc_html_e( 'Completed job', 'jcp-core' ); ?></span>
+							<span class="ps-mock__chip"><?php esc_html_e( 'Field photos', 'jcp-core' ); ?></span>
+						</div>
+						<div class="ps-mock__media">
+							<img
+								class="ps-mock__photo"
+								src="<?php echo esc_url( $campaign . 'jcp-campaign-hvac-capture-360.webp' ); ?>"
+								alt=""
+								width="640"
+								height="360"
+								decoding="async"
+								fetchpriority="high"
+								data-no-lazy
+							/>
+							<span class="ps-mock__geo"><?php esc_html_e( 'Service area', 'jcp-core' ); ?></span>
+						</div>
+						<div class="ps-mock__job-foot">
+							<div>
+								<strong><?php esc_html_e( 'HVAC service call', 'jcp-core' ); ?></strong>
+								<span><?php esc_html_e( 'Ready for JobCapturePro', 'jcp-core' ); ?></span>
+							</div>
+							<em><?php esc_html_e( 'Proof ready', 'jcp-core' ); ?></em>
+						</div>
+					</article>
+					<div class="pg-welcome-product__bridge" aria-hidden="true">
+						<span class="pg-welcome-product__jcp">JCP</span>
 					</div>
-					<p class="pg-welcome-visual__tagline"><?php esc_html_e( 'The work is already done. JCP puts it to work.', 'jcp-core' ); ?></p>
+					<ul class="pg-welcome-dests">
+						<li><?php esc_html_e( 'Website', 'jcp-core' ); ?></li>
+						<li><?php esc_html_e( 'Google', 'jcp-core' ); ?></li>
+						<li><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></li>
+						<li><?php esc_html_e( 'Social', 'jcp-core' ); ?></li>
+						<li><?php esc_html_e( 'Directory', 'jcp-core' ); ?></li>
+					</ul>
+					<p class="pg-welcome-product__tagline"><?php esc_html_e( 'The work is already done. JCP puts it to work.', 'jcp-core' ); ?></p>
 				</div>
 			</div>
 		</section>

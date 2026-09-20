@@ -99,13 +99,9 @@
   var creativeWhitelist = boot.creativeConcepts || ['default'];
 
   var DEST_TABS = ['website', 'google', 'social', 'reviews', 'directory'];
-  var DEST_CYCLE_MS = 1000;
 
   var state = createEmptyState();
   var advanceTimer = null;
-  var destCycleTimer = null;
-  var destCycleStep = 0;
-  var destCycleStopped = false;
   var startedTracked = false;
   var landingTracked = false;
   var questionViewed = {};
@@ -113,6 +109,7 @@
   var preloadedTradePhoto = '';
   var bottomActionHandler = null;
   var keyboardBound = false;
+  var activeDest = 'website';
 
   function syncBottomPad() {
     var bar = document.getElementById('pgBottomAction');
@@ -366,30 +363,102 @@
 
   function track(name, props) {
     props = props || {};
+    var eventUuid = uuid();
+    var attr = Object.assign({}, state.attribution || {}, attrPayload());
     var payload = {
       event: name,
+      event_uuid: eventUuid,
       survey_id: state.survey_id,
       survey_version: state.survey_version,
       session_id: state.session_id,
       lp_variant: LP_VARIANT,
       device_class: deviceClass(),
       current_state: state.current_state,
+      funnel_id: 'proof_gap',
+      funnel_version: state.survey_version,
+      trade: state.trade || undefined,
+      workflow: state.current_workflow || undefined,
+      jobs_per_week_bucket: state.jobs_per_week_bucket || undefined,
+      proof_gap_band: state.proof_gap_band || undefined,
     };
     Object.keys(props).forEach(function (k) {
       if (props[k] !== undefined && props[k] !== null && props[k] !== '') payload[k] = props[k];
     });
-    if (state.attribution && state.attribution.creative_concept && !payload.creative_concept) {
-      payload.creative_concept = state.attribution.creative_concept;
+    if (attr.creative_concept && !payload.creative_concept) {
+      payload.creative_concept = attr.creative_concept;
     }
+    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'ttclid', 'referrer'].forEach(function (k) {
+      if (attr[k] && !payload[k]) payload[k] = attr[k];
+    });
+    if (attr.fbclid) payload.has_fbclid = true;
+    if (attr.ttclid) payload.has_ttclid = true;
     delete payload.email;
     delete payload.phone;
     delete payload.first_name;
     delete payload.last_name;
     delete payload.business_name;
+    delete payload.fbclid;
+    delete payload.ttclid;
     try {
       window.dataLayer = window.dataLayer || [];
       window.dataLayer.push(payload);
     } catch (e) {}
+    persistFunnelEvent(name, eventUuid, payload);
+  }
+
+  function persistFunnelEvent(name, eventUuid, payload) {
+    var url = boot.funnelEventUrl || '/wp-json/jcp/v1/funnel-event';
+    var body = {
+      event_uuid: eventUuid,
+      session_id: state.session_id || '',
+      funnel_id: 'proof_gap',
+      funnel_version: String(state.survey_version || ''),
+      lp_variant: LP_VARIANT,
+      event_name: name,
+      screen: state.current_state || '',
+      question_index: propsQuestionIndex(payload),
+      question_id: payload.question_id || '',
+      answer_value: payload.answer_value || payload.answer_key || payload.answer || '',
+      trade: state.trade || '',
+      jobs_per_week_bucket: state.jobs_per_week_bucket || '',
+      proof_gap_band: state.proof_gap_band || '',
+      workflow: state.current_workflow || '',
+      utm_source: payload.utm_source || '',
+      utm_medium: payload.utm_medium || '',
+      utm_campaign: payload.utm_campaign || '',
+      utm_content: payload.utm_content || '',
+      utm_term: payload.utm_term || '',
+      has_fbclid: !!payload.has_fbclid,
+      has_ttclid: !!payload.has_ttclid,
+      device_category: deviceClass(),
+      referrer: payload.referrer || '',
+      metadata: {
+        creative_concept: payload.creative_concept || '',
+        destination: payload.destination || '',
+        cta_source: payload.cta_source || '',
+      },
+    };
+    try {
+      var json = JSON.stringify(body);
+      if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+        try {
+          var blob = new Blob([json], { type: 'application/json' });
+          if (navigator.sendBeacon(url, blob)) return;
+        } catch (eBeacon) {}
+      }
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: json,
+        keepalive: true,
+      }).catch(function () {});
+    } catch (ePersist) {}
+  }
+
+  function propsQuestionIndex(payload) {
+    var q = payload.question_id || '';
+    var map = { trade: 1, current_workflow: 2, jobs_per_week: 3, public_proof_percentage: 4 };
+    return map[q] || null;
   }
 
   function saveState() {
@@ -739,25 +808,22 @@
   }
 
   function buildJobsStackHtml() {
-    var count = 7;
     var tradeLabel = trades[state.trade] || 'Job';
-    var cards = '';
-    for (var i = 0; i < count; i++) {
-      cards +=
-        '<span class="pg-job-stack__card' +
-        (i === 0 ? ' is-front' : '') +
-        '" style="--pg-stack-i:' +
-        i +
-        '"><span class="pg-job-stack__thumb"></span><span class="pg-job-stack__label">' +
-        escapeHtml(tradeLabel) +
-        '</span></span>';
+    var annual = formatAnnualRange();
+    var cells = '';
+    for (var i = 0; i < 24; i++) {
+      cells += '<span class="pg-job-grid__cell' + (i < 3 ? ' is-accent' : '') + '"></span>';
     }
     return (
-      '<div class="pg-job-stack" aria-hidden="true">' +
-      cards +
-      '<p class="pg-job-stack__annual"><strong>' +
-      escapeHtml(formatAnnualRange()) +
-      '</strong></p></div>'
+      '<div class="pg-job-grid" aria-hidden="true">' +
+      '<div class="pg-job-grid__board">' +
+      cells +
+      '</div>' +
+      '<p class="pg-job-grid__caption"><strong>' +
+      escapeHtml(annual) +
+      '</strong><span>completed jobs · ' +
+      escapeHtml(tradeLabel) +
+      '</span></p></div>'
     );
   }
 
@@ -1212,7 +1278,7 @@
 
   function brandMark() {
     return (
-      '<span class="pg-dest-mark" aria-hidden="true">' +
+      '<span class="ps-mock__logo pg-dest-mark" aria-hidden="true">' +
       '<svg viewBox="0 0 16 16" width="14" height="14"><path fill="#fff" d="M3.2 2.2h2.35v9.1H12.8V13.8H3.2z"/></svg></span>'
     );
   }
@@ -1243,6 +1309,7 @@
     }
   }
 
+  /** Product destination panels — reused proof-sprint ps-mock markup (user-controlled only). */
   function renderDestPanel(dest) {
     var panel = document.getElementById('pgDestPanel');
     if (!panel) return;
@@ -1250,154 +1317,210 @@
     var photoUrl = getJobPhotoUrl();
     var mapUrl = panel.getAttribute('data-map') || '';
     var qrUrl = panel.getAttribute('data-qr') || '';
-    var biz = trades[state.trade] ? trades[state.trade] + ' Co.' : 'Your company';
+    var tradeLabel = trades[state.trade] || 'Trade';
+    var biz = tradeLabel + ' Co.';
     var title = escapeHtml(job.title);
     var city = escapeHtml(job.city);
     var desc = escapeHtml(job.desc);
     var bizEsc = escapeHtml(biz);
+    var mark = brandMark();
     var photo =
       photoUrl !== ''
-        ? '<img class="pg-dest-mock__photo" src="' + escapeHtml(photoUrl) + '" alt="" width="640" height="400" loading="lazy" decoding="async" />'
-        : '<div class="pg-dest-mock__photo pg-dest-mock__photo--neutral" aria-hidden="true"></div>';
-    var thumb = photoUrl !== ''
-      ? '<img class="pg-dest-mock__thumb" src="' + escapeHtml(photoUrl) + '" alt="" width="160" height="120" loading="lazy" decoding="async" />'
-      : '<div class="pg-dest-mock__thumb pg-dest-mock__thumb--neutral"></div>';
+        ? '<img class="ps-mock__photo" src="' + escapeHtml(photoUrl) + '" alt="" width="640" height="400" loading="lazy" decoding="async" />'
+        : '<div class="ps-mock__photo" style="background:#e2e8f0;min-height:8rem;" aria-hidden="true"></div>';
+    var thumb =
+      photoUrl !== ''
+        ? '<img class="ps-mock__thumb ps-mock__photo" src="' + escapeHtml(photoUrl) + '" alt="" width="160" height="120" loading="lazy" decoding="async" />'
+        : '<div class="ps-mock__thumb" style="background:#e2e8f0;min-height:4.5rem;border-radius:8px;" aria-hidden="true"></div>';
 
     if (dest === 'website') {
       panel.innerHTML =
-        '<div class="pg-dest-mock pg-dest-mock--browser">' +
-        '<div class="pg-dest-browser__bar"><span></span><span></span><span></span><div class="pg-dest-browser__url">yourcompany.com/locations</div></div>' +
-        '<div class="pg-dest-browser__body">' +
-        '<div class="pg-dest-browser__top">' +
-        brandMark() +
-        '<div><p class="pg-dest-browser__kicker">' +
+        '<div class="ps-mock ps-mock--browser">' +
+        '<div class="ps-mock-browser__bar"><span></span><span></span><span></span>' +
+        '<div class="ps-mock-browser__url">yourcompany.com/locations</div></div>' +
+        '<div class="ps-mock-browser__body">' +
+        '<div class="ps-mock-browser__topline">' +
+        mark +
+        '<div><p class="ps-mock-browser__kicker">' +
         city +
         '</p><h4>Recent check-ins</h4></div></div>' +
         (mapUrl
-          ? '<div class="pg-dest-map"><img src="' + escapeHtml(mapUrl) + '" alt="" width="640" height="280" loading="lazy" decoding="async" /><span class="pg-dest-map__pin is-active"></span></div>'
+          ? '<div class="ps-mock-map" style="position:relative;margin:0 0 8px;border-radius:10px;overflow:hidden;">' +
+            '<img src="' +
+            escapeHtml(mapUrl) +
+            '" alt="" width="640" height="200" loading="lazy" decoding="async" />' +
+            '<span class="ps-mock-map__pin is-active" style="position:absolute;left:52%;top:42%;width:10px;height:10px;border-radius:50%;background:#e85d04;box-shadow:0 0 0 3px rgba(232,93,4,.35);"></span>' +
+            '<span class="ps-mock-map__pin" style="position:absolute;left:34%;top:58%;width:8px;height:8px;border-radius:50%;background:#64748b;opacity:.85;"></span>' +
+            '</div>'
           : '') +
-        '<article class="pg-dest-jobcard is-active">' +
+        '<article class="ps-mock-jobcard is-active">' +
         thumb +
         '<div><strong>' +
         title +
         '</strong><span>' +
         city +
-        ' · Just published</span><p>' +
-        desc +
-        '</p></div></article></div></div>';
+        ' · Just published</span></div></article></div></div>';
       return;
     }
     if (dest === 'google') {
       panel.innerHTML =
-        '<div class="pg-dest-mock pg-dest-mock--gbp">' +
-        '<div class="pg-dest-gbp__head">' +
-        brandMark() +
+        '<div class="ps-mock ps-mock--gbp">' +
+        '<div class="ps-mock-gbp__brand">' +
+        mark +
         '<div><strong>' +
         bizEsc +
-        '</strong><span>Google Business Profile · Update</span></div><em>Posted when connected</em></div>' +
-        '<div class="pg-dest-mock__media">' +
+        '</strong><span>Google Business Profile · Update</span></div>' +
+        '<em>Posted when connected</em></div>' +
+        '<div class="ps-mock__media">' +
         photo +
         '</div>' +
-        '<div class="pg-dest-gbp__copy"><strong>Just finished: ' +
+        '<div class="ps-mock-gbp__copy"><strong>Just finished: ' +
         title +
+        ' in ' +
+        city +
         '</strong><p>' +
         desc +
-        '</p></div></div>';
+        ' Real work. Real photos from the field.</p></div>' +
+        '<div class="ps-mock-gbp__actions"><span>Share</span><span>Call</span><span>Directions</span></div></div>';
       return;
     }
     if (dest === 'social') {
       panel.innerHTML =
-        '<div class="pg-dest-mock pg-dest-mock--social">' +
-        '<div class="pg-dest-social__head">' +
-        brandMark() +
+        '<div class="ps-mock ps-mock--social">' +
+        '<div class="ps-mock-social__head">' +
+        mark +
         '<div><strong>' +
         bizEsc +
-        '</strong><span>Posted when connected</span></div></div>' +
-        '<p class="pg-dest-social__copy">Another job wrapped in ' +
+        '</strong><span>Posted when connected · ' +
+        city +
+        '</span></div></div>' +
+        '<p class="ps-mock-social__copy">Another job wrapped in ' +
         city +
         '. ' +
         title +
         ' done right — documented from the field.</p>' +
-        '<div class="pg-dest-mock__media">' +
+        '<div class="ps-mock__media">' +
         photo +
-        '</div></div>';
+        '</div>' +
+        '<div class="ps-mock-social__reactions"><span>Like</span><span>Comment</span><span>Share</span></div></div>';
       return;
     }
     if (dest === 'reviews') {
       panel.innerHTML =
-        '<div class="pg-dest-mock pg-dest-mock--review">' +
-        '<div class="pg-dest-review__thread">' +
-        '<div class="pg-dest-review__bubble">Thanks again for choosing us. If we earned it, leave a quick review:</div>' +
-        '<div class="pg-dest-review__bubble is-link">review.jobcapturepro.com/demo</div></div>' +
+        '<div class="ps-mock ps-mock--review">' +
+        '<div class="ps-mock-review__phone">' +
+        '<div class="ps-mock-review__phone-bar"><span>Messages</span><strong>Customer</strong></div>' +
+        '<div class="ps-mock-review__thread">' +
+        '<div class="ps-mock-review__bubble">Thanks again for choosing ' +
+        bizEsc +
+        '. If we earned it, leave a quick review:</div>' +
+        '<div class="ps-mock-review__bubble is-link">review.jobcapturepro.com/demo</div>' +
+        '<p class="ps-mock-review__time">Delivered · Just now</p></div></div>' +
         (qrUrl
-          ? '<div class="pg-dest-qr"><img src="' + escapeHtml(qrUrl) + '" alt="" width="96" height="96" loading="lazy" decoding="async" /><span>QR on site · CRM automation when enabled</span></div>'
+          ? '<div class="ps-mock-qr"><img src="' +
+            escapeHtml(qrUrl) +
+            '" alt="" width="88" height="88" loading="lazy" decoding="async" />' +
+            '<strong>Or show QR on site</strong>' +
+            '<span>QR/link from the app · CRM automation when enabled</span></div>'
           : '') +
         '</div>';
       return;
     }
     panel.innerHTML =
-      '<div class="pg-dest-mock pg-dest-mock--directory">' +
-      '<p class="pg-dest-dir__label">JobCapturePro Directory</p>' +
-      '<article class="pg-dest-dir__card">' +
-      '<div class="pg-dest-dir__head">' +
-      brandMark() +
-      '<strong>' +
+      '<div class="ps-mock ps-mock--directory">' +
+      '<p class="ps-mock-dir__label">JobCapturePro Directory</p>' +
+      '<article class="ps-mock-dir__card">' +
+      '<div class="ps-mock-dir__head">' +
+      '<div class="ps-mock-dir__avatar">' +
+      mark +
+      '</div>' +
+      '<div><strong>' +
       bizEsc +
-      '</strong></div>' +
-      '<div class="pg-dest-dir__latest">' +
-      thumb +
-      '<div><p>Latest completed job</p><strong>' +
-      title +
       '</strong><span>' +
+      escapeHtml(tradeLabel) +
+      ' · ' +
       city +
-      '</span></div></div></article></div>';
+      '</span></div></div>' +
+      '<div class="ps-mock-dir__latest">' +
+      thumb +
+      '<div><em>Latest completed job</em><strong>' +
+      title +
+      '</strong><span>Documented on site · Just published</span></div></div>' +
+      '<div class="ps-mock-dir__meta"><span>Service area activity</span></div></article></div>';
   }
 
-  function setDestTab(dest) {
+  function setDestTab(dest, options) {
+    options = options || {};
+    if (DEST_TABS.indexOf(dest) === -1) dest = 'website';
+    activeDest = dest;
     document.querySelectorAll('.pg-dest-tab').forEach(function (tab) {
       var on = tab.getAttribute('data-dest') === dest;
       tab.classList.toggle('is-active', on);
       tab.setAttribute('aria-selected', on ? 'true' : 'false');
+      tab.setAttribute('tabindex', on ? '0' : '-1');
     });
-    renderDestPanel(dest);
-  }
-
-  function stopDestCycle() {
-    if (destCycleTimer) {
-      clearInterval(destCycleTimer);
-      destCycleTimer = null;
+    var panel = document.getElementById('pgDestPanel');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var apply = function () {
+      renderDestPanel(dest);
+      if (panel) panel.classList.remove('is-switching');
+    };
+    if (panel && options.animate && !reduce) {
+      panel.classList.add('is-switching');
+      window.setTimeout(apply, 160);
+    } else {
+      apply();
+    }
+    if (options.fromUser) {
+      track('ProductRevealDestinationSelected', { destination: dest, trade: state.trade });
     }
   }
 
-  function startDestCycle() {
-    stopDestCycle();
-    destCycleStopped = false;
-    destCycleStep = 0;
-    setDestTab(DEST_TABS[0]);
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    destCycleTimer = setInterval(function () {
-      if (destCycleStopped) {
-        stopDestCycle();
-        return;
-      }
-      destCycleStep += 1;
-      if (destCycleStep >= DEST_TABS.length) {
-        stopDestCycle();
-        return;
-      }
-      setDestTab(DEST_TABS[destCycleStep]);
-    }, DEST_CYCLE_MS);
-  }
-
   function bindDestTabs() {
-    document.querySelectorAll('.pg-dest-tab').forEach(function (tab) {
+    var tabs = document.querySelectorAll('.pg-dest-tab');
+    tabs.forEach(function (tab, index) {
       tab.addEventListener('click', function () {
-        destCycleStopped = true;
-        stopDestCycle();
         var dest = tab.getAttribute('data-dest') || 'website';
-        setDestTab(dest);
+        setDestTab(dest, { fromUser: true, animate: true });
+      });
+      tab.addEventListener('keydown', function (e) {
+        var next = index;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (index + 1) % tabs.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (index - 1 + tabs.length) % tabs.length;
+        else return;
+        e.preventDefault();
+        tabs[next].focus();
+        setDestTab(tabs[next].getAttribute('data-dest') || 'website', { fromUser: true, animate: true });
       });
     });
+
+    var panel = document.getElementById('pgDestPanel');
+    if (panel && !panel.getAttribute('data-swipe-bound')) {
+      panel.setAttribute('data-swipe-bound', '1');
+      var touchX = null;
+      panel.addEventListener(
+        'touchstart',
+        function (e) {
+          if (!e.changedTouches || !e.changedTouches[0]) return;
+          touchX = e.changedTouches[0].clientX;
+        },
+        { passive: true }
+      );
+      panel.addEventListener(
+        'touchend',
+        function (e) {
+          if (touchX === null || !e.changedTouches || !e.changedTouches[0]) return;
+          var dx = e.changedTouches[0].clientX - touchX;
+          touchX = null;
+          if (Math.abs(dx) < 48) return;
+          var i = DEST_TABS.indexOf(activeDest);
+          if (i < 0) i = 0;
+          if (dx < 0 && i < DEST_TABS.length - 1) setDestTab(DEST_TABS[i + 1], { fromUser: true, animate: true });
+          else if (dx > 0 && i > 0) setDestTab(DEST_TABS[i - 1], { fromUser: true, animate: true });
+        },
+        { passive: true }
+      );
+    }
   }
 
   function renderReveal() {
@@ -1428,7 +1551,7 @@
         continuity.textContent = '';
       }
     }
-    startDestCycle();
+    setDestTab(activeDest || 'website', { fromUser: false, animate: false });
   }
 
   function renderTrialSummary() {
@@ -1518,7 +1641,6 @@
 
   function goTo(id) {
     clearAdvance();
-    if (id !== 'product_reveal') stopDestCycle();
     if (STATES.indexOf(id) === -1) return;
     hideAllInsights();
     state.current_state = id;
