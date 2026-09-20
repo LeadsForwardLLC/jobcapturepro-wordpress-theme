@@ -257,6 +257,18 @@ body.jcp-proof-gap .pg-btn {
   font-weight: 750;
   border-radius: 0.65rem;
   text-decoration: none;
+  box-sizing: border-box;
+  border: 0;
+  cursor: pointer;
+  background: var(--pg-accent);
+  color: #fff;
+}
+
+body.jcp-proof-gap .pg-btn:hover,
+body.jcp-proof-gap .pg-btn:focus-visible {
+  filter: brightness(0.95);
+  outline: none;
+  color: #fff;
 }
 
 body.jcp-proof-gap .pg-btn:disabled {
