@@ -191,13 +191,13 @@ body.jcp-proof-gap .pg-stage {
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 1.15rem var(--pg-gutter) calc(var(--pg-bottom-pad) + 0.5rem);
+  padding: 1.05rem var(--pg-gutter) 0.85rem;
   display: flex;
   flex-direction: column;
 }
 
 body.jcp-proof-gap.pg-has-bottom-action .pg-stage {
-  padding-bottom: calc(var(--pg-bottom-pad) + 0.75rem);
+  padding-bottom: 0.65rem;
 }
 
 body.jcp-proof-gap .pg-state {
