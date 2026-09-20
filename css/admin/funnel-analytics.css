@@ -1,0 +1,233 @@
+/**
+ * Funnel Analytics admin — JCP → Funnel Analytics
+ */
+
+.jcp-fa {
+  --jcp-fa-ink: #0f172a;
+  --jcp-fa-muted: #64748b;
+  --jcp-fa-line: #dcdcde;
+  --jcp-fa-card: #fff;
+  --jcp-fa-accent: #ff5036;
+  --jcp-fa-drop: #b91c1c;
+  --jcp-fa-ok: #15803d;
+  max-width: 1280px;
+}
+
+.jcp-fa__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  align-items: flex-end;
+  margin: 16px 0 8px;
+  padding: 14px 16px;
+  background: var(--jcp-fa-card);
+  border: 1px solid var(--jcp-fa-line);
+  border-radius: 8px;
+}
+
+.jcp-fa__filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--jcp-fa-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.jcp-fa__filters input[type="text"],
+.jcp-fa__filters select {
+  min-width: 120px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.jcp-fa__filters .button {
+  margin-bottom: 1px;
+}
+
+.jcp-fa__compare {
+  display: flex;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  font-size: 13px !important;
+  color: var(--jcp-fa-ink) !important;
+  padding-bottom: 6px;
+}
+
+.jcp-fa__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin: 16px 0 24px;
+}
+
+.jcp-fa__card {
+  background: var(--jcp-fa-card);
+  border: 1px solid var(--jcp-fa-line);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+
+.jcp-fa__card-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--jcp-fa-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.jcp-fa__card-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--jcp-fa-ink);
+  margin-top: 4px;
+  line-height: 1.2;
+}
+
+.jcp-fa__card-delta {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.jcp-fa__card-delta.is-up {
+  color: var(--jcp-fa-ok);
+}
+
+.jcp-fa__card-delta.is-down {
+  color: var(--jcp-fa-drop);
+}
+
+.jcp-fa__card-delta.is-flat {
+  color: var(--jcp-fa-muted);
+}
+
+.jcp-fa__rates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin: -8px 0 20px;
+  font-size: 13px;
+  color: var(--jcp-fa-muted);
+}
+
+.jcp-fa__rates strong {
+  color: var(--jcp-fa-ink);
+}
+
+.jcp-fa-funnel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0 28px;
+  padding: 16px;
+  background: var(--jcp-fa-card);
+  border: 1px solid var(--jcp-fa-line);
+  border-radius: 8px;
+}
+
+@media (min-width: 1100px) {
+  .jcp-fa-funnel {
+    flex-direction: row;
+    align-items: stretch;
+    overflow-x: auto;
+    gap: 0;
+  }
+
+  .jcp-fa-funnel__node {
+    flex: 1 1 0;
+    min-width: 96px;
+    border-right: 1px solid #eef0f2;
+    padding: 0 10px;
+  }
+
+  .jcp-fa-funnel__node:last-child {
+    border-right: 0;
+  }
+}
+
+.jcp-fa-funnel__node {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.jcp-fa-funnel__label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--jcp-fa-ink);
+}
+
+.jcp-fa-funnel__users {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--jcp-fa-ink);
+}
+
+.jcp-fa-funnel__bar {
+  height: 8px;
+  border-radius: 999px;
+  background: #eef2f7;
+  overflow: hidden;
+}
+
+.jcp-fa-funnel__bar > span {
+  display: block;
+  height: 100%;
+  background: #334155;
+  border-radius: inherit;
+}
+
+.jcp-fa-funnel__node.is-drop .jcp-fa-funnel__bar > span {
+  background: var(--jcp-fa-accent);
+}
+
+.jcp-fa-funnel__meta {
+  font-size: 11px;
+  color: var(--jcp-fa-muted);
+  line-height: 1.35;
+}
+
+.jcp-fa-funnel__meta .is-drop {
+  color: var(--jcp-fa-drop);
+  font-weight: 700;
+}
+
+.jcp-fa h2 {
+  margin-top: 28px;
+}
+
+.jcp-fa__toolbar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin: 8px 0 16px;
+}
+
+.jcp-fa table .jcp-fa-pctbar {
+  display: inline-block;
+  width: 72px;
+  height: 6px;
+  margin-right: 6px;
+  vertical-align: middle;
+  background: #eef2f7;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.jcp-fa table .jcp-fa-pctbar > span {
+  display: block;
+  height: 100%;
+  background: var(--jcp-fa-accent);
+}
+
+.jcp-fa__note {
+  color: var(--jcp-fa-muted);
+  max-width: 900px;
+}

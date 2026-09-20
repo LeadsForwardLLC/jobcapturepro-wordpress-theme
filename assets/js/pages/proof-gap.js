@@ -105,11 +105,15 @@
   var startedTracked = false;
   var landingTracked = false;
   var questionViewed = {};
+  var milestoneViewed = {};
+  var stepEnteredAt = Date.now();
+  var stepEnteredId = 'welcome';
   var insightVisible = false;
   var preloadedTradePhoto = '';
   var bottomActionHandler = null;
   var keyboardBound = false;
   var activeDest = 'website';
+  var destTracked = {};
 
   function syncBottomPad() {
     var bar = document.getElementById('pgBottomAction');
@@ -436,7 +440,9 @@
         creative_concept: payload.creative_concept || '',
         destination: payload.destination || '',
         cta_source: payload.cta_source || '',
+        duration_ms: payload.duration_ms || '',
       },
+      creative_concept: payload.creative_concept || '',
     };
     try {
       var json = JSON.stringify(body);
@@ -1480,7 +1486,8 @@
     } else {
       apply();
     }
-    if (options.fromUser) {
+    if (options.fromUser && !destTracked[dest]) {
+      destTracked[dest] = true;
       track('ProductRevealDestinationSelected', { destination: dest, answer_value: dest, trade: state.trade });
     }
   }
@@ -1651,6 +1658,22 @@
   function goTo(id) {
     clearAdvance();
     if (STATES.indexOf(id) === -1) return;
+
+    // Dwell timing for previous step (once per leave; capped to avoid tab-sleep outliers).
+    if (stepEnteredId && stepEnteredAt) {
+      var dwell = Date.now() - stepEnteredAt;
+      if (dwell >= 250 && dwell <= 30 * 60 * 1000) {
+        track('SurveyStepTiming', {
+          question_id: stepEnteredId,
+          screen: stepEnteredId,
+          duration_ms: dwell,
+          answer_value: String(dwell),
+        });
+      }
+    }
+    stepEnteredId = id;
+    stepEnteredAt = Date.now();
+
     hideAllInsights();
     state.current_state = id;
     saveState();
@@ -1680,27 +1703,39 @@
 
     if (id === 'proof_gap_result') {
       renderResult();
-      track('SurveyResultViewed', {
-        trade: state.trade,
-        current_workflow: state.current_workflow,
-        jobs_per_week_bucket: state.jobs_per_week_bucket,
-        public_proof_percentage: state.public_proof_percentage,
-        annual_jobs_min: state.annual_jobs_min,
-        annual_jobs_max: state.annual_jobs_max,
-      });
+      if (!milestoneViewed.result) {
+        milestoneViewed.result = true;
+        track('SurveyResultViewed', {
+          trade: state.trade,
+          current_workflow: state.current_workflow,
+          jobs_per_week_bucket: state.jobs_per_week_bucket,
+          public_proof_percentage: state.public_proof_percentage,
+          annual_jobs_min: state.annual_jobs_min,
+          annual_jobs_max: state.annual_jobs_max,
+        });
+      }
     }
-    if (id === 'email_capture') track('EmailCaptureViewed', { trade: state.trade });
+    if (id === 'email_capture' && !milestoneViewed.email_view) {
+      milestoneViewed.email_view = true;
+      track('EmailCaptureViewed', { trade: state.trade });
+    }
     if (id === 'product_reveal') {
       renderReveal();
-      track('ProductRevealStarted', {
-        trade: state.trade,
-        current_workflow: state.current_workflow,
-        cta_source: 'product_reveal',
-      });
+      if (!milestoneViewed.reveal) {
+        milestoneViewed.reveal = true;
+        track('ProductRevealStarted', {
+          trade: state.trade,
+          current_workflow: state.current_workflow,
+          cta_source: 'product_reveal',
+        });
+      }
     }
     if (id === 'trial_bridge') {
       renderTrialSummary();
-      track('TrialCTAViewed', { trade: state.trade, cta_source: 'trial_bridge' });
+      if (!milestoneViewed.trial_view) {
+        milestoneViewed.trial_view = true;
+        track('TrialCTAViewed', { trade: state.trade, cta_source: 'trial_bridge' });
+      }
     }
 
     syncQuestionUI(id);

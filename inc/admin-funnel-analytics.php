@@ -25,6 +25,145 @@ function jcp_funnel_analytics_admin_menu(): void {
 add_action( 'admin_menu', 'jcp_funnel_analytics_admin_menu', 20 );
 
 /**
+ * Enqueue admin styles on this page only.
+ *
+ * @param string $hook Hook.
+ */
+function jcp_funnel_analytics_admin_assets( string $hook ): void {
+	if ( $hook !== 'jcp-theme-settings_page_jcp-funnel-analytics' ) {
+		return;
+	}
+	$path = get_template_directory() . '/css/admin/funnel-analytics.css';
+	$uri  = get_template_directory_uri() . '/css/admin/funnel-analytics.css';
+	$ver  = is_readable( $path ) ? (string) filemtime( $path ) : '1';
+	wp_enqueue_style( 'jcp-funnel-analytics-admin', $uri, [], $ver );
+}
+add_action( 'admin_enqueue_scripts', 'jcp_funnel_analytics_admin_assets' );
+
+/**
+ * CSV export (non-PII aggregates only).
+ */
+function jcp_funnel_analytics_handle_csv_export(): void {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( esc_html__( 'Forbidden', 'jcp-core' ) );
+	}
+	check_admin_referer( 'jcp_funnel_analytics_csv' );
+	if ( ! function_exists( 'jcp_funnel_analytics_report' ) ) {
+		wp_die( esc_html__( 'Analytics module not loaded.', 'jcp-core' ) );
+	}
+
+	$filters = jcp_funnel_analytics_parse_filters();
+	$report  = jcp_funnel_analytics_report( $filters );
+	$funnel  = (string) ( $filters['funnel'] ?? 'proof_gap' );
+	$days    = (int) ( $filters['days'] ?? 30 );
+	$filename = sprintf( 'jcp-funnel-%s-%dd-%s.csv', $funnel, $days, gmdate( 'Ymd' ) );
+
+	nocache_headers();
+	header( 'Content-Type: text/csv; charset=utf-8' );
+	header( 'Content-Disposition: attachment; filename=' . $filename );
+
+	$out = fopen( 'php://output', 'w' );
+	if ( ! $out ) {
+		wp_die( esc_html__( 'Could not open output stream.', 'jcp-core' ) );
+	}
+
+	fputcsv( $out, [ 'section', 'key', 'label', 'sessions', 'from_previous_pct', 'drop', 'drop_pct', 'from_landing_pct', 'median_ms' ] );
+	foreach ( $report['stages'] ?? [] as $stage ) {
+		fputcsv(
+			$out,
+			[
+				'stage',
+				(string) ( $stage['key'] ?? '' ),
+				(string) ( $stage['label'] ?? '' ),
+				! empty( $stage['not_connected'] ) ? 'not_connected' : (string) (int) ( $stage['sessions'] ?? 0 ),
+				(string) ( $stage['from_previous'] ?? '' ),
+				(string) ( $stage['drop'] ?? '' ),
+				(string) ( $stage['drop_pct'] ?? '' ),
+				(string) ( $stage['from_landing'] ?? '' ),
+				(string) ( $stage['median_ms'] ?? '' ),
+			]
+		);
+	}
+
+	fputcsv( $out, [] );
+	fputcsv( $out, [ 'section', 'question', 'viewed', 'answered', 'answer_rate', 'drop_after_view', 'median_ms', 'top_answers' ] );
+	foreach ( $report['questions'] ?? [] as $q ) {
+		$tops = [];
+		foreach ( $q['top_answers'] ?? [] as $a ) {
+			$tops[] = ( $a['value'] ?? '' ) . ':' . (int) ( $a['count'] ?? 0 );
+		}
+		fputcsv(
+			$out,
+			[
+				'question',
+				(string) ( $q['question'] ?? '' ),
+				(int) ( $q['viewed'] ?? 0 ),
+				(int) ( $q['answered'] ?? 0 ),
+				(string) ( $q['answer_rate'] ?? '' ),
+				(int) ( $q['drop_after_view'] ?? 0 ),
+				(string) ( $q['median_ms'] ?? '' ),
+				implode( '|', $tops ),
+			]
+		);
+	}
+
+	fputcsv( $out, [] );
+	fputcsv( $out, [ 'section', 'destination', 'sessions' ] );
+	foreach ( $report['destinations'] ?? [] as $d ) {
+		fputcsv( $out, [ 'destination', (string) ( $d['destination'] ?? '' ), (int) ( $d['sessions'] ?? 0 ) ] );
+	}
+
+	fputcsv( $out, [] );
+	fputcsv( $out, [ 'section', 'device', 'sessions' ] );
+	foreach ( $report['devices'] ?? [] as $d ) {
+		fputcsv( $out, [ 'device', (string) ( $d['device'] ?? '' ), (int) ( $d['sessions'] ?? 0 ) ] );
+	}
+
+	fputcsv( $out, [] );
+	fputcsv( $out, [ 'section', 'source', 'campaign', 'content', 'landing', 'starts', 'survey_pct', 'email_pct', 'trial_cta_pct' ] );
+	foreach ( $report['traffic'] ?? [] as $t ) {
+		fputcsv(
+			$out,
+			[
+				'traffic',
+				(string) ( $t['source'] ?? '' ),
+				(string) ( $t['campaign'] ?? '' ),
+				(string) ( $t['content'] ?? '' ),
+				(int) ( $t['landing_sessions'] ?? 0 ),
+				(int) ( $t['starts'] ?? 0 ),
+				(string) ( $t['survey_completion'] ?? '' ),
+				(string) ( $t['email_pct'] ?? '' ),
+				(string) ( $t['trial_cta_pct'] ?? '' ),
+			]
+		);
+	}
+
+	fclose( $out );
+	exit;
+}
+add_action( 'admin_post_jcp_funnel_analytics_csv', 'jcp_funnel_analytics_handle_csv_export' );
+
+/**
+ * Format ms as human duration.
+ *
+ * @param int|null $ms Milliseconds.
+ */
+function jcp_funnel_analytics_format_ms( $ms ): string {
+	if ( $ms === null || $ms === '' ) {
+		return __( 'n/a', 'jcp-core' );
+	}
+	$ms = (int) $ms;
+	if ( $ms < 1000 ) {
+		return $ms . ' ms';
+	}
+	$sec = round( $ms / 1000, 1 );
+	if ( $sec < 60 ) {
+		return $sec . 's';
+	}
+	return round( $sec / 60, 1 ) . 'm';
+}
+
+/**
  * Render admin dashboard.
  */
 function jcp_funnel_analytics_render_admin(): void {
@@ -41,39 +180,101 @@ function jcp_funnel_analytics_render_admin(): void {
 	$funnels = jcp_funnel_analytics_funnels();
 	$summary = $report['summary'] ?? [];
 	$stages  = $report['stages'] ?? [];
+	$rates   = $report['rates'] ?? [];
+	$compare = $report['compare'] ?? [];
 	$nc      = static function ( $v ) {
 		if ( $v === null ) {
 			return esc_html__( 'Not connected', 'jcp-core' );
 		}
 		return esc_html( (string) $v );
 	};
-	?>
-	<div class="wrap jcp-funnel-analytics">
-		<h1><?php esc_html_e( 'Funnel Analytics', 'jcp-core' ); ?></h1>
-		<p class="description"><?php echo esc_html( (string) ( $report['calculation_note'] ?? '' ) ); ?></p>
+	$delta_html = static function ( string $key ) use ( $compare ): string {
+		if ( empty( $compare[ $key ] ) || $compare[ $key ]['delta'] === null ) {
+			return '';
+		}
+		$d   = (float) $compare[ $key ]['delta'];
+		$pct = $compare[ $key ]['delta_pct'];
+		$cls = $d > 0 ? 'is-up' : ( $d < 0 ? 'is-down' : 'is-flat' );
+		$sign = $d > 0 ? '+' : '';
+		$label = $sign . (int) $d;
+		if ( $pct !== null ) {
+			$label .= ' (' . $sign . $pct . '%)';
+		}
+		return '<div class="jcp-fa__card-delta ' . esc_attr( $cls ) . '">' . esc_html( $label ) . ' vs prior</div>';
+	};
 
-		<form method="get" style="margin:16px 0;display:flex;flex-wrap:wrap;gap:10px;align-items:end;">
+	$landing_sessions = 0;
+	foreach ( $stages as $s ) {
+		if ( ( $s['key'] ?? '' ) === 'landing' && is_int( $s['sessions'] ?? null ) ) {
+			$landing_sessions = (int) $s['sessions'];
+			break;
+		}
+	}
+
+	$csv_url = wp_nonce_url(
+		add_query_arg(
+			array_merge(
+				[ 'action' => 'jcp_funnel_analytics_csv' ],
+				array_filter(
+					[
+						'funnel'           => $filters['funnel'],
+						'days'             => $filters['days'],
+						'utm_source'       => $filters['utm_source'],
+						'utm_medium'       => $filters['utm_medium'] ?? '',
+						'utm_campaign'     => $filters['utm_campaign'],
+						'utm_content'      => $filters['utm_content'],
+						'lp_variant'       => $filters['lp_variant'],
+						'creative_concept' => $filters['creative_concept'] ?? '',
+						'trade'            => $filters['trade'],
+						'workflow'         => $filters['workflow'] ?? '',
+						'device'           => $filters['device'],
+					],
+					static function ( $v ) {
+						return $v !== '' && $v !== null;
+					}
+				)
+			),
+			admin_url( 'admin-post.php' )
+		),
+		'jcp_funnel_analytics_csv'
+	);
+	?>
+	<div class="wrap jcp-fa jcp-funnel-analytics">
+		<h1><?php esc_html_e( 'Funnel Analytics', 'jcp-core' ); ?></h1>
+		<p class="jcp-fa__note description"><?php echo esc_html( (string) ( $report['calculation_note'] ?? '' ) ); ?></p>
+		<?php if ( ! empty( $report['compare_note'] ) ) : ?>
+			<p class="description"><?php echo esc_html( (string) $report['compare_note'] ); ?></p>
+		<?php endif; ?>
+
+		<form method="get" class="jcp-fa__filters">
 			<input type="hidden" name="page" value="jcp-funnel-analytics" />
-			<label>Funnel
+			<label><?php esc_html_e( 'Funnel', 'jcp-core' ); ?>
 				<select name="funnel">
 					<?php foreach ( $funnels as $key => $label ) : ?>
 						<option value="<?php echo esc_attr( $key ); ?>" <?php selected( $filters['funnel'], $key ); ?>><?php echo esc_html( $label ); ?></option>
 					<?php endforeach; ?>
 				</select>
 			</label>
-			<label>Date range
+			<label><?php esc_html_e( 'Date range', 'jcp-core' ); ?>
 				<select name="days">
 					<?php foreach ( [ 7, 14, 30, 90 ] as $d ) : ?>
 						<option value="<?php echo (int) $d; ?>" <?php selected( (int) $filters['days'], $d ); ?>><?php echo esc_html( sprintf( __( 'Last %d days', 'jcp-core' ), $d ) ); ?></option>
 					<?php endforeach; ?>
 				</select>
 			</label>
-			<label>UTM source <input type="text" name="utm_source" value="<?php echo esc_attr( (string) $filters['utm_source'] ); ?>" placeholder="facebook" /></label>
-			<label>UTM campaign <input type="text" name="utm_campaign" value="<?php echo esc_attr( (string) $filters['utm_campaign'] ); ?>" /></label>
-			<label>UTM content / ad <input type="text" name="utm_content" value="<?php echo esc_attr( (string) $filters['utm_content'] ); ?>" /></label>
-			<label>lp_variant <input type="text" name="lp_variant" value="<?php echo esc_attr( (string) $filters['lp_variant'] ); ?>" /></label>
-			<label>Trade <input type="text" name="trade" value="<?php echo esc_attr( (string) $filters['trade'] ); ?>" /></label>
-			<label>Device
+			<label class="jcp-fa__compare">
+				<input type="checkbox" name="compare" value="1" <?php checked( ! empty( $filters['compare'] ) ); ?> />
+				<?php esc_html_e( 'Compare prior period', 'jcp-core' ); ?>
+			</label>
+			<label><?php esc_html_e( 'UTM source', 'jcp-core' ); ?> <input type="text" name="utm_source" value="<?php echo esc_attr( (string) $filters['utm_source'] ); ?>" placeholder="facebook" /></label>
+			<label><?php esc_html_e( 'UTM medium', 'jcp-core' ); ?> <input type="text" name="utm_medium" value="<?php echo esc_attr( (string) ( $filters['utm_medium'] ?? '' ) ); ?>" /></label>
+			<label><?php esc_html_e( 'UTM campaign', 'jcp-core' ); ?> <input type="text" name="utm_campaign" value="<?php echo esc_attr( (string) $filters['utm_campaign'] ); ?>" /></label>
+			<label><?php esc_html_e( 'UTM content', 'jcp-core' ); ?> <input type="text" name="utm_content" value="<?php echo esc_attr( (string) $filters['utm_content'] ); ?>" /></label>
+			<label><?php esc_html_e( 'lp_variant', 'jcp-core' ); ?> <input type="text" name="lp_variant" value="<?php echo esc_attr( (string) $filters['lp_variant'] ); ?>" /></label>
+			<label><?php esc_html_e( 'creative_concept', 'jcp-core' ); ?> <input type="text" name="creative_concept" value="<?php echo esc_attr( (string) ( $filters['creative_concept'] ?? '' ) ); ?>" /></label>
+			<label><?php esc_html_e( 'Trade', 'jcp-core' ); ?> <input type="text" name="trade" value="<?php echo esc_attr( (string) $filters['trade'] ); ?>" /></label>
+			<label><?php esc_html_e( 'Workflow', 'jcp-core' ); ?> <input type="text" name="workflow" value="<?php echo esc_attr( (string) ( $filters['workflow'] ?? '' ) ); ?>" /></label>
+			<label><?php esc_html_e( 'Device', 'jcp-core' ); ?>
 				<select name="device">
 					<option value=""><?php esc_html_e( 'All', 'jcp-core' ); ?></option>
 					<?php foreach ( [ 'mobile', 'tablet', 'desktop' ] as $dev ) : ?>
@@ -84,43 +285,93 @@ function jcp_funnel_analytics_render_admin(): void {
 			<button class="button button-primary" type="submit"><?php esc_html_e( 'Apply', 'jcp-core' ); ?></button>
 		</form>
 
-		<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:16px 0;">
-			<?php
-			$cards = [
-				'Visitors'           => $summary['visitors'] ?? 0,
-				'Survey starts'      => $summary['survey_starts'] ?? 0,
-				'Survey completion'  => $summary['survey_completion'] ?? 0,
-				'Emails captured'    => $summary['emails_captured'] ?? null,
-				'Product reveal'     => $summary['product_reveal'] ?? null,
-				'Trial CTA clicks'   => $summary['trial_cta_clicks'] ?? null,
-				'Trials started'     => $summary['trials_started'] ?? null,
-				'Activated trials'   => $summary['activated_trials'] ?? null,
-				'Paid customers'     => $summary['paid_customers'] ?? null,
-			];
-			foreach ( $cards as $label => $val ) :
-				?>
-				<div style="background:#fff;border:1px solid #c3c4c7;border-radius:4px;padding:14px;">
-					<div style="font-size:12px;color:#646970;"><?php echo esc_html( $label ); ?></div>
-					<div style="font-size:22px;font-weight:700;margin-top:4px;"><?php echo $nc( $val ); ?></div>
+		<div class="jcp-fa__toolbar">
+			<a class="button" href="<?php echo esc_url( $csv_url ); ?>"><?php esc_html_e( 'Export CSV (no PII)', 'jcp-core' ); ?></a>
+			<span class="description"><?php echo esc_html( sprintf( __( 'Cohort: %d sessions', 'jcp-core' ), (int) ( $report['cohort_size'] ?? 0 ) ) ); ?></span>
+		</div>
+
+		<?php
+		$cards = [
+			'visitors'          => __( 'Starts / visitors', 'jcp-core' ),
+			'survey_starts'     => __( 'Assessment started', 'jcp-core' ),
+			'survey_completion' => __( 'Assessment complete', 'jcp-core' ),
+			'emails_captured'   => __( 'Email captures', 'jcp-core' ),
+			'product_reveal'    => __( 'Product reveal reach', 'jcp-core' ),
+			'trial_plan_views'  => __( 'Trial plan views', 'jcp-core' ),
+			'trial_cta_clicks'  => __( 'Trial CTA clicks', 'jcp-core' ),
+			'trials_started'    => __( 'Trial starts', 'jcp-core' ),
+			'paid_customers'    => __( 'Paid', 'jcp-core' ),
+		];
+		?>
+		<div class="jcp-fa__cards">
+			<?php foreach ( $cards as $key => $label ) : ?>
+				<?php $val = $summary[ $key ] ?? null; ?>
+				<div class="jcp-fa__card">
+					<div class="jcp-fa__card-label"><?php echo esc_html( $label ); ?></div>
+					<div class="jcp-fa__card-value"><?php echo $nc( $val ); ?></div>
+					<?php echo $delta_html( $key ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 				</div>
 			<?php endforeach; ?>
 		</div>
 
-		<h2><?php esc_html_e( 'Funnel stages (unique sessions)', 'jcp-core' ); ?></h2>
-		<table class="widefat striped" style="max-width:1100px;">
+		<?php if ( ! empty( $rates ) ) : ?>
+			<div class="jcp-fa__rates">
+				<span><?php esc_html_e( 'Start → email', 'jcp-core' ); ?>: <strong><?php echo $rates['start_to_email'] === null ? '—' : esc_html( (string) $rates['start_to_email'] ) . '%'; ?></strong></span>
+				<span><?php esc_html_e( 'Reveal reach', 'jcp-core' ); ?>: <strong><?php echo $rates['reveal_reach'] === null ? '—' : esc_html( (string) $rates['reveal_reach'] ) . '%'; ?></strong></span>
+				<span><?php esc_html_e( 'Email → trial CTA', 'jcp-core' ); ?>: <strong><?php echo $rates['email_to_trial_cta'] === null ? '—' : esc_html( (string) $rates['email_to_trial_cta'] ) . '%'; ?></strong></span>
+				<span><?php esc_html_e( 'Start → trial CTA', 'jcp-core' ); ?>: <strong><?php echo $rates['start_to_trial_cta'] === null ? '—' : esc_html( (string) $rates['start_to_trial_cta'] ) . '%'; ?></strong></span>
+			</div>
+		<?php endif; ?>
+
+		<h2><?php esc_html_e( 'Funnel visualization', 'jcp-core' ); ?></h2>
+		<div class="jcp-fa-funnel" role="list">
+			<?php if ( empty( $stages ) ) : ?>
+				<p><?php esc_html_e( 'No sessions in this window yet.', 'jcp-core' ); ?></p>
+			<?php else : ?>
+				<?php foreach ( $stages as $stage ) : ?>
+					<?php
+					if ( ! empty( $stage['not_connected'] ) ) {
+						continue;
+					}
+					$sess = (int) ( $stage['sessions'] ?? 0 );
+					$width = $landing_sessions > 0 ? max( 4, round( ( $sess / $landing_sessions ) * 100 ) ) : ( $sess > 0 ? 100 : 4 );
+					$drop_hot = isset( $stage['drop_pct'] ) && (float) $stage['drop_pct'] >= 25;
+					?>
+					<div class="jcp-fa-funnel__node<?php echo $drop_hot ? ' is-drop' : ''; ?>" role="listitem">
+						<div class="jcp-fa-funnel__label"><?php echo esc_html( (string) $stage['label'] ); ?></div>
+						<div class="jcp-fa-funnel__users"><?php echo esc_html( (string) $sess ); ?></div>
+						<div class="jcp-fa-funnel__bar" aria-hidden="true"><span style="width:<?php echo (float) $width; ?>%"></span></div>
+						<div class="jcp-fa-funnel__meta">
+							<?php echo esc_html( (string) ( $stage['from_previous'] ?? '—' ) ); ?>% step
+							· <?php echo esc_html( (string) ( $stage['from_landing'] ?? '—' ) ); ?>% cum
+							<?php if ( isset( $stage['drop_pct'] ) && (float) $stage['drop_pct'] > 0 ) : ?>
+								· <span class="<?php echo $drop_hot ? 'is-drop' : ''; ?>"><?php echo esc_html( (string) $stage['drop_pct'] ); ?>% drop</span>
+							<?php endif; ?>
+							<?php if ( ! empty( $stage['median_ms'] ) ) : ?>
+								· <?php echo esc_html( jcp_funnel_analytics_format_ms( $stage['median_ms'] ) ); ?> med
+							<?php endif; ?>
+						</div>
+					</div>
+				<?php endforeach; ?>
+			<?php endif; ?>
+		</div>
+
+		<h2><?php esc_html_e( 'Drop-off table', 'jcp-core' ); ?></h2>
+		<table class="widefat striped">
 			<thead>
 				<tr>
 					<th><?php esc_html_e( 'Stage', 'jcp-core' ); ?></th>
 					<th><?php esc_html_e( 'Sessions', 'jcp-core' ); ?></th>
-					<th><?php esc_html_e( 'From previous', 'jcp-core' ); ?></th>
+					<th><?php esc_html_e( 'Step conv.', 'jcp-core' ); ?></th>
 					<th><?php esc_html_e( 'Drop-off', 'jcp-core' ); ?></th>
 					<th><?php esc_html_e( 'Drop %', 'jcp-core' ); ?></th>
-					<th><?php esc_html_e( 'From landing', 'jcp-core' ); ?></th>
+					<th><?php esc_html_e( 'From entry', 'jcp-core' ); ?></th>
+					<th><?php esc_html_e( 'Median time', 'jcp-core' ); ?></th>
 				</tr>
 			</thead>
 			<tbody>
 			<?php if ( empty( $stages ) ) : ?>
-				<tr><td colspan="6"><?php esc_html_e( 'No sessions in this window yet.', 'jcp-core' ); ?></td></tr>
+				<tr><td colspan="7"><?php esc_html_e( 'No sessions in this window yet.', 'jcp-core' ); ?></td></tr>
 			<?php else : ?>
 				<?php foreach ( $stages as $stage ) : ?>
 					<tr>
@@ -138,6 +389,7 @@ function jcp_funnel_analytics_render_admin(): void {
 						<td><?php echo ! empty( $stage['not_connected'] ) ? '—' : esc_html( (string) (int) $stage['drop'] ); ?></td>
 						<td><?php echo ! empty( $stage['not_connected'] ) ? '—' : esc_html( (string) $stage['drop_pct'] ) . '%'; ?></td>
 						<td><?php echo ! empty( $stage['not_connected'] ) ? '—' : esc_html( (string) $stage['from_landing'] ) . '%'; ?></td>
+						<td><?php echo ! empty( $stage['not_connected'] ) ? '—' : esc_html( jcp_funnel_analytics_format_ms( $stage['median_ms'] ?? null ) ); ?></td>
 					</tr>
 				<?php endforeach; ?>
 			<?php endif; ?>
@@ -145,8 +397,8 @@ function jcp_funnel_analytics_render_admin(): void {
 		</table>
 
 		<?php if ( ! empty( $report['questions'] ) ) : ?>
-			<h2 style="margin-top:28px;"><?php esc_html_e( 'Question analytics', 'jcp-core' ); ?></h2>
-			<table class="widefat striped" style="max-width:1100px;">
+			<h2><?php esc_html_e( 'Answer distributions', 'jcp-core' ); ?></h2>
+			<table class="widefat striped">
 				<thead>
 					<tr>
 						<th><?php esc_html_e( 'Question', 'jcp-core' ); ?></th>
@@ -155,7 +407,7 @@ function jcp_funnel_analytics_render_admin(): void {
 						<th><?php esc_html_e( 'Answer rate', 'jcp-core' ); ?></th>
 						<th><?php esc_html_e( 'Drop after view', 'jcp-core' ); ?></th>
 						<th><?php esc_html_e( 'Median time', 'jcp-core' ); ?></th>
-						<th><?php esc_html_e( 'Most common answers', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'Top answers', 'jcp-core' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
@@ -164,16 +416,21 @@ function jcp_funnel_analytics_render_admin(): void {
 						<td><strong><?php echo esc_html( (string) $q['question'] ); ?></strong></td>
 						<td><?php echo (int) $q['viewed']; ?></td>
 						<td><?php echo (int) $q['answered']; ?></td>
-						<td><?php echo esc_html( (string) $q['answer_rate'] ); ?>%</td>
+						<td>
+							<span class="jcp-fa-pctbar" aria-hidden="true"><span style="width:<?php echo min( 100, (float) $q['answer_rate'] ); ?>%"></span></span>
+							<?php echo esc_html( (string) $q['answer_rate'] ); ?>%
+						</td>
 						<td><?php echo (int) $q['drop_after_view']; ?></td>
-						<td><?php echo $q['median_ms'] === null ? esc_html__( 'n/a yet', 'jcp-core' ) : esc_html( (string) $q['median_ms'] ) . ' ms'; ?></td>
+						<td><?php echo esc_html( jcp_funnel_analytics_format_ms( $q['median_ms'] ?? null ) ); ?></td>
 						<td>
 							<?php
 							$bits = [];
+							$total_ans = max( 1, (int) $q['answered'] );
 							foreach ( $q['top_answers'] as $a ) {
-								$bits[] = esc_html( $a['value'] ) . ' (' . (int) $a['count'] . ')';
+								$pct = round( ( (int) $a['count'] / $total_ans ) * 100, 1 );
+								$bits[] = esc_html( $a['value'] ) . ' ' . (int) $a['count'] . ' (' . esc_html( (string) $pct ) . '%)';
 							}
-							echo $bits ? implode( ', ', $bits ) : '—';
+							echo $bits ? implode( ' · ', $bits ) : '—';
 							?>
 						</td>
 					</tr>
@@ -183,19 +440,65 @@ function jcp_funnel_analytics_render_admin(): void {
 		<?php endif; ?>
 
 		<?php if ( ! empty( $report['destinations'] ) ) : ?>
-			<h2 style="margin-top:28px;"><?php esc_html_e( 'Product destination engagement', 'jcp-core' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'Unique sessions that tapped each destination tab (user action only — no autoplay views).', 'jcp-core' ); ?></p>
-			<table class="widefat striped" style="max-width:640px;">
+			<h2><?php esc_html_e( 'Product destination engagement', 'jcp-core' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Unique sessions that tapped each destination (first tap per destination only — no autoplay).', 'jcp-core' ); ?></p>
+			<?php
+			$di = $report['destination_insight'] ?? [];
+			if ( ! empty( $di ) ) :
+				?>
+				<p class="description">
+					<?php
+					echo esc_html(
+						sprintf(
+							/* translators: 1: avg destinations, 2: session count */
+							__( 'Avg destinations viewed: %1$s across %2$d sessions with a tab tap.', 'jcp-core' ),
+							(string) ( $di['avg_per_session'] ?? 0 ),
+							(int) ( $di['sessions_with_dest'] ?? 0 )
+						)
+					);
+					?>
+				</p>
+			<?php endif; ?>
+			<table class="widefat striped" style="max-width:720px;">
 				<thead>
 					<tr>
 						<th><?php esc_html_e( 'Destination', 'jcp-core' ); ?></th>
 						<th><?php esc_html_e( 'Sessions', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'First destination', 'jcp-core' ); ?></th>
 					</tr>
 				</thead>
 				<tbody>
-				<?php foreach ( $report['destinations'] as $d ) : ?>
+				<?php
+				$first_map = [];
+				foreach ( $di['first'] ?? [] as $f ) {
+					$first_map[ (string) $f['destination'] ] = (int) $f['sessions'];
+				}
+				foreach ( $report['destinations'] as $d ) :
+					$dest = (string) $d['destination'];
+					?>
 					<tr>
-						<td><strong><?php echo esc_html( ucfirst( (string) $d['destination'] ) ); ?></strong></td>
+						<td><strong><?php echo esc_html( ucfirst( $dest ) ); ?></strong></td>
+						<td><?php echo (int) $d['sessions']; ?></td>
+						<td><?php echo (int) ( $first_map[ $dest ] ?? 0 ); ?></td>
+					</tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
+		<?php endif; ?>
+
+		<?php if ( ! empty( $report['devices'] ) ) : ?>
+			<h2><?php esc_html_e( 'Device breakdown', 'jcp-core' ); ?></h2>
+			<table class="widefat striped" style="max-width:420px;">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Device', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'Sessions', 'jcp-core' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+				<?php foreach ( $report['devices'] as $d ) : ?>
+					<tr>
+						<td><?php echo esc_html( (string) $d['device'] ); ?></td>
 						<td><?php echo (int) $d['sessions']; ?></td>
 					</tr>
 				<?php endforeach; ?>
@@ -204,8 +507,8 @@ function jcp_funnel_analytics_render_admin(): void {
 		<?php endif; ?>
 
 		<?php if ( ! empty( $report['traffic'] ) ) : ?>
-			<h2 style="margin-top:28px;"><?php esc_html_e( 'Traffic quality', 'jcp-core' ); ?></h2>
-			<table class="widefat striped" style="max-width:1200px;">
+			<h2><?php esc_html_e( 'Traffic / creative breakdown', 'jcp-core' ); ?></h2>
+			<table class="widefat striped">
 				<thead>
 					<tr>
 						<th><?php esc_html_e( 'Source', 'jcp-core' ); ?></th>
@@ -217,7 +520,6 @@ function jcp_funnel_analytics_render_admin(): void {
 						<th><?php esc_html_e( 'Email %', 'jcp-core' ); ?></th>
 						<th><?php esc_html_e( 'Trial CTA %', 'jcp-core' ); ?></th>
 						<th><?php esc_html_e( 'Trial start %', 'jcp-core' ); ?></th>
-						<th><?php esc_html_e( 'Activation %', 'jcp-core' ); ?></th>
 						<th><?php esc_html_e( 'Paid %', 'jcp-core' ); ?></th>
 					</tr>
 				</thead>
@@ -233,7 +535,6 @@ function jcp_funnel_analytics_render_admin(): void {
 						<td><?php echo esc_html( (string) $t['email_pct'] ); ?>%</td>
 						<td><?php echo esc_html( (string) $t['trial_cta_pct'] ); ?>%</td>
 						<td><?php echo $nc( $t['trial_start_pct'] ); ?></td>
-						<td><?php echo $nc( $t['activation_pct'] ); ?></td>
 						<td><?php echo $nc( $t['paid_pct'] ); ?></td>
 					</tr>
 				<?php endforeach; ?>
@@ -243,7 +544,7 @@ function jcp_funnel_analytics_render_admin(): void {
 
 		<?php $diag = $report['diagnostics'] ?? []; ?>
 		<?php if ( ! empty( $diag ) ) : ?>
-			<h2 style="margin-top:28px;"><?php esc_html_e( 'Data quality', 'jcp-core' ); ?></h2>
+			<h2><?php esc_html_e( 'Data quality', 'jcp-core' ); ?></h2>
 			<table class="widefat striped" style="max-width:720px;">
 				<tbody>
 					<tr><th><?php esc_html_e( 'Sessions missing source (30d)', 'jcp-core' ); ?></th><td><?php echo (int) ( $diag['missing_source_sessions'] ?? 0 ); ?></td></tr>

@@ -906,14 +906,58 @@ body.jcp-proof-gap .pg-plan-next__list {
   color: #334155;
 }
 body.jcp-proof-gap .pg-authority--trial {
-  margin-top: 0.65rem;
+  margin-top: 0.55rem;
 }
 body.jcp-proof-gap .pg-review-slot--trial {
-  margin-top: 0.55rem;
-  margin-bottom: 0.25rem;
+  margin-top: 0.45rem;
+  margin-bottom: 0.2rem;
 }
-body.jcp-proof-gap .pg-review-slot--trial .pg-review__quote {
-  -webkit-line-clamp: 3;
+
+/* Trial plan: keep payoff + Trent reachable without burying CTA */
+body.jcp-proof-gap .pg-state--trial .pg-plan-card {
+  margin-top: 0.55rem;
+  padding: 0.7rem 0.8rem;
+}
+body.jcp-proof-gap .pg-state--trial .pg-continuity--trial {
+  margin-top: 0.55rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+body.jcp-proof-gap .pg-state--trial .pg-review-slot--trial .pg-review {
+  padding: 0.55rem 0.65rem;
+}
+body.jcp-proof-gap .pg-state--trial .pg-review-slot--trial .pg-review__quote {
+  -webkit-line-clamp: 2;
+  font-size: 0.82rem;
+}
+
+@media (max-height: 900px) {
+  body.jcp-proof-gap .pg-state--welcome .pg-sub--tight {
+    display: none;
+  }
+  body.jcp-proof-gap .pg-state--welcome .pg-welcome-visual__tagline {
+    display: none;
+  }
+  body.jcp-proof-gap .pg-state--welcome .pg-welcome-job .ps-mock__photo {
+    max-height: 7.5rem;
+  }
+  body.jcp-proof-gap .pg-authority--welcome {
+    margin-top: 0.45rem;
+    padding: 0.4rem 0.55rem;
+  }
+  body.jcp-proof-gap .pg-authority--welcome .pg-authority__by {
+    font-size: 0.68rem;
+  }
+  body.jcp-proof-gap .pg-authority--welcome .pg-authority__stats {
+    font-size: 0.62rem;
+    margin-top: 0.12rem;
+  }
+  body.jcp-proof-gap .pg-state--trial .pg-plan-next__list li:nth-child(3) {
+    display: none;
+  }
+  body.jcp-proof-gap .pg-state--trial .pg-continuity--trial {
+    display: none;
+  }
 }
 
 body.jcp-proof-gap .pg-title,
