@@ -362,29 +362,55 @@
     if (field === 'current_workflow') return workflows[key] || key;
     if (field === 'jobs_per_week') {
       var b = jobsBuckets[key] || {};
-      return b.weekly_label ? b.weekly_label + ' / week' : key;
+      return b.weekly_label || key;
     }
     if (field === 'public_proof_percentage') return proofDisplayLabel(key);
     return key;
   }
 
-  function collapseChoiceList(field, valueText) {
+  function fillAnswerSummary(field, key, valueText) {
     var slot = summarySlotForField(field);
-    var choices = document.querySelector('[data-pg-choices="' + field + '"]');
     var summary = document.querySelector('[data-pg-summary="' + slot + '"]');
-    if (choices) choices.hidden = true;
-    if (summary) {
-      summary.hidden = false;
-      var val = summary.querySelector('[data-pg-summary-value]');
-      if (val) val.textContent = valueText || '';
+    if (!summary) return;
+    summary.hidden = false;
+    var val = summary.querySelector('[data-pg-summary-value]');
+    if (!val) return;
+    if (field === 'current_workflow') {
+      val.innerHTML = workflowChoiceInner(key, workflows[key] || key);
+      val.classList.add('pg-answer-summary__value--workflow');
+    } else {
+      val.classList.remove('pg-answer-summary__value--workflow');
+      val.textContent = valueText || '';
     }
+  }
+
+  function collapseChoiceList(field, valueText, key, done) {
+    var choices = document.querySelector('[data-pg-choices="' + field + '"]');
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var finish = function () {
+      if (choices) {
+        choices.classList.remove('is-exiting');
+        choices.hidden = true;
+      }
+      fillAnswerSummary(field, key, valueText);
+      if (typeof done === 'function') done();
+    };
+    if (!choices || choices.hidden || reduce) {
+      finish();
+      return;
+    }
+    choices.classList.add('is-exiting');
+    window.setTimeout(finish, 200);
   }
 
   function expandChoiceList(field) {
     var slot = summarySlotForField(field);
     var choices = document.querySelector('[data-pg-choices="' + field + '"]');
     var summary = document.querySelector('[data-pg-summary="' + slot + '"]');
-    if (choices) choices.hidden = false;
+    if (choices) {
+      choices.classList.remove('is-exiting');
+      choices.hidden = false;
+    }
     if (summary) summary.hidden = true;
     hideAllInsights();
   }
@@ -397,7 +423,7 @@
       expandChoiceList(field);
       return;
     }
-    collapseChoiceList(field, summaryValueText(field, ans));
+    collapseChoiceList(field, summaryValueText(field, ans), ans);
     if (stateId === 'current_workflow' && !state.jobs_per_week_bucket) {
       showInsight('workflow', WORKFLOW_INSIGHTS[ans] || WORKFLOW_INSIGHTS.scattered, 'jobs_per_week', 'Continue →');
     } else if (stateId === 'jobs_per_week' && !state.public_proof_percentage) {
@@ -428,28 +454,29 @@
       };
       if (tier === 'low') {
         insight.headline = 'That means a lot of work may disappear from public view.';
-        insight.body =
-          'Not because the work wasn’t done. Because nobody turned the finished job into proof after it was completed.';
+        insight.body = 'Not because the work wasn’t done — because finished jobs weren’t turned into proof.';
         if (state.unused_jobs_min != null) {
           var rangeTxt =
             state.unused_jobs_max == null
               ? state.unused_jobs_min.toLocaleString() + '+'
               : formatUnusedRange();
           insight.body2 =
-            'Based on your answers: approximately ' + rangeTxt + ' completed jobs/year may not become public proof.';
+            'Based on your answers: ~' + rangeTxt + ' completed jobs/year may not become public proof.';
         }
       } else if (tier === 'mid') {
         insight.headline = 'You’re creating more proof than you’re putting to work.';
-        insight.body =
-          'The opportunity is making the process consistent without adding another manual marketing task.';
+        insight.body = 'Make the process consistent without adding another manual marketing task.';
+        if (state.unused_jobs_min != null && state.unused_jobs_max != null) {
+          insight.body2 =
+            'Based on your answers: ~' + formatUnusedRange() + ' completed jobs/year may not become public proof.';
+        }
       } else if (tier === 'high') {
         insight.headline = 'You’re already doing the hard part.';
-        insight.body =
-          'Your opportunity may be less about creating more proof and more about eliminating the manual work required to distribute it.';
+        insight.body = 'The opportunity is removing the manual work required to distribute proof.';
       } else {
         insight.headline = 'Not knowing is useful information too.';
         insight.body =
-          'If it is hard to tell what happens to a finished job after the crew leaves, the process probably is not as visible or repeatable as it could be.';
+          'If it’s hard to tell what happens after the crew leaves, the process may not be repeatable yet.';
       }
       showInsight('proof', insight, 'proof_gap_result', 'See My Proof Gap →');
     }
@@ -602,6 +629,7 @@
       btn.setAttribute('data-pg-value', key);
       if (field === 'public_proof_percentage' && item && typeof item === 'object') {
         btn.className += ' pg-choice--stacked';
+        if (key === 'unknown') btn.className += ' pg-choice--span';
         var t = document.createElement('span');
         t.className = 'pg-choice__title';
         t.textContent = item.title || item.label || key;
@@ -729,7 +757,7 @@
     var item = proofPct[key];
     if (!item) return key || '—';
     if (typeof item === 'object') {
-      if (item.title && item.band) return item.title + ' (' + item.band + ')';
+      if (item.title && item.band) return item.title + ' · ' + item.band;
       return item.label || item.title || key;
     }
     return item;
@@ -819,8 +847,9 @@
         trade: state.trade,
         current_workflow: key,
       });
-      collapseChoiceList('current_workflow', summaryValueText('current_workflow', key));
-      showInsight('workflow', WORKFLOW_INSIGHTS[key] || WORKFLOW_INSIGHTS.scattered, 'jobs_per_week', 'Continue →');
+      collapseChoiceList('current_workflow', summaryValueText('current_workflow', key), key, function () {
+        showInsight('workflow', WORKFLOW_INSIGHTS[key] || WORKFLOW_INSIGHTS.scattered, 'jobs_per_week', 'Continue →');
+      });
       return;
     }
 
@@ -842,23 +871,24 @@
         current_workflow: state.current_workflow,
         jobs_per_week_bucket: key,
       });
-      collapseChoiceList('jobs_per_week', summaryValueText('jobs_per_week', key));
       var highVol = key === '21_35' || key === '36_50' || key === '50_plus';
-      showInsight(
-        'jobs',
-        {
-          headline: 'That’s roughly ' + formatAnnualRange() + ' completed jobs every year.',
-          body: highVol
-            ? 'Your team is already creating an enormous amount of real-world marketing material.'
-            : 'You probably don’t have a content-creation problem.',
-          body2: highVol
-            ? 'The question is what happens to it after the job.'
-            : 'Your company is already producing the raw material every week.',
-          extraHtml: buildJobsStackHtml(),
-        },
-        'public_proof_percentage',
-        'Continue →'
-      );
+      collapseChoiceList('jobs_per_week', summaryValueText('jobs_per_week', key), key, function () {
+        showInsight(
+          'jobs',
+          {
+            headline: 'That’s roughly ' + formatAnnualRange() + ' completed jobs every year.',
+            body: highVol
+              ? 'Your team is already creating an enormous amount of real-world marketing material.'
+              : 'You probably don’t have a content-creation problem.',
+            body2: highVol
+              ? 'The question is what happens to it after the job.'
+              : 'Your company already produces the raw material every week.',
+            extraHtml: buildJobsStackHtml(),
+          },
+          'public_proof_percentage',
+          'Continue →'
+        );
+      });
       return;
     }
 
@@ -882,40 +912,36 @@
         public_proof_percentage: key,
       });
 
-      var insight = { headline: '', body: '', body2: '' };
+      var insight = { headline: '', body: '', body2: '', extraHtml: buildProofGridHtml() };
       if (tier === 'low') {
         insight.headline = 'That means a lot of work may disappear from public view.';
-        insight.body = 'Not because the work wasn’t done. Because nobody turned the finished job into proof after it was completed.';
+        insight.body = 'Not because the work wasn’t done — because finished jobs weren’t turned into proof.';
         if (state.unused_jobs_min != null) {
           var rangeTxt =
             state.unused_jobs_max == null
               ? state.unused_jobs_min.toLocaleString() + '+'
               : formatUnusedRange();
           insight.body2 =
-            'Based on your answers: approximately ' + rangeTxt + ' completed jobs/year may not become public proof.';
+            'Based on your answers: ~' + rangeTxt + ' completed jobs/year may not become public proof.';
         }
       } else if (tier === 'mid') {
         insight.headline = 'You’re creating more proof than you’re putting to work.';
-        insight.body =
-          'The opportunity is making the process consistent without adding another manual marketing task.';
+        insight.body = 'Make the process consistent without adding another manual marketing task.';
         if (state.unused_jobs_min != null && state.unused_jobs_max != null) {
           insight.body2 =
-            'Based on your answers: approximately ' +
-            formatUnusedRange() +
-            ' completed jobs/year may not become public proof.';
+            'Based on your answers: ~' + formatUnusedRange() + ' completed jobs/year may not become public proof.';
         }
       } else if (tier === 'high') {
         insight.headline = 'You’re already doing the hard part.';
-        insight.body =
-          'Your opportunity may be less about creating more proof and more about eliminating the manual work required to distribute it.';
+        insight.body = 'The opportunity is removing the manual work required to distribute proof.';
       } else {
         insight.headline = 'Not knowing is useful information too.';
         insight.body =
-          'If it is hard to tell what happens to a finished job after the crew leaves, the process probably is not as visible or repeatable as it could be.';
+          'If it’s hard to tell what happens after the crew leaves, the process may not be repeatable yet.';
       }
-      collapseChoiceList('public_proof_percentage', summaryValueText('public_proof_percentage', key));
-      insight.extraHtml = buildProofGridHtml();
-      showInsight('proof', insight, 'proof_gap_result', 'See My Proof Gap →');
+      collapseChoiceList('public_proof_percentage', summaryValueText('public_proof_percentage', key), key, function () {
+        showInsight('proof', insight, 'proof_gap_result', 'See My Proof Gap →');
+      });
     }
   }
 

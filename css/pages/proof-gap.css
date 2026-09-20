@@ -22,6 +22,11 @@ body.jcp-proof-gap {
   min-height: 100dvh;
 }
 
+/* Author display rules otherwise override the UA [hidden] stylesheet. */
+body.jcp-proof-gap [hidden] {
+  display: none !important;
+}
+
 body.jcp-proof-gap .pg-shell {
   min-height: 100dvh;
   min-height: 100svh;
@@ -195,10 +200,31 @@ body.jcp-proof-gap .pg-sub {
 body.jcp-proof-gap .pg-choices {
   display: grid;
   gap: 0.55rem;
+  transition: opacity 0.2s var(--pg-ease), transform 0.2s var(--pg-ease);
+}
+
+body.jcp-proof-gap .pg-choices.is-exiting {
+  opacity: 0;
+  transform: translateY(-0.25rem);
+  pointer-events: none;
 }
 
 body.jcp-proof-gap .pg-choices--grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.jcp-proof-gap .pg-choices--proof {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+body.jcp-proof-gap .pg-choices--proof .pg-choice {
+  min-height: 2.55rem;
+  padding: 0.5rem 0.6rem;
+}
+
+body.jcp-proof-gap .pg-choices--proof .pg-choice--span {
+  grid-column: 1 / -1;
 }
 
 body.jcp-proof-gap .pg-choices--compact {
@@ -642,10 +668,6 @@ body.jcp-proof-gap .proof-gap-insight-card__text {
   font-weight: 550;
 }
 
-body.jcp-proof-gap .proof-gap-insight-card__cta {
-  margin-top: 0.55rem;
-}
-
 @media (prefers-reduced-motion: reduce) {
   body.jcp-proof-gap .proof-gap-insight-card,
   body.jcp-proof-gap .proof-gap-insight-card.is-visible {
@@ -961,6 +983,17 @@ body.jcp-proof-gap .pg-answer-summary__value {
   color: var(--pg-ink);
 }
 
+body.jcp-proof-gap .pg-answer-summary__value--workflow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 800;
+}
+
+body.jcp-proof-gap .pg-answer-summary__value--workflow .pg-choice__text {
+  font-weight: 800;
+}
+
 body.jcp-proof-gap .pg-answer-summary__change {
   appearance: none;
   border: 0;
@@ -1001,27 +1034,37 @@ body.jcp-proof-gap .pg-choice__text {
   line-height: 1.25;
 }
 
+body.jcp-proof-gap .proof-gap-insight-card__cta {
+  position: relative;
+  z-index: 4;
+  margin-top: 0.55rem;
+}
+
 body.jcp-proof-gap .proof-gap-insight-card__extra {
   margin: 0.35rem 0 0.15rem;
 }
 
 body.jcp-proof-gap .pg-job-stack {
   position: relative;
-  min-height: 4.5rem;
-  margin-top: 0.15rem;
+  height: 4.35rem;
+  margin: 0.15rem 0 0.35rem;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 body.jcp-proof-gap .pg-job-stack__card {
   position: absolute;
-  left: calc(var(--pg-stack-i) * 6%);
-  top: calc(var(--pg-stack-i) * 2px);
-  width: 3.1rem;
-  padding: 0.35rem;
-  border-radius: 0.45rem;
+  left: calc(var(--pg-stack-i) * 5.5%);
+  top: calc(var(--pg-stack-i) * 1.5px);
+  width: 2.85rem;
+  padding: 0.3rem;
+  border-radius: 0.4rem;
   background: #fff;
   border: 1px solid rgba(15, 23, 42, 0.12);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-  transform: rotate(calc(var(--pg-stack-i) * -2deg));
+  box-shadow: 0 3px 8px rgba(15, 23, 42, 0.07);
+  transform: rotate(calc(var(--pg-stack-i) * -1.5deg));
+  pointer-events: none;
+  z-index: 1;
 }
 
 body.jcp-proof-gap .pg-job-stack__card.is-front {
@@ -1031,22 +1074,35 @@ body.jcp-proof-gap .pg-job-stack__card.is-front {
 
 body.jcp-proof-gap .pg-job-stack__thumb {
   display: block;
-  height: 1.65rem;
-  border-radius: 0.3rem;
+  height: 1.35rem;
+  border-radius: 0.25rem;
   background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.15rem;
 }
 
 body.jcp-proof-gap .pg-job-stack__label {
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   font-weight: 800;
   color: var(--pg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 body.jcp-proof-gap .pg-job-stack__annual {
-  margin: 3.25rem 0 0;
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  margin: 0;
+  z-index: 3;
+  padding: 0.25rem 0.45rem;
+  border-radius: 0.45rem;
+  background: rgba(255, 255, 255, 0.92);
   font-size: 0.82rem;
-  color: #3f4b5c;
+  font-weight: 800;
+  color: var(--pg-ink);
+  pointer-events: none;
 }
 
 body.jcp-proof-gap .pg-proof-grid {
@@ -1605,5 +1661,201 @@ body.jcp-proof-gap .pg-summary__item--full .pg-summary__val {
   body.jcp-proof-gap .pg-layout {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
+  }
+}
+
+/* Viewport-fit compression for phone heights */
+@media (max-height: 1000px) {
+  body.jcp-proof-gap .pg-layout {
+    padding-top: 0.55rem;
+    padding-bottom: 0.75rem;
+  }
+
+  body.jcp-proof-gap .pg-title--sm {
+    font-size: clamp(1.1rem, 4vw, 1.35rem);
+    margin-bottom: 0.55rem;
+  }
+
+  body.jcp-proof-gap .pg-eyebrow {
+    margin-bottom: 0.28rem;
+    font-size: 0.66rem;
+  }
+
+  body.jcp-proof-gap .proof-gap-insight-card {
+    padding: 0.65rem 0.7rem 0.7rem;
+    gap: 0.5rem;
+    margin-top: 0.55rem;
+  }
+
+  body.jcp-proof-gap .proof-gap-insight-card__headline {
+    font-size: 0.92rem;
+    margin-bottom: 0.25rem;
+  }
+
+  body.jcp-proof-gap .proof-gap-insight-card__text {
+    font-size: 0.84rem;
+    margin-bottom: 0.3rem;
+  }
+
+  body.jcp-proof-gap .proof-gap-insight-card__extra {
+    margin: 0.3rem 0 0.35rem;
+  }
+
+  body.jcp-proof-gap .pg-proof-grid {
+    gap: 0.28rem;
+    margin: 0.2rem 0;
+  }
+
+  body.jcp-proof-gap .pg-proof-grid__cell {
+    min-height: 1.25rem;
+  }
+
+  body.jcp-proof-gap .pg-proof-grid__cap {
+    font-size: 0.7rem;
+  }
+
+  body.jcp-proof-gap .pg-job-stack {
+    height: 3.5rem;
+    margin: 0.15rem 0 0.25rem;
+  }
+
+  body.jcp-proof-gap .proof-gap-insight-card__cta {
+    margin-top: 0.3rem;
+    min-height: 2.65rem;
+  }
+
+  body.jcp-proof-gap .pg-state--reveal .pg-eyebrow {
+    display: none;
+  }
+
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card__meta {
+    display: none;
+  }
+
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card--compact .pg-job-card__photo,
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card__neutral {
+    aspect-ratio: 24 / 7;
+    max-height: 4.25rem;
+    min-height: 3.5rem;
+  }
+
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card__body {
+    padding: 0.35rem 0.65rem 0.45rem;
+  }
+
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card__title {
+    font-size: 0.88rem;
+  }
+
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card__source {
+    font-size: 0.74rem;
+    margin: 0.1rem 0 0;
+  }
+
+  body.jcp-proof-gap .pg-reveal-kicker {
+    margin: 0.35rem 0 0.25rem;
+    font-size: 0.64rem;
+  }
+
+  body.jcp-proof-gap .pg-dest-tabs {
+    gap: 0.2rem;
+    margin-bottom: 0.25rem;
+  }
+
+  body.jcp-proof-gap .pg-dest-tab {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+    min-height: 2rem;
+  }
+
+  body.jcp-proof-gap .pg-dest-panel {
+    max-height: 8.75rem;
+    min-height: 0;
+    overflow: hidden;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  body.jcp-proof-gap .pg-dest-mock {
+    padding: 0.5rem;
+    box-shadow: none;
+  }
+
+  body.jcp-proof-gap .pg-dest-mock__photo {
+    aspect-ratio: 16 / 7;
+    max-height: 4.5rem;
+  }
+
+  body.jcp-proof-gap .pg-dest-browser__body {
+    padding: 0.45rem;
+  }
+
+  body.jcp-proof-gap .pg-dest-map {
+    max-height: 3.5rem;
+    overflow: hidden;
+  }
+
+  body.jcp-proof-gap .pg-dest-note {
+    display: none;
+  }
+
+  body.jcp-proof-gap .pg-chips {
+    gap: 0.25rem;
+    margin: 0.25rem 0 0.2rem;
+  }
+
+  body.jcp-proof-gap .pg-chips li {
+    padding: 0.22rem 0.45rem;
+    font-size: 0.68rem;
+  }
+
+  body.jcp-proof-gap .pg-payoff-line {
+    margin: 0.2rem 0 0.3rem;
+    font-size: 0.82rem;
+    line-height: 1.3;
+  }
+
+  body.jcp-proof-gap .pg-continuity {
+    margin-bottom: 0.35rem;
+    padding: 0.45rem 0.55rem;
+    font-size: 0.78rem;
+  }
+
+  body.jcp-proof-gap .pg-state--reveal .pg-continuity {
+    display: none;
+  }
+
+  body.jcp-proof-gap .pg-state--reveal .pg-btn {
+    margin-top: 0.4rem;
+    min-height: 2.65rem;
+  }
+}
+
+@media (max-height: 820px) {
+  body.jcp-proof-gap .pg-welcome-visual {
+    min-height: 7.5rem;
+    padding: 0.7rem 0.75rem;
+    margin: 0.65rem 0 0.35rem;
+  }
+
+  body.jcp-proof-gap .pg-welcome-visual__tagline {
+    font-size: 0.72rem;
+  }
+
+  body.jcp-proof-gap .proof-gap-insight-card__stamp {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+
+  body.jcp-proof-gap .pg-dest-panel {
+    max-height: 7.5rem;
+  }
+
+  body.jcp-proof-gap .pg-state--reveal .pg-chips {
+    display: none;
+  }
+
+  body.jcp-proof-gap .pg-state--reveal .pg-payoff-line {
+    font-size: 0.78rem;
   }
 }
