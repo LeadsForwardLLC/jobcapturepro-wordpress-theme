@@ -788,14 +788,21 @@ body.jcp-proof-gap .pg-dest-panel .ps-mock__photo {
     display: none;
   }
   body.jcp-proof-gap .pg-state--reveal .pg-job-card__media {
-    display: none;
+    display: block;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card--compact .pg-job-card__photo,
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card--compact .pg-job-card__neutral {
+    max-height: 4.25rem;
   }
   body.jcp-proof-gap .pg-state--reveal .pg-review-slot--reveal {
     display: block;
     margin-top: 0.35rem;
   }
   body.jcp-proof-gap .pg-state--reveal .pg-review-slot--reveal .pg-review__quote {
-    -webkit-line-clamp: 2;
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+    font-size: 0.76rem;
   }
   body.jcp-proof-gap .pg-dest-panel .ps-mock__photo {
     max-height: 6.5rem !important;
@@ -844,7 +851,11 @@ body.jcp-proof-gap .pg-dest-panel .ps-mock__photo {
     max-height: 4.5rem !important;
   }
   body.jcp-proof-gap .pg-state--reveal .pg-job-card__media {
-    display: none;
+    display: block;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card--compact .pg-job-card__photo,
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card--compact .pg-job-card__neutral {
+    max-height: 3.75rem;
   }
   body.jcp-proof-gap .pg-state--reveal .pg-title--sm {
     font-size: clamp(1.05rem, 4.2vw, 1.25rem);

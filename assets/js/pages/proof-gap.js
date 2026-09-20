@@ -581,18 +581,22 @@
 
     if (isWelcome) return;
 
-    var surveyStates = STATES.filter(function (s) {
-      return s !== 'welcome';
-    });
-    var idx = surveyStates.indexOf(state.current_state);
-    if (idx < 0) idx = 0;
-    var pct = ((idx + 1) / surveyStates.length) * 100;
-    var fill = document.getElementById('pgProgressFill');
-    if (fill) fill.style.width = pct + '%';
-
     var phase = PHASE_BY_STATE[state.current_state] || 'work';
     var order = ['work', 'gap', 'plan'];
     var activeIdx = order.indexOf(phase);
+    var phasePct = { work: 34, gap: 67, plan: 100 };
+    // Interpolate within phase by step position for smoother fill.
+    var inPhase = STATES.filter(function (s) {
+      return PHASE_BY_STATE[s] === phase;
+    });
+    var localIdx = Math.max(0, inPhase.indexOf(state.current_state));
+    var localSpan = inPhase.length || 1;
+    var prevPct = activeIdx <= 0 ? 0 : phasePct[order[activeIdx - 1]] || 0;
+    var endPct = phasePct[phase] || 100;
+    var pct = prevPct + ((localIdx + 1) / localSpan) * (endPct - prevPct);
+    var fill = document.getElementById('pgProgressFill');
+    if (fill) fill.style.width = Math.min(100, Math.round(pct)) + '%';
+
     document.querySelectorAll('.pg-progress__phase').forEach(function (el) {
       var p = el.getAttribute('data-phase');
       var pi = order.indexOf(p);
@@ -1546,27 +1550,11 @@
 
     var jobTitle = document.getElementById('pgJobTitle');
     var src = document.getElementById('pgRevealSource');
-    var continuity = document.getElementById('pgContinuityNote');
     var ctx = revealJobContext();
 
     if (jobTitle) jobTitle.textContent = ctx.title;
     if (src) src.textContent = sourceLabel();
     renderJobCardMedia();
-
-    if (continuity) {
-      if (state.current_workflow === 'housecall_pro') {
-        continuity.hidden = false;
-        continuity.textContent =
-          'Keep Housecall Pro. Your crew can keep working the way they already do when using the supported integration.';
-      } else if (state.current_workflow === 'companycam') {
-        continuity.hidden = false;
-        continuity.textContent =
-          'Keep CompanyCam. Your crew can keep working the way they already do when using the supported integration.';
-      } else {
-        continuity.hidden = true;
-        continuity.textContent = '';
-      }
-    }
     setDestTab(activeDest || 'website', { fromUser: false, animate: false });
   }
 
@@ -1975,7 +1963,17 @@
     saveState();
 
     if (!landingTracked) {
+      try {
+        if (sessionStorage.getItem('jcp_pg_landing_tracked') === '1') {
+          landingTracked = true;
+        }
+      } catch (eLand) {}
+    }
+    if (!landingTracked) {
       landingTracked = true;
+      try {
+        sessionStorage.setItem('jcp_pg_landing_tracked', '1');
+      } catch (eSet) {}
       track('SurveyLandingViewed', {});
       try {
         window.dataLayer = window.dataLayer || [];

@@ -270,7 +270,7 @@ function jcp_funnel_analytics_proof_gap_stages(): array {
 		[ 'key' => 'proof', 'label' => __( 'Proof frequency', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'public_proof_percentage' ],
 		[ 'key' => 'result', 'label' => __( 'Proof Gap result', 'jcp-core' ), 'events' => [ 'SurveyResultViewed' ] ],
 		[ 'key' => 'email', 'label' => __( 'Email save', 'jcp-core' ), 'events' => [ 'EmailSubmitted' ] ],
-		[ 'key' => 'reveal', 'label' => __( 'Product reveal', 'jcp-core' ), 'events' => [ 'ProductRevealStarted', 'ProductRevealCompleted' ] ],
+		[ 'key' => 'reveal', 'label' => __( 'Product reveal', 'jcp-core' ), 'events' => [ 'ProductRevealCompleted' ] ],
 		[ 'key' => 'trial_plan', 'label' => __( 'Trial plan', 'jcp-core' ), 'events' => [ 'TrialCTAViewed' ] ],
 		[ 'key' => 'trial_cta', 'label' => __( 'Trial CTA', 'jcp-core' ), 'events' => [ 'TrialCTAClicked' ] ],
 		[ 'key' => 'trial_started', 'label' => __( 'Trial started', 'jcp-core' ), 'events' => [ 'TrialStarted' ], 'lifecycle' => true ],
@@ -360,14 +360,29 @@ function jcp_funnel_analytics_proof_gap_where( array $filters, int $offset_days 
 	$days   = (int) $filters['days'];
 	$until  = gmdate( 'Y-m-d H:i:s', time() - ( $offset_days * DAY_IN_SECONDS ) );
 	$since  = gmdate( 'Y-m-d H:i:s', time() - ( ( $offset_days + $days ) * DAY_IN_SECONDS ) );
+	// Cohort window only — session-attribute filters applied via EXISTS after cohort build.
 	$where  = [ 'funnel_id = %s', 'created_at >= %s', 'created_at < %s' ];
 	$args   = [ 'proof_gap', $since, $until ];
 
-	foreach ( [ 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'lp_variant', 'trade', 'workflow', 'creative_concept' ] as $col ) {
-		if ( ! empty( $filters[ $col ] ) ) {
-			$where[] = "$col = %s";
-			$args[]  = $filters[ $col ];
-		}
+	if ( ! empty( $filters['utm_source'] ) ) {
+		$where[] = 'utm_source = %s';
+		$args[]  = $filters['utm_source'];
+	}
+	if ( ! empty( $filters['utm_medium'] ) ) {
+		$where[] = 'utm_medium = %s';
+		$args[]  = $filters['utm_medium'];
+	}
+	if ( ! empty( $filters['utm_campaign'] ) ) {
+		$where[] = 'utm_campaign = %s';
+		$args[]  = $filters['utm_campaign'];
+	}
+	if ( ! empty( $filters['utm_content'] ) ) {
+		$where[] = 'utm_content = %s';
+		$args[]  = $filters['utm_content'];
+	}
+	if ( ! empty( $filters['lp_variant'] ) ) {
+		$where[] = 'lp_variant = %s';
+		$args[]  = $filters['lp_variant'];
 	}
 	if ( ! empty( $filters['device'] ) ) {
 		$where[] = 'device_category = %s';
@@ -403,6 +418,7 @@ function jcp_funnel_analytics_proof_gap_report_window( array $filters, int $offs
 	);
 	$cohort = $wpdb->get_col( $cohort_sql );
 	$cohort = array_values( array_filter( array_map( 'strval', $cohort ?: [] ) ) );
+	$cohort = jcp_funnel_analytics_filter_cohort_by_session_attrs( $table, $cohort, $filters );
 
 	$stages_def = jcp_funnel_analytics_proof_gap_stages();
 	$stage_rows = [];
@@ -1039,14 +1055,60 @@ function jcp_funnel_analytics_demo_adapter_report( array $filters ): array {
 }
 
 /**
+ * Apply trade/workflow/creative filters via any event in the session (not landing row).
+ *
+ * @param string $table Table.
+ * @param array  $cohort Session IDs.
+ * @param array  $filters Filters.
+ * @return array
+ */
+function jcp_funnel_analytics_filter_cohort_by_session_attrs( string $table, array $cohort, array $filters ): array {
+	global $wpdb;
+	if ( empty( $cohort ) ) {
+		return [];
+	}
+	$attr_cols = [];
+	foreach ( [ 'trade', 'workflow', 'creative_concept' ] as $col ) {
+		if ( ! empty( $filters[ $col ] ) ) {
+			$attr_cols[ $col ] = (string) $filters[ $col ];
+		}
+	}
+	if ( ! $attr_cols ) {
+		return $cohort;
+	}
+
+	$placeholders = implode( ',', array_fill( 0, count( $cohort ), '%s' ) );
+	$args         = $cohort;
+	$exists       = [];
+	foreach ( $attr_cols as $col => $val ) {
+		$exists[] = "EXISTS (
+			SELECT 1 FROM $table e
+			WHERE e.session_id = s.session_id
+			AND e.funnel_id = 'proof_gap'
+			AND e.$col = %s
+		)";
+		$args[] = $val;
+	}
+	$exists_sql = implode( ' AND ', $exists );
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$sql = $wpdb->prepare(
+		"SELECT DISTINCT s.session_id FROM $table s
+		WHERE s.session_id IN ($placeholders)
+		AND $exists_sql",
+		$args
+	);
+	$filtered = $wpdb->get_col( $sql );
+	return array_values( array_filter( array_map( 'strval', $filtered ?: [] ) ) );
+}
+
+/**
  * @param array $filters Filters.
  * @return array
  */
 function jcp_funnel_analytics_proof_sprint_adapter_report( array $filters ): array {
-	// Proof Sprint currently posts milestones into demo-event when email is known.
-	$report = jcp_funnel_analytics_demo_adapter_report( $filters );
-	$report['calculation_note'] = __( 'Proof Sprint shares demo-event milestones when a contact email is present. Dedicated first-party Proof Sprint stages will appear here as instrumentation expands. Downstream trial/activation/paid remain Not connected unless lifecycle wiring exists.', 'jcp-core' );
-	return $report;
+	return jcp_funnel_analytics_empty_adapter(
+		__( 'Proof Sprint is not yet wired into first-party Funnel Analytics (funnel_id=proof_sprint). This selector stays empty until dedicated instrumentation lands. Use Demo Analytics for legacy Proof Sprint milestones.', 'jcp-core' )
+	);
 }
 
 /**
