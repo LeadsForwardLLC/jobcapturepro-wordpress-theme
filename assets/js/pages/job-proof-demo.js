@@ -1955,6 +1955,7 @@
     if (mq && mq.addEventListener) {
       mq.addEventListener('change', refresh);
     }
+    document.addEventListener('jpd:optedin', refresh);
     refresh();
   }
 
