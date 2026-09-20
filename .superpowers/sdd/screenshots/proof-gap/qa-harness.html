@@ -1,71 +1,79 @@
 <!DOCTYPE html>
 <html lang="en" data-jcp-lp-variant="proof_gap_survey_v1">
 <head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>Proof Gap Final QA</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Proof Gap Native App QA</title>
 <link rel="stylesheet" href="../../../../css/base.css"/>
 <link rel="stylesheet" href="../../../../css/buttons.css"/>
 <link rel="stylesheet" href="../../../../css/pages/proof-gap.css"/>
-<style>:root{--jcp-color-text-primary:#111827;--jcp-color-text-secondary:#6b7280;--jcp-color-primary:#ff5036;--jcp-color-bg-secondary:#f9fafb}body{margin:0;font-family:system-ui,sans-serif}</style>
+<style>
+:root{--jcp-color-text-primary:#111827;--jcp-color-text-secondary:#6b7280;--jcp-color-primary:#ff5036;--jcp-color-bg-secondary:#f9fafb}
+html,body{margin:0;height:100%;height:100dvh;overflow:hidden;font-family:system-ui,sans-serif}
+</style>
 </head>
-<body class="jcp-proof-gap" data-jcp-lp-variant="proof_gap_survey_v1" data-pg-survey-id="proof_gap_survey_v1" data-pg-survey-version="3">
+<body class="jcp-proof-gap" data-jcp-lp-variant="proof_gap_survey_v1" data-pg-survey-id="proof_gap_survey_v1" data-pg-survey-version="4">
 <div class="pg-shell" id="pg-shell">
 <header class="pg-chrome" role="banner">
-<div class="pg-chrome__bar"><span class="pg-chrome__brand"><img src="../../../../assets/brand/jcp-logo-dark-320.webp" alt="JobCapturePro" width="120" height="28"/></span>
-<button type="button" class="pg-chrome__back" id="pgBack" hidden>Back</button></div>
-<div class="pg-progress" id="pgProgress" hidden><div class="pg-progress__phases" role="list">
+<div class="pg-chrome__bar">
+<span class="pg-chrome__brand"><img src="../../../../assets/brand/jcp-logo-dark-320.webp" alt="JobCapturePro" width="120" height="28"/></span>
+<button type="button" class="pg-chrome__back" id="pgBack" hidden>Back</button>
+</div>
+<div class="pg-progress" id="pgProgress" hidden>
+<div class="pg-progress__phases" role="list">
 <span class="pg-progress__phase is-active" data-phase="work" role="listitem">Your work</span>
 <span class="pg-progress__phase" data-phase="gap" role="listitem">Your proof gap</span>
 <span class="pg-progress__phase" data-phase="plan" role="listitem">Your plan</span>
-</div><div class="pg-progress__track"><div class="pg-progress__fill" id="pgProgressFill"></div></div></div>
+</div>
+<div class="pg-progress__track"><div class="pg-progress__fill" id="pgProgressFill"></div></div>
+</div>
 </header>
-<main id="pg-app" class="pg-app"><div class="pg-layout"><div class="pg-stage" id="pgStage" id="pgStage" aria-live="polite">
+<main id="pg-app" class="pg-app">
+<div class="pg-layout">
+	<div class="pg-stage" id="pgStage" aria-live="polite">
 
 		<section class="pg-state pg-state--welcome" data-pg-state="welcome" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"></p>
-				<h1 class="pg-title"></h1>
-				<p class="pg-sub"></p>
-				<p class="pg-sub pg-sub--tight"></p>
+				<p class="pg-eyebrow">The 60-second proof gap check</p>
+				<h1 class="pg-title">How much of your best work disappears after the truck leaves?</h1>
+				<p class="pg-sub">Your crew already creates the proof.</p>
+				<p class="pg-sub pg-sub--tight">Answer 4 quick questions and see how much may be going unused — and what one finished job could become with JobCapturePro.</p>
 
 				<div class="pg-welcome-visual" data-pg-welcome-visual data-creative="default" aria-hidden="true">
 					<div class="pg-welcome-visual__flow">
-						<span class="pg-welcome-visual__node"></span>
+						<span class="pg-welcome-visual__node">Completed job</span>
 						<span class="pg-welcome-visual__arrow" aria-hidden="true">→</span>
 						<span class="pg-welcome-visual__node pg-welcome-visual__node--stamp">
 							<svg viewBox="0 0 32 32" width="18" height="18" aria-hidden="true"><circle cx="16" cy="16" r="12" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 16l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-							
+							Proof stamp
 						</span>
 						<span class="pg-welcome-visual__arrow" aria-hidden="true">→</span>
 						<span class="pg-welcome-visual__outs">
-							<em></em>
-							<em></em>
-							<em></em>
-							<em></em>
-							<em></em>
+							<em>Website</em>
+							<em>Google</em>
+							<em>Reviews</em>
+							<em>Social</em>
+							<em>Directory</em>
 						</span>
 					</div>
-					<p class="pg-welcome-visual__tagline"></p>
+					<p class="pg-welcome-visual__tagline">The work is already done. JCP puts it to work.</p>
 				</div>
-
-				<button type="button" class="btn btn-primary pg-btn" id="pgWelcomeCta"></button>
-				<p class="pg-micro"></p>
 			</div>
 		</section>
 
 		<section class="pg-state" data-pg-state="trade" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"></p>
-				<h1 class="pg-title pg-title--sm" id="pg-trade-title"></h1>
+				<p class="pg-eyebrow">Your work</p>
+				<h1 class="pg-title pg-title--sm" id="pg-trade-title">What kind of work does your company do most?</h1>
 				<div class="pg-choices pg-choices--grid pg-choices--trade" role="group" aria-labelledby="pg-trade-title" data-pg-choices="trade"></div>
 			</div>
 		</section>
 
 		<section class="pg-state" data-pg-state="current_workflow" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"></p>
-				<h1 class="pg-title pg-title--sm" id="pg-workflow-title"></h1>
-				<div class="pg-choices pg-choices--workflow" role="group" aria-labelledby="pg-workflow-title" data-pg-choices="current_workflow" data-logo-hcp="../../../../assets/integrations/housecall-pro.svg" data-logo-cc="../../../../assets/integrations/companycam.svg"
+				<p class="pg-eyebrow">Your work</p>
+				<h1 class="pg-title pg-title--sm" id="pg-workflow-title">Where do most of your finished-job photos live today?</h1>
+				<div class="pg-choices pg-choices--workflow" role="group" aria-labelledby="pg-workflow-title" data-pg-choices="current_workflow"
 					data-logo-hcp="../../../../assets/integrations/housecall-pro.svg"
 					data-logo-cc="../../../../assets/integrations/companycam.svg"></div>
 				<div class="pg-answer-summary" data-pg-summary="workflow" hidden>
@@ -81,8 +89,8 @@
 
 		<section class="pg-state" data-pg-state="jobs_per_week" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"></p>
-				<h1 class="pg-title pg-title--sm" id="pg-jobs-title"></h1>
+				<p class="pg-eyebrow">Your work</p>
+				<h1 class="pg-title pg-title--sm" id="pg-jobs-title">About how many jobs does your company finish in a normal week?</h1>
 				<div class="pg-choices pg-choices--compact" role="group" aria-labelledby="pg-jobs-title" data-pg-choices="jobs_per_week"></div>
 				<div class="pg-answer-summary" data-pg-summary="jobs" hidden>
 					<span class="pg-answer-summary__label">Jobs each week</span>
@@ -97,8 +105,8 @@
 
 		<section class="pg-state" data-pg-state="public_proof_percentage" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"></p>
-				<h1 class="pg-title pg-title--sm" id="pg-proof-title"></h1>
+				<p class="pg-eyebrow">Your proof gap</p>
+				<h1 class="pg-title pg-title--sm" id="pg-proof-title">After a job is finished, how often does it become something a future customer can actually see?</h1>
 				<div class="pg-choices pg-choices--proof" role="group" aria-labelledby="pg-proof-title" data-pg-choices="public_proof_percentage"></div>
 				<div class="pg-answer-summary" data-pg-summary="proof" hidden>
 					<span class="pg-answer-summary__label">Your answer</span>
@@ -113,57 +121,61 @@
 
 		<section class="pg-state" data-pg-state="proof_gap_result" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"></p>
+				<p class="pg-eyebrow">Your proof gap</p>
 				<h1 class="pg-title pg-title--sm" id="pgResultTitle"></h1>
 				<div class="pg-result pg-result--visual" id="pgResultCard">
 					<div class="pg-result__hero">
 						<strong class="pg-result__hero-num" id="pgResultCompleted">—</strong>
-						<span class="pg-result__hero-label"></span>
+						<span class="pg-result__hero-label">Completed jobs / year</span>
 					</div>
 					<div class="pg-gap-viz" id="pgGapViz" aria-hidden="true"></div>
 					<ul class="pg-result__stats">
-						<li><span></span><strong id="pgResultPublic">—</strong></li>
-						<li id="pgResultInvisibleWrap" hidden><span></span><strong id="pgResultInvisible">—</strong></li>
+						<li><span>Customer-visible proof</span><strong id="pgResultPublic">—</strong></li>
+						<li id="pgResultInvisibleWrap" hidden><span>Potentially staying invisible</span><strong id="pgResultInvisible">—</strong></li>
 					</ul>
-					<p class="pg-result__note"></p>
-					<p class="pg-result__support" id="pgResultSupport"></p>
+					<p class="pg-result__note">Based on the ranges you selected.</p>
+					<p class="pg-result__support" id="pgResultSupport">Your crew already does the expensive part: the actual work. The opportunity is putting more of it in front of the next customer — without giving your team another marketing job.</p>
 				</div>
-				<button type="button" class="btn btn-primary pg-btn" id="pgResultCta"></button>
 			</div>
 		</section>
 
 		<section class="pg-state" data-pg-state="email_capture" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"></p>
-				<h1 class="pg-title pg-title--sm"></h1>
-				<p class="pg-sub"></p>
+				<p class="pg-eyebrow">Your plan</p>
+				<h1 class="pg-title pg-title--sm">Save your personalized Proof Plan</h1>
+				<p class="pg-sub">Enter the best email to save your answers, see what one of your completed jobs could become, and come back anytime.</p>
 				<form class="pg-email" id="pgEmailForm" novalidate>
-					<label class="pg-email__label" for="pgEmail"> <span class="pg-req">*</span></label>
+					<label class="pg-email__label" for="pgEmail">Email <span class="pg-req">*</span></label>
 					<input class="pg-email__input" id="pgEmail" name="email" type="email" autocomplete="email" inputmode="email" required placeholder="you@company.com" />
 					<p class="pg-email__error" id="pgEmailError" role="alert" hidden></p>
-					<button type="submit" class="btn btn-primary pg-btn" id="pgEmailSubmit"></button>
-					<p class="pg-email__consent"></p>
+					<p class="pg-email__consent">We’ll email your results and relevant JobCapturePro follow-up. Unsubscribe anytime.</p>
 				</form>
-				
+				<aside class="pg-review-slot pg-review-slot--live" data-pg-review-slot="email">
+					<blockquote class="pg-review">
+						<div class="pg-stars" aria-label="5 out of 5 stars"><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span></div>
+						<p class="pg-review__quote">“Game changer for our marketing.”</p>
+						<footer class="pg-review__footer"><span class="pg-review__meta"><strong>Brian Hardy</strong><em>Owner</em></span></footer>
+					</blockquote>
+				</aside>
 			</div>
 		</section>
 
 		<section class="pg-state pg-state--reveal" data-pg-state="product_reveal" hidden>
 			<div class="pg-state__inner pg-state__inner--wide">
-				<p class="pg-eyebrow"></p>
-				<h1 class="pg-title pg-title--sm" id="pgRevealTitle"></h1>
+				<p class="pg-eyebrow">Your plan</p>
+				<h1 class="pg-title pg-title--sm" id="pgRevealTitle">Here’s what one finished job could become.</h1>
 
 				<article class="pg-job-card pg-job-card--compact" id="pgJobCard">
 					<div class="pg-job-card__media" id="pgJobMedia">
 						<img class="pg-job-card__photo" id="pgJobPhoto" alt="" width="640" height="360" loading="lazy" decoding="async" hidden />
 						<div class="pg-job-card__neutral" id="pgJobNeutral" hidden>
 							<span class="pg-job-card__neutral-icon" aria-hidden="true">✓</span>
-							<span></span>
+							<span>Completed job</span>
 						</div>
 					</div>
 					<div class="pg-job-card__body">
 						<strong class="pg-job-card__title" id="pgJobTitle">—</strong>
-						<p class="pg-job-card__meta"></p>
+						<p class="pg-job-card__meta">Completed · Job photos · Field location</p>
 						<p class="pg-job-card__source" id="pgRevealSource">—</p>
 					</div>
 				</article>
@@ -188,29 +200,47 @@
 					<li>No writing captions in the truck</li>
 				</ul>
 				<p class="pg-payoff-line"><strong>Your crew does the work. JCP makes the work keep working.</strong></p>
-				<button type="button" class="btn btn-primary pg-btn" id="pgRevealContinue">See My Trial Plan →</button>
 			</div>
 		</section>
 
 		<section class="pg-state" data-pg-state="trial_bridge" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"></p>
-				<h1 class="pg-title pg-title--sm"></h1>
-				<p class="pg-sub pg-sub--tight"></p>
+				<p class="pg-eyebrow">Your plan</p>
+				<h1 class="pg-title pg-title--sm">Your crew already does the hard part.</h1>
+				<p class="pg-sub pg-sub--tight">Keep finishing jobs. Keep taking the photos. Let JobCapturePro handle what happens next.</p>
 				<ul class="pg-summary pg-summary--grid" id="pgTrialSummary"></ul>
 				<p class="pg-continuity pg-continuity--trial" id="pgTrialContinuity" hidden></p>
-				<a class="btn btn-primary pg-btn" id="pgTrialCta" href="#">Start My Free 14-Day Trial →</a>
-				<p class="pg-micro">No credit card required.</p>
-				
+				<aside class="pg-review-slot pg-review-slot--live" data-pg-review-slot="trial">
+					<blockquote class="pg-review">
+						<div class="pg-stars" aria-label="5 out of 5 stars"><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span></div>
+						<p class="pg-review__quote">“Our crew just keeps finishing jobs — JCP handles the rest.”</p>
+						<footer class="pg-review__footer"><span class="pg-review__meta"><strong>Trent Ellison</strong><em>Owner</em></span></footer>
+					</blockquote>
+				</aside>
 			</div>
 		</section>
 	</div>
 
-	
+	<footer class="pg-bottom-action" id="pgBottomAction" hidden>
+		<p class="pg-bottom-action__micro" id="pgBottomMicro" hidden></p>
+		<div class="pg-bottom-action__cta" id="pgBottomCtaHost"></div>
+	</footer>
+
+	<aside class="pg-story" aria-hidden="true">
+		<div class="pg-story-mark" data-pg-story-mark>
+			<svg class="pg-story-mark__svg" viewBox="0 0 120 160" width="100" height="132" role="img" aria-label="">
+				<rect x="8" y="12" width="104" height="136" rx="12" fill="none" stroke="currentColor" stroke-width="3" opacity="0.35"/>
+				<path d="M28 48h64M28 72h48M28 96h56" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
+				<circle cx="88" cy="118" r="18" fill="none" stroke="currentColor" stroke-width="3" opacity="0.5"/>
+				<path d="M80 118l6 6 12-14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+			</svg>
+			<span class="pg-story-mark__caption">Proof Files continuity</span>
+		</div>
+	</aside>
 </div>
+
+</main>
 </div>
-<aside class="pg-story" aria-hidden="true"><div class="pg-story-mark"><span class="pg-story-mark__caption">Proof Files</span></div></aside>
-</div></main></div>
 <script type="application/json" id="pg-boot">
 {"surveyId":"proof_gap_survey_v1","surveyVersion":"4","lpVariant":"proof_gap_survey_v1","restUrl":"/__qa_mock_rest__","trialBase":"https://app.jobcapturepro.com/onboarding","campaignBase":"../../../../assets/campaign/",
 "trades":{"hvac":"HVAC","plumbing":"Plumbing","electrical":"Electrical","roofing":"Roofing","remodeling":"Remodeling","painting":"Painting","landscaping":"Landscaping","garage_door":"Garage door","pest_control":"Pest control","tree_service":"Tree service","power_washing":"Power washing","other":"Other"},
@@ -222,4 +252,5 @@
 </script>
 <script>(function(){var n=window.fetch.bind(window);window.fetch=function(u,o){if(String(u).indexOf('__qa_mock_rest__')!==-1){return Promise.resolve({ok:true,json:function(){return Promise.resolve({success:true,captured:true,event_id:'qa',handoff_token:'tok'})}});}return n(u,o);};})();</script>
 <script src="../../../../assets/js/pages/proof-gap.js"></script>
-</body></html>
+</body>
+</html>

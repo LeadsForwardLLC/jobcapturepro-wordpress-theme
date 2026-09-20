@@ -111,6 +111,209 @@
   var questionViewed = {};
   var insightVisible = false;
   var preloadedTradePhoto = '';
+  var bottomActionHandler = null;
+  var keyboardBound = false;
+
+  function syncBottomPad() {
+    var bar = document.getElementById('pgBottomAction');
+    var pad = 0;
+    if (bar && !bar.hidden) {
+      pad = Math.ceil(bar.getBoundingClientRect().height) || 88;
+    }
+    document.documentElement.style.setProperty('--pg-bottom-pad', pad + 'px');
+    document.body.style.setProperty('--pg-bottom-pad', pad + 'px');
+  }
+
+  function clearBottomAction() {
+    var bar = document.getElementById('pgBottomAction');
+    var host = document.getElementById('pgBottomCtaHost');
+    var micro = document.getElementById('pgBottomMicro');
+    bottomActionHandler = null;
+    if (host) host.innerHTML = '';
+    if (micro) {
+      micro.hidden = true;
+      micro.textContent = '';
+    }
+    if (bar) {
+      bar.hidden = true;
+      bar.classList.remove('is-entering');
+    }
+    document.body.classList.remove('pg-has-bottom-action');
+    syncBottomPad();
+  }
+
+  /**
+   * @param {{label:string, onClick?:Function, href?:string, type?:string, form?:string, id?:string, micro?:string, animate?:boolean}} opts
+   */
+  function setBottomAction(opts) {
+    opts = opts || {};
+    var bar = document.getElementById('pgBottomAction');
+    var host = document.getElementById('pgBottomCtaHost');
+    var micro = document.getElementById('pgBottomMicro');
+    if (!bar || !host) return;
+
+    host.innerHTML = '';
+    bottomActionHandler = typeof opts.onClick === 'function' ? opts.onClick : null;
+
+    var el;
+    if (opts.href) {
+      el = document.createElement('a');
+      el.className = 'btn btn-primary pg-btn';
+      el.href = opts.href;
+      el.textContent = opts.label || 'Continue →';
+      if (opts.id) el.id = opts.id;
+      el.addEventListener('click', function (ev) {
+        if (bottomActionHandler) bottomActionHandler(ev);
+      });
+    } else {
+      el = document.createElement('button');
+      el.type = opts.type || 'button';
+      el.className = 'btn btn-primary pg-btn';
+      el.textContent = opts.label || 'Continue →';
+      if (opts.id) el.id = opts.id;
+      if (opts.form) el.setAttribute('form', opts.form);
+      el.addEventListener('click', function (ev) {
+        if (opts.type === 'submit') return;
+        if (bottomActionHandler) {
+          ev.preventDefault();
+          bottomActionHandler(ev);
+        }
+      });
+    }
+    host.appendChild(el);
+
+    if (micro) {
+      if (opts.micro) {
+        micro.hidden = false;
+        micro.textContent = opts.micro;
+      } else {
+        micro.hidden = true;
+        micro.textContent = '';
+      }
+    }
+
+    var wasHidden = bar.hidden;
+    bar.hidden = false;
+    document.body.classList.add('pg-has-bottom-action');
+    if (opts.animate !== false && wasHidden && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      bar.classList.remove('is-entering');
+      void bar.offsetWidth;
+      bar.classList.add('is-entering');
+    }
+    requestAnimationFrame(syncBottomPad);
+    setTimeout(syncBottomPad, 50);
+  }
+
+  function syncBottomActionForState(id) {
+    if (id === 'welcome') {
+      setBottomAction({
+        id: 'pgWelcomeCta',
+        label: 'Find My Proof Gap →',
+        micro: 'About 60 seconds · No phone required · No credit card',
+        animate: false,
+        onClick: function () {
+          markCompleted('welcome');
+          if (!startedTracked) {
+            startedTracked = true;
+            track('SurveyStarted', { question_id: 'welcome', cta_source: 'welcome' });
+          }
+          saveState();
+          goTo('trade');
+        },
+      });
+      return;
+    }
+
+    if (id === 'trade') {
+      clearBottomAction();
+      return;
+    }
+
+    if (id === 'current_workflow' || id === 'jobs_per_week' || id === 'public_proof_percentage') {
+      // Insight CTA is set by showInsight after selection; otherwise no bar.
+      if (!insightVisible) clearBottomAction();
+      return;
+    }
+
+    if (id === 'proof_gap_result') {
+      setBottomAction({
+        id: 'pgResultCta',
+        label: 'Show Me What One Job Could Become →',
+        animate: false,
+        onClick: function () {
+          markCompleted('proof_gap_result');
+          saveState();
+          goTo('email_capture');
+        },
+      });
+      return;
+    }
+
+    if (id === 'email_capture') {
+      setBottomAction({
+        id: 'pgEmailSubmit',
+        label: 'Show Me My Job Transformation →',
+        type: 'submit',
+        form: 'pgEmailForm',
+        animate: false,
+      });
+      return;
+    }
+
+    if (id === 'product_reveal') {
+      setBottomAction({
+        id: 'pgRevealContinue',
+        label: 'See My Trial Plan →',
+        animate: false,
+        onClick: function () {
+          state.product_reveal_completed = true;
+          markCompleted('product_reveal');
+          saveState();
+          track('ProductRevealCompleted', {
+            trade: state.trade,
+            current_workflow: state.current_workflow,
+          });
+          goTo('trial_bridge');
+        },
+      });
+      return;
+    }
+
+    if (id === 'trial_bridge') {
+      setBottomAction({
+        id: 'pgTrialCta',
+        label: 'Start My Free 14-Day Trial →',
+        href: '#',
+        micro: 'No credit card required.',
+        animate: false,
+        onClick: function () {
+          state.trial_cta_clicked = true;
+          markCompleted('trial_bridge');
+          saveState();
+          track('TrialCTAClicked', { trade: state.trade, cta_source: 'trial_bridge' });
+          updateTrialHref();
+        },
+      });
+      updateTrialHref();
+      return;
+    }
+
+    clearBottomAction();
+  }
+
+  function bindKeyboardSafe() {
+    if (keyboardBound) return;
+    keyboardBound = true;
+    var vv = window.visualViewport;
+    if (!vv) return;
+    var onResize = function () {
+      var offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      document.body.style.setProperty('--pg-keyboard-offset', offset > 40 ? offset + 'px' : '0px');
+      syncBottomPad();
+    };
+    vv.addEventListener('resize', onResize);
+    vv.addEventListener('scroll', onResize);
+  }
 
   function createEmptyState() {
     return {
@@ -413,6 +616,7 @@
     }
     if (summary) summary.hidden = true;
     hideAllInsights();
+    clearBottomAction();
   }
 
   function syncQuestionUI(stateId) {
@@ -702,27 +906,20 @@
       (data.body ? '<p class="proof-gap-insight-card__text">' + escapeHtml(data.body) + '</p>' : '') +
       (data.body2 ? '<p class="proof-gap-insight-card__text">' + escapeHtml(data.body2) + '</p>' : '') +
       (data.extraHtml ? '<div class="proof-gap-insight-card__extra">' + data.extraHtml + '</div>' : '') +
-      '<button type="button" class="btn btn-primary pg-btn proof-gap-insight-card__cta">' +
-      escapeHtml(ctaLabel || 'Continue →') +
-      '</button>' +
       '</div>';
 
-    // Force reflow for entrance animation.
     void card.offsetWidth;
     card.classList.add('is-visible');
     insightVisible = true;
 
-    var cta = card.querySelector('.proof-gap-insight-card__cta');
-    if (cta) {
-      cta.addEventListener('click', function () {
+    setBottomAction({
+      label: ctaLabel || 'Continue →',
+      animate: true,
+      onClick: function () {
         hideAllInsights();
         goTo(nextState);
-      });
-      try {
-        cta.focus({ preventScroll: true });
-      } catch (eF) {}
-    }
-    ensureInsightVisible(card);
+      },
+    });
   }
 
   function formatAnnualRange() {
@@ -1376,9 +1573,13 @@
     }
 
     syncQuestionUI(id);
+    syncBottomActionForState(id);
+    bindKeyboardSafe();
 
     try {
-      window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+      var stage = document.getElementById('pgStage');
+      if (stage) stage.scrollTop = 0;
+      window.scrollTo({ top: 0, behavior: 'auto' });
     } catch (e) {
       window.scrollTo(0, 0);
     }
@@ -1561,19 +1762,6 @@
   }
 
   function bind() {
-    var welcome = document.getElementById('pgWelcomeCta');
-    if (welcome) {
-      welcome.addEventListener('click', function () {
-        markCompleted('welcome');
-        if (!startedTracked) {
-          startedTracked = true;
-          track('SurveyStarted', { question_id: 'welcome', cta_source: 'welcome' });
-        }
-        saveState();
-        goTo('trade');
-      });
-    }
-
     var back = document.getElementById('pgBack');
     if (back) back.addEventListener('click', goBack);
 
@@ -1595,42 +1783,10 @@
 
     bindDestTabs();
 
-    var resultCta = document.getElementById('pgResultCta');
-    if (resultCta) {
-      resultCta.addEventListener('click', function () {
-        markCompleted('proof_gap_result');
-        saveState();
-        goTo('email_capture');
-      });
-    }
-
     var emailForm = document.getElementById('pgEmailForm');
     if (emailForm) emailForm.addEventListener('submit', submitEmail);
 
-    var revealBtn = document.getElementById('pgRevealContinue');
-    if (revealBtn) {
-      revealBtn.addEventListener('click', function () {
-        state.product_reveal_completed = true;
-        markCompleted('product_reveal');
-        saveState();
-        track('ProductRevealCompleted', {
-          trade: state.trade,
-          current_workflow: state.current_workflow,
-        });
-        goTo('trial_bridge');
-      });
-    }
-
-    var trial = document.getElementById('pgTrialCta');
-    if (trial) {
-      trial.addEventListener('click', function () {
-        state.trial_cta_clicked = true;
-        markCompleted('trial_bridge');
-        saveState();
-        track('TrialCTAClicked', { trade: state.trade, cta_source: 'trial_bridge' });
-        updateTrialHref();
-      });
-    }
+    window.addEventListener('resize', syncBottomPad);
 
     window.addEventListener('pagehide', function () {
       track('SurveyExited', { question_id: state.current_state, trade: state.trade });

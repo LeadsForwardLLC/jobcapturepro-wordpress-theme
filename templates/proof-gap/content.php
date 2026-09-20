@@ -1,6 +1,6 @@
 <?php
 /**
- * Proof Gap survey — final CRO / visual polish shell.
+ * Proof Gap survey — native mobile app shell (final CRO).
  *
  * @package JCP_Core
  */
@@ -87,9 +87,6 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 					</div>
 					<p class="pg-welcome-visual__tagline"><?php esc_html_e( 'The work is already done. JCP puts it to work.', 'jcp-core' ); ?></p>
 				</div>
-
-				<button type="button" class="btn btn-primary pg-btn" id="pgWelcomeCta"><?php esc_html_e( 'Find My Proof Gap →', 'jcp-core' ); ?></button>
-				<p class="pg-micro"><?php esc_html_e( 'About 60 seconds · No phone required · No credit card', 'jcp-core' ); ?></p>
 			</div>
 		</section>
 
@@ -168,7 +165,6 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 					<p class="pg-result__note"><?php esc_html_e( 'Based on the ranges you selected.', 'jcp-core' ); ?></p>
 					<p class="pg-result__support" id="pgResultSupport"><?php esc_html_e( 'Your crew already does the expensive part: the actual work. The opportunity is putting more of it in front of the next customer — without giving your team another marketing job.', 'jcp-core' ); ?></p>
 				</div>
-				<button type="button" class="btn btn-primary pg-btn" id="pgResultCta"><?php esc_html_e( 'Show Me What One Job Could Become →', 'jcp-core' ); ?></button>
 			</div>
 		</section>
 
@@ -181,7 +177,6 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 					<label class="pg-email__label" for="pgEmail"><?php esc_html_e( 'Email', 'jcp-core' ); ?> <span class="pg-req">*</span></label>
 					<input class="pg-email__input" id="pgEmail" name="email" type="email" autocomplete="email" inputmode="email" required placeholder="you@company.com" />
 					<p class="pg-email__error" id="pgEmailError" role="alert" hidden></p>
-					<button type="submit" class="btn btn-primary pg-btn" id="pgEmailSubmit"><?php esc_html_e( 'Show Me My Job Transformation →', 'jcp-core' ); ?></button>
 					<p class="pg-email__consent"><?php esc_html_e( 'We’ll email your results and relevant JobCapturePro follow-up. Unsubscribe anytime.', 'jcp-core' ); ?></p>
 				</form>
 				<?php $render_review( $email_rev, 'email' ); ?>
@@ -228,7 +223,6 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 					<li><?php esc_html_e( 'No writing captions in the truck', 'jcp-core' ); ?></li>
 				</ul>
 				<p class="pg-payoff-line"><strong><?php esc_html_e( 'Your crew does the work. JCP makes the work keep working.', 'jcp-core' ); ?></strong></p>
-				<button type="button" class="btn btn-primary pg-btn" id="pgRevealContinue"><?php esc_html_e( 'See My Trial Plan →', 'jcp-core' ); ?></button>
 			</div>
 		</section>
 
@@ -239,12 +233,15 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 				<p class="pg-sub pg-sub--tight"><?php esc_html_e( 'Keep finishing jobs. Keep taking the photos. Let JobCapturePro handle what happens next.', 'jcp-core' ); ?></p>
 				<ul class="pg-summary pg-summary--grid" id="pgTrialSummary"></ul>
 				<p class="pg-continuity pg-continuity--trial" id="pgTrialContinuity" hidden></p>
-				<a class="btn btn-primary pg-btn" id="pgTrialCta" href="#"><?php esc_html_e( 'Start My Free 14-Day Trial →', 'jcp-core' ); ?></a>
-				<p class="pg-micro"><?php esc_html_e( 'No credit card required.', 'jcp-core' ); ?></p>
 				<?php $render_review( $trial_rev, 'trial' ); ?>
 			</div>
 		</section>
 	</div>
+
+	<footer class="pg-bottom-action" id="pgBottomAction" hidden>
+		<p class="pg-bottom-action__micro" id="pgBottomMicro" hidden></p>
+		<div class="pg-bottom-action__cta" id="pgBottomCtaHost"></div>
+	</footer>
 
 	<aside class="pg-story" aria-hidden="true">
 		<div class="pg-story-mark" data-pg-story-mark>
