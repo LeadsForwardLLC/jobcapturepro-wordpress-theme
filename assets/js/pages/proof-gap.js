@@ -63,8 +63,8 @@
     },
     other_crm: {
       variant: 'other_crm',
-      headline: 'You may be able to keep the workflow your crew already uses.',
-      body: 'JobCapturePro can work with supported systems and workflows so the goal is not to create another marketing task for your technicians.',
+      headline: 'You may be able to keep that workflow.',
+      body: 'JobCapturePro works with supported systems so the goal is not another marketing task for your crew.',
     },
     phones_camera_roll: {
       variant: 'phones_camera_roll',
@@ -811,19 +811,20 @@
     var tradeLabel = trades[state.trade] || 'Job';
     var annual = formatAnnualRange();
     var cells = '';
-    for (var i = 0; i < 24; i++) {
-      cells += '<span class="pg-job-grid__cell' + (i < 3 ? ' is-accent' : '') + '"></span>';
+    for (var i = 0; i < 20; i++) {
+      cells += '<span class="pg-job-grid__cell' + (i < 5 ? ' is-accent' : '') + '"></span>';
     }
     return (
       '<div class="pg-job-grid" aria-hidden="true">' +
-      '<div class="pg-job-grid__board">' +
+      '<p class="pg-job-grid__focal"><strong>' +
+      escapeHtml(annual) +
+      '</strong><span>completed jobs / year</span></p>' +
+      '<div class="pg-job-grid__board pg-job-grid__board--20">' +
       cells +
       '</div>' +
-      '<p class="pg-job-grid__caption"><strong>' +
-      escapeHtml(annual) +
-      '</strong><span>completed jobs · ' +
+      '<p class="pg-job-grid__caption"><span>' +
       escapeHtml(tradeLabel) +
-      '</span></p></div>'
+      ' · raw proof your crew already produces</span></p></div>'
     );
   }
 
@@ -942,6 +943,9 @@
       el.innerHTML = '';
       el.classList.remove('is-visible');
     });
+    document.querySelectorAll('.pg-review-slot--insight').forEach(function (el) {
+      el.classList.remove('is-shown');
+    });
     insightVisible = false;
   }
 
@@ -977,6 +981,11 @@
     void card.offsetWidth;
     card.classList.add('is-visible');
     insightVisible = true;
+    if (slot === 'workflow') {
+      document.querySelectorAll('.pg-review-slot--insight').forEach(function (el) {
+        el.classList.add('is-shown');
+      });
+    }
 
     setBottomAction({
       label: ctaLabel || 'Continue →',
@@ -1472,7 +1481,7 @@
       apply();
     }
     if (options.fromUser) {
-      track('ProductRevealDestinationSelected', { destination: dest, trade: state.trade });
+      track('ProductRevealDestinationSelected', { destination: dest, answer_value: dest, trade: state.trade });
     }
   }
 
@@ -1556,23 +1565,23 @@
 
   function renderTrialSummary() {
     var list = document.getElementById('pgTrialSummary');
+    var annualEl = document.getElementById('pgPlanAnnual');
+    if (annualEl) annualEl.textContent = formatAnnualRange() || '—';
     if (!list) return;
+    var proofLabel = proofDisplayLabel(state.public_proof_percentage);
     list.innerHTML =
-      '<li class="pg-summary__item"><span class="pg-summary__key">Trade</span><strong class="pg-summary__val">' +
+      '<li>' +
       escapeHtml(trades[state.trade] || state.trade || '—') +
-      '</strong></li>' +
-      '<li class="pg-summary__item"><span class="pg-summary__key">Workflow</span><strong class="pg-summary__val">' +
-      escapeHtml(workflows[state.current_workflow] || state.current_workflow || '—') +
-      '</strong></li>' +
-      '<li class="pg-summary__item"><span class="pg-summary__key">Jobs / week</span><strong class="pg-summary__val">' +
+      '</li>' +
+      '<li>' +
       escapeHtml((jobsBuckets[state.jobs_per_week_bucket] || {}).weekly_label || '—') +
-      '</strong></li>' +
-      '<li class="pg-summary__item"><span class="pg-summary__key">Annual jobs</span><strong class="pg-summary__val">' +
-      escapeHtml(formatAnnualRange()) +
-      '</strong></li>' +
-      '<li class="pg-summary__item pg-summary__item--full"><span class="pg-summary__key">Public proof</span><strong class="pg-summary__val">' +
-      escapeHtml(proofDisplayLabel(state.public_proof_percentage)) +
-      '</strong></li>';
+      ' jobs/week</li>' +
+      '<li>' +
+      escapeHtml(workflows[state.current_workflow] || state.current_workflow || '—') +
+      '</li>' +
+      '<li>' +
+      escapeHtml(proofLabel) +
+      ' becoming public proof</li>';
 
     var cont = document.getElementById('pgTrialContinuity');
     if (cont) {

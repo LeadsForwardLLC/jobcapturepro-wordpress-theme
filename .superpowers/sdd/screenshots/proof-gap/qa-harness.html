@@ -3,17 +3,18 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<title>Proof Gap Native App QA</title>
+<title>Proof Gap Final QA</title>
 <link rel="stylesheet" href="../../../../css/base.css"/>
 <link rel="stylesheet" href="../../../../css/buttons.css"/>
 <link rel="stylesheet" href="../../../../css/pages/proof-gap.css"/>
 <link rel="stylesheet" href="../../../../css/pages/proof-gap-mocks.css"/>
 <style>
 :root{--jcp-color-text-primary:#111827;--jcp-color-text-secondary:#6b7280;--jcp-color-primary:#ff5036;--jcp-color-bg-secondary:#f9fafb}
-html,body{margin:0;height:100%;height:100dvh;overflow:hidden;font-family:system-ui,sans-serif}
+html,body{margin:0;min-height:100%;font-family:system-ui,sans-serif}
+@media (max-width:767px){html,body{height:100%;height:100dvh;overflow:hidden}}
 </style>
 </head>
-<body class="jcp-proof-gap" data-jcp-lp-variant="proof_gap_survey_v1" data-pg-survey-id="proof_gap_survey_v1" data-pg-survey-version="6">
+<body class="jcp-proof-gap" data-jcp-lp-variant="proof_gap_survey_v1" data-pg-survey-id="proof_gap_survey_v1" data-pg-survey-version="7">
 <div class="pg-shell" id="pg-shell">
 <header class="pg-chrome" role="banner">
 <div class="pg-chrome__bar">
@@ -47,7 +48,16 @@ html,body{margin:0;height:100%;height:100dvh;overflow:hidden;font-family:system-
 							<span class="ps-mock__chip">Field photos</span>
 						</div>
 						<div class="ps-mock__media">
-							<img class="ps-mock__photo" src="../../../../assets/campaign/jcp-campaign-hvac-capture-360.webp" alt="" width="640" height="360" decoding="async" fetchpriority="high" data-no-lazy />
+							<img
+								class="ps-mock__photo"
+								src="../../../../assets/campaign/jcp-campaign-hvac-capture-360.webp"
+								alt=""
+								width="640"
+								height="360"
+								decoding="async"
+								fetchpriority="high"
+								data-no-lazy
+							/>
 							<span class="ps-mock__geo">Service area</span>
 						</div>
 						<div class="ps-mock__job-foot">
@@ -58,8 +68,10 @@ html,body{margin:0;height:100%;height:100dvh;overflow:hidden;font-family:system-
 							<em>Proof ready</em>
 						</div>
 					</article>
-					<div class="pg-welcome-product__bridge" aria-hidden="true">
+					<div class="pg-welcome-flow" aria-hidden="true">
+						<span class="pg-welcome-flow__line"></span>
 						<span class="pg-welcome-product__jcp">JCP</span>
+						<span class="pg-welcome-flow__line"></span>
 					</div>
 					<ul class="pg-welcome-dests">
 						<li>Website</li>
@@ -68,8 +80,8 @@ html,body{margin:0;height:100%;height:100dvh;overflow:hidden;font-family:system-
 						<li>Social</li>
 						<li>Directory</li>
 					</ul>
-					<p class="pg-welcome-product__tagline">The work is already done. JCP puts it to work.</p>
 				</div>
+				<div class="pg-authority pg-authority--welcome"><p class="pg-authority pg-authority--welcome__by">Built by the team behind LeadsForward</p><p class="pg-authority pg-authority--welcome__stats">10 years · 250K+ contractor leads · $150M+ client revenue booked</p></div>
 			</div>
 		</section>
 
@@ -96,6 +108,7 @@ html,body{margin:0;height:100%;height:100dvh;overflow:hidden;font-family:system-
 					</div>
 				</div>
 				<div class="proof-gap-insight-card" data-pg-insight="workflow" hidden></div>
+				<aside class="pg-review-slot pg-review-slot--live pg-review-slot--insight" data-pg-review-slot="workflow"><blockquote class="pg-review pg-review--compact"><div class="pg-stars" aria-label="5 out of 5 stars"><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span></div><p class="pg-review__quote">“JobCapturePro has been a game changer for my business!”</p><footer class="pg-review__footer"><img class="pg-review__avatar" src="../../../../assets/campaign/jcp-campaign-hvac-capture.jpg" alt="" width="32" height="32"/><span class="pg-review__meta"><strong>Heriberto Eddie Roman</strong><em>Business owner</em></span></footer></blockquote></aside>
 			</div>
 		</section>
 
@@ -162,13 +175,8 @@ html,body{margin:0;height:100%;height:100dvh;overflow:hidden;font-family:system-
 					<p class="pg-email__error" id="pgEmailError" role="alert" hidden></p>
 					<p class="pg-email__consent">We’ll email your results and relevant JobCapturePro follow-up. Unsubscribe anytime.</p>
 				</form>
-				<aside class="pg-review-slot pg-review-slot--live" data-pg-review-slot="email">
-					<blockquote class="pg-review">
-						<div class="pg-stars" aria-label="5 out of 5 stars"><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span></div>
-						<p class="pg-review__quote">“Game changer for our marketing.”</p>
-						<footer class="pg-review__footer"><span class="pg-review__meta"><strong>Brian Hardy</strong><em>Owner</em></span></footer>
-					</blockquote>
-				</aside>
+				<aside class="pg-case"><p class="pg-case__eyebrow">Local visibility case study</p><p class="pg-case__metric"><strong>0%</strong><span aria-hidden="true">→</span><strong class="pg-case__metric-hi">84–100%</strong></p><p class="pg-case__body">Maps 3-Pack grid visibility across four tracked keyword/market combinations in ~12 weeks.</p><p class="pg-case__attr">LeadsForward + JobCapturePro local-search strategy</p><p class="pg-case__note">Past performance does not guarantee future rankings.</p></aside>
+				<aside class="pg-review-slot pg-review-slot--live" data-pg-review-slot="email"><blockquote class="pg-review pg-review--compact"><div class="pg-stars" aria-label="5 out of 5 stars"><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span></div><p class="pg-review__quote">“Awesome. It takes my work site pictures and turns them into a marketing campaign.”</p><footer class="pg-review__footer"><img class="pg-review__avatar" src="../../../../assets/campaign/jcp-campaign-hvac-capture.jpg" alt="" width="32" height="32"/><span class="pg-review__meta"><strong>Brian Hardy</strong><em>Contractor</em></span></footer></blockquote></aside>
 			</div>
 		</section>
 
@@ -187,7 +195,6 @@ html,body{margin:0;height:100%;height:100dvh;overflow:hidden;font-family:system-
 					</div>
 					<div class="pg-job-card__body">
 						<strong class="pg-job-card__title" id="pgJobTitle">—</strong>
-						<p class="pg-job-card__meta">Completed · Job photos · Field location</p>
 						<p class="pg-job-card__source" id="pgRevealSource">—</p>
 					</div>
 				</article>
@@ -203,32 +210,39 @@ html,body{margin:0;height:100%;height:100dvh;overflow:hidden;font-family:system-
 				<div class="pg-dest-panel" id="pgDestPanel" role="tabpanel"
 					data-map="../../../../assets/map-3c5b675f-f28d-41a5-ba3a-972b4c189f10.png"
 					data-qr="../../../../assets/campaign/ps-dummy-qr.png"></div>
-				<p class="pg-dest-note">Availability depends on your plan and connected channels.</p>
 
-				<p class="pg-continuity" id="pgContinuityNote" hidden></p>
-				<ul class="pg-chips" aria-label="Payoff">
-					<li>No rewriting jobs</li>
-					<li>No moving photos</li>
-					<li>No writing captions in the truck</li>
-				</ul>
+				<p class="pg-benefit-line">No rewriting jobs · No moving photos · No captions in the truck</p>
 				<p class="pg-payoff-line"><strong>Your crew does the work. JCP makes the work keep working.</strong></p>
+				<aside class="pg-review-slot pg-review-slot--live pg-review-slot--reveal" data-pg-review-slot="reveal"><blockquote class="pg-review pg-review--compact"><div class="pg-stars" aria-label="5 out of 5 stars"><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span></div><p class="pg-review__quote">“One of the easiest marketing wins we've had for an HVAC client. Techs already take photos. Now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.”</p><footer class="pg-review__footer"><img class="pg-review__avatar" src="../../../../assets/campaign/jcp-campaign-face-operator.jpg" alt="" width="32" height="32"/><span class="pg-review__meta"><strong>Peter Bonk</strong><em>Marketing agency</em></span></footer></blockquote></aside>
 			</div>
 		</section>
 
-		<section class="pg-state" data-pg-state="trial_bridge" hidden>
+		<section class="pg-state pg-state--trial" data-pg-state="trial_bridge" hidden>
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow">Your plan</p>
 				<h1 class="pg-title pg-title--sm">Your crew already does the hard part.</h1>
 				<p class="pg-sub pg-sub--tight">Keep finishing jobs. Keep taking the photos. Let JobCapturePro handle what happens next.</p>
-				<ul class="pg-summary pg-summary--grid" id="pgTrialSummary"></ul>
-				<p class="pg-continuity pg-continuity--trial" id="pgTrialContinuity" hidden></p>
-				<aside class="pg-review-slot pg-review-slot--live" data-pg-review-slot="trial">
-					<blockquote class="pg-review">
-						<div class="pg-stars" aria-label="5 out of 5 stars"><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span></div>
-						<p class="pg-review__quote">“Our crew just keeps finishing jobs — JCP handles the rest.”</p>
-						<footer class="pg-review__footer"><span class="pg-review__meta"><strong>Trent Ellison</strong><em>Owner</em></span></footer>
-					</blockquote>
-				</aside>
+
+				<div class="pg-plan-card" id="pgPlanCard">
+					<div class="pg-plan-card__hero">
+						<strong class="pg-plan-card__num" id="pgPlanAnnual">—</strong>
+						<span class="pg-plan-card__label">completed jobs / year</span>
+					</div>
+					<ul class="pg-plan-chips" id="pgTrialSummary"></ul>
+					<div class="pg-plan-next">
+						<p class="pg-plan-next__title">What JCP does next</p>
+						<ol class="pg-plan-next__list">
+							<li>Uses the proof your team is already capturing</li>
+							<li>Turns completed jobs into customer-visible content</li>
+							<li>Helps distribute it across your connected channels</li>
+						</ol>
+					</div>
+					<p class="pg-continuity pg-continuity--trial" id="pgTrialContinuity" hidden></p>
+				</div>
+
+				<div class="pg-authority pg-authority--trial"><p class="pg-authority pg-authority--trial__by">Built by the team behind LeadsForward</p><p class="pg-authority pg-authority--trial__stats">10 years · 250K+ contractor leads · $150M+ client revenue booked</p></div>
+				<aside class="pg-review-slot pg-review-slot--live" data-pg-review-slot="trial" class-fix><blockquote class="pg-review pg-review--compact"><div class="pg-stars" aria-label="5 out of 5 stars"><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span></div><p class="pg-review__quote">“Easy to use and really smart. Makes it super simple to turn completed work into useful online content, and the review side is amazing.”</p><footer class="pg-review__footer"><img class="pg-review__avatar" src="../../../../assets/campaign/jcp-campaign-crew-review.jpg" alt="" width="32" height="32"/><span class="pg-review__meta"><strong>Trent Ellison</strong><em>Home service operator</em></span></footer></blockquote></aside>
+				<p class="pg-trial-nocc">No credit card required.</p>
 			</div>
 		</section>
 	</div>
@@ -237,24 +251,12 @@ html,body{margin:0;height:100%;height:100dvh;overflow:hidden;font-family:system-
 		<p class="pg-bottom-action__micro" id="pgBottomMicro" hidden></p>
 		<div class="pg-bottom-action__cta" id="pgBottomCtaHost"></div>
 	</footer>
-
-	<aside class="pg-story" aria-hidden="true">
-		<div class="pg-story-mark" data-pg-story-mark>
-			<svg class="pg-story-mark__svg" viewBox="0 0 120 160" width="100" height="132" role="img" aria-label="">
-				<rect x="8" y="12" width="104" height="136" rx="12" fill="none" stroke="currentColor" stroke-width="3" opacity="0.35"/>
-				<path d="M28 48h64M28 72h48M28 96h56" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
-				<circle cx="88" cy="118" r="18" fill="none" stroke="currentColor" stroke-width="3" opacity="0.5"/>
-				<path d="M80 118l6 6 12-14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
-			</svg>
-			<span class="pg-story-mark__caption">Proof Files continuity</span>
-		</div>
-	</aside>
 </div>
 
 </main>
 </div>
 <script type="application/json" id="pg-boot">
-{"surveyId":"proof_gap_survey_v1","surveyVersion":"4","lpVariant":"proof_gap_survey_v1","restUrl":"/__qa_mock_rest__","trialBase":"https://app.jobcapturepro.com/onboarding","campaignBase":"../../../../assets/campaign/",
+{"surveyId":"proof_gap_survey_v1","surveyVersion":"7","lpVariant":"proof_gap_survey_v1","restUrl":"/__qa_mock_rest__","trialBase":"https://app.jobcapturepro.com/onboarding","campaignBase":"../../../../assets/campaign/",
 "trades":{"hvac":"HVAC","plumbing":"Plumbing","electrical":"Electrical","roofing":"Roofing","remodeling":"Remodeling","painting":"Painting","landscaping":"Landscaping","garage_door":"Garage door","pest_control":"Pest control","tree_service":"Tree service","power_washing":"Power washing","other":"Other"},
 "workflows":{"housecall_pro":"Housecall Pro","companycam":"CompanyCam","other_crm":"Another CRM / field app","phones_camera_roll":"Phones / camera roll","group_text_shared_folder":"Group text / shared folder","scattered":"Scattered across places"},
 "jobsBuckets":{"1_5":{"label":"1–5","weekly_label":"1–5","min":52,"max":260},"6_10":{"label":"6–10","weekly_label":"6–10","min":312,"max":520},"11_20":{"label":"11–20","weekly_label":"11–20","min":572,"max":1040},"21_35":{"label":"21–35","weekly_label":"21–35","min":1092,"max":1820},"36_50":{"label":"36–50","weekly_label":"36–50","min":1872,"max":2600},"50_plus":{"label":"50+","weekly_label":"50+","min":2600,"max":null}},
@@ -262,7 +264,21 @@ html,body{margin:0;height:100%;height:100dvh;overflow:hidden;font-family:system-
 "tradeAssets":{"hvac":{"title":"HVAC service call","photo":"../../../../assets/campaign/jcp-campaign-hvac-capture-360.webp","neutral":false},"plumbing":{"title":"Water heater replacement","photo":"../../../../assets/campaign/jcp-campaign-job-proof-360.webp","neutral":false},"electrical":{"title":"Electrical panel / field job","photo":null,"neutral":true},"roofing":{"title":"Roofing project","photo":null,"neutral":true},"remodeling":{"title":"Remodel finish","photo":null,"neutral":true},"painting":{"title":"Paint job","photo":null,"neutral":true},"landscaping":{"title":"Landscaping job","photo":null,"neutral":true},"garage_door":{"title":"Garage door service","photo":null,"neutral":true},"pest_control":{"title":"Pest control visit","photo":null,"neutral":true},"tree_service":{"title":"Tree service job","photo":null,"neutral":true},"power_washing":{"title":"Power washing job","photo":null,"neutral":true},"other":{"title":"Finished field job","photo":null,"neutral":true}},
 "creativeConcepts":["default","empty_window","concept_02","concept_03"]}
 </script>
-<script>(function(){var n=window.fetch.bind(window);window.fetch=function(u,o){if(String(u).indexOf('__qa_mock_rest__')!==-1){return Promise.resolve({ok:true,json:function(){return Promise.resolve({success:true,captured:true,event_id:'qa',handoff_token:'tok'})}});}return n(u,o);};})();</script>
+
+<script>
+window.fetch = (function (orig) {
+  return function (url, opts) {
+    var u = String(url || '');
+    if (u.indexOf('proof-gap-survey-submit') !== -1 || u.indexOf('__qa_mock_rest__') !== -1) {
+      return Promise.resolve(new Response(JSON.stringify({ captured: true, success: true, handoff_token: 'qa', event_id: 'qa-event' }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    }
+    if (u.indexOf('funnel-event') !== -1) {
+      return Promise.resolve(new Response(JSON.stringify({ ok: true, deduped: false }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    }
+    return orig.apply(this, arguments);
+  };
+})(window.fetch);
+</script>
 <script src="../../../../assets/js/pages/proof-gap.js"></script>
 </body>
 </html>

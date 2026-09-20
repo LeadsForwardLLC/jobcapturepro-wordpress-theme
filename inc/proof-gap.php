@@ -14,8 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'JCP_PROOF_GAP_SLUG', 'proof-gap' );
 define( 'JCP_PROOF_GAP_VARIANT', 'proof_gap_survey_v1' );
 define( 'JCP_PROOF_GAP_SURVEY_ID', 'proof_gap_survey_v1' );
-define( 'JCP_PROOF_GAP_SURVEY_VERSION', '6' );
-define( 'JCP_PROOF_GAP_SEED_VERSION', '6' );
+define( 'JCP_PROOF_GAP_SURVEY_VERSION', '8' );
+define( 'JCP_PROOF_GAP_SEED_VERSION', '8' );
 
 /**
  * Request path without leading/trailing slashes.
@@ -256,8 +256,10 @@ function jcp_proof_gap_review_slots(): array {
 		}
 	}
 	return [
-		'email' => $by_id['brian-hardy'] ?? ( $reviews[1] ?? null ),
-		'trial' => $by_id['trent-ellison'] ?? ( $reviews[2] ?? null ),
+		'workflow' => $by_id['heriberto-eddie-roman'] ?? null,
+		'email'    => $by_id['brian-hardy'] ?? null,
+		'reveal'   => $by_id['peter-bonk'] ?? null,
+		'trial'    => $by_id['trent-ellison'] ?? null,
 	];
 }
 

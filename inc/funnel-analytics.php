@@ -253,16 +253,17 @@ function jcp_funnel_analytics_funnels(): array {
  */
 function jcp_funnel_analytics_proof_gap_stages(): array {
 	return [
-		[ 'key' => 'landing', 'label' => __( 'Landing', 'jcp-core' ), 'events' => [ 'SurveyLandingViewed' ] ],
+		[ 'key' => 'landing', 'label' => __( 'Welcome', 'jcp-core' ), 'events' => [ 'SurveyLandingViewed' ] ],
 		[ 'key' => 'started', 'label' => __( 'Survey started', 'jcp-core' ), 'events' => [ 'SurveyStarted' ] ],
-		[ 'key' => 'trade', 'label' => __( 'Trade answered', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'trade' ],
-		[ 'key' => 'workflow', 'label' => __( 'Workflow answered', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'current_workflow' ],
-		[ 'key' => 'jobs', 'label' => __( 'Jobs answered', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'jobs_per_week' ],
-		[ 'key' => 'proof', 'label' => __( 'Proof answered', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'public_proof_percentage' ],
-		[ 'key' => 'result', 'label' => __( 'Result viewed', 'jcp-core' ), 'events' => [ 'SurveyResultViewed' ] ],
-		[ 'key' => 'email', 'label' => __( 'Email submitted', 'jcp-core' ), 'events' => [ 'EmailSubmitted' ] ],
-		[ 'key' => 'reveal', 'label' => __( 'Product reveal completed', 'jcp-core' ), 'events' => [ 'ProductRevealCompleted' ] ],
-		[ 'key' => 'trial_cta', 'label' => __( 'Trial CTA clicked', 'jcp-core' ), 'events' => [ 'TrialCTAClicked' ] ],
+		[ 'key' => 'trade', 'label' => __( 'Trade', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'trade' ],
+		[ 'key' => 'workflow', 'label' => __( 'Workflow', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'current_workflow' ],
+		[ 'key' => 'jobs', 'label' => __( 'Jobs/week', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'jobs_per_week' ],
+		[ 'key' => 'proof', 'label' => __( 'Proof frequency', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'public_proof_percentage' ],
+		[ 'key' => 'result', 'label' => __( 'Proof Gap result', 'jcp-core' ), 'events' => [ 'SurveyResultViewed' ] ],
+		[ 'key' => 'email', 'label' => __( 'Email save', 'jcp-core' ), 'events' => [ 'EmailSubmitted' ] ],
+		[ 'key' => 'reveal', 'label' => __( 'Product reveal', 'jcp-core' ), 'events' => [ 'ProductRevealStarted', 'ProductRevealCompleted' ] ],
+		[ 'key' => 'trial_plan', 'label' => __( 'Trial plan', 'jcp-core' ), 'events' => [ 'TrialCTAViewed' ] ],
+		[ 'key' => 'trial_cta', 'label' => __( 'Trial CTA', 'jcp-core' ), 'events' => [ 'TrialCTAClicked' ] ],
 		[ 'key' => 'trial_started', 'label' => __( 'Trial started', 'jcp-core' ), 'events' => [ 'TrialStarted' ], 'lifecycle' => true ],
 		[ 'key' => 'activated', 'label' => __( 'Activated', 'jcp-core' ), 'events' => [ 'ActivatedTrial' ], 'lifecycle' => true ],
 		[ 'key' => 'paid', 'label' => __( 'Paid', 'jcp-core' ), 'events' => [ 'PaidCustomer' ], 'lifecycle' => true ],
@@ -404,7 +405,8 @@ function jcp_funnel_analytics_proof_gap_report( array $filters ): array {
 		'survey_starts'     => $stage_rows[1]['sessions'] ?? 0,
 		'survey_completion' => $stage_rows[6]['sessions'] ?? 0,
 		'emails_captured'   => $stage_rows[7]['sessions'] ?? 0,
-		'trial_cta_clicks'  => $stage_rows[9]['sessions'] ?? 0,
+		'product_reveal'    => $stage_rows[8]['sessions'] ?? 0,
+		'trial_cta_clicks'  => $stage_rows[10]['sessions'] ?? 0,
 		'trials_started'    => null,
 		'activated_trials'  => null,
 		'paid_customers'    => null,
@@ -414,11 +416,12 @@ function jcp_funnel_analytics_proof_gap_report( array $filters ): array {
 		'stages'              => $stage_rows,
 		'summary'             => $summary,
 		'questions'           => jcp_funnel_analytics_question_stats( $table, $cohort, $since ),
+		'destinations'        => jcp_funnel_analytics_destination_stats( $table, $cohort ),
 		'traffic'             => jcp_funnel_analytics_traffic_stats( $table, $cohort, $since ),
 		'diagnostics'         => jcp_funnel_analytics_diagnostics( $table ),
 		'lifecycle_connected' => false,
 		'cohort_size'         => count( $cohort ),
-		'calculation_note'    => __( 'Stage funnel uses unique session_ids whose SurveyLandingViewed or SurveyStarted occurred in the selected window. Conversion % is previous-stage and landing-relative, not raw event counts. Trial/activation/paid require cross-domain lifecycle wiring (shown as Not connected).', 'jcp-core' ),
+		'calculation_note'    => __( 'Stage funnel uses unique session_ids whose SurveyLandingViewed or SurveyStarted occurred in the selected window. Conversion % is previous-stage and landing-relative, not raw event counts. Destination tabs count only user-selected ProductRevealDestinationSelected events. Trial/activation/paid require cross-domain lifecycle wiring (shown as Not connected).', 'jcp-core' ),
 	];
 }
 
@@ -448,6 +451,41 @@ function jcp_funnel_analytics_count_stage_sessions( string $table, array $cohort
 		$args
 	);
 	return (int) $wpdb->get_var( $sql );
+}
+
+/**
+ * Product reveal destination engagement (user-selected tabs only).
+ *
+ * @param string $table Table.
+ * @param array  $cohort Sessions.
+ * @return array
+ */
+function jcp_funnel_analytics_destination_stats( string $table, array $cohort ): array {
+	global $wpdb;
+	$dests = [ 'website', 'google', 'social', 'reviews', 'directory' ];
+	$out   = [];
+	if ( empty( $cohort ) ) {
+		foreach ( $dests as $d ) {
+			$out[] = [ 'destination' => $d, 'sessions' => 0 ];
+		}
+		return $out;
+	}
+	$placeholders = implode( ',', array_fill( 0, count( $cohort ), '%s' ) );
+	foreach ( $dests as $d ) {
+		$args = array_merge( $cohort, [ $d ] );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$count = (int) $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(DISTINCT session_id) FROM $table
+				WHERE session_id IN ($placeholders)
+				AND event_name = 'ProductRevealDestinationSelected'
+				AND answer_value = %s",
+				$args
+			)
+		);
+		$out[] = [ 'destination' => $d, 'sessions' => $count ];
+	}
+	return $out;
 }
 
 /**

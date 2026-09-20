@@ -91,6 +91,7 @@ function jcp_funnel_analytics_render_admin(): void {
 				'Survey starts'      => $summary['survey_starts'] ?? 0,
 				'Survey completion'  => $summary['survey_completion'] ?? 0,
 				'Emails captured'    => $summary['emails_captured'] ?? null,
+				'Product reveal'     => $summary['product_reveal'] ?? null,
 				'Trial CTA clicks'   => $summary['trial_cta_clicks'] ?? null,
 				'Trials started'     => $summary['trials_started'] ?? null,
 				'Activated trials'   => $summary['activated_trials'] ?? null,
@@ -175,6 +176,27 @@ function jcp_funnel_analytics_render_admin(): void {
 							echo $bits ? implode( ', ', $bits ) : '—';
 							?>
 						</td>
+					</tr>
+				<?php endforeach; ?>
+				</tbody>
+			</table>
+		<?php endif; ?>
+
+		<?php if ( ! empty( $report['destinations'] ) ) : ?>
+			<h2 style="margin-top:28px;"><?php esc_html_e( 'Product destination engagement', 'jcp-core' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Unique sessions that tapped each destination tab (user action only — no autoplay views).', 'jcp-core' ); ?></p>
+			<table class="widefat striped" style="max-width:640px;">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Destination', 'jcp-core' ); ?></th>
+						<th><?php esc_html_e( 'Sessions', 'jcp-core' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+				<?php foreach ( $report['destinations'] as $d ) : ?>
+					<tr>
+						<td><strong><?php echo esc_html( ucfirst( (string) $d['destination'] ) ); ?></strong></td>
+						<td><?php echo (int) $d['sessions']; ?></td>
 					</tr>
 				<?php endforeach; ?>
 				</tbody>

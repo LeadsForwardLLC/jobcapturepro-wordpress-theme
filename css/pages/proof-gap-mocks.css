@@ -603,7 +603,7 @@ body.jcp-proof-gap .pg-welcome-product .ps-mock--job {
 }
 body.jcp-proof-gap .pg-welcome-product .ps-mock__photo {
   aspect-ratio: 16 / 9;
-  max-height: 9rem;
+  max-height: 8rem;
   width: 100%;
   object-fit: cover;
   object-position: center 35%;
@@ -612,6 +612,20 @@ body.jcp-proof-gap .pg-welcome-product .ps-mock__photo {
 body.jcp-proof-gap .pg-welcome-product__bridge {
   display: flex;
   justify-content: center;
+}
+body.jcp-proof-gap .pg-welcome-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin: 0.15rem 0;
+}
+body.jcp-proof-gap .pg-welcome-flow__line {
+  display: block;
+  width: 1.75rem;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 80, 54, 0.15), rgba(255, 80, 54, 0.55));
 }
 body.jcp-proof-gap .pg-welcome-product__jcp {
   display: inline-grid;
@@ -669,24 +683,24 @@ body.jcp-proof-gap .pg-answer-summary__value {
   font-size: 0.88rem;
 }
 
-/* Intrinsic destination panel — no giant empty boxes */
+/* Intrinsic destination panel — fixed in flow; never shrink-overlap siblings */
 body.jcp-proof-gap .pg-dest-panel {
   min-height: 0 !important;
-  max-height: none !important;
+  max-height: min(18rem, 42vh) !important;
   height: auto !important;
-  overflow: visible !important;
-  flex: 0 1 auto !important;
+  overflow: hidden !important;
+  flex: 0 0 auto !important;
   transition: opacity 180ms ease;
 }
 body.jcp-proof-gap .pg-state--reveal .pg-dest-panel {
-  flex: 0 1 auto !important;
-  overflow: visible !important;
+  flex: 0 0 auto !important;
+  overflow: hidden !important;
 }
 body.jcp-proof-gap .pg-state--reveal .pg-dest-mock,
 body.jcp-proof-gap .pg-dest-panel .ps-mock {
   height: auto !important;
-  max-height: none !important;
-  overflow: visible;
+  max-height: 100% !important;
+  overflow: hidden;
 }
 body.jcp-proof-gap .pg-dest-panel .ps-mock {
   margin: 0;
@@ -776,20 +790,40 @@ body.jcp-proof-gap .pg-dest-panel .ps-mock__photo {
   body.jcp-proof-gap .pg-state--reveal .pg-job-card__media {
     display: none;
   }
+  body.jcp-proof-gap .pg-state--reveal .pg-review-slot--reveal {
+    display: block;
+    margin-top: 0.35rem;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-review-slot--reveal .pg-review__quote {
+    -webkit-line-clamp: 2;
+  }
   body.jcp-proof-gap .pg-dest-panel .ps-mock__photo {
-    max-height: 7rem !important;
+    max-height: 6.5rem !important;
   }
   body.jcp-proof-gap .pg-dest-panel .ps-mock-map img {
-    max-height: 5rem !important;
+    max-height: 4.5rem !important;
   }
   body.jcp-proof-gap .pg-dest-panel .ps-mock-qr img {
-    width: 72px !important;
-    height: 72px !important;
+    width: 64px !important;
+    height: 64px !important;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-benefit-line {
+    margin-top: 0.4rem;
+    font-size: 0.68rem;
   }
 }
 @media (max-height: 860px) {
   body.jcp-proof-gap .pg-welcome-product .ps-mock__photo {
-    max-height: 7.25rem;
+    max-height: 6.25rem;
+  }
+  body.jcp-proof-gap .pg-state--welcome .pg-sub--tight {
+    display: none;
+  }
+  body.jcp-proof-gap .pg-authority--welcome {
+    padding: 0.4rem 0.5rem;
+  }
+  body.jcp-proof-gap .pg-authority--welcome .pg-authority__stats {
+    font-size: 0.64rem;
   }
   body.jcp-proof-gap .pg-dest-panel .ps-mock__photo {
     max-height: 6.75rem !important;

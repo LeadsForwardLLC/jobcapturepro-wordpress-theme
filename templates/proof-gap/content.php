@@ -1,6 +1,6 @@
 <?php
 /**
- * Proof Gap survey — native mobile app shell (final CRO).
+ * Proof Gap survey — native app shell content.
  *
  * @package JCP_Core
  */
@@ -13,9 +13,11 @@ $campaign  = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/
 $integ     = trailingslashit( get_template_directory_uri() ) . 'assets/integrations/';
 $map_url   = get_template_directory_uri() . '/assets/map-3c5b675f-f28d-41a5-ba3a-972b4c189f10.png';
 $qr_url    = $campaign . 'ps-dummy-qr.png';
-$slots     = function_exists( 'jcp_proof_gap_review_slots' ) ? jcp_proof_gap_review_slots() : [ 'email' => null, 'trial' => null ];
-$email_rev = is_array( $slots['email'] ?? null ) ? $slots['email'] : null;
-$trial_rev = is_array( $slots['trial'] ?? null ) ? $slots['trial'] : null;
+$slots     = function_exists( 'jcp_proof_gap_review_slots' ) ? jcp_proof_gap_review_slots() : [];
+$workflow_rev = is_array( $slots['workflow'] ?? null ) ? $slots['workflow'] : null;
+$email_rev    = is_array( $slots['email'] ?? null ) ? $slots['email'] : null;
+$reveal_rev   = is_array( $slots['reveal'] ?? null ) ? $slots['reveal'] : null;
+$trial_rev    = is_array( $slots['trial'] ?? null ) ? $slots['trial'] : null;
 
 $render_stars = static function ( int $rating ): void {
 	if ( $rating < 1 ) {
@@ -30,9 +32,8 @@ $render_stars = static function ( int $rating ): void {
 	echo '</div>';
 };
 
-$render_review = static function ( ?array $review, string $slot ) use ( $render_stars ): void {
+$render_review = static function ( ?array $review, string $slot, string $mod = '' ) use ( $render_stars ): void {
 	if ( ! $review || trim( (string) ( $review['quote'] ?? '' ) ) === '' ) {
-		echo '<aside class="pg-review-slot" data-pg-review-slot="' . esc_attr( $slot ) . '"><p class="pg-review-slot__placeholder">' . esc_html__( 'Approved review will appear here.', 'jcp-core' ) . '</p></aside>';
 		return;
 	}
 	$avatar = (string) ( $review['avatar'] ?? $review['avatar_url'] ?? '' );
@@ -40,21 +41,40 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 	$role   = (string) ( $review['role'] ?? '' );
 	$quote  = (string) ( $review['quote'] ?? '' );
 	$rating = isset( $review['rating'] ) ? (int) $review['rating'] : 0;
-	echo '<aside class="pg-review-slot pg-review-slot--live" data-pg-review-slot="' . esc_attr( $slot ) . '">';
-	echo '<blockquote class="pg-review">';
+	$cls    = 'pg-review-slot pg-review-slot--live' . ( $mod !== '' ? ' ' . $mod : '' );
+	echo '<aside class="' . esc_attr( $cls ) . '" data-pg-review-slot="' . esc_attr( $slot ) . '">';
+	echo '<blockquote class="pg-review pg-review--compact">';
 	if ( $rating > 0 ) {
 		$render_stars( $rating );
 	}
 	echo '<p class="pg-review__quote">“' . esc_html( $quote ) . '”</p>';
 	echo '<footer class="pg-review__footer">';
 	if ( $avatar !== '' ) {
-		echo '<img class="pg-review__avatar" src="' . esc_url( $avatar ) . '" alt="" width="36" height="36" loading="lazy" decoding="async" />';
+		echo '<img class="pg-review__avatar" src="' . esc_url( $avatar ) . '" alt="" width="32" height="32" loading="lazy" decoding="async" />';
 	}
 	echo '<span class="pg-review__meta"><strong>' . esc_html( $name ) . '</strong>';
 	if ( $role !== '' ) {
 		echo '<em>' . esc_html( $role ) . '</em>';
 	}
 	echo '</span></footer></blockquote></aside>';
+};
+
+$render_authority = static function ( string $mod = '' ): void {
+	$cls = 'pg-authority' . ( $mod !== '' ? ' ' . $mod : '' );
+	echo '<div class="' . esc_attr( $cls ) . '">';
+	echo '<p class="pg-authority__by">' . esc_html__( 'Built by the team behind LeadsForward', 'jcp-core' ) . '</p>';
+	echo '<p class="pg-authority__stats">' . esc_html__( '10 years · 250K+ contractor leads · $150M+ client revenue booked', 'jcp-core' ) . '</p>';
+	echo '</div>';
+};
+
+$render_case = static function (): void {
+	echo '<aside class="pg-case" aria-label="' . esc_attr__( 'Local visibility case study', 'jcp-core' ) . '">';
+	echo '<p class="pg-case__eyebrow">' . esc_html__( 'Local visibility case study', 'jcp-core' ) . '</p>';
+	echo '<p class="pg-case__metric"><strong>0%</strong><span aria-hidden="true">→</span><strong class="pg-case__metric-hi">84–100%</strong></p>';
+	echo '<p class="pg-case__body">' . esc_html__( 'Maps 3-Pack grid visibility across four tracked keyword/market combinations in ~12 weeks.', 'jcp-core' ) . '</p>';
+	echo '<p class="pg-case__attr">' . esc_html__( 'LeadsForward + JobCapturePro local-search strategy', 'jcp-core' ) . '</p>';
+	echo '<p class="pg-case__note">' . esc_html__( 'Past performance does not guarantee future rankings.', 'jcp-core' ) . '</p>';
+	echo '</aside>';
 };
 ?>
 
@@ -95,8 +115,10 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 							<em><?php esc_html_e( 'Proof ready', 'jcp-core' ); ?></em>
 						</div>
 					</article>
-					<div class="pg-welcome-product__bridge" aria-hidden="true">
+					<div class="pg-welcome-flow" aria-hidden="true">
+						<span class="pg-welcome-flow__line"></span>
 						<span class="pg-welcome-product__jcp">JCP</span>
+						<span class="pg-welcome-flow__line"></span>
 					</div>
 					<ul class="pg-welcome-dests">
 						<li><?php esc_html_e( 'Website', 'jcp-core' ); ?></li>
@@ -105,8 +127,8 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 						<li><?php esc_html_e( 'Social', 'jcp-core' ); ?></li>
 						<li><?php esc_html_e( 'Directory', 'jcp-core' ); ?></li>
 					</ul>
-					<p class="pg-welcome-product__tagline"><?php esc_html_e( 'The work is already done. JCP puts it to work.', 'jcp-core' ); ?></p>
 				</div>
+				<?php $render_authority( 'pg-authority--welcome' ); ?>
 			</div>
 		</section>
 
@@ -133,6 +155,7 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 					</div>
 				</div>
 				<div class="proof-gap-insight-card" data-pg-insight="workflow" hidden></div>
+				<?php $render_review( $workflow_rev, 'workflow', 'pg-review-slot--insight' ); ?>
 			</div>
 		</section>
 
@@ -199,6 +222,7 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 					<p class="pg-email__error" id="pgEmailError" role="alert" hidden></p>
 					<p class="pg-email__consent"><?php esc_html_e( 'We’ll email your results and relevant JobCapturePro follow-up. Unsubscribe anytime.', 'jcp-core' ); ?></p>
 				</form>
+				<?php $render_case(); ?>
 				<?php $render_review( $email_rev, 'email' ); ?>
 			</div>
 		</section>
@@ -218,7 +242,6 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 					</div>
 					<div class="pg-job-card__body">
 						<strong class="pg-job-card__title" id="pgJobTitle">—</strong>
-						<p class="pg-job-card__meta"><?php esc_html_e( 'Completed · Job photos · Field location', 'jcp-core' ); ?></p>
 						<p class="pg-job-card__source" id="pgRevealSource">—</p>
 					</div>
 				</article>
@@ -234,26 +257,38 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 				<div class="pg-dest-panel" id="pgDestPanel" role="tabpanel"
 					data-map="<?php echo esc_url( $map_url ); ?>"
 					data-qr="<?php echo esc_url( $qr_url ); ?>"></div>
-				<p class="pg-dest-note"><?php esc_html_e( 'Availability depends on your plan and connected channels.', 'jcp-core' ); ?></p>
 
-				<p class="pg-continuity" id="pgContinuityNote" hidden></p>
-				<ul class="pg-chips" aria-label="<?php esc_attr_e( 'Payoff', 'jcp-core' ); ?>">
-					<li><?php esc_html_e( 'No rewriting jobs', 'jcp-core' ); ?></li>
-					<li><?php esc_html_e( 'No moving photos', 'jcp-core' ); ?></li>
-					<li><?php esc_html_e( 'No writing captions in the truck', 'jcp-core' ); ?></li>
-				</ul>
+				<p class="pg-benefit-line"><?php esc_html_e( 'No rewriting jobs · No moving photos · No captions in the truck', 'jcp-core' ); ?></p>
 				<p class="pg-payoff-line"><strong><?php esc_html_e( 'Your crew does the work. JCP makes the work keep working.', 'jcp-core' ); ?></strong></p>
+				<?php $render_review( $reveal_rev, 'reveal', 'pg-review-slot--reveal' ); ?>
 			</div>
 		</section>
 
-		<section class="pg-state" data-pg-state="trial_bridge" hidden>
+		<section class="pg-state pg-state--trial" data-pg-state="trial_bridge" hidden>
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( 'Your plan', 'jcp-core' ); ?></p>
 				<h1 class="pg-title pg-title--sm"><?php esc_html_e( 'Your crew already does the hard part.', 'jcp-core' ); ?></h1>
 				<p class="pg-sub pg-sub--tight"><?php esc_html_e( 'Keep finishing jobs. Keep taking the photos. Let JobCapturePro handle what happens next.', 'jcp-core' ); ?></p>
-				<ul class="pg-summary pg-summary--grid" id="pgTrialSummary"></ul>
-				<p class="pg-continuity pg-continuity--trial" id="pgTrialContinuity" hidden></p>
-				<?php $render_review( $trial_rev, 'trial' ); ?>
+
+				<div class="pg-plan-card" id="pgPlanCard">
+					<div class="pg-plan-card__hero">
+						<strong class="pg-plan-card__num" id="pgPlanAnnual">—</strong>
+						<span class="pg-plan-card__label"><?php esc_html_e( 'completed jobs / year', 'jcp-core' ); ?></span>
+					</div>
+					<ul class="pg-plan-chips" id="pgTrialSummary"></ul>
+					<div class="pg-plan-next">
+						<p class="pg-plan-next__title"><?php esc_html_e( 'What JCP does next', 'jcp-core' ); ?></p>
+						<ol class="pg-plan-next__list">
+							<li><?php esc_html_e( 'Uses the proof your team is already capturing', 'jcp-core' ); ?></li>
+							<li><?php esc_html_e( 'Turns completed jobs into customer-visible content', 'jcp-core' ); ?></li>
+							<li><?php esc_html_e( 'Helps distribute it across your connected channels', 'jcp-core' ); ?></li>
+						</ol>
+					</div>
+					<p class="pg-continuity pg-continuity--trial" id="pgTrialContinuity" hidden></p>
+				</div>
+
+				<?php $render_authority( 'pg-authority--trial' ); ?>
+				<?php $render_review( $trial_rev, 'trial', 'pg-review-slot--trial' ); ?>
 			</div>
 		</section>
 	</div>
@@ -262,16 +297,4 @@ $render_review = static function ( ?array $review, string $slot ) use ( $render_
 		<p class="pg-bottom-action__micro" id="pgBottomMicro" hidden></p>
 		<div class="pg-bottom-action__cta" id="pgBottomCtaHost"></div>
 	</footer>
-
-	<aside class="pg-story" aria-hidden="true">
-		<div class="pg-story-mark" data-pg-story-mark>
-			<svg class="pg-story-mark__svg" viewBox="0 0 120 160" width="100" height="132" role="img" aria-label="">
-				<rect x="8" y="12" width="104" height="136" rx="12" fill="none" stroke="currentColor" stroke-width="3" opacity="0.35"/>
-				<path d="M28 48h64M28 72h48M28 96h56" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.45"/>
-				<circle cx="88" cy="118" r="18" fill="none" stroke="currentColor" stroke-width="3" opacity="0.5"/>
-				<path d="M80 118l6 6 12-14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
-			</svg>
-			<span class="pg-story-mark__caption"><?php esc_html_e( 'Proof Files continuity', 'jcp-core' ); ?></span>
-		</div>
-	</aside>
 </div>
