@@ -398,6 +398,7 @@ body.jcp-proof-gap .pg-bottom-action__micro {
   font-weight: 600;
   color: var(--pg-muted);
   line-height: 1.35;
+  white-space: pre-line;
 }
 
 body.jcp-proof-gap .pg-bottom-action__cta {
@@ -1247,9 +1248,99 @@ body.jcp-proof-gap .pg-reveal-flow__logo {
   vertical-align: middle;
 }
 
-body.jcp-proof-gap .pg-reveal-flow__note {
-  margin: 0.65rem 0 0;
+body.jcp-proof-gap .pg-reveal-flow__step .pg-reveal-flow__note {
+  margin: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--pg-ink, #0f172a);
+  line-height: 1.35;
+}
+
+body.jcp-proof-gap .pg-reveal-same {
+  margin: 0 0 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pg-muted);
+}
+
+body.jcp-proof-gap .pg-dest-caption {
+  display: grid;
+  gap: 0.2rem;
+  margin: 0.55rem 0 0.75rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 0.75rem;
+  background: var(--pg-band);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+body.jcp-proof-gap .pg-dest-caption__label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pg-accent);
+}
+
+body.jcp-proof-gap .pg-dest-caption__headline {
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--pg-ink, #0f172a);
+}
+
+body.jcp-proof-gap .pg-dest-caption__small {
   font-size: 0.82rem;
+  color: var(--pg-muted);
+  line-height: 1.4;
+}
+
+body.jcp-proof-gap .pg-result__bridge {
+  margin: 0.55rem 0 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: var(--pg-ink, #0f172a);
+}
+
+body.jcp-proof-gap .pg-result__flow {
+  margin: 0.55rem 0 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--pg-muted);
+}
+
+body.jcp-proof-gap .pg-result__channels {
+  margin: 0.45rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.3rem;
+}
+
+body.jcp-proof-gap .pg-result__channels li {
+  position: relative;
+  padding-left: 0.9rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--pg-ink, #0f172a);
+}
+
+body.jcp-proof-gap .pg-result__channels li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.45em;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 50%;
+  background: var(--pg-accent);
+}
+
+body.jcp-proof-gap .pg-result__without {
+  margin: 0.65rem 0 0;
+  font-size: 0.84rem;
+  font-weight: 700;
   color: var(--pg-muted);
 }
 

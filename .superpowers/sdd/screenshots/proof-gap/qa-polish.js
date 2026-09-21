@@ -129,7 +129,7 @@ async function waitBottom(page, part) {
     await page.waitForSelector('[data-pg-state="public_proof_percentage"]:not([hidden])');
     await shot(page, `${prefix}-07-proof.png`);
     await clickChoice(page, 'Nearly every job');
-    await waitBottom(page, 'See My Proof Gap');
+    await waitBottom(page, 'See What Customers See');
     await shot(page, `${prefix}-08-proof-insight.png`);
     await clickBottom(page);
 
@@ -220,7 +220,7 @@ async function waitBottom(page, part) {
     await waitBottom(page, 'Continue');
     await clickBottom(page);
     await clickChoice(page, 'Nearly every job');
-    await waitBottom(page, 'See My Proof Gap');
+    await waitBottom(page, 'See What Customers See');
     await clickBottom(page);
     await shot(page, 'd1366-09-result.png');
     await clickBottom(page);

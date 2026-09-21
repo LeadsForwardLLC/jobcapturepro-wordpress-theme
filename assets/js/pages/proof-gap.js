@@ -53,33 +53,64 @@
   var WORKFLOW_INSIGHTS = {
     housecall_pro: {
       variant: 'housecall_pro',
-      headline: 'Good news — your crew may not need another field workflow.',
-      body: 'With a supported connection, JobCapturePro can use job information and photos your team is already capturing in Housecall Pro.',
+      headline: 'Your crew may not need to change a thing.',
+      body: 'JobCapturePro can work with supported systems to turn completed-job photos into marketing without asking technicians to repeat the work in another app.',
+      body2: 'The goal: finish the job, take the photos, and let JobCapturePro handle what happens next.',
     },
     companycam: {
       variant: 'companycam',
-      headline: 'Good news — your crew may not need another photo workflow.',
-      body: 'With a supported connection, JobCapturePro can work with job photos your team is already capturing in CompanyCam.',
+      headline: 'Your crew may not need to change a thing.',
+      body: 'JobCapturePro can work with supported systems to turn completed-job photos into marketing without asking technicians to repeat the work in another app.',
+      body2: 'The goal: finish the job, take the photos, and let JobCapturePro handle what happens next.',
     },
     other_crm: {
       variant: 'other_crm',
-      headline: 'You may be able to keep that workflow.',
-      body: 'JobCapturePro works with supported systems so the goal is not another marketing task for your crew.',
+      headline: 'You may be able to keep the workflow your crew already uses.',
+      body: 'With supported systems, JobCapturePro can use the job photos your team is already capturing — so your technicians do not have to become marketers.',
+      body2: 'The goal: finish the job, take the photos, and let JobCapturePro handle what happens next.',
     },
     phones_camera_roll: {
       variant: 'phones_camera_roll',
-      headline: 'This is where a lot of proof gets stranded.',
-      body: 'The photos exist — but unless someone does something with them after the job, that finished work may never become public proof.',
+      headline: 'Your crew is already creating the raw material.',
+      body: 'Those job photos can become website content, Google updates, social posts, review opportunities, and more — instead of staying buried on a phone.',
     },
     group_text_shared_folder: {
       variant: 'group_text_shared_folder',
-      headline: 'The proof already exists.',
-      body: 'It’s just stored somewhere customers cannot automatically see it. Turning it into marketing becomes another manual task.',
+      headline: 'The finished work already exists.',
+      body: 'It is just stored somewhere customers cannot automatically see. Turning it into website, Google, social, and review activity becomes another manual task.',
     },
     scattered: {
       variant: 'scattered',
-      headline: 'That’s exactly the problem.',
-      body: 'When finished-job proof lives in several places, consistently turning every job into public marketing becomes another job of its own.',
+      headline: 'That is exactly the problem.',
+      body: 'When finished-job photos live in several places, consistently turning every job into website, Google, social, and review activity becomes another job of its own.',
+    },
+  };
+
+  var DEST_CAPTIONS = {
+    website: {
+      label: 'Website',
+      headline: 'Turn finished jobs into real project and service-area content.',
+      small: 'Real photos. Real work. Real locations.',
+    },
+    google: {
+      label: 'Google Business Profile',
+      headline: 'Keep your Google profile active with real completed jobs.',
+      small: 'Publish job-based updates when connected.',
+    },
+    social: {
+      label: 'Social',
+      headline: 'Turn the same job into a ready-to-publish social post.',
+      small: 'No sitting in the truck trying to write captions.',
+    },
+    reviews: {
+      label: 'Reviews',
+      headline: 'Turn a finished job into a review opportunity.',
+      small: 'Send a request or show the customer a QR code.',
+    },
+    directory: {
+      label: 'JobCapturePro Directory',
+      headline: 'Give every completed job another place to be discovered.',
+      small: 'Show recent work, services, and service-area activity.',
     },
   };
 
@@ -214,7 +245,7 @@
     if (id === 'welcome') {
       setBottomAction({
         id: 'pgWelcomeCta',
-        label: 'Find My Proof Gap →',
+        label: 'See How Much Work Goes Unseen →',
         micro: 'About 60 seconds · No phone required · No credit card',
         animate: false,
         onClick: function () {
@@ -290,7 +321,7 @@
         id: 'pgTrialCta',
         label: 'Start My Free 14-Day Trial →',
         href: '#',
-        micro: 'No credit card required.',
+        micro: 'Connect your workflow and put your next completed job to work.\nNo credit card required.',
         animate: false,
         onClick: function () {
           state.trial_cta_clicked = true;
@@ -717,17 +748,13 @@
     if (stateId === 'current_workflow' && !state.jobs_per_week_bucket) {
       showInsight('workflow', WORKFLOW_INSIGHTS[ans] || WORKFLOW_INSIGHTS.scattered, 'jobs_per_week', 'Continue →');
     } else if (stateId === 'jobs_per_week' && !state.public_proof_percentage) {
-      var highVol = ans === '21_35' || ans === '36_50' || ans === '50_plus';
       showInsight(
         'jobs',
         {
           headline: 'That’s roughly ' + formatAnnualRange() + ' completed jobs every year.',
-          body: highVol
-            ? 'Your team is already creating an enormous amount of real-world marketing material.'
-            : 'You probably don’t have a content-creation problem.',
-          body2: highVol
-            ? 'The question is what happens to it after the job.'
-            : 'Your company is already producing the raw material every week.',
+          body: 'You probably do not have a content problem.',
+          body2:
+            'Your company already creates hundreds of real job stories, photos, locations, and review opportunities every year.',
           extraHtml: typeof buildJobsStackHtml === 'function' ? buildJobsStackHtml() : '',
         },
         'public_proof_percentage',
@@ -742,33 +769,20 @@
         body2: '',
         extraHtml: typeof buildProofGridHtml === 'function' ? buildProofGridHtml(ans) : '',
       };
-      if (tier === 'low') {
-        insight.headline = 'That means a lot of work may disappear from public view.';
-        insight.body = 'Not because the work wasn’t done — because finished jobs weren’t turned into proof.';
-        if (state.unused_jobs_min != null) {
-          var rangeTxt =
-            state.unused_jobs_max == null
-              ? state.unused_jobs_min.toLocaleString() + '+'
-              : formatUnusedRange();
-          insight.body2 =
-            'Based on your answers: ~' + rangeTxt + ' completed jobs/year may not become public proof.';
-        }
-      } else if (tier === 'mid') {
-        insight.headline = 'You’re creating more proof than you’re putting to work.';
-        insight.body = 'Make the process consistent without adding another manual marketing task.';
-        if (state.unused_jobs_min != null && state.unused_jobs_max != null) {
-          insight.body2 =
-            'Based on your answers: ~' + formatUnusedRange() + ' completed jobs/year may not become public proof.';
-        }
+      if (tier === 'low' || tier === 'mid') {
+        insight.headline = 'A lot of completed work may be disappearing after the job is done.';
+        insight.body =
+          'Those jobs already happened. Your crew already took the photos. The missed opportunity is that many never become website content, Google updates, social posts, or review requests.';
       } else if (tier === 'high') {
         insight.headline = 'You’re already doing the hard part.';
-        insight.body = 'The opportunity is removing the manual work required to distribute proof.';
+        insight.body =
+          'The opportunity is removing the manual work required to turn each finished job into website, Google, social, and review activity.';
       } else {
         insight.headline = 'Not knowing is useful information too.';
         insight.body =
           'If it’s hard to tell what happens after the crew leaves, the process may not be repeatable yet.';
       }
-      showInsight('proof', insight, 'proof_gap_result', 'See My Proof Gap →');
+      showInsight('proof', insight, 'proof_gap_result', 'See What Customers See →');
     }
   }
 
@@ -830,7 +844,10 @@
   }
 
   function buildJobsStackHtml() {
-    var tradeLabel = trades[state.trade] || 'Job';
+    var tradeLabel =
+      state.trade === 'other' && state.other_trade_text
+        ? state.other_trade_text
+        : trades[state.trade] || 'Job';
     var annual = formatAnnualRange();
     var cells = '';
     for (var i = 0; i < 12; i++) {
@@ -840,13 +857,13 @@
       '<div class="pg-job-grid" aria-hidden="true">' +
       '<p class="pg-job-grid__focal"><strong>' +
       escapeHtml(annual) +
-      '</strong><span>completed jobs</span></p>' +
+      ' / year</strong><span>completed jobs your marketing could use</span></p>' +
       '<div class="pg-job-grid__board" style="grid-template-columns:repeat(12,minmax(0,1fr));">' +
       cells +
       '</div>' +
       '<p class="pg-job-grid__caption"><span>' +
       escapeHtml(tradeLabel) +
-      ' \u00b7 raw proof your crew already produces</span></p></div>'
+      ' \u00b7 real work your crew is already documenting</span></p></div>'
     );
   }
 
@@ -862,7 +879,13 @@
     for (var i = 0; i < 10; i++) {
       cells += '<span class="pg-proof-grid__cell' + (i < lit ? ' is-lit' : '') + '"></span>';
     }
-    return '<div class="pg-proof-grid" aria-hidden="true">' + cells + '<p class="pg-proof-grid__cap">Illustrative — ' + lit + ' of 10 jobs visible</p></div>';
+    return (
+      '<div class="pg-proof-grid" aria-hidden="true">' +
+      cells +
+      '<p class="pg-proof-grid__cap">Illustrative \u2014 ' +
+      lit +
+      ' of 10 completed jobs being reused</p></div>'
+    );
   }
 
   function renderGapViz() {
@@ -878,12 +901,12 @@
     var gapMid = 100 - pubMid;
     el.innerHTML =
       '<div class="pg-result-bar">' +
-      '<div class="pg-result-bar__track" role="img" aria-label="Public proof versus invisible">' +
+      '<div class="pg-result-bar__track" role="img" aria-label="Jobs reused in marketing versus unused">' +
       '<span class="pg-result-bar__seg--visible" style="width:' + pubMid + '%"></span>' +
       '<span class="pg-result-bar__seg--gap" style="width:' + gapMid + '%"></span></div>' +
       '<div class="pg-result-bar__legend">' +
-      '<span><i class="pg-result-bar__dot pg-result-bar__dot--visible"></i> Visible proof ~' + pubMid + '%</span>' +
-      '<span><i class="pg-result-bar__dot pg-result-bar__dot--gap"></i> Potentially invisible ~' + gapMid + '%</span>' +
+      '<span><i class="pg-result-bar__dot pg-result-bar__dot--visible"></i> Reused in marketing ~' + pubMid + '%</span>' +
+      '<span><i class="pg-result-bar__dot pg-result-bar__dot--gap"></i> Potentially unused ~' + gapMid + '%</span>' +
       '</div></div>';
   }
 
@@ -1039,6 +1062,7 @@
     var item = proofPct[key];
     if (!item) return key || '—';
     if (typeof item === 'object') {
+      if (item.band && key !== 'unknown') return item.band + ' reaching customers';
       if (item.title && item.band) return item.title + ' · ' + item.band;
       return item.label || item.title || key;
     }
@@ -1232,12 +1256,9 @@
           'jobs',
           {
             headline: 'That’s roughly ' + formatAnnualRange() + ' completed jobs every year.',
-            body: highVol
-              ? 'Your team is already creating an enormous amount of real-world marketing material.'
-              : 'You probably don’t have a content-creation problem.',
-            body2: highVol
-              ? 'The question is what happens to it after the job.'
-              : 'Your company already produces the raw material every week.',
+            body: 'You probably do not have a content problem.',
+            body2:
+              'Your company already creates hundreds of real job stories, photos, locations, and review opportunities every year.',
             extraHtml: buildJobsStackHtml(),
           },
           'public_proof_percentage',
@@ -1268,34 +1289,22 @@
       });
 
       var insight = { headline: '', body: '', body2: '', extraHtml: buildProofGridHtml() };
-      if (tier === 'low') {
-        insight.headline = 'That means a lot of work may disappear from public view.';
-        insight.body = 'Not because the work wasn’t done — because finished jobs weren’t turned into proof.';
-        if (state.unused_jobs_min != null) {
-          var rangeTxt =
-            state.unused_jobs_max == null
-              ? state.unused_jobs_min.toLocaleString() + '+'
-              : formatUnusedRange();
-          insight.body2 =
-            'Based on your answers: ~' + rangeTxt + ' completed jobs/year may not become public proof.';
-        }
-      } else if (tier === 'mid') {
-        insight.headline = 'You’re creating more proof than you’re putting to work.';
-        insight.body = 'Make the process consistent without adding another manual marketing task.';
-        if (state.unused_jobs_min != null && state.unused_jobs_max != null) {
-          insight.body2 =
-            'Based on your answers: ~' + formatUnusedRange() + ' completed jobs/year may not become public proof.';
-        }
+      if (tier === 'low' || tier === 'mid') {
+        insight.headline = 'A lot of completed work may be disappearing after the job is done.';
+        insight.body = 'Those jobs already happened. Your crew already took the photos.';
+        insight.body2 =
+          'The missed opportunity is that many never become: Website content · Google updates · Social posts · Review requests';
       } else if (tier === 'high') {
         insight.headline = 'You’re already doing the hard part.';
-        insight.body = 'The opportunity is removing the manual work required to distribute proof.';
+        insight.body =
+          'The opportunity is removing the manual work required to turn each finished job into website, Google, social, and review activity.';
       } else {
         insight.headline = 'Not knowing is useful information too.';
         insight.body =
           'If it’s hard to tell what happens after the crew leaves, the process may not be repeatable yet.';
       }
       collapseChoiceList('public_proof_percentage', summaryValueText('public_proof_percentage', key), key, function () {
-        showInsight('proof', insight, 'proof_gap_result', 'See My Proof Gap →');
+        showInsight('proof', insight, 'proof_gap_result', 'See What Customers See →');
       });
     }
   }
@@ -1324,26 +1333,26 @@
     var tier = proofTier(state.public_proof_percentage);
 
     if (title) {
-      if (tier === 'low') {
-        title.innerHTML = 'You don’t have a content problem.<br>You have a proof-distribution problem.';
-      } else if (tier === 'mid') {
-        title.textContent = 'You’re creating more proof than you’re putting to work.';
-      } else if (tier === 'high') {
-        title.innerHTML = 'You’re doing the hard part already.<br>Now remove the manual part.';
+      if (tier === 'high') {
+        title.textContent = 'You’re already reusing a lot of your completed work.';
+      } else if (tier === 'unknown') {
+        title.textContent = 'Your company finishes real jobs every week — the missing piece is knowing what customers actually see.';
       } else {
-        title.innerHTML = 'Your company is creating proof every week.<br>The missing piece is knowing what happens to it next.';
+        title.textContent = 'Hundreds of your completed jobs may never make it into your marketing.';
       }
     }
     if (completed) completed.textContent = formatAnnualRange();
     if (pub) pub.textContent = proofBandLabel(state.public_proof_percentage);
     computeUnusedRange();
     if (invWrap && inv) {
-      if (state.unused_jobs_min != null && tier !== 'unknown') {
+      if (state.unused_jobs_min != null && tier !== 'unknown' && tier !== 'high') {
         invWrap.hidden = false;
         inv.textContent =
           state.unused_jobs_max == null
-            ? state.unused_jobs_min.toLocaleString() + '+ / year'
-            : formatUnusedRange() + ' / year';
+            ? state.unused_jobs_min.toLocaleString() + '+ jobs / year'
+            : formatUnusedRange() + ' jobs / year';
+      } else if (tier === 'high') {
+        invWrap.hidden = true;
       } else {
         invWrap.hidden = true;
       }
@@ -1352,11 +1361,25 @@
     var support = document.getElementById('pgResultSupport');
     if (support) {
       if (tier === 'high') {
-        support.textContent =
-          'You’re already putting finished jobs in front of customers. JobCapturePro can help remove the manual steps between capture and publish.';
+        support.innerHTML =
+          '<p class="pg-result__bridge">JobCapturePro can help remove the manual steps between:</p>' +
+          '<p class="pg-result__flow" aria-hidden="true"><strong>Job finished</strong> → <strong>Photos captured</strong> → <strong>Website / Google / Social / Reviews / Directory</strong></p>';
       } else if (tier === 'unknown') {
-        support.textContent =
-          'When visibility is unclear, proof often stalls after the job. Making the path repeatable is the leverage point.';
+        support.innerHTML =
+          '<p class="pg-result__bridge">Your crew already did the expensive part: the actual work.</p>' +
+          '<p class="pg-result__bridge">JobCapturePro helps turn completed jobs into website content, Google Business Profile updates, social posts, review opportunities, and JobCapturePro Directory activity — without adding another marketing task for your crew.</p>';
+      } else {
+        support.innerHTML =
+          '<p class="pg-result__bridge">Your crew already did the expensive part: the actual work.</p>' +
+          '<p class="pg-result__bridge">JobCapturePro helps turn those completed jobs into:</p>' +
+          '<ul class="pg-result__channels">' +
+          '<li>Website content</li>' +
+          '<li>Google Business Profile updates</li>' +
+          '<li>Social posts</li>' +
+          '<li>Review opportunities</li>' +
+          '<li>JobCapturePro Directory activity</li>' +
+          '</ul>' +
+          '<p class="pg-result__without">Without adding another marketing task for your crew.</p>';
       }
     }
   }
@@ -1562,6 +1585,23 @@
       '<div class="ps-mock-dir__meta"><span>Service area activity</span></div></article></div>';
   }
 
+  function setDestCaption(dest) {
+    var el = document.getElementById('pgDestCaption');
+    if (!el) return;
+    var cap = DEST_CAPTIONS[dest] || DEST_CAPTIONS.website;
+    el.hidden = false;
+    el.innerHTML =
+      '<span class="pg-dest-caption__label">' +
+      escapeHtml(cap.label) +
+      '</span>' +
+      '<strong class="pg-dest-caption__headline">' +
+      escapeHtml(cap.headline) +
+      '</strong>' +
+      '<span class="pg-dest-caption__small">' +
+      escapeHtml(cap.small) +
+      '</span>';
+  }
+
   function setDestTab(dest, options) {
     options = options || {};
     if (DEST_TABS.indexOf(dest) === -1) dest = 'website';
@@ -1576,6 +1616,7 @@
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var apply = function () {
       renderDestPanel(dest);
+      setDestCaption(dest);
       if (panel) panel.classList.remove('is-switching');
     };
     if (panel && options.animate && !reduce) {
@@ -1738,21 +1779,31 @@
       ? escapeHtml(state.other_workflow_text)
       : escapeHtml(workflows[state.current_workflow] || state.current_workflow || '\u2014');
     var proofChipLabel = proofBandLabel(state.public_proof_percentage);
+    var reachingLabel =
+      state.public_proof_percentage === 'unknown' || !proofChipLabel
+        ? 'Not sure how often jobs reach customers'
+        : proofChipLabel + ' reaching customers';
 
     list.innerHTML =
       '<li>' + tradeChip + '</li>' +
       '<li>' + escapeHtml((jobsBuckets[state.jobs_per_week_bucket] || {}).weekly_label || '\u2014') + ' jobs/week</li>' +
       '<li>' + workflowChip + '</li>' +
-      '<li>Public proof: ' + escapeHtml(proofChipLabel) + '</li>';
+      '<li>' + escapeHtml(reachingLabel) + '</li>';
 
     var cont = document.getElementById('pgTrialContinuity');
     if (cont) {
       if (state.current_workflow === 'housecall_pro' || state.current_workflow === 'companycam') {
+        var systemName =
+          state.current_workflow === 'housecall_pro' ? 'Housecall Pro' : 'CompanyCam';
         cont.hidden = false;
-        cont.textContent = 'No new crew photo workflow required when using the supported connection.';
+        cont.innerHTML =
+          'Your crew may be able to keep using <strong>' +
+          escapeHtml(systemName) +
+          '</strong>. JobCapturePro can handle the marketing workflow from there.';
       } else {
-        cont.hidden = true;
-        cont.textContent = '';
+        cont.hidden = false;
+        cont.textContent =
+          'Your crew can capture completed jobs in JobCapturePro or through supported connected systems.';
       }
     }
     updateTrialHref();
