@@ -543,10 +543,6 @@ body.jcp-proof-gap .pg-choices--proof .pg-choice {
   padding: 0.5rem 0.6rem;
 }
 
-body.jcp-proof-gap .pg-choices--proof .pg-choice--span {
-  grid-column: 1 / -1;
-}
-
 body.jcp-proof-gap .pg-choices--compact {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
