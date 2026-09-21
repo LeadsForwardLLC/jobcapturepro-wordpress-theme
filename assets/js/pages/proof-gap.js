@@ -908,8 +908,10 @@
       cells += '<span class="pg-proof-grid__cell' + (i < lit ? ' is-lit' : '') + '"></span>';
     }
     return (
+      '<div class="pg-proof-grid-wrap">' +
       '<div class="pg-proof-grid" aria-hidden="true">' +
       cells +
+      '</div>' +
       '<p class="pg-proof-grid__cap">Illustrative — <strong>' +
       lit +
       ' being used</strong> · ' +

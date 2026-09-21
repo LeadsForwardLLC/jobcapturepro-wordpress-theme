@@ -1866,9 +1866,16 @@ body.jcp-proof-gap .pg-job-grid__caption strong {
   color: var(--pg-ink);
 }
 
+body.jcp-proof-gap .pg-proof-grid-wrap {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.15rem;
+  min-width: 0;
+}
+
 body.jcp-proof-gap .pg-proof-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 2.35rem));
   gap: 0.35rem;
   max-width: 14rem;
 }
@@ -1886,13 +1893,17 @@ body.jcp-proof-gap .pg-proof-grid__cell.is-lit {
 }
 
 body.jcp-proof-gap .pg-proof-grid__cap {
-  grid-column: 1 / -1;
-  margin: 0.25rem 0 0;
-  font-size: 0.72rem;
+  margin: 0;
+  max-width: 100%;
+  font-size: 0.78rem;
+  line-height: 1.4;
   color: var(--pg-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: none;
 }
 
 body.jcp-proof-gap .pg-result__hero {
@@ -2572,7 +2583,7 @@ body.jcp-proof-gap .pg-summary__item--full .pg-summary__val {
   }
 
   body.jcp-proof-gap .pg-proof-grid__cap {
-    font-size: 0.64rem;
+    font-size: 0.74rem;
     letter-spacing: -0.01em;
   }
 
