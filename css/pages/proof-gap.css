@@ -257,6 +257,11 @@ body.jcp-proof-gap.pg-has-bottom-action .pg-stage {
   padding-bottom: max(1.5rem, calc(var(--pg-bottom-pad, 88px) * 0.2 + 1rem));
 }
 
+body.jcp-proof-gap.pg-has-bottom-action .pg-state--reveal .pg-state__inner--wide {
+  /* Extra scroll room under reveal content so slides + testimonial clear the CTA */
+  padding-bottom: calc(var(--pg-bottom-pad, 96px) + 1.5rem);
+}
+
 body.jcp-proof-gap .pg-state {
   animation: pg-in 0.24s var(--pg-ease);
   flex: 1 1 auto;
@@ -305,27 +310,28 @@ body.jcp-proof-gap .proof-gap-insight-card.is-visible {
 body.jcp-proof-gap .pg-state--reveal .pg-state__inner--wide {
   max-width: 38rem;
   min-height: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  display: block;
+  padding-bottom: 1.25rem;
 }
 
 body.jcp-proof-gap .pg-state--reveal .pg-dest-tabs {
-  flex-shrink: 0;
+  margin-top: 0.25rem;
 }
 
 body.jcp-proof-gap .pg-state--reveal .pg-dest-panel {
-  flex: 0 0 auto;
-  height: 15.5rem;
-  max-height: 15.5rem;
-  min-height: 15.5rem;
-  overflow: hidden;
+  flex: none;
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
+  margin-top: 0.75rem;
+  margin-bottom: 0.35rem;
 }
 
 body.jcp-proof-gap .pg-state--reveal .pg-dest-mock {
   height: auto;
-  max-height: 100%;
-  overflow: hidden;
+  max-height: none;
+  overflow: visible;
 }
 
 body.jcp-proof-gap .pg-state--reveal .pg-benefit-line,
@@ -333,8 +339,31 @@ body.jcp-proof-gap .pg-state--reveal .pg-payoff-line,
 body.jcp-proof-gap .pg-state--reveal .pg-review-slot--reveal {
   position: relative;
   z-index: 1;
-  flex-shrink: 0;
-  background: #fff;
+  background: transparent;
+}
+
+body.jcp-proof-gap .pg-state--reveal .pg-payoff-line {
+  margin-top: 1rem;
+}
+
+body.jcp-proof-gap .pg-state--reveal .pg-benefit-line {
+  margin-top: 0.35rem;
+  margin-bottom: 0.85rem;
+}
+
+body.jcp-proof-gap .pg-state--reveal .pg-review-slot--reveal {
+  margin-top: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+body.jcp-proof-gap .pg-state--reveal .pg-reveal-kicker {
+  margin-top: 0.85rem;
+  margin-bottom: 0.55rem;
+}
+
+body.jcp-proof-gap .pg-state--reveal .pg-job-card--compact {
+  margin-top: 0.65rem;
+  margin-bottom: 0.15rem;
 }
 
 /* Bottom action rail — native app CTA */
@@ -1878,31 +1907,32 @@ body.jcp-proof-gap .pg-dest-tab.is-active {
 }
 
 body.jcp-proof-gap .pg-dest-panel {
-  margin-top: 0.55rem;
-  height: 15.5rem; /* ~248px — leave room for payoff above CTA */
-  max-height: 15.5rem;
-  overflow: hidden;
+  margin-top: 0.75rem;
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
   border-radius: 0.85rem;
 }
 
 body.jcp-proof-gap .pg-dest-panel > .ps-mock {
-  height: 100%;
-  max-height: 100%;
-  overflow: hidden;
+  height: auto;
+  max-height: none;
+  overflow: visible;
   box-sizing: border-box;
 }
 
 @media (min-width: 768px) {
   body.jcp-proof-gap .pg-dest-panel {
-    height: 20rem;
-    max-height: 20rem;
+    height: auto;
+    max-height: none;
   }
 }
 
 @media (min-width: 1100px) {
   body.jcp-proof-gap .pg-dest-panel {
-    height: 22rem;
-    max-height: 22rem;
+    height: auto;
+    max-height: none;
   }
 }
 
@@ -2357,11 +2387,11 @@ body.jcp-proof-gap .pg-summary__item--full .pg-summary__val {
   }
 
   body.jcp-proof-gap .pg-dest-panel {
-    max-height: 8.75rem;
+    max-height: none;
     min-height: 0;
-    overflow: hidden;
-    margin-top: 0.25rem;
-    margin-bottom: 0.25rem;
+    overflow: visible;
+    margin-top: 0.65rem;
+    margin-bottom: 0.35rem;
   }
 
   body.jcp-proof-gap .pg-dest-mock {
@@ -2474,9 +2504,10 @@ body.jcp-proof-gap .pg-summary__item--full .pg-summary__val {
 
   body.jcp-proof-gap .pg-dest-panel,
   body.jcp-proof-gap .pg-state--reveal .pg-dest-panel {
-    height: 15.5rem;
-    max-height: 15.5rem;
-    min-height: 15.5rem;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    overflow: visible;
   }
 
   body.jcp-proof-gap .pg-state--reveal .pg-chips {

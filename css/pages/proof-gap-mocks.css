@@ -399,31 +399,43 @@ body.jcp-proof-gap .ps-mock-review__time {
 body.jcp-proof-gap .ps-mock-qr--compact {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.55rem 0.65rem;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+  padding: 0.7rem 0.75rem;
   border-radius: 0.75rem;
   background: #f8fafc;
   border: 1px solid rgba(15, 23, 42, 0.08);
 }
 
 body.jcp-proof-gap .ps-mock-qr--compact img {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 4rem;
+  height: 4rem;
   object-fit: contain;
   flex-shrink: 0;
 }
 
 body.jcp-proof-gap .ps-mock-qr--compact strong {
   display: block;
-  font-size: var(--pg-fs-secondary, 1rem);
+  font-size: 0.9rem;
   font-weight: 800;
 }
 
 body.jcp-proof-gap .ps-mock-qr--compact span {
   display: block;
-  margin-top: 0.1rem;
-  font-size: var(--pg-fs-tertiary, 0.85rem);
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
   color: var(--pg-muted, #64748b);
+}
+
+body.jcp-proof-gap .ps-mock--review {
+  display: grid;
+  gap: 0.75rem;
+}
+
+body.jcp-proof-gap .ps-mock-review__thread {
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
 }
 
 body.jcp-proof-gap .ps-mock-map--neutral {
@@ -460,22 +472,20 @@ body.jcp-proof-gap .ps-mock-map--neutral .ps-mock-map__label {
   font-weight: 750;
 }
 
-/* Website destination: real map + pins, fit inside fixed preview frame */
+/* Website destination: real map + pins, natural height (stage scrolls) */
 body.jcp-proof-gap .ps-mock--browser-fit {
-  height: 100%;
+  height: auto;
   display: flex;
   flex-direction: column;
   min-height: 0;
 }
 
 body.jcp-proof-gap .ps-mock-browser__body--fit {
-  flex: 1 1 auto;
-  min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  padding: 0.55rem 0.65rem 0.65rem !important;
-  overflow: hidden;
+  gap: 0.65rem;
+  padding: 0.75rem 0.8rem 0.85rem !important;
+  overflow: visible;
 }
 
 body.jcp-proof-gap .ps-mock-browser__body--fit .ps-mock-browser__topline {
@@ -487,8 +497,9 @@ body.jcp-proof-gap .ps-mock-browser__body--fit .ps-mock-browser__topline {
 
 body.jcp-proof-gap .ps-mock-map--pins {
   position: relative;
-  flex: 1 1 auto;
-  min-height: 6.5rem;
+  flex: none;
+  height: 9.5rem;
+  min-height: 9.5rem;
   margin: 0;
   border-radius: 0.7rem;
   overflow: hidden;
@@ -940,30 +951,30 @@ body.jcp-proof-gap .pg-answer-summary__value {
   font-size: 0.88rem;
 }
 
-/* Intrinsic destination panel — fixed in flow; never shrink-overlap siblings */
+/* Destination panel — natural height; stage scrolls (no clipped slides) */
 body.jcp-proof-gap .pg-dest-panel {
   min-height: 0 !important;
-  max-height: min(18rem, 42vh) !important;
+  max-height: none !important;
   height: auto !important;
-  overflow: hidden !important;
-  flex: 0 0 auto !important;
+  overflow: visible !important;
+  flex: none !important;
   transition: opacity 180ms ease;
 }
 body.jcp-proof-gap .pg-state--reveal .pg-dest-panel {
-  flex: 0 0 auto !important;
-  overflow: hidden !important;
+  flex: none !important;
+  overflow: visible !important;
 }
 body.jcp-proof-gap .pg-state--reveal .pg-dest-mock,
 body.jcp-proof-gap .pg-dest-panel .ps-mock {
   height: auto !important;
-  max-height: 100% !important;
-  overflow: hidden;
+  max-height: none !important;
+  overflow: visible;
 }
 body.jcp-proof-gap .pg-dest-panel .ps-mock {
   margin: 0;
-  padding: 0.7rem;
-  gap: 0.55rem;
-  box-shadow: none;
+  padding: 0.85rem;
+  gap: 0.65rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
   border: 1px solid rgba(15, 23, 42, 0.1);
   border-radius: 0.85rem;
   background: #fff;

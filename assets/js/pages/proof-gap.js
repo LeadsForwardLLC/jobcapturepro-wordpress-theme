@@ -1527,12 +1527,12 @@
         '<div class="ps-mock-sms__bubble">Thanks again for choosing ' +
         bizEsc +
         '. If we earned it, would you mind leaving a quick review?</div>' +
-        '<div class="ps-mock-sms__bubble is-link">review.jobcapturepro.com/\u2026</div>' +
+        '<div class="ps-mock-sms__bubble is-link">review.jobcapturepro.com/demo</div>' +
         '<p class="ps-mock-review__time">Delivered \u00b7 Just now</p></div></div>' +
         (qrUrl
           ? '<div class="ps-mock-qr ps-mock-qr--compact"><img src="' +
             escapeHtml(qrUrl) +
-            '" alt="" width="56" height="56" loading="lazy" decoding="async" />' +
+            '" alt="" width="64" height="64" loading="lazy" decoding="async" />' +
             '<div><strong>Scan on-site</strong><span>Show this QR at the job</span></div></div>'
           : '') +
         '</div>';
