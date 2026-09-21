@@ -2153,12 +2153,16 @@ body.jcp-proof-gap .pg-dest-mock__media {
 }
 
 body.jcp-proof-gap .pg-dest-mark {
-  display: inline-grid;
-  place-items: center;
-  width: 1.65rem;
-  height: 1.65rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
   border-radius: 999px;
-  background: var(--pg-accent);
+  background: #ff5036;
+  color: #fff;
+  font-weight: 900;
+  line-height: 1;
 }
 
 body.jcp-proof-gap .pg-dest-mock--browser {
@@ -2912,23 +2916,29 @@ body.jcp-proof-gap .pg-result-bar__dot--gap {
 }
 
 /* ─── Final conversion pass additions ─── */
-body.jcp-proof-gap .pg-dest-mark {
+body.jcp-proof-gap .pg-dest-mark,
+body.jcp-proof-gap .ps-mock__logo.pg-dest-mark {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
   line-height: 1;
-  font-weight: 800;
-  color: #fff;
-  font-size: 0.85rem;
+  font-weight: 900;
+  color: #fff !important;
+  background: #ff5036 !important;
+  border-radius: 999px !important;
+  font-size: 0.95rem;
 }
 
 body.jcp-proof-gap .ps-mock-dir__avatar {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
-  font-weight: 800;
+  font-size: 1.05rem;
+  font-weight: 900;
   line-height: 1;
+  color: #fff !important;
+  background: #ff5036 !important;
+  border-radius: 999px !important;
 }
 
 body.jcp-proof-gap .pg-welcome-product--compact .ps-mock__media {

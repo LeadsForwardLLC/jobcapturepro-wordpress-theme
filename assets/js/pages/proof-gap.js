@@ -820,14 +820,13 @@
 
   function getJobPhotoUrl() {
     var asset = getTradeAsset(state.trade);
-    if (asset && asset.photo && !asset.neutral) return asset.photo;
-    // Never fall back to a trade-mismatched photo (e.g. plumbing water heater for electrical).
-    return '';
+    if (asset && asset.photo) return asset.photo;
+    var fallback = tradeAssets.other || tradeAssets.plumbing || tradeAssets.hvac;
+    return (fallback && fallback.photo) || '';
   }
 
   function usesNeutralJobVisual() {
-    var asset = getTradeAsset(state.trade);
-    return !asset || asset.neutral || !asset.photo;
+    return false;
   }
 
   function workflowIconSvg(key) {
@@ -1419,6 +1418,33 @@
     );
   }
 
+  function jobPhotoBlock(extraClass) {
+    var photoUrl = getJobPhotoUrl();
+    var cls = 'ps-mock__photo' + (extraClass ? ' ' + extraClass : '');
+    if (photoUrl !== '') {
+      return (
+        '<img class="' +
+        cls +
+        '" src="' +
+        escapeHtml(photoUrl) +
+        '" alt="" width="640" height="400" loading="lazy" decoding="async" />'
+      );
+    }
+    return '<div class="' + cls + ' ps-mock__photo--fallback" aria-hidden="true"><span>Completed job</span></div>';
+  }
+
+  function jobThumbBlock() {
+    var photoUrl = getJobPhotoUrl();
+    if (photoUrl !== '') {
+      return (
+        '<img class="ps-mock__thumb ps-mock__photo" src="' +
+        escapeHtml(photoUrl) +
+        '" alt="" width="160" height="120" loading="lazy" decoding="async" />'
+      );
+    }
+    return '<div class="ps-mock__thumb ps-mock__thumb--fallback" aria-hidden="true"></div>';
+  }
+
   function revealJobContext() {
     var asset = getTradeAsset(state.trade);
     var title = (asset && asset.title) || JOB_EXAMPLES[state.trade] || 'Finished field job';
@@ -1432,7 +1458,6 @@
     var panel = document.getElementById('pgDestPanel');
     if (!panel) return;
     var job = revealJobContext();
-    var photoUrl = getJobPhotoUrl();
     var mapUrl = panel.getAttribute('data-map') || '';
     var qrUrl = panel.getAttribute('data-qr') || '';
     var tradeLabel = trades[state.trade] || 'Trade';
@@ -1440,17 +1465,10 @@
     var biz = tradeLabel + ' Co';
     var title = escapeHtml(job.title);
     var city = escapeHtml(job.city);
-    var desc = escapeHtml(job.desc);
     var bizEsc = escapeHtml(biz);
     var mark = brandMark(tradeLabel);
-    var photo =
-      photoUrl !== ''
-        ? '<img class="ps-mock__photo" src="' + escapeHtml(photoUrl) + '" alt="" width="640" height="400" loading="lazy" decoding="async" />'
-        : '<div class="ps-mock__photo ps-mock__photo--fallback" aria-hidden="true"><span>Completed job</span></div>';
-    var thumb =
-      photoUrl !== ''
-        ? '<img class="ps-mock__thumb ps-mock__photo" src="' + escapeHtml(photoUrl) + '" alt="" width="160" height="120" loading="lazy" decoding="async" />'
-        : '<div class="ps-mock__thumb ps-mock__thumb--fallback" aria-hidden="true"></div>';
+    var photo = jobPhotoBlock();
+    var thumb = jobThumbBlock();
 
     if (dest === 'website') {
       var mapBlock = mapUrl
@@ -1513,7 +1531,6 @@
         '<p class="ps-mock-social__copy">' +
         title +
         ' completed today in your service area.</p>' +
-        '<p class="ps-mock-social__copy ps-mock-social__copy--sec">Another real job documented from the field.</p>' +
         '<div class="ps-mock__media">' +
         photo +
         '</div>' +
@@ -1523,7 +1540,11 @@
     if (dest === 'reviews') {
       panel.innerHTML =
         '<div class="ps-mock ps-mock--review">' +
-        '<p class="ps-mock-sms__label">Review request</p>' +
+        '<div class="ps-mock-review__job">' +
+        thumb +
+        '<div><strong>' +
+        title +
+        '</strong><span>Job just finished · Ask for the review now</span></div></div>' +
         '<div class="ps-mock-review__phone">' +
         '<div class="ps-mock-review__phone-bar">' +
         '<span class="ps-mock-review__app">Messages</span>' +
@@ -1544,28 +1565,35 @@
         '</div>';
       return;
     }
-    var tradeInitial = (tradeLabel.charAt(0) || 'J').toUpperCase();
+
     panel.innerHTML =
       '<div class="ps-mock ps-mock--directory">' +
       '<p class="ps-mock-dir__label">JobCapturePro Directory</p>' +
-      '<article class="ps-mock-dir__card">' +
+      '<article class="ps-mock-dir__card ps-mock-dir__card--listing">' +
+      '<span class="ps-mock-dir__badge">Active</span>' +
       '<div class="ps-mock-dir__head">' +
-      '<div class="ps-mock-dir__avatar" aria-hidden="true">' +
-      escapeHtml(tradeInitial) +
-      '</div>' +
-      '<div><strong>' +
+      mark +
+      '<div class="ps-mock-dir__identity">' +
+      '<strong class="ps-mock-dir__name">' +
       bizEsc +
-      '</strong><span>' +
+      '</strong>' +
+      '<span class="ps-mock-dir__trade">' +
       escapeHtml(tradeLabel) +
-      ' \u00b7 ' +
+      '</span>' +
+      '</div></div>' +
+      '<div class="ps-mock-dir__location"><span>' +
       city +
-      '</span></div></div>' +
+      '</span></div>' +
+      '<div class="ps-mock-dir__meta-row">' +
+      '<span>Jobs documented</span><span class="ps-mock-dir__dot" aria-hidden="true">·</span><span>Active today</span>' +
+      '</div>' +
       '<div class="ps-mock-dir__latest">' +
       thumb +
       '<div><em>Latest completed job</em><strong>' +
       title +
-      '</strong><span>Documented on site \u00b7 Just published</span></div></div>' +
-      '<div class="ps-mock-dir__meta"><span>Service area activity</span></div></article></div>';
+      '</strong><span>Documented on site · Just published</span></div></div>' +
+      '<div class="ps-mock-dir__footer"><span class="ps-mock-dir__cta">View activity</span></div>' +
+      '</article></div>';
   }
 
   function setDestCaption(dest) {

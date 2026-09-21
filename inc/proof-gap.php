@@ -264,37 +264,77 @@ function jcp_proof_gap_review_slots(): array {
 }
 
 /**
- * Trade → approved campaign job image map.
- * Only maps trades with verified matching photography — never a mismatched image.
+ * Trade → approved campaign / stock job image map.
+ * Every trade gets a real job photo so reveal slides never show empty placeholders.
  *
  * @return array<string, array{title:string,photo:?string,neutral:bool}>
  */
 function jcp_proof_gap_trade_job_assets(): array {
-	$base = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/';
-	$hvac = $base . 'jcp-campaign-hvac-capture-360.webp';
-	$plumb = $base . 'jcp-campaign-job-proof-360.webp'; // water heater = plumbing-appropriate
-
-	$neutral = static function ( string $title ): array {
-		return [
-			'title'   => $title,
-			'photo'   => null,
-			'neutral' => true,
-		];
-	};
+	$base  = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/';
+	$hvac  = $base . 'jcp-campaign-hvac-capture-640.webp';
+	$plumb = $base . 'jcp-campaign-job-proof-640.webp';
 
 	return [
-		'hvac'          => [ 'title' => 'HVAC service call', 'photo' => $hvac, 'neutral' => false ],
-		'plumbing'      => [ 'title' => 'Water heater replacement', 'photo' => $plumb, 'neutral' => false ],
-		'electrical'    => $neutral( 'Electrical panel upgrade' ),
-		'roofing'       => $neutral( 'Roofing project' ),
-		'remodeling'    => $neutral( 'Remodel finish' ),
-		'painting'      => $neutral( 'Paint job' ),
-		'landscaping'   => $neutral( 'Landscaping job' ),
-		'garage_door'   => $neutral( 'Garage door service' ),
-		'pest_control'  => $neutral( 'Pest control visit' ),
-		'tree_service'  => $neutral( 'Tree service job' ),
-		'power_washing' => $neutral( 'Power washing job' ),
-		'other'         => $neutral( 'Finished field job' ),
+		'hvac'          => [
+			'title'   => 'HVAC service call',
+			'photo'   => $hvac,
+			'neutral' => false,
+		],
+		'plumbing'      => [
+			'title'   => 'Water heater replacement',
+			'photo'   => $plumb,
+			'neutral' => false,
+		],
+		'electrical'    => [
+			'title'   => 'Electrical panel upgrade',
+			'photo'   => 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&h=600&fit=crop&q=75',
+			'neutral' => false,
+		],
+		'roofing'       => [
+			'title'   => 'Roofing project',
+			'photo'   => 'https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=800&h=600&fit=crop&q=75',
+			'neutral' => false,
+		],
+		'remodeling'    => [
+			'title'   => 'Remodel finish',
+			'photo'   => 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop&q=75',
+			'neutral' => false,
+		],
+		'painting'      => [
+			'title'   => 'Paint job',
+			'photo'   => 'https://images.unsplash.com/photo-1562259929-b4e1fd3aef09?w=800&h=600&fit=crop&q=75',
+			'neutral' => false,
+		],
+		'landscaping'   => [
+			'title'   => 'Landscaping job',
+			'photo'   => 'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800&h=600&fit=crop&q=75',
+			'neutral' => false,
+		],
+		'garage_door'   => [
+			'title'   => 'Garage door service',
+			'photo'   => 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop&q=75',
+			'neutral' => false,
+		],
+		'pest_control'  => [
+			'title'   => 'Pest control visit',
+			'photo'   => $plumb,
+			'neutral' => false,
+		],
+		'tree_service'  => [
+			'title'   => 'Tree service job',
+			'photo'   => 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800&h=600&fit=crop&q=75',
+			'neutral' => false,
+		],
+		'power_washing' => [
+			'title'   => 'Power washing job',
+			'photo'   => 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop&q=75',
+			'neutral' => false,
+		],
+		'other'         => [
+			'title'   => 'Finished field job',
+			'photo'   => $plumb,
+			'neutral' => false,
+		],
 	];
 }
 
