@@ -1264,6 +1264,24 @@ body.jcp-proof-gap .proof-gap-insight-card__text {
   word-break: normal;
 }
 
+body.jcp-proof-gap .proof-gap-insight-card__flow {
+  margin: 0.15rem 0 0.35rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: var(--pg-radius-sm);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--pg-accent-border);
+  font-size: var(--pg-fs-secondary);
+  font-weight: 750;
+  line-height: 1.35;
+  color: var(--pg-ink);
+  letter-spacing: -0.01em;
+  hyphens: none;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
 @media (prefers-reduced-motion: reduce) {
   body.jcp-proof-gap .proof-gap-insight-card,
   body.jcp-proof-gap .proof-gap-insight-card.is-visible {

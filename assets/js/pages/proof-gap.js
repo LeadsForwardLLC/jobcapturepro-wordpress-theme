@@ -73,16 +73,19 @@
       variant: 'phones_camera_roll',
       headline: 'The photos already exist. They just need somewhere useful to go.',
       body: 'Your team can create a JobCapturePro check-in from the field so a completed job can become useful marketing after the work is done.',
+      body2: 'Finish job → Take photos → JobCapturePro puts them to work',
     },
     group_text_shared_folder: {
       variant: 'group_text_shared_folder',
       headline: 'Your crew is already creating the content.',
       body: 'JobCapturePro gives those finished-job photos a repeatable path into customer-facing marketing.',
+      body2: 'Finish job → Take photos → JobCapturePro puts them to work',
     },
     scattered: {
       variant: 'scattered',
       headline: 'This is exactly where finished jobs get lost.',
       body: 'JobCapturePro creates one repeatable workflow for turning real jobs and photos into marketing assets.',
+      body2: 'Finish job → Take photos → JobCapturePro puts them to work',
     },
   };
 
@@ -1016,7 +1019,9 @@
       escapeHtml(data.headline) +
       '</h2>' +
       (data.body ? '<p class="proof-gap-insight-card__text">' + escapeHtml(data.body) + '</p>' : '') +
-      (data.body2 ? '<p class="proof-gap-insight-card__text">' + escapeHtml(data.body2) + '</p>' : '') +
+      (data.body2
+        ? '<p class="proof-gap-insight-card__flow">' + escapeHtml(data.body2) + '</p>'
+        : '') +
       (data.extraHtml ? '<div class="proof-gap-insight-card__extra">' + data.extraHtml + '</div>' : '') +
       '</div>';
 
