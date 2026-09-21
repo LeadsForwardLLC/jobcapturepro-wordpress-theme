@@ -13,6 +13,8 @@ const { spawn } = require('child_process');
 
 const THEME = path.resolve(__dirname, '../../../..');
 const OUT = path.join(__dirname, 'copy-pass');
+/** Visible (non-dot) mirror for Finder / Cursor file tree */
+const OUT_VISIBLE = path.join(THEME, 'proof-gap-screenshots');
 const PORT = 8771;
 
 const STEPS = [
@@ -260,16 +262,11 @@ function writeIndex() {
 </body>
 </html>`;
 
-  fs.writeFileSync(path.join(OUT, 'index.html'), html);
-  fs.writeFileSync(
-    path.join(OUT, 'README.md'),
-    `# Proof Gap — Copy Pass Screenshots
+  const readme = `# Proof Gap — Copy Pass Screenshots
 
-Easy find path in the theme:
+**Easy find (visible folder):** \`proof-gap-screenshots/\` at the theme root.
 
-\`\`\`
-.superpowers/sdd/screenshots/proof-gap/copy-pass/
-\`\`\`
+Also mirrored at: \`.superpowers/sdd/screenshots/proof-gap/copy-pass/\`
 
 Open \`index.html\` in a browser to flip through every step (mobile + desktop side by side).
 
@@ -299,8 +296,9 @@ Open \`index.html\` in a browser to flip through every step (mobile + desktop si
 cd .superpowers/sdd/screenshots/proof-gap
 node qa-copy-pass.js
 \`\`\`
-`
-  );
+`;
+  fs.writeFileSync(path.join(OUT, 'index.html'), html);
+  fs.writeFileSync(path.join(OUT, 'README.md'), readme);
   console.log('wrote index.html + README.md');
 }
 
@@ -326,7 +324,11 @@ node qa-copy-pass.js
       await ctx.close();
     }
     writeIndex();
+    // Mirror to a non-hidden theme folder (Finder / Cursor hide .superpowers).
+    fs.rmSync(OUT_VISIBLE, { recursive: true, force: true });
+    fs.cpSync(OUT, OUT_VISIBLE, { recursive: true });
     console.log('DONE', OUT);
+    console.log('VISIBLE', OUT_VISIBLE);
   } finally {
     await browser.close();
     server.kill('SIGTERM');

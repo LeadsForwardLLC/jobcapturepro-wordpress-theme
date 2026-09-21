@@ -1,8 +1,10 @@
 # Proof Gap screenshots
 
-**Latest copy-pass review (mobile + desktop, every step):**
+**Use the visible theme folder** (`.superpowers` is hidden in Finder/Cursor):
 
-[`copy-pass/`](./copy-pass/) — open [`copy-pass/index.html`](./copy-pass/index.html)
+[`../../../proof-gap-screenshots/`](../../../proof-gap-screenshots/) — open `proof-gap-screenshots/index.html`
+
+Internal mirror: [`copy-pass/`](./copy-pass/)
 
 Re-run:
 
@@ -10,5 +12,3 @@ Re-run:
 cd .superpowers/sdd/screenshots/proof-gap
 node qa-copy-pass.js
 ```
-
-Older QA dump folders (`final/`, `polish/`, `p3-*`, etc.) are archived capture sets from prior passes.
