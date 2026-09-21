@@ -200,8 +200,6 @@ body.jcp-proof-gap .pg-progress__fill {
   background: var(--pg-accent);
   transition: width 0.28s var(--pg-ease);
 }
-  transition: width 0.28s var(--pg-ease);
-}
 
 body.jcp-proof-gap .pg-app {
   flex: 1 1 auto;
