@@ -512,3 +512,117 @@
   background: var(--fa-soft);
   color: var(--fa-muted);
 }
+
+.jcp-fa__badge--ok {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.jcp-fa__notice {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--fa-line);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.jcp-fa__notice--ok {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+  color: #065f46;
+}
+
+.jcp-fa__notice--warn {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.jcp-fa__section-note {
+  margin: 4px 0 0;
+  color: var(--fa-muted);
+  font-size: 13px;
+  max-width: 720px;
+}
+
+.jcp-fa__ip-panel {
+  padding: 18px 20px 20px;
+  margin-bottom: 24px;
+  max-width: 720px;
+}
+
+.jcp-fa__ip-label {
+  display: block;
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--fa-slate);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.jcp-fa__ip-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px 14px;
+  border: 1px solid var(--fa-line);
+  border-radius: 10px;
+  background: var(--fa-soft);
+  color: var(--fa-ink);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.jcp-fa__ip-textarea:focus {
+  outline: none;
+  border-color: #fdbaa8;
+  box-shadow: 0 0 0 3px rgba(255, 80, 54, 0.12);
+  background: #fff;
+}
+
+.jcp-fa__ip-current {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 0;
+  color: var(--fa-muted);
+  font-size: 13px;
+}
+
+.jcp-fa__ip-current code {
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--fa-soft);
+  border: 1px solid var(--fa-line);
+  color: var(--fa-ink);
+  font-size: 12px;
+}
+
+.jcp-fa__ip-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.jcp-fa__btn--danger {
+  background: #fff;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.jcp-fa__btn--danger:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.jcp-fa__btn:disabled,
+.jcp-fa__btn[disabled] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

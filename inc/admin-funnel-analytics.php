@@ -145,6 +145,62 @@ function jcp_funnel_analytics_handle_csv_export(): void {
 add_action( 'admin_post_jcp_funnel_analytics_csv', 'jcp_funnel_analytics_handle_csv_export' );
 
 /**
+ * Save excluded IPs (+ optional purge of matching hashed events).
+ */
+function jcp_funnel_analytics_handle_excluded_ips(): void {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( esc_html__( 'Forbidden', 'jcp-core' ) );
+	}
+	check_admin_referer( 'jcp_funnel_analytics_excluded_ips' );
+
+	$redirect = admin_url( 'admin.php?page=jcp-funnel-analytics' );
+	$action   = sanitize_key( (string) ( $_POST['jcp_fa_ip_action'] ?? 'save' ) );
+
+	if ( $action === 'add_mine' ) {
+		$mine = function_exists( 'jcp_funnel_analytics_request_ip' ) ? jcp_funnel_analytics_request_ip() : '';
+		$list = function_exists( 'jcp_funnel_analytics_get_excluded_ips' ) ? jcp_funnel_analytics_get_excluded_ips() : [];
+		if ( $mine !== '' ) {
+			$list[] = $mine;
+			jcp_funnel_analytics_save_excluded_ips( $list );
+			$redirect = add_query_arg( 'jcp_fa_ip', 'added', $redirect );
+		} else {
+			$redirect = add_query_arg( 'jcp_fa_ip', 'no_ip', $redirect );
+		}
+		wp_safe_redirect( $redirect );
+		exit;
+	}
+
+	$raw = isset( $_POST['excluded_ips'] ) ? wp_unslash( (string) $_POST['excluded_ips'] ) : '';
+	$saved = jcp_funnel_analytics_save_excluded_ips( $raw );
+	$notice = 'saved';
+
+	if ( $action === 'save_purge' && function_exists( 'jcp_funnel_analytics_purge_excluded_ip_events' ) ) {
+		$deleted = jcp_funnel_analytics_purge_excluded_ip_events();
+		$notice  = 'purged';
+		$redirect = add_query_arg(
+			[
+				'jcp_fa_ip'      => $notice,
+				'jcp_fa_ip_n'    => count( $saved ),
+				'jcp_fa_deleted' => (int) $deleted,
+			],
+			$redirect
+		);
+	} else {
+		$redirect = add_query_arg(
+			[
+				'jcp_fa_ip'   => $notice,
+				'jcp_fa_ip_n' => count( $saved ),
+			],
+			$redirect
+		);
+	}
+
+	wp_safe_redirect( $redirect );
+	exit;
+}
+add_action( 'admin_post_jcp_funnel_analytics_excluded_ips', 'jcp_funnel_analytics_handle_excluded_ips' );
+
+/**
  * Format ms.
  *
  * @param mixed $ms Milliseconds.
@@ -269,6 +325,14 @@ function jcp_funnel_analytics_render_admin(): void {
 		'trials_started'    => __( 'Trial starts', 'jcp-core' ),
 		'paid_customers'    => __( 'Paid', 'jcp-core' ),
 	];
+
+	$excluded_ips = function_exists( 'jcp_funnel_analytics_get_excluded_ips' )
+		? jcp_funnel_analytics_get_excluded_ips()
+		: [];
+	$my_ip = function_exists( 'jcp_funnel_analytics_request_ip' )
+		? jcp_funnel_analytics_request_ip()
+		: '';
+	$ip_notice = isset( $_GET['jcp_fa_ip'] ) ? sanitize_key( (string) $_GET['jcp_fa_ip'] ) : '';
 	?>
 	<div class="wrap jcp-fa jcp-funnel-analytics">
 		<div class="jcp-fa__header">
@@ -285,9 +349,22 @@ function jcp_funnel_analytics_render_admin(): void {
 				<span class="jcp-fa__pill"><?php echo esc_html( (string) $funnel_label ); ?></span>
 				<span class="jcp-fa__pill"><?php echo esc_html( sprintf( /* translators: %d days */ __( 'Last %d days', 'jcp-core' ), (int) $filters['days'] ) ); ?></span>
 				<span class="jcp-fa__pill"><?php echo esc_html( sprintf( /* translators: %d sessions */ __( '%d cohort sessions', 'jcp-core' ), (int) ( $report['cohort_size'] ?? 0 ) ) ); ?></span>
+				<?php if ( $excluded_ips ) : ?>
+					<span class="jcp-fa__pill"><?php echo esc_html( sprintf( /* translators: %d IPs */ __( '%d IPs filtered', 'jcp-core' ), count( $excluded_ips ) ) ); ?></span>
+				<?php endif; ?>
 				<a class="jcp-fa__btn jcp-fa__btn--ghost" href="<?php echo esc_url( $csv_url ); ?>"><?php esc_html_e( 'Export CSV', 'jcp-core' ); ?></a>
 			</div>
 		</div>
+
+		<?php if ( $ip_notice === 'saved' ) : ?>
+			<div class="jcp-fa__notice jcp-fa__notice--ok"><?php echo esc_html( sprintf( /* translators: %d count */ __( 'Excluded IP list saved (%d addresses). New events from those IPs will not be stored.', 'jcp-core' ), (int) ( $_GET['jcp_fa_ip_n'] ?? count( $excluded_ips ) ) ) ); ?></div>
+		<?php elseif ( $ip_notice === 'purged' ) : ?>
+			<div class="jcp-fa__notice jcp-fa__notice--ok"><?php echo esc_html( sprintf( /* translators: 1: IP count 2: deleted rows */ __( 'Excluded IP list saved (%1$d addresses). Removed %2$d matching hashed events from storage.', 'jcp-core' ), (int) ( $_GET['jcp_fa_ip_n'] ?? count( $excluded_ips ) ), (int) ( $_GET['jcp_fa_deleted'] ?? 0 ) ) ); ?></div>
+		<?php elseif ( $ip_notice === 'added' ) : ?>
+			<div class="jcp-fa__notice jcp-fa__notice--ok"><?php esc_html_e( 'Your current IP was added to the exclusion list.', 'jcp-core' ); ?></div>
+		<?php elseif ( $ip_notice === 'no_ip' ) : ?>
+			<div class="jcp-fa__notice jcp-fa__notice--warn"><?php esc_html_e( 'Could not detect your current IP. Add it manually below.', 'jcp-core' ); ?></div>
+		<?php endif; ?>
 
 		<form method="get" class="jcp-fa__panel jcp-fa__filters">
 			<input type="hidden" name="page" value="jcp-funnel-analytics" />
@@ -640,6 +717,8 @@ function jcp_funnel_analytics_render_admin(): void {
 						<tr><th><?php esc_html_e( 'Sessions missing source (30d)', 'jcp-core' ); ?></th><td><?php echo (int) ( $diag['missing_source_sessions'] ?? 0 ); ?></td></tr>
 						<tr><th><?php esc_html_e( 'Sessions missing campaign (30d)', 'jcp-core' ); ?></th><td><?php echo (int) ( $diag['missing_campaign_sessions'] ?? 0 ); ?></td></tr>
 						<tr><th><?php esc_html_e( 'Duplicate event IDs rejected', 'jcp-core' ); ?></th><td><?php echo (int) ( $diag['duplicate_rejected'] ?? 0 ); ?></td></tr>
+						<tr><th><?php esc_html_e( 'Events skipped (excluded IP)', 'jcp-core' ); ?></th><td><?php echo (int) ( $diag['excluded_ip_skipped'] ?? 0 ); ?></td></tr>
+						<tr><th><?php esc_html_e( 'IPs on exclusion list', 'jcp-core' ); ?></th><td><?php echo (int) ( $diag['excluded_ips_count'] ?? 0 ); ?></td></tr>
 						<tr><th><?php esc_html_e( 'Events missing funnel_id', 'jcp-core' ); ?></th><td><?php echo (int) ( $diag['missing_funnel_id'] ?? 0 ); ?></td></tr>
 						<tr><th><?php esc_html_e( 'Events missing session_id', 'jcp-core' ); ?></th><td><?php echo (int) ( $diag['missing_session_id'] ?? 0 ); ?></td></tr>
 						<tr><th><?php esc_html_e( 'Last event received', 'jcp-core' ); ?></th><td><?php echo esc_html( (string) ( $diag['last_event_received'] ?? '—' ) ); ?></td></tr>
@@ -650,6 +729,35 @@ function jcp_funnel_analytics_render_admin(): void {
 				</table>
 			</div>
 		<?php endif; ?>
+
+		<div class="jcp-fa__section-head">
+			<h2><?php esc_html_e( 'Excluded IPs', 'jcp-core' ); ?></h2>
+			<p class="jcp-fa__section-note"><?php esc_html_e( 'Events from these addresses are dropped at ingest and omitted from reports. Only a hashed fingerprint is stored on accepted events — never the raw IP.', 'jcp-core' ); ?></p>
+		</div>
+		<div class="jcp-fa__panel jcp-fa__ip-panel">
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="jcp-fa__ip-form">
+				<input type="hidden" name="action" value="jcp_funnel_analytics_excluded_ips" />
+				<?php wp_nonce_field( 'jcp_funnel_analytics_excluded_ips' ); ?>
+				<label class="jcp-fa__ip-label" for="jcp-fa-excluded-ips">
+					<?php esc_html_e( 'One IPv4 or IPv6 address per line', 'jcp-core' ); ?>
+				</label>
+				<textarea id="jcp-fa-excluded-ips" name="excluded_ips" rows="6" class="jcp-fa__ip-textarea" placeholder="188.92.253.150&#10;2001:4860:7:22d::ff"><?php echo esc_textarea( implode( "\n", $excluded_ips ) ); ?></textarea>
+				<?php if ( $my_ip !== '' ) : ?>
+					<p class="jcp-fa__ip-current">
+						<?php esc_html_e( 'Your current IP:', 'jcp-core' ); ?>
+						<code><?php echo esc_html( $my_ip ); ?></code>
+						<?php if ( in_array( $my_ip, $excluded_ips, true ) ) : ?>
+							<span class="jcp-fa__badge jcp-fa__badge--ok"><?php esc_html_e( 'Already filtered', 'jcp-core' ); ?></span>
+						<?php endif; ?>
+					</p>
+				<?php endif; ?>
+				<div class="jcp-fa__ip-actions">
+					<button type="submit" name="jcp_fa_ip_action" value="save" class="jcp-fa__btn"><?php esc_html_e( 'Save exclusion list', 'jcp-core' ); ?></button>
+					<button type="submit" name="jcp_fa_ip_action" value="add_mine" class="jcp-fa__btn jcp-fa__btn--ghost"<?php disabled( $my_ip === '' || in_array( $my_ip, $excluded_ips, true ) ); ?>><?php esc_html_e( 'Add my current IP', 'jcp-core' ); ?></button>
+					<button type="submit" name="jcp_fa_ip_action" value="save_purge" class="jcp-fa__btn jcp-fa__btn--danger" onclick="return confirm('<?php echo esc_js( __( 'Save the list and delete any stored events whose hashed IP matches? Pre-hash historical rows cannot be removed this way.', 'jcp-core' ) ); ?>');"><?php esc_html_e( 'Save & purge matching events', 'jcp-core' ); ?></button>
+				</div>
+			</form>
+		</div>
 	</div>
 	<?php
 }

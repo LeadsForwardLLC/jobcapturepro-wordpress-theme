@@ -19,6 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'JCP_FUNNEL_EVENTS_TABLE', 'jcp_funnel_events' );
 define( 'JCP_FUNNEL_ANALYTICS_RETENTION_DAYS', 120 );
 define( 'JCP_FUNNEL_ANALYTICS_META_OPTION', 'jcp_funnel_analytics_meta' );
+define( 'JCP_FUNNEL_ANALYTICS_EXCLUDED_IPS_OPTION', 'jcp_funnel_analytics_excluded_ips' );
 
 /**
  * Create funnel events table if needed.
@@ -55,6 +56,7 @@ function jcp_funnel_analytics_maybe_create_table(): void {
 		has_ttclid tinyint(1) NOT NULL DEFAULT 0,
 		device_category varchar(32) DEFAULT NULL,
 		referrer varchar(512) DEFAULT NULL,
+		ip_hash varchar(64) DEFAULT NULL,
 		metadata longtext DEFAULT NULL,
 		created_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		PRIMARY KEY (id),
@@ -65,14 +67,225 @@ function jcp_funnel_analytics_maybe_create_table(): void {
 		KEY created_at (created_at),
 		KEY funnel_created (funnel_id, created_at),
 		KEY question_id (question_id),
-		KEY creative_concept (creative_concept)
+		KEY creative_concept (creative_concept),
+		KEY ip_hash (ip_hash)
 	) $charset;";
 
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 	dbDelta( $sql );
+
+	// Existing installs: ensure ip_hash column + index (dbDelta with IF NOT EXISTS is unreliable).
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$col = $wpdb->get_results( "SHOW COLUMNS FROM $table LIKE 'ip_hash'" );
+	if ( empty( $col ) ) {
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query( "ALTER TABLE $table ADD COLUMN ip_hash varchar(64) DEFAULT NULL AFTER referrer" );
+	}
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$idx = $wpdb->get_results( "SHOW INDEX FROM $table WHERE Key_name = 'ip_hash'" );
+	if ( empty( $idx ) ) {
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query( "ALTER TABLE $table ADD KEY ip_hash (ip_hash)" );
+	}
 }
 add_action( 'after_switch_theme', 'jcp_funnel_analytics_maybe_create_table' );
 add_action( 'init', 'jcp_funnel_analytics_maybe_create_table', 5 );
+
+/**
+ * Resolve request client IP (Cloudflare / proxy aware).
+ */
+function jcp_funnel_analytics_request_ip(): string {
+	$candidates = [];
+	if ( ! empty( $_SERVER['HTTP_CF_CONNECTING_IP'] ) ) {
+		$candidates[] = (string) $_SERVER['HTTP_CF_CONNECTING_IP'];
+	}
+	if ( ! empty( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
+		$parts = explode( ',', (string) $_SERVER['HTTP_X_FORWARDED_FOR'] );
+		$candidates[] = trim( (string) ( $parts[0] ?? '' ) );
+	}
+	if ( ! empty( $_SERVER['REMOTE_ADDR'] ) ) {
+		$candidates[] = (string) $_SERVER['REMOTE_ADDR'];
+	}
+	foreach ( $candidates as $ip ) {
+		$ip = jcp_funnel_analytics_normalize_ip( $ip );
+		if ( $ip !== '' ) {
+			return $ip;
+		}
+	}
+	return '';
+}
+
+/**
+ * Normalize an IP string for storage / comparison.
+ */
+function jcp_funnel_analytics_normalize_ip( string $ip ): string {
+	$ip = trim( $ip );
+	if ( $ip === '' ) {
+		return '';
+	}
+	// Strip brackets around IPv6 literals.
+	if ( $ip[0] === '[' && substr( $ip, -1 ) === ']' ) {
+		$ip = substr( $ip, 1, -1 );
+	}
+	// Drop port on IPv4 host:port.
+	if ( substr_count( $ip, ':' ) === 1 && strpos( $ip, '.' ) !== false ) {
+		$ip = explode( ':', $ip )[0];
+	}
+	if ( filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+		// Compress IPv6 for stable hashing.
+		if ( filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 ) ) {
+			$packed = @inet_pton( $ip );
+			if ( $packed !== false ) {
+				$expanded = inet_ntop( $packed );
+				if ( is_string( $expanded ) && $expanded !== '' ) {
+					return strtolower( $expanded );
+				}
+			}
+		}
+		return $ip;
+	}
+	return '';
+}
+
+/**
+ * HMAC hash of an IP (no raw IP stored in event rows).
+ */
+function jcp_funnel_analytics_ip_hash( string $ip ): string {
+	$ip = jcp_funnel_analytics_normalize_ip( $ip );
+	if ( $ip === '' ) {
+		return '';
+	}
+	$salt = defined( 'AUTH_KEY' ) ? AUTH_KEY : wp_salt( 'auth' );
+	return hash_hmac( 'sha256', $ip, (string) $salt );
+}
+
+/**
+ * @return list<string>
+ */
+function jcp_funnel_analytics_get_excluded_ips(): array {
+	$raw = get_option( JCP_FUNNEL_ANALYTICS_EXCLUDED_IPS_OPTION, [] );
+	if ( is_string( $raw ) ) {
+		$raw = preg_split( '/\r\n|\r|\n/', $raw ) ?: [];
+	}
+	if ( ! is_array( $raw ) ) {
+		return [];
+	}
+	$out = [];
+	foreach ( $raw as $ip ) {
+		$n = jcp_funnel_analytics_normalize_ip( (string) $ip );
+		if ( $n !== '' ) {
+			$out[ $n ] = $n;
+		}
+	}
+	return array_values( $out );
+}
+
+/**
+ * @param list<string>|string $ips IPs.
+ * @return list<string>
+ */
+function jcp_funnel_analytics_save_excluded_ips( $ips ): array {
+	if ( is_string( $ips ) ) {
+		$ips = preg_split( '/\r\n|\r|\n|,/', $ips ) ?: [];
+	}
+	$clean = [];
+	foreach ( (array) $ips as $ip ) {
+		$n = jcp_funnel_analytics_normalize_ip( (string) $ip );
+		if ( $n !== '' ) {
+			$clean[ $n ] = $n;
+		}
+	}
+	$clean = array_values( $clean );
+	update_option( JCP_FUNNEL_ANALYTICS_EXCLUDED_IPS_OPTION, $clean, false );
+	return $clean;
+}
+
+/**
+ * Seed default excluded IPs once (operator testing IPs).
+ */
+function jcp_funnel_analytics_maybe_seed_excluded_ips(): void {
+	if ( get_option( 'jcp_funnel_excluded_ips_seeded', '' ) === '1' ) {
+		return;
+	}
+	$existing = jcp_funnel_analytics_get_excluded_ips();
+	$defaults = [
+		'188.92.253.150',
+		'2001:4860:7:22d::ff',
+	];
+	$merged = array_values( array_unique( array_merge( $existing, $defaults ) ) );
+	jcp_funnel_analytics_save_excluded_ips( $merged );
+	update_option( 'jcp_funnel_excluded_ips_seeded', '1', false );
+}
+add_action( 'init', 'jcp_funnel_analytics_maybe_seed_excluded_ips', 6 );
+
+/**
+ * @return list<string> Hashes of excluded IPs.
+ */
+function jcp_funnel_analytics_excluded_ip_hashes(): array {
+	$hashes = [];
+	foreach ( jcp_funnel_analytics_get_excluded_ips() as $ip ) {
+		$h = jcp_funnel_analytics_ip_hash( $ip );
+		if ( $h !== '' ) {
+			$hashes[] = $h;
+		}
+	}
+	return array_values( array_unique( $hashes ) );
+}
+
+/**
+ * Whether an IP is on the exclusion list.
+ */
+function jcp_funnel_analytics_is_ip_excluded( string $ip ): bool {
+	$ip = jcp_funnel_analytics_normalize_ip( $ip );
+	if ( $ip === '' ) {
+		return false;
+	}
+	$excluded = jcp_funnel_analytics_get_excluded_ips();
+	if ( in_array( $ip, $excluded, true ) ) {
+		return true;
+	}
+	// Also compare hashes in case of IPv6 compression differences.
+	$hash = jcp_funnel_analytics_ip_hash( $ip );
+	return $hash !== '' && in_array( $hash, jcp_funnel_analytics_excluded_ip_hashes(), true );
+}
+
+/**
+ * SQL fragment to exclude filtered IPs from reports (event-level).
+ *
+ * @return array{sql:string,args:array}
+ */
+function jcp_funnel_analytics_excluded_ip_sql(): array {
+	$hashes = jcp_funnel_analytics_excluded_ip_hashes();
+	if ( ! $hashes ) {
+		return [ 'sql' => '1=1', 'args' => [] ];
+	}
+	$ph = implode( ',', array_fill( 0, count( $hashes ), '%s' ) );
+	return [
+		'sql'  => "(ip_hash IS NULL OR ip_hash NOT IN ($ph))",
+		'args' => $hashes,
+	];
+}
+
+/**
+ * Delete stored events whose ip_hash matches the exclusion list.
+ *
+ * @return int Rows deleted.
+ */
+function jcp_funnel_analytics_purge_excluded_ip_events(): int {
+	global $wpdb;
+	jcp_funnel_analytics_maybe_create_table();
+	$hashes = jcp_funnel_analytics_excluded_ip_hashes();
+	if ( ! $hashes ) {
+		return 0;
+	}
+	$table = $wpdb->prefix . JCP_FUNNEL_EVENTS_TABLE;
+	$ph    = implode( ',', array_fill( 0, count( $hashes ), '%s' ) );
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+	$deleted = $wpdb->query(
+		$wpdb->prepare( "DELETE FROM $table WHERE ip_hash IN ($ph)", $hashes )
+	);
+	return is_int( $deleted ) ? $deleted : 0;
+}
 
 /**
  * Register REST ingest endpoint (public, non-PII only).
@@ -155,6 +368,13 @@ function jcp_funnel_analytics_handle_event( WP_REST_Request $request ) {
 		return new WP_Error( 'missing_event', 'event_name required', [ 'status' => 400 ] );
 	}
 
+	$client_ip = jcp_funnel_analytics_request_ip();
+	$ip_hash   = $client_ip !== '' ? jcp_funnel_analytics_ip_hash( $client_ip ) : '';
+	if ( $client_ip !== '' && jcp_funnel_analytics_is_ip_excluded( $client_ip ) ) {
+		jcp_funnel_analytics_bump_meta( 'excluded_ip_skipped', 1 );
+		return rest_ensure_response( [ 'ok' => true, 'filtered' => true ] );
+	}
+
 	$table = $wpdb->prefix . JCP_FUNNEL_EVENTS_TABLE;
 	$exists = (int) $wpdb->get_var(
 		$wpdb->prepare( "SELECT COUNT(1) FROM $table WHERE event_uuid = %s", $event_uuid )
@@ -206,6 +426,7 @@ function jcp_funnel_analytics_handle_event( WP_REST_Request $request ) {
 		'has_ttclid'           => ! empty( $params['has_ttclid'] ) ? 1 : 0,
 		'device_category'      => sanitize_text_field( (string) ( $params['device_category'] ?? $params['device_class'] ?? '' ) ) ?: null,
 		'referrer'             => esc_url_raw( (string) ( $params['referrer'] ?? '' ) ) ?: null,
+		'ip_hash'              => $ip_hash !== '' ? $ip_hash : null,
 		'metadata'             => $meta_json,
 		'created_at'           => current_time( 'mysql' ),
 	];
@@ -388,6 +609,10 @@ function jcp_funnel_analytics_proof_gap_where( array $filters, int $offset_days 
 		$where[] = 'device_category = %s';
 		$args[]  = $filters['device'];
 	}
+
+	$ip_ex   = jcp_funnel_analytics_excluded_ip_sql();
+	$where[] = $ip_ex['sql'];
+	$args    = array_merge( $args, $ip_ex['args'] );
 
 	return [
 		'sql'   => implode( ' AND ', $where ),
@@ -952,28 +1177,39 @@ function jcp_funnel_analytics_diagnostics( string $table ): array {
 	if ( ! is_array( $meta ) ) {
 		$meta = [];
 	}
-	$since_24h = gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS );
+	$ip_ex      = jcp_funnel_analytics_excluded_ip_sql();
+	$since_24h  = gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS );
+	$ip_sql     = $ip_ex['sql'];
+	$ip_args    = $ip_ex['args'];
+
+	$q24 = "SELECT COUNT(1) FROM $table WHERE created_at >= %s AND $ip_sql";
 	$events_24h = (int) $wpdb->get_var(
-		$wpdb->prepare( "SELECT COUNT(1) FROM $table WHERE created_at >= %s", $since_24h )
+		$ip_args
+			? $wpdb->prepare( $q24, array_merge( [ $since_24h ], $ip_args ) )
+			: $wpdb->prepare( "SELECT COUNT(1) FROM $table WHERE created_at >= %s", $since_24h )
 	);
-	$missing_source = (int) $wpdb->get_var(
-		"SELECT COUNT(DISTINCT session_id) FROM $table WHERE (utm_source IS NULL OR utm_source = '') AND created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY)"
-	);
-	$missing_campaign = (int) $wpdb->get_var(
-		"SELECT COUNT(DISTINCT session_id) FROM $table WHERE (utm_campaign IS NULL OR utm_campaign = '') AND created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY)"
-	);
-	$missing_funnel = (int) $wpdb->get_var(
-		"SELECT COUNT(1) FROM $table WHERE funnel_id IS NULL OR funnel_id = ''"
-	);
-	$missing_session = (int) $wpdb->get_var(
-		"SELECT COUNT(1) FROM $table WHERE session_id IS NULL OR session_id = ''"
-	);
-	$last = $wpdb->get_var( "SELECT created_at FROM $table ORDER BY id DESC LIMIT 1" );
+
+	$q_src = "SELECT COUNT(DISTINCT session_id) FROM $table WHERE (utm_source IS NULL OR utm_source = '') AND created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY) AND $ip_sql";
+	$missing_source = (int) ( $ip_args ? $wpdb->get_var( $wpdb->prepare( $q_src, $ip_args ) ) : $wpdb->get_var( $q_src ) );
+
+	$q_camp = "SELECT COUNT(DISTINCT session_id) FROM $table WHERE (utm_campaign IS NULL OR utm_campaign = '') AND created_at >= DATE_SUB(UTC_TIMESTAMP(), INTERVAL 30 DAY) AND $ip_sql";
+	$missing_campaign = (int) ( $ip_args ? $wpdb->get_var( $wpdb->prepare( $q_camp, $ip_args ) ) : $wpdb->get_var( $q_camp ) );
+
+	$q_funnel = "SELECT COUNT(1) FROM $table WHERE (funnel_id IS NULL OR funnel_id = '') AND $ip_sql";
+	$missing_funnel = (int) ( $ip_args ? $wpdb->get_var( $wpdb->prepare( $q_funnel, $ip_args ) ) : $wpdb->get_var( $q_funnel ) );
+
+	$q_sess = "SELECT COUNT(1) FROM $table WHERE (session_id IS NULL OR session_id = '') AND $ip_sql";
+	$missing_session = (int) ( $ip_args ? $wpdb->get_var( $wpdb->prepare( $q_sess, $ip_args ) ) : $wpdb->get_var( $q_sess ) );
+
+	$q_last = "SELECT created_at FROM $table WHERE $ip_sql ORDER BY id DESC LIMIT 1";
+	$last   = $ip_args ? $wpdb->get_var( $wpdb->prepare( $q_last, $ip_args ) ) : $wpdb->get_var( $q_last );
 
 	return [
 		'missing_source_sessions'   => $missing_source,
 		'missing_campaign_sessions' => $missing_campaign,
 		'duplicate_rejected'        => (int) ( $meta['duplicate_rejected'] ?? 0 ),
+		'excluded_ip_skipped'       => (int) ( $meta['excluded_ip_skipped'] ?? 0 ),
+		'excluded_ips_count'        => count( jcp_funnel_analytics_get_excluded_ips() ),
 		'missing_funnel_id'         => $missing_funnel,
 		'missing_session_id'        => $missing_session,
 		'last_event_received'       => $last ? (string) $last : (string) ( $meta['last_event_at'] ?? '' ),
