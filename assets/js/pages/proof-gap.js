@@ -942,15 +942,16 @@
       btn.setAttribute('data-pg-value', key);
       if (field === 'public_proof_percentage' && item && typeof item === 'object') {
         btn.className += ' pg-choice--stacked';
-        if (key === 'unknown') btn.className += ' pg-choice--span';
         var t = document.createElement('span');
         t.className = 'pg-choice__title';
         t.textContent = item.title || item.label || key;
-        var b = document.createElement('span');
-        b.className = 'pg-choice__band';
-        b.textContent = item.band || '';
         btn.appendChild(t);
-        if (item.band) btn.appendChild(b);
+        if (item.band) {
+          var b = document.createElement('span');
+          b.className = 'pg-choice__band';
+          b.textContent = item.band;
+          btn.appendChild(b);
+        }
       } else if (field === 'current_workflow') {
         btn.className += ' pg-choice--workflow';
         btn.innerHTML = workflowChoiceInner(key, choiceLabel(map, key));

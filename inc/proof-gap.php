@@ -233,9 +233,9 @@ function jcp_proof_gap_proof_percentage_options(): array {
 			'max'   => 1.0,
 		],
 		'unknown' => [
-			'label' => __( 'Honestly, I’m not sure', 'jcp-core' ),
-			'title' => 'Honestly, I’m not sure',
-			'band'  => __( 'Not sure', 'jcp-core' ),
+			'label' => __( 'Not sure', 'jcp-core' ),
+			'title' => 'Not sure',
+			'band'  => '',
 			'min'   => null,
 			'max'   => null,
 		],
