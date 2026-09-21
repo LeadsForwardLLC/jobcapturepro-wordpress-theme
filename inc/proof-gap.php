@@ -264,75 +264,96 @@ function jcp_proof_gap_review_slots(): array {
 }
 
 /**
- * Trade → approved campaign / stock job image map.
- * Every trade gets a real job photo so reveal slides never show empty placeholders.
+ * Trade → curated local job photo map (theme assets only — never remote stock).
  *
- * @return array<string, array{title:string,photo:?string,neutral:bool}>
+ * Global default: assets/campaign/jobs/default.webp (home-service HVAC capture).
+ * Niche files live under assets/campaign/jobs/{slug}.webp when verified; otherwise default.
+ *
+ * @return array<string, array{title:string,photo:string,neutral:bool}>
  */
 function jcp_proof_gap_trade_job_assets(): array {
-	$base  = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/';
-	$hvac  = $base . 'jcp-campaign-hvac-capture-640.webp';
-	$plumb = $base . 'jcp-campaign-job-proof-640.webp';
+	$theme_dir = trailingslashit( get_template_directory() );
+	$theme_uri = trailingslashit( get_template_directory_uri() );
+
+	$asset_url = static function ( string $rel ) use ( $theme_dir, $theme_uri ): string {
+		$rel  = ltrim( $rel, '/' );
+		$path = $theme_dir . $rel;
+		$url  = $theme_uri . $rel;
+		if ( is_readable( $path ) ) {
+			return $url . '?v=' . (string) filemtime( $path );
+		}
+		return $url;
+	};
+
+	$default = $asset_url( 'assets/campaign/jobs/default.webp' );
+
+	$job_photo = static function ( string $slug ) use ( $theme_dir, $asset_url, $default ): string {
+		$rel = 'assets/campaign/jobs/' . $slug . '.webp';
+		if ( is_readable( $theme_dir . $rel ) ) {
+			return $asset_url( $rel );
+		}
+		return $default;
+	};
 
 	return [
 		'hvac'          => [
 			'title'   => 'HVAC service call',
-			'photo'   => $hvac,
+			'photo'   => $asset_url( 'assets/campaign/jcp-campaign-hvac-capture-640.webp' ),
 			'neutral' => false,
 		],
 		'plumbing'      => [
 			'title'   => 'Water heater replacement',
-			'photo'   => $plumb,
+			'photo'   => $asset_url( 'assets/campaign/jcp-campaign-job-proof-640.webp' ),
 			'neutral' => false,
 		],
 		'electrical'    => [
 			'title'   => 'Electrical panel upgrade',
-			'photo'   => 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&h=600&fit=crop&q=75',
+			'photo'   => $job_photo( 'electrical' ),
 			'neutral' => false,
 		],
 		'roofing'       => [
 			'title'   => 'Roofing project',
-			'photo'   => 'https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=800&h=600&fit=crop&q=75',
+			'photo'   => $job_photo( 'roofing' ),
 			'neutral' => false,
 		],
 		'remodeling'    => [
 			'title'   => 'Remodel finish',
-			'photo'   => 'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop&q=75',
+			'photo'   => $job_photo( 'remodeling' ),
 			'neutral' => false,
 		],
 		'painting'      => [
 			'title'   => 'Paint job',
-			'photo'   => 'https://images.unsplash.com/photo-1562259929-b4e1fd3aef09?w=800&h=600&fit=crop&q=75',
+			'photo'   => $job_photo( 'painting' ),
 			'neutral' => false,
 		],
 		'landscaping'   => [
 			'title'   => 'Landscaping job',
-			'photo'   => 'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800&h=600&fit=crop&q=75',
+			'photo'   => $job_photo( 'landscaping' ),
 			'neutral' => false,
 		],
 		'garage_door'   => [
 			'title'   => 'Garage door service',
-			'photo'   => 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=600&fit=crop&q=75',
+			'photo'   => $job_photo( 'garage_door' ),
 			'neutral' => false,
 		],
 		'pest_control'  => [
 			'title'   => 'Pest control visit',
-			'photo'   => $plumb,
+			'photo'   => $default,
 			'neutral' => false,
 		],
 		'tree_service'  => [
 			'title'   => 'Tree service job',
-			'photo'   => 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800&h=600&fit=crop&q=75',
+			'photo'   => $job_photo( 'tree_service' ),
 			'neutral' => false,
 		],
 		'power_washing' => [
 			'title'   => 'Power washing job',
-			'photo'   => 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop&q=75',
+			'photo'   => $job_photo( 'power_washing' ),
 			'neutral' => false,
 		],
 		'other'         => [
 			'title'   => 'Finished field job',
-			'photo'   => $plumb,
+			'photo'   => $default,
 			'neutral' => false,
 		],
 	];

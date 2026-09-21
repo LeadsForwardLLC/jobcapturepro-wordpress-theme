@@ -805,8 +805,19 @@
       'The missed opportunity is what they never become: Website content · Google activity · Social posts · Review opportunities';
   }
 
+  function getDefaultJobPhotoUrl() {
+    var fallback = tradeAssets.other || tradeAssets.hvac || tradeAssets.plumbing;
+    return (fallback && fallback.photo) || '';
+  }
+
   function getTradeAsset(trade) {
-    return tradeAssets[trade] || tradeAssets.other || { title: JOB_EXAMPLES[trade] || 'Finished field job', photo: null, neutral: true };
+    var asset = tradeAssets[trade] || tradeAssets.other || null;
+    if (asset && asset.photo) return asset;
+    return {
+      title: (asset && asset.title) || JOB_EXAMPLES[trade] || 'Finished field job',
+      photo: getDefaultJobPhotoUrl(),
+      neutral: false,
+    };
   }
 
   function preloadTradePhoto(trade) {
@@ -823,9 +834,7 @@
 
   function getJobPhotoUrl() {
     var asset = getTradeAsset(state.trade);
-    if (asset && asset.photo) return asset.photo;
-    var fallback = tradeAssets.other || tradeAssets.plumbing || tradeAssets.hvac;
-    return (fallback && fallback.photo) || '';
+    return (asset && asset.photo) || getDefaultJobPhotoUrl();
   }
 
   function usesNeutralJobVisual() {
