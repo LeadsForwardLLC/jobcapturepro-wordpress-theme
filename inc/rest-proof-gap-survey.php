@@ -154,7 +154,7 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 					$session_id !== '' ? 'session:' . $session_id : '',
 					$workflow !== '' ? 'workflow:' . $workflow : '',
 					$jobs_bucket !== '' ? 'jobs:' . $jobs_bucket : '',
-					$proof_pct !== '' ? 'proof:' . $proof_pct : '',
+					$proof_pct !== '' ? 'visibility:' . $proof_pct : '',
 					$other_trade_text !== '' ? 'other_trade:' . $other_trade_text : '',
 					$other_workflow_text !== '' ? 'other_workflow:' . $other_workflow_text : '',
 				]

@@ -1,16 +1,32 @@
-# Proof Gap screenshots (easy find)
+# Proof Gap — Copy Pass Screenshots
 
-This folder is the **visible** copy of the funnel screenshot gallery.
+**Easy find (visible folder):** `proof-gap-screenshots/` at the theme root.
 
-Open **`index.html`** for mobile + desktop side-by-side review of every step.
+Also mirrored at: `.superpowers/sdd/screenshots/proof-gap/copy-pass/`
 
-Theme path:
+Open `index.html` in a browser to flip through every step (mobile + desktop side by side).
 
-```
-proof-gap-screenshots/
-```
+## Captured path
 
-Re-capture (writes here and to the internal `.superpowers` mirror):
+1. Welcome
+2. Trade (Electrical)
+3. Workflow choices
+4. Workflow insight (Housecall Pro)
+5. Jobs/week choices
+6. Jobs insight
+7. Visibility question
+8. Visibility insight (About half)
+9. Result
+10. Email
+11–15. Product reveal (Website → Google → Social → Reviews → Directory)
+16. Trial / final plan
+
+## Viewports
+
+- `mobile-*.png` — 390×844
+- `desktop-*.png` — 1440×900
+
+## Re-run
 
 ```bash
 cd .superpowers/sdd/screenshots/proof-gap

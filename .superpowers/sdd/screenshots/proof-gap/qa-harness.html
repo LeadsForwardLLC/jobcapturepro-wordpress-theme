@@ -22,7 +22,7 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 <div class="pg-progress" id="pgProgress" hidden>
 <div class="pg-progress__phases" role="list">
 <span class="pg-progress__phase is-active" data-phase="work" role="listitem">Your work</span>
-<span class="pg-progress__phase" data-phase="gap" role="listitem">What customers see</span>
+<span class="pg-progress__phase" data-phase="gap" role="listitem">What gets seen</span>
 <span class="pg-progress__phase" data-phase="plan" role="listitem">Your plan</span>
 </div>
 <div class="pg-progress__track"><div class="pg-progress__fill" id="pgProgressFill"></div></div>
@@ -35,12 +35,12 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 
 		<section class="pg-state pg-state--welcome" data-pg-state="welcome" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow">The 60-second proof gap check</p>
+				<p class="pg-eyebrow">The 60-second job visibility check</p>
 				<h1 class="pg-title">How much of your best work disappears after the truck leaves?</h1>
 				<p class="pg-sub">Your crew already takes the photos.</p>
-				<p class="pg-sub pg-sub--tight">Answer 4 quick questions to see how much of your finished work customers may never see — and what JobCapturePro can do with one completed job.</p>
+				<p class="pg-sub pg-sub--tight">Answer 4 quick questions to see how much of that work actually reaches future customers — and what JobCapturePro can do with the rest.</p>
 
-				<div class="pg-welcome-product" data-pg-welcome-visual data-creative="default" aria-hidden="true">
+				<div class="pg-welcome-product pg-welcome-product--compact" data-pg-welcome-visual data-creative="default" aria-hidden="true">
 					<article class="pg-welcome-job ps-mock ps-mock--job">
 						<div class="ps-mock__chip-row">
 							<span class="ps-mock__chip is-good">Completed job</span>
@@ -80,19 +80,20 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 						<li>Directory</li>
 					</ul>
 				</div>
-			<div class="pg-trust">
+			<div class="pg-trust pg-trust--compact">
 					<div class="pg-trust__row">
 						<span class="pg-trust__stars" aria-label="5 out of 5 stars">★★★★★</span>
 						<span class="pg-trust__label">5-star feedback from contractors and home-service operators</span>
 						<span class="pg-trust__avatars">
-														<img src="../../../../assets/campaign/jcp-campaign-face-owner-64.webp" alt="" width="32" height="32" loading="lazy" decoding="async" />
-														<img src="../../../../assets/campaign/jcp-campaign-face-operator-64.webp" alt="" width="32" height="32" loading="lazy" decoding="async" />
-														<img src="../../../../assets/campaign/jcp-campaign-crew-review-64.webp" alt="" width="32" height="32" loading="lazy" decoding="async" />
-														<img src="../../../../assets/campaign/jcp-campaign-face-owner-64.webp" alt="" width="32" height="32" loading="lazy" decoding="async" />
-													</span>
+							<img src="../../../../assets/campaign/jcp-campaign-face-owner-64.webp" alt="" width="32" height="32" loading="lazy" decoding="async" />
+							<img src="../../../../assets/campaign/jcp-campaign-face-operator-64.webp" alt="" width="32" height="32" loading="lazy" decoding="async" />
+							<img src="../../../../assets/campaign/jcp-campaign-crew-review-64.webp" alt="" width="32" height="32" loading="lazy" decoding="async" />
+							<img src="../../../../assets/campaign/jcp-campaign-hvac-capture-360.webp" alt="" width="32" height="32" loading="lazy" decoding="async" />
+						</span>
 					</div>
-					<div class="pg-trust__row">
-						<span class="pg-trust__authority">Built by <strong>LeadsForward</strong> — 10 years · 250K+ contractor leads · $150M+ client revenue</span>
+					<div class="pg-trust__row pg-trust__row--authority">
+						<span class="pg-trust__authority">Built by the team behind <strong>LeadsForward</strong></span>
+						<span class="pg-trust__stats">10 years in home services · 250K+ contractor leads · $150M+ client revenue</span>
 					</div>
 				</div>
 			</div>
@@ -104,8 +105,12 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 				<h1 class="pg-title pg-title--sm" id="pg-trade-title">What kind of work does your company do most?</h1>
 			<div class="pg-choices pg-choices--grid pg-choices--trade" role="group" aria-labelledby="pg-trade-title" data-pg-choices="trade"></div>
 				<div class="pg-other-field" id="pgTradeOtherField" hidden>
-					<label class="pg-other-field__label" for="pgTradeOtherInput">What kind of work? (optional)</label>
+					<label class="pg-other-field__label" for="pgTradeOtherInput">Your trade (optional)</label>
 					<input class="pg-other-field__input" id="pgTradeOtherInput" type="text" maxlength="80" placeholder="e.g. Pool service, flooring, solar" autocomplete="off" />
+					<div class="pg-other-field__actions" id="pgTradeOtherActions">
+						<button type="button" class="btn btn-primary pg-btn pg-other-continue" data-pg-other-continue="trade">Continue</button>
+						<button type="button" class="pg-other-skip" data-pg-other-skip="trade">Skip</button>
+					</div>
 				</div>
 			</div>
 		</section>
@@ -120,6 +125,10 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 				<div class="pg-other-field" id="pgWorkflowOtherField" hidden>
 					<label class="pg-other-field__label" for="pgWorkflowOtherInput">Which one? (optional)</label>
 					<input class="pg-other-field__input" id="pgWorkflowOtherInput" type="text" maxlength="80" placeholder="e.g. FieldEdge, Service Fusion" autocomplete="off" />
+					<div class="pg-other-field__actions" id="pgWorkflowOtherActions">
+						<button type="button" class="btn btn-primary pg-btn pg-other-continue" data-pg-other-continue="workflow">Continue</button>
+						<button type="button" class="pg-other-skip" data-pg-other-skip="workflow">Skip</button>
+					</div>
 				</div>
 				<div class="pg-answer-summary" data-pg-summary="workflow" hidden>
 					<span class="pg-answer-summary__label">Your current workflow</span>
@@ -137,7 +146,7 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow">Your work</p>
 			<h1 class="pg-title pg-title--sm" id="pg-jobs-title">About how many jobs does your company finish in a normal week?</h1>
-				<p class="pg-hint">This helps estimate how much usable marketing material your company creates every year.</p>
+				<p class="pg-hint">We’ll estimate how much real-world marketing material your company creates every year.</p>
 				<div class="pg-choices pg-choices--compact" role="group" aria-labelledby="pg-jobs-title" data-pg-choices="jobs_per_week"></div>
 				<div class="pg-answer-summary" data-pg-summary="jobs" hidden>
 					<span class="pg-answer-summary__label">Jobs each week</span>
@@ -152,9 +161,9 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 
 		<section class="pg-state" data-pg-state="public_proof_percentage" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow">What customers see</p>
-				<h1 class="pg-title pg-title--sm" id="pg-proof-title">After a job is finished, how often does it make it onto your website, Google, social media, or into a review request?</h1>
-				<p class="pg-hint">Think about the jobs your team finishes in a normal month.</p>
+				<p class="pg-eyebrow">What gets seen</p>
+				<h1 class="pg-title pg-title--sm" id="pg-proof-title">Of those finished jobs, about how many actually make it into your marketing?</h1>
+				<p class="pg-hint">Website, Google, social media, or a review request.</p>
 				<div class="pg-choices pg-choices--proof" role="group" aria-labelledby="pg-proof-title" data-pg-choices="public_proof_percentage"></div>
 				<div class="pg-answer-summary" data-pg-summary="proof" hidden>
 					<span class="pg-answer-summary__label">Your answer</span>
@@ -169,19 +178,20 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 
 		<section class="pg-state" data-pg-state="proof_gap_result" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow">What customers see</p>
-				<h1 class="pg-title pg-title--sm" id="pgResultTitle"></h1>
+				<p class="pg-eyebrow">What gets seen</p>
 				<div class="pg-result pg-result--visual" id="pgResultCard">
 					<div class="pg-result__hero">
 						<strong class="pg-result__hero-num" id="pgResultCompleted">—</strong>
-						<span class="pg-result__hero-label">Completed jobs / year</span>
+						<span class="pg-result__hero-label" id="pgResultHeroLabel">finished jobs / year</span>
+						<p class="pg-result__hero-sub" id="pgResultHeroSub" hidden></p>
 					</div>
+					<h1 class="pg-title pg-title--sm pg-result__title" id="pgResultTitle"></h1>
 					<div class="pg-gap-viz" id="pgGapViz" aria-hidden="true"></div>
-					<ul class="pg-result__stats">
-						<li><span>Currently reused in marketing</span><strong id="pgResultPublic">—</strong></li>
-						<li id="pgResultInvisibleWrap" hidden><span>Potentially going unused</span><strong id="pgResultInvisible">—</strong></li>
+					<ul class="pg-result__stats" id="pgResultStats">
+						<li><span>Completed jobs / year</span><strong id="pgResultPublic">—</strong></li>
+						<li id="pgResultInvisibleWrap" hidden><span>Currently reused in marketing</span><strong id="pgResultInvisible">—</strong></li>
 					</ul>
-					<p class="pg-result__note">Based on the ranges you selected.</p>
+					<p class="pg-result__note" id="pgResultNote">Based on the ranges you selected.</p>
 					<div class="pg-result__support" id="pgResultSupport"></div>
 				</div>
 			</div>
@@ -190,48 +200,42 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 		<section class="pg-state" data-pg-state="email_capture" hidden>
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow">Your plan</p>
-				<h1 class="pg-title pg-title--sm">Save your results — then see what JobCapturePro does with one finished job.</h1>
-				<p class="pg-sub">Enter your email to save your answers and see how one completed job can turn into website content, Google activity, social posts, review opportunities, and more.</p>
+				<h1 class="pg-title pg-title--sm">See exactly what one of your jobs could become.</h1>
+				<p class="pg-sub">Enter your email to unlock your personalized example and save your results.</p>
 				<form class="pg-email" id="pgEmailForm" novalidate>
 					<label class="pg-email__label" for="pgEmail">Email <span class="pg-req">*</span></label>
 					<input class="pg-email__input" id="pgEmail" name="email" type="email" autocomplete="email" inputmode="email" required placeholder="you@company.com" />
 					<p class="pg-email__error" id="pgEmailError" role="alert" hidden></p>
 					<p class="pg-email__consent">We’ll email your results and relevant JobCapturePro follow-up. Unsubscribe anytime.</p>
 				</form>
-				<aside class="pg-case" aria-label="Local visibility case study"><p class="pg-case__eyebrow">Local visibility case study</p><p class="pg-case__metric"><strong>0%</strong><span aria-hidden="true">→</span><strong class="pg-case__metric-hi">84–100%</strong></p><p class="pg-case__body">Maps 3-Pack grid visibility across four tracked keyword/market combinations in ~12 weeks.</p><p class="pg-case__attr">LeadsForward + JobCapturePro local-search strategy</p><p class="pg-case__note">Past performance does not guarantee future rankings.</p></aside>
-				<aside class="pg-review-slot pg-review-slot--live" data-pg-review-slot="email"><blockquote class="pg-review pg-review--compact"><div class="pg-stars" aria-label="5 out of 5 stars"><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span></div><p class="pg-review__quote">“Awesome. It takes my work site pictures and turns them into a marketing campaign.”</p><footer class="pg-review__footer"><img class="pg-review__avatar" src="../../../../assets/campaign/jcp-campaign-face-operator-64.webp" alt="" width="32" height="32" loading="lazy" decoding="async" /><span class="pg-review__meta"><strong>Brian Hardy</strong><em>Contractor</em></span></footer></blockquote></aside>
+				<div class="pg-email-proof">
+					<aside class="pg-case" aria-label="Local visibility case study"><p class="pg-case__eyebrow">Local visibility case study</p><p class="pg-case__metric"><strong>0%</strong><span aria-hidden="true">→</span><strong class="pg-case__metric-hi">84–100%</strong></p><p class="pg-case__body">Maps 3-Pack grid visibility across four tracked keyword/market combinations in ~12 weeks.</p><p class="pg-case__attr">LeadsForward + JobCapturePro local-search strategy</p><p class="pg-case__note">Past performance does not guarantee future rankings.</p></aside>
+					<aside class="pg-review-slot pg-review-slot--live" data-pg-review-slot="email"><blockquote class="pg-review pg-review--compact"><div class="pg-stars" aria-label="5 out of 5 stars"><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span></div><p class="pg-review__quote">“Awesome. It takes my work site pictures and turns them into a marketing campaign.”</p><footer class="pg-review__footer"><img class="pg-review__avatar" src="../../../../assets/campaign/jcp-campaign-face-operator-64.webp" alt="" width="32" height="32" loading="lazy" decoding="async" /><span class="pg-review__meta"><strong>Brian Hardy</strong><em>Contractor</em></span></footer></blockquote></aside>
+				</div>
 			</div>
 		</section>
 
 		<section class="pg-state pg-state--reveal" data-pg-state="product_reveal" hidden>
 			<div class="pg-state__inner pg-state__inner--wide">
 				<p class="pg-eyebrow">Your plan</p>
-				<h1 class="pg-title pg-title--sm" id="pgRevealTitle">Here’s what one finished job could become.</h1>
-				<p class="pg-sub pg-sub--tight" id="pgRevealSubline">Your crew finishes the job and takes the photos. JobCapturePro takes it from there.</p>
+				<h1 class="pg-title pg-title--sm" id="pgRevealTitle">Here’s what one finished job can become.</h1>
+				<p class="pg-sub pg-sub--tight" id="pgRevealSubline">Your crew finishes the job and takes the photos. JobCapturePro handles the marketing steps after that.</p>
 
-				<article class="pg-job-card pg-job-card--compact" id="pgJobCard">
-					<div class="pg-job-card__media" id="pgJobMedia">
-						<img class="pg-job-card__photo" id="pgJobPhoto" alt="" width="640" height="360" loading="lazy" decoding="async" hidden />
-						<div class="pg-job-card__neutral" id="pgJobNeutral" hidden>
-							<span class="pg-job-card__neutral-icon" aria-hidden="true">✓</span>
-							<span>Completed job</span>
-						</div>
+				<div class="pg-transform-rail" id="pgTransformRail" aria-hidden="true">
+					<div class="pg-transform-rail__job">
+						<img class="pg-transform-rail__thumb" id="pgRailThumb" alt="" width="56" height="56" hidden />
+						<span class="pg-transform-rail__thumb pg-transform-rail__thumb--neutral" id="pgRailThumbNeutral" hidden>✓</span>
+						<span class="pg-transform-rail__meta"><strong id="pgRailJobLabel">1 completed job</strong></span>
 					</div>
-					<div class="pg-job-card__body">
-						<span class="pg-job-card__badge" id="pgJobBadge">Completed job</span>
-						<span class="pg-job-card__trade" id="pgJobTrade"></span>
-						<strong class="pg-job-card__title" id="pgJobTitle">—</strong>
-						<p class="pg-job-card__source" id="pgRevealSource">Captured from the field</p>
+					<span class="pg-transform-rail__arrow" aria-hidden="true">→</span>
+					<div class="pg-transform-rail__jcp">
+						<span class="pg-transform-rail__jcp-mark">JCP</span>
+						<span>JobCapturePro</span>
 					</div>
-				</article>
+					<span class="pg-transform-rail__arrow" aria-hidden="true">→</span>
+					<span class="pg-transform-rail__out">5 marketing outputs</span>
+				</div>
 
-				<p class="pg-reveal-flow" aria-hidden="true">
-					<span class="pg-reveal-flow__step"><span class="pg-reveal-flow__label">One completed job</span></span>
-					<span class="pg-reveal-flow__arrow" aria-hidden="true">↓</span>
-					<span class="pg-reveal-flow__step pg-reveal-flow__step--jcp"><span class="pg-reveal-flow__label">JobCapturePro</span></span>
-					<span class="pg-reveal-flow__arrow" aria-hidden="true">↓</span>
-					<span class="pg-reveal-flow__step"><span class="pg-reveal-flow__note">Website · Google · Social · Reviews · Directory</span></span>
-				</p>
 				<p class="pg-reveal-same" id="pgRevealSame">From the same job</p>
 				<div class="pg-dest-tabs" role="tablist" aria-label="Where this job can show up">
 					<button type="button" class="pg-dest-tab is-active" role="tab" aria-selected="true" data-dest="website">Website</button>
@@ -254,32 +258,31 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 		<section class="pg-state pg-state--trial" data-pg-state="trial_bridge" hidden>
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow">Your plan</p>
-				<h1 class="pg-title pg-title--sm">Your crew already does the hard part.</h1>
-				<p class="pg-sub pg-sub--tight">Keep finishing jobs. Keep taking the photos. Let JobCapturePro handle what happens next.</p>
+				<h1 class="pg-title pg-title--sm">Your crew already does the hard part. Put the next job to work.</h1>
+				<p class="pg-sub pg-sub--tight">Start free for 14 days. Connect the workflow you already use, capture a real job, and see what JobCapturePro can do with it.</p>
 
 				<div class="pg-plan-card" id="pgPlanCard">
-					<div class="pg-plan-card__hero">
-						<strong class="pg-plan-card__num" id="pgPlanAnnual">—</strong>
-						<span class="pg-plan-card__label">completed jobs / year</span>
-					</div>
+					<p class="pg-plan-card__kicker">Your setup</p>
 					<ul class="pg-plan-chips" id="pgTrialSummary"></ul>
+					<p class="pg-plan-first-win" id="pgTrialFirstWin"></p>
 				<div class="pg-plan-next">
-					<p class="pg-plan-next__title">What JobCapturePro does after the job</p>
+					<p class="pg-plan-next__title">How JobCapturePro works</p>
 					<ul class="pg-plan-steps">
 						<li class="pg-plan-step">
 							<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="13" r="3"/><line x1="12" y1="7" x2="12" y2="7.01"/></svg></span>
-							<span><strong>Capture</strong> — Use the job photos and details your team already creates.</span>
+							<span><strong>Capture</strong> — Use job photos and details your team already creates.</span>
 						</li>
 						<li class="pg-plan-step">
 							<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
-							<span><strong>Create</strong> — Turn the completed job into customer-facing marketing content.</span>
+							<span><strong>Create</strong> — Turn the finished job into customer-facing marketing content.</span>
 						</li>
 						<li class="pg-plan-step">
 							<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
-							<span><strong>Publish</strong> — Send it to your connected website, Google, social, review, and directory channels.</span>
+							<span><strong>Publish</strong> — Send it to your connected website, Google, social, review and directory channels.</span>
 						</li>
 					</ul>
 				</div>
+					<p class="pg-plan-outcome">Built to help contractors get found, get trusted, and get chosen — using work the company is already doing.</p>
 					<p class="pg-continuity pg-continuity--trial" id="pgTrialContinuity" hidden></p>
 				</div>
 

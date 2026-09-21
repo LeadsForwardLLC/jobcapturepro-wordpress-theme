@@ -36,10 +36,14 @@ const STEPS = [
   '16-trial',
 ];
 
-const VIEWPORTS = [
-  { width: 390, height: 844, prefix: 'mobile', label: 'Mobile 390×844' },
-  { width: 1440, height: 900, prefix: 'desktop', label: 'Desktop 1440×900' },
-];
+  const VIEWPORTS = [
+    { width: 375, height: 812, prefix: 'm375', label: 'Mobile 375×812' },
+    { width: 390, height: 844, prefix: 'mobile', label: 'Mobile 390×844' },
+    { width: 430, height: 932, prefix: 'm430', label: 'Mobile 430×932' },
+    { width: 1366, height: 768, prefix: 'd1366', label: 'Desktop 1366×768' },
+    { width: 1440, height: 900, prefix: 'desktop', label: 'Desktop 1440×900' },
+    { width: 1920, height: 1080, prefix: 'd1920', label: 'Desktop 1920×1080' },
+  ];
 
 function startServer() {
   return new Promise((resolve, reject) => {
@@ -137,7 +141,7 @@ async function runFunnel(page, prefix) {
   await page.waitForSelector('[data-pg-state="trade"]:not([hidden])');
   await take('02-trade');
 
-  await clickChoice(page, 'Electrical');
+  await clickChoice(page, 'HVAC');
   await page.waitForSelector('[data-pg-state="current_workflow"]:not([hidden])');
   await take('03-workflow');
 
@@ -156,7 +160,7 @@ async function runFunnel(page, prefix) {
   await page.waitForSelector('[data-pg-state="public_proof_percentage"]:not([hidden])');
   await take('07-visibility');
   await clickChoice(page, 'About half');
-  await waitBottom(page, 'See What Customers See');
+  await waitBottom(page, 'Show Me What');
   await take('08-visibility-insight');
   await clickBottom(page);
 

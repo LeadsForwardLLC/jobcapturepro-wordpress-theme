@@ -51,7 +51,7 @@ function jcp_sales_tool_default_reviews(): array {
 			'role'      => 'Business owner',
 			'quote'     => 'JobCapturePro has been a game changer for my business!',
 			'rating'    => 5,
-			'avatar'    => $campaign . 'jcp-campaign-hvac-capture.jpg',
+			'avatar'    => $campaign . 'jcp-campaign-face-owner.jpg',
 			'avatarAlt' => 'Heriberto Eddie Roman',
 		],
 	];

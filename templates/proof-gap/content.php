@@ -102,12 +102,12 @@ $render_case = static function (): void {
 
 		<section class="pg-state pg-state--welcome" data-pg-state="welcome" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"><?php esc_html_e( 'The 60-second proof gap check', 'jcp-core' ); ?></p>
+				<p class="pg-eyebrow"><?php esc_html_e( 'The 60-second job visibility check', 'jcp-core' ); ?></p>
 				<h1 class="pg-title"><?php esc_html_e( 'How much of your best work disappears after the truck leaves?', 'jcp-core' ); ?></h1>
 				<p class="pg-sub"><?php esc_html_e( 'Your crew already takes the photos.', 'jcp-core' ); ?></p>
-				<p class="pg-sub pg-sub--tight"><?php esc_html_e( 'Answer 4 quick questions to see how much of your finished work customers may never see — and what JobCapturePro can do with one completed job.', 'jcp-core' ); ?></p>
+				<p class="pg-sub pg-sub--tight"><?php esc_html_e( 'Answer 4 quick questions to see how much of that work actually reaches future customers — and what JobCapturePro can do with the rest.', 'jcp-core' ); ?></p>
 
-				<div class="pg-welcome-product" data-pg-welcome-visual data-creative="default" aria-hidden="true">
+				<div class="pg-welcome-product pg-welcome-product--compact" data-pg-welcome-visual data-creative="default" aria-hidden="true">
 					<article class="pg-welcome-job ps-mock ps-mock--job">
 						<div class="ps-mock__chip-row">
 							<span class="ps-mock__chip is-good"><?php esc_html_e( 'Completed job', 'jcp-core' ); ?></span>
@@ -147,20 +147,20 @@ $render_case = static function (): void {
 						<li><?php esc_html_e( 'Directory', 'jcp-core' ); ?></li>
 					</ul>
 				</div>
-			<div class="pg-trust">
+			<div class="pg-trust pg-trust--compact">
 					<div class="pg-trust__row">
 						<span class="pg-trust__stars" aria-label="<?php esc_attr_e( '5 out of 5 stars', 'jcp-core' ); ?>">★★★★★</span>
 						<span class="pg-trust__label"><?php esc_html_e( '5-star feedback from contractors and home-service operators', 'jcp-core' ); ?></span>
-						<?php if ( ! empty( $trust_avatars ) ) : ?>
 						<span class="pg-trust__avatars">
-							<?php foreach ( $trust_avatars as $av_url ) : ?>
-							<img src="<?php echo esc_url( $av_url ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
-							<?php endforeach; ?>
+							<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-owner-64.webp' ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
+							<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-operator-64.webp' ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
+							<img src="<?php echo esc_url( $campaign . 'jcp-campaign-crew-review-64.webp' ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
+							<img src="<?php echo esc_url( $campaign . 'jcp-campaign-hvac-capture-360.webp' ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
 						</span>
-						<?php endif; ?>
 					</div>
-					<div class="pg-trust__row">
-						<span class="pg-trust__authority"><?php echo wp_kses_post( __( 'Built by <strong>LeadsForward</strong> — 10 years · 250K+ contractor leads · $150M+ client revenue', 'jcp-core' ) ); ?></span>
+					<div class="pg-trust__row pg-trust__row--authority">
+						<span class="pg-trust__authority"><?php echo wp_kses_post( __( 'Built by the team behind <strong>LeadsForward</strong>', 'jcp-core' ) ); ?></span>
+						<span class="pg-trust__stats"><?php esc_html_e( '10 years in home services · 250K+ contractor leads · $150M+ client revenue', 'jcp-core' ); ?></span>
 					</div>
 				</div>
 			</div>
@@ -172,8 +172,12 @@ $render_case = static function (): void {
 				<h1 class="pg-title pg-title--sm" id="pg-trade-title"><?php esc_html_e( 'What kind of work does your company do most?', 'jcp-core' ); ?></h1>
 			<div class="pg-choices pg-choices--grid pg-choices--trade" role="group" aria-labelledby="pg-trade-title" data-pg-choices="trade"></div>
 				<div class="pg-other-field" id="pgTradeOtherField" hidden>
-					<label class="pg-other-field__label" for="pgTradeOtherInput"><?php esc_html_e( 'What kind of work? (optional)', 'jcp-core' ); ?></label>
+					<label class="pg-other-field__label" for="pgTradeOtherInput"><?php esc_html_e( 'Your trade (optional)', 'jcp-core' ); ?></label>
 					<input class="pg-other-field__input" id="pgTradeOtherInput" type="text" maxlength="80" placeholder="<?php esc_attr_e( 'e.g. Pool service, flooring, solar', 'jcp-core' ); ?>" autocomplete="off" />
+					<div class="pg-other-field__actions" id="pgTradeOtherActions">
+						<button type="button" class="btn btn-primary pg-btn pg-other-continue" data-pg-other-continue="trade"><?php esc_html_e( 'Continue', 'jcp-core' ); ?></button>
+						<button type="button" class="pg-other-skip" data-pg-other-skip="trade"><?php esc_html_e( 'Skip', 'jcp-core' ); ?></button>
+					</div>
 				</div>
 			</div>
 		</section>
@@ -188,6 +192,10 @@ $render_case = static function (): void {
 				<div class="pg-other-field" id="pgWorkflowOtherField" hidden>
 					<label class="pg-other-field__label" for="pgWorkflowOtherInput"><?php esc_html_e( 'Which one? (optional)', 'jcp-core' ); ?></label>
 					<input class="pg-other-field__input" id="pgWorkflowOtherInput" type="text" maxlength="80" placeholder="<?php esc_attr_e( 'e.g. FieldEdge, Service Fusion', 'jcp-core' ); ?>" autocomplete="off" />
+					<div class="pg-other-field__actions" id="pgWorkflowOtherActions">
+						<button type="button" class="btn btn-primary pg-btn pg-other-continue" data-pg-other-continue="workflow"><?php esc_html_e( 'Continue', 'jcp-core' ); ?></button>
+						<button type="button" class="pg-other-skip" data-pg-other-skip="workflow"><?php esc_html_e( 'Skip', 'jcp-core' ); ?></button>
+					</div>
 				</div>
 				<div class="pg-answer-summary" data-pg-summary="workflow" hidden>
 					<span class="pg-answer-summary__label"><?php esc_html_e( 'Your current workflow', 'jcp-core' ); ?></span>
@@ -205,7 +213,7 @@ $render_case = static function (): void {
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( 'Your work', 'jcp-core' ); ?></p>
 			<h1 class="pg-title pg-title--sm" id="pg-jobs-title"><?php esc_html_e( 'About how many jobs does your company finish in a normal week?', 'jcp-core' ); ?></h1>
-				<p class="pg-hint"><?php esc_html_e( 'This helps estimate how much usable marketing material your company creates every year.', 'jcp-core' ); ?></p>
+				<p class="pg-hint"><?php esc_html_e( 'We’ll estimate how much real-world marketing material your company creates every year.', 'jcp-core' ); ?></p>
 				<div class="pg-choices pg-choices--compact" role="group" aria-labelledby="pg-jobs-title" data-pg-choices="jobs_per_week"></div>
 				<div class="pg-answer-summary" data-pg-summary="jobs" hidden>
 					<span class="pg-answer-summary__label"><?php esc_html_e( 'Jobs each week', 'jcp-core' ); ?></span>
@@ -220,9 +228,9 @@ $render_case = static function (): void {
 
 		<section class="pg-state" data-pg-state="public_proof_percentage" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"><?php esc_html_e( 'What customers see', 'jcp-core' ); ?></p>
-				<h1 class="pg-title pg-title--sm" id="pg-proof-title"><?php esc_html_e( 'After a job is finished, how often does it make it onto your website, Google, social media, or into a review request?', 'jcp-core' ); ?></h1>
-				<p class="pg-hint"><?php esc_html_e( 'Think about the jobs your team finishes in a normal month.', 'jcp-core' ); ?></p>
+				<p class="pg-eyebrow"><?php esc_html_e( 'What gets seen', 'jcp-core' ); ?></p>
+				<h1 class="pg-title pg-title--sm" id="pg-proof-title"><?php esc_html_e( 'Of those finished jobs, about how many actually make it into your marketing?', 'jcp-core' ); ?></h1>
+				<p class="pg-hint"><?php esc_html_e( 'Website, Google, social media, or a review request.', 'jcp-core' ); ?></p>
 				<div class="pg-choices pg-choices--proof" role="group" aria-labelledby="pg-proof-title" data-pg-choices="public_proof_percentage"></div>
 				<div class="pg-answer-summary" data-pg-summary="proof" hidden>
 					<span class="pg-answer-summary__label"><?php esc_html_e( 'Your answer', 'jcp-core' ); ?></span>
@@ -237,19 +245,20 @@ $render_case = static function (): void {
 
 		<section class="pg-state" data-pg-state="proof_gap_result" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"><?php esc_html_e( 'What customers see', 'jcp-core' ); ?></p>
-				<h1 class="pg-title pg-title--sm" id="pgResultTitle"></h1>
+				<p class="pg-eyebrow"><?php esc_html_e( 'What gets seen', 'jcp-core' ); ?></p>
 				<div class="pg-result pg-result--visual" id="pgResultCard">
 					<div class="pg-result__hero">
 						<strong class="pg-result__hero-num" id="pgResultCompleted">—</strong>
-						<span class="pg-result__hero-label"><?php esc_html_e( 'Completed jobs / year', 'jcp-core' ); ?></span>
+						<span class="pg-result__hero-label" id="pgResultHeroLabel"><?php esc_html_e( 'finished jobs / year', 'jcp-core' ); ?></span>
+						<p class="pg-result__hero-sub" id="pgResultHeroSub" hidden></p>
 					</div>
+					<h1 class="pg-title pg-title--sm pg-result__title" id="pgResultTitle"></h1>
 					<div class="pg-gap-viz" id="pgGapViz" aria-hidden="true"></div>
-					<ul class="pg-result__stats">
-						<li><span><?php esc_html_e( 'Currently reused in marketing', 'jcp-core' ); ?></span><strong id="pgResultPublic">—</strong></li>
-						<li id="pgResultInvisibleWrap" hidden><span><?php esc_html_e( 'Potentially going unused', 'jcp-core' ); ?></span><strong id="pgResultInvisible">—</strong></li>
+					<ul class="pg-result__stats" id="pgResultStats">
+						<li><span><?php esc_html_e( 'Completed jobs / year', 'jcp-core' ); ?></span><strong id="pgResultPublic">—</strong></li>
+						<li id="pgResultInvisibleWrap" hidden><span><?php esc_html_e( 'Currently reused in marketing', 'jcp-core' ); ?></span><strong id="pgResultInvisible">—</strong></li>
 					</ul>
-					<p class="pg-result__note"><?php esc_html_e( 'Based on the ranges you selected.', 'jcp-core' ); ?></p>
+					<p class="pg-result__note" id="pgResultNote"><?php esc_html_e( 'Based on the ranges you selected.', 'jcp-core' ); ?></p>
 					<div class="pg-result__support" id="pgResultSupport"></div>
 				</div>
 			</div>
@@ -258,48 +267,42 @@ $render_case = static function (): void {
 		<section class="pg-state" data-pg-state="email_capture" hidden>
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( 'Your plan', 'jcp-core' ); ?></p>
-				<h1 class="pg-title pg-title--sm"><?php esc_html_e( 'Save your results — then see what JobCapturePro does with one finished job.', 'jcp-core' ); ?></h1>
-				<p class="pg-sub"><?php esc_html_e( 'Enter your email to save your answers and see how one completed job can turn into website content, Google activity, social posts, review opportunities, and more.', 'jcp-core' ); ?></p>
+				<h1 class="pg-title pg-title--sm"><?php esc_html_e( 'See exactly what one of your jobs could become.', 'jcp-core' ); ?></h1>
+				<p class="pg-sub"><?php esc_html_e( 'Enter your email to unlock your personalized example and save your results.', 'jcp-core' ); ?></p>
 				<form class="pg-email" id="pgEmailForm" novalidate>
 					<label class="pg-email__label" for="pgEmail"><?php esc_html_e( 'Email', 'jcp-core' ); ?> <span class="pg-req">*</span></label>
 					<input class="pg-email__input" id="pgEmail" name="email" type="email" autocomplete="email" inputmode="email" required placeholder="you@company.com" />
 					<p class="pg-email__error" id="pgEmailError" role="alert" hidden></p>
 					<p class="pg-email__consent"><?php esc_html_e( 'We’ll email your results and relevant JobCapturePro follow-up. Unsubscribe anytime.', 'jcp-core' ); ?></p>
 				</form>
-				<?php $render_case(); ?>
-				<?php $render_review( $email_rev, 'email' ); ?>
+				<div class="pg-email-proof">
+					<?php $render_case(); ?>
+					<?php $render_review( $email_rev, 'email' ); ?>
+				</div>
 			</div>
 		</section>
 
 		<section class="pg-state pg-state--reveal" data-pg-state="product_reveal" hidden>
 			<div class="pg-state__inner pg-state__inner--wide">
 				<p class="pg-eyebrow"><?php esc_html_e( 'Your plan', 'jcp-core' ); ?></p>
-				<h1 class="pg-title pg-title--sm" id="pgRevealTitle"><?php esc_html_e( 'Here’s what one finished job could become.', 'jcp-core' ); ?></h1>
-				<p class="pg-sub pg-sub--tight" id="pgRevealSubline"><?php esc_html_e( 'Your crew finishes the job and takes the photos. JobCapturePro takes it from there.', 'jcp-core' ); ?></p>
+				<h1 class="pg-title pg-title--sm" id="pgRevealTitle"><?php esc_html_e( 'Here’s what one finished job can become.', 'jcp-core' ); ?></h1>
+				<p class="pg-sub pg-sub--tight" id="pgRevealSubline"><?php esc_html_e( 'Your crew finishes the job and takes the photos. JobCapturePro handles the marketing steps after that.', 'jcp-core' ); ?></p>
 
-				<article class="pg-job-card pg-job-card--compact" id="pgJobCard">
-					<div class="pg-job-card__media" id="pgJobMedia">
-						<img class="pg-job-card__photo" id="pgJobPhoto" alt="" width="640" height="360" loading="lazy" decoding="async" hidden />
-						<div class="pg-job-card__neutral" id="pgJobNeutral" hidden>
-							<span class="pg-job-card__neutral-icon" aria-hidden="true">✓</span>
-							<span><?php esc_html_e( 'Completed job', 'jcp-core' ); ?></span>
-						</div>
+				<div class="pg-transform-rail" id="pgTransformRail" aria-hidden="true">
+					<div class="pg-transform-rail__job">
+						<img class="pg-transform-rail__thumb" id="pgRailThumb" alt="" width="56" height="56" hidden />
+						<span class="pg-transform-rail__thumb pg-transform-rail__thumb--neutral" id="pgRailThumbNeutral" hidden>✓</span>
+						<span class="pg-transform-rail__meta"><strong id="pgRailJobLabel"><?php esc_html_e( '1 completed job', 'jcp-core' ); ?></strong></span>
 					</div>
-					<div class="pg-job-card__body">
-						<span class="pg-job-card__badge" id="pgJobBadge"><?php esc_html_e( 'Completed job', 'jcp-core' ); ?></span>
-						<span class="pg-job-card__trade" id="pgJobTrade"></span>
-						<strong class="pg-job-card__title" id="pgJobTitle">—</strong>
-						<p class="pg-job-card__source" id="pgRevealSource"><?php esc_html_e( 'Captured from the field', 'jcp-core' ); ?></p>
+					<span class="pg-transform-rail__arrow" aria-hidden="true">→</span>
+					<div class="pg-transform-rail__jcp">
+						<span class="pg-transform-rail__jcp-mark">JCP</span>
+						<span><?php esc_html_e( 'JobCapturePro', 'jcp-core' ); ?></span>
 					</div>
-				</article>
+					<span class="pg-transform-rail__arrow" aria-hidden="true">→</span>
+					<span class="pg-transform-rail__out"><?php esc_html_e( '5 marketing outputs', 'jcp-core' ); ?></span>
+				</div>
 
-				<p class="pg-reveal-flow" aria-hidden="true">
-					<span class="pg-reveal-flow__step"><span class="pg-reveal-flow__label"><?php esc_html_e( 'One completed job', 'jcp-core' ); ?></span></span>
-					<span class="pg-reveal-flow__arrow" aria-hidden="true">↓</span>
-					<span class="pg-reveal-flow__step pg-reveal-flow__step--jcp"><span class="pg-reveal-flow__label"><?php esc_html_e( 'JobCapturePro', 'jcp-core' ); ?></span></span>
-					<span class="pg-reveal-flow__arrow" aria-hidden="true">↓</span>
-					<span class="pg-reveal-flow__step"><span class="pg-reveal-flow__note"><?php esc_html_e( 'Website · Google · Social · Reviews · Directory', 'jcp-core' ); ?></span></span>
-				</p>
 				<p class="pg-reveal-same" id="pgRevealSame"><?php esc_html_e( 'From the same job', 'jcp-core' ); ?></p>
 				<div class="pg-dest-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Where this job can show up', 'jcp-core' ); ?>">
 					<button type="button" class="pg-dest-tab is-active" role="tab" aria-selected="true" data-dest="website"><?php esc_html_e( 'Website', 'jcp-core' ); ?></button>
@@ -322,32 +325,31 @@ $render_case = static function (): void {
 		<section class="pg-state pg-state--trial" data-pg-state="trial_bridge" hidden>
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( 'Your plan', 'jcp-core' ); ?></p>
-				<h1 class="pg-title pg-title--sm"><?php esc_html_e( 'Your crew already does the hard part.', 'jcp-core' ); ?></h1>
-				<p class="pg-sub pg-sub--tight"><?php esc_html_e( 'Keep finishing jobs. Keep taking the photos. Let JobCapturePro handle what happens next.', 'jcp-core' ); ?></p>
+				<h1 class="pg-title pg-title--sm"><?php esc_html_e( 'Your crew already does the hard part. Put the next job to work.', 'jcp-core' ); ?></h1>
+				<p class="pg-sub pg-sub--tight"><?php esc_html_e( 'Start free for 14 days. Connect the workflow you already use, capture a real job, and see what JobCapturePro can do with it.', 'jcp-core' ); ?></p>
 
 				<div class="pg-plan-card" id="pgPlanCard">
-					<div class="pg-plan-card__hero">
-						<strong class="pg-plan-card__num" id="pgPlanAnnual">—</strong>
-						<span class="pg-plan-card__label"><?php esc_html_e( 'completed jobs / year', 'jcp-core' ); ?></span>
-					</div>
+					<p class="pg-plan-card__kicker"><?php esc_html_e( 'Your setup', 'jcp-core' ); ?></p>
 					<ul class="pg-plan-chips" id="pgTrialSummary"></ul>
+					<p class="pg-plan-first-win" id="pgTrialFirstWin"></p>
 				<div class="pg-plan-next">
-					<p class="pg-plan-next__title"><?php esc_html_e( 'What JobCapturePro does after the job', 'jcp-core' ); ?></p>
+					<p class="pg-plan-next__title"><?php esc_html_e( 'How JobCapturePro works', 'jcp-core' ); ?></p>
 					<ul class="pg-plan-steps">
 						<li class="pg-plan-step">
 							<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="13" r="3"/><line x1="12" y1="7" x2="12" y2="7.01"/></svg></span>
-							<span><strong><?php esc_html_e( 'Capture', 'jcp-core' ); ?></strong> — <?php esc_html_e( 'Use the job photos and details your team already creates.', 'jcp-core' ); ?></span>
+							<span><strong><?php esc_html_e( 'Capture', 'jcp-core' ); ?></strong> — <?php esc_html_e( 'Use job photos and details your team already creates.', 'jcp-core' ); ?></span>
 						</li>
 						<li class="pg-plan-step">
 							<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
-							<span><strong><?php esc_html_e( 'Create', 'jcp-core' ); ?></strong> — <?php esc_html_e( 'Turn the completed job into customer-facing marketing content.', 'jcp-core' ); ?></span>
+							<span><strong><?php esc_html_e( 'Create', 'jcp-core' ); ?></strong> — <?php esc_html_e( 'Turn the finished job into customer-facing marketing content.', 'jcp-core' ); ?></span>
 						</li>
 						<li class="pg-plan-step">
 							<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
-							<span><strong><?php esc_html_e( 'Publish', 'jcp-core' ); ?></strong> — <?php esc_html_e( 'Send it to your connected website, Google, social, review, and directory channels.', 'jcp-core' ); ?></span>
+							<span><strong><?php esc_html_e( 'Publish', 'jcp-core' ); ?></strong> — <?php esc_html_e( 'Send it to your connected website, Google, social, review and directory channels.', 'jcp-core' ); ?></span>
 						</li>
 					</ul>
 				</div>
+					<p class="pg-plan-outcome"><?php esc_html_e( 'Built to help contractors get found, get trusted, and get chosen — using work the company is already doing.', 'jcp-core' ); ?></p>
 					<p class="pg-continuity pg-continuity--trial" id="pgTrialContinuity" hidden></p>
 				</div>
 

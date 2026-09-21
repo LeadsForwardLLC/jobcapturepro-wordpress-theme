@@ -53,36 +53,36 @@
   var WORKFLOW_INSIGHTS = {
     housecall_pro: {
       variant: 'housecall_pro',
-      headline: 'Your crew may not need to change a thing.',
-      body: 'JobCapturePro can work with supported systems to turn completed-job photos into marketing without asking technicians to repeat the work in another app.',
-      body2: 'The goal: finish the job, take the photos, and let JobCapturePro handle what happens next.',
+      headline: 'Good news: your crew may not need to change a thing.',
+      body: 'If your team already captures job photos in Housecall Pro, JobCapturePro can work with supported workflows so your techs keep doing what they already do.',
+      body2: 'Finish job → Take photos → JobCapturePro puts them to work',
     },
     companycam: {
       variant: 'companycam',
-      headline: 'Your crew may not need to change a thing.',
-      body: 'JobCapturePro can work with supported systems to turn completed-job photos into marketing without asking technicians to repeat the work in another app.',
-      body2: 'The goal: finish the job, take the photos, and let JobCapturePro handle what happens next.',
+      headline: 'Good news: your crew may not need to change a thing.',
+      body: 'If your team already captures job photos in CompanyCam, JobCapturePro can work with supported workflows so your techs keep doing what they already do.',
+      body2: 'Finish job → Take photos → JobCapturePro puts them to work',
     },
     other_crm: {
       variant: 'other_crm',
-      headline: 'You may be able to keep the workflow your crew already uses.',
-      body: 'With supported systems, JobCapturePro can use the job photos your team is already capturing — so your technicians do not have to become marketers.',
-      body2: 'The goal: finish the job, take the photos, and let JobCapturePro handle what happens next.',
+      headline: 'You may be able to keep the workflow you already use.',
+      body: 'JobCapturePro is designed to use existing job/photo workflows where supported instead of giving your technicians another marketing task.',
+      body2: 'Finish job → Take photos → JobCapturePro puts them to work',
     },
     phones_camera_roll: {
       variant: 'phones_camera_roll',
-      headline: 'Your crew is already creating the raw material.',
-      body: 'Those job photos can become website content, Google updates, social posts, review opportunities, and more — instead of staying buried on a phone.',
+      headline: 'The photos already exist. They just need somewhere useful to go.',
+      body: 'Your team can create a JobCapturePro check-in from the field so a completed job can become useful marketing after the work is done.',
     },
     group_text_shared_folder: {
       variant: 'group_text_shared_folder',
-      headline: 'The finished work already exists.',
-      body: 'It is just stored somewhere customers cannot automatically see. Turning it into website, Google, social, and review activity becomes another manual task.',
+      headline: 'Your crew is already creating the content.',
+      body: 'JobCapturePro gives those finished-job photos a repeatable path into customer-facing marketing.',
     },
     scattered: {
       variant: 'scattered',
-      headline: 'That is exactly the problem.',
-      body: 'When finished-job photos live in several places, consistently turning every job into website, Google, social, and review activity becomes another job of its own.',
+      headline: 'This is exactly where finished jobs get lost.',
+      body: 'JobCapturePro creates one repeatable workflow for turning real jobs and photos into marketing assets.',
     },
   };
 
@@ -90,12 +90,12 @@
     website: {
       label: 'Website',
       headline: 'Turn finished jobs into real project and service-area content.',
-      small: 'Real photos. Real work. Real locations.',
+      small: 'Show future customers real work you’ve completed near them.',
     },
     google: {
       label: 'Google Business Profile',
-      headline: 'Keep your Google profile active with real completed jobs.',
-      small: 'Publish job-based updates when connected.',
+      headline: 'Keep your Google Business Profile active with real completed jobs.',
+      small: 'Keep your profile active with real job activity.',
     },
     social: {
       label: 'Social',
@@ -105,7 +105,7 @@
     reviews: {
       label: 'Reviews',
       headline: 'Turn a finished job into a review opportunity.',
-      small: 'Send a request or show the customer a QR code.',
+      small: 'Create more consistent opportunities to ask at the right time.',
     },
     directory: {
       label: 'JobCapturePro Directory',
@@ -150,6 +150,9 @@
   var autoplayOrder = ['website', 'google', 'social', 'reviews', 'directory'];
   var autoplayIndex = 0;
   var autoplayPaused = false;
+  var autoplayResumeTimer = null;
+  var AUTOPLAY_MS = 5500;
+  var AUTOPLAY_RESUME_MS = 10000;
 
   function syncBottomPad() {
     var bar = document.getElementById('pgBottomAction');
@@ -245,8 +248,8 @@
     if (id === 'welcome') {
       setBottomAction({
         id: 'pgWelcomeCta',
-        label: 'See How Much Work Goes Unseen →',
-        micro: 'About 60 seconds · No phone required · No credit card',
+        label: 'See What Your Jobs Could Be Doing →',
+        micro: '4 quick questions · About 60 seconds · No phone · No credit card',
         animate: false,
         onClick: function () {
           markCompleted('welcome');
@@ -300,7 +303,7 @@
     if (id === 'product_reveal') {
       setBottomAction({
         id: 'pgRevealContinue',
-        label: 'See My Trial Plan →',
+        label: 'Show Me My Setup →',
         animate: false,
         onClick: function () {
           state.product_reveal_completed = true;
@@ -321,7 +324,7 @@
         id: 'pgTrialCta',
         label: 'Start My Free 14-Day Trial →',
         href: '#',
-        micro: 'Connect your workflow and put your next completed job to work.\nNo credit card required.',
+        micro: 'No credit card required.\nYour email is already filled in.',
         animate: false,
         onClick: function () {
           state.trial_cta_clicked = true;
@@ -752,9 +755,9 @@
         'jobs',
         {
           headline: 'That’s roughly ' + formatAnnualRange() + ' completed jobs every year.',
-          body: 'You probably do not have a content problem.',
+          body: 'Your company probably does not have a content-creation problem.',
           body2:
-            'Your company already creates hundreds of real job stories, photos, locations, and review opportunities every year.',
+            'Your team is already creating real job stories, photos, locations, and review opportunities every week.',
           extraHtml: typeof buildJobsStackHtml === 'function' ? buildJobsStackHtml() : '',
         },
         'public_proof_percentage',
@@ -767,24 +770,37 @@
         headline: '',
         body: '',
         body2: '',
-        extraHtml: typeof buildProofGridHtml === 'function' ? buildProofGridHtml(ans) : '',
+        extraHtml: typeof buildProofGridHtml === 'function' ? buildProofGridHtml() : '',
       };
-      if (tier === 'low' || tier === 'mid') {
-        insight.headline = 'A lot of completed work may be disappearing after the job is done.';
-        insight.body = 'Those jobs already happened. Your crew already took the photos.';
-        insight.body2 =
-          'The missed opportunity is that many never become: Website content · Google updates · Social posts · Review requests';
-      } else if (tier === 'high') {
-        insight.headline = 'You’re already doing the hard part.';
-        insight.body =
-          'The opportunity is removing the manual work required to turn each finished job into website, Google, social, and review activity.';
-      } else {
-        insight.headline = 'Not knowing is useful information too.';
-        insight.body =
-          'If it’s hard to tell what happens after the crew leaves, the process may not be repeatable yet.';
-      }
-      showInsight('proof', insight, 'proof_gap_result', 'See What Customers See →');
+      applyVisibilityInsight(insight, tier, ans);
+      showInsight('proof', insight, 'proof_gap_result', visibilityCta(tier));
     }
+  }
+
+  function visibilityCta(tier) {
+    if (tier === 'high') return 'Show Me What I Could Automate →';
+    if (tier === 'unknown') return 'Show Me The Opportunity →';
+    return 'Show Me What I’m Missing →';
+  }
+
+  function applyVisibilityInsight(insight, tier, key) {
+    if (key === '0_10' || key === '11_25') {
+      insight.headline = 'Most of the work is disappearing after the job is done.';
+    } else if (key === '26_50') {
+      insight.headline = 'More than half of your finished jobs may never reach a future customer.';
+    } else if (key === '51_75') {
+      insight.headline = 'You’re using some of the work — but a meaningful share is still getting left behind.';
+    } else if (key === '76_100') {
+      insight.headline = 'You’re already doing the hard part.';
+      insight.body =
+        'The opportunity is removing the manual work between capture and publishing.';
+      return;
+    } else {
+      insight.headline = 'That’s common when there isn’t one repeatable system for what happens after the job.';
+    }
+    insight.body = 'The jobs already happened. Your crew already took the photos.';
+    insight.body2 =
+      'The missed opportunity is what they never become: Website content · Google activity · Social posts · Review opportunities';
   }
 
   function getTradeAsset(trade) {
@@ -805,12 +821,14 @@
 
   function getJobPhotoUrl() {
     var asset = getTradeAsset(state.trade);
-    if (asset && asset.photo) return asset.photo;
-    // Approved generic field-job photo — same asset across all destinations (never a gray skeleton).
-    var campaign = (boot.campaignBase || '').replace(/\/?$/, '/');
-    if (campaign) return campaign + 'jcp-campaign-job-proof-360.webp';
-    var hvac = tradeAssets.hvac;
-    return (hvac && hvac.photo) || '';
+    if (asset && asset.photo && !asset.neutral) return asset.photo;
+    // Never fall back to a trade-mismatched photo (e.g. plumbing water heater for electrical).
+    return '';
+  }
+
+  function usesNeutralJobVisual() {
+    var asset = getTradeAsset(state.trade);
+    return !asset || asset.neutral || !asset.photo;
   }
 
   function workflowIconSvg(key) {
@@ -845,26 +863,14 @@
   }
 
   function buildJobsStackHtml() {
-    var tradeLabel =
-      state.trade === 'other' && state.other_trade_text
-        ? state.other_trade_text
-        : trades[state.trade] || 'Job';
     var annual = formatAnnualRange();
-    var cells = '';
-    for (var i = 0; i < 12; i++) {
-      cells += '<span class="pg-job-grid__cell' + (i < 4 ? ' is-accent' : '') + '"></span>';
-    }
     return (
-      '<div class="pg-job-grid" aria-hidden="true">' +
-      '<p class="pg-job-grid__focal"><strong>' +
+      '<div class="pg-jobs-insight">' +
+      '<p class="pg-jobs-insight__num"><strong>' +
       escapeHtml(annual) +
-      ' / year</strong><span>completed jobs your marketing could use</span></p>' +
-      '<div class="pg-job-grid__board" style="grid-template-columns:repeat(12,minmax(0,1fr));">' +
-      cells +
-      '</div>' +
-      '<p class="pg-job-grid__caption"><span>' +
-      escapeHtml(tradeLabel) +
-      ' \u00b7 real work your crew is already documenting</span></p></div>'
+      '</strong><span>completed jobs / year</span></p>' +
+      '<p class="pg-jobs-insight__channels">Each completed job can potentially become: <strong>Website · Google · Social · Review · Directory</strong></p>' +
+      '</div>'
     );
   }
 
@@ -876,6 +882,7 @@
 
   function buildProofGridHtml() {
     var lit = proofHighlightCount();
+    var unused = 10 - lit;
     var cells = '';
     for (var i = 0; i < 10; i++) {
       cells += '<span class="pg-proof-grid__cell' + (i < lit ? ' is-lit' : '') + '"></span>';
@@ -883,9 +890,11 @@
     return (
       '<div class="pg-proof-grid" aria-hidden="true">' +
       cells +
-      '<p class="pg-proof-grid__cap">Illustrative \u2014 ' +
+      '<p class="pg-proof-grid__cap">Illustrative — <strong>' +
       lit +
-      ' of 10 completed jobs being reused</p></div>'
+      ' being used</strong> · ' +
+      unused +
+      ' potentially unused</p></div>'
     );
   }
 
@@ -1034,14 +1043,9 @@
   function formatAnnualRange() {
     if (state.annual_jobs_min == null) return '—';
     if (state.annual_jobs_max == null) {
-      return state.annual_jobs_min.toLocaleString() + '+ / year';
+      return state.annual_jobs_min.toLocaleString() + '+';
     }
-    return (
-      state.annual_jobs_min.toLocaleString() +
-      '–' +
-      state.annual_jobs_max.toLocaleString() +
-      ' / year'
-    );
+    return state.annual_jobs_min.toLocaleString() + '–' + state.annual_jobs_max.toLocaleString();
   }
 
   function formatUnusedRange() {
@@ -1132,6 +1136,7 @@
       if (key === 'other') {
         var otherField = document.getElementById('pgTradeOtherField');
         if (otherField) otherField.hidden = false;
+        clearBottomAction();
         saveState();
         track('SurveyQuestionAnswered', {
           question_index: stateIndex('trade'),
@@ -1140,20 +1145,6 @@
           feedback_shown: false,
           trade: key,
           other_text_provided: false,
-        });
-        setBottomAction({
-          label: 'Continue \u2192',
-          animate: true,
-          onClick: function () {
-            var inp = document.getElementById('pgTradeOtherInput');
-            var val = inp ? sanitizeCustomText(inp.value) : '';
-            state.other_trade_text = val;
-            saveState();
-            if (val) {
-              track('SurveyOtherTextProvided', { question_id: 'trade', other_text_provided: true });
-            }
-            goTo('current_workflow');
-          },
         });
         return;
       }
@@ -1180,6 +1171,7 @@
       if (key === 'other_crm') {
         var wfField = document.getElementById('pgWorkflowOtherField');
         if (wfField) wfField.hidden = false;
+        clearBottomAction();
         saveState();
         feedbackVariant = (WORKFLOW_INSIGHTS[key] || {}).variant || key;
         track('SurveyQuestionAnswered', {
@@ -1191,24 +1183,6 @@
           trade: state.trade,
           current_workflow: key,
           custom_workflow_provided: false,
-        });
-        setBottomAction({
-          label: 'Continue \u2192',
-          animate: true,
-          onClick: function () {
-            var inp = document.getElementById('pgWorkflowOtherInput');
-            var val = inp ? sanitizeCustomText(inp.value) : '';
-            state.other_workflow_text = val;
-            saveState();
-            if (val) {
-              track('SurveyOtherTextProvided', { question_id: 'current_workflow', custom_workflow_provided: true });
-            }
-            var wfFieldHide = document.getElementById('pgWorkflowOtherField');
-            if (wfFieldHide) wfFieldHide.hidden = true;
-            collapseChoiceList('current_workflow', val || summaryValueText('current_workflow', key), key, function () {
-              showInsight('workflow', WORKFLOW_INSIGHTS[key] || WORKFLOW_INSIGHTS.scattered, 'jobs_per_week', 'Continue \u2192');
-            });
-          },
         });
         return;
       }
@@ -1257,9 +1231,9 @@
           'jobs',
           {
             headline: 'That’s roughly ' + formatAnnualRange() + ' completed jobs every year.',
-            body: 'You probably do not have a content problem.',
+            body: 'Your company probably does not have a content-creation problem.',
             body2:
-              'Your company already creates hundreds of real job stories, photos, locations, and review opportunities every year.',
+              'Your team is already creating real job stories, photos, locations, and review opportunities every week.',
             extraHtml: buildJobsStackHtml(),
           },
           'public_proof_percentage',
@@ -1290,22 +1264,9 @@
       });
 
       var insight = { headline: '', body: '', body2: '', extraHtml: buildProofGridHtml() };
-      if (tier === 'low' || tier === 'mid') {
-        insight.headline = 'A lot of completed work may be disappearing after the job is done.';
-        insight.body = 'Those jobs already happened. Your crew already took the photos.';
-        insight.body2 =
-          'The missed opportunity is that many never become: Website content · Google updates · Social posts · Review requests';
-      } else if (tier === 'high') {
-        insight.headline = 'You’re already doing the hard part.';
-        insight.body =
-          'The opportunity is removing the manual work required to turn each finished job into website, Google, social, and review activity.';
-      } else {
-        insight.headline = 'Not knowing is useful information too.';
-        insight.body =
-          'If it’s hard to tell what happens after the crew leaves, the process may not be repeatable yet.';
-      }
+      applyVisibilityInsight(insight, tier, key);
       collapseChoiceList('public_proof_percentage', summaryValueText('public_proof_percentage', key), key, function () {
-        showInsight('proof', insight, 'proof_gap_result', 'See What Customers See →');
+        showInsight('proof', insight, 'proof_gap_result', visibilityCta(tier));
       });
     }
   }
@@ -1328,61 +1289,109 @@
   function renderResult() {
     var title = document.getElementById('pgResultTitle');
     var completed = document.getElementById('pgResultCompleted');
+    var heroLabel = document.getElementById('pgResultHeroLabel');
+    var heroSub = document.getElementById('pgResultHeroSub');
     var pub = document.getElementById('pgResultPublic');
     var invWrap = document.getElementById('pgResultInvisibleWrap');
     var inv = document.getElementById('pgResultInvisible');
-    var tier = proofTier(state.public_proof_percentage);
-
-    if (title) {
-      if (tier === 'high') {
-        title.textContent = 'You’re already reusing a lot of your completed work.';
-      } else if (tier === 'unknown') {
-        title.textContent = 'Your company finishes real jobs every week — the missing piece is knowing what customers actually see.';
-      } else {
-        title.textContent = 'Hundreds of your completed jobs may never make it into your marketing.';
-      }
-    }
-    if (completed) completed.textContent = formatAnnualRange();
-    if (pub) pub.textContent = proofBandLabel(state.public_proof_percentage);
-    computeUnusedRange();
-    if (invWrap && inv) {
-      if (state.unused_jobs_min != null && tier !== 'unknown' && tier !== 'high') {
-        invWrap.hidden = false;
-        inv.textContent =
-          state.unused_jobs_max == null
-            ? state.unused_jobs_min.toLocaleString() + '+ jobs / year'
-            : formatUnusedRange() + ' jobs / year';
-      } else if (tier === 'high') {
-        invWrap.hidden = true;
-      } else {
-        invWrap.hidden = true;
-      }
-    }
-    renderGapViz();
+    var note = document.getElementById('pgResultNote');
     var support = document.getElementById('pgResultSupport');
-    if (support) {
-      if (tier === 'high') {
+    var tier = proofTier(state.public_proof_percentage);
+    computeUnusedRange();
+
+    var channelsHtml =
+      '<ul class="pg-result__channel-cards">' +
+      '<li><strong>Website</strong><span>real project + service-area content</span></li>' +
+      '<li><strong>Google</strong><span>job-based Business Profile activity</span></li>' +
+      '<li><strong>Social</strong><span>ready-to-publish content</span></li>' +
+      '<li><strong>Reviews</strong><span>timely review opportunities</span></li>' +
+      '<li><strong>Directory</strong><span>another place to show recent work</span></li>' +
+      '</ul>' +
+      '<p class="pg-result__outcome">More real work online. More reasons for Google and customers to see that you’re active. More opportunities to earn reviews, build trust, improve local visibility, and convert the next customer.</p>';
+
+    if (tier === 'high') {
+      if (title) title.textContent = 'You’re already putting finished jobs in front of customers.';
+      if (completed) completed.textContent = formatAnnualRange();
+      if (heroLabel) heroLabel.textContent = 'completed jobs / year';
+      if (heroSub) {
+        heroSub.hidden = false;
+        heroSub.textContent = 'Your opportunity is automating the manual steps between capture → create → publish.';
+      }
+      if (pub) pub.textContent = formatAnnualRange();
+      if (invWrap && inv) {
+        invWrap.hidden = false;
+        inv.textContent = proofBandLabel(state.public_proof_percentage) || '76–100%';
+        var invLabel = invWrap.querySelector('span');
+        if (invLabel) invLabel.textContent = 'Currently reused in marketing';
+      }
+      if (note) note.textContent = 'You’re already doing the hard part.';
+      if (support) {
         support.innerHTML =
           '<p class="pg-result__bridge">JobCapturePro can help remove the manual steps between:</p>' +
-          '<p class="pg-result__flow" aria-hidden="true"><strong>Job finished</strong> → <strong>Photos captured</strong> → <strong>Website / Google / Social / Reviews / Directory</strong></p>';
-      } else if (tier === 'unknown') {
-        support.innerHTML =
-          '<p class="pg-result__bridge">Your crew already did the expensive part: the actual work.</p>' +
-          '<p class="pg-result__bridge">JobCapturePro helps turn completed jobs into website content, Google Business Profile updates, social posts, review opportunities, and JobCapturePro Directory activity — without adding another marketing task for your crew.</p>';
-      } else {
-        support.innerHTML =
-          '<p class="pg-result__bridge">Your crew already did the expensive part: the actual work.</p>' +
-          '<p class="pg-result__bridge">JobCapturePro helps turn those completed jobs into:</p>' +
-          '<ul class="pg-result__channels">' +
-          '<li>Website content</li>' +
-          '<li>Google Business Profile updates</li>' +
-          '<li>Social posts</li>' +
-          '<li>Review opportunities</li>' +
-          '<li>JobCapturePro Directory activity</li>' +
-          '</ul>' +
-          '<p class="pg-result__without">Without adding another marketing task for your crew.</p>';
+          '<p class="pg-result__flow"><strong>Capture</strong> → <strong>Create</strong> → <strong>Publish</strong></p>' +
+          channelsHtml;
       }
+      renderGapViz();
+      return;
     }
+
+    if (tier === 'unknown') {
+      if (title) title.textContent = 'Make the process after the job visible and repeatable.';
+      if (completed) completed.textContent = formatAnnualRange();
+      if (heroLabel) heroLabel.textContent = 'completed jobs / year';
+      if (heroSub) {
+        heroSub.hidden = false;
+        heroSub.textContent =
+          'Because you’re not sure how many become marketing, the first opportunity is simply making that process visible and repeatable.';
+      }
+      if (pub) pub.textContent = formatAnnualRange();
+      if (invWrap) invWrap.hidden = true;
+      if (note) note.textContent = 'Based on the ranges you selected.';
+      if (support) {
+        support.innerHTML =
+          '<p class="pg-result__bridge">Your team creates approximately ' +
+          escapeHtml(formatAnnualRange()) +
+          ' completed jobs/year.</p>' +
+          channelsHtml;
+      }
+      renderGapViz();
+      return;
+    }
+
+    // low / mid — lead with unused opportunity
+    var unusedTxt =
+      state.unused_jobs_max == null
+        ? state.unused_jobs_min != null
+          ? state.unused_jobs_min.toLocaleString() + '+'
+          : '—'
+        : formatUnusedRange();
+    if (title) title.textContent = 'may never reach a future customer.';
+    if (completed) completed.textContent = unusedTxt;
+    if (heroLabel) heroLabel.textContent = 'finished jobs / year';
+    if (heroSub) {
+      heroSub.hidden = true;
+      heroSub.textContent = '';
+    }
+    if (pub) pub.textContent = formatAnnualRange();
+    if (invWrap && inv) {
+      invWrap.hidden = false;
+      inv.textContent = proofBandLabel(state.public_proof_percentage) || '—';
+      var invLab = invWrap.querySelector('span');
+      if (invLab) invLab.textContent = 'Currently reused in marketing';
+    }
+    if (note) {
+      note.textContent =
+        'Based on ' +
+        formatAnnualRange() +
+        ' completed jobs/year and your estimate that ' +
+        (proofBandLabel(state.public_proof_percentage) || 'some') +
+        ' gets used in marketing.';
+    }
+    if (support) {
+      support.innerHTML =
+        '<p class="pg-result__bridge">JobCapturePro can turn the work your team already does into:</p>' + channelsHtml;
+    }
+    renderGapViz();
   }
 
   function sourceLabel() {
@@ -1405,7 +1414,7 @@
   function brandMark(initial) {
     var letter = (initial || 'J').toString().charAt(0).toUpperCase() || 'J';
     return (
-      '<span class="ps-mock__logo pg-dest-mark" aria-hidden="true" style="display:flex;align-items:center;justify-content:center;line-height:1;font-weight:800;color:#fff;font-size:0.85rem;">' +
+      '<span class="ps-mock__logo pg-dest-mark" aria-hidden="true">' +
       escapeHtml(letter) +
       '</span>'
     );
@@ -1417,32 +1426,6 @@
     var city = 'Your service area';
     var desc = 'Documented from the field — ready for channels.';
     return { title: title, city: city, desc: desc };
-  }
-
-  function renderJobCardMedia() {
-    var photoEl = document.getElementById('pgJobPhoto');
-    var neutralEl = document.getElementById('pgJobNeutral');
-    var badgeEl = document.getElementById('pgJobBadge');
-    var tradeEl = document.getElementById('pgJobTrade');
-    var url = getJobPhotoUrl();
-    var tradeLabel =
-      state.trade === 'other' && state.other_trade_text
-        ? state.other_trade_text
-        : trades[state.trade] || 'Trade';
-    if (badgeEl) badgeEl.textContent = 'Completed job';
-    if (tradeEl) tradeEl.textContent = tradeLabel;
-    if (photoEl && neutralEl) {
-      if (url) {
-        photoEl.src = url;
-        photoEl.alt = revealJobContext().title;
-        photoEl.hidden = false;
-        neutralEl.hidden = true;
-      } else {
-        photoEl.hidden = true;
-        photoEl.removeAttribute('src');
-        neutralEl.hidden = false;
-      }
-    }
   }
 
   /** Product destination panels — reused proof-sprint ps-mock markup (user-controlled only). */
@@ -1568,7 +1551,7 @@
       '<p class="ps-mock-dir__label">JobCapturePro Directory</p>' +
       '<article class="ps-mock-dir__card">' +
       '<div class="ps-mock-dir__head">' +
-      '<div class="ps-mock-dir__avatar" style="display:flex;align-items:center;justify-content:center;font-size:1.1rem;">' +
+      '<div class="ps-mock-dir__avatar" aria-hidden="true">' +
       escapeHtml(tradeInitial) +
       '</div>' +
       '<div><strong>' +
@@ -1627,8 +1610,7 @@
       apply();
     }
     if (options.fromUser) {
-      autoplayDisabled = true;
-      stopAutoplay();
+      pauseAutoplayForManual();
       if (!destTracked[dest]) {
         destTracked[dest] = true;
         track('ProductDestinationClicked', { destination: dest, trade: state.trade });
@@ -1684,33 +1666,56 @@
     }
   }
 
-  function renderReveal() {
-    var tradeLabel = trades[state.trade] || state.trade || 'field';
-    var title = document.getElementById('pgRevealTitle');
-    if (title) title.textContent = 'Here\u2019s what one finished ' + tradeLabel + ' job could become.';
+  function renderJobCardMedia() {
+    // Legacy no-op kept for callers — reveal uses transform rail.
+    syncTransformRail();
+  }
 
-    var jobTitle = document.getElementById('pgJobTitle');
-    var src = document.getElementById('pgRevealSource');
+  function syncTransformRail() {
+    var thumb = document.getElementById('pgRailThumb');
+    var neut = document.getElementById('pgRailThumbNeutral');
+    var label = document.getElementById('pgRailJobLabel');
+    var url = getJobPhotoUrl();
     var ctx = revealJobContext();
-
-    if (jobTitle) jobTitle.textContent = ctx.title;
-    if (src) src.textContent = sourceLabel();
-    renderJobCardMedia();
-    setDestTab('website', { fromUser: false, animate: false });
-
-    var contextEl = document.querySelector('[data-pg-review-slot="reveal"] [data-pg-review-context]');
-    if (contextEl) {
-      if (state.trade && state.trade !== 'hvac') {
-        contextEl.textContent = 'From an agency using JobCapturePro with an HVAC client';
-        contextEl.hidden = false;
+    var tradeLabel =
+      state.trade === 'other' && state.other_trade_text
+        ? state.other_trade_text
+        : trades[state.trade] || 'Trade';
+    if (label) label.textContent = '1 completed ' + tradeLabel.toLowerCase() + ' job';
+    if (thumb && neut) {
+      if (url) {
+        thumb.src = url;
+        thumb.hidden = false;
+        neut.hidden = true;
       } else {
-        contextEl.textContent = '';
-        contextEl.hidden = true;
+        thumb.hidden = true;
+        thumb.removeAttribute('src');
+        neut.hidden = false;
       }
     }
+    if (ctx && label && ctx.title) {
+      label.textContent = ctx.title;
+    }
+  }
 
+  function renderReveal() {
+    var tradeLabel =
+      state.trade === 'other' && state.other_trade_text
+        ? state.other_trade_text
+        : trades[state.trade] || state.trade || 'field';
+    var title = document.getElementById('pgRevealTitle');
+    if (title) title.textContent = 'Here\u2019s what one finished ' + tradeLabel + ' job can become.';
+
+    syncTransformRail();
+    setDestTab('website', { fromUser: false, animate: false });
+
+    bindDestTabs();
     bindAutoplayPause();
     autoplayDisabled = false;
+    if (autoplayResumeTimer) {
+      clearTimeout(autoplayResumeTimer);
+      autoplayResumeTimer = null;
+    }
     setTimeout(startAutoplay, 800);
   }
 
@@ -1721,13 +1726,27 @@
     }
   }
 
+  function pauseAutoplayForManual() {
+    autoplayDisabled = true;
+    stopAutoplay();
+    if (autoplayResumeTimer) clearTimeout(autoplayResumeTimer);
+    autoplayResumeTimer = setTimeout(function () {
+      if (state.current_state !== 'product_reveal') return;
+      if (document.hidden) return;
+      autoplayDisabled = false;
+      autoplayIndex = DEST_TABS.indexOf(activeDest);
+      if (autoplayIndex < 0) autoplayIndex = 0;
+      startAutoplayFromCurrent();
+    }, AUTOPLAY_RESUME_MS);
+  }
+
   function autoplayTick() {
     if (autoplayDisabled) return;
     if (state.current_state !== 'product_reveal') {
       stopAutoplay();
       return;
     }
-    if (autoplayPaused) {
+    if (document.hidden || autoplayPaused) {
       autoplayTimer = setTimeout(autoplayTick, 400);
       return;
     }
@@ -1739,7 +1758,7 @@
     var dest = autoplayOrder[autoplayIndex];
     setDestTab(dest, { fromUser: false, animate: true });
     track('ProductDestinationViewed', { destination: dest, source: 'auto' });
-    autoplayTimer = setTimeout(autoplayTick, 4750);
+    autoplayTimer = setTimeout(autoplayTick, AUTOPLAY_MS);
   }
 
   function startAutoplay() {
@@ -1748,7 +1767,14 @@
     stopAutoplay();
     autoplayIndex = 0;
     track('ProductDestinationViewed', { destination: autoplayOrder[0], source: 'auto' });
-    autoplayTimer = setTimeout(autoplayTick, 5300);
+    autoplayTimer = setTimeout(autoplayTick, AUTOPLAY_MS);
+  }
+
+  function startAutoplayFromCurrent() {
+    if (autoplayDisabled) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    stopAutoplay();
+    autoplayTimer = setTimeout(autoplayTick, AUTOPLAY_MS);
   }
 
   function bindAutoplayPause() {
@@ -1769,8 +1795,7 @@
 
   function renderTrialSummary() {
     var list = document.getElementById('pgTrialSummary');
-    var annualEl = document.getElementById('pgPlanAnnual');
-    if (annualEl) annualEl.textContent = formatAnnualRange() || '\u2014';
+    var firstWin = document.getElementById('pgTrialFirstWin');
     if (!list) return;
 
     var tradeChip = (state.trade === 'other' && state.other_trade_text)
@@ -1779,17 +1804,28 @@
     var workflowChip = (state.current_workflow === 'other_crm' && state.other_workflow_text)
       ? escapeHtml(state.other_workflow_text)
       : escapeHtml(workflows[state.current_workflow] || state.current_workflow || '\u2014');
-    var proofChipLabel = proofBandLabel(state.public_proof_percentage);
-    var reachingLabel =
-      state.public_proof_percentage === 'unknown' || !proofChipLabel
-        ? 'Not sure how often jobs reach customers'
-        : proofChipLabel + ' reaching customers';
+    var jobsChip = escapeHtml((jobsBuckets[state.jobs_per_week_bucket] || {}).weekly_label || '\u2014') + ' jobs/week';
 
     list.innerHTML =
       '<li>' + tradeChip + '</li>' +
-      '<li>' + escapeHtml((jobsBuckets[state.jobs_per_week_bucket] || {}).weekly_label || '\u2014') + ' jobs/week</li>' +
       '<li>' + workflowChip + '</li>' +
-      '<li>' + escapeHtml(reachingLabel) + '</li>';
+      '<li>' + jobsChip + '</li>';
+
+    if (firstWin) {
+      if (state.current_workflow === 'housecall_pro') {
+        firstWin.textContent =
+          'Based on your answers, the easiest first win is: Connect Housecall Pro, bring in a real completed job, and publish the work your crew is already capturing.';
+      } else if (state.current_workflow === 'companycam') {
+        firstWin.textContent =
+          'Based on your answers, the easiest first win is: Connect CompanyCam, bring in a real completed job, and publish the work your crew is already capturing.';
+      } else if (state.current_workflow === 'phones_camera_roll') {
+        firstWin.textContent =
+          'Based on your answers, the easiest first win is: Create your first JobCapturePro check-in from a real job and publish it where customers can see it.';
+      } else {
+        firstWin.textContent =
+          'Based on your answers, the easiest first win is: Capture a real completed job and publish it to a connected website, Google, social, review, or directory channel.';
+      }
+    }
 
     var cont = document.getElementById('pgTrialContinuity');
     if (cont) {
@@ -2156,6 +2192,7 @@
     });
 
     bindDestTabs();
+    bindOtherFields();
 
     var emailForm = document.getElementById('pgEmailForm');
     if (emailForm) emailForm.addEventListener('submit', submitEmail);
@@ -2164,6 +2201,63 @@
 
     window.addEventListener('pagehide', function () {
       track('SurveyExited', { question_id: state.current_state, trade: state.trade });
+    });
+  }
+
+  function advanceTradeOther(skip) {
+    var inp = document.getElementById('pgTradeOtherInput');
+    var val = skip ? '' : inp ? sanitizeCustomText(inp.value) : '';
+    state.other_trade_text = val;
+    saveState();
+    if (val) track('SurveyOtherTextProvided', { question_id: 'trade', other_text_provided: true });
+    var otherField = document.getElementById('pgTradeOtherField');
+    if (otherField) otherField.hidden = true;
+    goTo('current_workflow');
+  }
+
+  function advanceWorkflowOther(skip) {
+    var inp = document.getElementById('pgWorkflowOtherInput');
+    var val = skip ? '' : inp ? sanitizeCustomText(inp.value) : '';
+    state.other_workflow_text = val;
+    saveState();
+    if (val) track('SurveyOtherTextProvided', { question_id: 'current_workflow', custom_workflow_provided: true });
+    var wfField = document.getElementById('pgWorkflowOtherField');
+    if (wfField) wfField.hidden = true;
+    collapseChoiceList(
+      'current_workflow',
+      val || summaryValueText('current_workflow', state.current_workflow),
+      state.current_workflow,
+      function () {
+        showInsight(
+          'workflow',
+          WORKFLOW_INSIGHTS[state.current_workflow] || WORKFLOW_INSIGHTS.scattered,
+          'jobs_per_week',
+          'Continue →'
+        );
+      }
+    );
+  }
+
+  function bindOtherFields() {
+    document.querySelectorAll('[data-pg-other-continue="trade"]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        advanceTradeOther(false);
+      });
+    });
+    document.querySelectorAll('[data-pg-other-skip="trade"]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        advanceTradeOther(true);
+      });
+    });
+    document.querySelectorAll('[data-pg-other-continue="workflow"]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        advanceWorkflowOther(false);
+      });
+    });
+    document.querySelectorAll('[data-pg-other-skip="workflow"]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        advanceWorkflowOther(true);
+      });
     });
   }
 
