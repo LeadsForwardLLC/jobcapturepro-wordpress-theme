@@ -1072,10 +1072,25 @@ body.jcp-proof-gap .pg-state--trial .pg-review-slot--trial .pg-review__quote {
 }
 
 body.jcp-proof-gap .pg-title,
-body.jcp-proof-gap .pg-sub {
+body.jcp-proof-gap .pg-sub,
+body.jcp-proof-gap .pg-hint,
+body.jcp-proof-gap .pg-eyebrow,
+body.jcp-proof-gap .pg-choice,
+body.jcp-proof-gap .pg-review__quote,
+body.jcp-proof-gap .pg-review__meta,
+body.jcp-proof-gap .proof-gap-insight-card__headline,
+body.jcp-proof-gap .proof-gap-insight-card__text,
+body.jcp-proof-gap .pg-result__title,
+body.jcp-proof-gap .pg-result__body,
+body.jcp-proof-gap p,
+body.jcp-proof-gap h1,
+body.jcp-proof-gap h2,
+body.jcp-proof-gap h3,
+body.jcp-proof-gap li {
   hyphens: none;
   -webkit-hyphens: none;
-  overflow-wrap: normal;
+  -ms-hyphens: none;
+  overflow-wrap: break-word;
   word-break: normal;
 }
 
