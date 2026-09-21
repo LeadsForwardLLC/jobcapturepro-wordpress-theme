@@ -755,9 +755,8 @@
         'jobs',
         {
           headline: 'That’s roughly ' + formatAnnualRange() + ' completed jobs every year.',
-          body: 'Your company probably does not have a content-creation problem.',
-          body2:
-            'Your team is already creating real job stories, photos, locations, and review opportunities every week.',
+          body:
+            'Your team is already creating the job stories, photos, locations, and review opportunities every week — you don’t have a content problem.',
           extraHtml: typeof buildJobsStackHtml === 'function' ? buildJobsStackHtml() : '',
         },
         'public_proof_percentage',
@@ -1231,9 +1230,8 @@
           'jobs',
           {
             headline: 'That’s roughly ' + formatAnnualRange() + ' completed jobs every year.',
-            body: 'Your company probably does not have a content-creation problem.',
-            body2:
-              'Your team is already creating real job stories, photos, locations, and review opportunities every week.',
+            body:
+              'Your team is already creating the job stories, photos, locations, and review opportunities every week — you don’t have a content problem.',
             extraHtml: buildJobsStackHtml(),
           },
           'public_proof_percentage',
