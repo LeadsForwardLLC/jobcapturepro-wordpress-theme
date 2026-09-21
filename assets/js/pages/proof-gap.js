@@ -1447,19 +1447,32 @@
         : '<div class="ps-mock__thumb ps-mock__thumb--fallback" aria-hidden="true"></div>';
 
     if (dest === 'website') {
+      var mapBlock = mapUrl
+        ? '<div class="ps-mock-map ps-mock-map--pins" aria-hidden="true">' +
+          '<img class="ps-mock-map__img" src="' +
+          escapeHtml(mapUrl) +
+          '" alt="" width="640" height="280" loading="lazy" decoding="async" />' +
+          '<span class="ps-mock-map__pin is-active" style="left:52%;top:42%;"></span>' +
+          '<span class="ps-mock-map__pin" style="left:34%;top:58%;"></span>' +
+          '<span class="ps-mock-map__pin" style="left:68%;top:55%;"></span>' +
+          '<span class="ps-mock-map__pin" style="left:44%;top:28%;"></span>' +
+          '<span class="ps-mock-map__veil"></span>' +
+          '<span class="ps-mock-map__chip">Service area check-ins</span>' +
+          '</div>'
+        : '<div class="ps-mock-map ps-mock-map--neutral" aria-hidden="true">' +
+          '<span class="ps-mock-map__pin is-active"></span>' +
+          '<span class="ps-mock-map__label">Service area</span></div>';
+
       panel.innerHTML =
-        '<div class="ps-mock ps-mock--browser">' +
+        '<div class="ps-mock ps-mock--browser ps-mock--browser-fit">' +
         '<div class="ps-mock-browser__bar"><span></span><span></span><span></span>' +
         '<div class="ps-mock-browser__url">yourcompany.com/service-area</div></div>' +
-        '<div class="ps-mock-browser__body">' +
+        '<div class="ps-mock-browser__body ps-mock-browser__body--fit">' +
         '<div class="ps-mock-browser__topline">' +
         mark +
         '<div><p class="ps-mock-browser__kicker">Service area</p><h4>Recent check-ins</h4></div></div>' +
-        '<div class="ps-mock-map ps-mock-map--neutral" aria-hidden="true">' +
-        '<span class="ps-mock-map__pin is-active"></span>' +
-        '<span class="ps-mock-map__label">Service area</span>' +
-        '</div>' +
-        '<article class="ps-mock-jobcard is-active">' +
+        mapBlock +
+        '<article class="ps-mock-jobcard ps-mock-jobcard--fit is-active">' +
         thumb +
         '<div><strong>' +
         title +
