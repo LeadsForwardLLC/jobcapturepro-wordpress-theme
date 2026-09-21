@@ -10,9 +10,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 $campaign  = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/';
+$campaign_dir = trailingslashit( get_template_directory() ) . 'assets/campaign/';
 $integ     = trailingslashit( get_template_directory_uri() ) . 'assets/integrations/';
 $map_url   = get_template_directory_uri() . '/assets/map-3c5b675f-f28d-41a5-ba3a-972b4c189f10.png';
 $qr_url    = $campaign . 'ps-dummy-qr.png';
+$campaign_asset = static function ( string $file ) use ( $campaign, $campaign_dir ): string {
+	$path = $campaign_dir . $file;
+	$ver  = file_exists( $path ) ? (string) filemtime( $path ) : (string) time();
+	return $campaign . $file . '?v=' . rawurlencode( $ver );
+};
 $slots     = function_exists( 'jcp_proof_gap_review_slots' ) ? jcp_proof_gap_review_slots() : [];
 $workflow_rev = is_array( $slots['workflow'] ?? null ) ? $slots['workflow'] : null;
 $email_rev    = is_array( $slots['email'] ?? null ) ? $slots['email'] : null;
@@ -154,9 +160,9 @@ $render_case = static function (): void {
 						<span class="pg-trust__label"><?php esc_html_e( '5-star feedback from contractors and home-service operators', 'jcp-core' ); ?></span>
 					</div>
 					<span class="pg-trust__avatars" aria-hidden="true">
-						<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-owner-64.webp' ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
-						<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-operator-64.webp' ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
-						<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-crew-man-64.webp' ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
+						<img src="<?php echo esc_url( $campaign_asset( 'jcp-campaign-face-owner-64.webp' ) ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
+						<img src="<?php echo esc_url( $campaign_asset( 'jcp-campaign-face-operator-64.webp' ) ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
+						<img src="<?php echo esc_url( $campaign_asset( 'jcp-campaign-face-crew-man-64.webp' ) ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
 					</span>
 				</div>
 				<div class="pg-trust__divider" aria-hidden="true"></div>

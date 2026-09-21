@@ -16,6 +16,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function jcp_sales_tool_default_reviews(): array {
 	$campaign = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/';
+	$dir      = trailingslashit( get_template_directory() ) . 'assets/campaign/';
+
+	$avatar = static function ( string $file ) use ( $campaign, $dir ): string {
+		$path = $dir . $file;
+		$ver  = file_exists( $path ) ? (string) filemtime( $path ) : (string) time();
+		return $campaign . $file . '?v=' . rawurlencode( $ver );
+	};
 
 	return [
 		[
@@ -24,7 +31,7 @@ function jcp_sales_tool_default_reviews(): array {
 			'role'      => 'Marketing agency',
 			'quote'     => 'One of the easiest marketing wins we\'ve had for an HVAC client. Techs already take photos. Now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.',
 			'rating'    => 5,
-			'avatar'    => $campaign . 'jcp-campaign-face-operator.jpg',
+			'avatar'    => $avatar( 'jcp-campaign-face-operator-64.webp' ),
 			'avatarAlt' => 'Peter Bonk',
 		],
 		[
@@ -33,7 +40,7 @@ function jcp_sales_tool_default_reviews(): array {
 			'role'      => 'Contractor',
 			'quote'     => 'Awesome. It takes my work site pictures and turns them into a marketing campaign.',
 			'rating'    => 5,
-			'avatar'    => $campaign . 'jcp-campaign-face-crew-man.jpg',
+			'avatar'    => $avatar( 'jcp-campaign-face-crew-man-64.webp' ),
 			'avatarAlt' => 'Brian Hardy',
 		],
 		[
@@ -42,7 +49,7 @@ function jcp_sales_tool_default_reviews(): array {
 			'role'      => 'Home service operator',
 			'quote'     => 'Easy to use and really smart. Makes it super simple to turn completed work into useful online content, and the review side is amazing.',
 			'rating'    => 5,
-			'avatar'    => $campaign . 'jcp-campaign-face-operator.jpg',
+			'avatar'    => $avatar( 'jcp-campaign-face-operator-64.webp' ),
 			'avatarAlt' => 'Trent Ellison',
 		],
 		[
@@ -51,7 +58,7 @@ function jcp_sales_tool_default_reviews(): array {
 			'role'      => 'Business owner',
 			'quote'     => 'JobCapturePro has been a game changer for my business!',
 			'rating'    => 5,
-			'avatar'    => $campaign . 'jcp-campaign-face-owner.jpg',
+			'avatar'    => $avatar( 'jcp-campaign-face-owner-64.webp' ),
 			'avatarAlt' => 'Heriberto Eddie Roman',
 		],
 	];
