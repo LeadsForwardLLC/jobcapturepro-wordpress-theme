@@ -771,8 +771,9 @@
       };
       if (tier === 'low' || tier === 'mid') {
         insight.headline = 'A lot of completed work may be disappearing after the job is done.';
-        insight.body =
-          'Those jobs already happened. Your crew already took the photos. The missed opportunity is that many never become website content, Google updates, social posts, or review requests.';
+        insight.body = 'Those jobs already happened. Your crew already took the photos.';
+        insight.body2 =
+          'The missed opportunity is that many never become: Website content · Google updates · Social posts · Review requests';
       } else if (tier === 'high') {
         insight.headline = 'You’re already doing the hard part.';
         insight.body =
