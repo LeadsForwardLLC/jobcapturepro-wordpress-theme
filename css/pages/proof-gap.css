@@ -1825,6 +1825,9 @@ body.jcp-proof-gap .pg-proof-grid__cap {
   margin: 0.25rem 0 0;
   font-size: 0.72rem;
   color: var(--pg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 body.jcp-proof-gap .pg-result__hero {
