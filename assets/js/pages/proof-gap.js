@@ -828,8 +828,17 @@
       insight.headline = 'That’s common when there isn’t one repeatable system for what happens after the job.';
     }
     insight.body = 'The jobs already happened. Your crew already took the photos.';
-    insight.body2 =
-      'The missed opportunity is what they never become: Website content · Google activity · Social posts · Review opportunities';
+    insight.body2 = '';
+    insight.flowHtml =
+      '<div class="pg-insight-flow">' +
+      '<p class="pg-insight-flow__lead">What those finished jobs never become:</p>' +
+      '<ul class="pg-insight-flow__chips" aria-label="Marketing outputs">' +
+      '<li>Website content</li>' +
+      '<li>Google activity</li>' +
+      '<li>Social posts</li>' +
+      '<li>Review opportunities</li>' +
+      '</ul>' +
+      '</div>';
   }
 
   function getDefaultJobPhotoUrl() {
@@ -1468,6 +1477,7 @@
       (data.body2
         ? '<p class="proof-gap-insight-card__flow">' + escapeHtml(data.body2) + '</p>'
         : '') +
+      (data.flowHtml ? data.flowHtml : '') +
       (data.extraHtml ? '<div class="proof-gap-insight-card__extra">' + data.extraHtml + '</div>' : '') +
       '</div>';
 

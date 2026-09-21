@@ -1309,6 +1309,47 @@ body.jcp-proof-gap .proof-gap-insight-card__flow {
   word-break: normal;
 }
 
+body.jcp-proof-gap .pg-insight-flow {
+  margin: 0.35rem 0 0.45rem;
+  padding: 0.7rem 0.75rem;
+  border-radius: var(--pg-radius-sm);
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid var(--pg-accent-border);
+}
+
+body.jcp-proof-gap .pg-insight-flow__lead {
+  margin: 0 0 0.55rem;
+  font-size: var(--pg-fs-tertiary);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--pg-muted);
+  line-height: 1.35;
+}
+
+body.jcp-proof-gap .pg-insight-flow__chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+body.jcp-proof-gap .pg-insight-flow__chips li {
+  margin: 0;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  background: #fff;
+  border: 1.5px solid rgba(255, 80, 54, 0.28);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+  font-size: var(--pg-fs-tertiary);
+  font-weight: 800;
+  color: var(--pg-ink);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
 @media (prefers-reduced-motion: reduce) {
   body.jcp-proof-gap .proof-gap-insight-card,
   body.jcp-proof-gap .proof-gap-insight-card.is-visible {
