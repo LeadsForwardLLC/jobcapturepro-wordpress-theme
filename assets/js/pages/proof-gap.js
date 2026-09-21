@@ -790,7 +790,12 @@
 
   function getJobPhotoUrl() {
     var asset = getTradeAsset(state.trade);
-    return asset && asset.photo ? asset.photo : '';
+    if (asset && asset.photo) return asset.photo;
+    // Approved generic field-job photo — same asset across all destinations (never a gray skeleton).
+    var campaign = (boot.campaignBase || '').replace(/\/?$/, '/');
+    if (campaign) return campaign + 'jcp-campaign-job-proof-360.webp';
+    var hvac = tradeAssets.hvac;
+    return (hvac && hvac.photo) || '';
   }
 
   function workflowIconSvg(key) {
@@ -1333,7 +1338,7 @@
     if (pub) pub.textContent = proofBandLabel(state.public_proof_percentage);
     computeUnusedRange();
     if (invWrap && inv) {
-      if (state.unused_jobs_min != null && tier !== 'unknown' && tier !== 'high') {
+      if (state.unused_jobs_min != null && tier !== 'unknown') {
         invWrap.hidden = false;
         inv.textContent =
           state.unused_jobs_max == null
@@ -1357,23 +1362,28 @@
   }
 
   function sourceLabel() {
-    if (state.current_workflow === 'housecall_pro') return 'Captured in Housecall Pro';
-    if (state.current_workflow === 'companycam') return 'Captured in CompanyCam';
-    if (state.current_workflow === 'other_crm') return 'Captured in your field / CRM workflow';
-    if (state.current_workflow === 'phones_camera_roll') return 'Captured by your crew on phones';
-    if (state.current_workflow === 'group_text_shared_folder') return 'Captured in a shared folder / group text';
-    if (state.current_workflow === 'scattered') return 'Captured across scattered sources';
-    return 'Captured by your crew';
+    return 'Captured from the field';
+  }
+
+  function sourceWorkflowHint() {
+    if (state.current_workflow === 'housecall_pro') return 'Housecall Pro';
+    if (state.current_workflow === 'companycam') return 'CompanyCam';
+    if (state.current_workflow === 'other_crm' && state.other_workflow_text) return state.other_workflow_text;
+    if (state.current_workflow === 'other_crm') return 'Field / CRM workflow';
+    if (state.current_workflow === 'phones_camera_roll') return 'Phones / camera roll';
+    return '';
   }
 
   function workflowShortLabel() {
     return workflows[state.current_workflow] || state.current_workflow || 'Your workflow';
   }
 
-  function brandMark() {
+  function brandMark(initial) {
+    var letter = (initial || 'J').toString().charAt(0).toUpperCase() || 'J';
     return (
-      '<span class="ps-mock__logo pg-dest-mark" aria-hidden="true">' +
-      '<svg viewBox="0 0 16 16" width="14" height="14"><path fill="#fff" d="M3.2 2.2h2.35v9.1H12.8V13.8H3.2z"/></svg></span>'
+      '<span class="ps-mock__logo pg-dest-mark" aria-hidden="true" style="display:flex;align-items:center;justify-content:center;line-height:1;font-weight:800;color:#fff;font-size:0.85rem;">' +
+      escapeHtml(letter) +
+      '</span>'
     );
   }
 
@@ -1388,7 +1398,15 @@
   function renderJobCardMedia() {
     var photoEl = document.getElementById('pgJobPhoto');
     var neutralEl = document.getElementById('pgJobNeutral');
+    var badgeEl = document.getElementById('pgJobBadge');
+    var tradeEl = document.getElementById('pgJobTrade');
     var url = getJobPhotoUrl();
+    var tradeLabel =
+      state.trade === 'other' && state.other_trade_text
+        ? state.other_trade_text
+        : trades[state.trade] || 'Trade';
+    if (badgeEl) badgeEl.textContent = 'Completed job';
+    if (tradeEl) tradeEl.textContent = tradeLabel;
     if (photoEl && neutralEl) {
       if (url) {
         photoEl.src = url;
@@ -1412,47 +1430,40 @@
     var mapUrl = panel.getAttribute('data-map') || '';
     var qrUrl = panel.getAttribute('data-qr') || '';
     var tradeLabel = trades[state.trade] || 'Trade';
-    var biz = tradeLabel + ' Co.';
+    if (state.trade === 'other' && state.other_trade_text) tradeLabel = state.other_trade_text;
+    var biz = tradeLabel + ' Co';
     var title = escapeHtml(job.title);
     var city = escapeHtml(job.city);
     var desc = escapeHtml(job.desc);
     var bizEsc = escapeHtml(biz);
-    var mark = brandMark();
+    var mark = brandMark(tradeLabel);
     var photo =
       photoUrl !== ''
         ? '<img class="ps-mock__photo" src="' + escapeHtml(photoUrl) + '" alt="" width="640" height="400" loading="lazy" decoding="async" />'
-        : '<div class="ps-mock__photo" style="background:#e2e8f0;min-height:8rem;" aria-hidden="true"></div>';
+        : '<div class="ps-mock__photo ps-mock__photo--fallback" aria-hidden="true"><span>Completed job</span></div>';
     var thumb =
       photoUrl !== ''
         ? '<img class="ps-mock__thumb ps-mock__photo" src="' + escapeHtml(photoUrl) + '" alt="" width="160" height="120" loading="lazy" decoding="async" />'
-        : '<div class="ps-mock__thumb" style="background:#e2e8f0;min-height:4.5rem;border-radius:8px;" aria-hidden="true"></div>';
+        : '<div class="ps-mock__thumb ps-mock__thumb--fallback" aria-hidden="true"></div>';
 
     if (dest === 'website') {
       panel.innerHTML =
         '<div class="ps-mock ps-mock--browser">' +
         '<div class="ps-mock-browser__bar"><span></span><span></span><span></span>' +
-        '<div class="ps-mock-browser__url">yourcompany.com/locations</div></div>' +
+        '<div class="ps-mock-browser__url">yourcompany.com/service-area</div></div>' +
         '<div class="ps-mock-browser__body">' +
         '<div class="ps-mock-browser__topline">' +
         mark +
-        '<div><p class="ps-mock-browser__kicker">' +
-        city +
-        '</p><h4>Recent check-ins</h4></div></div>' +
-        (mapUrl
-          ? '<div class="ps-mock-map" style="position:relative;margin:0 0 8px;border-radius:10px;overflow:hidden;">' +
-            '<img src="' +
-            escapeHtml(mapUrl) +
-            '" alt="" width="640" height="200" loading="lazy" decoding="async" style="filter:saturate(0.3) brightness(1.05);" />' +
-            '<span class="ps-mock-map__pin is-active" style="position:absolute;left:52%;top:42%;width:10px;height:10px;border-radius:50%;background:#e85d04;box-shadow:0 0 0 3px rgba(232,93,4,.35);"></span>' +
-            '</div>'
-          : '') +
+        '<div><p class="ps-mock-browser__kicker">Service area</p><h4>Recent check-ins</h4></div></div>' +
+        '<div class="ps-mock-map ps-mock-map--neutral" aria-hidden="true">' +
+        '<span class="ps-mock-map__pin is-active"></span>' +
+        '<span class="ps-mock-map__label">Service area</span>' +
+        '</div>' +
         '<article class="ps-mock-jobcard is-active">' +
         thumb +
         '<div><strong>' +
         title +
-        '</strong><span>' +
-        city +
-        ' · Just published</span></div></article></div></div>';
+        '</strong><span>Just published</span></div></article></div></div>';
       return;
     }
     if (dest === 'google') {
@@ -1467,13 +1478,9 @@
         '<div class="ps-mock__media">' +
         photo +
         '</div>' +
-        '<div class="ps-mock-gbp__copy"><strong>Just finished: ' +
+        '<div class="ps-mock-gbp__copy"><strong>Just finished</strong><p>' +
         title +
-        ' in ' +
-        city +
-        '</strong><p>' +
-        desc +
-        ' Real work. Real photos from the field.</p></div></div>';
+        ' completed in your service area.</p><p>Real work documented from the field.</p></div></div>';
       return;
     }
     if (dest === 'social') {
@@ -1483,14 +1490,11 @@
         mark +
         '<div><strong>' +
         bizEsc +
-        '</strong><span>Posted when connected · ' +
-        city +
-        '</span></div></div>' +
-        '<p class="ps-mock-social__copy">Another job wrapped in ' +
-        city +
-        '. ' +
+        '</strong><span>Posted when connected</span></div></div>' +
+        '<p class="ps-mock-social__copy">' +
         title +
-        ' done right — documented from the field.</p>' +
+        ' completed today in your service area.</p>' +
+        '<p class="ps-mock-social__copy ps-mock-social__copy--sec">Another real job documented from the field.</p>' +
         '<div class="ps-mock__media">' +
         photo +
         '</div>' +
@@ -1500,21 +1504,23 @@
     if (dest === 'reviews') {
       panel.innerHTML =
         '<div class="ps-mock ps-mock--review">' +
-        '<div class="ps-mock-sms__label">Review Request</div>' +
+        '<p class="ps-mock-sms__label">Review request</p>' +
         '<div class="ps-mock-review__phone">' +
-        '<div class="ps-mock-review__phone-bar"><span>Messages</span><strong>Customer</strong></div>' +
+        '<div class="ps-mock-review__phone-bar">' +
+        '<span class="ps-mock-review__app">Messages</span>' +
+        '<strong class="ps-mock-review__contact">Customer</strong>' +
+        '</div>' +
         '<div class="ps-mock-review__thread">' +
         '<div class="ps-mock-sms__bubble">Thanks again for choosing ' +
         bizEsc +
-        '. If we earned it, leave a quick review:</div>' +
-        '<div class="ps-mock-sms__bubble is-link">review.jobcapturepro.com/demo</div>' +
+        '. If we earned it, would you mind leaving a quick review?</div>' +
+        '<div class="ps-mock-sms__bubble is-link">review.jobcapturepro.com/\u2026</div>' +
         '<p class="ps-mock-review__time">Delivered \u00b7 Just now</p></div></div>' +
         (qrUrl
-          ? '<div class="ps-mock-qr"><img src="' +
+          ? '<div class="ps-mock-qr ps-mock-qr--compact"><img src="' +
             escapeHtml(qrUrl) +
-            '" alt="" width="72" height="72" loading="lazy" decoding="async" />' +
-            '<strong>Scan on-site</strong>' +
-            '<span>QR/link from the app \u00b7 CRM automation when enabled</span></div>'
+            '" alt="" width="56" height="56" loading="lazy" decoding="async" />' +
+            '<div><strong>Scan on-site</strong><span>Show this QR at the job</span></div></div>'
           : '') +
         '</div>';
       return;
@@ -1661,8 +1667,15 @@
   }
 
   function autoplayTick() {
-    if (autoplayDisabled || autoplayPaused) return;
-    if (state.current_state !== 'product_reveal') { stopAutoplay(); return; }
+    if (autoplayDisabled) return;
+    if (state.current_state !== 'product_reveal') {
+      stopAutoplay();
+      return;
+    }
+    if (autoplayPaused) {
+      autoplayTimer = setTimeout(autoplayTick, 400);
+      return;
+    }
     autoplayIndex++;
     if (autoplayIndex >= autoplayOrder.length) {
       stopAutoplay();
@@ -1671,7 +1684,7 @@
     var dest = autoplayOrder[autoplayIndex];
     setDestTab(dest, { fromUser: false, animate: true });
     track('ProductDestinationViewed', { destination: dest, source: 'auto' });
-    autoplayTimer = setTimeout(autoplayTick, 4500);
+    autoplayTimer = setTimeout(autoplayTick, 4750);
   }
 
   function startAutoplay() {
@@ -1748,39 +1761,29 @@
   function updateTrialHref() {
     var a = document.getElementById('pgTrialCta');
     if (!a) return;
-    var base = boot.trialBase || 'https://app.jobcapturepro.com/onboarding';
+    var base =
+      (window.JCP_ONBOARDING && window.JCP_ONBOARDING.url) ||
+      boot.trialBase ||
+      'https://app.jobcapturepro.com/onboarding';
     try {
-      var u = new URL(base, window.location.origin);
-      var attr = Object.assign({}, attrPayload() || {}, state.attribution || {});
-      [
-        'utm_source',
-        'utm_medium',
-        'utm_campaign',
-        'utm_content',
-        'utm_term',
-        'fbclid',
-        'ttclid',
-        'campaign_id',
-        'adset_id',
-        'ad_id',
-      ].forEach(function (k) {
-        var v = attr[k] || readUrlParam(k);
-        if (v) u.searchParams.set(k, v);
-      });
-      u.searchParams.set('lp_variant', LP_VARIANT);
-      u.searchParams.set('survey_session_id', state.session_id);
-      u.searchParams.set('jcp_surface', 'proof_gap_survey_trial');
-      var ind = mapTradeToIndustry(state.trade);
-      if (ind) u.searchParams.set('industry', ind);
-      if (state.handoff_token) u.searchParams.set('pg_handoff', state.handoff_token);
-      a.href = u.toString();
+      var handoffExtra = {
+        lp_variant: LP_VARIANT,
+      };
+      if (state.handoff_token) handoffExtra.pg_handoff = state.handoff_token;
+      if (state.session_id) handoffExtra.survey_session_id = state.session_id;
+
+      var href = base;
       if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.decorateHref === 'function') {
-        var handoffExtra = {};
-        if (state.handoff_token) handoffExtra.pg_handoff = state.handoff_token;
-        if (state.session_id) handoffExtra.survey_session_id = state.session_id;
-        handoffExtra.lp_variant = LP_VARIANT;
-        a.href = window.JCPOnboardingHandoff.decorateHref(a.href, handoffExtra, 'proof_gap_survey_trial') || a.href;
+        href = window.JCPOnboardingHandoff.decorateHref(href, handoffExtra, 'proof_gap_survey_trial') || href;
+      } else {
+        var u = new URL(href, window.location.origin);
+        Object.keys(handoffExtra).forEach(function (k) {
+          if (handoffExtra[k]) u.searchParams.set(k, handoffExtra[k]);
+        });
+        if (state.email) u.searchParams.set('email', state.email);
+        href = u.toString();
       }
+      a.href = href;
     } catch (e) {
       a.href = base;
     }
@@ -1939,12 +1942,16 @@
 
   function persistDemoUser(email) {
     try {
+      var industry = mapTradeToIndustry(state.trade);
       var user = {
         email: email,
         firstName: deriveFirstName(email),
         lastName: '',
-        niche: state.trade || '',
-        industry: mapTradeToIndustry(state.trade),
+        businessName: '',
+        phone: '',
+        goals: [],
+        niche: industry || state.trade || '',
+        industry: industry,
         trade: state.trade || '',
         source: 'proof_gap_survey',
       };
@@ -2028,6 +2035,7 @@
           return;
         }
 
+        state.email = email;
         state.email_captured = true;
         state.handoff_token = (result.json && result.json.handoff_token) || '';
         markCompleted('email_capture');

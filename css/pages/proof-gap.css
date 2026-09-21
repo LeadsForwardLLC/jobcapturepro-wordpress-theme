@@ -124,7 +124,7 @@ body.jcp-proof-gap .pg-progress__phases {
   justify-content: space-between;
   gap: 0.5rem;
   margin-bottom: 0.35rem;
-  font-size: 0.72rem;
+  font-size: var(--pg-fs-eyebrow);
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -316,8 +316,9 @@ body.jcp-proof-gap .pg-state--reveal .pg-dest-tabs {
 
 body.jcp-proof-gap .pg-state--reveal .pg-dest-panel {
   flex: 0 0 auto;
-  min-height: 0;
-  max-height: min(18rem, 42vh);
+  height: 15.5rem;
+  max-height: 15.5rem;
+  min-height: 15.5rem;
   overflow: hidden;
 }
 
@@ -1767,15 +1768,73 @@ body.jcp-proof-gap .pg-job-card__neutral-icon {
   font-size: 1rem;
 }
 
+body.jcp-proof-gap .pg-job-card--compact {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  min-height: 5.75rem;
+  max-height: 7.25rem;
+  padding: 0.65rem 0.75rem;
+  overflow: hidden;
+}
+
+body.jcp-proof-gap .pg-job-card--compact .pg-job-card__media {
+  width: 6.5rem;
+  height: 5rem;
+  border-radius: 0.65rem;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
 body.jcp-proof-gap .pg-job-card--compact .pg-job-card__photo {
-  aspect-ratio: 16 / 9;
-  max-height: 11rem;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  aspect-ratio: auto;
   object-fit: cover;
+  display: block;
+}
+
+body.jcp-proof-gap .pg-job-card__badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: var(--pg-fs-tertiary);
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+body.jcp-proof-gap .pg-job-card__trade {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: var(--pg-fs-tertiary);
+  font-weight: 700;
+  color: var(--pg-muted);
+}
+
+body.jcp-proof-gap .pg-job-card--compact .pg-job-card__title {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: var(--pg-fs-card);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+body.jcp-proof-gap .pg-job-card--compact .pg-job-card__source {
+  margin: 0.2rem 0 0;
+  font-size: var(--pg-fs-secondary);
+  color: var(--pg-muted);
 }
 
 body.jcp-proof-gap .pg-reveal-kicker {
-  margin: 0.35rem 0 0.45rem;
-  font-size: 0.72rem;
+  margin: 0.5rem 0 0.45rem;
+  font-size: var(--pg-fs-eyebrow);
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -1803,7 +1862,7 @@ body.jcp-proof-gap .pg-dest-tab {
   border-radius: 999px;
   padding: 0.45rem 0.75rem;
   font: inherit;
-  font-size: 0.78rem;
+  font-size: var(--pg-fs-tertiary);
   font-weight: 750;
   cursor: pointer;
   min-height: 44px;
@@ -1811,14 +1870,40 @@ body.jcp-proof-gap .pg-dest-tab {
 }
 
 body.jcp-proof-gap .pg-dest-tab.is-active {
-  border-color: rgba(255, 80, 54, 0.45);
+  border-color: rgba(255, 80, 54, 0.55);
   background: #fff7f5;
   color: var(--pg-ink);
+  box-shadow: none;
+  outline: none;
 }
 
 body.jcp-proof-gap .pg-dest-panel {
   margin-top: 0.55rem;
-  min-height: 10rem;
+  height: 15.5rem; /* ~248px — leave room for payoff above CTA */
+  max-height: 15.5rem;
+  overflow: hidden;
+  border-radius: 0.85rem;
+}
+
+body.jcp-proof-gap .pg-dest-panel > .ps-mock {
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  body.jcp-proof-gap .pg-dest-panel {
+    height: 20rem;
+    max-height: 20rem;
+  }
+}
+
+@media (min-width: 1100px) {
+  body.jcp-proof-gap .pg-dest-panel {
+    height: 22rem;
+    max-height: 22rem;
+  }
 }
 
 body.jcp-proof-gap .pg-dest-note {
@@ -2314,8 +2399,8 @@ body.jcp-proof-gap .pg-summary__item--full .pg-summary__val {
 
   body.jcp-proof-gap .pg-payoff-line {
     margin: 0.2rem 0 0.3rem;
-    font-size: 0.82rem;
-    line-height: 1.3;
+    font-size: var(--pg-fs-body);
+    line-height: 1.35;
   }
 
   body.jcp-proof-gap .pg-continuity {
@@ -2369,7 +2454,7 @@ body.jcp-proof-gap .pg-summary__item--full .pg-summary__val {
     padding: 0.45rem 0.55rem;
   }
   body.jcp-proof-gap .pg-state--trial .pg-authority--trial .pg-authority__stats {
-    font-size: 0.64rem;
+    font-size: var(--pg-fs-secondary);
   }
   body.jcp-proof-gap .pg-state--trial .pg-review-slot--trial .pg-review__quote {
     -webkit-line-clamp: unset;
@@ -2387,8 +2472,11 @@ body.jcp-proof-gap .pg-summary__item--full .pg-summary__val {
     height: 1.85rem;
   }
 
-  body.jcp-proof-gap .pg-dest-panel {
-    max-height: min(14rem, 36vh);
+  body.jcp-proof-gap .pg-dest-panel,
+  body.jcp-proof-gap .pg-state--reveal .pg-dest-panel {
+    height: 15.5rem;
+    max-height: 15.5rem;
+    min-height: 15.5rem;
   }
 
   body.jcp-proof-gap .pg-state--reveal .pg-chips {
@@ -2396,7 +2484,7 @@ body.jcp-proof-gap .pg-summary__item--full .pg-summary__val {
   }
 
   body.jcp-proof-gap .pg-state--reveal .pg-payoff-line {
-    font-size: 0.78rem;
+    font-size: var(--pg-fs-body);
   }
 
   /* Keep reveal above the rail; Peter testimonial scrolls if needed */

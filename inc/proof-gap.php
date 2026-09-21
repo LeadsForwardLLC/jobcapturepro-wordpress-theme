@@ -285,7 +285,7 @@ function jcp_proof_gap_trade_job_assets(): array {
 	return [
 		'hvac'          => [ 'title' => 'HVAC service call', 'photo' => $hvac, 'neutral' => false ],
 		'plumbing'      => [ 'title' => 'Water heater replacement', 'photo' => $plumb, 'neutral' => false ],
-		'electrical'    => $neutral( 'Electrical panel / field job' ),
+		'electrical'    => $neutral( 'Electrical panel upgrade' ),
 		'roofing'       => $neutral( 'Roofing project' ),
 		'remodeling'    => $neutral( 'Remodel finish' ),
 		'painting'      => $neutral( 'Paint job' ),

@@ -285,12 +285,14 @@ $render_case = static function (): void {
 						</div>
 					</div>
 					<div class="pg-job-card__body">
+						<span class="pg-job-card__badge" id="pgJobBadge"><?php esc_html_e( 'Completed job', 'jcp-core' ); ?></span>
+						<span class="pg-job-card__trade" id="pgJobTrade"></span>
 						<strong class="pg-job-card__title" id="pgJobTitle">—</strong>
-						<p class="pg-job-card__source" id="pgRevealSource">—</p>
+						<p class="pg-job-card__source" id="pgRevealSource"><?php esc_html_e( 'Captured from the field', 'jcp-core' ); ?></p>
 					</div>
 				</article>
 
-				<p class="pg-reveal-kicker"><?php esc_html_e( 'JCP takes it from here', 'jcp-core' ); ?></p>
+				<p class="pg-reveal-kicker"><?php esc_html_e( 'JobCapturePro takes it from here', 'jcp-core' ); ?></p>
 				<div class="pg-dest-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Proof destinations', 'jcp-core' ); ?>">
 					<button type="button" class="pg-dest-tab is-active" role="tab" aria-selected="true" data-dest="website"><?php esc_html_e( 'Website', 'jcp-core' ); ?></button>
 					<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="google"><?php esc_html_e( 'Google', 'jcp-core' ); ?></button>
@@ -302,7 +304,7 @@ $render_case = static function (): void {
 					data-map="<?php echo esc_url( $map_url ); ?>"
 					data-qr="<?php echo esc_url( $qr_url ); ?>"></div>
 
-			<p class="pg-payoff-line"><strong><?php esc_html_e( 'Your crew does the work. JobCapturePro makes the work keep working.', 'jcp-core' ); ?></strong></p>
+				<p class="pg-payoff-line"><strong><?php esc_html_e( 'Your crew does the work. JobCapturePro makes the work keep working.', 'jcp-core' ); ?></strong></p>
 				<p class="pg-benefit-line"><?php esc_html_e( 'No rewriting jobs · No moving photos · No captions in the truck', 'jcp-core' ); ?></p>
 				<?php $render_review( $reveal_rev, 'reveal', 'pg-review-slot--reveal', '' ); ?>
 			</div>
