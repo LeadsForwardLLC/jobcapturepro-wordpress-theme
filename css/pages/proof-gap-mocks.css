@@ -63,7 +63,7 @@ body.jcp-proof-gap .ps-mock__chip {
 
 body.jcp-proof-gap .ps-mock__chip.is-good {
   background: #ecfdf5;
-  color: #047857;
+  color: var(--pg-success);
 }
 
 body.jcp-proof-gap .ps-mock__job-foot {
@@ -111,7 +111,7 @@ body.jcp-proof-gap .ps-mock__logo {
   width: 2.35rem;
   height: 2.35rem;
   border-radius: 999px;
-  background: #ff5036 !important;
+  background: var(--pg-accent) !important;
   color: #fff !important;
   font-size: 0.95rem;
   font-weight: 900;
@@ -161,7 +161,7 @@ body.jcp-proof-gap .ps-mock__checklist li {
 
 body.jcp-proof-gap .ps-mock__checklist li.is-done::before {
   content: "✓ ";
-  color: #047857;
+  color: var(--pg-success);
   font-weight: 800;
 }
 
@@ -269,7 +269,7 @@ body.jcp-proof-gap .ps-mock-jobcard p {
 }
 
 body.jcp-proof-gap .ps-mock-jobcard em {
-  color: #047857;
+  color: var(--pg-success);
   font-weight: 750;
 }
 
@@ -315,7 +315,7 @@ body.jcp-proof-gap .ps-mock-gbp__brand em {
   padding: 0.22rem 0.5rem;
   border-radius: 999px;
   background: #ecfdf5;
-  color: #047857;
+  color: var(--pg-success);
   font-size: 0.65rem;
   font-weight: 800;
   font-style: normal;
@@ -378,7 +378,7 @@ body.jcp-proof-gap .ps-mock-review__job .ps-mock__photo {
 body.jcp-proof-gap .ps-mock-review__job strong {
   display: block;
   font-size: 0.88rem;
-  color: var(--pg-ink, #0f172a);
+  color: var(--pg-ink);
 }
 
 body.jcp-proof-gap .ps-mock-review__job span {
@@ -386,7 +386,7 @@ body.jcp-proof-gap .ps-mock-review__job span {
   margin-top: 0.15rem;
   font-size: 0.72rem;
   font-weight: 700;
-  color: #047857;
+  color: var(--pg-success);
 }
 
 body.jcp-proof-gap .ps-mock-review__phone {
@@ -416,7 +416,7 @@ body.jcp-proof-gap .ps-mock-review__app {
 body.jcp-proof-gap .ps-mock-review__contact {
   font-size: var(--pg-fs-secondary, 1rem);
   font-weight: 800;
-  color: var(--pg-ink, #0f172a);
+  color: var(--pg-ink);
   line-height: 1.2;
 }
 
@@ -493,7 +493,7 @@ body.jcp-proof-gap .ps-mock-map--neutral .ps-mock-map__pin {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: #ff5036;
+  background: var(--pg-accent);
   box-shadow: 0 0 0 3px rgba(255, 80, 54, 0.28);
 }
 
@@ -567,7 +567,7 @@ body.jcp-proof-gap .ps-mock-map--pins .ps-mock-map__pin {
 body.jcp-proof-gap .ps-mock-map--pins .ps-mock-map__pin.is-active {
   width: 12px;
   height: 12px;
-  background: #ff5036;
+  background: var(--pg-accent);
   box-shadow:
     0 0 0 3px rgba(255, 80, 54, 0.35),
     0 0 0 2px #fff;
@@ -633,7 +633,7 @@ body.jcp-proof-gap .ps-mock-jobcard--fit strong {
 body.jcp-proof-gap .ps-mock-jobcard--fit span {
   margin-top: 0.12rem;
   font-size: 0.72rem;
-  color: #047857;
+  color: var(--pg-success);
   font-weight: 700;
 }
 
@@ -748,15 +748,17 @@ body.jcp-proof-gap .ps-mock-social__head {
 }
 
 body.jcp-proof-gap .ps-mock-social__avatar {
-  display: grid;
-  place-items: center;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
   width: 2.35rem;
   height: 2.35rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #ff503e, #fb923c);
-  color: #fff;
+  border-radius: 999px;
+  background: var(--pg-accent) !important;
+  color: #fff !important;
   font-weight: 900;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  line-height: 1;
 }
 
 body.jcp-proof-gap .ps-mock-social__head strong {
@@ -819,7 +821,7 @@ body.jcp-proof-gap .ps-mock-dir__badge {
   padding: 0.22rem 0.55rem;
   border-radius: 999px;
   background: rgba(255, 80, 54, 0.12);
-  color: #ff5036;
+  color: var(--pg-accent);
   font-size: 0.62rem;
   font-weight: 900;
   letter-spacing: 0.04em;
@@ -833,7 +835,7 @@ body.jcp-proof-gap .ps-mock-dir__verified {
   padding: 0.22rem 0.5rem;
   border-radius: 999px;
   background: #ecfdf5;
-  color: #047857;
+  color: var(--pg-success);
   font-size: 0.65rem;
   font-weight: 800;
 }
@@ -899,7 +901,7 @@ body.jcp-proof-gap .ps-mock-dir__avatar {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 999px;
-  background: #ff5036 !important;
+  background: var(--pg-accent) !important;
   color: #fff !important;
   font-weight: 900;
   font-size: 1.05rem;
@@ -942,7 +944,7 @@ body.jcp-proof-gap .ps-mock-dir__latest em {
   font-style: normal;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #ff5036;
+  color: var(--pg-accent);
 }
 
 body.jcp-proof-gap .ps-mock-dir__latest strong {
@@ -967,7 +969,7 @@ body.jcp-proof-gap .ps-mock-dir__footer {
 body.jcp-proof-gap .ps-mock-dir__cta {
   font-size: 0.78rem;
   font-weight: 800;
-  color: #ff5036;
+  color: var(--pg-accent);
 }
 
 body.jcp-proof-gap .ps-mock-dir__cta::after {
