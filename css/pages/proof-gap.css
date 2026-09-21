@@ -3907,3 +3907,212 @@ body.jcp-proof-gap .pg-plan-build.is-done .pg-plan-build__status {
     transform: none;
   }
 }
+
+/* ─── App sim interstitial (story phone, one-shot) ─── */
+body.jcp-proof-gap.pg-is-app-sim .pg-bottom-action {
+  display: none !important;
+}
+
+body.jcp-proof-gap .pg-state--app-sim .pg-state__inner {
+  max-width: 28rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+body.jcp-proof-gap .pg-app-sim__stage {
+  margin: 0.85rem auto 0.75rem;
+  width: 100%;
+  max-width: 280px;
+}
+
+body.jcp-proof-gap .pg-app-sim-phone {
+  max-width: 280px;
+}
+
+body.jcp-proof-gap .pg-app-sim-phone .jcp-story-phone__device.hero-phone-mockup,
+body.jcp-proof-gap .pg-app-sim-phone.demo-preview-phone-mockup.hero-phone-mockup {
+  width: min(100%, 240px) !important;
+  max-width: 240px !important;
+}
+
+body.jcp-proof-gap .pg-app-sim-phone .jcp-story-phone__caption {
+  margin-top: 0.65rem;
+  min-height: 2.4em;
+  font-size: var(--pg-fs-secondary);
+  font-weight: 750;
+  color: var(--pg-ink);
+}
+
+body.jcp-proof-gap .pg-app-sim-phone .jcp-story-phone__orbit {
+  inset: -4px -14px 36px;
+}
+
+body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-chip {
+  animation: none !important;
+  opacity: 0;
+  transform: translateY(6px) scale(0.94);
+  transition:
+    opacity 320ms var(--pg-ease),
+    transform 320ms var(--pg-ease);
+}
+
+body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-chip--jobs {
+  transform: translate(-50%, 8px) scale(0.94);
+}
+
+body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--maps,
+body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--web,
+body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--social,
+body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--reviews,
+body.jcp-proof-gap .pg-app-sim-phone.is-done .jcp-story-chip--jobs {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--web {
+  transition-delay: 120ms;
+}
+body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--social {
+  transition-delay: 240ms;
+}
+body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--reviews {
+  transition-delay: 360ms;
+}
+body.jcp-proof-gap .pg-app-sim-phone.is-done .jcp-story-chip--jobs {
+  transition-delay: 120ms;
+  transform: translate(-50%, 0) scale(1);
+}
+
+body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-scene.is-active .jcp-story-camera__flash {
+  animation: pg-sim-camera-flash 0.55s ease 0.28s 1;
+}
+
+body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-scene.is-active .jcp-story-camera__shutter span {
+  animation: pg-sim-shutter 0.45s ease 0.48s 1;
+}
+
+body.jcp-proof-gap .pg-app-sim-phone.is-manual[data-active-scene='process'] .jcp-story-process__spinner {
+  animation: pg-sim-spin 0.85s linear infinite;
+}
+
+@keyframes pg-sim-camera-flash {
+  0% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.85;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes pg-sim-shutter {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.92);
+  }
+}
+
+@keyframes pg-sim-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+body.jcp-proof-gap .pg-app-sim__channels {
+  list-style: none;
+  margin: 0.35rem 0 0.85rem;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+body.jcp-proof-gap .pg-app-sim__channels li {
+  margin: 0;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #fff;
+  font-size: var(--pg-fs-tertiary);
+  font-weight: 750;
+  color: var(--pg-muted);
+  opacity: 0.55;
+  transition:
+    opacity 220ms var(--pg-ease),
+    border-color 220ms var(--pg-ease),
+    background 220ms var(--pg-ease),
+    color 220ms var(--pg-ease),
+    box-shadow 220ms var(--pg-ease);
+}
+
+body.jcp-proof-gap .pg-app-sim__channels li.is-live {
+  opacity: 1;
+  border-color: rgba(255, 80, 54, 0.55);
+  background: linear-gradient(180deg, #fff8f6 0%, #ffe8e2 100%);
+  color: var(--pg-accent);
+  box-shadow: 0 0 0 3px rgba(255, 80, 54, 0.1);
+}
+
+body.jcp-proof-gap .pg-app-sim__meter {
+  height: 0.45rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+  overflow: hidden;
+  max-width: 18rem;
+  margin: 0 auto 0.65rem;
+}
+
+body.jcp-proof-gap .pg-app-sim__meter-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ff6a4d 0%, var(--pg-accent) 55%, #ff8a6e 100%);
+  transition: width linear;
+}
+
+body.jcp-proof-gap .pg-app-sim__status {
+  margin: 0;
+  min-height: 1.35em;
+  font-size: var(--pg-fs-secondary);
+  font-weight: 750;
+  color: var(--pg-accent);
+}
+
+body.jcp-proof-gap .pg-app-sim__skip {
+  appearance: none;
+  margin: 0.85rem auto 0;
+  display: inline-block;
+  border: 0;
+  background: transparent;
+  color: var(--pg-muted);
+  font: inherit;
+  font-size: var(--pg-fs-tertiary);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  cursor: pointer;
+  min-height: 44px;
+  padding: 0.35rem 0.5rem;
+}
+
+body.jcp-proof-gap .pg-app-sim__skip:hover {
+  color: var(--pg-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-camera__flash,
+  body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-process__spinner {
+    animation: none !important;
+  }
+
+  body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-chip {
+    transition: none;
+  }
+}

@@ -193,7 +193,10 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-buttons', 'css/buttons.css', [ 'jcp-core-layout' ] );
         jcp_core_enqueue_style( 'jcp-core-components', 'css/components.css', [ 'jcp-core-buttons' ] );
         jcp_core_enqueue_style( 'jcp-core-utilities', 'css/utilities.css', [ 'jcp-core-components' ] );
-        jcp_core_enqueue_style( 'jcp-core-proof-gap', 'css/pages/proof-gap.css', [ 'jcp-core-buttons', 'jcp-core-components' ] );
+        jcp_core_enqueue_style( 'jcp-core-sections', 'css/sections.css', [ 'jcp-core-components' ] );
+        jcp_core_enqueue_style( 'jcp-core-hero-live-demo', 'css/components/hero-live-demo.css', [ 'jcp-core-sections' ] );
+        jcp_core_enqueue_style( 'jcp-core-demo-app-phone', 'css/components/demo-app-phone.css', [ 'jcp-core-sections' ] );
+        jcp_core_enqueue_style( 'jcp-core-proof-gap', 'css/pages/proof-gap.css', [ 'jcp-core-buttons', 'jcp-core-components', 'jcp-core-demo-app-phone' ] );
         jcp_core_enqueue_style( 'jcp-core-proof-gap-mocks', 'css/pages/proof-gap-mocks.css', [ 'jcp-core-proof-gap' ] );
 
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );

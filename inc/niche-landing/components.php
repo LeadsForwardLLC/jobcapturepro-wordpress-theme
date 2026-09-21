@@ -241,16 +241,21 @@ function jcp_component_hero_home_visual( string $demo_url = '', string $photo_ur
  * Full JCP story phone — capture → optimize → publish → channels → more jobs.
  * Used in homepage/campaign heroes and demo preview sections.
  *
- * @param string $demo_url Demo URL.
- * @param string $photo_url Optional job photo for the capture beat.
- * @param bool   $manual   Demo-run mode: JS-driven scenes (no story-phone loop).
+ * @param string               $demo_url  Demo URL.
+ * @param string               $photo_url Optional job photo for the capture beat.
+ * @param bool                 $manual    Demo-run mode: JS-driven scenes (no story-phone loop).
+ * @param array<string, mixed> $opts      Optional: show_orbit, caption_id, root_class, data_attrs.
  */
-function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url = '', bool $manual = false ): void {
+function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url = '', bool $manual = false, array $opts = [] ): void {
 	$demo_url  = $demo_url !== '' ? $demo_url : home_url( '/demo/' );
 	$photo_url = $photo_url !== '' ? $photo_url : ( function_exists( 'jcp_media_default_phone_image' ) ? jcp_media_default_phone_image() : '' );
 	// Always start on home so JS scene timing stays in sync with the 18s CSS keyframes
 	// (starting mid-loop on checkin left the card/photo at opacity:0 — blank phone).
 	$start_scene = 'home';
+	$show_orbit  = array_key_exists( 'show_orbit', $opts ) ? (bool) $opts['show_orbit'] : ! $manual;
+	$caption_id  = (string) ( $opts['caption_id'] ?? ( $manual ? 'jpdRunPhoneCaption' : '' ) );
+	$root_class  = trim( 'jcp-story-phone' . ( $manual ? ' jpd-run-phone is-manual is-paused' : '' ) . ' ' . (string) ( $opts['root_class'] ?? '' ) );
+	$data_attrs  = (string) ( $opts['data_attrs'] ?? '' );
 	$captions    = [
 		__( '1. Tap + to start a check-in', 'jcp-core' ),
 		__( '2. Snap the finished job photo', 'jcp-core' ),
@@ -260,11 +265,18 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 	];
 	?>
 	<div
-		class="jcp-story-phone<?php echo $manual ? ' jpd-run-phone is-manual is-paused' : ''; ?>"
-		<?php echo $manual ? 'data-jpd-run-phone data-jpd-run-phone-manual="1" data-active-scene="home"' : 'data-jcp-story-phone data-start-scene="' . esc_attr( $start_scene ) . '"'; ?>
+		class="<?php echo esc_attr( $root_class ); ?>"
+		<?php
+		if ( $manual ) {
+			echo 'data-jpd-run-phone data-jpd-run-phone-manual="1" data-active-scene="home"';
+		} else {
+			echo 'data-jcp-story-phone data-start-scene="' . esc_attr( $start_scene ) . '"';
+		}
+		echo $data_attrs !== '' ? ' ' . $data_attrs : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- caller-supplied trusted attrs.
+		?>
 	>
 		<div class="jcp-story-phone__glow" aria-hidden="true"></div>
-		<?php if ( ! $manual ) : ?>
+		<?php if ( $show_orbit ) : ?>
 		<div class="jcp-story-phone__orbit" aria-hidden="true">
 			<span class="jcp-story-chip jcp-story-chip--maps" data-story-chip="maps">
 				<img src="<?php echo esc_url( jcp_core_icon( 'map-pin' ) ); ?>" alt="" width="14" height="14" />
@@ -450,7 +462,13 @@ function jcp_component_demo_app_phone( string $demo_url = '', string $photo_url 
 		<?php echo $manual ? '</div>' : '</a>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static tag. ?>
 		<p
 			class="jcp-story-phone__caption<?php echo $manual ? ' jpd-run-phone-caption' : ''; ?>"
-			<?php echo $manual ? 'id="jpdRunPhoneCaption" data-jpd-run-caption' : 'data-jcp-story-caption data-captions="' . esc_attr( wp_json_encode( array_values( $captions ) ) ) . '"'; ?>
+			<?php
+			if ( $manual ) {
+				echo 'id="' . esc_attr( $caption_id !== '' ? $caption_id : 'jpdRunPhoneCaption' ) . '" data-jpd-run-caption';
+			} else {
+				echo 'data-jcp-story-caption data-captions="' . esc_attr( wp_json_encode( array_values( $captions ) ) ) . '"';
+			}
+			?>
 		>
 			<?php echo esc_html( $manual ? __( 'Your tech opens JCP in the field…', 'jcp-core' ) : $captions[0] ); ?>
 		</p>

@@ -19,6 +19,7 @@
     'public_proof_percentage',
     'proof_gap_result',
     'email_capture',
+    'app_sim',
     'product_reveal',
     'plan_build',
     'trial_bridge',
@@ -32,6 +33,7 @@
     public_proof_percentage: 'gap',
     proof_gap_result: 'gap',
     email_capture: 'plan',
+    app_sim: 'plan',
     product_reveal: 'plan',
     plan_build: 'plan',
     trial_bridge: 'plan',
@@ -42,6 +44,12 @@
   var planBuildTimer = null;
   var planBuildStepTimers = [];
   var destTabsHintTimer = null;
+
+  var APP_SIM_DURATION_MS = 5600;
+  var APP_SIM_REDUCED_MS = 1100;
+  var appSimTimer = null;
+  var appSimStepTimers = [];
+  var appSimSkipBound = false;
 
   var JOB_EXAMPLES = {
     hvac: 'HVAC service call',
@@ -308,6 +316,11 @@
         form: 'pgEmailForm',
         animate: false,
       });
+      return;
+    }
+
+    if (id === 'app_sim') {
+      clearBottomAction();
       return;
     }
 
@@ -622,6 +635,7 @@
         if (!state.email_captured) return id;
         continue;
       }
+      if (id === 'app_sim') continue;
       if (id === 'product_reveal') {
         if (!state.product_reveal_completed) return id;
         continue;
@@ -666,7 +680,7 @@
   function setBackVisible() {
     var back = document.getElementById('pgBack');
     if (!back) return;
-    back.hidden = state.current_state === 'welcome';
+    back.hidden = state.current_state === 'welcome' || state.current_state === 'app_sim';
   }
 
   function readUrlParam(key) {
@@ -1173,6 +1187,234 @@
     hint.hidden = false;
     if (destTabsHintTimer) clearTimeout(destTabsHintTimer);
     destTabsHintTimer = setTimeout(dismissDestTabsHint, 5200);
+  }
+
+  function clearAppSimTimers() {
+    if (appSimTimer) {
+      clearTimeout(appSimTimer);
+      appSimTimer = null;
+    }
+    appSimStepTimers.forEach(function (t) {
+      clearTimeout(t);
+    });
+    appSimStepTimers = [];
+  }
+
+  function setAppSimScene(id) {
+    var root = document.querySelector('[data-pg-app-sim-phone]');
+    if (!root) return;
+    root.setAttribute('data-active-scene', id);
+    root.querySelectorAll('[data-story-scene]').forEach(function (scene) {
+      var on = scene.getAttribute('data-story-scene') === id;
+      scene.classList.toggle('is-active', on);
+      scene.setAttribute('aria-hidden', on ? 'false' : 'true');
+    });
+  }
+
+  function setAppSimCaption(text) {
+    var cap = document.getElementById('pgAppSimCaption');
+    if (!cap || !text) return;
+    cap.classList.add('is-swapping');
+    window.setTimeout(function () {
+      cap.textContent = text;
+      cap.classList.remove('is-swapping');
+    }, 140);
+  }
+
+  function setAppSimStatus(text) {
+    var el = document.getElementById('pgAppSimStatus');
+    if (el && text) el.textContent = text;
+  }
+
+  function setAppSimMeter(pct, durationMs) {
+    var meter = document.getElementById('pgAppSimMeter');
+    if (!meter) return;
+    if (typeof durationMs === 'number') {
+      meter.style.transitionDuration = durationMs + 'ms';
+    }
+    meter.style.width = Math.max(0, Math.min(100, pct)) + '%';
+  }
+
+  function setAppSimChannels(upTo) {
+    var order = ['website', 'google', 'social', 'reviews', 'directory'];
+    var idx = order.indexOf(upTo);
+    document.querySelectorAll('[data-sim-channel]').forEach(function (el) {
+      var key = el.getAttribute('data-sim-channel');
+      var i = order.indexOf(key);
+      el.classList.toggle('is-live', idx >= 0 && i >= 0 && i <= idx);
+    });
+  }
+
+  function personalizeAppSimPhone() {
+    var root = document.querySelector('[data-pg-app-sim-phone]');
+    if (!root) return;
+    var url = typeof getJobPhotoUrl === 'function' ? getJobPhotoUrl() : '';
+    var jobLabel = JOB_EXAMPLES[state.trade] || 'Finished field job';
+    var cityLine = 'Your service area';
+
+    root.querySelectorAll('[data-jpd-job-photo], .jcp-story-checkin-card__photo').forEach(function (img) {
+      if (url) {
+        img.src = url;
+        img.hidden = false;
+      }
+    });
+
+    var title = root.querySelector('.jcp-story-checkin-card .demo-item-title');
+    if (title) title.textContent = jobLabel;
+    var sub = root.querySelector('.jcp-story-checkin-card .demo-item-subtitle');
+    if (sub) sub.textContent = cityLine;
+
+    var lead = root.querySelector('.jcp-story-outcome__lead span');
+    if (lead) {
+      var tradeWord = (trades[state.trade] || 'job').toLowerCase();
+      lead.textContent = '“Saw your ' + tradeWord + ' jobs on Google”';
+    }
+  }
+
+  function finishAppSim(skipped) {
+    clearAppSimTimers();
+    markCompleted('app_sim');
+    track(skipped ? 'AppSimSkipped' : 'AppSimCompleted', {
+      trade: state.trade,
+      current_workflow: state.current_workflow,
+    });
+    goTo('product_reveal');
+  }
+
+  function bindAppSimSkip() {
+    var btn = document.getElementById('pgAppSimSkip');
+    if (!btn || appSimSkipBound) return;
+    appSimSkipBound = true;
+    btn.addEventListener('click', function () {
+      finishAppSim(true);
+    });
+  }
+
+  function startAppSimSequence() {
+    clearAppSimTimers();
+    bindAppSimSkip();
+    personalizeAppSimPhone();
+
+    var root = document.querySelector('[data-pg-app-sim-phone]');
+    var skip = document.getElementById('pgAppSimSkip');
+    var reduced = prefersReducedMotion();
+    var duration = reduced ? APP_SIM_REDUCED_MS : APP_SIM_DURATION_MS;
+
+    if (root) {
+      root.classList.add('is-manual', 'is-paused', 'pg-app-sim-phone--running');
+      root.classList.remove('is-done', 'is-publishing');
+    }
+    setAppSimChannels('');
+    setAppSimMeter(0, 0);
+    var meterEl = document.getElementById('pgAppSimMeter');
+    if (meterEl) void meterEl.offsetWidth;
+    setAppSimMeter(reduced ? 100 : 8, reduced ? duration : 400);
+    setAppSimScene('home');
+    setAppSimCaption('Your tech opens JobCapturePro…');
+    setAppSimStatus('Opening JobCapturePro…');
+    if (skip) skip.hidden = true;
+
+    track('AppSimStarted', {
+      trade: state.trade,
+      current_workflow: state.current_workflow,
+    });
+
+    if (reduced) {
+      setAppSimScene('checkin');
+      setAppSimChannels('directory');
+      setAppSimCaption('Check-in published across channels.');
+      setAppSimStatus('Ready — showing your outputs…');
+      appSimTimer = setTimeout(function () {
+        finishAppSim(false);
+      }, duration);
+      return;
+    }
+
+    var beats = [
+      {
+        t: 0,
+        fn: function () {
+          setAppSimScene('home');
+          setAppSimCaption('Your tech opens JobCapturePro…');
+          setAppSimStatus('Opening JobCapturePro…');
+          setAppSimMeter(12, 600);
+        },
+      },
+      {
+        t: 700,
+        fn: function () {
+          setAppSimScene('camera');
+          setAppSimCaption('One tap. Finished job photo captured.');
+          setAppSimStatus('Capturing the finished job…');
+          setAppSimMeter(28, 700);
+        },
+      },
+      {
+        t: 1600,
+        fn: function () {
+          setAppSimScene('process');
+          setAppSimCaption('JCP builds check-in, map pin, and channel copy.');
+          setAppSimStatus('Building proof from the photo…');
+          setAppSimMeter(48, 900);
+          if (skip) skip.hidden = false;
+        },
+      },
+      {
+        t: 2700,
+        fn: function () {
+          setAppSimScene('checkin');
+          setAppSimCaption('Check-in ready. Publishing starts now.');
+          setAppSimStatus('Publishing across connected channels…');
+          setAppSimChannels('website');
+          setAppSimMeter(62, 600);
+          if (root) root.classList.add('is-publishing');
+        },
+      },
+      {
+        t: 3200,
+        fn: function () {
+          setAppSimChannels('google');
+          setAppSimMeter(72, 400);
+        },
+      },
+      {
+        t: 3600,
+        fn: function () {
+          setAppSimChannels('social');
+          setAppSimMeter(80, 400);
+        },
+      },
+      {
+        t: 4000,
+        fn: function () {
+          setAppSimChannels('reviews');
+          setAppSimMeter(88, 400);
+        },
+      },
+      {
+        t: 4400,
+        fn: function () {
+          setAppSimChannels('directory');
+          setAppSimScene('outcome');
+          setAppSimCaption('Proof is live. Here’s what that job becomes…');
+          setAppSimStatus('Live — opening your channel previews…');
+          setAppSimMeter(100, 500);
+          if (root) root.classList.add('is-done');
+        },
+      },
+    ];
+
+    beats.forEach(function (beat) {
+      appSimStepTimers.push(
+        setTimeout(function () {
+          beat.fn();
+        }, beat.t)
+      );
+    });
+
+    appSimTimer = setTimeout(function () {
+      finishAppSim(false);
+    }, duration);
   }
 
   function scheduleAdvance(next) {
@@ -2154,6 +2396,7 @@
   function goTo(id) {
     clearAdvance();
     clearPlanBuildTimers();
+    clearAppSimTimers();
     stopAutoplay();
     if (STATES.indexOf(id) === -1) return;
 
@@ -2173,13 +2416,18 @@
     stepEnteredAt = Date.now();
 
     hideAllInsights();
-    state.current_state = id === 'plan_build' ? 'product_reveal' : id;
-    if (id !== 'plan_build') {
-      saveState();
-    } else {
-      // Keep resume pointing at product_reveal; runtime uses the visible section id.
+    // Transient screens: keep resume pointing at a durable state.
+    if (id === 'plan_build') {
+      state.current_state = 'product_reveal';
       saveState();
       state.current_state = 'plan_build';
+    } else if (id === 'app_sim') {
+      state.current_state = 'email_capture';
+      saveState();
+      state.current_state = 'app_sim';
+    } else {
+      state.current_state = id;
+      saveState();
     }
 
     document.querySelectorAll('[data-pg-state]').forEach(function (el) {
@@ -2191,6 +2439,7 @@
 
     document.body.classList.toggle('pg-is-welcome', id === 'welcome');
     document.body.classList.toggle('pg-is-plan-build', id === 'plan_build');
+    document.body.classList.toggle('pg-is-app-sim', id === 'app_sim');
 
     if (!questionViewed[id]) {
       questionViewed[id] = true;
@@ -2223,6 +2472,9 @@
     if (id === 'email_capture' && !milestoneViewed.email_view) {
       milestoneViewed.email_view = true;
       track('EmailCaptureViewed', { trade: state.trade });
+    }
+    if (id === 'app_sim') {
+      startAppSimSequence();
     }
     if (id === 'product_reveal') {
       renderReveal();
@@ -2262,7 +2514,12 @@
   function goBack() {
     clearAdvance();
     clearPlanBuildTimers();
+    clearAppSimTimers();
     hideAllInsights();
+    if (state.current_state === 'app_sim' || state.current_state === 'product_reveal') {
+      goTo('email_capture');
+      return;
+    }
     if (state.current_state === 'plan_build' || state.current_state === 'trial_bridge') {
       goTo('product_reveal');
       return;
@@ -2434,7 +2691,7 @@
         });
         pushAcquisitionLead(returnedId);
         updateTrialHref();
-        goTo('product_reveal');
+        goTo('app_sim');
       })
       .catch(function () {
         if (btn) {

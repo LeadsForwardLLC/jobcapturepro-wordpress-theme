@@ -309,6 +309,56 @@ $render_case = static function (): void {
 			</div>
 		</section>
 
+		<section class="pg-state pg-state--app-sim" data-pg-state="app_sim" hidden>
+			<div class="pg-state__inner pg-app-sim">
+				<p class="pg-eyebrow"><?php esc_html_e( 'See it work', 'jcp-core' ); ?></p>
+				<h1 class="pg-title pg-title--sm" id="pgAppSimTitle"><?php esc_html_e( 'Watch one finished job go live…', 'jcp-core' ); ?></h1>
+				<p class="pg-sub pg-sub--tight" id="pgAppSimSub"><?php esc_html_e( 'Same app your crew would use — capture, build, publish.', 'jcp-core' ); ?></p>
+
+				<div class="pg-app-sim__stage" id="pgAppSimStage">
+					<?php
+					$sim_photo = '';
+					if ( function_exists( 'jcp_proof_gap_trade_job_assets' ) ) {
+						$assets = jcp_proof_gap_trade_job_assets();
+						if ( is_array( $assets ) ) {
+							$first = reset( $assets );
+							if ( is_array( $first ) && ! empty( $first['photo'] ) ) {
+								$sim_photo = (string) $first['photo'];
+							}
+						}
+					}
+					if ( function_exists( 'jcp_component_demo_app_phone' ) ) {
+						jcp_component_demo_app_phone(
+							'',
+							$sim_photo,
+							true,
+							[
+								'show_orbit'  => true,
+								'caption_id'  => 'pgAppSimCaption',
+								'root_class'  => 'pg-app-sim-phone',
+								'data_attrs'  => 'data-pg-app-sim-phone',
+							]
+						);
+					}
+					?>
+				</div>
+
+				<ul class="pg-app-sim__channels" id="pgAppSimChannels" aria-label="<?php esc_attr_e( 'Publishing channels', 'jcp-core' ); ?>">
+					<li data-sim-channel="website"><?php esc_html_e( 'Website', 'jcp-core' ); ?></li>
+					<li data-sim-channel="google"><?php esc_html_e( 'Google', 'jcp-core' ); ?></li>
+					<li data-sim-channel="social"><?php esc_html_e( 'Social', 'jcp-core' ); ?></li>
+					<li data-sim-channel="reviews"><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></li>
+					<li data-sim-channel="directory"><?php esc_html_e( 'Directory', 'jcp-core' ); ?></li>
+				</ul>
+
+				<div class="pg-app-sim__meter" aria-hidden="true">
+					<span class="pg-app-sim__meter-fill" id="pgAppSimMeter"></span>
+				</div>
+				<p class="pg-app-sim__status" id="pgAppSimStatus" aria-live="polite"><?php esc_html_e( 'Opening JobCapturePro…', 'jcp-core' ); ?></p>
+				<button type="button" class="pg-app-sim__skip" id="pgAppSimSkip" hidden><?php esc_html_e( 'Skip preview →', 'jcp-core' ); ?></button>
+			</div>
+		</section>
+
 		<section class="pg-state pg-state--reveal" data-pg-state="product_reveal" hidden>
 			<div class="pg-state__inner pg-state__inner--wide">
 				<p class="pg-eyebrow"><?php esc_html_e( 'Your plan', 'jcp-core' ); ?></p>
