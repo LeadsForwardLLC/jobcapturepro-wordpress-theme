@@ -148,20 +148,27 @@ $render_case = static function (): void {
 					</ul>
 				</div>
 			<div class="pg-trust pg-trust--compact">
-					<div class="pg-trust__row">
+				<div class="pg-trust__proof">
+					<div class="pg-trust__proof-copy">
 						<span class="pg-trust__stars" aria-label="<?php esc_attr_e( '5 out of 5 stars', 'jcp-core' ); ?>">★★★★★</span>
 						<span class="pg-trust__label"><?php esc_html_e( '5-star feedback from contractors and home-service operators', 'jcp-core' ); ?></span>
-						<span class="pg-trust__avatars">
-							<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-owner-64.webp' ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
-							<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-operator-64.webp' ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
-							<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-crew-man-64.webp' ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
-						</span>
 					</div>
-					<div class="pg-trust__row pg-trust__row--authority">
-						<span class="pg-trust__authority"><?php echo wp_kses_post( __( 'Built by the team behind <strong>LeadsForward</strong>', 'jcp-core' ) ); ?></span>
-						<span class="pg-trust__stats"><?php esc_html_e( '10 years in home services · 250K+ contractor leads · $150M+ client revenue', 'jcp-core' ); ?></span>
-					</div>
+					<span class="pg-trust__avatars" aria-hidden="true">
+						<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-owner-64.webp' ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
+						<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-operator-64.webp' ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
+						<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-crew-man-64.webp' ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
+					</span>
 				</div>
+				<div class="pg-trust__divider" aria-hidden="true"></div>
+				<div class="pg-trust__authority-block">
+					<p class="pg-trust__authority"><?php echo wp_kses_post( __( 'Built by the team behind <strong>LeadsForward</strong>', 'jcp-core' ) ); ?></p>
+					<ul class="pg-trust__metrics">
+						<li><strong>10 yrs</strong><span><?php esc_html_e( 'home services', 'jcp-core' ); ?></span></li>
+						<li><strong>250K+</strong><span><?php esc_html_e( 'contractor leads', 'jcp-core' ); ?></span></li>
+						<li><strong>$150M+</strong><span><?php esc_html_e( 'client revenue', 'jcp-core' ); ?></span></li>
+					</ul>
+				</div>
+			</div>
 			</div>
 		</section>
 

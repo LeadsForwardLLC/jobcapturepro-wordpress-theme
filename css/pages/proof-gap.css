@@ -2748,57 +2748,144 @@ body.jcp-proof-gap .pg-summary__item--full .pg-summary__val {
 
 /* ─── Welcome trust module ─── */
 body.jcp-proof-gap .pg-trust {
-  margin: 0.75rem 0 0.4rem;
-  padding: 0.65rem 0.75rem;
-  border-radius: 0.75rem;
-  background: #f8fafc;
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  margin: 0.85rem 0 0.35rem;
+  padding: 0.9rem 0.95rem;
+  border-radius: var(--pg-radius);
+  background: var(--pg-card);
+  border: 1px solid var(--pg-border);
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.04);
   display: grid;
-  gap: 0.5rem;
+  gap: 0.75rem;
 }
+
+body.jcp-proof-gap .pg-trust__proof {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+}
+
+body.jcp-proof-gap .pg-trust__proof-copy {
+  display: grid;
+  gap: 0.28rem;
+  min-width: 0;
+}
+
 body.jcp-proof-gap .pg-trust__row {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
 }
+
 body.jcp-proof-gap .pg-trust__stars {
   display: flex;
-  gap: 0.08rem;
-  font-size: 1rem;
+  gap: 0.1rem;
+  font-size: 1.05rem;
   line-height: 1;
   color: var(--pg-warning);
+  letter-spacing: 0.02em;
 }
+
 body.jcp-proof-gap .pg-trust__label {
-  font-size: var(--pg-fs-secondary);
-  font-weight: 650;
-  color: var(--pg-muted);
-  line-height: 1.3;
-}
-body.jcp-proof-gap .pg-trust__avatars {
-  display: flex;
-  margin-left: auto;
-}
-body.jcp-proof-gap .pg-trust__avatars img {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 999px;
-  object-fit: cover;
-  border: 2px solid #fff;
-  margin-left: -0.5rem;
-}
-body.jcp-proof-gap .pg-trust__avatars img:first-child {
-  margin-left: 0;
-}
-body.jcp-proof-gap .pg-trust__authority {
   font-size: var(--pg-fs-secondary);
   font-weight: 650;
   color: var(--pg-muted);
   line-height: 1.35;
 }
+
+body.jcp-proof-gap .pg-trust__avatars {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+body.jcp-proof-gap .pg-trust__avatars img {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid #fff;
+  margin-left: -0.55rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+body.jcp-proof-gap .pg-trust__avatars img:first-child {
+  margin-left: 0;
+}
+
+body.jcp-proof-gap .pg-trust__divider {
+  height: 1px;
+  background: var(--pg-border);
+}
+
+body.jcp-proof-gap .pg-trust__authority-block {
+  display: grid;
+  gap: 0.55rem;
+}
+
+body.jcp-proof-gap .pg-trust__authority {
+  margin: 0;
+  font-size: var(--pg-fs-secondary);
+  font-weight: 600;
+  color: var(--pg-muted);
+  line-height: 1.35;
+}
+
 body.jcp-proof-gap .pg-trust__authority strong {
   color: var(--pg-ink);
   font-weight: 800;
+}
+
+body.jcp-proof-gap .pg-trust__metrics {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+body.jcp-proof-gap .pg-trust__metrics li {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.45rem 0.4rem;
+  border-radius: 0.55rem;
+  background: #f8fafc;
+  border: 1px solid var(--pg-border);
+  text-align: center;
+}
+
+body.jcp-proof-gap .pg-trust__metrics strong {
+  font-size: var(--pg-fs-secondary);
+  font-weight: 850;
+  color: var(--pg-ink);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+body.jcp-proof-gap .pg-trust__metrics span {
+  font-size: 0.68rem;
+  font-weight: 650;
+  color: var(--pg-muted);
+  line-height: 1.25;
+}
+
+body.jcp-proof-gap .pg-trust--compact {
+  margin-top: 0.85rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--pg-border);
+  border-radius: var(--pg-radius);
+  background: var(--pg-card);
+}
+
+body.jcp-proof-gap .pg-trust__stats {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: var(--pg-fs-secondary);
+  font-weight: 650;
+  color: var(--pg-ink);
+  line-height: 1.35;
 }
 
 /* ─── Other field inline expand ─── */
@@ -3016,23 +3103,6 @@ body.jcp-proof-gap .pg-welcome-product--compact .ps-mock__media {
 body.jcp-proof-gap .pg-welcome-product--compact .ps-mock__photo {
   max-height: 9.5rem;
   object-fit: cover;
-}
-
-body.jcp-proof-gap .pg-trust--compact {
-  margin-top: 0.75rem;
-  padding: 0.75rem 0.85rem;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 0.85rem;
-  background: #fff;
-}
-
-body.jcp-proof-gap .pg-trust__stats {
-  display: block;
-  margin-top: 0.25rem;
-  font-size: var(--pg-fs-secondary);
-  font-weight: 650;
-  color: var(--pg-ink);
-  line-height: 1.35;
 }
 
 body.jcp-proof-gap .pg-other-field__actions {
