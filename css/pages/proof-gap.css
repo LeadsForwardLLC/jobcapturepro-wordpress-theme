@@ -55,6 +55,10 @@ body.jcp-proof-gap {
   overflow-x: hidden;
   width: 100%;
   max-width: 100%;
+  /* Never mid-word-hyphenate survey copy (Safari/iOS especially). */
+  hyphens: none;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
 }
 
 body.jcp-proof-gap *,
@@ -1207,6 +1211,11 @@ body.jcp-proof-gap .proof-gap-insight-card__text {
   line-height: var(--pg-lh-body);
   color: #3f4b5c;
   font-weight: 550;
+  hyphens: none;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 @media (prefers-reduced-motion: reduce) {
