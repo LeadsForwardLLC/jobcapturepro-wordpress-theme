@@ -360,13 +360,16 @@ $render_case = static function (): void {
 					</ul>
 				</div>
 
-				<p class="pg-reveal-same" id="pgRevealSame"><?php esc_html_e( 'Tap a channel to preview', 'jcp-core' ); ?></p>
-				<div class="pg-dest-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Where this job can show up', 'jcp-core' ); ?>">
-					<button type="button" class="pg-dest-tab is-active" role="tab" aria-selected="true" data-dest="website"><?php esc_html_e( 'Website', 'jcp-core' ); ?></button>
-					<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="google"><?php esc_html_e( 'Google', 'jcp-core' ); ?></button>
-					<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="social"><?php esc_html_e( 'Social', 'jcp-core' ); ?></button>
-					<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="reviews"><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></button>
-					<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="directory"><?php esc_html_e( 'Directory', 'jcp-core' ); ?></button>
+				<p class="pg-reveal-same" id="pgRevealSame"><?php esc_html_e( 'Tap a channel below to preview it', 'jcp-core' ); ?></p>
+				<div class="pg-dest-tabs-wrap">
+					<div class="pg-dest-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Preview each marketing channel', 'jcp-core' ); ?>">
+						<button type="button" class="pg-dest-tab is-active" role="tab" aria-selected="true" data-dest="website"><?php esc_html_e( 'Website', 'jcp-core' ); ?></button>
+						<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="google"><?php esc_html_e( 'Google', 'jcp-core' ); ?></button>
+						<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="social"><?php esc_html_e( 'Social', 'jcp-core' ); ?></button>
+						<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="reviews"><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></button>
+						<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="directory"><?php esc_html_e( 'Directory', 'jcp-core' ); ?></button>
+					</div>
+					<p class="pg-dest-tabs-hint" id="pgDestTabsHint" aria-hidden="true"><?php esc_html_e( 'Swipe or tap to switch previews', 'jcp-core' ); ?></p>
 				</div>
 				<p class="pg-dest-caption" id="pgDestCaption" hidden></p>
 				<div class="pg-dest-panel" id="pgDestPanel" role="tabpanel"
@@ -376,6 +379,43 @@ $render_case = static function (): void {
 				<p class="pg-payoff-line"><strong><?php esc_html_e( 'Your crew does the work. JobCapturePro makes the work keep working.', 'jcp-core' ); ?></strong></p>
 				<p class="pg-benefit-line"><?php esc_html_e( 'No rewriting jobs · No moving photos · No captions in the truck', 'jcp-core' ); ?></p>
 				<?php $render_review( $reveal_rev, 'reveal', 'pg-review-slot--reveal', '' ); ?>
+			</div>
+		</section>
+
+		<section class="pg-state pg-state--plan-build" data-pg-state="plan_build" hidden>
+			<div class="pg-state__inner">
+				<p class="pg-eyebrow"><?php esc_html_e( 'Your plan', 'jcp-core' ); ?></p>
+				<h1 class="pg-title pg-title--sm" id="pgPlanBuildTitle"><?php esc_html_e( 'Creating your personalized plan…', 'jcp-core' ); ?></h1>
+				<p class="pg-sub pg-sub--tight" id="pgPlanBuildSub"><?php esc_html_e( 'Matching JobCapturePro to how your crew already works.', 'jcp-core' ); ?></p>
+
+				<div class="pg-plan-build" id="pgPlanBuild" aria-live="polite">
+					<ul class="pg-plan-build__chips" id="pgPlanBuildChips"></ul>
+
+					<div class="pg-plan-build__meter" aria-hidden="true">
+						<span class="pg-plan-build__meter-fill" id="pgPlanBuildMeter"></span>
+					</div>
+
+					<ul class="pg-plan-build__steps" id="pgPlanBuildSteps">
+						<li class="pg-plan-build__step" data-build-step="0">
+							<span class="pg-plan-build__check" aria-hidden="true"></span>
+							<span class="pg-plan-build__step-text"><?php esc_html_e( 'Locking in your trade', 'jcp-core' ); ?></span>
+						</li>
+						<li class="pg-plan-build__step" data-build-step="1">
+							<span class="pg-plan-build__check" aria-hidden="true"></span>
+							<span class="pg-plan-build__step-text"><?php esc_html_e( 'Connecting your photo workflow', 'jcp-core' ); ?></span>
+						</li>
+						<li class="pg-plan-build__step" data-build-step="2">
+							<span class="pg-plan-build__check" aria-hidden="true"></span>
+							<span class="pg-plan-build__step-text"><?php esc_html_e( 'Sizing your job volume', 'jcp-core' ); ?></span>
+						</li>
+						<li class="pg-plan-build__step" data-build-step="3">
+							<span class="pg-plan-build__check" aria-hidden="true"></span>
+							<span class="pg-plan-build__step-text"><?php esc_html_e( 'Picking your easiest first win', 'jcp-core' ); ?></span>
+						</li>
+					</ul>
+
+					<p class="pg-plan-build__status" id="pgPlanBuildStatus"><?php esc_html_e( 'Almost ready…', 'jcp-core' ); ?></p>
+				</div>
 			</div>
 		</section>
 

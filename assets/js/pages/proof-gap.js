@@ -20,6 +20,7 @@
     'proof_gap_result',
     'email_capture',
     'product_reveal',
+    'plan_build',
     'trial_bridge',
   ];
 
@@ -32,8 +33,15 @@
     proof_gap_result: 'gap',
     email_capture: 'plan',
     product_reveal: 'plan',
+    plan_build: 'plan',
     trial_bridge: 'plan',
   };
+
+  var PLAN_BUILD_DURATION_MS = 3800;
+  var PLAN_BUILD_REDUCED_MS = 900;
+  var planBuildTimer = null;
+  var planBuildStepTimers = [];
+  var destTabsHintTimer = null;
 
   var JOB_EXAMPLES = {
     hvac: 'HVAC service call',
@@ -316,9 +324,14 @@
             trade: state.trade,
             current_workflow: state.current_workflow,
           });
-          goTo('trial_bridge');
+          goTo('plan_build');
         },
       });
+      return;
+    }
+
+    if (id === 'plan_build') {
+      clearBottomAction();
       return;
     }
 
@@ -613,6 +626,7 @@
         if (!state.product_reveal_completed) return id;
         continue;
       }
+      if (id === 'plan_build') continue;
       if (id === 'trial_bridge') return id;
     }
     return 'trial_bridge';
@@ -993,6 +1007,172 @@
       clearTimeout(advanceTimer);
       advanceTimer = null;
     }
+  }
+
+  function prefersReducedMotion() {
+    try {
+      return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function clearPlanBuildTimers() {
+    if (planBuildTimer) {
+      clearTimeout(planBuildTimer);
+      planBuildTimer = null;
+    }
+    planBuildStepTimers.forEach(function (t) {
+      clearTimeout(t);
+    });
+    planBuildStepTimers = [];
+  }
+
+  function planBuildChipLabels() {
+    var chips = [];
+    var tradeChip =
+      state.trade === 'other' && state.other_trade_text
+        ? state.other_trade_text
+        : trades[state.trade] || state.trade;
+    var workflowChip =
+      state.current_workflow === 'other_crm' && state.other_workflow_text
+        ? state.other_workflow_text
+        : workflows[state.current_workflow] || state.current_workflow;
+    var jobsChip = (jobsBuckets[state.jobs_per_week_bucket] || {}).weekly_label;
+    if (tradeChip) chips.push(tradeChip);
+    if (workflowChip) chips.push(workflowChip);
+    if (jobsChip) chips.push(jobsChip + ' jobs/week');
+    return chips;
+  }
+
+  function renderPlanBuildChips() {
+    var el = document.getElementById('pgPlanBuildChips');
+    if (!el) return;
+    el.innerHTML = planBuildChipLabels()
+      .map(function (label, i) {
+        return (
+          '<li class="pg-plan-build__chip" style="--pg-chip-i:' +
+          i +
+          '"><span>' +
+          escapeHtml(label) +
+          '</span></li>'
+        );
+      })
+      .join('');
+  }
+
+  function setPlanBuildStepActive(idx) {
+    document.querySelectorAll('.pg-plan-build__step').forEach(function (step) {
+      var n = parseInt(step.getAttribute('data-build-step'), 10);
+      step.classList.toggle('is-active', n === idx);
+      step.classList.toggle('is-done', n < idx);
+    });
+  }
+
+  function finishPlanBuildSteps() {
+    document.querySelectorAll('.pg-plan-build__step').forEach(function (step) {
+      step.classList.add('is-done');
+      step.classList.remove('is-active');
+    });
+  }
+
+  function startPlanBuildSequence() {
+    clearPlanBuildTimers();
+    renderPlanBuildChips();
+
+    var root = document.getElementById('pgPlanBuild');
+    var meter = document.getElementById('pgPlanBuildMeter');
+    var status = document.getElementById('pgPlanBuildStatus');
+    var reduced = prefersReducedMotion();
+    var duration = reduced ? PLAN_BUILD_REDUCED_MS : PLAN_BUILD_DURATION_MS;
+    var statuses = [
+      'Matching your trade…',
+      'Wiring up your photo flow…',
+      'Calibrating job volume…',
+      'Locking your first win…',
+      'Plan ready — let’s go.',
+    ];
+
+    if (root) {
+      root.classList.remove('is-running', 'is-done');
+      void root.offsetWidth;
+      root.classList.add('is-running');
+    }
+    if (meter) {
+      meter.style.transitionDuration = '0ms';
+      meter.style.width = '0%';
+      void meter.offsetWidth;
+      meter.style.transitionDuration = duration + 'ms';
+      meter.style.width = '100%';
+    }
+
+    setPlanBuildStepActive(0);
+    if (status) status.textContent = statuses[0];
+
+    track('PlanBuildStarted', {
+      trade: state.trade,
+      current_workflow: state.current_workflow,
+      jobs_per_week_bucket: state.jobs_per_week_bucket,
+    });
+
+    if (reduced) {
+      finishPlanBuildSteps();
+      if (status) status.textContent = statuses[4];
+      planBuildTimer = setTimeout(function () {
+        if (root) root.classList.add('is-done');
+        markCompleted('plan_build');
+        goTo('trial_bridge');
+      }, duration);
+      return;
+    }
+
+    var stepMs = [480, 1050, 1700, 2400];
+    stepMs.forEach(function (at, i) {
+      planBuildStepTimers.push(
+        setTimeout(function () {
+          setPlanBuildStepActive(i);
+          if (status) status.textContent = statuses[i];
+        }, at)
+      );
+    });
+
+    planBuildStepTimers.push(
+      setTimeout(function () {
+        finishPlanBuildSteps();
+        if (status) status.textContent = statuses[4];
+        if (root) root.classList.add('is-done');
+      }, 3100)
+    );
+
+    planBuildTimer = setTimeout(function () {
+      markCompleted('plan_build');
+      track('PlanBuildCompleted', {
+        trade: state.trade,
+        duration_ms: duration,
+      });
+      goTo('trial_bridge');
+    }, duration);
+  }
+
+  function dismissDestTabsHint() {
+    var wrap = document.querySelector('.pg-dest-tabs-wrap');
+    var hint = document.getElementById('pgDestTabsHint');
+    if (wrap) wrap.classList.add('is-hint-dismissed');
+    if (hint) hint.hidden = true;
+    if (destTabsHintTimer) {
+      clearTimeout(destTabsHintTimer);
+      destTabsHintTimer = null;
+    }
+  }
+
+  function showDestTabsHint() {
+    var wrap = document.querySelector('.pg-dest-tabs-wrap');
+    var hint = document.getElementById('pgDestTabsHint');
+    if (!wrap || !hint) return;
+    wrap.classList.remove('is-hint-dismissed');
+    hint.hidden = false;
+    if (destTabsHintTimer) clearTimeout(destTabsHintTimer);
+    destTabsHintTimer = setTimeout(dismissDestTabsHint, 5200);
   }
 
   function scheduleAdvance(next) {
@@ -1685,6 +1865,7 @@
       apply();
     }
     if (options.fromUser) {
+      dismissDestTabsHint();
       pauseAutoplayForManual();
       if (!destTracked[dest]) {
         destTracked[dest] = true;
@@ -1695,6 +1876,10 @@
   }
 
   function bindDestTabs() {
+    var tabsRoot = document.querySelector('.pg-dest-tabs');
+    if (!tabsRoot || tabsRoot.getAttribute('data-tabs-bound')) return;
+    tabsRoot.setAttribute('data-tabs-bound', '1');
+
     var tabs = document.querySelectorAll('.pg-dest-tab');
     tabs.forEach(function (tab, index) {
       tab.addEventListener('click', function () {
@@ -1786,6 +1971,7 @@
 
     bindDestTabs();
     bindAutoplayPause();
+    showDestTabsHint();
     autoplayDisabled = false;
     if (autoplayResumeTimer) {
       clearTimeout(autoplayResumeTimer);
@@ -1967,6 +2153,7 @@
 
   function goTo(id) {
     clearAdvance();
+    clearPlanBuildTimers();
     stopAutoplay();
     if (STATES.indexOf(id) === -1) return;
 
@@ -1986,8 +2173,14 @@
     stepEnteredAt = Date.now();
 
     hideAllInsights();
-    state.current_state = id;
-    saveState();
+    state.current_state = id === 'plan_build' ? 'product_reveal' : id;
+    if (id !== 'plan_build') {
+      saveState();
+    } else {
+      // Keep resume pointing at product_reveal; runtime uses the visible section id.
+      saveState();
+      state.current_state = 'plan_build';
+    }
 
     document.querySelectorAll('[data-pg-state]').forEach(function (el) {
       el.hidden = el.getAttribute('data-pg-state') !== id;
@@ -1997,6 +2190,7 @@
     setBackVisible();
 
     document.body.classList.toggle('pg-is-welcome', id === 'welcome');
+    document.body.classList.toggle('pg-is-plan-build', id === 'plan_build');
 
     if (!questionViewed[id]) {
       questionViewed[id] = true;
@@ -2041,6 +2235,9 @@
         });
       }
     }
+    if (id === 'plan_build') {
+      startPlanBuildSequence();
+    }
     if (id === 'trial_bridge') {
       renderTrialSummary();
       if (!milestoneViewed.trial_view) {
@@ -2064,7 +2261,12 @@
 
   function goBack() {
     clearAdvance();
+    clearPlanBuildTimers();
     hideAllInsights();
+    if (state.current_state === 'plan_build' || state.current_state === 'trial_bridge') {
+      goTo('product_reveal');
+      return;
+    }
     var idx = stateIndex(state.current_state);
     if (idx <= 0) return;
     goTo(STATES[idx - 1]);
