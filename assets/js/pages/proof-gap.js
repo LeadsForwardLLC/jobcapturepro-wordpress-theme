@@ -1449,9 +1449,10 @@
 
   function jobThumbBlock() {
     var photoUrl = getJobPhotoUrl();
+    // Thumb only — never also use ps-mock__photo (panel rules force those to full-bleed 16:10).
     if (photoUrl !== '') {
       return (
-        '<img class="ps-mock__thumb ps-mock__photo" src="' +
+        '<img class="ps-mock__thumb" src="' +
         escapeHtml(photoUrl) +
         '" alt="" width="160" height="120" loading="lazy" decoding="async" />'
       );
@@ -1556,13 +1557,16 @@
         '<div class="ps-mock ps-mock--review">' +
         '<div class="ps-mock-review__job">' +
         thumb +
-        '<div><strong>' +
+        '<div class="ps-mock-review__job-copy">' +
+        '<strong>' +
         title +
-        '</strong><span>Job just finished · Ask for the review now</span></div></div>' +
+        '</strong>' +
+        '<span>Job just finished · Ask for the review now</span>' +
+        '</div></div>' +
         '<div class="ps-mock-review__phone">' +
         '<div class="ps-mock-review__phone-bar">' +
         '<span class="ps-mock-review__app">Messages</span>' +
-        '<strong class="ps-mock-review__contact">Customer</strong>' +
+        '<strong class="ps-mock-review__contact">To: Customer</strong>' +
         '</div>' +
         '<div class="ps-mock-review__thread">' +
         '<div class="ps-mock-sms__bubble">Thanks again for choosing ' +

@@ -364,21 +364,41 @@ body.jcp-proof-gap .ps-mock-review__job {
   border-radius: 0.75rem;
   border: 1px solid rgba(255, 80, 54, 0.22);
   background: #fff7f5;
+  min-width: 0;
+  overflow: hidden;
 }
 
+/* Beat .pg-dest-panel .ps-mock__photo full-bleed rules — thumbs stay square beside copy. */
+body.jcp-proof-gap .pg-dest-panel .ps-mock-review__job .ps-mock__thumb,
+body.jcp-proof-gap .pg-dest-panel .ps-mock-review__job .ps-mock__photo,
 body.jcp-proof-gap .ps-mock-review__job .ps-mock__thumb,
 body.jcp-proof-gap .ps-mock-review__job .ps-mock__photo {
+  display: block;
   width: 3.5rem;
   height: 3.5rem;
+  min-width: 3.5rem;
+  min-height: 3.5rem;
+  max-width: 3.5rem;
+  max-height: 3.5rem;
+  aspect-ratio: 1;
   object-fit: cover;
+  object-position: center;
   border-radius: 0.5rem;
   flex-shrink: 0;
+}
+
+body.jcp-proof-gap .ps-mock-review__job > div,
+body.jcp-proof-gap .ps-mock-review__job-copy {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 body.jcp-proof-gap .ps-mock-review__job strong {
   display: block;
   font-size: 0.88rem;
   color: var(--pg-ink);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
 }
 
 body.jcp-proof-gap .ps-mock-review__job span {
@@ -387,6 +407,8 @@ body.jcp-proof-gap .ps-mock-review__job span {
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--pg-success);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 body.jcp-proof-gap .ps-mock-review__phone {
