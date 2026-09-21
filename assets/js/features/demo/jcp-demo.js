@@ -932,11 +932,13 @@ function normalizeDemoNicheKey(raw) {
 
 function resolveDemoPhotoUrl(src) {
   const raw = String(src || '');
-  if (raw.startsWith('CAMPAIGN:') && assetBase) {
-    return `${assetBase}/campaign/${raw.slice('CAMPAIGN:'.length)}`;
-  }
   if (raw.startsWith('CAMPAIGN:')) {
-    return 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&h=600&fit=crop&q=75';
+    const file = raw.slice('CAMPAIGN:'.length);
+    if (assetBase) {
+      return `${assetBase}/campaign/${file}`;
+    }
+    // Offline / missing boot: still stay on local theme assets, never remote stock.
+    return `/wp-content/themes/jobcapturepro-core/assets/campaign/${file}`;
   }
   return raw;
 }
