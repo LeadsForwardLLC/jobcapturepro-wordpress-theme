@@ -757,9 +757,8 @@
       showInsight(
         'jobs',
         {
-          headline: 'That’s roughly ' + formatAnnualRange() + ' completed jobs every year.',
-          body:
-            'Your team is already creating the job stories, photos, locations, and review opportunities every week — you don’t have a content problem.',
+          headline: 'You don’t have a content problem.',
+          body: 'Your crew already creates the photos, locations, and review moments every week.',
           extraHtml: typeof buildJobsStackHtml === 'function' ? buildJobsStackHtml() : '',
         },
         'public_proof_percentage',
@@ -876,10 +875,21 @@
     var annual = formatAnnualRange();
     return (
       '<div class="pg-jobs-insight">' +
-      '<p class="pg-jobs-insight__num"><strong>' +
+      '<div class="pg-jobs-insight__metric">' +
+      '<p class="pg-jobs-insight__eyebrow">Based on your answer</p>' +
+      '<p class="pg-jobs-insight__num">' +
       escapeHtml(annual) +
-      '</strong><span>completed jobs / year</span></p>' +
-      '<p class="pg-jobs-insight__channels">Each completed job can potentially become: <strong>Website · Google · Social · Review · Directory</strong></p>' +
+      '</p>' +
+      '<p class="pg-jobs-insight__unit">completed jobs / year</p>' +
+      '</div>' +
+      '<p class="pg-jobs-insight__lead">Each finished job can become marketing on</p>' +
+      '<ul class="pg-jobs-insight__chips" aria-label="Marketing channels">' +
+      '<li>Website</li>' +
+      '<li>Google</li>' +
+      '<li>Social</li>' +
+      '<li>Reviews</li>' +
+      '<li>Directory</li>' +
+      '</ul>' +
       '</div>'
     );
   }
@@ -995,7 +1005,7 @@
     document.querySelectorAll('.proof-gap-insight-card').forEach(function (el) {
       el.hidden = true;
       el.innerHTML = '';
-      el.classList.remove('is-visible');
+      el.classList.remove('is-visible', 'proof-gap-insight-card--jobs');
     });
     document.querySelectorAll('.pg-review-slot--insight').forEach(function (el) {
       el.classList.remove('is-shown');
@@ -1018,11 +1028,14 @@
     var card = document.querySelector('[data-pg-insight="' + slot + '"]');
     if (!card) return;
     card.hidden = false;
-    card.classList.remove('is-visible');
+    card.classList.remove('is-visible', 'proof-gap-insight-card--jobs');
+    if (slot === 'jobs') card.classList.add('proof-gap-insight-card--jobs');
     card.innerHTML =
-      '<div class="proof-gap-insight-card__stamp" aria-hidden="true">' +
-      '<svg viewBox="0 0 40 40" width="28" height="28"><circle cx="20" cy="20" r="15" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 20l5 5 11-12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-      '</div>' +
+      (slot === 'jobs'
+        ? ''
+        : '<div class="proof-gap-insight-card__stamp" aria-hidden="true">' +
+          '<svg viewBox="0 0 40 40" width="28" height="28"><circle cx="20" cy="20" r="15" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 20l5 5 11-12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          '</div>') +
       '<div class="proof-gap-insight-card__body">' +
       '<h2 class="proof-gap-insight-card__headline">' +
       escapeHtml(data.headline) +
@@ -1243,9 +1256,8 @@
         showInsight(
           'jobs',
           {
-            headline: 'That’s roughly ' + formatAnnualRange() + ' completed jobs every year.',
-            body:
-              'Your team is already creating the job stories, photos, locations, and review opportunities every week — you don’t have a content problem.',
+            headline: 'You don’t have a content problem.',
+            body: 'Your crew already creates the photos, locations, and review moments every week.',
             extraHtml: buildJobsStackHtml(),
           },
           'public_proof_percentage',

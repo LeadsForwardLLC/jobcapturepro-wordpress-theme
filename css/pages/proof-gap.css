@@ -3147,27 +3147,103 @@ body.jcp-proof-gap .pg-other-continue {
   min-height: 44px;
 }
 
-body.jcp-proof-gap .pg-jobs-insight__num {
-  margin: 0.75rem 0 0.35rem;
+body.jcp-proof-gap .pg-jobs-insight {
+  margin-top: 0.85rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+body.jcp-proof-gap .pg-jobs-insight__metric {
+  padding: 1.05rem 1rem 1.1rem;
+  border-radius: var(--pg-radius);
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
   text-align: center;
 }
 
-body.jcp-proof-gap .pg-jobs-insight__num strong {
-  display: block;
-  font-size: clamp(1.75rem, 5vw, 2.25rem);
+body.jcp-proof-gap .pg-jobs-insight__eyebrow {
+  margin: 0 0 0.45rem;
+  font-size: var(--pg-fs-eyebrow);
+  font-weight: 750;
+  letter-spacing: var(--pg-tracking-eyebrow);
+  text-transform: uppercase;
   color: var(--pg-accent);
-  line-height: 1.1;
 }
 
-body.jcp-proof-gap .pg-jobs-insight__num span,
-body.jcp-proof-gap .pg-jobs-insight__channels {
+body.jcp-proof-gap .pg-jobs-insight__num {
+  margin: 0;
+  font-size: clamp(2rem, 7vw, 2.65rem);
+  font-weight: 850;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--pg-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+body.jcp-proof-gap .pg-jobs-insight__unit {
+  margin: 0.35rem 0 0;
   font-size: var(--pg-fs-secondary);
+  font-weight: 650;
   color: var(--pg-muted);
 }
 
-body.jcp-proof-gap .pg-jobs-insight__channels {
+body.jcp-proof-gap .pg-jobs-insight__lead {
+  margin: 0;
   text-align: center;
-  margin: 0.5rem 0 0;
+  font-size: var(--pg-fs-secondary);
+  font-weight: 600;
+  color: var(--pg-muted);
+}
+
+body.jcp-proof-gap .pg-jobs-insight__chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+body.jcp-proof-gap .pg-jobs-insight__chips li {
+  margin: 0;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: #fff;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  color: var(--pg-ink);
+  line-height: 1.2;
+}
+
+body.jcp-proof-gap .proof-gap-insight-card--jobs {
+  grid-template-columns: 1fr;
+  gap: 0;
+  padding: 1.15rem 1.1rem 1.2rem;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+body.jcp-proof-gap .proof-gap-insight-card--jobs .proof-gap-insight-card__headline {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.2rem, 3.4vw, 1.4rem);
+  font-weight: 850;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  text-align: center;
+}
+
+body.jcp-proof-gap .proof-gap-insight-card--jobs .proof-gap-insight-card__text {
+  margin: 0;
+  text-align: center;
+  font-size: var(--pg-fs-secondary);
+  line-height: 1.45;
+}
+
+body.jcp-proof-gap .proof-gap-insight-card--jobs .proof-gap-insight-card__extra {
+  margin: 0;
 }
 
 body.jcp-proof-gap .pg-result__title {
