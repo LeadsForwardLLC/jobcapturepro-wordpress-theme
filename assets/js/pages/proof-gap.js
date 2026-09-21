@@ -114,6 +114,11 @@
   var keyboardBound = false;
   var activeDest = 'website';
   var destTracked = {};
+  var autoplayTimer = null;
+  var autoplayDisabled = false;
+  var autoplayOrder = ['website', 'google', 'social', 'reviews', 'directory'];
+  var autoplayIndex = 0;
+  var autoplayPaused = false;
 
   function syncBottomPad() {
     var bar = document.getElementById('pgBottomAction');
@@ -336,6 +341,8 @@
       product_reveal_completed: false,
       trial_cta_clicked: false,
       handoff_token: '',
+      other_trade_text: '',
+      other_workflow_text: '',
       attribution: {},
       created_at: Date.now(),
       updated_at: Date.now(),
@@ -821,20 +828,20 @@
     var tradeLabel = trades[state.trade] || 'Job';
     var annual = formatAnnualRange();
     var cells = '';
-    for (var i = 0; i < 20; i++) {
-      cells += '<span class="pg-job-grid__cell' + (i < 5 ? ' is-accent' : '') + '"></span>';
+    for (var i = 0; i < 12; i++) {
+      cells += '<span class="pg-job-grid__cell' + (i < 4 ? ' is-accent' : '') + '"></span>';
     }
     return (
       '<div class="pg-job-grid" aria-hidden="true">' +
       '<p class="pg-job-grid__focal"><strong>' +
       escapeHtml(annual) +
-      '</strong><span>completed jobs / year</span></p>' +
-      '<div class="pg-job-grid__board pg-job-grid__board--20">' +
+      '</strong><span>completed jobs</span></p>' +
+      '<div class="pg-job-grid__board" style="grid-template-columns:repeat(12,minmax(0,1fr));">' +
       cells +
       '</div>' +
       '<p class="pg-job-grid__caption"><span>' +
       escapeHtml(tradeLabel) +
-      ' · raw proof your crew already produces</span></p></div>'
+      ' \u00b7 raw proof your crew already produces</span></p></div>'
     );
   }
 
@@ -859,32 +866,20 @@
     var band = proofPct[state.public_proof_percentage];
     var tier = proofTier(state.public_proof_percentage);
     if (!band || tier === 'unknown' || band.min == null || band.max == null) {
-      el.innerHTML = '<div class="pg-gap-viz__empty">Select a proof range to visualize the gap.</div>';
+      el.innerHTML = '';
       return;
     }
     var pubMid = Math.round(((band.min + band.max) / 2) * 100);
     var gapMid = 100 - pubMid;
-    var cells = '';
-    var lit = Math.max(1, Math.min(10, Math.round(((band.min + band.max) / 2) * 10)));
-    for (var i = 0; i < 10; i++) {
-      cells += '<span class="pg-gap-viz__cell' + (i < lit ? ' is-public' : ' is-gap') + '"></span>';
-    }
     el.innerHTML =
-      '<div class="pg-gap-viz__bar" role="img" aria-label="Public proof versus invisible">' +
-      '<span class="pg-gap-viz__seg pg-gap-viz__seg--public" style="width:' +
-      pubMid +
-      '%"></span>' +
-      '<span class="pg-gap-viz__seg pg-gap-viz__seg--gap" style="width:' +
-      gapMid +
-      '%"></span></div>' +
-      '<div class="pg-gap-viz__grid">' +
-      cells +
-      '</div>' +
-      '<div class="pg-gap-viz__legend"><span><i class="pg-gap-viz__dot pg-gap-viz__dot--public"></i> Visible proof ~' +
-      pubMid +
-      '%</span><span><i class="pg-gap-viz__dot pg-gap-viz__dot--gap"></i> Potentially invisible ~' +
-      gapMid +
-      '%</span></div>';
+      '<div class="pg-result-bar">' +
+      '<div class="pg-result-bar__track" role="img" aria-label="Public proof versus invisible">' +
+      '<span class="pg-result-bar__seg--visible" style="width:' + pubMid + '%"></span>' +
+      '<span class="pg-result-bar__seg--gap" style="width:' + gapMid + '%"></span></div>' +
+      '<div class="pg-result-bar__legend">' +
+      '<span><i class="pg-result-bar__dot pg-result-bar__dot--visible"></i> Visible proof ~' + pubMid + '%</span>' +
+      '<span><i class="pg-result-bar__dot pg-result-bar__dot--gap"></i> Potentially invisible ~' + gapMid + '%</span>' +
+      '</div></div>';
   }
 
   function choiceLabel(map, key) {
@@ -1103,6 +1098,39 @@
       state.trade = key;
       markCompleted('trade');
       preloadTradePhoto(key);
+
+      if (key === 'other') {
+        var otherField = document.getElementById('pgTradeOtherField');
+        if (otherField) otherField.hidden = false;
+        saveState();
+        track('SurveyQuestionAnswered', {
+          question_index: stateIndex('trade'),
+          question_id: 'trade',
+          answer_key: key,
+          feedback_shown: false,
+          trade: key,
+          other_text_provided: false,
+        });
+        setBottomAction({
+          label: 'Continue \u2192',
+          animate: true,
+          onClick: function () {
+            var inp = document.getElementById('pgTradeOtherInput');
+            var val = inp ? sanitizeCustomText(inp.value) : '';
+            state.other_trade_text = val;
+            saveState();
+            if (val) {
+              track('SurveyOtherTextProvided', { question_id: 'trade', other_text_provided: true });
+            }
+            goTo('current_workflow');
+          },
+        });
+        return;
+      }
+
+      var otherFieldHide = document.getElementById('pgTradeOtherField');
+      if (otherFieldHide) otherFieldHide.hidden = true;
+      state.other_trade_text = '';
       saveState();
       track('SurveyQuestionAnswered', {
         question_index: stateIndex('trade'),
@@ -1118,6 +1146,46 @@
     if (field === 'current_workflow') {
       state.current_workflow = key;
       markCompleted('current_workflow');
+
+      if (key === 'other_crm') {
+        var wfField = document.getElementById('pgWorkflowOtherField');
+        if (wfField) wfField.hidden = false;
+        saveState();
+        feedbackVariant = (WORKFLOW_INSIGHTS[key] || {}).variant || key;
+        track('SurveyQuestionAnswered', {
+          question_index: stateIndex('current_workflow'),
+          question_id: 'current_workflow',
+          answer_key: key,
+          feedback_shown: false,
+          feedback_variant: feedbackVariant,
+          trade: state.trade,
+          current_workflow: key,
+          custom_workflow_provided: false,
+        });
+        setBottomAction({
+          label: 'Continue \u2192',
+          animate: true,
+          onClick: function () {
+            var inp = document.getElementById('pgWorkflowOtherInput');
+            var val = inp ? sanitizeCustomText(inp.value) : '';
+            state.other_workflow_text = val;
+            saveState();
+            if (val) {
+              track('SurveyOtherTextProvided', { question_id: 'current_workflow', custom_workflow_provided: true });
+            }
+            var wfFieldHide = document.getElementById('pgWorkflowOtherField');
+            if (wfFieldHide) wfFieldHide.hidden = true;
+            collapseChoiceList('current_workflow', val || summaryValueText('current_workflow', key), key, function () {
+              showInsight('workflow', WORKFLOW_INSIGHTS[key] || WORKFLOW_INSIGHTS.scattered, 'jobs_per_week', 'Continue \u2192');
+            });
+          },
+        });
+        return;
+      }
+
+      var wfFieldHide = document.getElementById('pgWorkflowOtherField');
+      if (wfFieldHide) wfFieldHide.hidden = true;
+      state.other_workflow_text = '';
       saveState();
       feedbackVariant = (WORKFLOW_INSIGHTS[key] || {}).variant || key;
       track('SurveyQuestionAnswered', {
@@ -1130,7 +1198,7 @@
         current_workflow: key,
       });
       collapseChoiceList('current_workflow', summaryValueText('current_workflow', key), key, function () {
-        showInsight('workflow', WORKFLOW_INSIGHTS[key] || WORKFLOW_INSIGHTS.scattered, 'jobs_per_week', 'Continue →');
+        showInsight('workflow', WORKFLOW_INSIGHTS[key] || WORKFLOW_INSIGHTS.scattered, 'jobs_per_week', 'Continue \u2192');
       });
       return;
     }
@@ -1233,6 +1301,13 @@
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+  }
+
+  function sanitizeCustomText(raw) {
+    return String(raw || '')
+      .replace(/[<>&"']/g, '')
+      .trim()
+      .slice(0, 80);
   }
 
   function renderResult() {
@@ -1367,9 +1442,8 @@
           ? '<div class="ps-mock-map" style="position:relative;margin:0 0 8px;border-radius:10px;overflow:hidden;">' +
             '<img src="' +
             escapeHtml(mapUrl) +
-            '" alt="" width="640" height="200" loading="lazy" decoding="async" />' +
+            '" alt="" width="640" height="200" loading="lazy" decoding="async" style="filter:saturate(0.3) brightness(1.05);" />' +
             '<span class="ps-mock-map__pin is-active" style="position:absolute;left:52%;top:42%;width:10px;height:10px;border-radius:50%;background:#e85d04;box-shadow:0 0 0 3px rgba(232,93,4,.35);"></span>' +
-            '<span class="ps-mock-map__pin" style="position:absolute;left:34%;top:58%;width:8px;height:8px;border-radius:50%;background:#64748b;opacity:.85;"></span>' +
             '</div>'
           : '') +
         '<article class="ps-mock-jobcard is-active">' +
@@ -1399,8 +1473,7 @@
         city +
         '</strong><p>' +
         desc +
-        ' Real work. Real photos from the field.</p></div>' +
-        '<div class="ps-mock-gbp__actions"><span>Share</span><span>Call</span><span>Directions</span></div></div>';
+        ' Real work. Real photos from the field.</p></div></div>';
       return;
     }
     if (dest === 'social') {
@@ -1427,44 +1500,46 @@
     if (dest === 'reviews') {
       panel.innerHTML =
         '<div class="ps-mock ps-mock--review">' +
+        '<div class="ps-mock-sms__label">Review Request</div>' +
         '<div class="ps-mock-review__phone">' +
         '<div class="ps-mock-review__phone-bar"><span>Messages</span><strong>Customer</strong></div>' +
         '<div class="ps-mock-review__thread">' +
-        '<div class="ps-mock-review__bubble">Thanks again for choosing ' +
+        '<div class="ps-mock-sms__bubble">Thanks again for choosing ' +
         bizEsc +
         '. If we earned it, leave a quick review:</div>' +
-        '<div class="ps-mock-review__bubble is-link">review.jobcapturepro.com/demo</div>' +
-        '<p class="ps-mock-review__time">Delivered · Just now</p></div></div>' +
+        '<div class="ps-mock-sms__bubble is-link">review.jobcapturepro.com/demo</div>' +
+        '<p class="ps-mock-review__time">Delivered \u00b7 Just now</p></div></div>' +
         (qrUrl
           ? '<div class="ps-mock-qr"><img src="' +
             escapeHtml(qrUrl) +
-            '" alt="" width="88" height="88" loading="lazy" decoding="async" />' +
-            '<strong>Or show QR on site</strong>' +
-            '<span>QR/link from the app · CRM automation when enabled</span></div>'
+            '" alt="" width="72" height="72" loading="lazy" decoding="async" />' +
+            '<strong>Scan on-site</strong>' +
+            '<span>QR/link from the app \u00b7 CRM automation when enabled</span></div>'
           : '') +
         '</div>';
       return;
     }
+    var tradeInitial = (tradeLabel.charAt(0) || 'J').toUpperCase();
     panel.innerHTML =
       '<div class="ps-mock ps-mock--directory">' +
       '<p class="ps-mock-dir__label">JobCapturePro Directory</p>' +
       '<article class="ps-mock-dir__card">' +
       '<div class="ps-mock-dir__head">' +
-      '<div class="ps-mock-dir__avatar">' +
-      mark +
+      '<div class="ps-mock-dir__avatar" style="display:flex;align-items:center;justify-content:center;font-size:1.1rem;">' +
+      escapeHtml(tradeInitial) +
       '</div>' +
       '<div><strong>' +
       bizEsc +
       '</strong><span>' +
       escapeHtml(tradeLabel) +
-      ' · ' +
+      ' \u00b7 ' +
       city +
       '</span></div></div>' +
       '<div class="ps-mock-dir__latest">' +
       thumb +
       '<div><em>Latest completed job</em><strong>' +
       title +
-      '</strong><span>Documented on site · Just published</span></div></div>' +
+      '</strong><span>Documented on site \u00b7 Just published</span></div></div>' +
       '<div class="ps-mock-dir__meta"><span>Service area activity</span></div></article></div>';
   }
 
@@ -1490,9 +1565,14 @@
     } else {
       apply();
     }
-    if (options.fromUser && !destTracked[dest]) {
-      destTracked[dest] = true;
-      track('ProductRevealDestinationSelected', { destination: dest, answer_value: dest, trade: state.trade });
+    if (options.fromUser) {
+      autoplayDisabled = true;
+      stopAutoplay();
+      if (!destTracked[dest]) {
+        destTracked[dest] = true;
+        track('ProductDestinationClicked', { destination: dest, trade: state.trade });
+      }
+      track('ProductDestinationViewed', { destination: dest, source: 'manual' });
     }
   }
 
@@ -1546,7 +1626,7 @@
   function renderReveal() {
     var tradeLabel = trades[state.trade] || state.trade || 'field';
     var title = document.getElementById('pgRevealTitle');
-    if (title) title.textContent = 'Here’s what one finished ' + tradeLabel + ' job could become.';
+    if (title) title.textContent = 'Here\u2019s what one finished ' + tradeLabel + ' job could become.';
 
     var jobTitle = document.getElementById('pgJobTitle');
     var src = document.getElementById('pgRevealSource');
@@ -1555,28 +1635,89 @@
     if (jobTitle) jobTitle.textContent = ctx.title;
     if (src) src.textContent = sourceLabel();
     renderJobCardMedia();
-    setDestTab(activeDest || 'website', { fromUser: false, animate: false });
+    setDestTab('website', { fromUser: false, animate: false });
+
+    var contextEl = document.querySelector('[data-pg-review-slot="reveal"] [data-pg-review-context]');
+    if (contextEl) {
+      if (state.trade && state.trade !== 'hvac') {
+        contextEl.textContent = 'From an agency using JobCapturePro with an HVAC client';
+        contextEl.hidden = false;
+      } else {
+        contextEl.textContent = '';
+        contextEl.hidden = true;
+      }
+    }
+
+    bindAutoplayPause();
+    autoplayDisabled = false;
+    setTimeout(startAutoplay, 800);
+  }
+
+  function stopAutoplay() {
+    if (autoplayTimer) {
+      clearTimeout(autoplayTimer);
+      autoplayTimer = null;
+    }
+  }
+
+  function autoplayTick() {
+    if (autoplayDisabled || autoplayPaused) return;
+    if (state.current_state !== 'product_reveal') { stopAutoplay(); return; }
+    autoplayIndex++;
+    if (autoplayIndex >= autoplayOrder.length) {
+      stopAutoplay();
+      return;
+    }
+    var dest = autoplayOrder[autoplayIndex];
+    setDestTab(dest, { fromUser: false, animate: true });
+    track('ProductDestinationViewed', { destination: dest, source: 'auto' });
+    autoplayTimer = setTimeout(autoplayTick, 4500);
+  }
+
+  function startAutoplay() {
+    if (autoplayDisabled) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    stopAutoplay();
+    autoplayIndex = 0;
+    track('ProductDestinationViewed', { destination: autoplayOrder[0], source: 'auto' });
+    autoplayTimer = setTimeout(autoplayTick, 5300);
+  }
+
+  function bindAutoplayPause() {
+    var panel = document.getElementById('pgDestPanel');
+    if (!panel || panel.getAttribute('data-autoplay-bound')) return;
+    panel.setAttribute('data-autoplay-bound', '1');
+    panel.addEventListener('mouseenter', function () { autoplayPaused = true; });
+    panel.addEventListener('mouseleave', function () { autoplayPaused = false; });
+    panel.addEventListener('focusin', function () { autoplayPaused = true; });
+    panel.addEventListener('focusout', function () { autoplayPaused = false; });
+    try {
+      document.addEventListener('visibilitychange', function () {
+        if (document.hidden) { autoplayPaused = true; }
+        else { autoplayPaused = false; }
+      });
+    } catch (e) {}
   }
 
   function renderTrialSummary() {
     var list = document.getElementById('pgTrialSummary');
     var annualEl = document.getElementById('pgPlanAnnual');
-    if (annualEl) annualEl.textContent = formatAnnualRange() || '—';
+    if (annualEl) annualEl.textContent = formatAnnualRange() || '\u2014';
     if (!list) return;
-    var proofLabel = proofDisplayLabel(state.public_proof_percentage);
+
+    var tradeChip = (state.trade === 'other' && state.other_trade_text)
+      ? escapeHtml(state.other_trade_text)
+      : escapeHtml(trades[state.trade] || state.trade || '\u2014');
+    var workflowChip = (state.current_workflow === 'other_crm' && state.other_workflow_text)
+      ? escapeHtml(state.other_workflow_text)
+      : escapeHtml(workflows[state.current_workflow] || state.current_workflow || '\u2014');
+    var proofChipLabel = proofBandLabel(state.public_proof_percentage);
+
     list.innerHTML =
-      '<li>' +
-      escapeHtml(trades[state.trade] || state.trade || '—') +
-      '</li>' +
-      '<li>' +
-      escapeHtml((jobsBuckets[state.jobs_per_week_bucket] || {}).weekly_label || '—') +
-      ' jobs/week</li>' +
-      '<li>' +
-      escapeHtml(workflows[state.current_workflow] || state.current_workflow || '—') +
-      '</li>' +
-      '<li>' +
-      escapeHtml(proofLabel) +
-      ' becoming public proof</li>';
+      '<li>' + tradeChip + '</li>' +
+      '<li>' + escapeHtml((jobsBuckets[state.jobs_per_week_bucket] || {}).weekly_label || '\u2014') + ' jobs/week</li>' +
+      '<li>' + workflowChip + '</li>' +
+      '<li>Public proof: ' + escapeHtml(proofChipLabel) + '</li>';
 
     var cont = document.getElementById('pgTrialContinuity');
     if (cont) {
@@ -1633,10 +1774,12 @@
       if (ind) u.searchParams.set('industry', ind);
       if (state.handoff_token) u.searchParams.set('pg_handoff', state.handoff_token);
       a.href = u.toString();
-      if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.decorate === 'function') {
-        a.href = window.JCPOnboardingHandoff.decorate(a.href) || a.href;
-      } else if (typeof window.jcpDecorateOnboardingUrl === 'function') {
-        a.href = window.jcpDecorateOnboardingUrl(a.href) || a.href;
+      if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.decorateHref === 'function') {
+        var handoffExtra = {};
+        if (state.handoff_token) handoffExtra.pg_handoff = state.handoff_token;
+        if (state.session_id) handoffExtra.survey_session_id = state.session_id;
+        handoffExtra.lp_variant = LP_VARIANT;
+        a.href = window.JCPOnboardingHandoff.decorateHref(a.href, handoffExtra, 'proof_gap_survey_trial') || a.href;
       }
     } catch (e) {
       a.href = base;
@@ -1645,6 +1788,7 @@
 
   function goTo(id) {
     clearAdvance();
+    stopAutoplay();
     if (STATES.indexOf(id) === -1) return;
 
     // Dwell timing for previous step (once per leave; capped to avoid tab-sleep outliers).
@@ -1795,18 +1939,18 @@
 
   function persistDemoUser(email) {
     try {
-      localStorage.setItem(
-        'demoUser',
-        JSON.stringify({
-          email: email,
-          firstName: deriveFirstName(email),
-          lastName: '',
-          niche: state.trade || '',
-          industry: mapTradeToIndustry(state.trade),
-          trade: state.trade || '',
-          source: 'proof_gap_survey',
-        })
-      );
+      var user = {
+        email: email,
+        firstName: deriveFirstName(email),
+        lastName: '',
+        niche: state.trade || '',
+        industry: mapTradeToIndustry(state.trade),
+        trade: state.trade || '',
+        source: 'proof_gap_survey',
+      };
+      if (state.other_trade_text) user.other_trade_text = state.other_trade_text;
+      if (state.other_workflow_text) user.other_workflow_text = state.other_workflow_text;
+      localStorage.setItem('demoUser', JSON.stringify(user));
     } catch (e) {}
   }
 
@@ -1857,6 +2001,8 @@
       fbclid: attr.fbclid || '',
       referrer: attr.referrer || document.referrer || '',
     };
+    if (state.other_trade_text) body.other_trade_text = state.other_trade_text;
+    if (state.other_workflow_text) body.other_workflow_text = state.other_workflow_text;
 
     fetch(boot.restUrl || '/wp-json/jcp/v1/proof-gap-survey-submit', {
       method: 'POST',
@@ -1901,6 +2047,7 @@
           cta_source: 'email_capture',
         });
         pushAcquisitionLead(returnedId);
+        updateTrialHref();
         goTo('product_reveal');
       })
       .catch(function () {

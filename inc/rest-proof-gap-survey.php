@@ -49,6 +49,16 @@ function jcp_proof_gap_register_rest_routes(): void {
 					'type'              => 'string',
 					'sanitize_callback' => 'sanitize_text_field',
 				],
+				'other_trade_text'  => [
+					'required'          => false,
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+				'other_workflow_text' => [
+					'required'          => false,
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				],
 				'survey_session_id' => [
 					'required'          => false,
 					'type'              => 'string',
@@ -118,11 +128,13 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 	$local      = sanitize_text_field( (string) strstr( $email, '@', true ) );
 	$first_name = $local !== '' ? $local : 'there';
 
-	$business_type = sanitize_text_field( (string) $request->get_param( 'business_type' ) );
-	$session_id    = sanitize_text_field( (string) $request->get_param( 'survey_session_id' ) );
-	$workflow      = sanitize_text_field( (string) $request->get_param( 'current_workflow' ) );
-	$jobs_bucket   = sanitize_text_field( (string) $request->get_param( 'jobs_per_week_bucket' ) );
-	$proof_pct     = sanitize_text_field( (string) $request->get_param( 'public_proof_percentage' ) );
+	$business_type      = sanitize_text_field( (string) $request->get_param( 'business_type' ) );
+	$session_id         = sanitize_text_field( (string) $request->get_param( 'survey_session_id' ) );
+	$workflow           = sanitize_text_field( (string) $request->get_param( 'current_workflow' ) );
+	$jobs_bucket        = sanitize_text_field( (string) $request->get_param( 'jobs_per_week_bucket' ) );
+	$proof_pct          = sanitize_text_field( (string) $request->get_param( 'public_proof_percentage' ) );
+	$other_trade_text   = mb_substr( sanitize_text_field( (string) $request->get_param( 'other_trade_text' ) ), 0, 80 );
+	$other_workflow_text = mb_substr( sanitize_text_field( (string) $request->get_param( 'other_workflow_text' ) ), 0, 80 );
 
 	$params = [
 		'first_name'      => $first_name,
@@ -143,6 +155,8 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 					$workflow !== '' ? 'workflow:' . $workflow : '',
 					$jobs_bucket !== '' ? 'jobs:' . $jobs_bucket : '',
 					$proof_pct !== '' ? 'proof:' . $proof_pct : '',
+					$other_trade_text !== '' ? 'other_trade:' . $other_trade_text : '',
+					$other_workflow_text !== '' ? 'other_workflow:' . $other_workflow_text : '',
 				]
 			)
 		),
