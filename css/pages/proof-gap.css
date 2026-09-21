@@ -2503,7 +2503,8 @@ body.jcp-proof-gap .pg-summary__item--full .pg-summary__val {
   }
 
   body.jcp-proof-gap .pg-proof-grid__cap {
-    font-size: 0.7rem;
+    font-size: 0.64rem;
+    letter-spacing: -0.01em;
   }
 
   body.jcp-proof-gap .pg-job-stack {
