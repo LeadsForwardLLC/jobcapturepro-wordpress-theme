@@ -8,7 +8,7 @@
 $campaign_uri = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/';
 $img_capture  = esc_url( $campaign_uri . 'jcp-campaign-hvac-capture.jpg' );
 $img_proof    = esc_url( $campaign_uri . 'jcp-campaign-job-proof.jpg' );
-$img_crew     = esc_url( $campaign_uri . 'jcp-campaign-crew-review.jpg' );
+$img_crew     = esc_url( $campaign_uri . 'jcp-campaign-hvac-capture.jpg' );
 $img_owner    = esc_url( $campaign_uri . 'jcp-campaign-face-owner.jpg' );
 $img_operator = esc_url( $campaign_uri . 'jcp-campaign-face-operator.jpg' );
 
@@ -44,7 +44,7 @@ $icon_check  = esc_url( jcp_core_icon( 'check' ) );
         <div class="deck-visual-hero">
           <img
             src="<?php echo $img_crew; ?>"
-            alt="Crew reviewing a completed job on site"
+            alt="Contractor capturing a completed job on site"
             width="720"
             height="480"
             loading="eager"

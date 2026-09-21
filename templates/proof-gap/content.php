@@ -154,8 +154,7 @@ $render_case = static function (): void {
 						<span class="pg-trust__avatars">
 							<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-owner-64.webp' ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
 							<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-operator-64.webp' ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
-							<img src="<?php echo esc_url( $campaign . 'jcp-campaign-crew-review-64.webp' ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
-							<img src="<?php echo esc_url( $campaign . 'jcp-campaign-hvac-capture-360.webp' ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
+							<img src="<?php echo esc_url( $campaign . 'jcp-campaign-face-crew-man-64.webp' ); ?>" alt="" width="32" height="32" loading="lazy" decoding="async" />
 						</span>
 					</div>
 					<div class="pg-trust__row pg-trust__row--authority">

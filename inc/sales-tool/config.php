@@ -33,7 +33,7 @@ function jcp_sales_tool_default_reviews(): array {
 			'role'      => 'Contractor',
 			'quote'     => 'Awesome. It takes my work site pictures and turns them into a marketing campaign.',
 			'rating'    => 5,
-			'avatar'    => $campaign . 'jcp-campaign-hvac-capture.jpg',
+			'avatar'    => $campaign . 'jcp-campaign-face-crew-man.jpg',
 			'avatarAlt' => 'Brian Hardy',
 		],
 		[
@@ -42,7 +42,7 @@ function jcp_sales_tool_default_reviews(): array {
 			'role'      => 'Home service operator',
 			'quote'     => 'Easy to use and really smart. Makes it super simple to turn completed work into useful online content, and the review side is amazing.',
 			'rating'    => 5,
-			'avatar'    => $campaign . 'jcp-campaign-crew-review.jpg',
+			'avatar'    => $campaign . 'jcp-campaign-face-operator.jpg',
 			'avatarAlt' => 'Trent Ellison',
 		],
 		[

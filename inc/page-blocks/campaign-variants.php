@@ -172,7 +172,7 @@ function jcp_campaign_variants(): array {
 						'body'      => 'Ask while the customer experience is still fresh.',
 						'label'     => 'Reviews',
 						'chrome'    => 'reviews',
-						'image_url' => '__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg',
+						'image_url' => '__CAMPAIGN_ASSET__/jcp-campaign-face-crew-man.jpg',
 						'image_alt' => 'On-site review ask',
 					],
 				],
@@ -468,7 +468,7 @@ function jcp_campaign_variant_normalize_shared_visuals( array $legacy ): array {
 		'__CAMPAIGN_ASSET__/jcp-campaign-job-proof.jpg',
 		'__CAMPAIGN_ASSET__/jcp-campaign-face-operator.jpg',
 		'__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg',
-		'__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg',
+		'__CAMPAIGN_ASSET__/jcp-campaign-face-crew-man.jpg',
 	];
 
 	if ( isset( $legacy['benefits']['items'] ) && is_array( $legacy['benefits']['items'] ) ) {

@@ -34,7 +34,7 @@ function jcp_niche_story_moments_defaults(): array {
 		'publish_preview_url' => $campaign_uri . 'jcp-campaign-job-proof.jpg',
 		'reviews_headline'    => __( 'Ask while they’re still happy.', 'jcp-core' ),
 		'reviews_body'        => __( 'Show the QR before you leave, while the experience is still fresh.', 'jcp-core' ),
-		'reviews_photo_url'   => $campaign_uri . 'jcp-campaign-face-owner.jpg',
+		'reviews_photo_url'   => $campaign_uri . 'jcp-campaign-face-crew-man.jpg',
 		'reviews_photo_alt'   => __( 'Owner on site after a completed job', 'jcp-core' ),
 		'reviews_quote'       => __( '“Tech was on time and cleaned up. 5 stars.”', 'jcp-core' ),
 		'cta_primary'         => [

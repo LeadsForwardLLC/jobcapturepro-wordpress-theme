@@ -92,8 +92,8 @@
       label: 'Pest control',
       title: 'Treatment / service job',
       city: 'Austin, TX',
-      photo: 'campaign:jcp-campaign-crew-review-640.webp',
-      fallback: 'campaign:jcp-campaign-crew-review.jpg',
+      photo: 'campaign:jcp-campaign-job-proof-640.webp',
+      fallback: 'campaign:jcp-campaign-job-proof.jpg',
       desc: 'Service completed and documented for the property.',
     },
     'tree-service': {

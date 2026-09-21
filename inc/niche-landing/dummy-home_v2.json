@@ -81,7 +81,7 @@
       {
         "title": "Review ask",
         "body": "Ask while the job is still fresh, including on-site QR.",
-        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-crew-review.jpg",
+        "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-crew-man.jpg",
         "image_alt": "Crew reviewing completed job photos on site",
         "label": "Reviews",
         "chrome": "reviews"
@@ -90,7 +90,7 @@
         "title": "Social + directory",
         "body": "Shareable proof and a verified listing powered by real work.",
         "image_url": "__CAMPAIGN_ASSET__/jcp-campaign-face-owner.jpg",
-        "image_alt": "Home service business owner representing directory and social proof",
+        "image_alt": "Home service business owner on a job site representing directory and social proof",
         "label": "Social",
         "chrome": "social"
       }
