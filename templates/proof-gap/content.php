@@ -91,6 +91,21 @@ foreach ( [ $workflow_rev, $email_rev, $reveal_rev, $trial_rev ] as $rev ) {
 		$trust_avatars[] = (string) ( $rev['avatar'] ?? $rev['avatar_url'] ?? '' );
 	}
 }
+// Fallback face set if a slot review is missing — four distinct male faces.
+if ( count( $trust_avatars ) < 4 ) {
+	$trust_avatars = [
+		$campaign_asset( 'jcp-campaign-face-owner-64.webp' ),
+		$campaign_asset( 'jcp-campaign-face-operator-64.webp' ),
+		$campaign_asset( 'jcp-campaign-face-crew-man-64.webp' ),
+		$campaign_asset( 'jcp-campaign-face-manager-64.webp' ),
+	];
+} else {
+	$trust_avatars = array_values( array_unique( $trust_avatars ) );
+	if ( count( $trust_avatars ) < 4 ) {
+		$trust_avatars[] = $campaign_asset( 'jcp-campaign-face-manager-64.webp' );
+	}
+	$trust_avatars = array_slice( $trust_avatars, 0, 4 );
+}
 
 $render_case = static function (): void {
 	echo '<aside class="pg-case" aria-label="' . esc_attr__( 'Local visibility case study', 'jcp-core' ) . '">';
@@ -160,9 +175,9 @@ $render_case = static function (): void {
 						<span class="pg-trust__label"><?php esc_html_e( '5-star feedback from contractors and home-service operators', 'jcp-core' ); ?></span>
 					</div>
 					<span class="pg-trust__avatars" aria-hidden="true">
-						<img src="<?php echo esc_url( $campaign_asset( 'jcp-campaign-face-owner-64.webp' ) ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
-						<img src="<?php echo esc_url( $campaign_asset( 'jcp-campaign-face-operator-64.webp' ) ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
-						<img src="<?php echo esc_url( $campaign_asset( 'jcp-campaign-face-crew-man-64.webp' ) ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
+						<?php foreach ( $trust_avatars as $trust_src ) : ?>
+							<img src="<?php echo esc_url( $trust_src ); ?>" alt="" width="36" height="36" loading="lazy" decoding="async" />
+						<?php endforeach; ?>
 					</span>
 				</div>
 				<div class="pg-trust__divider" aria-hidden="true"></div>

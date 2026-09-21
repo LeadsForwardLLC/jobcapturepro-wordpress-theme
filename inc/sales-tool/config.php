@@ -31,7 +31,7 @@ function jcp_sales_tool_default_reviews(): array {
 			'role'      => 'Marketing agency',
 			'quote'     => 'One of the easiest marketing wins we\'ve had for an HVAC client. Techs already take photos. Now those become GBP updates, website content, social posts, and an on-site review ask. The review flow alone has been worth it.',
 			'rating'    => 5,
-			'avatar'    => $avatar( 'jcp-campaign-face-operator-64.webp' ),
+			'avatar'    => $avatar( 'jcp-campaign-face-manager-64.webp' ),
 			'avatarAlt' => 'Peter Bonk',
 		],
 		[

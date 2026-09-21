@@ -243,9 +243,9 @@ function jcp_proof_gap_proof_percentage_options(): array {
 }
 
 /**
- * Two distinct approved reviews for email + trial slots.
+ * Review snippets for Proof Gap slots (all four default testimonials, unique faces).
  *
- * @return array{email:?array<string,mixed>,trial:?array<string,mixed>}
+ * @return array{workflow:?array<string,mixed>,email:?array<string,mixed>,reveal:?array<string,mixed>,trial:?array<string,mixed>}
  */
 function jcp_proof_gap_review_slots(): array {
 	$reviews = function_exists( 'jcp_sales_tool_default_reviews' ) ? jcp_sales_tool_default_reviews() : [];
