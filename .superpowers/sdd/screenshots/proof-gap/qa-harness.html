@@ -254,38 +254,53 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 			</div>
 		</section>
 
-		<section class="pg-state pg-state--trial" data-pg-state="trial_bridge" hidden>
+				<section class="pg-state pg-state--trial" data-pg-state="trial_bridge" hidden>
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow">Your plan</p>
-				<h1 class="pg-title pg-title--sm">Your crew already does the hard part. Put the next job to work.</h1>
-				<p class="pg-sub pg-sub--tight">Start free for 14 days. Connect the workflow you already use, capture a real job, and see what JobCapturePro can do with it.</p>
+				<h1 class="pg-title">Put the next job to work.</h1>
+				<p class="pg-sub">Start free for 14 days. Connect your workflow, capture one real job, and see JobCapturePro turn it into marketing.</p>
 
 				<div class="pg-plan-card" id="pgPlanCard">
-					<p class="pg-plan-card__kicker">Your setup</p>
-					<ul class="pg-plan-chips" id="pgTrialSummary"></ul>
-					<p class="pg-plan-first-win" id="pgTrialFirstWin"></p>
-				<div class="pg-plan-next">
-					<p class="pg-plan-next__title">How JobCapturePro works</p>
-					<ul class="pg-plan-steps">
-						<li class="pg-plan-step">
-							<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="13" r="3"/><line x1="12" y1="7" x2="12" y2="7.01"/></svg></span>
-							<span><strong>Capture</strong> — Use job photos and details your team already creates.</span>
-						</li>
-						<li class="pg-plan-step">
-							<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
-							<span><strong>Create</strong> — Turn the finished job into customer-facing marketing content.</span>
-						</li>
-						<li class="pg-plan-step">
-							<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
-							<span><strong>Publish</strong> — Send it to your connected website, Google, social, review and directory channels.</span>
-						</li>
-					</ul>
-				</div>
-					<p class="pg-plan-outcome">Built to help contractors get found, get trusted, and get chosen — using work the company is already doing.</p>
+					<div class="pg-plan-setup">
+						<p class="pg-plan-card__kicker">Your setup</p>
+						<ul class="pg-plan-chips" id="pgTrialSummary"></ul>
+					</div>
+
+					<div class="pg-plan-win">
+						<p class="pg-plan-win__label">Easiest first win</p>
+						<p class="pg-plan-first-win" id="pgTrialFirstWin"></p>
+					</div>
+
+					<div class="pg-plan-next">
+						<p class="pg-plan-next__title">How JobCapturePro works</p>
+						<ul class="pg-plan-steps">
+							<li class="pg-plan-step">
+								<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="13" r="3"/><line x1="12" y1="7" x2="12" y2="7.01"/></svg></span>
+								<span class="pg-plan-step__copy">
+									<strong class="pg-plan-step__title">Capture</strong>
+									<span class="pg-plan-step__text">Use the job photos and details your team already creates.</span>
+								</span>
+							</li>
+							<li class="pg-plan-step">
+								<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+								<span class="pg-plan-step__copy">
+									<strong class="pg-plan-step__title">Create</strong>
+									<span class="pg-plan-step__text">Turn that finished job into customer-facing marketing.</span>
+								</span>
+							</li>
+							<li class="pg-plan-step">
+								<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+								<span class="pg-plan-step__copy">
+									<strong class="pg-plan-step__title">Publish</strong>
+									<span class="pg-plan-step__text">Send it to website, Google, social, reviews, and directory.</span>
+								</span>
+							</li>
+						</ul>
+					</div>
+
 					<p class="pg-continuity pg-continuity--trial" id="pgTrialContinuity" hidden></p>
 				</div>
 
-				<div class="pg-authority pg-authority--metrics pg-authority--trial"><div class="pg-authority__metric"><span class="pg-authority__metric-val">10 years</span><span class="pg-authority__metric-label">in home services</span></div>
 				<aside class="pg-review-slot pg-review-slot--live pg-review-slot--trial" data-pg-review-slot="trial"><blockquote class="pg-review pg-review--compact"><div class="pg-stars" aria-label="5 out of 5 stars"><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span></div><p class="pg-review__quote">“Easy to use and really smart. Makes it super simple to turn completed work into useful online content, and the review side is amazing.”</p><footer class="pg-review__footer"><img class="pg-review__avatar" src="../../../../assets/campaign/jcp-campaign-face-operator-64.webp" alt="" width="32" height="32" loading="lazy" decoding="async" /><span class="pg-review__meta"><strong>Trent Ellison</strong><em>Contractor</em></span></footer></blockquote></aside>
 			</div>
 		</section>

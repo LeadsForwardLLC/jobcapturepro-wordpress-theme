@@ -954,16 +954,18 @@ body.jcp-proof-gap .pg-payoff-line {
 }
 
 body.jcp-proof-gap .pg-plan-card {
-  margin-top: 0.75rem;
-  padding: 0.85rem;
-  border-radius: 0.9rem;
+  margin-top: 1.15rem;
+  padding: 1.15rem 1.1rem 1.2rem;
+  border-radius: 1rem;
   border: 1px solid rgba(15, 23, 42, 0.1);
   background: #fff;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  display: grid;
+  gap: 1.15rem;
 }
 body.jcp-proof-gap .pg-plan-card__hero {
   text-align: center;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0;
 }
 body.jcp-proof-gap .pg-plan-card__num {
   display: block;
@@ -976,9 +978,13 @@ body.jcp-proof-gap .pg-plan-card__num {
 body.jcp-proof-gap .pg-plan-card__label {
   display: block;
   margin-top: 0.2rem;
-  font-size: 0.78rem;
+  font-size: var(--pg-fs-tertiary);
   font-weight: 700;
   color: var(--pg-muted);
+}
+body.jcp-proof-gap .pg-plan-setup {
+  display: grid;
+  gap: 0.55rem;
 }
 body.jcp-proof-gap .pg-plan-chips {
   list-style: none;
@@ -986,67 +992,101 @@ body.jcp-proof-gap .pg-plan-chips {
   padding: 0;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  justify-content: center;
+  gap: 0.45rem;
+  justify-content: flex-start;
 }
 body.jcp-proof-gap .pg-plan-chips li {
-  padding: 0.35rem 0.6rem;
+  padding: 0.4rem 0.7rem;
   border-radius: 999px;
-  background: #f1f5f9;
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.08);
   font-size: var(--pg-fs-tertiary);
   font-weight: 750;
   color: var(--pg-ink);
 }
+body.jcp-proof-gap .pg-plan-win {
+  padding: 0.85rem 0.9rem;
+  border-radius: 0.85rem;
+  background: linear-gradient(180deg, #fff8f5 0%, #fff1eb 100%);
+  border: 1px solid rgba(255, 80, 54, 0.2);
+}
+body.jcp-proof-gap .pg-plan-win__label {
+  margin: 0 0 0.35rem;
+  font-size: var(--pg-fs-eyebrow);
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pg-accent);
+}
 body.jcp-proof-gap .pg-plan-next {
-  margin-top: 0.85rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(15, 23, 42, 0.06);
+  margin: 0;
+  padding: 0;
+  border-top: 0;
+  display: grid;
+  gap: 0.7rem;
 }
 body.jcp-proof-gap .pg-plan-next__title {
-  margin: 0 0 0.4rem;
-  font-size: 0.68rem;
+  margin: 0;
+  font-size: var(--pg-fs-eyebrow);
   font-weight: 800;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--pg-muted);
+  color: var(--pg-accent);
 }
 body.jcp-proof-gap .pg-plan-next__list {
   margin: 0;
   padding: 0 0 0 1.1rem;
   display: grid;
-  gap: 0.3rem;
-  font-size: 0.82rem;
-  line-height: 1.35;
+  gap: 0.45rem;
+  font-size: var(--pg-fs-secondary);
+  line-height: 1.4;
   color: #334155;
 }
 body.jcp-proof-gap .pg-authority--trial {
-  margin-top: 0.55rem;
+  margin-top: 0.75rem;
 }
 body.jcp-proof-gap .pg-review-slot--trial {
-  margin-top: 0.45rem;
-  margin-bottom: 0.2rem;
+  margin-top: 1rem;
+  margin-bottom: 0.35rem;
 }
 
-/* Trial plan: keep payoff + Trent reachable without burying CTA */
+/* Trial close: conversion hierarchy — never crush type on short screens */
+body.jcp-proof-gap .pg-state--trial .pg-title {
+  font-size: clamp(1.85rem, 5.5vw, 2.25rem);
+  margin-bottom: 0.55rem;
+  line-height: 1.12;
+}
+body.jcp-proof-gap .pg-state--trial .pg-sub {
+  margin: 0 0 0.25rem;
+  font-size: var(--pg-fs-body);
+  line-height: 1.45;
+  color: var(--pg-muted);
+}
 body.jcp-proof-gap .pg-state--trial .pg-plan-card {
-  margin-top: 0.55rem;
-  padding: 0.7rem 0.8rem;
+  margin-top: 1.1rem;
+  padding: 1.15rem 1.1rem 1.25rem;
 }
 body.jcp-proof-gap .pg-state--trial .pg-continuity--trial {
-  margin-top: 0.55rem;
-  font-size: 0.72rem;
-  line-height: 1.35;
+  margin: 0;
+  padding: 0.7rem 0.8rem;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  font-size: var(--pg-fs-secondary);
+  line-height: 1.4;
+  color: #475569;
 }
 body.jcp-proof-gap .pg-state--trial .pg-review-slot--trial .pg-review {
-  padding: 0.55rem 0.65rem;
+  padding: 0.75rem 0.85rem;
 }
 body.jcp-proof-gap .pg-state--trial .pg-review-slot--trial .pg-review__quote {
   -webkit-line-clamp: unset;
   line-clamp: unset;
   overflow: visible;
   display: block;
-  font-size: var(--pg-fs-secondary);
+  font-size: var(--pg-fs-body);
+  line-height: 1.4;
+  font-weight: 650;
 }
 
 @media (max-height: 900px) {
@@ -1069,9 +1109,6 @@ body.jcp-proof-gap .pg-state--trial .pg-review-slot--trial .pg-review__quote {
   body.jcp-proof-gap .pg-authority--welcome .pg-authority__stats {
     font-size: 0.62rem;
     margin-top: 0.12rem;
-  }
-  body.jcp-proof-gap .pg-state--trial .pg-continuity--trial {
-    display: none;
   }
 }
 
@@ -2629,38 +2666,34 @@ body.jcp-proof-gap .pg-summary__item--full .pg-summary__val {
 }
 
 @media (max-height: 820px) {
-  body.jcp-proof-gap .pg-state--trial .pg-title--sm {
-    font-size: 1.15rem;
-    margin-bottom: 0.4rem;
-  }
-  body.jcp-proof-gap .pg-state--trial .pg-sub--tight {
-    font-size: 0.82rem;
+  body.jcp-proof-gap .pg-state--trial .pg-title {
+    font-size: clamp(1.65rem, 5vw, 1.95rem);
     margin-bottom: 0.45rem;
   }
+  body.jcp-proof-gap .pg-state--trial .pg-sub {
+    font-size: var(--pg-fs-secondary);
+    margin-bottom: 0.15rem;
+  }
   body.jcp-proof-gap .pg-state--trial .pg-plan-card {
-    margin-top: 0.45rem;
-    padding: 0.65rem 0.75rem;
+    margin-top: 0.85rem;
+    padding: 1rem 0.95rem 1.05rem;
+    gap: 0.95rem;
   }
   body.jcp-proof-gap .pg-state--trial .pg-plan-card__num {
     font-size: 1.55rem;
   }
   body.jcp-proof-gap .pg-state--trial .pg-plan-card__hero {
-    margin-bottom: 0.45rem;
+    margin-bottom: 0;
   }
   body.jcp-proof-gap .pg-state--trial .pg-plan-next {
-    margin-top: 0.55rem;
-    padding-top: 0.5rem;
+    gap: 0.6rem;
   }
   body.jcp-proof-gap .pg-state--trial .pg-plan-next__list {
-    font-size: 0.76rem;
-    gap: 0.2rem;
-  }
-  body.jcp-proof-gap .pg-state--trial .pg-continuity--trial {
-    display: none;
+    font-size: var(--pg-fs-secondary);
+    gap: 0.4rem;
   }
   body.jcp-proof-gap .pg-state--trial .pg-authority--trial {
-    margin-top: 0.45rem;
-    padding: 0.45rem 0.55rem;
+    display: none;
   }
   body.jcp-proof-gap .pg-state--trial .pg-authority--trial .pg-authority__stats {
     font-size: var(--pg-fs-secondary);
@@ -2794,36 +2827,61 @@ body.jcp-proof-gap .pg-hint {
   line-height: 1.4;
 }
 
-/* ─── Plan icon rows (replaces numbered list) ─── */
+/* ─── Plan icon rows (conversion close) ─── */
 body.jcp-proof-gap .pg-plan-steps {
   margin: 0;
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 body.jcp-proof-gap .pg-plan-step {
   display: flex;
-  align-items: center;
-  gap: 0.65rem;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.7rem 0.75rem;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.06);
   font-size: var(--pg-fs-secondary);
   font-weight: 650;
   color: #334155;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 body.jcp-proof-gap .pg-plan-step__icon {
   flex: 0 0 auto;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.55rem;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 0.65rem;
   display: grid;
   place-items: center;
   background: #fff7f5;
   color: var(--pg-accent);
+  border: 1px solid rgba(255, 80, 54, 0.16);
 }
 body.jcp-proof-gap .pg-plan-step__icon svg {
-  width: 1.15rem;
-  height: 1.15rem;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+body.jcp-proof-gap .pg-plan-step__copy {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+body.jcp-proof-gap .pg-plan-step__title {
+  display: block;
+  font-size: var(--pg-fs-card);
+  font-weight: 850;
+  color: var(--pg-ink);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+body.jcp-proof-gap .pg-plan-step__text {
+  display: block;
+  font-size: var(--pg-fs-secondary);
+  font-weight: 550;
+  color: var(--pg-muted);
+  line-height: 1.4;
 }
 
 /* ─── Authority 3-column metrics ─── */
@@ -3156,8 +3214,8 @@ body.jcp-proof-gap .pg-dest-panel {
 }
 
 body.jcp-proof-gap .pg-plan-card__kicker {
-  margin: 0 0 0.5rem;
-  font-size: 0.72rem;
+  margin: 0;
+  font-size: var(--pg-fs-eyebrow);
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -3165,14 +3223,15 @@ body.jcp-proof-gap .pg-plan-card__kicker {
 }
 
 body.jcp-proof-gap .pg-plan-first-win {
-  margin: 0.65rem 0 0.85rem;
+  margin: 0;
   font-size: var(--pg-fs-body);
-  line-height: 1.45;
+  font-weight: 700;
+  line-height: 1.4;
   color: var(--pg-ink);
 }
 
 body.jcp-proof-gap .pg-plan-outcome {
-  margin: 0.85rem 0 0;
+  margin: 0;
   font-size: var(--pg-fs-secondary);
   line-height: 1.45;
   color: var(--pg-muted);

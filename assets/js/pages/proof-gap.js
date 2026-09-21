@@ -1841,16 +1841,16 @@
     if (firstWin) {
       if (state.current_workflow === 'housecall_pro') {
         firstWin.textContent =
-          'Based on your answers, the easiest first win is: Connect Housecall Pro, bring in a real completed job, and publish the work your crew is already capturing.';
+          'Connect Housecall Pro, pull in one completed job, and publish the work your crew already captured.';
       } else if (state.current_workflow === 'companycam') {
         firstWin.textContent =
-          'Based on your answers, the easiest first win is: Connect CompanyCam, bring in a real completed job, and publish the work your crew is already capturing.';
+          'Connect CompanyCam, pull in one completed job, and publish the work your crew already captured.';
       } else if (state.current_workflow === 'phones_camera_roll') {
         firstWin.textContent =
-          'Based on your answers, the easiest first win is: Create your first JobCapturePro check-in from a real job and publish it where customers can see it.';
+          'Create your first check-in from a real job and publish it where customers can see it.';
       } else {
         firstWin.textContent =
-          'Based on your answers, the easiest first win is: Capture a real completed job and publish it to a connected website, Google, social, review, or directory channel.';
+          'Capture one completed job and publish it to website, Google, social, reviews, or directory.';
       }
     }
 

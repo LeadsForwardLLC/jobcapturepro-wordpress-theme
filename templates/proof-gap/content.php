@@ -324,35 +324,50 @@ $render_case = static function (): void {
 		<section class="pg-state pg-state--trial" data-pg-state="trial_bridge" hidden>
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( 'Your plan', 'jcp-core' ); ?></p>
-				<h1 class="pg-title pg-title--sm"><?php esc_html_e( 'Your crew already does the hard part. Put the next job to work.', 'jcp-core' ); ?></h1>
-				<p class="pg-sub pg-sub--tight"><?php esc_html_e( 'Start free for 14 days. Connect the workflow you already use, capture a real job, and see what JobCapturePro can do with it.', 'jcp-core' ); ?></p>
+				<h1 class="pg-title"><?php esc_html_e( 'Put the next job to work.', 'jcp-core' ); ?></h1>
+				<p class="pg-sub"><?php esc_html_e( 'Start free for 14 days. Connect your workflow, capture one real job, and see JobCapturePro turn it into marketing.', 'jcp-core' ); ?></p>
 
 				<div class="pg-plan-card" id="pgPlanCard">
-					<p class="pg-plan-card__kicker"><?php esc_html_e( 'Your setup', 'jcp-core' ); ?></p>
-					<ul class="pg-plan-chips" id="pgTrialSummary"></ul>
-					<p class="pg-plan-first-win" id="pgTrialFirstWin"></p>
-				<div class="pg-plan-next">
-					<p class="pg-plan-next__title"><?php esc_html_e( 'How JobCapturePro works', 'jcp-core' ); ?></p>
-					<ul class="pg-plan-steps">
-						<li class="pg-plan-step">
-							<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="13" r="3"/><line x1="12" y1="7" x2="12" y2="7.01"/></svg></span>
-							<span><strong><?php esc_html_e( 'Capture', 'jcp-core' ); ?></strong> — <?php esc_html_e( 'Use job photos and details your team already creates.', 'jcp-core' ); ?></span>
-						</li>
-						<li class="pg-plan-step">
-							<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
-							<span><strong><?php esc_html_e( 'Create', 'jcp-core' ); ?></strong> — <?php esc_html_e( 'Turn the finished job into customer-facing marketing content.', 'jcp-core' ); ?></span>
-						</li>
-						<li class="pg-plan-step">
-							<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
-							<span><strong><?php esc_html_e( 'Publish', 'jcp-core' ); ?></strong> — <?php esc_html_e( 'Send it to your connected website, Google, social, review and directory channels.', 'jcp-core' ); ?></span>
-						</li>
-					</ul>
-				</div>
-					<p class="pg-plan-outcome"><?php esc_html_e( 'Built to help contractors get found, get trusted, and get chosen — using work the company is already doing.', 'jcp-core' ); ?></p>
+					<div class="pg-plan-setup">
+						<p class="pg-plan-card__kicker"><?php esc_html_e( 'Your setup', 'jcp-core' ); ?></p>
+						<ul class="pg-plan-chips" id="pgTrialSummary"></ul>
+					</div>
+
+					<div class="pg-plan-win">
+						<p class="pg-plan-win__label"><?php esc_html_e( 'Easiest first win', 'jcp-core' ); ?></p>
+						<p class="pg-plan-first-win" id="pgTrialFirstWin"></p>
+					</div>
+
+					<div class="pg-plan-next">
+						<p class="pg-plan-next__title"><?php esc_html_e( 'How JobCapturePro works', 'jcp-core' ); ?></p>
+						<ul class="pg-plan-steps">
+							<li class="pg-plan-step">
+								<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><circle cx="12" cy="13" r="3"/><line x1="12" y1="7" x2="12" y2="7.01"/></svg></span>
+								<span class="pg-plan-step__copy">
+									<strong class="pg-plan-step__title"><?php esc_html_e( 'Capture', 'jcp-core' ); ?></strong>
+									<span class="pg-plan-step__text"><?php esc_html_e( 'Use the job photos and details your team already creates.', 'jcp-core' ); ?></span>
+								</span>
+							</li>
+							<li class="pg-plan-step">
+								<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></span>
+								<span class="pg-plan-step__copy">
+									<strong class="pg-plan-step__title"><?php esc_html_e( 'Create', 'jcp-core' ); ?></strong>
+									<span class="pg-plan-step__text"><?php esc_html_e( 'Turn that finished job into customer-facing marketing.', 'jcp-core' ); ?></span>
+								</span>
+							</li>
+							<li class="pg-plan-step">
+								<span class="pg-plan-step__icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span>
+								<span class="pg-plan-step__copy">
+									<strong class="pg-plan-step__title"><?php esc_html_e( 'Publish', 'jcp-core' ); ?></strong>
+									<span class="pg-plan-step__text"><?php esc_html_e( 'Send it to website, Google, social, reviews, and directory.', 'jcp-core' ); ?></span>
+								</span>
+							</li>
+						</ul>
+					</div>
+
 					<p class="pg-continuity pg-continuity--trial" id="pgTrialContinuity" hidden></p>
 				</div>
 
-				<?php $render_authority_metrics( 'pg-authority--trial' ); ?>
 				<?php $render_review( $trial_rev, 'trial', 'pg-review-slot--trial' ); ?>
 			</div>
 		</section>
