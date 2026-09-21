@@ -272,7 +272,7 @@ $render_case = static function (): void {
 					<label class="pg-email__label" for="pgEmail"><?php esc_html_e( 'Email', 'jcp-core' ); ?> <span class="pg-req">*</span></label>
 					<input class="pg-email__input" id="pgEmail" name="email" type="email" autocomplete="email" inputmode="email" required placeholder="you@company.com" />
 					<p class="pg-email__error" id="pgEmailError" role="alert" hidden></p>
-					<p class="pg-email__consent"><?php esc_html_e( 'We’ll email your results and relevant JobCapturePro follow-up. Unsubscribe anytime.', 'jcp-core' ); ?></p>
+					<p class="pg-email__consent"><?php esc_html_e( 'We’ll send your results — no spam.', 'jcp-core' ); ?></p>
 				</form>
 				<div class="pg-email-proof">
 					<?php $render_case(); ?>
