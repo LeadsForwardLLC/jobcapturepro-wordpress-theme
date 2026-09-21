@@ -733,15 +733,15 @@ function endDemoPrepOverlay() {
   el.setAttribute('aria-hidden', 'true');
 }
 
-/** Unsplash job-scene URLs (no people / faces) keyed by niche family. */
+/** Local curated job-scene assets (theme campaign/jobs — never remote stock). */
 const NICHE_PHOTO_PACKS = {
   plumbing: {
     label: 'Plumbing job',
     jobTitle: 'Water Heater Replacement',
     photos: [
-		'https://images.unsplash.com/photo-1585704032915-c3400ca199e7?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1581858726788-75bc0f6a952d?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1607400201889-565b1ee75f8e?w=800&h=600&fit=crop&q=75',
+      'CAMPAIGN:jcp-campaign-job-proof.jpg',
+      'CAMPAIGN:jobs/default.webp',
+      'CAMPAIGN:jcp-campaign-hvac-capture.jpg',
     ],
     descriptions: [
       `Water heater replacement at ${getCanonicalFullAddress()}. Installed a high-efficiency unit, verified venting, and tested T&P relief. Local, geotagged job proof ready for your website and Google.`,
@@ -753,9 +753,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'HVAC job',
     jobTitle: 'AC System Replacement',
     photos: [
-      'CAMPAIGN:jcp-campaign-job-proof.jpg',
       'CAMPAIGN:jcp-campaign-hvac-capture.jpg',
-      'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&h=600&fit=crop&q=75',
+      'CAMPAIGN:jcp-campaign-job-proof.jpg',
+      'CAMPAIGN:jobs/default.webp',
     ],
     descriptions: [
       `HVAC install at ${getCanonicalFullAddress()}. New outdoor unit set, lineset connected, and system commissioned for cooling. Geotagged job proof ready to publish.`,
@@ -767,9 +767,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Electrical job',
     jobTitle: 'Electrical Panel Upgrade',
     photos: [
-      'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1558442074-3c19857bc1dc?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1473341302250-a0c3377630b0?w=800&h=600&fit=crop&q=75',
+      'CAMPAIGN:jobs/electrical.webp',
+      'CAMPAIGN:jobs/default.webp',
+      'CAMPAIGN:jcp-campaign-job-proof.jpg',
     ],
     descriptions: [
       `Electrical panel upgrade at ${getCanonicalFullAddress()}. New breaker layout, labeled circuits, and safety check completed.`,
@@ -781,9 +781,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Roofing job',
     jobTitle: 'Asphalt Shingle Roof Replacement',
     photos: [
-      'https://images.unsplash.com/photo-1632778149955-e80f8ceca2e8?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=600&fit=crop&q=75',
+      'CAMPAIGN:jobs/roofing.webp',
+      'CAMPAIGN:jobs/default.webp',
+      'CAMPAIGN:jobs/remodeling.webp',
     ],
     descriptions: [
       `Roof replacement at ${getCanonicalFullAddress()}. Tear-off complete, new underlayment and shingles installed, flashing sealed.`,
@@ -795,9 +795,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Outdoor job',
     jobTitle: 'Landscape Installation',
     photos: [
-      'https://images.unsplash.com/photo-1558904541-efa843a96f01?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1598902108854-10e335adac99?w=800&h=600&fit=crop&q=75',
+      'CAMPAIGN:jobs/landscaping.webp',
+      'CAMPAIGN:jobs/tree_service.webp',
+      'CAMPAIGN:jobs/default.webp',
     ],
     descriptions: [
       `Outdoor project completed at ${getCanonicalFullAddress()}. Site cleaned, work documented, ready for homeowners nearby.`,
@@ -809,9 +809,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Cleaning job',
     jobTitle: 'Driveway Cleaning',
     photos: [
-      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1527515637462-cff94eecc1ac?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1563453392212-326f5e854473?w=800&h=600&fit=crop&q=75',
+      'CAMPAIGN:jobs/power_washing.webp',
+      'CAMPAIGN:jobs/default.webp',
+      'CAMPAIGN:jcp-campaign-job-proof.jpg',
     ],
     descriptions: [
       `Deep clean completed at ${getCanonicalFullAddress()}. Surfaces detailed, floors finished, home left ready for the owner.`,
@@ -823,9 +823,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Remodel job',
     jobTitle: 'Kitchen Remodel',
     photos: [
-      'https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=600&fit=crop&q=75',
+      'CAMPAIGN:jobs/remodeling.webp',
+      'CAMPAIGN:jobs/painting.webp',
+      'CAMPAIGN:jobs/default.webp',
     ],
     descriptions: [
       `Remodel work completed at ${getCanonicalFullAddress()}. Finished surfaces installed and site cleaned for handover.`,
@@ -837,9 +837,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Restoration job',
     jobTitle: 'Completed Service Job',
     photos: [
-      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&q=75',
+      'CAMPAIGN:jobs/default.webp',
+      'CAMPAIGN:jobs/power_washing.webp',
+      'CAMPAIGN:jcp-campaign-job-proof.jpg',
     ],
     descriptions: [
       `Restoration work completed at ${getCanonicalFullAddress()}. Affected areas treated, dried, and documented for the homeowner.`,
@@ -851,9 +851,9 @@ const NICHE_PHOTO_PACKS = {
     label: 'Job site',
     jobTitle: 'Completed Service Job',
     photos: [
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&h=600&fit=crop&q=75',
-      'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=800&h=600&fit=crop&q=75',
+      'CAMPAIGN:jobs/default.webp',
+      'CAMPAIGN:jcp-campaign-hvac-capture.jpg',
+      'CAMPAIGN:jcp-campaign-job-proof.jpg',
     ],
     descriptions: [
       `Completed job at ${getCanonicalFullAddress()}. Work documented on site with geotagged proof ready for your website and Google.`,
