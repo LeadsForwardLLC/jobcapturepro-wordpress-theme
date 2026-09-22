@@ -1505,13 +1505,14 @@ body.jcp-proof-gap .pg-reveal-flow__step .pg-reveal-flow__note {
 }
 
 body.jcp-proof-gap .pg-reveal-same {
-  margin: 1.15rem 0 0.55rem;
-  font-size: 0.72rem;
+  margin: 0.85rem 0 0.75rem;
+  font-size: var(--pg-fs-section);
   font-weight: 750;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--pg-muted);
-  text-align: center;
+  letter-spacing: -0.015em;
+  text-transform: none;
+  color: var(--pg-ink);
+  text-align: left;
+  line-height: 1.3;
 }
 
 body.jcp-proof-gap .pg-dest-caption {
@@ -3297,10 +3298,11 @@ body.jcp-proof-gap .pg-jobs-insight__unit {
 
 body.jcp-proof-gap .pg-jobs-insight__lead {
   margin: 0;
-  text-align: center;
+  text-align: left;
   font-size: var(--pg-fs-secondary);
-  font-weight: 600;
-  color: var(--pg-muted);
+  font-weight: 650;
+  color: var(--pg-ink);
+  line-height: 1.45;
 }
 
 body.jcp-proof-gap .pg-jobs-insight__chips {
@@ -3687,6 +3689,10 @@ body.jcp-proof-gap .pg-dest-tab {
   border: 1.5px solid rgba(15, 23, 42, 0.14);
   background: #fff;
   box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+  padding: 0.65rem 1rem;
+  min-height: 52px;
+  font-size: var(--pg-fs-secondary);
+  font-weight: 750;
   transition:
     border-color 160ms var(--pg-ease),
     background 160ms var(--pg-ease),
@@ -3949,155 +3955,62 @@ body.jcp-proof-gap .pg-plan-build.is-done .pg-plan-build__status {
   }
 }
 
-/* ─── App sim interstitial (story phone, one-shot) ─── */
+/* ─── App sim interstitial (live checklist) ─── */
 body.jcp-proof-gap.pg-is-app-sim .pg-bottom-action {
   display: none !important;
 }
 
 body.jcp-proof-gap .pg-state--app-sim .pg-state__inner {
-  max-width: 28rem;
+  max-width: 26rem;
   margin-inline: auto;
   text-align: center;
 }
 
-body.jcp-proof-gap .pg-app-sim__stage {
-  margin: 0.85rem auto 0.75rem;
-  width: 100%;
-  max-width: 280px;
+body.jcp-proof-gap .pg-app-sim__panel {
+  margin: 1rem auto 0.75rem;
+  padding: 1.25rem 1.1rem 1.15rem;
+  border-radius: var(--pg-radius-lg);
+  background:
+    radial-gradient(90% 70% at 10% 0%, rgba(255, 80, 54, 0.1), transparent 55%),
+    #fff;
+  border: 1px solid var(--pg-accent-border);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  text-align: left;
 }
 
-body.jcp-proof-gap .pg-app-sim-phone {
-  max-width: 280px;
+body.jcp-proof-gap .pg-app-sim__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin-bottom: 0.75rem;
+  border-radius: 0.65rem;
+  background: var(--pg-accent);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  animation: pg-sim-mark-pulse 1.6s ease-in-out infinite;
 }
 
-body.jcp-proof-gap .pg-app-sim-phone .jcp-story-phone__device.hero-phone-mockup,
-body.jcp-proof-gap .pg-app-sim-phone.demo-preview-phone-mockup.hero-phone-mockup {
-  width: min(100%, 240px) !important;
-  max-width: 240px !important;
-}
-
-body.jcp-proof-gap .pg-app-sim-phone .jcp-story-phone__caption {
-  margin-top: 0.65rem;
-  min-height: 2.4em;
-  font-size: var(--pg-fs-secondary);
-  font-weight: 750;
-  color: var(--pg-ink);
-}
-
-body.jcp-proof-gap .pg-app-sim-phone .jcp-story-phone__orbit {
-  inset: -4px -14px 36px;
-}
-
-body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-chip {
-  animation: none !important;
-  opacity: 0;
-  transform: translateY(6px) scale(0.94);
-  transition:
-    opacity 320ms var(--pg-ease),
-    transform 320ms var(--pg-ease);
-}
-
-body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-chip--jobs {
-  transform: translate(-50%, 8px) scale(0.94);
-}
-
-body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--maps,
-body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--web,
-body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--social,
-body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--reviews,
-body.jcp-proof-gap .pg-app-sim-phone.is-done .jcp-story-chip--jobs {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--web {
-  transition-delay: 120ms;
-}
-body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--social {
-  transition-delay: 240ms;
-}
-body.jcp-proof-gap .pg-app-sim-phone.is-publishing .jcp-story-chip--reviews {
-  transition-delay: 360ms;
-}
-body.jcp-proof-gap .pg-app-sim-phone.is-done .jcp-story-chip--jobs {
-  transition-delay: 120ms;
-  transform: translate(-50%, 0) scale(1);
-}
-
-body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-scene.is-active .jcp-story-camera__flash {
-  animation: pg-sim-camera-flash 0.55s ease 0.28s 1;
-}
-
-body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-scene.is-active .jcp-story-camera__shutter span {
-  animation: pg-sim-shutter 0.45s ease 0.48s 1;
-}
-
-body.jcp-proof-gap .pg-app-sim-phone.is-manual[data-active-scene='process'] .jcp-story-process__spinner {
-  animation: pg-sim-spin 0.85s linear infinite;
-}
-
-@keyframes pg-sim-camera-flash {
-  0% {
-    opacity: 0;
-  }
-  40% {
-    opacity: 0.85;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-
-@keyframes pg-sim-shutter {
+@keyframes pg-sim-mark-pulse {
   0%,
   100% {
     transform: scale(1);
   }
   50% {
-    transform: scale(0.92);
+    transform: scale(1.05);
   }
 }
 
-@keyframes pg-sim-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-body.jcp-proof-gap .pg-app-sim__channels {
-  list-style: none;
-  margin: 0.35rem 0 0.85rem;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.35rem;
-}
-
-body.jcp-proof-gap .pg-app-sim__channels li {
-  margin: 0;
-  padding: 0.35rem 0.65rem;
-  border-radius: 999px;
-  border: 1px solid rgba(15, 23, 42, 0.12);
-  background: #fff;
-  font-size: var(--pg-fs-tertiary);
+body.jcp-proof-gap .pg-app-sim__status {
+  margin: 0 0 0.85rem;
+  min-height: 1.4em;
+  font-size: var(--pg-fs-secondary);
   font-weight: 750;
-  color: var(--pg-muted);
-  opacity: 0.55;
-  transition:
-    opacity 220ms var(--pg-ease),
-    border-color 220ms var(--pg-ease),
-    background 220ms var(--pg-ease),
-    color 220ms var(--pg-ease),
-    box-shadow 220ms var(--pg-ease);
-}
-
-body.jcp-proof-gap .pg-app-sim__channels li.is-live {
-  opacity: 1;
-  border-color: rgba(255, 80, 54, 0.55);
-  background: linear-gradient(180deg, #fff8f6 0%, #ffe8e2 100%);
-  color: var(--pg-accent);
-  box-shadow: 0 0 0 3px rgba(255, 80, 54, 0.1);
+  color: var(--pg-ink);
+  line-height: 1.35;
 }
 
 body.jcp-proof-gap .pg-app-sim__meter {
@@ -4105,8 +4018,7 @@ body.jcp-proof-gap .pg-app-sim__meter {
   border-radius: 999px;
   background: rgba(15, 23, 42, 0.08);
   overflow: hidden;
-  max-width: 18rem;
-  margin: 0 auto 0.65rem;
+  margin: 0 0 1rem;
 }
 
 body.jcp-proof-gap .pg-app-sim__meter-fill {
@@ -4118,12 +4030,79 @@ body.jcp-proof-gap .pg-app-sim__meter-fill {
   transition: width linear;
 }
 
-body.jcp-proof-gap .pg-app-sim__status {
+body.jcp-proof-gap .pg-app-sim__ticks {
+  list-style: none;
   margin: 0;
-  min-height: 1.35em;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+body.jcp-proof-gap .pg-app-sim__ticks li {
+  position: relative;
+  margin: 0;
+  padding: 0.55rem 0.7rem 0.55rem 2.35rem;
+  border-radius: var(--pg-radius-sm);
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid transparent;
   font-size: var(--pg-fs-secondary);
-  font-weight: 750;
-  color: var(--pg-accent);
+  font-weight: 700;
+  color: var(--pg-muted);
+  line-height: 1.3;
+  opacity: 0.55;
+  transition:
+    opacity 220ms var(--pg-ease),
+    background 220ms var(--pg-ease),
+    border-color 220ms var(--pg-ease),
+    color 220ms var(--pg-ease);
+}
+
+body.jcp-proof-gap .pg-app-sim__ticks li::before {
+  content: '';
+  position: absolute;
+  left: 0.7rem;
+  top: 50%;
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-top: -0.525rem;
+  border-radius: 999px;
+  border: 2px solid rgba(15, 23, 42, 0.18);
+  background: #fff;
+  box-sizing: border-box;
+}
+
+body.jcp-proof-gap .pg-app-sim__ticks li.is-on,
+body.jcp-proof-gap .pg-app-sim__ticks li.is-done {
+  opacity: 1;
+  color: var(--pg-ink);
+}
+
+body.jcp-proof-gap .pg-app-sim__ticks li.is-on {
+  background: rgba(255, 80, 54, 0.07);
+  border-color: rgba(255, 80, 54, 0.2);
+}
+
+body.jcp-proof-gap .pg-app-sim__ticks li.is-on::before {
+  border-color: var(--pg-accent);
+  box-shadow: 0 0 0 3px rgba(255, 80, 54, 0.12);
+}
+
+body.jcp-proof-gap .pg-app-sim__ticks li.is-done::before {
+  border-color: #16a34a;
+  background: #16a34a;
+}
+
+body.jcp-proof-gap .pg-app-sim__ticks li.is-done::after {
+  content: '';
+  position: absolute;
+  left: 1.02rem;
+  top: 50%;
+  width: 0.28rem;
+  height: 0.5rem;
+  margin-top: -0.32rem;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }
 
 body.jcp-proof-gap .pg-app-sim__skip {
@@ -4147,13 +4126,104 @@ body.jcp-proof-gap .pg-app-sim__skip:hover {
   color: var(--pg-ink);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-camera__flash,
-  body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-process__spinner {
-    animation: none !important;
-  }
+/* Welcome callout + channel checklist */
+body.jcp-proof-gap .pg-sub--callout {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin: 0.65rem 0 0.35rem;
+  font-size: var(--pg-fs-body);
+  color: var(--pg-ink);
+}
 
-  body.jcp-proof-gap .pg-app-sim-phone.is-manual .jcp-story-chip {
-    transition: none;
+body.jcp-proof-gap .pg-sub__arrow {
+  flex: 0 0 auto;
+  color: var(--pg-accent);
+  font-weight: 850;
+  line-height: 1.35;
+}
+
+body.jcp-proof-gap .pg-welcome-checklist {
+  margin: 1.15rem 0 1rem;
+  padding: 1.15rem 1.05rem 1.05rem;
+  border-radius: var(--pg-radius-lg);
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
+  text-align: center;
+}
+
+body.jcp-proof-gap .pg-welcome-checklist__logo {
+  display: block;
+  width: auto;
+  height: 1.85rem;
+  margin: 0 auto 0.95rem;
+}
+
+body.jcp-proof-gap .pg-welcome-checklist__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+  text-align: left;
+}
+
+body.jcp-proof-gap .pg-welcome-checklist__list li {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0.45rem 0.55rem;
+  border-radius: var(--pg-radius-sm);
+  background: rgba(22, 163, 74, 0.06);
+  font-size: var(--pg-fs-secondary);
+  font-weight: 750;
+  color: var(--pg-ink);
+}
+
+body.jcp-proof-gap .pg-welcome-checklist__check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 999px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 850;
+  line-height: 1;
+}
+
+body.jcp-proof-gap .pg-btn--stacked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  line-height: 1.15;
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+}
+
+body.jcp-proof-gap .pg-btn__label {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+body.jcp-proof-gap .pg-btn__sub {
+  font-size: 0.78rem;
+  font-weight: 650;
+  opacity: 0.92;
+}
+
+body.jcp-proof-gap .proof-gap-insight-card--jobs .proof-gap-insight-card__text:empty {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.jcp-proof-gap .pg-app-sim__mark {
+    animation: none !important;
   }
 }

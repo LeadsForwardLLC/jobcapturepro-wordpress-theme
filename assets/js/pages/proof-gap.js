@@ -202,7 +202,7 @@
   }
 
   /**
-   * @param {{label:string, onClick?:Function, href?:string, type?:string, form?:string, id?:string, micro?:string, animate?:boolean}} opts
+   * @param {{label:string, onClick?:Function, href?:string, type?:string, form?:string, id?:string, micro?:string, sublabel?:string, animate?:boolean}} opts
    */
   function setBottomAction(opts) {
     opts = opts || {};
@@ -219,7 +219,6 @@
       el = document.createElement('a');
       el.className = 'btn btn-primary pg-btn';
       el.href = opts.href;
-      el.textContent = opts.label || 'Continue →';
       if (opts.id) el.id = opts.id;
       el.addEventListener('click', function (ev) {
         if (bottomActionHandler) bottomActionHandler(ev);
@@ -228,7 +227,6 @@
       el = document.createElement('button');
       el.type = opts.type || 'button';
       el.className = 'btn btn-primary pg-btn';
-      el.textContent = opts.label || 'Continue →';
       if (opts.id) el.id = opts.id;
       if (opts.form) el.setAttribute('form', opts.form);
       el.addEventListener('click', function (ev) {
@@ -238,6 +236,17 @@
           bottomActionHandler(ev);
         }
       });
+    }
+    if (opts.sublabel) {
+      el.classList.add('pg-btn--stacked');
+      el.innerHTML =
+        '<span class="pg-btn__label">' +
+        escapeHtml(opts.label || 'Continue →') +
+        '</span><span class="pg-btn__sub">' +
+        escapeHtml(opts.sublabel) +
+        '</span>';
+    } else {
+      el.textContent = opts.label || 'Continue →';
     }
     host.appendChild(el);
 
@@ -327,7 +336,7 @@
     if (id === 'product_reveal') {
       setBottomAction({
         id: 'pgRevealContinue',
-        label: 'Show Me My Setup →',
+        label: 'Show Me My Free Trial →',
         animate: false,
         onClick: function () {
           state.product_reveal_completed = true;
@@ -353,7 +362,7 @@
         id: 'pgTrialCta',
         label: 'Start My Free 14-Day Trial →',
         href: '#',
-        micro: 'No credit card required.\nYour email is already filled in.',
+        sublabel: 'No credit card required',
         animate: false,
         onClick: function () {
           state.trial_cta_clicked = true;
@@ -740,21 +749,18 @@
 
   function collapseChoiceList(field, valueText, key, done) {
     var choices = document.querySelector('[data-pg-choices="' + field + '"]');
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var finish = function () {
-      if (choices) {
-        choices.classList.remove('is-exiting');
-        choices.hidden = true;
-      }
-      fillAnswerSummary(field, key, valueText);
-      if (typeof done === 'function') done();
-    };
-    if (!choices || choices.hidden || reduce) {
-      finish();
-      return;
+    var slot = summarySlotForField(field);
+    var summary = document.querySelector('[data-pg-summary="' + slot + '"]');
+    // Keep the full choice list visible — insight appears below without collapsing the screen.
+    if (choices) {
+      choices.classList.remove('is-exiting');
+      choices.hidden = false;
+      choices.querySelectorAll('.pg-choice').forEach(function (btn) {
+        btn.classList.toggle('is-selected', btn.getAttribute('data-pg-value') === key);
+      });
     }
-    choices.classList.add('is-exiting');
-    window.setTimeout(finish, 200);
+    if (summary) summary.hidden = true;
+    if (typeof done === 'function') done();
   }
 
   function expandChoiceList(field) {
@@ -764,6 +770,9 @@
     if (choices) {
       choices.classList.remove('is-exiting');
       choices.hidden = false;
+      choices.querySelectorAll('.pg-choice').forEach(function (btn) {
+        btn.classList.remove('is-selected');
+      });
     }
     if (summary) summary.hidden = true;
     hideAllInsights();
@@ -785,8 +794,8 @@
       showInsight(
         'jobs',
         {
-          headline: 'You don’t have a content problem.',
-          body: 'Your crew already creates the photos, locations, and review moments every week.',
+          headline: 'Based on your answer, your crew generates:',
+          body: '',
           extraHtml: typeof buildJobsStackHtml === 'function' ? buildJobsStackHtml() : '',
         },
         'public_proof_percentage',
@@ -813,30 +822,18 @@
   }
 
   function applyVisibilityInsight(insight, tier, key) {
-    if (key === '0_10' || key === '11_25') {
-      insight.headline = 'Most of the work is disappearing after the job is done.';
-    } else if (key === '26_50') {
-      insight.headline = 'More than half of your finished jobs may never reach a future customer.';
-    } else if (key === '51_75') {
-      insight.headline = 'You’re using some of the work — but a meaningful share is still getting left behind.';
-    } else if (key === '76_100') {
-      insight.headline = 'You’re already doing the hard part.';
-      insight.body =
-        'The opportunity is removing the manual work between capture and publishing.';
-      return;
-    } else {
-      insight.headline = 'That’s common when there isn’t one repeatable system for what happens after the job.';
-    }
-    insight.body = 'The jobs already happened. Your crew already took the photos.';
+    insight.headline = 'JobCapturePro ensures that 100% of your finished jobs reach your future customers.';
+    insight.body = '';
     insight.body2 = '';
     insight.flowHtml =
       '<div class="pg-insight-flow">' +
-      '<p class="pg-insight-flow__lead">What those finished jobs never become:</p>' +
+      '<p class="pg-insight-flow__lead">JCP turns your completed jobs into:</p>' +
       '<ul class="pg-insight-flow__chips" aria-label="Marketing outputs">' +
       '<li>Website content</li>' +
       '<li>Google activity</li>' +
       '<li>Social posts</li>' +
       '<li>Review opportunities</li>' +
+      '<li>Directory listings</li>' +
       '</ul>' +
       '</div>';
   }
@@ -913,13 +910,12 @@
     return (
       '<div class="pg-jobs-insight">' +
       '<div class="pg-jobs-insight__metric">' +
-      '<p class="pg-jobs-insight__eyebrow">Based on your answer</p>' +
       '<p class="pg-jobs-insight__num">' +
       escapeHtml(annual) +
       '</p>' +
       '<p class="pg-jobs-insight__unit">completed jobs / year</p>' +
       '</div>' +
-      '<p class="pg-jobs-insight__lead">Each finished job can become marketing on</p>' +
+      '<p class="pg-jobs-insight__lead">JobCapturePro automatically turns those finished jobs into marketing across 5 channels that increases your visibility and helps you win your next job through:</p>' +
       '<ul class="pg-jobs-insight__chips" aria-label="Marketing channels">' +
       '<li>Website</li>' +
       '<li>Google</li>' +
@@ -1209,27 +1205,6 @@
     appSimStepTimers = [];
   }
 
-  function setAppSimScene(id) {
-    var root = document.querySelector('[data-pg-app-sim-phone]');
-    if (!root) return;
-    root.setAttribute('data-active-scene', id);
-    root.querySelectorAll('[data-story-scene]').forEach(function (scene) {
-      var on = scene.getAttribute('data-story-scene') === id;
-      scene.classList.toggle('is-active', on);
-      scene.setAttribute('aria-hidden', on ? 'false' : 'true');
-    });
-  }
-
-  function setAppSimCaption(text) {
-    var cap = document.getElementById('pgAppSimCaption');
-    if (!cap || !text) return;
-    cap.classList.add('is-swapping');
-    window.setTimeout(function () {
-      cap.textContent = text;
-      cap.classList.remove('is-swapping');
-    }, 140);
-  }
-
   function setAppSimStatus(text) {
     var el = document.getElementById('pgAppSimStatus');
     if (el && text) el.textContent = text;
@@ -1244,40 +1219,16 @@
     meter.style.width = Math.max(0, Math.min(100, pct)) + '%';
   }
 
-  function setAppSimChannels(upTo) {
-    var order = ['website', 'google', 'social', 'reviews', 'directory'];
+  function setAppSimTicks(upTo) {
+    var order = ['capture', 'build', 'website', 'google', 'social', 'reviews', 'directory'];
     var idx = order.indexOf(upTo);
-    document.querySelectorAll('[data-sim-channel]').forEach(function (el) {
-      var key = el.getAttribute('data-sim-channel');
+    document.querySelectorAll('[data-sim-tick]').forEach(function (el) {
+      var key = el.getAttribute('data-sim-tick');
       var i = order.indexOf(key);
-      el.classList.toggle('is-live', idx >= 0 && i >= 0 && i <= idx);
+      var on = idx >= 0 && i >= 0 && i <= idx;
+      el.classList.toggle('is-on', on && i === idx);
+      el.classList.toggle('is-done', on && i < idx);
     });
-  }
-
-  function personalizeAppSimPhone() {
-    var root = document.querySelector('[data-pg-app-sim-phone]');
-    if (!root) return;
-    var url = typeof getJobPhotoUrl === 'function' ? getJobPhotoUrl() : '';
-    var jobLabel = JOB_EXAMPLES[state.trade] || 'Finished field job';
-    var cityLine = 'Your service area';
-
-    root.querySelectorAll('[data-jpd-job-photo], .jcp-story-checkin-card__photo').forEach(function (img) {
-      if (url) {
-        img.src = url;
-        img.hidden = false;
-      }
-    });
-
-    var title = root.querySelector('.jcp-story-checkin-card .demo-item-title');
-    if (title) title.textContent = jobLabel;
-    var sub = root.querySelector('.jcp-story-checkin-card .demo-item-subtitle');
-    if (sub) sub.textContent = cityLine;
-
-    var lead = root.querySelector('.jcp-story-outcome__lead span');
-    if (lead) {
-      var tradeWord = (trades[state.trade] || 'job').toLowerCase();
-      lead.textContent = '“Saw your ' + tradeWord + ' jobs on Google”';
-    }
   }
 
   function finishAppSim(skipped) {
@@ -1302,25 +1253,19 @@
   function startAppSimSequence() {
     clearAppSimTimers();
     bindAppSimSkip();
-    personalizeAppSimPhone();
 
-    var root = document.querySelector('[data-pg-app-sim-phone]');
     var skip = document.getElementById('pgAppSimSkip');
+    var panel = document.getElementById('pgAppSimStage');
     var reduced = prefersReducedMotion();
-    var duration = reduced ? APP_SIM_REDUCED_MS : APP_SIM_DURATION_MS;
+    var duration = reduced ? APP_SIM_REDUCED_MS : 4200;
 
-    if (root) {
-      root.classList.add('is-manual', 'is-paused', 'pg-app-sim-phone--running');
-      root.classList.remove('is-done', 'is-publishing');
-    }
-    setAppSimChannels('');
+    if (panel) panel.classList.add('is-running');
+    setAppSimTicks('');
     setAppSimMeter(0, 0);
     var meterEl = document.getElementById('pgAppSimMeter');
     if (meterEl) void meterEl.offsetWidth;
-    setAppSimMeter(reduced ? 100 : 8, reduced ? duration : 400);
-    setAppSimScene('home');
-    setAppSimCaption('Your tech opens JobCapturePro…');
-    setAppSimStatus('Opening JobCapturePro…');
+    setAppSimMeter(reduced ? 100 : 10, reduced ? duration : 350);
+    setAppSimStatus('Starting with your finished job…');
     if (skip) skip.hidden = true;
 
     track('AppSimStarted', {
@@ -1329,10 +1274,8 @@
     });
 
     if (reduced) {
-      setAppSimScene('checkin');
-      setAppSimChannels('directory');
-      setAppSimCaption('Check-in published across channels.');
-      setAppSimStatus('Ready — showing your outputs…');
+      setAppSimTicks('directory');
+      setAppSimStatus('Ready — showing your channel previews…');
       appSimTimer = setTimeout(function () {
         finishAppSim(false);
       }, duration);
@@ -1340,83 +1283,22 @@
     }
 
     var beats = [
-      {
-        t: 0,
-        fn: function () {
-          setAppSimScene('home');
-          setAppSimCaption('Your tech opens JobCapturePro…');
-          setAppSimStatus('Opening JobCapturePro…');
-          setAppSimMeter(12, 600);
-        },
-      },
-      {
-        t: 700,
-        fn: function () {
-          setAppSimScene('camera');
-          setAppSimCaption('One tap. Finished job photo captured.');
-          setAppSimStatus('Capturing the finished job…');
-          setAppSimMeter(28, 700);
-        },
-      },
-      {
-        t: 1600,
-        fn: function () {
-          setAppSimScene('process');
-          setAppSimCaption('JCP builds check-in, map pin, and channel copy.');
-          setAppSimStatus('Building proof from the photo…');
-          setAppSimMeter(48, 900);
-          if (skip) skip.hidden = false;
-        },
-      },
-      {
-        t: 2700,
-        fn: function () {
-          setAppSimScene('checkin');
-          setAppSimCaption('Check-in ready. Publishing starts now.');
-          setAppSimStatus('Publishing across connected channels…');
-          setAppSimChannels('website');
-          setAppSimMeter(62, 600);
-          if (root) root.classList.add('is-publishing');
-        },
-      },
-      {
-        t: 3200,
-        fn: function () {
-          setAppSimChannels('google');
-          setAppSimMeter(72, 400);
-        },
-      },
-      {
-        t: 3600,
-        fn: function () {
-          setAppSimChannels('social');
-          setAppSimMeter(80, 400);
-        },
-      },
-      {
-        t: 4000,
-        fn: function () {
-          setAppSimChannels('reviews');
-          setAppSimMeter(88, 400);
-        },
-      },
-      {
-        t: 4400,
-        fn: function () {
-          setAppSimChannels('directory');
-          setAppSimScene('outcome');
-          setAppSimCaption('Proof is live. Here’s what that job becomes…');
-          setAppSimStatus('Live — opening your channel previews…');
-          setAppSimMeter(100, 500);
-          if (root) root.classList.add('is-done');
-        },
-      },
+      { t: 0, tick: 'capture', status: 'Photo captured from the finished job…', pct: 18 },
+      { t: 650, tick: 'build', status: 'Building usable marketing proof…', pct: 34 },
+      { t: 1300, tick: 'website', status: 'Publishing to Website…', pct: 48, showSkip: true },
+      { t: 1850, tick: 'google', status: 'Updating Google…', pct: 62 },
+      { t: 2400, tick: 'social', status: 'Preparing Social…', pct: 74 },
+      { t: 2900, tick: 'reviews', status: 'Queuing Reviews…', pct: 86 },
+      { t: 3400, tick: 'directory', status: 'Live on Directory — opening previews…', pct: 100 },
     ];
 
     beats.forEach(function (beat) {
       appSimStepTimers.push(
         setTimeout(function () {
-          beat.fn();
+          setAppSimTicks(beat.tick);
+          setAppSimStatus(beat.status);
+          setAppSimMeter(beat.pct, 450);
+          if (beat.showSkip && skip) skip.hidden = false;
         }, beat.t)
       );
     });
@@ -1690,8 +1572,8 @@
         showInsight(
           'jobs',
           {
-            headline: 'You don’t have a content problem.',
-            body: 'Your crew already creates the photos, locations, and review moments every week.',
+            headline: 'Based on your answer, your crew generates:',
+            body: '',
             extraHtml: buildJobsStackHtml(),
           },
           'public_proof_percentage',
@@ -2187,6 +2069,7 @@
     var thumb = document.getElementById('pgRailThumb');
     var neut = document.getElementById('pgRailThumbNeutral');
     var label = document.getElementById('pgRailJobLabel');
+    if (!thumb && !neut && !label) return;
     var url = getJobPhotoUrl();
     var ctx = revealJobContext();
     var tradeLabel =
