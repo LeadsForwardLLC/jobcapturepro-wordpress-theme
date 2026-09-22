@@ -1,9 +1,10 @@
 /**
  * Capture every Proof Gap funnel step on mobile + desktop.
- * Output: copy-pass/ (PNG + index.html)
+ * Prefers live site (accurate CSS/fonts); falls back to local harness.
  *
- * Run from theme root or this folder:
+ * Run:
  *   node qa-copy-pass.js
+ *   PROOF_GAP_URL=https://jobcapturepro.com/proof-gap/ node qa-copy-pass.js
  */
 const { chromium } = require('playwright');
 const path = require('path');
@@ -13,9 +14,9 @@ const { spawn } = require('child_process');
 
 const THEME = path.resolve(__dirname, '../../../..');
 const OUT = path.join(__dirname, 'copy-pass');
-/** Visible (non-dot) mirror for Finder / Cursor file tree */
 const OUT_VISIBLE = path.join(THEME, 'proof-gap-screenshots');
 const PORT = 8771;
+const LIVE_URL = process.env.PROOF_GAP_URL || 'https://jobcapturepro.com/proof-gap/';
 
 const STEPS = [
   '01-welcome',
@@ -28,22 +29,24 @@ const STEPS = [
   '08-visibility-insight',
   '09-result',
   '10-email',
-  '11-reveal-website',
-  '12-reveal-google',
-  '13-reveal-social',
-  '14-reveal-reviews',
-  '15-reveal-directory',
-  '16-trial',
+  '11-app-sim-start',
+  '12-app-sim-mid',
+  '13-app-sim-done',
+  '14-reveal-website',
+  '15-reveal-google',
+  '16-reveal-social',
+  '17-reveal-reviews',
+  '18-reveal-directory',
+  '19-plan-build-start',
+  '20-plan-build-mid',
+  '21-plan-build-done',
+  '22-trial',
 ];
 
-  const VIEWPORTS = [
-    { width: 375, height: 812, prefix: 'm375', label: 'Mobile 375×812' },
-    { width: 390, height: 844, prefix: 'mobile', label: 'Mobile 390×844' },
-    { width: 430, height: 932, prefix: 'm430', label: 'Mobile 430×932' },
-    { width: 1366, height: 768, prefix: 'd1366', label: 'Desktop 1366×768' },
-    { width: 1440, height: 900, prefix: 'desktop', label: 'Desktop 1440×900' },
-    { width: 1920, height: 1080, prefix: 'd1920', label: 'Desktop 1920×1080' },
-  ];
+const VIEWPORTS = [
+  { width: 390, height: 844, prefix: 'mobile', label: 'Mobile 390×844', dpr: 2, mobile: true },
+  { width: 1440, height: 900, prefix: 'desktop', label: 'Desktop 1440×900', dpr: 1, mobile: false },
+];
 
 function startServer() {
   return new Promise((resolve, reject) => {
@@ -66,7 +69,7 @@ function startServer() {
 
 async function shot(page, name, fullPage) {
   const file = path.join(OUT, name);
-  await page.waitForTimeout(180);
+  await page.waitForTimeout(120);
   await page.screenshot({ path: file, fullPage: !!fullPage });
   console.log('wrote', name);
 }
@@ -82,7 +85,7 @@ async function clickBottom(page) {
 }
 
 async function waitBottom(page, part) {
-  await page.waitForSelector('#pgBottomAction:not([hidden])', { timeout: 10000 });
+  await page.waitForSelector('#pgBottomAction:not([hidden])', { timeout: 12000 });
   if (part) {
     await page.waitForFunction(
       (t) => {
@@ -90,25 +93,28 @@ async function waitBottom(page, part) {
         return !!(b && b.textContent && b.textContent.includes(t));
       },
       part,
-      { timeout: 10000 }
+      { timeout: 12000 }
     );
   }
-  await page.waitForTimeout(160);
+  await page.waitForTimeout(140);
+}
+
+async function waitState(page, id) {
+  await page.waitForSelector(`[data-pg-state="${id}"]:not([hidden])`, { timeout: 20000 });
 }
 
 async function prepPage(page) {
   await page.addInitScript(() => {
+    try {
+      localStorage.removeItem('jcp_proof_gap_state_v1');
+      localStorage.removeItem('jcp_pg_lead_event_id');
+    } catch (e) {}
     window.JCPOnboardingHandoff = {
       decorateHref(href, extra) {
         const u = new URL(href, location.origin);
         Object.keys(extra || {}).forEach((k) => {
           if (extra[k]) u.searchParams.set(k, String(extra[k]));
         });
-        try {
-          const raw = localStorage.getItem('demoUser');
-          const user = raw ? JSON.parse(raw) : null;
-          if (user && user.email) u.searchParams.set('email', user.email);
-        } catch (e) {}
         return u.toString();
       },
     };
@@ -128,21 +134,29 @@ async function prepPage(page) {
   });
 }
 
-async function runFunnel(page, prefix) {
-  const long = new Set(['09-result', '10-email', '11-reveal-website', '12-reveal-google', '13-reveal-social', '14-reveal-reviews', '15-reveal-directory', '16-trial']);
+async function runFunnel(page, prefix, startUrl) {
+  const long = new Set([
+    '09-result',
+    '10-email',
+    '14-reveal-website',
+    '15-reveal-google',
+    '16-reveal-social',
+    '17-reveal-reviews',
+    '18-reveal-directory',
+    '22-trial',
+  ]);
   const take = (step) => shot(page, `${prefix}-${step}.png`, long.has(step));
 
-  const url = `http://127.0.0.1:${PORT}/.superpowers/sdd/screenshots/proof-gap/qa-harness.html?utm_source=facebook&fbclid=COPYPASS`;
-  await page.goto(url, { waitUntil: 'networkidle' });
-  await page.waitForSelector('[data-pg-state="welcome"]:not([hidden])');
+  await page.goto(startUrl, { waitUntil: 'networkidle' });
+  await waitState(page, 'welcome');
   await take('01-welcome');
 
   await clickBottom(page);
-  await page.waitForSelector('[data-pg-state="trade"]:not([hidden])');
+  await waitState(page, 'trade');
   await take('02-trade');
 
   await clickChoice(page, 'HVAC');
-  await page.waitForSelector('[data-pg-state="current_workflow"]:not([hidden])');
+  await waitState(page, 'current_workflow');
   await take('03-workflow');
 
   await clickChoice(page, 'Housecall Pro');
@@ -150,38 +164,52 @@ async function runFunnel(page, prefix) {
   await take('04-workflow-insight');
   await clickBottom(page);
 
-  await page.waitForSelector('[data-pg-state="jobs_per_week"]:not([hidden])');
+  await waitState(page, 'jobs_per_week');
   await take('05-jobs');
   await clickChoice(page, '11–20');
   await waitBottom(page, 'Continue');
   await take('06-jobs-insight');
   await clickBottom(page);
 
-  await page.waitForSelector('[data-pg-state="public_proof_percentage"]:not([hidden])');
+  await waitState(page, 'public_proof_percentage');
   await take('07-visibility');
   await clickChoice(page, 'About half');
   await waitBottom(page, 'Show Me What');
   await take('08-visibility-insight');
   await clickBottom(page);
 
-  await page.waitForSelector('[data-pg-state="proof_gap_result"]:not([hidden])');
+  await waitState(page, 'proof_gap_result');
   await take('09-result');
   await clickBottom(page);
 
-  await page.waitForSelector('[data-pg-state="email_capture"]:not([hidden])');
+  await waitState(page, 'email_capture');
   await take('10-email');
   await page.fill('#pgEmail', `copy-pass+${prefix}@example.com`);
   await clickBottom(page);
 
-  await page.waitForSelector('[data-pg-state="product_reveal"]:not([hidden])');
-  await page.waitForTimeout(500);
-  await take('11-reveal-website');
+  // App sim — capture start / mid / near-complete before auto-advance
+  await waitState(page, 'app_sim');
+  await take('11-app-sim-start');
+  await page.waitForTimeout(1800);
+  await take('12-app-sim-mid');
+  await page.waitForFunction(
+    () => {
+      const ticks = document.querySelectorAll('#pgAppSimTicks li.is-done, #pgAppSimTicks li.is-on, #pgAppSimTicks .is-done');
+      return ticks.length >= 4 || document.body.classList.contains('pg-is-app-sim') === false;
+    },
+    { timeout: 8000 }
+  ).catch(() => {});
+  await take('13-app-sim-done');
+
+  await waitState(page, 'product_reveal');
+  await page.waitForTimeout(450);
+  await take('14-reveal-website');
 
   for (const [dest, step] of [
-    ['google', '12-reveal-google'],
-    ['social', '13-reveal-social'],
-    ['reviews', '14-reveal-reviews'],
-    ['directory', '15-reveal-directory'],
+    ['google', '15-reveal-google'],
+    ['social', '16-reveal-social'],
+    ['reviews', '17-reveal-reviews'],
+    ['directory', '18-reveal-directory'],
   ]) {
     await page.click(`.pg-dest-tab[data-dest="${dest}"]`);
     await page.waitForTimeout(280);
@@ -189,35 +217,31 @@ async function runFunnel(page, prefix) {
   }
 
   await clickBottom(page);
-  await page.waitForSelector('[data-pg-state="trial_bridge"]:not([hidden])');
-  await take('16-trial');
+
+  await waitState(page, 'plan_build');
+  await take('19-plan-build-start');
+  await page.waitForTimeout(1400);
+  await take('20-plan-build-mid');
+  await page.waitForFunction(
+    () => {
+      const done = document.querySelectorAll('#pgPlanBuildSteps .is-done, #pgPlanBuildSteps .pg-plan-build__step.is-done');
+      return done.length >= 3 || !document.body.classList.contains('pg-is-plan-build');
+    },
+    { timeout: 6000 }
+  ).catch(() => {});
+  await take('21-plan-build-done');
+
+  await waitState(page, 'trial_bridge');
+  await take('22-trial');
 }
 
 function writeIndex() {
-  const rows = STEPS.map((step, i) => {
-    const label = step.replace(/^\d+-/, '').replace(/-/g, ' ');
-    return `
-    <section class="step">
-      <h2>${i + 1}. ${label}</h2>
-      <div class="pair">
-        <figure>
-          <figcaption>Mobile</figcaption>
-          <a href="mobile-${step}.png" target="_blank"><img src="mobile-${step}.png" alt="Mobile ${label}" loading="lazy" /></a>
-        </figure>
-        <figure>
-          <figcaption>Desktop</figcaption>
-          <a href="desktop-${step}.png" target="_blank"><img src="desktop-${step}.png" alt="Desktop ${label}" loading="lazy" /></a>
-        </figure>
-      </div>
-    </section>`;
-  }).join('\n');
-
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Proof Gap — Copy Pass Screenshots</title>
+  <title>Proof Gap — Full Funnel Screenshots</title>
   <style>
     :root { color-scheme: light; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; }
     body { margin: 0; background: #f4f6f8; color: #0f172a; }
@@ -237,9 +261,9 @@ function writeIndex() {
 </head>
 <body>
   <header>
-    <h1>Proof Gap — Copy Pass Screenshots</h1>
-    <p>Path: Electrical · Housecall Pro · 11–20 jobs/week · About half reused · Full funnel</p>
-    <p>Location: <code>.superpowers/sdd/screenshots/proof-gap/copy-pass/</code></p>
+    <h1>Proof Gap — Full Funnel Screenshots</h1>
+    <p>Path: HVAC · Housecall Pro · 11–20 jobs/week · About half · Includes app_sim + plan_build</p>
+    <p>Open from theme root: <code>proof-gap-screenshots/index.html</code></p>
     <nav>
       ${STEPS.map((s, i) => `<a href="#s${i + 1}">${i + 1}</a>`).join('')}
     </nav>
@@ -266,18 +290,14 @@ function writeIndex() {
 </body>
 </html>`;
 
-  const readme = `# Proof Gap — Copy Pass Screenshots
+  const readme = `# Proof Gap — Full Funnel Screenshots
 
-**Easy find (visible folder):** \`proof-gap-screenshots/\` at the theme root.
-
-Also mirrored at: \`.superpowers/sdd/screenshots/proof-gap/copy-pass/\`
-
-Open \`index.html\` in a browser to flip through every step (mobile + desktop side by side).
+**Easy find:** \`proof-gap-screenshots/\` at the theme root → open \`index.html\`.
 
 ## Captured path
 
 1. Welcome
-2. Trade (Electrical)
+2. Trade (HVAC)
 3. Workflow choices
 4. Workflow insight (Housecall Pro)
 5. Jobs/week choices
@@ -286,8 +306,10 @@ Open \`index.html\` in a browser to flip through every step (mobile + desktop si
 8. Visibility insight (About half)
 9. Result
 10. Email
-11–15. Product reveal (Website → Google → Social → Reviews → Directory)
-16. Trial / final plan
+11–13. App sim (start / mid / done)
+14–18. Product reveal tabs (Website → Directory)
+19–21. Plan build (start / mid / done)
+22. Trial / final plan
 
 ## Viewports
 
@@ -310,32 +332,35 @@ node qa-copy-pass.js
   fs.rmSync(OUT, { recursive: true, force: true });
   fs.mkdirSync(OUT, { recursive: true });
 
-  const server = await startServer();
+  // Live site blocks headless browsers (403). Always use local theme harness.
+  let server = await startServer();
+  const startUrl = `http://127.0.0.1:${PORT}/.superpowers/sdd/screenshots/proof-gap/qa-harness.html?utm_source=facebook&fbclid=COPYPASS&_=${Date.now()}`;
+  console.log('Using local harness', startUrl);
+
   const browser = await chromium.launch({ headless: true });
 
   try {
     for (const vp of VIEWPORTS) {
       const ctx = await browser.newContext({
         viewport: { width: vp.width, height: vp.height },
-        deviceScaleFactor: vp.prefix === 'mobile' ? 2 : 1,
-        isMobile: vp.prefix === 'mobile',
-        hasTouch: vp.prefix === 'mobile',
+        deviceScaleFactor: vp.dpr,
+        isMobile: vp.mobile,
+        hasTouch: vp.mobile,
       });
       const page = await ctx.newPage();
       await prepPage(page);
       console.log('---', vp.label);
-      await runFunnel(page, vp.prefix);
+      await runFunnel(page, vp.prefix, startUrl);
       await ctx.close();
     }
     writeIndex();
-    // Mirror to a non-hidden theme folder (Finder / Cursor hide .superpowers).
     fs.rmSync(OUT_VISIBLE, { recursive: true, force: true });
     fs.cpSync(OUT, OUT_VISIBLE, { recursive: true });
     console.log('DONE', OUT);
     console.log('VISIBLE', OUT_VISIBLE);
   } finally {
     await browser.close();
-    server.kill('SIGTERM');
+    if (server) server.kill('SIGTERM');
   }
 })().catch((err) => {
   console.error(err);

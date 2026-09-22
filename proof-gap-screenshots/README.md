@@ -1,15 +1,11 @@
-# Proof Gap — Copy Pass Screenshots
+# Proof Gap — Full Funnel Screenshots
 
-**Easy find (visible folder):** `proof-gap-screenshots/` at the theme root.
-
-Also mirrored at: `.superpowers/sdd/screenshots/proof-gap/copy-pass/`
-
-Open `index.html` in a browser to flip through every step (mobile + desktop side by side).
+**Easy find:** `proof-gap-screenshots/` at the theme root → open `index.html`.
 
 ## Captured path
 
 1. Welcome
-2. Trade (Electrical)
+2. Trade (HVAC)
 3. Workflow choices
 4. Workflow insight (Housecall Pro)
 5. Jobs/week choices
@@ -18,8 +14,10 @@ Open `index.html` in a browser to flip through every step (mobile + desktop side
 8. Visibility insight (About half)
 9. Result
 10. Email
-11–15. Product reveal (Website → Google → Social → Reviews → Directory)
-16. Trial / final plan
+11–13. App sim (start / mid / done)
+14–18. Product reveal tabs (Website → Directory)
+19–21. Plan build (start / mid / done)
+22. Trial / final plan
 
 ## Viewports
 
