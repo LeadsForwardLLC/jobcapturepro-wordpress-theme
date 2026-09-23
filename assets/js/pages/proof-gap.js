@@ -829,11 +829,11 @@
       '<div class="pg-insight-flow">' +
       '<p class="pg-insight-flow__lead">JCP turns your completed jobs into:</p>' +
       '<ul class="pg-insight-flow__chips" aria-label="Marketing outputs">' +
-      '<li>Website content</li>' +
-      '<li>Google activity</li>' +
-      '<li>Social posts</li>' +
-      '<li>Review opportunities</li>' +
-      '<li>Directory listings</li>' +
+      '<li>Website Content</li>' +
+      '<li>Google Update</li>' +
+      '<li>Review Request</li>' +
+      '<li>Social Post</li>' +
+      '<li>Directory Activity</li>' +
       '</ul>' +
       '</div>';
   }
@@ -917,11 +917,11 @@
       '</div>' +
       '<p class="pg-jobs-insight__lead">JobCapturePro automatically turns those finished jobs into marketing across 5 channels that increases your visibility and helps you win your next job through:</p>' +
       '<ul class="pg-jobs-insight__chips" aria-label="Marketing channels">' +
-      '<li>Website</li>' +
-      '<li>Google</li>' +
-      '<li>Social</li>' +
-      '<li>Reviews</li>' +
-      '<li>Directory</li>' +
+      '<li>Website Content</li>' +
+      '<li>Google Update</li>' +
+      '<li>Review Request</li>' +
+      '<li>Social Post</li>' +
+      '<li>Directory Activity</li>' +
       '</ul>' +
       '</div>'
     );
