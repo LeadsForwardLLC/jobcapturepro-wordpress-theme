@@ -49,22 +49,12 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 
 		<section class="pg-state pg-state--welcome" data-pg-state="welcome" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow">The 60-second job visibility check</p>
-				<h1 class="pg-title">How much of your best work disappears after the job is done?</h1>
-				<p class="pg-sub pg-sub--callout"><span class="pg-sub__arrow" aria-hidden="true">→</span> <strong>Your crew already takes the photos.</strong></p>
-				<p class="pg-sub pg-sub--tight">Answer four questions to see how JobCapturePro can make those photos work for you.</p>
+				<p class="pg-eyebrow">The 60 second job visibility check</p>
+				<h1 class="pg-title pg-title--welcome">Your crew already takes the photos. Are they helping you win the next job?</h1>
+				<p class="pg-sub">Answer 4 quick questions to see how much of your work is going unseen and what JobCapturePro could be doing with it.</p>
 
 				<div class="pg-welcome-checklist" data-pg-welcome-visual data-creative="default" aria-hidden="true">
-					<img
-						class="pg-welcome-checklist__logo"
-						src="../../../../assets/brand/jcp-logo-dark-320.webp"
-						alt="JobCapturePro"
-						width="160"
-						height="36"
-						decoding="async"
-						fetchpriority="high"
-						data-no-lazy
-					/>
+					<p class="pg-welcome-checklist__heading">One completed job can automatically become:</p>
 					<ul class="pg-welcome-checklist__list">
 						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span>Website</li>
 						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span>Google</li>
@@ -101,8 +91,8 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 
 		<section class="pg-state" data-pg-state="trade" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow">Your work</p>
-				<h1 class="pg-title pg-title--sm" id="pg-trade-title">1. What kind of work does your company do most?</h1>
+				<p class="pg-eyebrow">1. Your work</p>
+				<h1 class="pg-title pg-title--sm" id="pg-trade-title">What kind of work does your company do most?</h1>
 			<div class="pg-choices pg-choices--grid pg-choices--trade" role="group" aria-labelledby="pg-trade-title" data-pg-choices="trade"></div>
 				<div class="pg-other-field" id="pgTradeOtherField" hidden>
 					<label class="pg-other-field__label" for="pgTradeOtherInput">Your trade (optional)</label>
@@ -117,8 +107,8 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 
 		<section class="pg-state" data-pg-state="current_workflow" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow">Your work</p>
-				<h1 class="pg-title pg-title--sm" id="pg-workflow-title">2. Where do most of your finished-job photos live today?</h1>
+				<p class="pg-eyebrow">2. Your work</p>
+				<h1 class="pg-title pg-title--sm" id="pg-workflow-title">Where do most of your finished-job photos live today?</h1>
 			<div class="pg-choices pg-choices--workflow" role="group" aria-labelledby="pg-workflow-title" data-pg-choices="current_workflow"
 				data-logo-hcp="../../../../assets/integrations/housecall-pro.svg"
 				data-logo-cc="../../../../assets/integrations/companycam.svg"></div>
@@ -143,8 +133,8 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 
 		<section class="pg-state" data-pg-state="jobs_per_week" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow">Your work</p>
-			<h1 class="pg-title pg-title--sm" id="pg-jobs-title">3. How many jobs does your company complete per week?</h1>
+				<p class="pg-eyebrow">3. Your work</p>
+			<h1 class="pg-title pg-title--sm" id="pg-jobs-title">How many jobs does your company complete per week?</h1>
 				<p class="pg-hint">We’ll estimate how much valuable marketing material your company creates every year.</p>
 				<div class="pg-choices pg-choices--compact" role="group" aria-labelledby="pg-jobs-title" data-pg-choices="jobs_per_week"></div>
 				<div class="pg-answer-summary" data-pg-summary="jobs" hidden>
@@ -160,8 +150,8 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 
 		<section class="pg-state" data-pg-state="public_proof_percentage" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow">What gets seen</p>
-				<h1 class="pg-title pg-title--sm" id="pg-proof-title">4. Of those finished jobs, about how many actually make it into your marketing?</h1>
+				<p class="pg-eyebrow">4. What gets seen</p>
+				<h1 class="pg-title pg-title--sm" id="pg-proof-title">Of those finished jobs, about how many actually make it into your marketing?</h1>
 				<p class="pg-hint">Website content, Google profile, social media, or review requests.</p>
 				<div class="pg-choices pg-choices--proof" role="group" aria-labelledby="pg-proof-title" data-pg-choices="public_proof_percentage"></div>
 				<div class="pg-answer-summary" data-pg-summary="proof" hidden>
