@@ -125,22 +125,16 @@ $render_case = static function (): void {
 
 		<section class="pg-state pg-state--welcome" data-pg-state="welcome" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"><?php esc_html_e( 'The 60-second job visibility check', 'jcp-core' ); ?></p>
-				<h1 class="pg-title"><?php esc_html_e( 'How much of your best work disappears after the job is done?', 'jcp-core' ); ?></h1>
-				<p class="pg-sub pg-sub--callout"><span class="pg-sub__arrow" aria-hidden="true">→</span> <strong><?php esc_html_e( 'Your crew already takes the photos.', 'jcp-core' ); ?></strong></p>
-				<p class="pg-sub pg-sub--tight"><?php esc_html_e( 'Answer four questions to see how JobCapturePro can make those photos work for you.', 'jcp-core' ); ?></p>
+				<p class="pg-eyebrow"><?php esc_html_e( 'The 60 second job visibility check', 'jcp-core' ); ?></p>
+				<h1 class="pg-title pg-title--welcome">
+					<span class="pg-title__lead"><?php esc_html_e( 'Your crew already takes the photos.', 'jcp-core' ); ?></span>
+					<span class="pg-title__ask"><?php esc_html_e( 'Are they helping you win the next job?', 'jcp-core' ); ?></span>
+				</h1>
+				<p class="pg-sub pg-sub--emphasis"><strong><?php esc_html_e( 'Most completed jobs never become visible proof.', 'jcp-core' ); ?></strong></p>
+				<p class="pg-sub"><?php esc_html_e( 'Answer 4 quick questions to see how much of your work is going unseen and what JobCapturePro could be doing with it.', 'jcp-core' ); ?></p>
 
 				<div class="pg-welcome-checklist" data-pg-welcome-visual data-creative="default" aria-hidden="true">
-					<img
-						class="pg-welcome-checklist__logo"
-						src="<?php echo esc_url( get_template_directory_uri() . '/assets/brand/jcp-logo-dark-320.webp' ); ?>"
-						alt="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>"
-						width="160"
-						height="36"
-						decoding="async"
-						fetchpriority="high"
-						data-no-lazy
-					/>
+					<p class="pg-welcome-checklist__heading"><?php esc_html_e( 'One completed job can become:', 'jcp-core' ); ?></p>
 					<ul class="pg-welcome-checklist__list">
 						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Website', 'jcp-core' ); ?></li>
 						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Google', 'jcp-core' ); ?></li>
