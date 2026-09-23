@@ -127,7 +127,6 @@ $render_case = static function (): void {
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( 'The 60 second job visibility check', 'jcp-core' ); ?></p>
 				<h1 class="pg-title pg-title--welcome"><?php esc_html_e( 'Your crew already takes the photos. Are they helping you win the next job?', 'jcp-core' ); ?></h1>
-				<p class="pg-sub pg-sub--emphasis"><strong><?php esc_html_e( 'Too many completed jobs never make it past the camera roll or CRM.', 'jcp-core' ); ?></strong></p>
 				<p class="pg-sub"><?php esc_html_e( 'Answer 4 quick questions to see how much of your work is going unseen and what JobCapturePro could be doing with it.', 'jcp-core' ); ?></p>
 
 				<div class="pg-welcome-checklist" data-pg-welcome-visual data-creative="default" aria-hidden="true">
