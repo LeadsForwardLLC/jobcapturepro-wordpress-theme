@@ -130,7 +130,7 @@ $render_case = static function (): void {
 				<p class="pg-sub"><?php esc_html_e( 'Answer 4 quick questions to see how much of your work is going unseen and what JobCapturePro could be doing with it.', 'jcp-core' ); ?></p>
 
 				<div class="pg-welcome-checklist" data-pg-welcome-visual data-creative="default" aria-hidden="true">
-					<p class="pg-welcome-checklist__heading"><?php esc_html_e( 'One completed job can become:', 'jcp-core' ); ?></p>
+					<p class="pg-welcome-checklist__heading"><?php esc_html_e( 'One completed job can automatically become:', 'jcp-core' ); ?></p>
 					<ul class="pg-welcome-checklist__list">
 						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Website', 'jcp-core' ); ?></li>
 						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Google', 'jcp-core' ); ?></li>
