@@ -108,11 +108,13 @@ if ( count( $trust_avatars ) < 4 ) {
 }
 
 $render_case = static function (): void {
-	echo '<aside class="pg-case" aria-label="' . esc_attr__( 'Local visibility case study', 'jcp-core' ) . '">';
-	echo '<p class="pg-case__eyebrow">' . esc_html__( 'Local visibility case study', 'jcp-core' ) . '</p>';
-	echo '<p class="pg-case__metric"><strong>0%</strong><span aria-hidden="true">→</span><strong class="pg-case__metric-hi">84–100%</strong></p>';
-	echo '<p class="pg-case__body">' . esc_html__( 'Maps 3-Pack grid visibility across four tracked keyword/market combinations in ~12 weeks.', 'jcp-core' ) . '</p>';
-	echo '<p class="pg-case__attr">' . esc_html__( 'LeadsForward + JobCapturePro local-search strategy', 'jcp-core' ) . '</p>';
+	echo '<aside class="pg-case" aria-label="' . esc_attr__( 'Foundation repair case study', 'jcp-core' ) . '">';
+	echo '<p class="pg-case__eyebrow">' . esc_html__( 'Verified local search result', 'jcp-core' ) . '</p>';
+	echo '<p class="pg-case__lead">' . esc_html__( 'One foundation repair company saw:', 'jcp-core' ) . '</p>';
+	echo '<p class="pg-case__metric"><strong class="pg-case__metric-lo">0%</strong><span class="pg-case__metric-arrow" aria-hidden="true">→</span><strong class="pg-case__metric-hi">84–100%</strong></p>';
+	echo '<p class="pg-case__metric-label">' . esc_html__( 'Google Maps 3-Pack visibility', 'jcp-core' ) . '</p>';
+	echo '<p class="pg-case__body">' . esc_html__( 'From nearly invisible to showing across tracked local searches in about 12 weeks — measured across four keyword/market grids.', 'jcp-core' ) . '</p>';
+	echo '<p class="pg-case__attr">' . esc_html__( 'LeadsForward + JobCapturePro strategy', 'jcp-core' ) . '</p>';
 	echo '<p class="pg-case__note">' . esc_html__( 'Past performance does not guarantee future rankings.', 'jcp-core' ) . '</p>';
 	echo '</aside>';
 };

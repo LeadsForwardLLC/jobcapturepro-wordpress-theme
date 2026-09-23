@@ -4249,6 +4249,18 @@ body.jcp-proof-gap .pg-app-sim__skip:hover {
   color: var(--pg-ink);
 }
 
+/* Fallback if panel is ever rendered outside the phone shell */
+body.jcp-proof-gap .pg-app-sim > .pg-app-sim__panel,
+body.jcp-proof-gap .pg-app-sim > #pgAppSimStage {
+  width: 280px !important;
+  min-width: 280px !important;
+  max-width: 280px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  border-radius: var(--pg-radius-lg);
+  border: 1px solid var(--pg-accent-border);
+}
+
 @media (max-width: 320px) {
   body.jcp-proof-gap .pg-app-sim__device,
   body.jcp-proof-gap .pg-app-sim__bezel {
