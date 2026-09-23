@@ -341,8 +341,6 @@ $render_case = static function (): void {
 					data-map="<?php echo esc_url( $map_url ); ?>"
 					data-qr="<?php echo esc_url( $qr_url ); ?>"></div>
 
-				<p class="pg-payoff-line"><strong><?php esc_html_e( 'Your crew does the work. JobCapturePro makes the work keep working.', 'jcp-core' ); ?></strong></p>
-				<p class="pg-benefit-line"><?php esc_html_e( 'No rewriting jobs · No moving photos · No captions in the truck', 'jcp-core' ); ?></p>
 				<?php $render_review( $reveal_rev, 'reveal', 'pg-review-slot--reveal', '' ); ?>
 			</div>
 		</section>
