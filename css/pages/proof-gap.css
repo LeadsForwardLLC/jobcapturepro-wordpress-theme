@@ -3039,7 +3039,7 @@ body.jcp-proof-gap .pg-other-field__input:focus {
 
 /* ─── Jobs hint line ─── */
 body.jcp-proof-gap .pg-hint {
-  margin: -0.35rem 0 0.75rem;
+  margin: 0 0 0.85rem;
   font-size: var(--pg-fs-secondary);
   color: var(--pg-muted);
   line-height: 1.4;
@@ -3962,21 +3962,38 @@ body.jcp-proof-gap.pg-is-app-sim .pg-bottom-action {
 
 body.jcp-proof-gap .pg-state--app-sim .pg-state__inner {
   max-width: 28rem;
+  width: 100%;
   margin-inline: auto;
   text-align: center;
+  align-items: center; /* flex column — keep phone centered, not stretch-to-fit */
+}
+
+/*
+ * HARD fixed phone width. Status text swaps must never change box size.
+ * Use px (not rem/%) so nothing intrinsic can recompute width mid-animation.
+ */
+body.jcp-proof-gap .pg-app-sim__device,
+body.jcp-proof-gap #pgAppSimStage,
+body.jcp-proof-gap .pg-app-sim__panel {
+  box-sizing: border-box !important;
 }
 
 body.jcp-proof-gap .pg-app-sim__device {
-  --pg-sim-phone-w: min(100%, 17.25rem); /* ~276px — steady width like /demo */
-  width: var(--pg-sim-phone-w);
-  max-width: var(--pg-sim-phone-w);
-  margin: 0.85rem auto 0.35rem;
-  flex-shrink: 0;
+  width: 280px !important;
+  min-width: 280px !important;
+  max-width: 280px !important;
+  margin: 0.85rem auto 0.35rem !important;
+  flex: 0 0 280px !important;
+  align-self: center !important;
+  contain: layout;
 }
 
 body.jcp-proof-gap .pg-app-sim__bezel {
   position: relative;
-  width: 100%;
+  width: 280px !important;
+  min-width: 280px !important;
+  max-width: 280px !important;
+  box-sizing: border-box !important;
   padding: 0.7rem;
   border-radius: 2rem;
   background: linear-gradient(165deg, #1c1c1e 0%, #0b0f19 55%, #111827 100%);
@@ -4003,6 +4020,7 @@ body.jcp-proof-gap .pg-app-sim__island {
 body.jcp-proof-gap .pg-app-sim__screen {
   position: relative;
   width: 100%;
+  max-width: 100%;
   border-radius: 1.45rem;
   overflow: hidden;
   background: #f8fafc;
@@ -4036,9 +4054,12 @@ body.jcp-proof-gap .pg-app-sim__live {
   border-radius: 999px;
 }
 
-body.jcp-proof-gap .pg-app-sim__panel {
-  width: 100%;
-  margin: 0;
+body.jcp-proof-gap .pg-app-sim__panel,
+body.jcp-proof-gap #pgAppSimStage {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+  margin: 0 !important;
   padding: 0.75rem 0.7rem 0.85rem;
   border: 0;
   border-radius: 0;
@@ -4047,6 +4068,7 @@ body.jcp-proof-gap .pg-app-sim__panel {
     #fff;
   box-shadow: none;
   text-align: left;
+  overflow: hidden;
 }
 
 body.jcp-proof-gap .pg-app-sim__panel-head {
@@ -4056,6 +4078,8 @@ body.jcp-proof-gap .pg-app-sim__panel-head {
   align-items: start;
   margin-bottom: 0.7rem;
   min-width: 0;
+  width: 100%;
+  max-width: 100%;
 }
 
 body.jcp-proof-gap .pg-app-sim__mark {
@@ -4087,14 +4111,18 @@ body.jcp-proof-gap .pg-app-sim__mark {
 
 body.jcp-proof-gap .pg-app-sim__status {
   margin: 0;
-  min-height: 2.55em; /* reserve 2 lines so status swaps don't reflow width/height */
+  min-height: 2.6em;
+  height: 2.6em;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
   font-size: 0.82rem;
   font-weight: 750;
   color: var(--pg-ink);
   line-height: 1.3;
+  overflow: hidden;
   overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 body.jcp-proof-gap .pg-app-sim__meter {
@@ -4104,12 +4132,14 @@ body.jcp-proof-gap .pg-app-sim__meter {
   overflow: hidden;
   margin: 0 0 0.7rem;
   width: 100%;
+  max-width: 100%;
 }
 
 body.jcp-proof-gap .pg-app-sim__meter-fill {
   display: block;
   height: 100%;
   width: 0;
+  max-width: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #ff6a4d 0%, var(--pg-accent) 55%, #ff8a6e 100%);
   transition: width linear;
@@ -4122,12 +4152,14 @@ body.jcp-proof-gap .pg-app-sim__ticks {
   display: grid;
   gap: 0.32rem;
   width: 100%;
+  max-width: 100%;
 }
 
 body.jcp-proof-gap .pg-app-sim__ticks li {
   position: relative;
   margin: 0;
   width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
   padding: 0.42rem 0.55rem 0.42rem 2.05rem;
   border-radius: 0.55rem;
@@ -4138,6 +4170,9 @@ body.jcp-proof-gap .pg-app-sim__ticks li {
   color: var(--pg-muted);
   line-height: 1.25;
   opacity: 0.55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition:
     opacity 220ms var(--pg-ease),
     background 220ms var(--pg-ease),
@@ -4214,9 +4249,16 @@ body.jcp-proof-gap .pg-app-sim__skip:hover {
   color: var(--pg-ink);
 }
 
-@media (min-width: 768px) {
+@media (max-width: 320px) {
+  body.jcp-proof-gap .pg-app-sim__device,
+  body.jcp-proof-gap .pg-app-sim__bezel {
+    width: 260px !important;
+    min-width: 260px !important;
+    max-width: 260px !important;
+  }
+
   body.jcp-proof-gap .pg-app-sim__device {
-    --pg-sim-phone-w: 18.5rem; /* ~296px desktop — matches /demo hero phone */
+    flex-basis: 260px !important;
   }
 }
 
