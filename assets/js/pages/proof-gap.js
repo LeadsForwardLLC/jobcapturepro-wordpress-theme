@@ -1655,7 +1655,7 @@
     }
 
     if (tier === 'high') {
-      if (title) title.textContent = 'You’re already putting finished jobs in front of customers.';
+      if (title) title.textContent = 'Some of your best work still never gets seen.';
       if (completed) completed.textContent = formatAnnualRange();
       if (heroLabel) heroLabel.textContent = 'completed jobs / year';
       if (heroSub) {
@@ -1674,7 +1674,7 @@
       if (support) {
         support.innerHTML =
           '<div class="pg-result__next">' +
-          '<p class="pg-result__bridge">JobCapturePro helps remove the manual steps between</p>' +
+          '<p class="pg-result__bridge">JobCapturePro automates:</p>' +
           '<p class="pg-result__flow">' +
           '<span>Capture</span><span class="pg-result__flow-arrow" aria-hidden="true">→</span>' +
           '<span>Create</span><span class="pg-result__flow-arrow" aria-hidden="true">→</span>' +
