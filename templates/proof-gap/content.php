@@ -132,11 +132,11 @@ $render_case = static function (): void {
 				<div class="pg-welcome-checklist" data-pg-welcome-visual data-creative="default" aria-hidden="true">
 					<p class="pg-welcome-checklist__heading"><?php esc_html_e( 'One completed job can automatically become:', 'jcp-core' ); ?></p>
 					<ul class="pg-welcome-checklist__list">
-						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Website', 'jcp-core' ); ?></li>
-						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Google', 'jcp-core' ); ?></li>
-						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></li>
-						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Social', 'jcp-core' ); ?></li>
-						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Directory', 'jcp-core' ); ?></li>
+						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Website Content', 'jcp-core' ); ?></li>
+						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Google Update', 'jcp-core' ); ?></li>
+						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Review Request', 'jcp-core' ); ?></li>
+						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Social Post', 'jcp-core' ); ?></li>
+						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span><?php esc_html_e( 'Directory Activity', 'jcp-core' ); ?></li>
 					</ul>
 				</div>
 			<div class="pg-trust pg-trust--compact">
