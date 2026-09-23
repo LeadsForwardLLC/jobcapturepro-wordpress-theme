@@ -15,7 +15,7 @@ define( 'JCP_PROOF_GAP_SLUG', 'proof-gap' );
 define( 'JCP_PROOF_GAP_VARIANT', 'proof_gap_survey_v1' );
 define( 'JCP_PROOF_GAP_SURVEY_ID', 'proof_gap_survey_v1' );
 define( 'JCP_PROOF_GAP_SURVEY_VERSION', '10' );
-define( 'JCP_PROOF_GAP_SEED_VERSION', '10' );
+define( 'JCP_PROOF_GAP_SEED_VERSION', '11' );
 
 /**
  * Request path without leading/trailing slashes.
@@ -90,12 +90,17 @@ function jcp_proof_gap_maybe_seed(): void {
 			update_post_meta( (int) $post_id, '_wp_page_template', 'page-proof-gap.php' );
 			update_post_meta( (int) $post_id, '_jcp_campaign_variant', JCP_PROOF_GAP_VARIANT );
 			update_post_meta( (int) $post_id, '_yoast_wpseo_meta-robots-noindex', '1' );
+			update_post_meta( (int) $post_id, '_yoast_wpseo_meta-robots-nofollow', '1' );
+			update_post_meta( (int) $post_id, 'rank_math_robots', [ 'noindex', 'nofollow' ] );
 		}
 	} elseif ( $page instanceof WP_Post ) {
 		$tpl = (string) get_page_template_slug( (int) $page->ID );
 		if ( $tpl !== 'page-proof-gap.php' ) {
 			update_post_meta( (int) $page->ID, '_wp_page_template', 'page-proof-gap.php' );
 		}
+		update_post_meta( (int) $page->ID, '_yoast_wpseo_meta-robots-noindex', '1' );
+		update_post_meta( (int) $page->ID, '_yoast_wpseo_meta-robots-nofollow', '1' );
+		update_post_meta( (int) $page->ID, 'rank_math_robots', [ 'noindex', 'nofollow' ] );
 	}
 
 	if ( $ver !== JCP_PROOF_GAP_SEED_VERSION ) {
@@ -134,6 +139,100 @@ function jcp_proof_gap_body_class( array $classes ): array {
 	return $classes;
 }
 add_filter( 'body_class', 'jcp_proof_gap_body_class' );
+
+/**
+ * Always noindex + nofollow the Proof Gap funnel.
+ */
+function jcp_proof_gap_robots_meta(): void {
+	if ( ! jcp_proof_gap_is_current() ) {
+		return;
+	}
+	echo '<meta name="robots" content="noindex, nofollow">' . "\n";
+}
+add_action( 'wp_head', 'jcp_proof_gap_robots_meta', 1 );
+
+/**
+ * Core robots API: noindex + nofollow for Proof Gap.
+ *
+ * @param array<string, mixed> $robots Robots directives.
+ * @return array<string, mixed>
+ */
+function jcp_proof_gap_wp_robots( $robots ) {
+	if ( ! jcp_proof_gap_is_current() ) {
+		return $robots;
+	}
+	if ( ! is_array( $robots ) ) {
+		$robots = [];
+	}
+	$robots['noindex']  = true;
+	$robots['nofollow'] = true;
+	unset( $robots['index'], $robots['follow'] );
+	return $robots;
+}
+add_filter( 'wp_robots', 'jcp_proof_gap_wp_robots', 999 );
+
+/**
+ * Rank Math robots: noindex + nofollow for Proof Gap.
+ *
+ * @param array<string, string> $robots Robots directives.
+ * @return array<string, string>
+ */
+function jcp_proof_gap_rank_math_robots( $robots ) {
+	if ( ! jcp_proof_gap_is_current() ) {
+		return $robots;
+	}
+	if ( ! is_array( $robots ) ) {
+		$robots = [];
+	}
+	$robots['index']  = 'noindex';
+	$robots['follow'] = 'nofollow';
+	return $robots;
+}
+add_filter( 'rank_math/frontend/robots', 'jcp_proof_gap_rank_math_robots', 999 );
+
+/**
+ * Keep Proof Gap out of the core XML sitemap.
+ *
+ * @param array|false  $entry     Sitemap entry.
+ * @param \WP_Post     $post      Post.
+ * @param string       $post_type Post type.
+ * @return array|false
+ */
+function jcp_proof_gap_exclude_from_wp_sitemap( $entry, $post, $post_type ) {
+	if ( $post_type !== 'page' || ! ( $post instanceof WP_Post ) ) {
+		return $entry;
+	}
+	if ( (string) $post->post_name === JCP_PROOF_GAP_SLUG && (int) $post->post_parent === 0 ) {
+		return false;
+	}
+	if ( (string) get_page_template_slug( (int) $post->ID ) === 'page-proof-gap.php' ) {
+		return false;
+	}
+	return $entry;
+}
+add_filter( 'wp_sitemaps_posts_entry', 'jcp_proof_gap_exclude_from_wp_sitemap', 10, 3 );
+
+/**
+ * Keep Proof Gap out of Rank Math sitemaps.
+ *
+ * @param array|false $url    Sitemap URL data.
+ * @param string      $type   Object type.
+ * @param mixed       $object Object.
+ * @return array|false
+ */
+function jcp_proof_gap_exclude_from_rank_math_sitemap( $url, $type, $object ) {
+	if ( $type !== 'post' || ! ( $object instanceof WP_Post ) || $object->post_type !== 'page' ) {
+		return $url;
+	}
+	if ( (string) $object->post_name === JCP_PROOF_GAP_SLUG && (int) $object->post_parent === 0 ) {
+		return false;
+	}
+	if ( (string) get_page_template_slug( (int) $object->ID ) === 'page-proof-gap.php' ) {
+		return false;
+	}
+	return $url;
+}
+add_filter( 'rank_math/sitemap/entry', 'jcp_proof_gap_exclude_from_rank_math_sitemap', 10, 3 );
 
 /**
  * Trade option catalog (canonical key => label).
