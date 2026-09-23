@@ -294,21 +294,34 @@ $render_case = static function (): void {
 				<h1 class="pg-title pg-title--sm" id="pgAppSimTitle"><?php esc_html_e( 'Building your job into marketing…', 'jcp-core' ); ?></h1>
 				<p class="pg-sub pg-sub--tight" id="pgAppSimSub"><?php esc_html_e( 'Watch JobCapturePro turn one finished job into live outputs.', 'jcp-core' ); ?></p>
 
-				<div class="pg-app-sim__panel" id="pgAppSimStage">
-					<span class="pg-app-sim__mark" aria-hidden="true">JCP</span>
-					<p class="pg-app-sim__status" id="pgAppSimStatus" aria-live="polite"><?php esc_html_e( 'Starting with your finished job…', 'jcp-core' ); ?></p>
-					<div class="pg-app-sim__meter" aria-hidden="true">
-						<span class="pg-app-sim__meter-fill" id="pgAppSimMeter"></span>
+				<div class="pg-app-sim__device" role="img" aria-label="<?php esc_attr_e( 'JobCapturePro app preview', 'jcp-core' ); ?>">
+					<div class="pg-app-sim__bezel">
+						<span class="pg-app-sim__island" aria-hidden="true"></span>
+						<div class="pg-app-sim__screen">
+							<div class="pg-app-sim__chrome" aria-hidden="true">
+								<span class="pg-app-sim__time">9:41</span>
+								<span class="pg-app-sim__live"><?php esc_html_e( 'Live', 'jcp-core' ); ?></span>
+							</div>
+							<div class="pg-app-sim__panel" id="pgAppSimStage">
+								<div class="pg-app-sim__panel-head">
+									<span class="pg-app-sim__mark" aria-hidden="true">JCP</span>
+									<p class="pg-app-sim__status" id="pgAppSimStatus" aria-live="polite"><?php esc_html_e( 'Starting with your finished job…', 'jcp-core' ); ?></p>
+								</div>
+								<div class="pg-app-sim__meter" aria-hidden="true">
+									<span class="pg-app-sim__meter-fill" id="pgAppSimMeter"></span>
+								</div>
+								<ul class="pg-app-sim__ticks" id="pgAppSimTicks" aria-label="<?php esc_attr_e( 'Progress checklist', 'jcp-core' ); ?>">
+									<li data-sim-tick="capture"><?php esc_html_e( 'Photo captured', 'jcp-core' ); ?></li>
+									<li data-sim-tick="build"><?php esc_html_e( 'Proof built', 'jcp-core' ); ?></li>
+									<li data-sim-tick="website"><?php esc_html_e( 'Website', 'jcp-core' ); ?></li>
+									<li data-sim-tick="google"><?php esc_html_e( 'Google', 'jcp-core' ); ?></li>
+									<li data-sim-tick="social"><?php esc_html_e( 'Social', 'jcp-core' ); ?></li>
+									<li data-sim-tick="reviews"><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></li>
+									<li data-sim-tick="directory"><?php esc_html_e( 'Directory', 'jcp-core' ); ?></li>
+								</ul>
+							</div>
+						</div>
 					</div>
-					<ul class="pg-app-sim__ticks" id="pgAppSimTicks" aria-label="<?php esc_attr_e( 'Progress checklist', 'jcp-core' ); ?>">
-						<li data-sim-tick="capture"><?php esc_html_e( 'Photo captured', 'jcp-core' ); ?></li>
-						<li data-sim-tick="build"><?php esc_html_e( 'Proof built', 'jcp-core' ); ?></li>
-						<li data-sim-tick="website"><?php esc_html_e( 'Website', 'jcp-core' ); ?></li>
-						<li data-sim-tick="google"><?php esc_html_e( 'Google', 'jcp-core' ); ?></li>
-						<li data-sim-tick="social"><?php esc_html_e( 'Social', 'jcp-core' ); ?></li>
-						<li data-sim-tick="reviews"><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></li>
-						<li data-sim-tick="directory"><?php esc_html_e( 'Directory', 'jcp-core' ); ?></li>
-					</ul>
 				</div>
 				<button type="button" class="pg-app-sim__skip" id="pgAppSimSkip" hidden><?php esc_html_e( 'Skip preview →', 'jcp-core' ); ?></button>
 			</div>

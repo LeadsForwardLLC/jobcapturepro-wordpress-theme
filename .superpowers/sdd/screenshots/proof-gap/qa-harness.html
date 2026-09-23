@@ -212,27 +212,40 @@ html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
 			</div>
 		</section>
 
-		<section class="pg-state pg-state--app-sim" data-pg-state="app_sim" hidden>
+				<section class="pg-state pg-state--app-sim" data-pg-state="app_sim" hidden>
 			<div class="pg-state__inner pg-app-sim">
 				<p class="pg-eyebrow">See it work</p>
 				<h1 class="pg-title pg-title--sm" id="pgAppSimTitle">Building your job into marketing…</h1>
 				<p class="pg-sub pg-sub--tight" id="pgAppSimSub">Watch JobCapturePro turn one finished job into live outputs.</p>
 
-				<div class="pg-app-sim__panel" id="pgAppSimStage">
-					<span class="pg-app-sim__mark" aria-hidden="true">JCP</span>
-					<p class="pg-app-sim__status" id="pgAppSimStatus" aria-live="polite">Starting with your finished job…</p>
-					<div class="pg-app-sim__meter" aria-hidden="true">
-						<span class="pg-app-sim__meter-fill" id="pgAppSimMeter"></span>
+				<div class="pg-app-sim__device" role="img" aria-label="JobCapturePro app preview">
+					<div class="pg-app-sim__bezel">
+						<span class="pg-app-sim__island" aria-hidden="true"></span>
+						<div class="pg-app-sim__screen">
+							<div class="pg-app-sim__chrome" aria-hidden="true">
+								<span class="pg-app-sim__time">9:41</span>
+								<span class="pg-app-sim__live">Live</span>
+							</div>
+							<div class="pg-app-sim__panel" id="pgAppSimStage">
+								<div class="pg-app-sim__panel-head">
+									<span class="pg-app-sim__mark" aria-hidden="true">JCP</span>
+									<p class="pg-app-sim__status" id="pgAppSimStatus" aria-live="polite">Starting with your finished job…</p>
+								</div>
+								<div class="pg-app-sim__meter" aria-hidden="true">
+									<span class="pg-app-sim__meter-fill" id="pgAppSimMeter"></span>
+								</div>
+								<ul class="pg-app-sim__ticks" id="pgAppSimTicks" aria-label="Progress checklist">
+									<li data-sim-tick="capture">Photo captured</li>
+									<li data-sim-tick="build">Proof built</li>
+									<li data-sim-tick="website">Website</li>
+									<li data-sim-tick="google">Google</li>
+									<li data-sim-tick="social">Social</li>
+									<li data-sim-tick="reviews">Reviews</li>
+									<li data-sim-tick="directory">Directory</li>
+								</ul>
+							</div>
+						</div>
 					</div>
-					<ul class="pg-app-sim__ticks" id="pgAppSimTicks" aria-label="Progress checklist">
-						<li data-sim-tick="capture">Photo captured</li>
-						<li data-sim-tick="build">Proof built</li>
-						<li data-sim-tick="website">Website</li>
-						<li data-sim-tick="google">Google</li>
-						<li data-sim-tick="social">Social</li>
-						<li data-sim-tick="reviews">Reviews</li>
-						<li data-sim-tick="directory">Directory</li>
-					</ul>
 				</div>
 				<button type="button" class="pg-app-sim__skip" id="pgAppSimSkip" hidden>Skip preview →</button>
 			</div>

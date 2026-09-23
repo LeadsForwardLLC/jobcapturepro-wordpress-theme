@@ -1265,7 +1265,7 @@
     var meterEl = document.getElementById('pgAppSimMeter');
     if (meterEl) void meterEl.offsetWidth;
     setAppSimMeter(reduced ? 100 : 10, reduced ? duration : 350);
-    setAppSimStatus('Starting with your finished job…');
+    setAppSimStatus('Starting with your job…');
     if (skip) skip.hidden = true;
 
     track('AppSimStarted', {
@@ -1283,13 +1283,13 @@
     }
 
     var beats = [
-      { t: 0, tick: 'capture', status: 'Photo captured from the finished job…', pct: 18 },
-      { t: 650, tick: 'build', status: 'Building usable marketing proof…', pct: 34 },
+      { t: 0, tick: 'capture', status: 'Photo captured…', pct: 18 },
+      { t: 650, tick: 'build', status: 'Building marketing proof…', pct: 34 },
       { t: 1300, tick: 'website', status: 'Publishing to Website…', pct: 48, showSkip: true },
       { t: 1850, tick: 'google', status: 'Updating Google…', pct: 62 },
       { t: 2400, tick: 'social', status: 'Preparing Social…', pct: 74 },
       { t: 2900, tick: 'reviews', status: 'Queuing Reviews…', pct: 86 },
-      { t: 3400, tick: 'directory', status: 'Live on Directory — opening previews…', pct: 100 },
+      { t: 3400, tick: 'directory', status: 'Opening channel previews…', pct: 100 },
     ];
 
     beats.forEach(function (beat) {
