@@ -907,11 +907,11 @@ body.jcp-proof-gap .pg-case {
   margin-top: 0.85rem;
   padding: 1rem 1rem 1.05rem;
   border-radius: var(--pg-radius);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(15, 23, 42, 0.08);
   background:
-    linear-gradient(135deg, rgba(255, 80, 54, 0.12) 0%, transparent 42%),
-    var(--pg-dark);
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.18);
+    linear-gradient(135deg, rgba(255, 80, 54, 0.06) 0%, transparent 45%),
+    var(--jcp-color-bg-tertiary, #f3f4f6);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
   text-align: left;
 }
 body.jcp-proof-gap .pg-case__eyebrow {
@@ -920,13 +920,13 @@ body.jcp-proof-gap .pg-case__eyebrow {
   font-weight: 800;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: #ff8a6e;
+  color: var(--pg-accent);
 }
 body.jcp-proof-gap .pg-case__lead {
   margin: 0.55rem 0 0;
   font-size: 0.92rem;
   font-weight: 750;
-  color: #f1f5f9;
+  color: var(--pg-ink);
   line-height: 1.35;
 }
 body.jcp-proof-gap .pg-case__metric {
@@ -939,15 +939,15 @@ body.jcp-proof-gap .pg-case__metric {
   font-weight: 900;
   letter-spacing: -0.03em;
   line-height: 1.1;
-  color: #f8fafc;
+  color: var(--pg-ink);
   font-variant-numeric: tabular-nums;
 }
 body.jcp-proof-gap .pg-case__metric-lo {
-  color: #94a3b8;
+  color: var(--pg-muted);
   font-weight: 800;
 }
 body.jcp-proof-gap .pg-case__metric-arrow {
-  color: #64748b;
+  color: #94a3b8;
   font-weight: 700;
 }
 body.jcp-proof-gap .pg-case__metric-hi {
@@ -959,26 +959,26 @@ body.jcp-proof-gap .pg-case__metric-label {
   font-weight: 750;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #94a3b8;
+  color: var(--pg-muted);
 }
 body.jcp-proof-gap .pg-case__body {
   margin: 0;
   font-size: 0.84rem;
   line-height: 1.45;
-  color: #cbd5e1;
+  color: #475569;
 }
 body.jcp-proof-gap .pg-case__attr {
   margin: 0.7rem 0 0;
   font-size: 0.78rem;
   font-weight: 750;
-  color: #e2e8f0;
+  color: var(--pg-ink);
   line-height: 1.35;
 }
 body.jcp-proof-gap .pg-case__note {
   margin: 0.45rem 0 0;
   font-size: 0.68rem;
   line-height: 1.4;
-  color: #94a3b8;
+  color: var(--pg-muted);
   opacity: 0.95;
 }
 
