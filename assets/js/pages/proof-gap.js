@@ -1836,20 +1836,41 @@
       return;
     }
     if (dest === 'social') {
+      var likeIcon =
+        '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      var commentIcon =
+        '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      var shareIcon =
+        '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7M16 6l-4-4-4 4M12 2v13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      var globeIcon =
+        '<svg class="ps-mock-social__globe" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
       panel.innerHTML =
         '<div class="ps-mock ps-mock--social">' +
         '<div class="ps-mock-social__head">' +
         mark +
-        '<div><strong>' +
+        '<div class="ps-mock-social__meta"><strong>' +
         bizEsc +
-        '</strong><span>Posted when connected</span></div></div>' +
+        '</strong><span>Just now · ' +
+        globeIcon +
+        ' Public</span></div></div>' +
         '<p class="ps-mock-social__copy">' +
         title +
         ' completed today in your service area.</p>' +
-        '<div class="ps-mock__media">' +
+        '<div class="ps-mock-social__media">' +
         photo +
         '</div>' +
-        '<div class="ps-mock-social__reactions"><span>Like</span><span>Comment</span><span>Share</span></div></div>';
+        '<div class="ps-mock-social__engagement">' +
+        '<span class="ps-mock-social__likes"><i aria-hidden="true">👍</i><i aria-hidden="true">❤️</i> 24</span>' +
+        '<span>3 comments · 1 share</span>' +
+        '</div>' +
+        '<div class="ps-mock-social__reactions">' +
+        '<span>' +
+        likeIcon +
+        ' Like</span><span>' +
+        commentIcon +
+        ' Comment</span><span>' +
+        shareIcon +
+        ' Share</span></div></div>';
       return;
     }
     if (dest === 'reviews') {

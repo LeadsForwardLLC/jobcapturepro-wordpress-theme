@@ -763,52 +763,147 @@ body.jcp-proof-gap .ps-mock-qr span {
   line-height: 1.35;
 }
 
+body.jcp-proof-gap .ps-mock--social {
+  gap: 0;
+  padding: 0.75rem 0 0;
+  overflow: hidden;
+}
+
+body.jcp-proof-gap .ps-mock--social .ps-mock-social__head,
+body.jcp-proof-gap .ps-mock--social .ps-mock-social__copy,
+body.jcp-proof-gap .ps-mock--social .ps-mock-social__engagement,
+body.jcp-proof-gap .ps-mock--social .ps-mock-social__reactions {
+  padding-left: 0.85rem;
+  padding-right: 0.85rem;
+}
+
 body.jcp-proof-gap .ps-mock-social__head {
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  margin-bottom: 0.55rem;
 }
 
+body.jcp-proof-gap .ps-mock--social .pg-dest-mark,
+body.jcp-proof-gap .ps-mock--social .ps-mock__logo,
 body.jcp-proof-gap .ps-mock-social__avatar {
   display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  width: 2.35rem;
-  height: 2.35rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border-radius: 999px;
   background: var(--pg-accent) !important;
   color: #fff !important;
   font-weight: 900;
-  font-size: 0.95rem;
+  font-size: 1rem;
   line-height: 1;
+  flex-shrink: 0;
+}
+
+body.jcp-proof-gap .ps-mock-social__meta {
+  min-width: 0;
 }
 
 body.jcp-proof-gap .ps-mock-social__head strong {
   display: block;
-  font-size: 0.88rem;
+  font-size: 0.92rem;
+  font-weight: 750;
+  color: #050505;
+  line-height: 1.2;
 }
 
 body.jcp-proof-gap .ps-mock-social__head span {
-  display: block;
-  font-size: 0.68rem;
-  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-top: 0.12rem;
+  font-size: 0.72rem;
+  color: #65676b;
+  font-weight: 500;
+}
+
+body.jcp-proof-gap .ps-mock-social__globe {
+  display: inline-block;
+  vertical-align: -0.1em;
+  color: #65676b;
 }
 
 body.jcp-proof-gap .ps-mock-social__copy {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #050505;
+  font-weight: 450;
+}
+
+body.jcp-proof-gap .ps-mock-social__media {
+  position: relative;
+  overflow: hidden;
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.45;
-  color: #334155;
+  border-radius: 0;
+  background: #0f172a;
+}
+
+body.jcp-proof-gap .ps-mock-social__media .ps-mock__photo {
+  border-radius: 0;
+  aspect-ratio: 4 / 3;
+}
+
+body.jcp-proof-gap .ps-mock-social__engagement {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.55rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid #e4e6eb;
+  font-size: 0.78rem;
+  color: #65676b;
+  font-weight: 500;
+}
+
+body.jcp-proof-gap .ps-mock-social__likes {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+body.jcp-proof-gap .ps-mock-social__likes i {
+  font-style: normal;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+body.jcp-proof-gap .ps-mock-social__likes i + i {
+  margin-left: -0.2rem;
 }
 
 body.jcp-proof-gap .ps-mock-social__reactions {
-  display: flex;
-  gap: 1rem;
-  padding-top: 0.55rem;
-  border-top: 1px solid #f1f5f9;
-  font-size: 0.75rem;
-  font-weight: 750;
-  color: #64748b;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin: 0;
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  border-top: 0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: #65676b;
+}
+
+body.jcp-proof-gap .ps-mock-social__reactions span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 2.35rem;
+  border-radius: 0.4rem;
+}
+
+body.jcp-proof-gap .ps-mock-social__reactions svg {
+  flex-shrink: 0;
+  color: #65676b;
 }
 
 body.jcp-proof-gap .ps-mock-dir__label {
