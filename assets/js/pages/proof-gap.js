@@ -1819,20 +1819,28 @@
       return;
     }
     if (dest === 'google') {
+      var moreIcon =
+        '<svg class="ps-mock-gbp__more" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="19" r="1.6" fill="currentColor"/></svg>';
       panel.innerHTML =
         '<div class="ps-mock ps-mock--gbp">' +
         '<div class="ps-mock-gbp__brand">' +
         mark +
-        '<div><strong>' +
+        '<div class="ps-mock-gbp__meta"><strong>' +
         bizEsc +
-        '</strong><span>Google Business Profile · Update</span></div>' +
-        '<em>Posted when connected</em></div>' +
-        '<div class="ps-mock__media">' +
+        '</strong><span>Just now · Update</span></div>' +
+        moreIcon +
+        '</div>' +
+        '<div class="ps-mock-gbp__media">' +
         photo +
         '</div>' +
-        '<div class="ps-mock-gbp__copy"><strong>Just finished</strong><p>' +
+        '<div class="ps-mock-gbp__copy">' +
+        '<p><strong>Just finished:</strong> ' +
         title +
-        ' completed in your service area.</p><p>Real work documented from the field.</p></div></div>';
+        ' completed in your service area. Real work documented from the field.</p>' +
+        '</div>' +
+        '<div class="ps-mock-gbp__cta">Call now</div>' +
+        '<div class="ps-mock-gbp__foot"><span>Viewed 18 times</span><span>Share</span></div>' +
+        '</div>';
       return;
     }
     if (dest === 'social') {
