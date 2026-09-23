@@ -1630,14 +1630,7 @@
     var tier = proofTier(state.public_proof_percentage);
     computeUnusedRange();
 
-    var channelsHtml =
-      '<ul class="pg-result__channel-cards">' +
-      '<li class="pg-result__channel"><span class="pg-result__channel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 010 20 15.3 15.3 0 010-20z"/></svg></span><span class="pg-result__channel-copy"><strong>Website</strong><span>Real project + service-area content</span></span></li>' +
-      '<li class="pg-result__channel"><span class="pg-result__channel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></span><span class="pg-result__channel-copy"><strong>Google</strong><span>Job-based Business Profile activity</span></span></li>' +
-      '<li class="pg-result__channel"><span class="pg-result__channel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></span><span class="pg-result__channel-copy"><strong>Social</strong><span>Ready-to-publish content</span></span></li>' +
-      '<li class="pg-result__channel"><span class="pg-result__channel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span><span class="pg-result__channel-copy"><strong>Reviews</strong><span>Timely review opportunities</span></span></li>' +
-      '<li class="pg-result__channel"><span class="pg-result__channel-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg></span><span class="pg-result__channel-copy"><strong>Directory</strong><span>Another place to show recent work</span></span></li>' +
-      '</ul>';
+    if (support) support.innerHTML = '';
 
     function setResultNote(text, asQuote) {
       if (!note) return;
@@ -1650,7 +1643,6 @@
       if (completed) completed.textContent = formatAnnualRange();
       if (heroLabel) heroLabel.textContent = 'completed jobs / year';
       if (heroSub) {
-        // Avoid repeating Capture→Create→Publish; the quote + next panel carry that beat.
         heroSub.hidden = true;
         heroSub.textContent = '';
       }
@@ -1662,17 +1654,6 @@
         if (invLabel) invLabel.textContent = 'Currently reused in marketing';
       }
       setResultNote('You’re already doing the hard part.', true);
-      if (support) {
-        support.innerHTML =
-          '<div class="pg-result__next">' +
-          '<p class="pg-result__bridge">JobCapturePro automates:</p>' +
-          '<p class="pg-result__flow">' +
-          '<span>Capture</span><span class="pg-result__flow-arrow" aria-hidden="true">→</span>' +
-          '<span>Create</span><span class="pg-result__flow-arrow" aria-hidden="true">→</span>' +
-          '<span>Publish</span></p>' +
-          '</div>' +
-          channelsHtml;
-      }
       renderGapViz();
       return;
     }
@@ -1689,15 +1670,6 @@
       if (pub) pub.textContent = formatAnnualRange();
       if (invWrap) invWrap.hidden = true;
       setResultNote('Based on the ranges you selected.', false);
-      if (support) {
-        support.innerHTML =
-          '<div class="pg-result__next">' +
-          '<p class="pg-result__bridge">Your team creates about ' +
-          escapeHtml(formatAnnualRange()) +
-          ' completed jobs a year. JobCapturePro can turn them into:</p>' +
-          '</div>' +
-          channelsHtml;
-      }
       renderGapViz();
       return;
     }
@@ -1731,13 +1703,6 @@
         ' gets used in marketing.',
       false
     );
-    if (support) {
-      support.innerHTML =
-        '<div class="pg-result__next">' +
-        '<p class="pg-result__bridge">JobCapturePro can turn the work your team already does into:</p>' +
-        '</div>' +
-        channelsHtml;
-    }
     renderGapViz();
   }
 
