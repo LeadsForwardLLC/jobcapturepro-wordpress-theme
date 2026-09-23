@@ -3265,8 +3265,8 @@ body.jcp-proof-gap .pg-jobs-insight {
 body.jcp-proof-gap .pg-jobs-insight__metric {
   padding: 1.05rem 1rem 1.1rem;
   border-radius: var(--pg-radius);
-  background: #fff;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: var(--pg-dark);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   text-align: center;
 }
 
@@ -3285,7 +3285,7 @@ body.jcp-proof-gap .pg-jobs-insight__num {
   font-weight: 850;
   letter-spacing: -0.03em;
   line-height: 1.05;
-  color: var(--pg-ink);
+  color: var(--pg-accent);
   font-variant-numeric: tabular-nums;
 }
 
@@ -3293,7 +3293,7 @@ body.jcp-proof-gap .pg-jobs-insight__unit {
   margin: 0.35rem 0 0;
   font-size: var(--pg-fs-secondary);
   font-weight: 650;
-  color: var(--pg-muted);
+  color: #c7cdd8;
 }
 
 body.jcp-proof-gap .pg-jobs-insight__lead {
