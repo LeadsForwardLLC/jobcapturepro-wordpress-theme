@@ -174,8 +174,8 @@ $render_case = static function (): void {
 
 		<section class="pg-state" data-pg-state="trade" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"><?php esc_html_e( 'Your work', 'jcp-core' ); ?></p>
-				<h1 class="pg-title pg-title--sm" id="pg-trade-title"><?php esc_html_e( '1. What kind of work does your company do most?', 'jcp-core' ); ?></h1>
+				<p class="pg-eyebrow"><?php esc_html_e( '1. Your work', 'jcp-core' ); ?></p>
+				<h1 class="pg-title pg-title--sm" id="pg-trade-title"><?php esc_html_e( 'What kind of work does your company do most?', 'jcp-core' ); ?></h1>
 			<div class="pg-choices pg-choices--grid pg-choices--trade" role="group" aria-labelledby="pg-trade-title" data-pg-choices="trade"></div>
 				<div class="pg-other-field" id="pgTradeOtherField" hidden>
 					<label class="pg-other-field__label" for="pgTradeOtherInput"><?php esc_html_e( 'Your trade (optional)', 'jcp-core' ); ?></label>
@@ -190,8 +190,8 @@ $render_case = static function (): void {
 
 		<section class="pg-state" data-pg-state="current_workflow" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"><?php esc_html_e( 'Your work', 'jcp-core' ); ?></p>
-				<h1 class="pg-title pg-title--sm" id="pg-workflow-title"><?php esc_html_e( '2. Where do most of your finished-job photos live today?', 'jcp-core' ); ?></h1>
+				<p class="pg-eyebrow"><?php esc_html_e( '2. Your work', 'jcp-core' ); ?></p>
+				<h1 class="pg-title pg-title--sm" id="pg-workflow-title"><?php esc_html_e( 'Where do most of your finished-job photos live today?', 'jcp-core' ); ?></h1>
 			<div class="pg-choices pg-choices--workflow" role="group" aria-labelledby="pg-workflow-title" data-pg-choices="current_workflow"
 				data-logo-hcp="<?php echo esc_url( $integ . 'housecall-pro.svg' ); ?>"
 				data-logo-cc="<?php echo esc_url( $integ . 'companycam.svg' ); ?>"></div>
@@ -217,8 +217,8 @@ $render_case = static function (): void {
 
 		<section class="pg-state" data-pg-state="jobs_per_week" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"><?php esc_html_e( 'Your work', 'jcp-core' ); ?></p>
-			<h1 class="pg-title pg-title--sm" id="pg-jobs-title"><?php esc_html_e( '3. How many jobs does your company complete per week?', 'jcp-core' ); ?></h1>
+				<p class="pg-eyebrow"><?php esc_html_e( '3. Your work', 'jcp-core' ); ?></p>
+			<h1 class="pg-title pg-title--sm" id="pg-jobs-title"><?php esc_html_e( 'How many jobs does your company complete per week?', 'jcp-core' ); ?></h1>
 				<p class="pg-hint"><?php esc_html_e( 'We’ll estimate how much valuable marketing material your company creates every year.', 'jcp-core' ); ?></p>
 				<div class="pg-choices pg-choices--compact" role="group" aria-labelledby="pg-jobs-title" data-pg-choices="jobs_per_week"></div>
 				<div class="pg-answer-summary" data-pg-summary="jobs" hidden>
@@ -234,8 +234,8 @@ $render_case = static function (): void {
 
 		<section class="pg-state" data-pg-state="public_proof_percentage" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"><?php esc_html_e( 'What gets seen', 'jcp-core' ); ?></p>
-				<h1 class="pg-title pg-title--sm" id="pg-proof-title"><?php esc_html_e( '4. Of those finished jobs, about how many actually make it into your marketing?', 'jcp-core' ); ?></h1>
+				<p class="pg-eyebrow"><?php esc_html_e( '4. What gets seen', 'jcp-core' ); ?></p>
+				<h1 class="pg-title pg-title--sm" id="pg-proof-title"><?php esc_html_e( 'Of those finished jobs, about how many actually make it into your marketing?', 'jcp-core' ); ?></h1>
 				<p class="pg-hint"><?php esc_html_e( 'Website content, Google profile, social media, or review requests.', 'jcp-core' ); ?></p>
 				<div class="pg-choices pg-choices--proof" role="group" aria-labelledby="pg-proof-title" data-pg-choices="public_proof_percentage"></div>
 				<div class="pg-answer-summary" data-pg-summary="proof" hidden>
