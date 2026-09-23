@@ -983,8 +983,11 @@ body.jcp-proof-gap .pg-case__note {
 }
 
 body.jcp-proof-gap .pg-review--compact .pg-review__quote {
-  font-size: var(--pg-fs-secondary);
-  line-height: var(--pg-lh-body);
+  font-size: 0.9rem;
+  font-weight: 500;
+  font-style: italic;
+  line-height: 1.45;
+  color: #374151;
   display: block;
   -webkit-line-clamp: unset;
   line-clamp: unset;
@@ -1155,9 +1158,11 @@ body.jcp-proof-gap .pg-state--trial .pg-review-slot--trial .pg-review__quote {
   line-clamp: unset;
   overflow: visible;
   display: block;
-  font-size: var(--pg-fs-body);
-  line-height: 1.4;
-  font-weight: 650;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  font-weight: 500;
+  font-style: italic;
+  color: #374151;
 }
 
 @media (max-height: 900px) {
