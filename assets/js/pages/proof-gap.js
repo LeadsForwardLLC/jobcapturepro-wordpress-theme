@@ -808,7 +808,7 @@
         headline: '',
         body: '',
         body2: '',
-        extraHtml: typeof buildProofGridHtml === 'function' ? buildProofGridHtml() : '',
+        extraHtml: '',
       };
       applyVisibilityInsight(insight, tier, ans);
       showInsight('proof', insight, 'proof_gap_result', visibilityCta(tier));
@@ -825,17 +825,8 @@
     insight.headline = 'JobCapturePro ensures that 100% of your finished jobs reach your future customers.';
     insight.body = '';
     insight.body2 = '';
-    insight.flowHtml =
-      '<div class="pg-insight-flow">' +
-      '<p class="pg-insight-flow__lead">JCP turns your completed jobs into:</p>' +
-      '<ul class="pg-insight-flow__chips" aria-label="Marketing outputs">' +
-      '<li>Website Content</li>' +
-      '<li>Google Update</li>' +
-      '<li>Review Request</li>' +
-      '<li>Social Post</li>' +
-      '<li>Directory Activity</li>' +
-      '</ul>' +
-      '</div>';
+    insight.flowHtml = '';
+    insight.extraHtml = '';
   }
 
   function getDefaultJobPhotoUrl() {
@@ -1603,7 +1594,7 @@
         public_proof_percentage: key,
       });
 
-      var insight = { headline: '', body: '', body2: '', extraHtml: buildProofGridHtml() };
+      var insight = { headline: '', body: '', body2: '', extraHtml: '' };
       applyVisibilityInsight(insight, tier, key);
       collapseChoiceList('public_proof_percentage', summaryValueText('public_proof_percentage', key), key, function () {
         showInsight('proof', insight, 'proof_gap_result', visibilityCta(tier));
