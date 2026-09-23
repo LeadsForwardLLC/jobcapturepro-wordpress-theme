@@ -191,6 +191,20 @@ function jcp_proof_gap_rank_math_robots( $robots ) {
 add_filter( 'rank_math/frontend/robots', 'jcp_proof_gap_rank_math_robots', 999 );
 
 /**
+ * Yoast robots: noindex + nofollow for Proof Gap.
+ *
+ * @param string $robots Robots content string.
+ * @return string
+ */
+function jcp_proof_gap_yoast_robots( $robots ) {
+	if ( ! jcp_proof_gap_is_current() ) {
+		return $robots;
+	}
+	return 'noindex, nofollow';
+}
+add_filter( 'wpseo_robots', 'jcp_proof_gap_yoast_robots', 999 );
+
+/**
  * Keep Proof Gap out of the core XML sitemap.
  *
  * @param array|false  $entry     Sitemap entry.
