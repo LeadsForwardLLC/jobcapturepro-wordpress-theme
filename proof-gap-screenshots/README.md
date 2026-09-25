@@ -1,4 +1,4 @@
-# Proof Gap — Full Funnel Screenshots
+# Proof Gap — Mobile Funnel Screenshots
 
 **Easy find:** `proof-gap-screenshots/` at the theme root → open `index.html`.
 
@@ -22,11 +22,10 @@
 ## Viewports
 
 - `mobile-*.png` — 390×844
-- `desktop-*.png` — 1440×900
 
 ## Re-run
 
 ```bash
 cd .superpowers/sdd/screenshots/proof-gap
-node qa-copy-pass.js
+MOBILE_ONLY=1 node qa-copy-pass.js
 ```

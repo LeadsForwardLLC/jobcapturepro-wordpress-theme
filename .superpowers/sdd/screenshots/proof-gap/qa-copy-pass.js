@@ -4,6 +4,7 @@
  *
  * Run:
  *   node qa-copy-pass.js
+ *   MOBILE_ONLY=1 node qa-copy-pass.js
  *   PROOF_GAP_URL=https://jobcapturepro.com/proof-gap/ node qa-copy-pass.js
  */
 const { chromium } = require('playwright');
@@ -43,10 +44,12 @@ const STEPS = [
   '22-trial',
 ];
 
-const VIEWPORTS = [
+const MOBILE_ONLY = process.env.MOBILE_ONLY === '1' || process.env.MOBILE_ONLY === 'true';
+const ALL_VIEWPORTS = [
   { width: 390, height: 844, prefix: 'mobile', label: 'Mobile 390×844', dpr: 2, mobile: true },
   { width: 1440, height: 900, prefix: 'desktop', label: 'Desktop 1440×900', dpr: 1, mobile: false },
 ];
+const VIEWPORTS = MOBILE_ONLY ? ALL_VIEWPORTS.filter((v) => v.mobile) : ALL_VIEWPORTS;
 
 function startServer() {
   return new Promise((resolve, reject) => {
@@ -236,32 +239,33 @@ async function runFunnel(page, prefix, startUrl) {
 }
 
 function writeIndex() {
+  const mobileOnly = VIEWPORTS.every((v) => v.mobile);
+  const title = mobileOnly ? 'Proof Gap — Mobile Funnel Screenshots' : 'Proof Gap — Full Funnel Screenshots';
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Proof Gap — Full Funnel Screenshots</title>
+  <title>${title}</title>
   <style>
     :root { color-scheme: light; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif; }
     body { margin: 0; background: #f4f6f8; color: #0f172a; }
     header { position: sticky; top: 0; z-index: 2; background: #0f172a; color: #fff; padding: 1rem 1.25rem; }
     header p { margin: 0.35rem 0 0; opacity: 0.75; font-size: 0.9rem; }
-    main { max-width: 1180px; margin: 0 auto; padding: 1.25rem; }
+    main { max-width: ${mobileOnly ? '460px' : '1180px'}; margin: 0 auto; padding: 1.25rem; }
     .step { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1rem; margin-bottom: 1rem; }
     .step h2 { margin: 0 0 0.75rem; font-size: 1.05rem; text-transform: capitalize; }
-    .pair { display: grid; grid-template-columns: 1fr 1.6fr; gap: 0.85rem; align-items: start; }
+    .pair { display: grid; grid-template-columns: ${mobileOnly ? '1fr' : '1fr 1.6fr'}; gap: 0.85rem; align-items: start; }
     figure { margin: 0; }
     figcaption { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: #64748b; margin-bottom: 0.35rem; }
     img { width: 100%; height: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; display: block; }
     nav { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.75rem 0 0; }
     nav a { color: #93c5fd; font-size: 0.82rem; }
-    @media (max-width: 900px) { .pair { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <header>
-    <h1>Proof Gap — Full Funnel Screenshots</h1>
+    <h1>${title}</h1>
     <p>Path: HVAC · Housecall Pro · 11–20 jobs/week · About half · Includes app_sim + plan_build</p>
     <p>Open from theme root: <code>proof-gap-screenshots/index.html</code></p>
     <nav>
@@ -271,18 +275,17 @@ function writeIndex() {
   <main>
     ${STEPS.map((step, i) => {
       const label = step.replace(/^\d+-/, '').replace(/-/g, ' ');
+      const figures = VIEWPORTS.map(
+        (vp) => `
+        <figure>
+          <figcaption>${vp.label}</figcaption>
+          <a href="${vp.prefix}-${step}.png" target="_blank"><img src="${vp.prefix}-${step}.png" alt="${vp.prefix} ${label}" loading="lazy" /></a>
+        </figure>`
+      ).join('');
       return `
     <section class="step" id="s${i + 1}">
       <h2>${String(i + 1).padStart(2, '0')} · ${label}</h2>
-      <div class="pair">
-        <figure>
-          <figcaption>Mobile 390×844</figcaption>
-          <a href="mobile-${step}.png" target="_blank"><img src="mobile-${step}.png" alt="Mobile ${label}" loading="lazy" /></a>
-        </figure>
-        <figure>
-          <figcaption>Desktop 1440×900</figcaption>
-          <a href="desktop-${step}.png" target="_blank"><img src="desktop-${step}.png" alt="Desktop ${label}" loading="lazy" /></a>
-        </figure>
+      <div class="pair">${figures}
       </div>
     </section>`;
     }).join('\n')}
@@ -290,7 +293,8 @@ function writeIndex() {
 </body>
 </html>`;
 
-  const readme = `# Proof Gap — Full Funnel Screenshots
+  const viewportLines = VIEWPORTS.map((v) => `- \`${v.prefix}-*.png\` — ${v.width}×${v.height}`).join('\n');
+  const readme = `# ${title}
 
 **Easy find:** \`proof-gap-screenshots/\` at the theme root → open \`index.html\`.
 
@@ -313,14 +317,13 @@ function writeIndex() {
 
 ## Viewports
 
-- \`mobile-*.png\` — 390×844
-- \`desktop-*.png\` — 1440×900
+${viewportLines}
 
 ## Re-run
 
 \`\`\`bash
 cd .superpowers/sdd/screenshots/proof-gap
-node qa-copy-pass.js
+${mobileOnly ? 'MOBILE_ONLY=1 node qa-copy-pass.js' : 'node qa-copy-pass.js'}
 \`\`\`
 `;
   fs.writeFileSync(path.join(OUT, 'index.html'), html);
