@@ -265,16 +265,32 @@
       setBottomAction({
         id: 'pgTrialCta',
         label: 'Start My Free 14-Day Trial \u2192',
-        href: '#',
+        href: (boot.trialBase || 'https://app.jobcapturepro.com/onboarding'),
         sublabel: 'No credit card required',
         animate: false,
-        onClick: function () {
+        onClick: function (ev) {
+          if (ev && typeof ev.preventDefault === 'function') ev.preventDefault();
           state.trial_cta_clicked = true;
           markCompleted('trial_bridge');
           saveState();
-          track('TrialCTAClicked', { trade: state.trade, cta_source: 'trial_bridge' });
-          track('trial_cta_clicked', { source: 'proof_gap', trade: state.trade });
+          track('TrialCTAClicked', {
+            trade: state.trade,
+            current_workflow: state.current_workflow,
+            jobs_per_week_bucket: state.jobs_per_week_bucket,
+            cta_source: 'trial_bridge',
+          });
+          track('trial_cta_clicked', {
+            source: 'proof_gap',
+            trade: state.trade,
+            workflow: state.current_workflow,
+            jobs_per_week: state.jobs_per_week_bucket,
+          });
           updateTrialHref();
+          var a = document.getElementById('pgTrialCta');
+          var dest = a && a.href ? a.href : '';
+          if (dest && dest.indexOf('onboarding') !== -1) {
+            window.location.assign(dest);
+          }
         },
       });
       updateTrialHref();
@@ -1332,22 +1348,55 @@
   function updateTrialHref() {
     var a = document.getElementById('pgTrialCta');
     if (!a) return;
-    var base = (window.JCP_ONBOARDING && window.JCP_ONBOARDING.url) || boot.trialBase || 'https://app.jobcapturepro.com/onboarding';
+    var base =
+      (window.JCP_ONBOARDING && window.JCP_ONBOARDING.url) ||
+      boot.trialBase ||
+      'https://app.jobcapturepro.com/onboarding';
     try {
       var handoffExtra = { lp_variant: LP_VARIANT };
       if (state.handoff_token) handoffExtra.pg_handoff = state.handoff_token;
       if (state.session_id) handoffExtra.survey_session_id = state.session_id;
+      if (state.email) {
+        handoffExtra.email = state.email;
+        var first = deriveFirstName(state.email);
+        if (first) handoffExtra.first_name = first;
+      }
+      if (state.trade) {
+        handoffExtra.business_type = state.trade;
+        var industry = mapTradeToIndustry(state.trade);
+        if (industry) {
+          handoffExtra.industry = industry;
+          handoffExtra.industryId = industry;
+          handoffExtra.industry_id = industry;
+        }
+      }
+
+      // Merge demoUser + paid attribution when available so email always rides along.
+      if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.buildHandoffParams === 'function') {
+        var built = window.JCPOnboardingHandoff.buildHandoffParams() || {};
+        Object.keys(built).forEach(function (k) {
+          if (handoffExtra[k] == null || handoffExtra[k] === '') handoffExtra[k] = built[k];
+        });
+      }
+
       var href = base;
       if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.decorateHref === 'function') {
         href = window.JCPOnboardingHandoff.decorateHref(href, handoffExtra, 'proof_gap_survey_trial') || href;
       } else {
         var u = new URL(href, window.location.origin);
-        Object.keys(handoffExtra).forEach(function (k) { if (handoffExtra[k]) u.searchParams.set(k, handoffExtra[k]); });
+        Object.keys(handoffExtra).forEach(function (k) {
+          if (handoffExtra[k]) u.searchParams.set(k, handoffExtra[k]);
+        });
         href = u.toString();
       }
+
+      // Force email onto the trial URL even if decorate only fills missing keys.
       if (state.email) {
         var parsed = new URL(href, window.location.origin);
-        if (!parsed.searchParams.get('email')) parsed.searchParams.set('email', state.email);
+        parsed.searchParams.set('email', state.email);
+        if (!parsed.searchParams.get('first_name')) {
+          parsed.searchParams.set('first_name', deriveFirstName(state.email));
+        }
         href = parsed.toString();
       }
       a.href = href;
@@ -1422,15 +1471,27 @@
     var eventId = getOrCreateLeadEventId();
     var attr = attrPayload();
     var body = {
-      email: email, business_type: state.trade || '', survey_session_id: state.session_id,
-      survey_version: state.survey_version, current_workflow: state.current_workflow || '',
+      email: email,
+      business_type: state.trade || '',
+      survey_session_id: state.session_id,
+      survey_version: state.survey_version,
+      current_workflow: state.current_workflow || '',
       jobs_per_week_bucket: state.jobs_per_week_bucket || '',
       public_proof_percentage: state.public_proof_percentage || '',
-      event_id: eventId, landing_page: location.href,
-      lp_variant: attr.lp_variant || LP_VARIANT, funnel_surface: 'proof_gap_survey',
-      utm_source: attr.utm_source || '', utm_medium: attr.utm_medium || '',
-      utm_campaign: attr.utm_campaign || '', utm_content: attr.utm_content || '',
-      utm_term: attr.utm_term || '', fbclid: attr.fbclid || '',
+      annual_jobs_min: state.annual_jobs_min,
+      annual_jobs_max: state.annual_jobs_max,
+      unused_jobs_min: state.unused_jobs_min,
+      unused_jobs_max: state.unused_jobs_max,
+      event_id: eventId,
+      landing_page: location.href,
+      lp_variant: attr.lp_variant || LP_VARIANT,
+      funnel_surface: 'proof_gap_survey',
+      utm_source: attr.utm_source || '',
+      utm_medium: attr.utm_medium || '',
+      utm_campaign: attr.utm_campaign || '',
+      utm_content: attr.utm_content || '',
+      utm_term: attr.utm_term || '',
+      fbclid: attr.fbclid || '',
       referrer: attr.referrer || document.referrer || '',
     };
     if (state.other_trade_text) body.other_trade_text = state.other_trade_text;
@@ -1460,9 +1521,22 @@
           trade: state.trade, current_workflow: state.current_workflow,
           jobs_per_week_bucket: state.jobs_per_week_bucket,
           public_proof_percentage: state.public_proof_percentage,
+          annual_jobs_min: state.annual_jobs_min,
+          annual_jobs_max: state.annual_jobs_max,
+          unused_jobs_min: state.unused_jobs_min,
+          unused_jobs_max: state.unused_jobs_max,
           cta_source: 'result_email',
         });
-        track('proof_gap_email_submitted', { trade: state.trade });
+        track('proof_gap_email_submitted', {
+          trade: state.trade,
+          workflow: state.current_workflow,
+          jobs_per_week: state.jobs_per_week_bucket,
+          marketing_usage: state.public_proof_percentage,
+          annual_jobs_low: state.annual_jobs_min,
+          annual_jobs_high: state.annual_jobs_max,
+          unused_jobs_low: state.unused_jobs_min,
+          unused_jobs_high: state.unused_jobs_max,
+        });
         pushAcquisitionLead(returnedId);
         updateTrialHref();
         goTo('app_sim');

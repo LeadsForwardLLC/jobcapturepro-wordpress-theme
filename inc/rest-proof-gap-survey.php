@@ -84,6 +84,26 @@ function jcp_proof_gap_register_rest_routes(): void {
 					'type'              => 'string',
 					'sanitize_callback' => 'sanitize_text_field',
 				],
+				'annual_jobs_min' => [
+					'required'          => false,
+					'type'              => 'number',
+					'sanitize_callback' => 'absint',
+				],
+				'annual_jobs_max' => [
+					'required'          => false,
+					'type'              => 'number',
+					'sanitize_callback' => 'absint',
+				],
+				'unused_jobs_min' => [
+					'required'          => false,
+					'type'              => 'number',
+					'sanitize_callback' => 'absint',
+				],
+				'unused_jobs_max' => [
+					'required'          => false,
+					'type'              => 'number',
+					'sanitize_callback' => 'absint',
+				],
 				'event_id' => [
 					'required'          => false,
 					'type'              => 'string',
@@ -128,13 +148,30 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 	$local      = sanitize_text_field( (string) strstr( $email, '@', true ) );
 	$first_name = $local !== '' ? $local : 'there';
 
-	$business_type      = sanitize_text_field( (string) $request->get_param( 'business_type' ) );
-	$session_id         = sanitize_text_field( (string) $request->get_param( 'survey_session_id' ) );
-	$workflow           = sanitize_text_field( (string) $request->get_param( 'current_workflow' ) );
-	$jobs_bucket        = sanitize_text_field( (string) $request->get_param( 'jobs_per_week_bucket' ) );
-	$proof_pct          = sanitize_text_field( (string) $request->get_param( 'public_proof_percentage' ) );
-	$other_trade_text   = mb_substr( sanitize_text_field( (string) $request->get_param( 'other_trade_text' ) ), 0, 80 );
+	$business_type       = sanitize_text_field( (string) $request->get_param( 'business_type' ) );
+	$session_id          = sanitize_text_field( (string) $request->get_param( 'survey_session_id' ) );
+	$workflow            = sanitize_text_field( (string) $request->get_param( 'current_workflow' ) );
+	$jobs_bucket         = sanitize_text_field( (string) $request->get_param( 'jobs_per_week_bucket' ) );
+	$proof_pct           = sanitize_text_field( (string) $request->get_param( 'public_proof_percentage' ) );
+	$other_trade_text    = mb_substr( sanitize_text_field( (string) $request->get_param( 'other_trade_text' ) ), 0, 80 );
 	$other_workflow_text = mb_substr( sanitize_text_field( (string) $request->get_param( 'other_workflow_text' ) ), 0, 80 );
+	$annual_min          = absint( $request->get_param( 'annual_jobs_min' ) );
+	$annual_max          = absint( $request->get_param( 'annual_jobs_max' ) );
+	$unused_min          = absint( $request->get_param( 'unused_jobs_min' ) );
+	$unused_max          = absint( $request->get_param( 'unused_jobs_max' ) );
+
+	$annual_label = '';
+	if ( $annual_min > 0 || $annual_max > 0 ) {
+		$annual_label = $annual_max > 0
+			? 'annual_jobs:' . $annual_min . '-' . $annual_max
+			: 'annual_jobs:' . $annual_min . '+';
+	}
+	$unused_label = '';
+	if ( $unused_min > 0 || $unused_max > 0 ) {
+		$unused_label = $unused_max > 0
+			? 'unused_jobs:' . $unused_min . '-' . $unused_max
+			: 'unused_jobs:' . $unused_min . '+';
+	}
 
 	$params = [
 		'first_name'      => $first_name,
@@ -152,9 +189,12 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 			array_filter(
 				[
 					$session_id !== '' ? 'session:' . $session_id : '',
+					$business_type !== '' ? 'trade:' . $business_type : '',
 					$workflow !== '' ? 'workflow:' . $workflow : '',
 					$jobs_bucket !== '' ? 'jobs:' . $jobs_bucket : '',
 					$proof_pct !== '' ? 'visibility:' . $proof_pct : '',
+					$annual_label,
+					$unused_label,
 					$other_trade_text !== '' ? 'other_trade:' . $other_trade_text : '',
 					$other_workflow_text !== '' ? 'other_workflow:' . $other_workflow_text : '',
 				]
@@ -205,6 +245,10 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 				'current_workflow'        => $workflow,
 				'jobs_per_week_bucket'    => $jobs_bucket,
 				'public_proof_percentage' => $proof_pct,
+				'annual_jobs_min'         => $annual_min,
+				'annual_jobs_max'         => $annual_max,
+				'unused_jobs_min'         => $unused_min,
+				'unused_jobs_max'         => $unused_max,
 				'survey_session_id'       => $session_id,
 				'lp_variant'              => JCP_PROOF_GAP_VARIANT,
 			]

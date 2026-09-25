@@ -950,9 +950,9 @@ function jcp_funnel_analytics_median_step_ms( string $table, array $cohort, stri
 		'workflow'    => 'current_workflow',
 		'jobs'        => 'jobs_per_week',
 		'proof'       => 'public_proof_percentage',
-		'result'      => 'proof_gap_result',
-		'email'       => 'email_capture',
-		'reveal'      => 'product_reveal',
+		'result'      => 'result_email',
+		'email'       => 'result_email',
+		'reveal'      => 'app_sim',
 		'trial_plan'  => 'trial_bridge',
 		'trial_cta'   => 'trial_bridge',
 	];

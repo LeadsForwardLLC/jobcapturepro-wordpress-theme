@@ -47,7 +47,7 @@ $trial_base = function_exists( 'jcp_core_onboarding_app_url_raw' )
 	<?php body_class(); ?>
 	data-jcp-lp-variant="proof_gap_survey_v1"
 	data-pg-survey-id="proof_gap_survey_v1"
-	data-pg-survey-version="10"
+	data-pg-survey-version="<?php echo esc_attr( JCP_PROOF_GAP_SURVEY_VERSION ); ?>"
 >
 <?php wp_body_open(); ?>
 
