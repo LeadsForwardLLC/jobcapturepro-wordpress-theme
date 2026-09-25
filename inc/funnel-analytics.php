@@ -491,7 +491,7 @@ function jcp_funnel_analytics_proof_gap_stages(): array {
 		[ 'key' => 'proof', 'label' => __( 'Proof frequency', 'jcp-core' ), 'events' => [ 'SurveyQuestionAnswered' ], 'question_id' => 'public_proof_percentage' ],
 		[ 'key' => 'result', 'label' => __( 'Proof Gap result', 'jcp-core' ), 'events' => [ 'SurveyResultViewed' ] ],
 		[ 'key' => 'email', 'label' => __( 'Email save', 'jcp-core' ), 'events' => [ 'EmailSubmitted' ] ],
-		[ 'key' => 'reveal', 'label' => __( 'Product reveal', 'jcp-core' ), 'events' => [ 'ProductRevealCompleted' ] ],
+		[ 'key' => 'reveal', 'label' => __( 'App sim / transform', 'jcp-core' ), 'events' => [ 'AppSimCompleted' ] ],
 		[ 'key' => 'trial_plan', 'label' => __( 'Trial plan', 'jcp-core' ), 'events' => [ 'TrialCTAViewed' ] ],
 		[ 'key' => 'trial_cta', 'label' => __( 'Trial CTA', 'jcp-core' ), 'events' => [ 'TrialCTAClicked' ] ],
 		[ 'key' => 'trial_started', 'label' => __( 'Trial started', 'jcp-core' ), 'events' => [ 'TrialStarted' ], 'lifecycle' => true ],

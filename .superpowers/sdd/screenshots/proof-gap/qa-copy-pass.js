@@ -1,6 +1,6 @@
 /**
  * Capture every Proof Gap funnel step on mobile + desktop.
- * Prefers live site (accurate CSS/fonts); falls back to local harness.
+ * v11 simplified flow: 8 states, 10 screenshot steps.
  *
  * Run:
  *   node qa-copy-pass.js
@@ -23,25 +23,13 @@ const STEPS = [
   '01-welcome',
   '02-trade',
   '03-workflow',
-  '04-workflow-insight',
-  '05-jobs',
-  '06-jobs-insight',
-  '07-visibility',
-  '08-visibility-insight',
-  '09-result',
-  '10-email',
-  '11-app-sim-start',
-  '12-app-sim-mid',
-  '13-app-sim-done',
-  '14-reveal-website',
-  '15-reveal-google',
-  '16-reveal-social',
-  '17-reveal-reviews',
-  '18-reveal-directory',
-  '19-plan-build-start',
-  '20-plan-build-mid',
-  '21-plan-build-done',
-  '22-trial',
+  '04-jobs',
+  '05-visibility',
+  '06-result-email',
+  '07-app-sim',
+  '08-trial-preview-website',
+  '09-trial-preview-social',
+  '10-trial-preview-google',
 ];
 
 const MOBILE_ONLY = process.env.MOBILE_ONLY === '1' || process.env.MOBILE_ONLY === 'true';
@@ -138,16 +126,7 @@ async function prepPage(page) {
 }
 
 async function runFunnel(page, prefix, startUrl) {
-  const long = new Set([
-    '09-result',
-    '10-email',
-    '14-reveal-website',
-    '15-reveal-google',
-    '16-reveal-social',
-    '17-reveal-reviews',
-    '18-reveal-directory',
-    '22-trial',
-  ]);
+  const long = new Set(['06-result-email', '08-trial-preview-website', '09-trial-preview-social', '10-trial-preview-google']);
   const take = (step) => shot(page, `${prefix}-${step}.png`, long.has(step));
 
   await page.goto(startUrl, { waitUntil: 'networkidle' });
@@ -163,84 +142,41 @@ async function runFunnel(page, prefix, startUrl) {
   await take('03-workflow');
 
   await clickChoice(page, 'Housecall Pro');
-  await waitBottom(page, 'Continue');
-  await take('04-workflow-insight');
-  await clickBottom(page);
-
   await waitState(page, 'jobs_per_week');
-  await take('05-jobs');
-  await clickChoice(page, '11–20');
-  await waitBottom(page, 'Continue');
-  await take('06-jobs-insight');
-  await clickBottom(page);
+  await take('04-jobs');
 
+  await clickChoice(page, '11\u201320');
   await waitState(page, 'public_proof_percentage');
-  await take('07-visibility');
+  await take('05-visibility');
+
   await clickChoice(page, 'About half');
-  await waitBottom(page, 'Show Me What');
-  await take('08-visibility-insight');
-  await clickBottom(page);
+  await waitState(page, 'result_email');
+  await waitBottom(page, 'Build My Job Example');
+  await take('06-result-email');
 
-  await waitState(page, 'proof_gap_result');
-  await take('09-result');
-  await clickBottom(page);
-
-  await waitState(page, 'email_capture');
-  await take('10-email');
   await page.fill('#pgEmail', `copy-pass+${prefix}@example.com`);
   await clickBottom(page);
 
-  // App sim — capture start / mid / near-complete before auto-advance
   await waitState(page, 'app_sim');
-  await take('11-app-sim-start');
-  await page.waitForTimeout(1800);
-  await take('12-app-sim-mid');
-  await page.waitForFunction(
-    () => {
-      const ticks = document.querySelectorAll('#pgAppSimTicks li.is-done, #pgAppSimTicks li.is-on, #pgAppSimTicks .is-done');
-      return ticks.length >= 4 || document.body.classList.contains('pg-is-app-sim') === false;
-    },
-    { timeout: 8000 }
-  ).catch(() => {});
-  await take('13-app-sim-done');
-
-  await waitState(page, 'product_reveal');
-  await page.waitForTimeout(450);
-  await take('14-reveal-website');
-
-  for (const [dest, step] of [
-    ['google', '15-reveal-google'],
-    ['social', '16-reveal-social'],
-    ['reviews', '17-reveal-reviews'],
-    ['directory', '18-reveal-directory'],
-  ]) {
-    await page.click(`.pg-dest-tab[data-dest="${dest}"]`);
-    await page.waitForTimeout(280);
-    await take(step);
-  }
-
-  await clickBottom(page);
-
-  await waitState(page, 'plan_build');
-  await take('19-plan-build-start');
-  await page.waitForTimeout(1400);
-  await take('20-plan-build-mid');
-  await page.waitForFunction(
-    () => {
-      const done = document.querySelectorAll('#pgPlanBuildSteps .is-done, #pgPlanBuildSteps .pg-plan-build__step.is-done');
-      return done.length >= 3 || !document.body.classList.contains('pg-is-plan-build');
-    },
-    { timeout: 6000 }
-  ).catch(() => {});
-  await take('21-plan-build-done');
+  await page.waitForTimeout(600);
+  await take('07-app-sim');
 
   await waitState(page, 'trial_bridge');
-  await take('22-trial');
+  await page.waitForTimeout(500);
+  await take('08-trial-preview-website');
+
+  await page.click('.pg-dest-tab[data-dest="social"]');
+  await page.waitForTimeout(300);
+  await take('09-trial-preview-social');
+
+  await page.click('.pg-dest-tab[data-dest="google"]');
+  await page.waitForTimeout(300);
+  await take('10-trial-preview-google');
 }
 
 function writeIndex() {
   const mobileOnly = VIEWPORTS.every((v) => v.mobile);
-  const title = mobileOnly ? 'Proof Gap — Mobile Funnel Screenshots' : 'Proof Gap — Full Funnel Screenshots';
+  const title = mobileOnly ? 'Proof Gap v11 — Mobile Funnel Screenshots' : 'Proof Gap v11 — Full Funnel Screenshots';
   const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -266,7 +202,7 @@ function writeIndex() {
 <body>
   <header>
     <h1>${title}</h1>
-    <p>Path: HVAC · Housecall Pro · 11–20 jobs/week · About half · Includes app_sim + plan_build</p>
+    <p>Path: HVAC · Housecall Pro · 11–20 jobs/week · About half · 8-state flow (v11)</p>
     <p>Open from theme root: <code>proof-gap-screenshots/index.html</code></p>
     <nav>
       ${STEPS.map((s, i) => `<a href="#s${i + 1}">${i + 1}</a>`).join('')}
@@ -298,22 +234,16 @@ function writeIndex() {
 
 **Easy find:** \`proof-gap-screenshots/\` at the theme root → open \`index.html\`.
 
-## Captured path
+## Captured path (v11 — 8 states)
 
 1. Welcome
 2. Trade (HVAC)
-3. Workflow choices
-4. Workflow insight (Housecall Pro)
-5. Jobs/week choices
-6. Jobs insight
-7. Visibility question
-8. Visibility insight (About half)
-9. Result
-10. Email
-11–13. App sim (start / mid / done)
-14–18. Product reveal tabs (Website → Directory)
-19–21. Plan build (start / mid / done)
-22. Trial / final plan
+3. Workflow (Housecall Pro) — auto-advance with micro-confirm
+4. Jobs/week (11–20)
+5. Visibility question (About half)
+6. Result + email (combined screen)
+7. App sim (compressed ~4s)
+8–10. Trial bridge with dest previews (Website, Social, Google)
 
 ## Viewports
 
@@ -335,7 +265,6 @@ ${mobileOnly ? 'MOBILE_ONLY=1 node qa-copy-pass.js' : 'node qa-copy-pass.js'}
   fs.rmSync(OUT, { recursive: true, force: true });
   fs.mkdirSync(OUT, { recursive: true });
 
-  // Live site blocks headless browsers (403). Always use local theme harness.
   let server = await startServer();
   const startUrl = `http://127.0.0.1:${PORT}/.superpowers/sdd/screenshots/proof-gap/qa-harness.html?utm_source=facebook&fbclid=COPYPASS&_=${Date.now()}`;
   console.log('Using local harness', startUrl);

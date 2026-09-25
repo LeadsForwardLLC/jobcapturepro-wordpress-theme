@@ -108,13 +108,12 @@ if ( count( $trust_avatars ) < 4 ) {
 }
 
 $render_case = static function (): void {
-	echo '<aside class="pg-case" aria-label="' . esc_attr__( 'Foundation repair case study', 'jcp-core' ) . '">';
-	echo '<p class="pg-case__eyebrow">' . esc_html__( 'Verified local search result', 'jcp-core' ) . '</p>';
+	echo '<aside class="pg-case" aria-label="' . esc_attr__( 'Local visibility case study', 'jcp-core' ) . '">';
+	echo '<p class="pg-case__eyebrow">' . esc_html__( 'Local visibility case study', 'jcp-core' ) . '</p>';
 	echo '<p class="pg-case__lead">' . esc_html__( 'One foundation repair company saw:', 'jcp-core' ) . '</p>';
 	echo '<p class="pg-case__metric"><strong class="pg-case__metric-lo">0%</strong><span class="pg-case__metric-arrow" aria-hidden="true">→</span><strong class="pg-case__metric-hi">84–100%</strong></p>';
-	echo '<p class="pg-case__metric-label">' . esc_html__( 'Google Maps 3-Pack visibility', 'jcp-core' ) . '</p>';
-	echo '<p class="pg-case__body">' . esc_html__( 'From nearly invisible to showing across tracked local searches in about 12 weeks — measured across four keyword/market grids.', 'jcp-core' ) . '</p>';
-	echo '<p class="pg-case__attr">' . esc_html__( 'LeadsForward + JobCapturePro strategy', 'jcp-core' ) . '</p>';
+	echo '<p class="pg-case__body">' . esc_html__( 'Top-3 Local Falcon grid visibility across four tracked keyword/market combinations in ~12 weeks.', 'jcp-core' ) . '</p>';
+	echo '<p class="pg-case__attr">' . esc_html__( 'LeadsForward + JobCapturePro local-search strategy', 'jcp-core' ) . '</p>';
 	echo '<p class="pg-case__note">' . esc_html__( 'Past performance does not guarantee future rankings.', 'jcp-core' ) . '</p>';
 	echo '</aside>';
 };
@@ -127,7 +126,7 @@ $render_case = static function (): void {
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( 'The 60 second job visibility check', 'jcp-core' ); ?></p>
 				<h1 class="pg-title pg-title--welcome"><?php esc_html_e( 'Your crew already takes the photos. Are they helping you win the next job?', 'jcp-core' ); ?></h1>
-				<p class="pg-sub"><?php esc_html_e( 'Answer 4 quick questions to see how much of your work is going unseen and what JobCapturePro could be doing with it.', 'jcp-core' ); ?></p>
+				<p class="pg-sub"><?php esc_html_e( 'Answer 4 quick questions to see how much of your work is going unseen — and what JobCapturePro could be doing with it.', 'jcp-core' ); ?></p>
 
 				<div class="pg-welcome-checklist" data-pg-welcome-visual data-creative="default" aria-hidden="true">
 					<p class="pg-welcome-checklist__heading"><?php esc_html_e( 'One completed job can automatically become:', 'jcp-core' ); ?></p>
@@ -195,15 +194,7 @@ $render_case = static function (): void {
 						<button type="button" class="pg-other-skip" data-pg-other-skip="workflow"><?php esc_html_e( 'Skip', 'jcp-core' ); ?></button>
 					</div>
 				</div>
-				<div class="pg-answer-summary" data-pg-summary="workflow" hidden>
-					<span class="pg-answer-summary__label"><?php esc_html_e( 'Your current workflow', 'jcp-core' ); ?></span>
-					<div class="pg-answer-summary__row">
-						<span class="pg-answer-summary__value" data-pg-summary-value></span>
-						<button type="button" class="pg-answer-summary__change" data-pg-change="workflow"><?php esc_html_e( 'Change', 'jcp-core' ); ?></button>
-					</div>
-				</div>
-				<div class="proof-gap-insight-card" data-pg-insight="workflow" hidden></div>
-				<?php $render_review( $workflow_rev, 'workflow', 'pg-review-slot--insight' ); ?>
+				<p class="pg-micro-confirm" id="pgWorkflowConfirm" hidden role="status"></p>
 			</div>
 		</section>
 
@@ -213,14 +204,6 @@ $render_case = static function (): void {
 			<h1 class="pg-title pg-title--sm" id="pg-jobs-title"><?php esc_html_e( 'How many jobs does your company complete per week?', 'jcp-core' ); ?></h1>
 				<p class="pg-hint"><?php esc_html_e( 'We’ll estimate how much valuable marketing material your company creates every year.', 'jcp-core' ); ?></p>
 				<div class="pg-choices pg-choices--compact" role="group" aria-labelledby="pg-jobs-title" data-pg-choices="jobs_per_week"></div>
-				<div class="pg-answer-summary" data-pg-summary="jobs" hidden>
-					<span class="pg-answer-summary__label"><?php esc_html_e( 'Jobs each week', 'jcp-core' ); ?></span>
-					<div class="pg-answer-summary__row">
-						<span class="pg-answer-summary__value" data-pg-summary-value></span>
-						<button type="button" class="pg-answer-summary__change" data-pg-change="jobs"><?php esc_html_e( 'Change', 'jcp-core' ); ?></button>
-					</div>
-				</div>
-				<div class="proof-gap-insight-card" data-pg-insight="jobs" hidden></div>
 			</div>
 		</section>
 
@@ -228,22 +211,15 @@ $render_case = static function (): void {
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( '4. What gets seen', 'jcp-core' ); ?></p>
 				<h1 class="pg-title pg-title--sm" id="pg-proof-title"><?php esc_html_e( 'Of those finished jobs, about how many actually make it into your marketing?', 'jcp-core' ); ?></h1>
-				<p class="pg-hint"><?php esc_html_e( 'Website content, Google profile, social media, or review requests.', 'jcp-core' ); ?></p>
+				<p class="pg-hint"><?php esc_html_e( 'Website content, Google Business Profile, social media, or review requests.', 'jcp-core' ); ?></p>
 				<div class="pg-choices pg-choices--proof" role="group" aria-labelledby="pg-proof-title" data-pg-choices="public_proof_percentage"></div>
-				<div class="pg-answer-summary" data-pg-summary="proof" hidden>
-					<span class="pg-answer-summary__label"><?php esc_html_e( 'Your answer', 'jcp-core' ); ?></span>
-					<div class="pg-answer-summary__row">
-						<span class="pg-answer-summary__value" data-pg-summary-value></span>
-						<button type="button" class="pg-answer-summary__change" data-pg-change="proof"><?php esc_html_e( 'Change', 'jcp-core' ); ?></button>
-					</div>
-				</div>
-				<div class="proof-gap-insight-card" data-pg-insight="proof" hidden></div>
 			</div>
 		</section>
 
-		<section class="pg-state" data-pg-state="proof_gap_result" hidden>
+
+		<section class="pg-state pg-state--result-email" data-pg-state="result_email" hidden>
 			<div class="pg-state__inner">
-				<p class="pg-eyebrow"><?php esc_html_e( 'What gets seen', 'jcp-core' ); ?></p>
+				<p class="pg-eyebrow"><?php esc_html_e( 'Your proof gap', 'jcp-core' ); ?></p>
 				<div class="pg-result pg-result--visual" id="pgResultCard">
 					<div class="pg-result__hero">
 						<strong class="pg-result__hero-num" id="pgResultCompleted">—</strong>
@@ -255,27 +231,23 @@ $render_case = static function (): void {
 					<ul class="pg-result__stats" id="pgResultStats">
 						<li><span><?php esc_html_e( 'Completed jobs / year', 'jcp-core' ); ?></span><strong id="pgResultPublic">—</strong></li>
 						<li id="pgResultInvisibleWrap" hidden><span><?php esc_html_e( 'Currently reused in marketing', 'jcp-core' ); ?></span><strong id="pgResultInvisible">—</strong></li>
+						<li id="pgResultUnusedWrap" hidden><span><?php esc_html_e( 'Potentially unused', 'jcp-core' ); ?></span><strong id="pgResultUnused">—</strong></li>
 					</ul>
 					<p class="pg-result__note" id="pgResultNote"><?php esc_html_e( 'Based on the ranges you selected.', 'jcp-core' ); ?></p>
 					<div class="pg-result__support" id="pgResultSupport"></div>
 				</div>
-			</div>
-		</section>
-
-		<section class="pg-state" data-pg-state="email_capture" hidden>
-			<div class="pg-state__inner">
-				<p class="pg-eyebrow"><?php esc_html_e( 'Your plan', 'jcp-core' ); ?></p>
-				<h1 class="pg-title pg-title--sm"><?php esc_html_e( 'See exactly what one of your jobs could become.', 'jcp-core' ); ?></h1>
-				<p class="pg-sub"><?php esc_html_e( 'Enter your email to unlock your personalized example and save your results.', 'jcp-core' ); ?></p>
-				<form class="pg-email" id="pgEmailForm" novalidate>
-					<label class="pg-email__label" for="pgEmail"><?php esc_html_e( 'Email', 'jcp-core' ); ?> <span class="pg-req">*</span></label>
-					<input class="pg-email__input" id="pgEmail" name="email" type="email" autocomplete="email" inputmode="email" required placeholder="you@company.com" />
-					<p class="pg-email__error" id="pgEmailError" role="alert" hidden></p>
-					<p class="pg-email__consent"><?php esc_html_e( 'We’ll send your results — no spam.', 'jcp-core' ); ?></p>
-				</form>
+				<div class="pg-result-email">
+					<h2 class="pg-title pg-title--sm"><?php esc_html_e( 'See what one of those jobs could become.', 'jcp-core' ); ?></h2>
+					<p class="pg-sub"><?php esc_html_e( 'Enter your email to build your personalized example and save your results.', 'jcp-core' ); ?></p>
+					<form class="pg-email" id="pgEmailForm" novalidate>
+						<label class="pg-email__label" for="pgEmail"><?php esc_html_e( 'Email', 'jcp-core' ); ?> <span class="pg-req">*</span></label>
+						<input class="pg-email__input" id="pgEmail" name="email" type="email" autocomplete="email" inputmode="email" required placeholder="you@company.com" />
+						<p class="pg-email__error" id="pgEmailError" role="alert" hidden></p>
+						<p class="pg-email__consent"><?php esc_html_e( 'We’ll send your results — no spam.', 'jcp-core' ); ?></p>
+					</form>
+				</div>
 				<div class="pg-email-proof">
 					<?php $render_case(); ?>
-					<?php $render_review( $email_rev, 'email' ); ?>
 				</div>
 			</div>
 		</section>
@@ -319,74 +291,11 @@ $render_case = static function (): void {
 			</div>
 		</section>
 
-		<section class="pg-state pg-state--reveal" data-pg-state="product_reveal" hidden>
-			<div class="pg-state__inner pg-state__inner--wide">
-				<p class="pg-eyebrow"><?php esc_html_e( 'Your plan', 'jcp-core' ); ?></p>
-				<h1 class="pg-title pg-title--sm" id="pgRevealTitle"><?php esc_html_e( 'Here’s what one finished job can become.', 'jcp-core' ); ?></h1>
-				<p class="pg-sub pg-sub--tight" id="pgRevealSubline"><?php esc_html_e( 'Your crew finishes the job and takes the photos. JobCapturePro turns that into marketing.', 'jcp-core' ); ?></p>
-
-				<p class="pg-reveal-same" id="pgRevealSame"><?php esc_html_e( 'Tap a channel below to preview it', 'jcp-core' ); ?></p>
-				<div class="pg-dest-tabs-wrap">
-					<div class="pg-dest-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Preview each marketing channel', 'jcp-core' ); ?>">
-						<button type="button" class="pg-dest-tab is-active" role="tab" aria-selected="true" data-dest="website"><?php esc_html_e( 'Website', 'jcp-core' ); ?></button>
-						<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="google"><?php esc_html_e( 'Google', 'jcp-core' ); ?></button>
-						<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="social"><?php esc_html_e( 'Social', 'jcp-core' ); ?></button>
-						<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="reviews"><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></button>
-						<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="directory"><?php esc_html_e( 'Directory', 'jcp-core' ); ?></button>
-					</div>
-					<p class="pg-dest-tabs-hint" id="pgDestTabsHint" aria-hidden="true"><?php esc_html_e( 'Swipe or tap to switch previews', 'jcp-core' ); ?></p>
-				</div>
-				<p class="pg-dest-caption" id="pgDestCaption" hidden></p>
-				<div class="pg-dest-panel" id="pgDestPanel" role="tabpanel"
-					data-map="<?php echo esc_url( $map_url ); ?>"
-					data-qr="<?php echo esc_url( $qr_url ); ?>"></div>
-
-				<?php $render_review( $reveal_rev, 'reveal', 'pg-review-slot--reveal', '' ); ?>
-			</div>
-		</section>
-
-		<section class="pg-state pg-state--plan-build" data-pg-state="plan_build" hidden>
-			<div class="pg-state__inner">
-				<p class="pg-eyebrow"><?php esc_html_e( 'Your plan', 'jcp-core' ); ?></p>
-				<h1 class="pg-title pg-title--sm" id="pgPlanBuildTitle"><?php esc_html_e( 'Creating your personalized plan…', 'jcp-core' ); ?></h1>
-				<p class="pg-sub pg-sub--tight" id="pgPlanBuildSub"><?php esc_html_e( 'Matching JobCapturePro to how your crew already works.', 'jcp-core' ); ?></p>
-
-				<div class="pg-plan-build" id="pgPlanBuild" aria-live="polite">
-					<ul class="pg-plan-build__chips" id="pgPlanBuildChips"></ul>
-
-					<div class="pg-plan-build__meter" aria-hidden="true">
-						<span class="pg-plan-build__meter-fill" id="pgPlanBuildMeter"></span>
-					</div>
-
-					<ul class="pg-plan-build__steps" id="pgPlanBuildSteps">
-						<li class="pg-plan-build__step" data-build-step="0">
-							<span class="pg-plan-build__check" aria-hidden="true"></span>
-							<span class="pg-plan-build__step-text"><?php esc_html_e( 'Locking in your trade', 'jcp-core' ); ?></span>
-						</li>
-						<li class="pg-plan-build__step" data-build-step="1">
-							<span class="pg-plan-build__check" aria-hidden="true"></span>
-							<span class="pg-plan-build__step-text"><?php esc_html_e( 'Connecting your photo workflow', 'jcp-core' ); ?></span>
-						</li>
-						<li class="pg-plan-build__step" data-build-step="2">
-							<span class="pg-plan-build__check" aria-hidden="true"></span>
-							<span class="pg-plan-build__step-text"><?php esc_html_e( 'Sizing your job volume', 'jcp-core' ); ?></span>
-						</li>
-						<li class="pg-plan-build__step" data-build-step="3">
-							<span class="pg-plan-build__check" aria-hidden="true"></span>
-							<span class="pg-plan-build__step-text"><?php esc_html_e( 'Picking your easiest first win', 'jcp-core' ); ?></span>
-						</li>
-					</ul>
-
-					<p class="pg-plan-build__status" id="pgPlanBuildStatus"><?php esc_html_e( 'Almost ready…', 'jcp-core' ); ?></p>
-				</div>
-			</div>
-		</section>
-
 		<section class="pg-state pg-state--trial" data-pg-state="trial_bridge" hidden>
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( 'Your plan', 'jcp-core' ); ?></p>
 				<h1 class="pg-title"><?php esc_html_e( 'Put the next job to work.', 'jcp-core' ); ?></h1>
-				<p class="pg-sub"><?php esc_html_e( 'Start free for 14 days. Connect your workflow, capture one real job, and see JobCapturePro turn it into marketing.', 'jcp-core' ); ?></p>
+				<p class="pg-sub"><?php esc_html_e( 'Start free for 14 days. Connect your workflow, use one real completed job, and see JobCapturePro turn it into marketing.', 'jcp-core' ); ?></p>
 
 				<div class="pg-plan-card" id="pgPlanCard">
 					<div class="pg-plan-setup">
@@ -401,6 +310,25 @@ $render_case = static function (): void {
 				</div>
 
 				<?php $render_review( $trial_rev, 'trial', 'pg-review-slot--trial' ); ?>
+
+				<div class="pg-trial-previews">
+					<h2 class="pg-title pg-title--sm" id="pgRevealTitle"><?php esc_html_e( 'See what one finished job can become.', 'jcp-core' ); ?></h2>
+					<p class="pg-sub pg-sub--tight" id="pgRevealSubline"><?php esc_html_e( 'Preview where JobCapturePro can put the same job to work.', 'jcp-core' ); ?></p>
+					<div class="pg-dest-tabs-wrap">
+						<div class="pg-dest-tabs" role="tablist" aria-label="<?php esc_attr_e( 'Preview each marketing channel', 'jcp-core' ); ?>">
+							<button type="button" class="pg-dest-tab is-active" role="tab" aria-selected="true" data-dest="website"><?php esc_html_e( 'Website', 'jcp-core' ); ?></button>
+							<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="google"><?php esc_html_e( 'Google', 'jcp-core' ); ?></button>
+							<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="social"><?php esc_html_e( 'Social', 'jcp-core' ); ?></button>
+							<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="reviews"><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></button>
+							<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="directory"><?php esc_html_e( 'Directory', 'jcp-core' ); ?></button>
+						</div>
+						<p class="pg-dest-tabs-hint" id="pgDestTabsHint" aria-hidden="true"><?php esc_html_e( 'Swipe or tap to switch previews', 'jcp-core' ); ?></p>
+					</div>
+					<p class="pg-dest-caption" id="pgDestCaption" hidden></p>
+					<div class="pg-dest-panel" id="pgDestPanel" role="tabpanel"
+						data-map="<?php echo esc_url( $map_url ); ?>"
+						data-qr="<?php echo esc_url( $qr_url ); ?>"></div>
+				</div>
 			</div>
 		</section>
 	</div>

@@ -4464,3 +4464,81 @@ body.jcp-proof-gap .proof-gap-insight-card--jobs .proof-gap-insight-card__text:e
     animation: none !important;
   }
 }
+
+/* ─── v11: Micro-confirm (workflow) ─── */
+body.jcp-proof-gap .pg-micro-confirm {
+  margin: 0.65rem 0 0;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.6rem;
+  background: #f0fdf4;
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: #15803d;
+  text-align: center;
+  line-height: 1.35;
+}
+body.jcp-proof-gap .pg-micro-confirm[hidden] {
+  display: none;
+}
+
+/* ─── v11: Combined result + email state ─── */
+body.jcp-proof-gap .pg-result-email {
+  display: grid;
+  gap: 1.35rem;
+  margin-top: 1rem;
+}
+body.jcp-proof-gap .pg-result-email .pg-email {
+  margin-top: 0;
+}
+
+/* Unused stats row */
+body.jcp-proof-gap .pg-result__unused-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+body.jcp-proof-gap .pg-result__unused-wrap[hidden] {
+  display: none;
+}
+body.jcp-proof-gap .pg-result__unused-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #b91c1c;
+}
+
+/* ─── v11: Trial previews (dest tabs inside trial_bridge) ─── */
+body.jcp-proof-gap .pg-trial-previews {
+  margin-top: 1.75rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+  padding-top: 1.25rem;
+}
+body.jcp-proof-gap .pg-trial-previews .pg-dest-tabs {
+  margin-top: 0.25rem;
+}
+body.jcp-proof-gap .pg-trial-previews .pg-dest-panel {
+  flex: none;
+  height: auto;
+  max-height: none;
+  min-height: 0;
+  overflow: visible;
+  margin-top: 0.75rem;
+}
+body.jcp-proof-gap .pg-trial-previews .pg-reveal-title {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1rem, 2.4vw, 1.15rem);
+  font-weight: 750;
+  line-height: 1.3;
+}
+body.jcp-proof-gap .pg-trial-previews .pg-reveal-subline {
+  margin: 0 0 0.75rem;
+  font-size: 0.88rem;
+  color: var(--pg-muted);
+  line-height: 1.4;
+}
+
+/* Hide empty insight cards (legacy markup safety) */
+body.jcp-proof-gap .proof-gap-insight-card:empty,
+body.jcp-proof-gap .pg-answer-summary:empty {
+  display: none;
+}
