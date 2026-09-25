@@ -4485,11 +4485,28 @@ body.jcp-proof-gap .pg-micro-confirm[hidden] {
 /* ─── v11: Combined result + email state ─── */
 body.jcp-proof-gap .pg-result-email {
   display: grid;
-  gap: 1.35rem;
-  margin-top: 1rem;
+  gap: 0.65rem;
+  margin-top: 0.85rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.07);
+}
+body.jcp-proof-gap .pg-result-email .pg-title {
+  margin: 0;
+}
+body.jcp-proof-gap .pg-result-email .pg-sub {
+  margin: 0;
 }
 body.jcp-proof-gap .pg-result-email .pg-email {
-  margin-top: 0;
+  margin-top: 0.15rem;
+}
+body.jcp-proof-gap .pg-state--result-email .pg-result {
+  padding: 1rem 1rem 0.9rem;
+}
+body.jcp-proof-gap .pg-state--result-email .pg-result__hero-num {
+  font-size: clamp(1.85rem, 7vw, 2.35rem);
+}
+body.jcp-proof-gap .pg-state--result-email .pg-email-proof {
+  margin-top: 1.1rem;
 }
 
 /* Unused stats row */
