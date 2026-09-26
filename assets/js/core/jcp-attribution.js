@@ -5,6 +5,7 @@
  */
 (function () {
   const STORAGE_KEY = 'jcp_lead_attribution';
+  const STORAGE_KEY_PERSIST = 'jcp_lead_attribution_v2';
   const PARAM_KEYS = [
     'utm_source',
     'utm_medium',
@@ -13,7 +14,7 @@
     'utm_term',
     'fbclid',
   ];
-  const EXTRA_KEYS = ['lp_variant'];
+  const EXTRA_KEYS = ['lp_variant', 'qa_trace_id', 'first_touch_timestamp', '_fbp', '_fbc'];
 
   /** Path → analytics key for paid LPs (belt-and-suspenders if PHP attr misses). */
   const PATH_VARIANT_MAP = {
@@ -76,7 +77,25 @@
     }
   }
 
+  function readCookie(name) {
+    try {
+      const m = document.cookie.match(
+        new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()[\]\\/+^])/g, '\\$1') + '=([^;]*)')
+      );
+      return m ? decodeURIComponent(m[1]) : '';
+    } catch (e) {
+      return '';
+    }
+  }
+
   function readStoredAttribution() {
+    try {
+      const persisted = localStorage.getItem(STORAGE_KEY_PERSIST);
+      if (persisted) {
+        const data = JSON.parse(persisted);
+        if (data && typeof data === 'object') return data;
+      }
+    } catch (ePersist) {}
     try {
       const raw = sessionStorage.getItem(STORAGE_KEY);
       if (!raw) return null;
@@ -93,6 +112,11 @@
     } catch (e) {
       // no-op
     }
+    try {
+      localStorage.setItem(STORAGE_KEY_PERSIST, JSON.stringify(data));
+    } catch (e2) {
+      // no-op
+    }
   }
 
   /**
@@ -107,10 +131,21 @@
         data = {
           landing_page: window.location.pathname + window.location.search,
           referrer: document.referrer || '',
+          first_touch_timestamp: new Date().toISOString(),
         };
         PARAM_KEYS.forEach((key) => {
           data[key] = params.get(key) || '';
         });
+      }
+
+      if (!data.first_touch_timestamp) {
+        data.first_touch_timestamp = new Date().toISOString();
+      }
+      if (!data.landing_page) {
+        data.landing_page = window.location.pathname + window.location.search;
+      }
+      if (!data.referrer && document.referrer) {
+        data.referrer = document.referrer;
       }
 
       // Preserve first-touch UTMs; always stamp LP variant from page or URL when present.
@@ -118,6 +153,17 @@
       if (pageVariant && !data.lp_variant) {
         data.lp_variant = pageVariant;
       }
+
+      const qaTrace =
+        params.get('qa_trace_id') || params.get('jcp_qa_trace') || params.get('qa_trace') || '';
+      if (qaTrace && !data.qa_trace_id) {
+        data.qa_trace_id = String(qaTrace).trim().slice(0, 80);
+      }
+
+      const fbp = readCookie('_fbp');
+      const fbc = readCookie('_fbc');
+      if (fbp) data._fbp = fbp;
+      if (fbc) data._fbc = fbc;
 
       const contactId = readContactIdFromUrl();
       if (contactId) {
@@ -145,6 +191,12 @@
       });
       if (data.landing_page) out.landing_page = String(data.landing_page).trim();
       if (data.referrer) out.referrer = String(data.referrer).trim();
+      if (data.first_touch_timestamp) {
+        out.first_touch_timestamp = String(data.first_touch_timestamp).trim();
+      }
+      if (data.qa_trace_id) out.qa_trace_id = String(data.qa_trace_id).trim();
+      if (data._fbp) out._fbp = String(data._fbp).trim();
+      if (data._fbc) out._fbc = String(data._fbc).trim();
       if (isValidGhlContactId(data.contact_id)) {
         out.contact_id = String(data.contact_id).trim();
       }

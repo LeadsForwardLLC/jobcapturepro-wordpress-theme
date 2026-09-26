@@ -376,6 +376,7 @@
       survey_id: state.survey_id,
       survey_version: state.survey_version,
       session_id: state.session_id,
+      survey_session_id: state.session_id,
       lp_variant: LP_VARIANT,
       device_class: deviceClass(),
       current_state: state.current_state,
@@ -392,6 +393,13 @@
     if (attr.creative_concept && !payload.creative_concept) {
       payload.creative_concept = attr.creative_concept;
     }
+    if (attr.qa_trace_id && !payload.qa_trace_id) payload.qa_trace_id = attr.qa_trace_id;
+    if (attr.landing_page && !payload.landing_page) payload.landing_page = attr.landing_page;
+    if (attr.first_touch_timestamp && !payload.first_touch_timestamp) {
+      payload.first_touch_timestamp = attr.first_touch_timestamp;
+    }
+    if (attr._fbp && !payload._fbp) payload._fbp = attr._fbp;
+    if (attr._fbc && !payload._fbc) payload._fbc = attr._fbc;
     ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'ttclid', 'referrer'].forEach(function (k) {
       if (attr[k] && !payload[k]) payload[k] = attr[k];
     });
@@ -409,6 +417,35 @@
       window.dataLayer.push(payload);
     } catch (e) {}
     persistFunnelEvent(name, eventUuid, payload);
+    capturePostHog(name, payload);
+  }
+
+  /**
+   * Canonical PostHog taxonomy only — avoid double-firing legacy PascalCase names.
+   */
+  var POSTHOG_CANONICAL = {
+    proof_gap_viewed: true,
+    proof_gap_started: true,
+    proof_gap_answered: true,
+    proof_gap_completed: true,
+    proof_gap_email_submitted: true,
+    proof_gap_transformation_viewed: true,
+    proof_gap_preview_clicked: true,
+    trial_cta_viewed: true,
+    trial_cta_clicked: true,
+  };
+
+  function capturePostHog(name, payload) {
+    // Canonical names only — legacy PascalCase stays on dataLayer/REST.
+    if (!POSTHOG_CANONICAL[name]) return;
+    try {
+      if (window.JCPPostHog && typeof window.JCPPostHog.capture === 'function') {
+        var phProps = Object.assign({}, payload);
+        delete phProps.event;
+        phProps.survey_session_id = state.session_id;
+        window.JCPPostHog.capture(name, phProps);
+      }
+    } catch (ePh) {}
   }
 
   function persistFunnelEvent(name, eventUuid, payload) {
@@ -1371,6 +1408,23 @@
         }
       }
 
+      // Identity continuity for PostHog across marketing → app subdomain.
+      try {
+        if (window.JCPPostHog && typeof window.JCPPostHog.getDistinctId === 'function') {
+          var phId = window.JCPPostHog.getDistinctId();
+          if (phId) handoffExtra.ph_distinct_id = phId;
+        }
+      } catch (ePhId) {}
+
+      var attrHandoff = attrPayload();
+      if (attrHandoff.qa_trace_id) handoffExtra.qa_trace_id = attrHandoff.qa_trace_id;
+      // Pass first-touch UTMs when present (not the marketing-site defaults alone).
+      ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(function (k) {
+        if (attrHandoff[k] && String(attrHandoff[k]).indexOf('jobcapturepro.com') === -1) {
+          handoffExtra[k] = attrHandoff[k];
+        }
+      });
+
       // Merge demoUser + paid attribution when available so email always rides along.
       if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.buildHandoffParams === 'function') {
         var built = window.JCPOnboardingHandoff.buildHandoffParams() || {};
@@ -1629,6 +1683,12 @@
       if (!milestoneViewed.trial_view) {
         milestoneViewed.trial_view = true;
         track('TrialCTAViewed', { trade: state.trade, cta_source: 'trial_bridge' });
+        track('trial_cta_viewed', {
+          source: 'proof_gap',
+          trade: state.trade,
+          workflow: state.current_workflow,
+          jobs_per_week: state.jobs_per_week_bucket,
+        });
       }
     }
 

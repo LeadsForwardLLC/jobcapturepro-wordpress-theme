@@ -197,9 +197,22 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-proof-gap-mocks', 'css/pages/proof-gap-mocks.css', [ 'jcp-core-proof-gap' ] );
 
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
+        jcp_core_enqueue_script( 'jcp-core-posthog', 'js/core/jcp-posthog.js', [ 'jcp-core-attribution' ] );
         jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );
-        jcp_core_enqueue_script( 'jcp-core-proof-gap', 'js/pages/proof-gap.js', [ 'jcp-core-attribution', 'jcp-core-onboarding-handoff' ] );
+        jcp_core_enqueue_script( 'jcp-core-proof-gap', 'js/pages/proof-gap.js', [ 'jcp-core-attribution', 'jcp-core-posthog', 'jcp-core-onboarding-handoff' ] );
 
+        wp_add_inline_script(
+            'jcp-core-posthog',
+            'window.JCP_POSTHOG=window.JCP_POSTHOG||' . wp_json_encode(
+                [
+                    // Public project API key (same token used by the web SDK / GTM).
+                    'apiKey'  => apply_filters( 'jcp_posthog_project_api_key', 'phc_v8emzqtZ8beAjLsqj2byb5fK8wRHbW2g6hXBqAEZPMyS' ),
+                    'apiHost' => apply_filters( 'jcp_posthog_api_host', 'https://us.i.posthog.com' ),
+                    'uiHost'  => apply_filters( 'jcp_posthog_ui_host', 'https://us.posthog.com' ),
+                ]
+            ) . ';',
+            'before'
+        );
         wp_add_inline_script(
             'jcp-core-proof-gap',
             'window.JCP_CONFIG=window.JCP_CONFIG||{env:"live",baseUrl:' . wp_json_encode( site_url() ) . '};',
