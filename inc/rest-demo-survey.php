@@ -268,6 +268,8 @@ function jcp_demo_ghl_normalize_contact_params( array $params ): array {
         $business_type_label = $business_type;
     }
 
+    $use_case_param = isset( $params['use_case'] ) ? trim( (string) $params['use_case'] ) : '';
+
     return [
         'first_name'       => $first_name,
         'last_name'        => $last_name,
@@ -276,7 +278,9 @@ function jcp_demo_ghl_normalize_contact_params( array $params ): array {
         'company'          => $company,
         'business_type'    => $business_type_label,
         'service_area'     => $service_area,
-        'use_case'         => implode( ', ', $demo_goals ),
+        // Prefer an explicit use_case (Proof Gap packs survey answers here).
+        // Fall back to demo_goals for classic demo opt-in payloads.
+        'use_case'         => $use_case_param !== '' ? $use_case_param : implode( ', ', $demo_goals ),
         'referral_source'  => $referral_source,
         'utm_source'       => isset( $params['utm_source'] ) ? trim( (string) $params['utm_source'] ) : '',
         'utm_medium'       => isset( $params['utm_medium'] ) ? trim( (string) $params['utm_medium'] ) : '',
