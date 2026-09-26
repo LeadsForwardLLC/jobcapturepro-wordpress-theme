@@ -51,26 +51,29 @@
     try {
       id = getCookie(COOKIE_NAME) || localStorage.getItem(LS_KEY) || '';
     } catch (e) {}
-    if (!id || id.length < 8) {
-      id = uuid();
+
+    // Sticky: once we have a marketing-site id, never replace it mid-funnel.
+    if (id && id.length >= 8) {
+      try {
+        localStorage.setItem(LS_KEY, id);
+      } catch (e2) {}
+      setCookie(COOKIE_NAME, id);
+      return id;
     }
-    try {
-      localStorage.setItem(LS_KEY, id);
-    } catch (e2) {}
-    setCookie(COOKIE_NAME, id);
-    // Align with GTM PostHog when present (do not create a new person).
+
+    // First visit only: adopt GTM PostHog distinct_id when already present.
     try {
       if (window.posthog && typeof window.posthog.get_distinct_id === 'function') {
         var existing = String(window.posthog.get_distinct_id() || '');
-        if (existing && existing.length > 8) {
-          id = existing;
-          localStorage.setItem(LS_KEY, id);
-          setCookie(COOKIE_NAME, id);
-        } else if (typeof window.posthog.identify === 'function') {
-          // Keep anonymous continuity via register/bootstrap-style assign when supported.
-        }
+        if (existing && existing.length > 8) id = existing;
       }
     } catch (e3) {}
+
+    if (!id || id.length < 8) id = uuid();
+    try {
+      localStorage.setItem(LS_KEY, id);
+    } catch (e4) {}
+    setCookie(COOKIE_NAME, id);
     return id;
   }
 

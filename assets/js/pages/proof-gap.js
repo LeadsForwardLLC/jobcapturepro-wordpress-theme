@@ -1779,15 +1779,28 @@
     if (!landingTracked) {
       try { if (sessionStorage.getItem('jcp_pg_landing_tracked') === '1') landingTracked = true; } catch (eLand) {}
     }
-    if (!landingTracked) {
+
+    function fireLandingOnce() {
+      if (landingTracked) return;
       landingTracked = true;
       try { sessionStorage.setItem('jcp_pg_landing_tracked', '1'); } catch (eSet) {}
+      try {
+        if (window.JCPPostHog && typeof window.JCPPostHog.getDistinctId === 'function') {
+          window.JCPPostHog.getDistinctId();
+        }
+      } catch (eWarm) {}
       track('SurveyLandingViewed', {});
       track('proof_gap_viewed', {});
       try {
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push({ event: 'PaidLandingView', page_path: location.pathname, lp_variant: LP_VARIANT, session_id: state.session_id });
       } catch (e) {}
+    }
+
+    // Brief delay so GTM PostHog can supply distinct_id before first capture when present.
+    if (!landingTracked) {
+      if (window.posthog && window.posthog.__loaded) fireLandingOnce();
+      else setTimeout(fireLandingOnce, 400);
     }
 
     bind();
