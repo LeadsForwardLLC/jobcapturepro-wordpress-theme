@@ -136,19 +136,15 @@
       if (!properties.$pathname) properties.$pathname = location.pathname;
     }
 
-    // Always send via the public capture API so events are not dependent on GTM
-    // PostHog SDK readiness / filtering. Optionally mirror into the live SDK.
+    // Canonical path is the public capture API so events are not dependent on GTM
+    // PostHog SDK readiness / filtering. Do NOT also mirror into window.posthog —
+    // that double-fires the same event when the GTM SDK is already loaded.
     sendBeaconOrFetch({
       api_key: API_KEY,
       event: name,
       properties: properties,
       timestamp: new Date().toISOString(),
     });
-    try {
-      if (window.posthog && typeof window.posthog.capture === 'function' && window.posthog.__loaded) {
-        window.posthog.capture(name, properties);
-      }
-    } catch (ePh) {}
   }
 
   function register(extra) {
