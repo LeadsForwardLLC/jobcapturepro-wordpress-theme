@@ -74,8 +74,9 @@ $login_href = function_exists( 'jcp_core_app_login_url_raw' )
 				class="jcp-landing-brandbar__cta"
 				href="<?php echo esc_url( $trial_href ); ?>"
 				data-ps-trial
-				data-ps-source="brandbar"
-			><?php esc_html_e( 'Start free 14-day trial', 'jcp-core' ); ?></a>
+				data-ps-placement="brandbar"
+				data-ps-track="trial_cta"
+			><?php esc_html_e( 'Start Free Trial', 'jcp-core' ); ?></a>
 		</div>
 	</div>
 </header>
@@ -89,18 +90,23 @@ $login_href = function_exists( 'jcp_core_app_login_url_raw' )
 
 <footer class="jcp-footer jcp-footer--landing-minimal ps-footer" role="contentinfo">
 	<div class="jcp-container ps-footer__inner">
-		<p class="ps-footer__built"><?php esc_html_e( 'Built by the team behind LeadsForward', 'jcp-core' ); ?></p>
+		<p class="jcp-footer-landing-copy ps-footer__copy">&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> JobCapturePro</p>
 		<nav class="jcp-footer-legal ps-footer__nav" aria-label="<?php esc_attr_e( 'Legal', 'jcp-core' ); ?>">
 			<a href="<?php echo esc_url( home_url( '/privacy-policy/' ) ); ?>"><?php esc_html_e( 'Privacy', 'jcp-core' ); ?></a>
 			<a href="<?php echo esc_url( home_url( '/terms/' ) ); ?>"><?php esc_html_e( 'Terms', 'jcp-core' ); ?></a>
-			<a href="<?php echo esc_url( home_url( '/support/' ) ); ?>"><?php esc_html_e( 'Contact', 'jcp-core' ); ?></a>
 		</nav>
-		<p class="jcp-footer-landing-copy ps-footer__copy">&copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> JobCapturePro</p>
 	</div>
 </footer>
 
 <div class="ps-sticky-cta" id="psStickyCta" hidden>
-	<a class="btn btn-primary" href="#ps-optin" data-ps-scroll-optin data-ps-track="DemoCTA" data-ps-source="mobile_sticky"><?php esc_html_e( 'See it on my business →', 'jcp-core' ); ?></a>
+	<a
+		class="btn btn-primary"
+		href="<?php echo esc_url( $trial_href ); ?>"
+		data-ps-trial
+		data-ps-placement="mobile_sticky"
+		data-ps-track="trial_cta"
+	><?php esc_html_e( 'Start My Free 14-Day Trial →', 'jcp-core' ); ?></a>
+	<span class="ps-sticky-cta__micro"><?php esc_html_e( 'No credit card required', 'jcp-core' ); ?></span>
 </div>
 
 <?php wp_footer(); ?>

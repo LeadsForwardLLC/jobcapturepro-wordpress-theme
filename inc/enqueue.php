@@ -135,10 +135,21 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-proof-sprint', 'css/pages/proof-sprint.css', [ 'jcp-core-home', 'jcp-core-story-moments', 'jcp-core-niche-landing' ] );
 
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
+        jcp_core_enqueue_script( 'jcp-core-posthog', 'js/core/jcp-posthog.js', [ 'jcp-core-attribution' ] );
         jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );
-        jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
-        jcp_core_enqueue_script( 'jcp-core-proof-sprint', 'js/pages/proof-sprint.js', [ 'jcp-core-attribution', 'jcp-core-onboarding-handoff', 'jcp-core-authority' ] );
+        jcp_core_enqueue_script( 'jcp-core-proof-sprint', 'js/pages/proof-sprint.js', [ 'jcp-core-attribution', 'jcp-core-posthog', 'jcp-core-onboarding-handoff' ] );
 
+        wp_add_inline_script(
+            'jcp-core-posthog',
+            'window.JCP_POSTHOG=window.JCP_POSTHOG||' . wp_json_encode(
+                [
+                    'apiKey'  => apply_filters( 'jcp_posthog_project_api_key', 'phc_v8emzqtZ8beAjLsqj2byb5fK8wRHbW2g6hXBqAEZPMyS' ),
+                    'apiHost' => apply_filters( 'jcp_posthog_api_host', 'https://us.i.posthog.com' ),
+                    'uiHost'  => apply_filters( 'jcp_posthog_ui_host', 'https://us.posthog.com' ),
+                ]
+            ) . ';',
+            'before'
+        );
         wp_add_inline_script(
             'jcp-core-proof-sprint',
             'window.JCP_CONFIG=window.JCP_CONFIG||{env:"live",baseUrl:' . wp_json_encode( site_url() ) . '};',
@@ -151,22 +162,6 @@ function jcp_core_enqueue_assets(): void {
                 'campaignBase' => trailingslashit( get_template_directory_uri() ) . 'assets/campaign/',
                 'lpVariant'    => 'proof_sprint',
                 'mapUrl'       => get_template_directory_uri() . '/assets/map-3c5b675f-f28d-41a5-ba3a-972b4c189f10.png',
-            ]
-        );
-        wp_localize_script(
-            'jcp-core-proof-sprint',
-            'JCP_DEMO_SURVEY',
-            [
-                'rest_url'        => rest_url( 'jcp/v1/demo-survey-submit' ),
-                'rest_viewed_url' => rest_url( 'jcp/v1/demo-viewed-submit' ),
-                'rest_event_url'  => rest_url( 'jcp/v1/demo-event' ),
-            ]
-        );
-        wp_localize_script(
-            'jcp-core-proof-sprint',
-            'JCP_DEMO_EVENT',
-            [
-                'rest_url' => rest_url( 'jcp/v1/demo-event' ),
             ]
         );
         if ( function_exists( 'jcp_core_onboarding_app_url_raw' ) && function_exists( 'jcp_core_onboarding_hardcoded_session_id' ) ) {
