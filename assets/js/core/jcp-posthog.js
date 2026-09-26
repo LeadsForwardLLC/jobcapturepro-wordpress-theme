@@ -126,26 +126,26 @@
     var properties = scrub(Object.assign({}, attributionExtras(), props || {}));
     properties.distinct_id = distinctId;
     properties.$lib = 'jcp-posthog';
-    properties.$lib_version = '1.0.0';
+    properties.$lib_version = '1.0.1';
     if (typeof location !== 'undefined') {
       if (!properties.$current_url) properties.$current_url = location.href;
       if (!properties.$host) properties.$host = location.host;
       if (!properties.$pathname) properties.$pathname = location.pathname;
     }
-    // Prefer live posthog.capture when GTM SDK is ready (shared distinct_id).
-    try {
-      if (window.posthog && typeof window.posthog.capture === 'function' && window.posthog.__loaded) {
-        window.posthog.capture(name, properties);
-        return;
-      }
-    } catch (ePh) {}
 
+    // Always send via the public capture API so events are not dependent on GTM
+    // PostHog SDK readiness / filtering. Optionally mirror into the live SDK.
     sendBeaconOrFetch({
       api_key: API_KEY,
       event: name,
       properties: properties,
       timestamp: new Date().toISOString(),
     });
+    try {
+      if (window.posthog && typeof window.posthog.capture === 'function' && window.posthog.__loaded) {
+        window.posthog.capture(name, properties);
+      }
+    } catch (ePh) {}
   }
 
   function register(extra) {
