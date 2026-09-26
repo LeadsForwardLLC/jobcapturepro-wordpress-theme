@@ -1,0 +1,1825 @@
+/**
+ * Proof Gap Survey — simplified funnel state machine (v11).
+ * 8-state flow: welcome → trade → current_workflow → jobs_per_week →
+ * public_proof_percentage → result_email → app_sim → trial_bridge.
+ */
+(function () {
+  'use strict';
+
+  var STORAGE_KEY = 'jcp_proof_gap_state_v1';
+  var TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  var LEAD_EVENT_ID_KEY = 'jcp_pg_lead_event_id';
+  var AUTO_ADVANCE_MS = 250;
+  var LP_VARIANT = 'proof_gap_survey_v1';
+
+  var STATES = [
+    'welcome',
+    'trade',
+    'current_workflow',
+    'jobs_per_week',
+    'public_proof_percentage',
+    'result_email',
+    'app_sim',
+    'trial_bridge',
+  ];
+
+  var PHASE_BY_STATE = {
+    welcome: null,
+    trade: 'work',
+    current_workflow: 'work',
+    jobs_per_week: 'work',
+    public_proof_percentage: 'gap',
+    result_email: 'gap',
+    app_sim: 'plan',
+    trial_bridge: 'plan',
+  };
+
+  var APP_SIM_DURATION_MS = 4000;
+  var APP_SIM_REDUCED_MS = 1000;
+  var appSimTimer = null;
+  var appSimStepTimers = [];
+  var appSimSkipBound = false;
+  var destTabsHintTimer = null;
+
+  var WORKFLOW_CONFIRM_MSGS = {
+    housecall_pro: '\u2713 Your crew can keep using Housecall Pro.',
+    companycam: '\u2713 Your crew can keep using CompanyCam.',
+    other_crm: '\u2713 JCP may be able to work with your existing workflow.',
+  };
+
+  var JOB_EXAMPLES = {
+    hvac: 'HVAC service call',
+    plumbing: 'Plumbing repair',
+    electrical: 'Electrical install',
+    roofing: 'Roofing project',
+    remodeling: 'Remodel finish',
+    painting: 'Interior paint job',
+    landscaping: 'Landscaping job',
+    garage_door: 'Garage door service',
+    pest_control: 'Pest control visit',
+    tree_service: 'Tree service job',
+    power_washing: 'Power washing job',
+    other: 'Finished field job',
+  };
+
+  var DEST_CAPTIONS = {
+    website: {
+      label: 'Website',
+      headline: 'Turn finished jobs into real project and service-area content.',
+      small: 'Show future customers real work you\u2019ve completed near them.',
+    },
+    google: {
+      label: 'Google Business Profile',
+      headline: 'Turn real job activity into consistent Google updates.',
+      small: 'Keep your profile active with real job activity.',
+    },
+    social: {
+      label: 'Social',
+      headline: 'Turn the same job into a ready-to-publish social post.',
+      small: 'No sitting in the truck trying to write captions.',
+    },
+    reviews: {
+      label: 'Reviews',
+      headline: 'Turn a finished job into a review opportunity.',
+      small: 'Create more consistent opportunities to ask at the right time.',
+    },
+    directory: {
+      label: 'JobCapturePro Directory',
+      headline: 'Give every completed job another place to be discovered.',
+      small: 'Show recent work, services, and service-area activity.',
+    },
+  };
+
+  var boot = {};
+  try {
+    var bootEl = document.getElementById('pg-boot');
+    if (bootEl) boot = JSON.parse(bootEl.textContent || '{}') || {};
+  } catch (eBoot) {
+    boot = {};
+  }
+
+  var trades = boot.trades || {};
+  var workflows = boot.workflows || {};
+  var jobsBuckets = boot.jobsBuckets || {};
+  var proofPct = boot.proofPct || {};
+  var tradeAssets = boot.tradeAssets || {};
+  var creativeWhitelist = boot.creativeConcepts || ['default'];
+
+  var DEST_TABS = ['website', 'google', 'social', 'reviews', 'directory'];
+
+  var state = createEmptyState();
+  var advanceTimer = null;
+  var startedTracked = false;
+  var landingTracked = false;
+  var questionViewed = {};
+  var milestoneViewed = {};
+  var stepEnteredAt = Date.now();
+  var stepEnteredId = 'welcome';
+  var preloadedTradePhoto = '';
+  var bottomActionHandler = null;
+  var keyboardBound = false;
+  var activeDest = 'website';
+  var destTracked = {};
+
+  /* ─── Bottom action bar ─── */
+
+  function syncBottomPad() {
+    var bar = document.getElementById('pgBottomAction');
+    var pad = 0;
+    if (bar && !bar.hidden) {
+      pad = Math.ceil(bar.getBoundingClientRect().height) || 88;
+    }
+    document.documentElement.style.setProperty('--pg-bottom-pad', pad + 'px');
+    document.body.style.setProperty('--pg-bottom-pad', pad + 'px');
+  }
+
+  function clearBottomAction() {
+    var bar = document.getElementById('pgBottomAction');
+    var host = document.getElementById('pgBottomCtaHost');
+    var micro = document.getElementById('pgBottomMicro');
+    bottomActionHandler = null;
+    if (host) host.innerHTML = '';
+    if (micro) {
+      micro.hidden = true;
+      micro.textContent = '';
+    }
+    if (bar) {
+      bar.hidden = true;
+      bar.classList.remove('is-entering');
+    }
+    document.body.classList.remove('pg-has-bottom-action');
+    syncBottomPad();
+  }
+
+  function setBottomAction(opts) {
+    opts = opts || {};
+    var bar = document.getElementById('pgBottomAction');
+    var host = document.getElementById('pgBottomCtaHost');
+    var micro = document.getElementById('pgBottomMicro');
+    if (!bar || !host) return;
+
+    host.innerHTML = '';
+    bottomActionHandler = typeof opts.onClick === 'function' ? opts.onClick : null;
+
+    var el;
+    if (opts.href) {
+      el = document.createElement('a');
+      el.className = 'btn btn-primary pg-btn';
+      el.href = opts.href;
+      if (opts.id) el.id = opts.id;
+      el.addEventListener('click', function (ev) {
+        if (bottomActionHandler) bottomActionHandler(ev);
+      });
+    } else {
+      el = document.createElement('button');
+      el.type = opts.type || 'button';
+      el.className = 'btn btn-primary pg-btn';
+      if (opts.id) el.id = opts.id;
+      if (opts.form) el.setAttribute('form', opts.form);
+      el.addEventListener('click', function (ev) {
+        if (opts.type === 'submit') return;
+        if (bottomActionHandler) {
+          ev.preventDefault();
+          bottomActionHandler(ev);
+        }
+      });
+    }
+    if (opts.sublabel) {
+      el.classList.add('pg-btn--stacked');
+      el.innerHTML =
+        '<span class="pg-btn__label">' +
+        escapeHtml(opts.label || 'Continue \u2192') +
+        '</span><span class="pg-btn__sub">' +
+        escapeHtml(opts.sublabel) +
+        '</span>';
+    } else {
+      el.textContent = opts.label || 'Continue \u2192';
+    }
+    host.appendChild(el);
+
+    if (micro) {
+      if (opts.micro) {
+        micro.hidden = false;
+        micro.textContent = opts.micro;
+      } else {
+        micro.hidden = true;
+        micro.textContent = '';
+      }
+    }
+
+    var wasHidden = bar.hidden;
+    bar.hidden = false;
+    document.body.classList.add('pg-has-bottom-action');
+    if (opts.animate !== false && wasHidden && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      bar.classList.remove('is-entering');
+      void bar.offsetWidth;
+      bar.classList.add('is-entering');
+    }
+    requestAnimationFrame(syncBottomPad);
+    setTimeout(syncBottomPad, 50);
+  }
+
+  function syncBottomActionForState(id) {
+    if (id === 'welcome') {
+      setBottomAction({
+        id: 'pgWelcomeCta',
+        label: 'See What Your Jobs Could Be Doing \u2192',
+        micro: '4 quick questions \u00b7 About 60 seconds \u00b7 No phone \u00b7 No credit card',
+        animate: false,
+        onClick: function () {
+          markCompleted('welcome');
+          if (!startedTracked) {
+            startedTracked = true;
+            track('SurveyStarted', { question_id: 'welcome', cta_source: 'welcome' });
+            track('proof_gap_started', {});
+          }
+          saveState();
+          goTo('trade');
+        },
+      });
+      return;
+    }
+
+    if (id === 'trade' || id === 'current_workflow' || id === 'jobs_per_week' || id === 'public_proof_percentage') {
+      clearBottomAction();
+      return;
+    }
+
+    if (id === 'result_email') {
+      setBottomAction({
+        id: 'pgEmailSubmit',
+        label: 'Build My Job Example \u2192',
+        type: 'submit',
+        form: 'pgEmailForm',
+        animate: false,
+      });
+      return;
+    }
+
+    if (id === 'app_sim') {
+      clearBottomAction();
+      return;
+    }
+
+    if (id === 'trial_bridge') {
+      setBottomAction({
+        id: 'pgTrialCta',
+        label: 'Start My Free 14-Day Trial \u2192',
+        href: (boot.trialBase || 'https://app.jobcapturepro.com/onboarding'),
+        sublabel: 'No credit card required',
+        animate: false,
+        onClick: function (ev) {
+          if (ev && typeof ev.preventDefault === 'function') ev.preventDefault();
+          state.trial_cta_clicked = true;
+          markCompleted('trial_bridge');
+          saveState();
+          track('TrialCTAClicked', {
+            trade: state.trade,
+            current_workflow: state.current_workflow,
+            jobs_per_week_bucket: state.jobs_per_week_bucket,
+            cta_source: 'trial_bridge',
+          });
+          track('trial_cta_clicked', {
+            source: 'proof_gap',
+            trade: state.trade,
+            workflow: state.current_workflow,
+            jobs_per_week: state.jobs_per_week_bucket,
+          });
+          updateTrialHref();
+          var a = document.getElementById('pgTrialCta');
+          var dest = a && a.href ? a.href : '';
+          if (dest && dest.indexOf('onboarding') !== -1) {
+            window.location.assign(dest);
+          }
+        },
+      });
+      updateTrialHref();
+      return;
+    }
+
+    clearBottomAction();
+  }
+
+  function bindKeyboardSafe() {
+    if (keyboardBound) return;
+    keyboardBound = true;
+    var vv = window.visualViewport;
+    if (!vv) return;
+    var onResize = function () {
+      var offset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+      document.body.style.setProperty('--pg-keyboard-offset', offset > 40 ? offset + 'px' : '0px');
+      syncBottomPad();
+    };
+    vv.addEventListener('resize', onResize);
+    vv.addEventListener('scroll', onResize);
+  }
+
+  /* ─── State management ─── */
+
+  function createEmptyState() {
+    return {
+      survey_id: boot.surveyId || 'proof_gap_survey_v1',
+      survey_version: boot.surveyVersion || '11',
+      session_id: '',
+      current_state: 'welcome',
+      completed_states: [],
+      trade: '',
+      current_workflow: '',
+      jobs_per_week_bucket: '',
+      annual_jobs_min: null,
+      annual_jobs_max: null,
+      public_proof_percentage: '',
+      proof_gap_band: '',
+      unused_jobs_min: null,
+      unused_jobs_max: null,
+      email_captured: false,
+      trial_cta_clicked: false,
+      handoff_token: '',
+      other_trade_text: '',
+      other_workflow_text: '',
+      attribution: {},
+      created_at: Date.now(),
+      updated_at: Date.now(),
+    };
+  }
+
+  function uuid() {
+    try {
+      if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    } catch (e) {}
+    return 'pg_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+  }
+
+  function deviceClass() {
+    var w = window.innerWidth || 0;
+    if (w < 768) return 'mobile';
+    if (w < 1280) return 'tablet';
+    return 'desktop';
+  }
+
+  function attrPayload() {
+    try {
+      if (window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function') {
+        return window.JCPLeadAttribution.getPayload() || {};
+      }
+    } catch (e) {}
+    return {};
+  }
+
+  function track(name, props) {
+    props = props || {};
+    var eventUuid = uuid();
+    var attr = Object.assign({}, state.attribution || {}, attrPayload());
+    var payload = {
+      event: name,
+      event_uuid: eventUuid,
+      survey_id: state.survey_id,
+      survey_version: state.survey_version,
+      session_id: state.session_id,
+      survey_session_id: state.session_id,
+      lp_variant: LP_VARIANT,
+      device_class: deviceClass(),
+      current_state: state.current_state,
+      funnel_id: 'proof_gap',
+      funnel_version: state.survey_version,
+      trade: state.trade || undefined,
+      workflow: state.current_workflow || undefined,
+      jobs_per_week_bucket: state.jobs_per_week_bucket || undefined,
+      proof_gap_band: state.proof_gap_band || undefined,
+    };
+    Object.keys(props).forEach(function (k) {
+      if (props[k] !== undefined && props[k] !== null && props[k] !== '') payload[k] = props[k];
+    });
+    if (attr.creative_concept && !payload.creative_concept) {
+      payload.creative_concept = attr.creative_concept;
+    }
+    if (attr.qa_trace_id && !payload.qa_trace_id) payload.qa_trace_id = attr.qa_trace_id;
+    if (attr.landing_page && !payload.landing_page) payload.landing_page = attr.landing_page;
+    if (attr.first_touch_timestamp && !payload.first_touch_timestamp) {
+      payload.first_touch_timestamp = attr.first_touch_timestamp;
+    }
+    if (attr._fbp && !payload._fbp) payload._fbp = attr._fbp;
+    if (attr._fbc && !payload._fbc) payload._fbc = attr._fbc;
+    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'ttclid', 'referrer'].forEach(function (k) {
+      if (attr[k] && !payload[k]) payload[k] = attr[k];
+    });
+    if (attr.fbclid) payload.has_fbclid = true;
+    if (attr.ttclid) payload.has_ttclid = true;
+    delete payload.email;
+    delete payload.phone;
+    delete payload.first_name;
+    delete payload.last_name;
+    delete payload.business_name;
+    delete payload.fbclid;
+    delete payload.ttclid;
+    try {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push(payload);
+    } catch (e) {}
+    persistFunnelEvent(name, eventUuid, payload);
+    capturePostHog(name, payload);
+  }
+
+  /**
+   * Canonical PostHog taxonomy only — avoid double-firing legacy PascalCase names.
+   */
+  var POSTHOG_CANONICAL = {
+    proof_gap_viewed: true,
+    proof_gap_started: true,
+    proof_gap_answered: true,
+    proof_gap_completed: true,
+    proof_gap_email_submitted: true,
+    proof_gap_transformation_viewed: true,
+    proof_gap_preview_clicked: true,
+    trial_cta_viewed: true,
+    trial_cta_clicked: true,
+  };
+
+  function capturePostHog(name, payload) {
+    // Canonical names only — legacy PascalCase stays on dataLayer/REST.
+    if (!POSTHOG_CANONICAL[name]) return;
+    try {
+      if (window.JCPPostHog && typeof window.JCPPostHog.capture === 'function') {
+        var phProps = Object.assign({}, payload);
+        delete phProps.event;
+        phProps.survey_session_id = state.session_id;
+        window.JCPPostHog.capture(name, phProps);
+      }
+    } catch (ePh) {}
+  }
+
+  function persistFunnelEvent(name, eventUuid, payload) {
+    var url = boot.funnelEventUrl || '/wp-json/jcp/v1/funnel-event';
+    var body = {
+      event_uuid: eventUuid,
+      session_id: state.session_id || '',
+      funnel_id: 'proof_gap',
+      funnel_version: String(state.survey_version || ''),
+      lp_variant: LP_VARIANT,
+      event_name: name,
+      screen: state.current_state || '',
+      question_index: propsQuestionIndex(payload),
+      question_id: payload.question_id || '',
+      answer_value: payload.answer_value || payload.answer_key || payload.answer || '',
+      trade: state.trade || '',
+      jobs_per_week_bucket: state.jobs_per_week_bucket || '',
+      proof_gap_band: state.proof_gap_band || '',
+      workflow: state.current_workflow || '',
+      utm_source: payload.utm_source || '',
+      utm_medium: payload.utm_medium || '',
+      utm_campaign: payload.utm_campaign || '',
+      utm_content: payload.utm_content || '',
+      utm_term: payload.utm_term || '',
+      has_fbclid: !!payload.has_fbclid,
+      has_ttclid: !!payload.has_ttclid,
+      device_category: deviceClass(),
+      referrer: payload.referrer || '',
+      metadata: {
+        creative_concept: payload.creative_concept || '',
+        destination: payload.destination || '',
+        cta_source: payload.cta_source || '',
+        duration_ms: payload.duration_ms || '',
+      },
+      creative_concept: payload.creative_concept || '',
+    };
+    try {
+      var json = JSON.stringify(body);
+      if (typeof navigator !== 'undefined' && typeof navigator.sendBeacon === 'function') {
+        try {
+          var blob = new Blob([json], { type: 'application/json' });
+          if (navigator.sendBeacon(url, blob)) return;
+        } catch (eBeacon) {}
+      }
+      fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: json,
+        keepalive: true,
+      }).catch(function () {});
+    } catch (ePersist) {}
+  }
+
+  function propsQuestionIndex(payload) {
+    var q = payload.question_id || '';
+    var map = { trade: 1, current_workflow: 2, jobs_per_week: 3, public_proof_percentage: 4 };
+    return map[q] || null;
+  }
+
+  function saveState() {
+    state.updated_at = Date.now();
+    state.attribution = Object.assign({}, state.attribution || {}, attrPayload());
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ expires: Date.now() + TTL_MS, state: state }));
+    } catch (e) {}
+  }
+
+  function loadState() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      var parsed = JSON.parse(raw);
+      if (!parsed || !parsed.state || !parsed.expires || parsed.expires < Date.now()) {
+        localStorage.removeItem(STORAGE_KEY);
+        return false;
+      }
+      var s = parsed.state;
+      if (s.survey_id !== (boot.surveyId || 'proof_gap_survey_v1')) return false;
+      state = Object.assign(createEmptyState(), s);
+      if (!state.current_state || STATES.indexOf(state.current_state) === -1) state.current_state = 'welcome';
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function ensureSession() {
+    if (!state.session_id) {
+      state.session_id = uuid();
+      saveState();
+    }
+  }
+
+  function stateIndex(id) {
+    var i = STATES.indexOf(id);
+    return i < 0 ? 0 : i;
+  }
+
+  function markCompleted(id) {
+    if (state.completed_states.indexOf(id) === -1) state.completed_states.push(id);
+  }
+
+  function invalidateDownstream(fromField) {
+    var order = ['trade', 'current_workflow', 'jobs_per_week', 'public_proof_percentage'];
+    var idx = order.indexOf(fromField);
+    if (idx < 0) return;
+    for (var i = idx + 1; i < order.length; i++) {
+      var id = order[i];
+      state.completed_states = state.completed_states.filter(function (c) { return c !== id; });
+      if (id === 'current_workflow') state.current_workflow = '';
+      if (id === 'jobs_per_week') {
+        state.jobs_per_week_bucket = '';
+        state.annual_jobs_min = null;
+        state.annual_jobs_max = null;
+      }
+      if (id === 'public_proof_percentage') {
+        state.public_proof_percentage = '';
+        state.proof_gap_band = '';
+        state.unused_jobs_min = null;
+        state.unused_jobs_max = null;
+      }
+    }
+    if (['jobs_per_week', 'public_proof_percentage', 'trade', 'current_workflow'].indexOf(fromField) !== -1) {
+      state.unused_jobs_min = null;
+      state.unused_jobs_max = null;
+    }
+  }
+
+  function answerForState(id) {
+    if (id === 'jobs_per_week') return state.jobs_per_week_bucket;
+    if (id === 'trade') return state.trade;
+    if (id === 'current_workflow') return state.current_workflow;
+    if (id === 'public_proof_percentage') return state.public_proof_percentage;
+    return '';
+  }
+
+  function firstIncomplete() {
+    for (var i = 0; i < STATES.length; i++) {
+      var id = STATES[i];
+      if (id === 'welcome') {
+        if (state.completed_states.indexOf('welcome') === -1 && !state.trade) return 'welcome';
+        continue;
+      }
+      if (id === 'trade' || id === 'current_workflow' || id === 'jobs_per_week' || id === 'public_proof_percentage') {
+        if (!answerForState(id)) return id;
+        continue;
+      }
+      if (id === 'result_email') {
+        if (!state.email_captured) return id;
+        continue;
+      }
+      if (id === 'app_sim') continue;
+      if (id === 'trial_bridge') return id;
+    }
+    return 'trial_bridge';
+  }
+
+  /* ─── Progress + navigation ─── */
+
+  function updateProgress() {
+    var progress = document.getElementById('pgProgress');
+    var isWelcome = state.current_state === 'welcome';
+    if (progress) progress.hidden = isWelcome;
+    if (isWelcome) return;
+
+    var phase = PHASE_BY_STATE[state.current_state] || 'work';
+    var order = ['work', 'gap', 'plan'];
+    var activeIdx = order.indexOf(phase);
+    var phasePct = { work: 34, gap: 67, plan: 100 };
+    var inPhase = STATES.filter(function (s) { return PHASE_BY_STATE[s] === phase; });
+    var localIdx = Math.max(0, inPhase.indexOf(state.current_state));
+    var localSpan = inPhase.length || 1;
+    var prevPct = activeIdx <= 0 ? 0 : phasePct[order[activeIdx - 1]] || 0;
+    var endPct = phasePct[phase] || 100;
+    var pct = prevPct + ((localIdx + 1) / localSpan) * (endPct - prevPct);
+    var fill = document.getElementById('pgProgressFill');
+    if (fill) fill.style.width = Math.min(100, Math.round(pct)) + '%';
+
+    document.querySelectorAll('.pg-progress__phase').forEach(function (el) {
+      var p = el.getAttribute('data-phase');
+      var pi = order.indexOf(p);
+      el.classList.toggle('is-active', p === phase);
+      el.classList.toggle('is-done', pi < activeIdx);
+    });
+  }
+
+  function setBackVisible() {
+    var back = document.getElementById('pgBack');
+    if (!back) return;
+    back.hidden = state.current_state === 'welcome' || state.current_state === 'app_sim';
+  }
+
+  function readUrlParam(key) {
+    try { return new URLSearchParams(window.location.search).get(key) || ''; }
+    catch (e) { return ''; }
+  }
+
+  function initCreativeConcept() {
+    var fromUrl = readUrlParam('creative_concept');
+    var concept = 'default';
+    if (fromUrl && creativeWhitelist.indexOf(fromUrl) !== -1) {
+      concept = fromUrl;
+    } else if (state.attribution && state.attribution.creative_concept && creativeWhitelist.indexOf(state.attribution.creative_concept) !== -1) {
+      concept = state.attribution.creative_concept;
+    }
+    state.attribution = state.attribution || {};
+    state.attribution.creative_concept = concept;
+    var visual = document.querySelector('[data-pg-welcome-visual]');
+    if (visual) visual.setAttribute('data-creative', concept);
+  }
+
+  /* ─── Choices ─── */
+
+  function choiceLabel(map, key) {
+    var item = map[key];
+    if (item == null) return key;
+    if (typeof item === 'object') {
+      if (item.title && item.band) return item.title + '\n' + item.band;
+      return item.label || item.title || key;
+    }
+    return item;
+  }
+
+  function workflowIconSvg(key) {
+    if (key === 'other_crm') {
+      return '<svg class="pg-choice__icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M7 9h10M7 13h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+    }
+    if (key === 'phones_camera_roll') {
+      return '<svg class="pg-choice__icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="14" r="3" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+    }
+    if (key === 'group_text_shared_folder') {
+      return '<svg class="pg-choice__icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M4 6h16v12H4z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8 10h8M8 14h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+    }
+    return '<svg class="pg-choice__icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="6" cy="8" r="2" fill="currentColor"/><circle cx="12" cy="6" r="2" fill="currentColor"/><circle cx="18" cy="9" r="2" fill="currentColor"/><path d="M4 18c0-2 2-3 4-3M10 18c0-2 2-3 4-3M16 18c0-1 2-2 3-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  }
+
+  function workflowChoiceInner(key, label) {
+    var host = document.querySelector('[data-pg-choices="current_workflow"]');
+    var safeLabel = escapeHtml(label);
+    if (key === 'housecall_pro' && host) {
+      var hcp = host.getAttribute('data-logo-hcp') || '';
+      if (hcp) return '<span class="pg-choice__lead"><img class="pg-choice__logo" src="' + escapeHtml(hcp) + '" alt="" width="72" height="20" loading="lazy" decoding="async" /></span><span class="pg-choice__text">' + safeLabel + '</span>';
+    }
+    if (key === 'companycam' && host) {
+      var cc = host.getAttribute('data-logo-cc') || '';
+      if (cc) return '<span class="pg-choice__lead"><img class="pg-choice__logo" src="' + escapeHtml(cc) + '" alt="" width="72" height="20" loading="lazy" decoding="async" /></span><span class="pg-choice__text">' + safeLabel + '</span>';
+    }
+    return '<span class="pg-choice__lead">' + workflowIconSvg(key) + '</span><span class="pg-choice__text">' + safeLabel + '</span>';
+  }
+
+  function renderChoices(field, map, selectedKey) {
+    var host = document.querySelector('[data-pg-choices="' + field + '"]');
+    if (!host) return;
+    host.innerHTML = '';
+    Object.keys(map).forEach(function (key) {
+      var item = map[key];
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'pg-choice' + (selectedKey === key ? ' is-selected' : '');
+      btn.setAttribute('data-pg-field', field);
+      btn.setAttribute('data-pg-value', key);
+      if (field === 'public_proof_percentage' && item && typeof item === 'object') {
+        btn.className += ' pg-choice--stacked';
+        var t = document.createElement('span');
+        t.className = 'pg-choice__title';
+        t.textContent = item.title || item.label || key;
+        btn.appendChild(t);
+        if (item.band) {
+          var b = document.createElement('span');
+          b.className = 'pg-choice__band';
+          b.textContent = item.band;
+          btn.appendChild(b);
+        }
+      } else if (field === 'current_workflow') {
+        btn.className += ' pg-choice--workflow';
+        btn.innerHTML = workflowChoiceInner(key, choiceLabel(map, key));
+      } else {
+        btn.textContent = choiceLabel(map, key);
+      }
+      btn.addEventListener('click', function () { onChoice(field, key, btn); });
+      host.appendChild(btn);
+    });
+  }
+
+  /* ─── Auto-advance ─── */
+
+  function clearAdvance() {
+    if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+  }
+
+  function prefersReducedMotion() {
+    try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+    catch (e) { return false; }
+  }
+
+  function scheduleAdvance(next, delayMs) {
+    clearAdvance();
+    var delay = typeof delayMs === 'number' ? delayMs : (prefersReducedMotion() ? 0 : AUTO_ADVANCE_MS);
+    advanceTimer = setTimeout(function () { goTo(next); }, delay);
+  }
+
+  /* ─── Workflow micro-confirm ─── */
+
+  function showWorkflowConfirm(key) {
+    var el = document.getElementById('pgWorkflowConfirm');
+    if (!el) return;
+    var msg = WORKFLOW_CONFIRM_MSGS[key] || '';
+    if (!msg) { el.hidden = true; el.textContent = ''; return; }
+    el.textContent = msg;
+    el.hidden = false;
+  }
+
+  function hideWorkflowConfirm() {
+    var el = document.getElementById('pgWorkflowConfirm');
+    if (el) { el.hidden = true; el.textContent = ''; }
+  }
+
+  /* ─── Choice handler ─── */
+
+  function onChoice(field, key, btn) {
+    document.querySelectorAll('.pg-choice[data-pg-field="' + field + '"]').forEach(function (b) {
+      b.classList.remove('is-selected');
+    });
+    if (btn) btn.classList.add('is-selected');
+
+    var prev =
+      field === 'trade' ? state.trade :
+      field === 'current_workflow' ? state.current_workflow :
+      field === 'jobs_per_week' ? state.jobs_per_week_bucket :
+      state.public_proof_percentage;
+    if (prev && prev !== key) invalidateDownstream(field);
+
+    if (field === 'trade') {
+      state.trade = key;
+      markCompleted('trade');
+      preloadTradePhoto(key);
+
+      if (key === 'other') {
+        var otherField = document.getElementById('pgTradeOtherField');
+        if (otherField) otherField.hidden = false;
+        clearBottomAction();
+        saveState();
+        track('SurveyQuestionAnswered', {
+          question_index: stateIndex('trade'), question_id: 'trade', answer_key: key,
+          feedback_shown: false, trade: key, other_text_provided: false,
+        });
+        track('proof_gap_answered', { question: 'trade', answer: key, step_number: 1 });
+        return;
+      }
+
+      var otherFieldHide = document.getElementById('pgTradeOtherField');
+      if (otherFieldHide) otherFieldHide.hidden = true;
+      state.other_trade_text = '';
+      saveState();
+      track('SurveyQuestionAnswered', {
+        question_index: stateIndex('trade'), question_id: 'trade', answer_key: key,
+        feedback_shown: false, trade: key,
+      });
+      track('proof_gap_answered', { question: 'trade', answer: key, step_number: 1 });
+      scheduleAdvance('current_workflow');
+      return;
+    }
+
+    if (field === 'current_workflow') {
+      state.current_workflow = key;
+      markCompleted('current_workflow');
+
+      if (key === 'other_crm') {
+        var wfField = document.getElementById('pgWorkflowOtherField');
+        if (wfField) wfField.hidden = false;
+        clearBottomAction();
+        saveState();
+        track('SurveyQuestionAnswered', {
+          question_index: stateIndex('current_workflow'), question_id: 'current_workflow',
+          answer_key: key, feedback_shown: false, trade: state.trade, current_workflow: key,
+          custom_workflow_provided: false,
+        });
+        track('proof_gap_answered', { question: 'current_workflow', answer: key, step_number: 2 });
+        return;
+      }
+
+      var wfFieldHide = document.getElementById('pgWorkflowOtherField');
+      if (wfFieldHide) wfFieldHide.hidden = true;
+      state.other_workflow_text = '';
+      saveState();
+      track('SurveyQuestionAnswered', {
+        question_index: stateIndex('current_workflow'), question_id: 'current_workflow',
+        answer_key: key, feedback_shown: !!WORKFLOW_CONFIRM_MSGS[key], trade: state.trade,
+        current_workflow: key,
+      });
+      track('proof_gap_answered', { question: 'current_workflow', answer: key, step_number: 2 });
+      showWorkflowConfirm(key);
+      var delay = WORKFLOW_CONFIRM_MSGS[key] ? 300 : AUTO_ADVANCE_MS;
+      scheduleAdvance('jobs_per_week', delay);
+      return;
+    }
+
+    if (field === 'jobs_per_week') {
+      state.jobs_per_week_bucket = key;
+      var bucket = jobsBuckets[key] || {};
+      state.annual_jobs_min = typeof bucket.min === 'number' ? bucket.min : null;
+      state.annual_jobs_max = typeof bucket.max === 'number' ? bucket.max : null;
+      markCompleted('jobs_per_week');
+      saveState();
+      track('SurveyQuestionAnswered', {
+        question_index: stateIndex('jobs_per_week'), question_id: 'jobs_per_week',
+        answer_key: key, feedback_shown: false, trade: state.trade,
+        current_workflow: state.current_workflow, jobs_per_week_bucket: key,
+      });
+      track('proof_gap_answered', { question: 'jobs_per_week', answer: key, step_number: 3 });
+      scheduleAdvance('public_proof_percentage');
+      return;
+    }
+
+    if (field === 'public_proof_percentage') {
+      state.public_proof_percentage = key;
+      state.proof_gap_band = key;
+      computeUnusedRange();
+      markCompleted('public_proof_percentage');
+      saveState();
+      track('SurveyQuestionAnswered', {
+        question_index: stateIndex('public_proof_percentage'), question_id: 'public_proof_percentage',
+        answer_key: key, feedback_shown: false, trade: state.trade,
+        current_workflow: state.current_workflow, jobs_per_week_bucket: state.jobs_per_week_bucket,
+        public_proof_percentage: key,
+      });
+      track('proof_gap_answered', { question: 'public_proof_percentage', answer: key, step_number: 4 });
+      track('proof_gap_completed', {
+        trade: state.trade, workflow: state.current_workflow,
+        jobs_per_week: state.jobs_per_week_bucket, marketing_usage: key,
+        annual_jobs_low: state.annual_jobs_min, annual_jobs_high: state.annual_jobs_max,
+        unused_jobs_low: state.unused_jobs_min, unused_jobs_high: state.unused_jobs_max,
+      });
+      scheduleAdvance('result_email');
+    }
+  }
+
+  /* ─── Utility ─── */
+
+  function escapeHtml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function sanitizeCustomText(raw) {
+    return String(raw || '').replace(/[<>&"']/g, '').trim().slice(0, 80);
+  }
+
+  /* ─── Proof math ─── */
+
+  function formatAnnualRange() {
+    if (state.annual_jobs_min == null) return '\u2014';
+    if (state.annual_jobs_max == null) return state.annual_jobs_min.toLocaleString() + '+';
+    return state.annual_jobs_min.toLocaleString() + '\u2013' + state.annual_jobs_max.toLocaleString();
+  }
+
+  function formatUnusedRange() {
+    if (state.unused_jobs_min == null || state.unused_jobs_max == null) return '';
+    if (state.unused_jobs_min === state.unused_jobs_max) return '\u2248' + state.unused_jobs_min.toLocaleString();
+    return state.unused_jobs_min.toLocaleString() + '\u2013' + state.unused_jobs_max.toLocaleString();
+  }
+
+  function proofBandLabel(key) {
+    var item = proofPct[key];
+    if (!item) return key || '\u2014';
+    if (typeof item === 'object') return item.band || item.label || key;
+    return item;
+  }
+
+  function computeUnusedRange() {
+    state.unused_jobs_min = null;
+    state.unused_jobs_max = null;
+    var band = proofPct[state.public_proof_percentage];
+    if (!band || typeof band !== 'object') return;
+    if (band.min == null || band.max == null) return;
+    if (state.annual_jobs_min == null) return;
+    var annualMax = state.annual_jobs_max != null ? state.annual_jobs_max : state.annual_jobs_min;
+    var uMin = Math.max(0, Math.floor(state.annual_jobs_min * (1 - band.max)));
+    var uMax = Math.max(0, Math.ceil(annualMax * (1 - band.min)));
+    if (state.annual_jobs_max == null) {
+      state.unused_jobs_min = uMin;
+      state.unused_jobs_max = null;
+      return;
+    }
+    if (uMin > uMax) { var tmp = uMin; uMin = uMax; uMax = tmp; }
+    state.unused_jobs_min = uMin;
+    state.unused_jobs_max = uMax;
+  }
+
+  function proofTier(key) {
+    if (key === 'unknown') return 'unknown';
+    if (key === '0_10' || key === '11_25') return 'low';
+    if (key === '26_50' || key === '51_75') return 'mid';
+    if (key === '76_100') return 'high';
+    return 'mid';
+  }
+
+  function unusedPercentLabel() {
+    var band = proofPct[state.public_proof_percentage];
+    if (!band || typeof band !== 'object' || band.min == null || band.max == null) return '';
+    var pubMid = Math.round(((band.min + band.max) / 2) * 100);
+    var gap = 100 - pubMid;
+    return '\u2248' + gap + '%';
+  }
+
+  /* ─── Result rendering ─── */
+
+  function renderGapViz() {
+    var el = document.getElementById('pgGapViz');
+    if (!el) return;
+    var band = proofPct[state.public_proof_percentage];
+    var tier = proofTier(state.public_proof_percentage);
+    if (!band || tier === 'unknown' || band.min == null || band.max == null) { el.innerHTML = ''; return; }
+    var pubMid = Math.round(((band.min + band.max) / 2) * 100);
+    var gapMid = 100 - pubMid;
+    el.innerHTML =
+      '<div class="pg-result-bar">' +
+      '<div class="pg-result-bar__track" role="img" aria-label="Jobs reused in marketing versus unused">' +
+      '<span class="pg-result-bar__seg--visible" style="width:' + pubMid + '%"></span>' +
+      '<span class="pg-result-bar__seg--gap" style="width:' + gapMid + '%"></span></div>' +
+      '<div class="pg-result-bar__legend">' +
+      '<span><i class="pg-result-bar__dot pg-result-bar__dot--visible"></i> Reused in marketing ~' + pubMid + '%</span>' +
+      '<span><i class="pg-result-bar__dot pg-result-bar__dot--gap"></i> Potentially unused ~' + gapMid + '%</span>' +
+      '</div></div>';
+  }
+
+  function renderResult() {
+    var title = document.getElementById('pgResultTitle');
+    var completed = document.getElementById('pgResultCompleted');
+    var heroLabel = document.getElementById('pgResultHeroLabel');
+    var heroSub = document.getElementById('pgResultHeroSub');
+    var pub = document.getElementById('pgResultPublic');
+    var invWrap = document.getElementById('pgResultInvisibleWrap');
+    var inv = document.getElementById('pgResultInvisible');
+    var unusedWrap = document.getElementById('pgResultUnusedWrap');
+    var unused = document.getElementById('pgResultUnused');
+    var note = document.getElementById('pgResultNote');
+    var support = document.getElementById('pgResultSupport');
+    var tier = proofTier(state.public_proof_percentage);
+    computeUnusedRange();
+
+    if (support) support.innerHTML = '';
+
+    if (tier === 'high') {
+      if (title) title.textContent = 'Some of your best work still never gets seen.';
+      if (completed) completed.textContent = formatAnnualRange();
+      if (heroLabel) heroLabel.textContent = 'completed jobs / year';
+      if (heroSub) { heroSub.hidden = true; heroSub.textContent = ''; }
+      if (pub) pub.textContent = formatAnnualRange();
+      if (invWrap && inv) {
+        invWrap.hidden = false;
+        inv.textContent = proofBandLabel(state.public_proof_percentage) || '76\u2013100%';
+        var invLabel = invWrap.querySelector('span');
+        if (invLabel) invLabel.textContent = 'Currently reused in marketing';
+      }
+      if (unusedWrap) unusedWrap.hidden = true;
+      if (note) { note.className = 'pg-result__note pg-result__note--quote'; note.textContent = 'You\u2019re already doing the hard part.'; }
+      renderGapViz();
+      return;
+    }
+
+    if (tier === 'unknown') {
+      if (title) title.textContent = 'Make the process after the job visible and repeatable.';
+      if (completed) completed.textContent = formatAnnualRange();
+      if (heroLabel) heroLabel.textContent = 'completed jobs / year';
+      if (heroSub) {
+        heroSub.hidden = false;
+        heroSub.textContent = 'Because you\u2019re not sure how many become marketing, the first opportunity is simply making that process visible and repeatable.';
+      }
+      if (pub) pub.textContent = formatAnnualRange();
+      if (invWrap) invWrap.hidden = true;
+      if (unusedWrap) unusedWrap.hidden = true;
+      if (note) { note.className = 'pg-result__note'; note.textContent = 'Based on the ranges you selected.'; }
+      renderGapViz();
+      return;
+    }
+
+    var unusedTxt =
+      state.unused_jobs_max == null
+        ? state.unused_jobs_min != null ? state.unused_jobs_min.toLocaleString() + '+' : '\u2014'
+        : formatUnusedRange();
+    if (title) title.textContent = 'may be disappearing after the invoice gets paid.';
+    if (completed) completed.textContent = unusedTxt;
+    if (heroLabel) heroLabel.textContent = 'finished jobs / year';
+    if (heroSub) { heroSub.hidden = true; heroSub.textContent = ''; }
+    if (pub) pub.textContent = formatAnnualRange();
+    if (invWrap && inv) {
+      invWrap.hidden = false;
+      inv.textContent = proofBandLabel(state.public_proof_percentage) || '\u2014';
+      var invLab = invWrap.querySelector('span');
+      if (invLab) invLab.textContent = 'Currently reused in marketing';
+    }
+    if (unusedWrap && unused) {
+      unusedWrap.hidden = false;
+      unused.textContent = unusedPercentLabel() || unusedTxt;
+    }
+    if (note) {
+      note.className = 'pg-result__note';
+      note.textContent = 'Based on ' + formatAnnualRange() + ' completed jobs/year and your estimate that ' +
+        (proofBandLabel(state.public_proof_percentage) || 'some') + ' gets used in marketing.';
+    }
+    renderGapViz();
+  }
+
+  /* ─── Trade assets ─── */
+
+  function getDefaultJobPhotoUrl() {
+    var fallback = tradeAssets.other || tradeAssets.hvac || tradeAssets.plumbing;
+    return (fallback && fallback.photo) || '';
+  }
+
+  function getTradeAsset(trade) {
+    var asset = tradeAssets[trade] || tradeAssets.other || null;
+    if (asset && asset.photo) return asset;
+    return { title: (asset && asset.title) || JOB_EXAMPLES[trade] || 'Finished field job', photo: getDefaultJobPhotoUrl(), neutral: false };
+  }
+
+  function preloadTradePhoto(trade) {
+    var asset = getTradeAsset(trade);
+    if (!asset || !asset.photo) return;
+    if (preloadedTradePhoto === asset.photo) return;
+    preloadedTradePhoto = asset.photo;
+    try { var img = new Image(); img.decoding = 'async'; img.src = asset.photo; } catch (e) {}
+  }
+
+  function getJobPhotoUrl() {
+    var asset = getTradeAsset(state.trade);
+    return (asset && asset.photo) || getDefaultJobPhotoUrl();
+  }
+
+  function brandMark(initial) {
+    var letter = (initial || 'J').toString().charAt(0).toUpperCase() || 'J';
+    return '<span class="ps-mock__logo pg-dest-mark" aria-hidden="true">' + escapeHtml(letter) + '</span>';
+  }
+
+  function jobPhotoBlock(extraClass) {
+    var photoUrl = getJobPhotoUrl();
+    var cls = 'ps-mock__photo' + (extraClass ? ' ' + extraClass : '');
+    if (photoUrl !== '') {
+      return '<img class="' + cls + '" src="' + escapeHtml(photoUrl) + '" alt="" width="640" height="400" loading="lazy" decoding="async" />';
+    }
+    return '<div class="' + cls + ' ps-mock__photo--fallback" aria-hidden="true"><span>Completed job</span></div>';
+  }
+
+  function jobThumbBlock() {
+    var photoUrl = getJobPhotoUrl();
+    if (photoUrl !== '') {
+      return '<img class="ps-mock__thumb" src="' + escapeHtml(photoUrl) + '" alt="" width="160" height="120" loading="lazy" decoding="async" />';
+    }
+    return '<div class="ps-mock__thumb ps-mock__thumb--fallback" aria-hidden="true"></div>';
+  }
+
+  function revealJobContext() {
+    var asset = getTradeAsset(state.trade);
+    var titleTxt = (asset && asset.title) || JOB_EXAMPLES[state.trade] || 'Finished field job';
+    return { title: titleTxt, city: 'Your service area', desc: 'Documented from the field \u2014 ready for channels.' };
+  }
+
+  /* ─── Dest panel rendering ─── */
+
+  function renderDestPanel(dest) {
+    var panel = document.getElementById('pgDestPanel');
+    if (!panel) return;
+    var job = revealJobContext();
+    var mapUrl = panel.getAttribute('data-map') || '';
+    var qrUrl = panel.getAttribute('data-qr') || '';
+    var tradeLabel = trades[state.trade] || 'Trade';
+    if (state.trade === 'other' && state.other_trade_text) tradeLabel = state.other_trade_text;
+    var biz = tradeLabel + ' Co';
+    var title = escapeHtml(job.title);
+    var city = escapeHtml(job.city);
+    var bizEsc = escapeHtml(biz);
+    var mark = brandMark(tradeLabel);
+    var photo = jobPhotoBlock();
+    var thumb = jobThumbBlock();
+
+    if (dest === 'website') {
+      var mapBlock = mapUrl
+        ? '<div class="ps-mock-map ps-mock-map--pins" aria-hidden="true"><img class="ps-mock-map__img" src="' + escapeHtml(mapUrl) + '" alt="" width="640" height="280" loading="lazy" decoding="async" /><span class="ps-mock-map__pin is-active" style="left:52%;top:42%;"></span><span class="ps-mock-map__pin" style="left:34%;top:58%;"></span><span class="ps-mock-map__pin" style="left:68%;top:55%;"></span><span class="ps-mock-map__pin" style="left:44%;top:28%;"></span><span class="ps-mock-map__veil"></span><span class="ps-mock-map__chip">Service area check-ins</span></div>'
+        : '<div class="ps-mock-map ps-mock-map--neutral" aria-hidden="true"><span class="ps-mock-map__pin is-active"></span><span class="ps-mock-map__label">Service area</span></div>';
+      panel.innerHTML = '<div class="ps-mock ps-mock--browser ps-mock--browser-fit"><div class="ps-mock-browser__bar"><span></span><span></span><span></span><div class="ps-mock-browser__url">yourcompany.com/service-area</div></div><div class="ps-mock-browser__body ps-mock-browser__body--fit"><div class="ps-mock-browser__topline">' + mark + '<div><p class="ps-mock-browser__kicker">Service area</p><h4>Recent check-ins</h4></div></div>' + mapBlock + '<article class="ps-mock-jobcard ps-mock-jobcard--fit is-active">' + thumb + '<div><strong>' + title + '</strong><span>Just published</span></div></article></div></div>';
+      return;
+    }
+    if (dest === 'google') {
+      var moreIcon = '<svg class="ps-mock-gbp__more" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><circle cx="12" cy="5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="19" r="1.6" fill="currentColor"/></svg>';
+      panel.innerHTML = '<div class="ps-mock ps-mock--gbp"><div class="ps-mock-gbp__brand">' + mark + '<div class="ps-mock-gbp__meta"><strong>' + bizEsc + '</strong><span>Just now \u00b7 Update</span></div>' + moreIcon + '</div><div class="ps-mock-gbp__media">' + photo + '</div><div class="ps-mock-gbp__copy"><p><strong>Just finished:</strong> ' + title + ' completed in your service area. Real work documented from the field.</p></div><div class="ps-mock-gbp__cta">Call now</div><div class="ps-mock-gbp__foot"><span>Viewed 18 times</span><span>Share</span></div></div>';
+      return;
+    }
+    if (dest === 'social') {
+      var likeIcon = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      var commentIcon = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      var shareIcon = '<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 12v7a2 2 0 002 2h12a2 2 0 002-2v-7M16 6l-4-4-4 4M12 2v13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      var globeIcon = '<svg class="ps-mock-social__globe" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" fill="none" stroke="currentColor" stroke-width="2"/></svg>';
+      panel.innerHTML = '<div class="ps-mock ps-mock--social"><div class="ps-mock-social__head">' + mark + '<div class="ps-mock-social__meta"><strong>' + bizEsc + '</strong><span>Just now \u00b7 ' + globeIcon + ' Public</span></div></div><p class="ps-mock-social__copy">' + title + ' completed today in your service area.</p><div class="ps-mock-social__media">' + photo + '</div><div class="ps-mock-social__engagement"><span class="ps-mock-social__likes"><i aria-hidden="true">\ud83d\udc4d</i><i aria-hidden="true">\u2764\ufe0f</i> 24</span><span>3 comments \u00b7 1 share</span></div><div class="ps-mock-social__reactions"><span>' + likeIcon + ' Like</span><span>' + commentIcon + ' Comment</span><span>' + shareIcon + ' Share</span></div></div>';
+      return;
+    }
+    if (dest === 'reviews') {
+      panel.innerHTML = '<div class="ps-mock ps-mock--review"><div class="ps-mock-review__job">' + thumb + '<div class="ps-mock-review__job-copy"><strong>' + title + '</strong><span>Job just finished \u00b7 Ask for the review now</span></div></div><div class="ps-mock-review__phone"><div class="ps-mock-review__phone-bar"><span class="ps-mock-review__app">Messages</span><strong class="ps-mock-review__contact">To: Customer</strong></div><div class="ps-mock-review__thread"><div class="ps-mock-sms__bubble">Thanks again for choosing ' + bizEsc + '. If we earned it, would you mind leaving a quick review?</div><div class="ps-mock-sms__bubble is-link">review.jobcapturepro.com/demo</div><p class="ps-mock-review__time">Delivered \u00b7 Just now</p></div></div>' + (qrUrl ? '<div class="ps-mock-qr ps-mock-qr--compact"><img src="' + escapeHtml(qrUrl) + '" alt="" width="64" height="64" loading="lazy" decoding="async" /><div><strong>Scan on-site</strong><span>Show this QR at the job</span></div></div>' : '') + '</div>';
+      return;
+    }
+    panel.innerHTML = '<div class="ps-mock ps-mock--directory"><p class="ps-mock-dir__label">JobCapturePro Directory</p><article class="ps-mock-dir__card ps-mock-dir__card--listing"><span class="ps-mock-dir__badge">Active</span><div class="ps-mock-dir__head">' + mark + '<div class="ps-mock-dir__identity"><strong class="ps-mock-dir__name">' + bizEsc + '</strong><span class="ps-mock-dir__trade">' + escapeHtml(tradeLabel) + '</span></div></div><div class="ps-mock-dir__location"><span>' + city + '</span></div><div class="ps-mock-dir__meta-row"><span>Jobs documented</span><span class="ps-mock-dir__dot" aria-hidden="true">\u00b7</span><span>Active today</span></div><div class="ps-mock-dir__latest">' + thumb + '<div><em>Latest completed job</em><strong>' + title + '</strong><span>Documented on site \u00b7 Just published</span></div></div><div class="ps-mock-dir__footer"><span class="ps-mock-dir__cta">View activity</span></div></article></div>';
+  }
+
+  function setDestCaption(dest) {
+    var el = document.getElementById('pgDestCaption');
+    if (!el) return;
+    var cap = DEST_CAPTIONS[dest] || DEST_CAPTIONS.website;
+    el.hidden = false;
+    el.innerHTML = '<span class="pg-dest-caption__label">' + escapeHtml(cap.label) + '</span><strong class="pg-dest-caption__headline">' + escapeHtml(cap.headline) + '</strong><span class="pg-dest-caption__small">' + escapeHtml(cap.small) + '</span>';
+  }
+
+  function setDestTab(dest, options) {
+    options = options || {};
+    if (DEST_TABS.indexOf(dest) === -1) dest = 'website';
+    activeDest = dest;
+    document.querySelectorAll('.pg-dest-tab').forEach(function (tab) {
+      var on = tab.getAttribute('data-dest') === dest;
+      tab.classList.toggle('is-active', on);
+      tab.setAttribute('aria-selected', on ? 'true' : 'false');
+      tab.setAttribute('tabindex', on ? '0' : '-1');
+    });
+    var panel = document.getElementById('pgDestPanel');
+    var reduce = prefersReducedMotion();
+    var apply = function () { renderDestPanel(dest); setDestCaption(dest); if (panel) panel.classList.remove('is-switching'); };
+    if (panel && options.animate && !reduce) { panel.classList.add('is-switching'); window.setTimeout(apply, 160); }
+    else { apply(); }
+    if (options.fromUser) {
+      dismissDestTabsHint();
+      if (!destTracked[dest]) {
+        destTracked[dest] = true;
+        track('ProductDestinationClicked', { destination: dest, trade: state.trade });
+        track('proof_gap_preview_clicked', { channel: dest, trade: state.trade });
+      }
+      track('ProductDestinationViewed', { destination: dest, source: 'manual' });
+    }
+  }
+
+  function dismissDestTabsHint() {
+    var wrap = document.querySelector('.pg-dest-tabs-wrap');
+    var hint = document.getElementById('pgDestTabsHint');
+    if (wrap) wrap.classList.add('is-hint-dismissed');
+    if (hint) hint.hidden = true;
+    if (destTabsHintTimer) { clearTimeout(destTabsHintTimer); destTabsHintTimer = null; }
+  }
+
+  function showDestTabsHint() {
+    var wrap = document.querySelector('.pg-dest-tabs-wrap');
+    var hint = document.getElementById('pgDestTabsHint');
+    if (!wrap || !hint) return;
+    wrap.classList.remove('is-hint-dismissed');
+    hint.hidden = false;
+    if (destTabsHintTimer) clearTimeout(destTabsHintTimer);
+    destTabsHintTimer = setTimeout(dismissDestTabsHint, 5200);
+  }
+
+  function bindDestTabs() {
+    var tabsRoot = document.querySelector('.pg-dest-tabs');
+    if (!tabsRoot || tabsRoot.getAttribute('data-tabs-bound')) return;
+    tabsRoot.setAttribute('data-tabs-bound', '1');
+    var tabs = document.querySelectorAll('.pg-dest-tab');
+    tabs.forEach(function (tab, index) {
+      tab.addEventListener('click', function () { setDestTab(tab.getAttribute('data-dest') || 'website', { fromUser: true, animate: true }); });
+      tab.addEventListener('keydown', function (e) {
+        var next = index;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (index + 1) % tabs.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (index - 1 + tabs.length) % tabs.length;
+        else return;
+        e.preventDefault();
+        tabs[next].focus();
+        setDestTab(tabs[next].getAttribute('data-dest') || 'website', { fromUser: true, animate: true });
+      });
+    });
+    var panel = document.getElementById('pgDestPanel');
+    if (panel && !panel.getAttribute('data-swipe-bound')) {
+      panel.setAttribute('data-swipe-bound', '1');
+      var touchX = null;
+      panel.addEventListener('touchstart', function (e) { if (e.changedTouches && e.changedTouches[0]) touchX = e.changedTouches[0].clientX; }, { passive: true });
+      panel.addEventListener('touchend', function (e) {
+        if (touchX === null || !e.changedTouches || !e.changedTouches[0]) return;
+        var dx = e.changedTouches[0].clientX - touchX; touchX = null;
+        if (Math.abs(dx) < 48) return;
+        var i = DEST_TABS.indexOf(activeDest);
+        if (i < 0) i = 0;
+        if (dx < 0 && i < DEST_TABS.length - 1) setDestTab(DEST_TABS[i + 1], { fromUser: true, animate: true });
+        else if (dx > 0 && i > 0) setDestTab(DEST_TABS[i - 1], { fromUser: true, animate: true });
+      }, { passive: true });
+    }
+  }
+
+  function initTrialPreviews() {
+    var tradeLabel = state.trade === 'other' && state.other_trade_text
+      ? state.other_trade_text
+      : trades[state.trade] || state.trade || 'field';
+    var title = document.getElementById('pgRevealTitle');
+    if (title) title.textContent = 'See what one finished ' + tradeLabel + ' job can become.';
+    setDestTab('website', { fromUser: false, animate: false });
+    bindDestTabs();
+    showDestTabsHint();
+    if (!milestoneViewed.reveal) {
+      milestoneViewed.reveal = true;
+      track('ProductRevealStarted', { trade: state.trade, current_workflow: state.current_workflow, cta_source: 'trial_bridge' });
+    }
+  }
+
+  /* ─── App sim ─── */
+
+  function clearAppSimTimers() {
+    if (appSimTimer) { clearTimeout(appSimTimer); appSimTimer = null; }
+    appSimStepTimers.forEach(function (t) { clearTimeout(t); });
+    appSimStepTimers = [];
+  }
+
+  function setAppSimStatus(text) {
+    var el = document.getElementById('pgAppSimStatus');
+    if (el && text) el.textContent = text;
+  }
+
+  function setAppSimMeter(pct, durationMs) {
+    var meter = document.getElementById('pgAppSimMeter');
+    if (!meter) return;
+    if (typeof durationMs === 'number') meter.style.transitionDuration = durationMs + 'ms';
+    meter.style.width = Math.max(0, Math.min(100, pct)) + '%';
+  }
+
+  function setAppSimTicks(upTo) {
+    var order = ['capture', 'build', 'website', 'google', 'social', 'reviews', 'directory'];
+    var idx = order.indexOf(upTo);
+    document.querySelectorAll('[data-sim-tick]').forEach(function (el) {
+      var key = el.getAttribute('data-sim-tick');
+      var i = order.indexOf(key);
+      var on = idx >= 0 && i >= 0 && i <= idx;
+      el.classList.toggle('is-on', on && i === idx);
+      el.classList.toggle('is-done', on && i < idx);
+    });
+  }
+
+  function finishAppSim(skipped) {
+    clearAppSimTimers();
+    markCompleted('app_sim');
+    track(skipped ? 'AppSimSkipped' : 'AppSimCompleted', { trade: state.trade, current_workflow: state.current_workflow });
+    goTo('trial_bridge');
+  }
+
+  function bindAppSimSkip() {
+    var btn = document.getElementById('pgAppSimSkip');
+    if (!btn || appSimSkipBound) return;
+    appSimSkipBound = true;
+    btn.addEventListener('click', function () { finishAppSim(true); });
+  }
+
+  function startAppSimSequence() {
+    clearAppSimTimers();
+    bindAppSimSkip();
+    var skip = document.getElementById('pgAppSimSkip');
+    var panel = document.getElementById('pgAppSimStage');
+    var reduced = prefersReducedMotion();
+    var duration = reduced ? APP_SIM_REDUCED_MS : APP_SIM_DURATION_MS;
+
+    if (panel) panel.classList.add('is-running');
+    setAppSimTicks('');
+    setAppSimMeter(0, 0);
+    var meterEl = document.getElementById('pgAppSimMeter');
+    if (meterEl) void meterEl.offsetWidth;
+    setAppSimMeter(reduced ? 100 : 10, reduced ? duration : 350);
+    setAppSimStatus('Starting with your job\u2026');
+    if (skip) skip.hidden = true;
+
+    track('AppSimStarted', { trade: state.trade, current_workflow: state.current_workflow });
+    track('proof_gap_transformation_viewed', { trade: state.trade });
+
+    if (reduced) {
+      setAppSimTicks('directory');
+      setAppSimStatus('Ready \u2014 showing your channel previews\u2026');
+      appSimTimer = setTimeout(function () { finishAppSim(false); }, duration);
+      return;
+    }
+
+    var beats = [
+      { t: 0, tick: 'capture', status: 'Photo captured\u2026', pct: 18 },
+      { t: 500, tick: 'build', status: 'Building marketing proof\u2026', pct: 34 },
+      { t: 1000, tick: 'website', status: 'Publishing to Website\u2026', pct: 48, showSkip: true },
+      { t: 1500, tick: 'google', status: 'Updating Google\u2026', pct: 62 },
+      { t: 2000, tick: 'social', status: 'Preparing Social\u2026', pct: 74 },
+      { t: 2500, tick: 'reviews', status: 'Queuing Reviews\u2026', pct: 86 },
+      { t: 3000, tick: 'directory', status: 'Opening channel previews\u2026', pct: 100 },
+    ];
+
+    beats.forEach(function (beat) {
+      appSimStepTimers.push(setTimeout(function () {
+        setAppSimTicks(beat.tick);
+        setAppSimStatus(beat.status);
+        setAppSimMeter(beat.pct, 450);
+        if (beat.showSkip && skip) skip.hidden = false;
+      }, beat.t));
+    });
+
+    appSimTimer = setTimeout(function () { finishAppSim(false); }, duration);
+  }
+
+  /* ─── Trial summary ─── */
+
+  function renderTrialSummary() {
+    var list = document.getElementById('pgTrialSummary');
+    var firstWin = document.getElementById('pgTrialFirstWin');
+    if (!list) return;
+
+    var tradeChip = (state.trade === 'other' && state.other_trade_text)
+      ? escapeHtml(state.other_trade_text)
+      : escapeHtml(trades[state.trade] || state.trade || '\u2014');
+    var workflowChip = (state.current_workflow === 'other_crm' && state.other_workflow_text)
+      ? escapeHtml(state.other_workflow_text)
+      : escapeHtml(workflows[state.current_workflow] || state.current_workflow || '\u2014');
+    var jobsChip = escapeHtml((jobsBuckets[state.jobs_per_week_bucket] || {}).weekly_label || '\u2014') + ' jobs/week';
+
+    list.innerHTML = '<li>' + tradeChip + '</li><li>' + workflowChip + '</li><li>' + jobsChip + '</li>';
+
+    if (firstWin) {
+      if (state.current_workflow === 'housecall_pro') {
+        firstWin.textContent = 'Connect Housecall Pro, pull in one completed job, and publish the work your crew already captured.';
+      } else if (state.current_workflow === 'companycam') {
+        firstWin.textContent = 'Connect CompanyCam, pull in photos from one completed job, and turn them into marketing proof.';
+      } else if (state.current_workflow === 'phones_camera_roll') {
+        firstWin.textContent = 'Upload photos from one completed job and let JobCapturePro turn them into marketing proof.';
+      } else if (state.current_workflow === 'other_crm') {
+        firstWin.textContent = 'Connect your field workflow if supported, or upload one completed job and publish the proof.';
+      } else {
+        firstWin.textContent = 'Capture one completed job and publish it to website, Google, social, reviews, or directory.';
+      }
+    }
+    updateTrialHref();
+  }
+
+  function mapTradeToIndustry(trade) {
+    var map = { hvac: 'hvac', plumbing: 'plumbing', roofing: 'roofing', tree_service: 'tree-service', landscaping: 'landscaping', electrical: 'electrical', remodeling: 'remodeling' };
+    return map[trade] || '';
+  }
+
+  function updateTrialHref() {
+    var a = document.getElementById('pgTrialCta');
+    if (!a) return;
+    var base =
+      (window.JCP_ONBOARDING && window.JCP_ONBOARDING.url) ||
+      boot.trialBase ||
+      'https://app.jobcapturepro.com/onboarding';
+    try {
+      var handoffExtra = { lp_variant: LP_VARIANT };
+      if (state.handoff_token) handoffExtra.pg_handoff = state.handoff_token;
+      if (state.session_id) handoffExtra.survey_session_id = state.session_id;
+      if (state.email) {
+        handoffExtra.email = state.email;
+        var first = deriveFirstName(state.email);
+        if (first) handoffExtra.first_name = first;
+      }
+      if (state.trade) {
+        handoffExtra.business_type = state.trade;
+        var industry = mapTradeToIndustry(state.trade);
+        if (industry) {
+          handoffExtra.industry = industry;
+          handoffExtra.industryId = industry;
+          handoffExtra.industry_id = industry;
+        }
+      }
+
+      // Identity continuity for PostHog across marketing → app subdomain.
+      try {
+        if (window.JCPPostHog && typeof window.JCPPostHog.getDistinctId === 'function') {
+          var phId = window.JCPPostHog.getDistinctId();
+          if (phId) handoffExtra.ph_distinct_id = phId;
+        }
+      } catch (ePhId) {}
+
+      var attrHandoff = attrPayload();
+      if (attrHandoff.qa_trace_id) handoffExtra.qa_trace_id = attrHandoff.qa_trace_id;
+      // Pass first-touch UTMs when present (not the marketing-site defaults alone).
+      ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(function (k) {
+        if (attrHandoff[k] && String(attrHandoff[k]).indexOf('jobcapturepro.com') === -1) {
+          handoffExtra[k] = attrHandoff[k];
+        }
+      });
+
+      // Merge demoUser + paid attribution when available so email always rides along.
+      if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.buildHandoffParams === 'function') {
+        var built = window.JCPOnboardingHandoff.buildHandoffParams() || {};
+        Object.keys(built).forEach(function (k) {
+          if (handoffExtra[k] == null || handoffExtra[k] === '') handoffExtra[k] = built[k];
+        });
+      }
+
+      var href = base;
+      if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.decorateHref === 'function') {
+        href = window.JCPOnboardingHandoff.decorateHref(href, handoffExtra, 'proof_gap_survey_trial') || href;
+      } else {
+        var u = new URL(href, window.location.origin);
+        Object.keys(handoffExtra).forEach(function (k) {
+          if (handoffExtra[k]) u.searchParams.set(k, handoffExtra[k]);
+        });
+        href = u.toString();
+      }
+
+      // Force email onto the trial URL even if decorate only fills missing keys.
+      if (state.email) {
+        var parsed = new URL(href, window.location.origin);
+        parsed.searchParams.set('email', state.email);
+        if (!parsed.searchParams.get('first_name')) {
+          parsed.searchParams.set('first_name', deriveFirstName(state.email));
+        }
+        href = parsed.toString();
+      }
+      a.href = href;
+    } catch (e) {
+      a.href = base;
+    }
+  }
+
+  /* ─── Email submission ─── */
+
+  function getOrCreateLeadEventId() {
+    try { var existing = sessionStorage.getItem(LEAD_EVENT_ID_KEY); if (existing && /^[A-Za-z0-9_-]{8,64}$/.test(existing)) return existing; } catch (e) {}
+    var id = uuid().replace(/[^A-Za-z0-9_-]/g, '').slice(0, 36);
+    try { sessionStorage.setItem(LEAD_EVENT_ID_KEY, id); } catch (e2) {}
+    return id;
+  }
+
+  function pushAcquisitionLead(eventId) {
+    try {
+      if (sessionStorage.getItem('jcp_datalayer_pg_opt_in')) return;
+      window.dataLayer = window.dataLayer || [];
+      var attr = attrPayload();
+      var payload = {
+        event: 'demo_opt_in', lead_type: 'proof_gap_survey', source: 'proof_gap_survey',
+        business_type: state.trade || '', trade: state.trade || '',
+        utm_source: attr.utm_source || '', utm_medium: attr.utm_medium || '',
+        utm_campaign: attr.utm_campaign || '', utm_content: attr.utm_content || '',
+        lp_variant: attr.lp_variant || LP_VARIANT, fbclid: attr.fbclid || '',
+        funnel_surface: 'proof_gap_survey', session_id: state.session_id,
+      };
+      if (eventId) { payload.event_id = eventId; payload.eventID = eventId; }
+      window.dataLayer.push(payload);
+      sessionStorage.setItem('jcp_datalayer_pg_opt_in', '1');
+    } catch (err) {}
+  }
+
+  function deriveFirstName(email) {
+    var local = String(email || '').split('@')[0] || 'there';
+    return local.replace(/[._-]+/g, ' ').trim().slice(0, 40) || 'there';
+  }
+
+  function persistDemoUser(email) {
+    try {
+      var industry = mapTradeToIndustry(state.trade);
+      var user = {
+        email: email, firstName: deriveFirstName(email), lastName: '', businessName: '',
+        phone: '', goals: [], niche: industry || state.trade || '', industry: industry,
+        trade: state.trade || '', source: 'proof_gap_survey',
+      };
+      if (state.other_trade_text) user.other_trade_text = state.other_trade_text;
+      if (state.other_workflow_text) user.other_workflow_text = state.other_workflow_text;
+      localStorage.setItem('demoUser', JSON.stringify(user));
+    } catch (e) {}
+  }
+
+  function submitEmail(ev) {
+    if (ev) ev.preventDefault();
+    var input = document.getElementById('pgEmail');
+    var err = document.getElementById('pgEmailError');
+    var btn = document.getElementById('pgEmailSubmit');
+    var email = input ? String(input.value || '').trim() : '';
+    if (err) { err.hidden = true; err.textContent = ''; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      if (err) { err.hidden = false; err.textContent = 'Enter a valid email address.'; }
+      if (input) input.focus();
+      return;
+    }
+
+    var defaultLabel = btn ? btn.textContent : '';
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving\u2026'; }
+
+    var eventId = getOrCreateLeadEventId();
+    var attr = attrPayload();
+    var body = {
+      email: email,
+      business_type: state.trade || '',
+      survey_session_id: state.session_id,
+      survey_version: state.survey_version,
+      current_workflow: state.current_workflow || '',
+      jobs_per_week_bucket: state.jobs_per_week_bucket || '',
+      public_proof_percentage: state.public_proof_percentage || '',
+      annual_jobs_min: state.annual_jobs_min,
+      annual_jobs_max: state.annual_jobs_max,
+      unused_jobs_min: state.unused_jobs_min,
+      unused_jobs_max: state.unused_jobs_max,
+      event_id: eventId,
+      landing_page: location.href,
+      lp_variant: attr.lp_variant || LP_VARIANT,
+      funnel_surface: 'proof_gap_survey',
+      utm_source: attr.utm_source || '',
+      utm_medium: attr.utm_medium || '',
+      utm_campaign: attr.utm_campaign || '',
+      utm_content: attr.utm_content || '',
+      utm_term: attr.utm_term || '',
+      fbclid: attr.fbclid || '',
+      referrer: attr.referrer || document.referrer || '',
+    };
+    if (state.other_trade_text) body.other_trade_text = state.other_trade_text;
+    if (state.other_workflow_text) body.other_workflow_text = state.other_workflow_text;
+
+    fetch(boot.restUrl || '/wp-json/jcp/v1/proof-gap-survey-submit', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
+    })
+      .then(function (res) {
+        return res.json().then(function (json) { return { ok: res.ok && !!(json && (json.captured === true || json.success === true)), json: json }; });
+      })
+      .then(function (result) {
+        if (btn) { btn.disabled = false; btn.textContent = defaultLabel || 'Build My Job Example \u2192'; }
+        if (!result.ok) {
+          if (err) { err.hidden = false; err.textContent = (result.json && result.json.message) || 'We couldn\u2019t save that right now. Please try again.'; }
+          return;
+        }
+        state.email = email;
+        state.email_captured = true;
+        state.handoff_token = (result.json && result.json.handoff_token) || '';
+        markCompleted('result_email');
+        persistDemoUser(email);
+        saveState();
+        var returnedId = result.json && result.json.event_id ? String(result.json.event_id) : eventId;
+        try { if (returnedId) sessionStorage.setItem(LEAD_EVENT_ID_KEY, returnedId); } catch (eId) {}
+        track('EmailSubmitted', {
+          trade: state.trade, current_workflow: state.current_workflow,
+          jobs_per_week_bucket: state.jobs_per_week_bucket,
+          public_proof_percentage: state.public_proof_percentage,
+          annual_jobs_min: state.annual_jobs_min,
+          annual_jobs_max: state.annual_jobs_max,
+          unused_jobs_min: state.unused_jobs_min,
+          unused_jobs_max: state.unused_jobs_max,
+          cta_source: 'result_email',
+        });
+        track('proof_gap_email_submitted', {
+          trade: state.trade,
+          workflow: state.current_workflow,
+          jobs_per_week: state.jobs_per_week_bucket,
+          marketing_usage: state.public_proof_percentage,
+          annual_jobs_low: state.annual_jobs_min,
+          annual_jobs_high: state.annual_jobs_max,
+          unused_jobs_low: state.unused_jobs_min,
+          unused_jobs_high: state.unused_jobs_max,
+        });
+        pushAcquisitionLead(returnedId);
+        updateTrialHref();
+        goTo('app_sim');
+      })
+      .catch(function () {
+        if (btn) { btn.disabled = false; btn.textContent = defaultLabel || 'Build My Job Example \u2192'; }
+        if (err) { err.hidden = false; err.textContent = 'Network error \u2014 please try again.'; }
+      });
+  }
+
+  /* ─── Navigation ─── */
+
+  function goTo(id) {
+    clearAdvance();
+    clearAppSimTimers();
+    if (STATES.indexOf(id) === -1) return;
+
+    if (stepEnteredId && stepEnteredAt) {
+      var dwell = Date.now() - stepEnteredAt;
+      if (dwell >= 250 && dwell <= 30 * 60 * 1000) {
+        track('SurveyStepTiming', { question_id: stepEnteredId, screen: stepEnteredId, duration_ms: dwell, answer_value: String(dwell) });
+      }
+    }
+    stepEnteredId = id;
+    stepEnteredAt = Date.now();
+
+    hideWorkflowConfirm();
+
+    if (id === 'app_sim') {
+      state.current_state = 'result_email';
+      saveState();
+      state.current_state = 'app_sim';
+    } else {
+      state.current_state = id;
+      saveState();
+    }
+
+    document.querySelectorAll('[data-pg-state]').forEach(function (el) {
+      el.hidden = el.getAttribute('data-pg-state') !== id;
+    });
+
+    updateProgress();
+    setBackVisible();
+
+    document.body.classList.toggle('pg-is-welcome', id === 'welcome');
+    document.body.classList.toggle('pg-is-app-sim', id === 'app_sim');
+
+    if (!questionViewed[id]) {
+      questionViewed[id] = true;
+      if (['trade', 'current_workflow', 'jobs_per_week', 'public_proof_percentage'].indexOf(id) !== -1) {
+        track('SurveyQuestionViewed', {
+          question_index: stateIndex(id), question_id: id,
+          trade: state.trade, current_workflow: state.current_workflow,
+          jobs_per_week_bucket: state.jobs_per_week_bucket,
+          public_proof_percentage: state.public_proof_percentage,
+        });
+      }
+    }
+
+    if (id === 'result_email') {
+      renderResult();
+      if (!milestoneViewed.result) {
+        milestoneViewed.result = true;
+        track('SurveyResultViewed', {
+          trade: state.trade, current_workflow: state.current_workflow,
+          jobs_per_week_bucket: state.jobs_per_week_bucket,
+          public_proof_percentage: state.public_proof_percentage,
+          annual_jobs_min: state.annual_jobs_min, annual_jobs_max: state.annual_jobs_max,
+        });
+      }
+      if (!milestoneViewed.email_view) {
+        milestoneViewed.email_view = true;
+        track('EmailCaptureViewed', { trade: state.trade });
+      }
+      try {
+        var emailBlock = document.querySelector('.pg-result-email');
+        if (emailBlock) {
+          setTimeout(function () {
+            emailBlock.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }, 80);
+        }
+      } catch (eScroll) {}
+    }
+    if (id === 'app_sim') {
+      startAppSimSequence();
+    }
+    if (id === 'trial_bridge') {
+      renderTrialSummary();
+      initTrialPreviews();
+      if (!milestoneViewed.trial_view) {
+        milestoneViewed.trial_view = true;
+        track('TrialCTAViewed', { trade: state.trade, cta_source: 'trial_bridge' });
+        track('trial_cta_viewed', {
+          source: 'proof_gap',
+          trade: state.trade,
+          workflow: state.current_workflow,
+          jobs_per_week: state.jobs_per_week_bucket,
+        });
+      }
+    }
+
+    syncBottomActionForState(id);
+    bindKeyboardSafe();
+
+    try {
+      var stage = document.getElementById('pgStage');
+      if (stage) stage.scrollTop = 0;
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    } catch (e) { window.scrollTo(0, 0); }
+  }
+
+  function goBack() {
+    clearAdvance();
+    clearAppSimTimers();
+    if (state.current_state === 'app_sim' || state.current_state === 'trial_bridge') {
+      goTo('result_email');
+      return;
+    }
+    var idx = stateIndex(state.current_state);
+    if (idx <= 0) return;
+    goTo(STATES[idx - 1]);
+  }
+
+  /* ─── Binding ─── */
+
+  function bind() {
+    var back = document.getElementById('pgBack');
+    if (back) back.addEventListener('click', goBack);
+    bindDestTabs();
+    bindOtherFields();
+    var emailForm = document.getElementById('pgEmailForm');
+    if (emailForm) emailForm.addEventListener('submit', submitEmail);
+    window.addEventListener('resize', syncBottomPad);
+    window.addEventListener('pagehide', function () {
+      track('SurveyExited', { question_id: state.current_state, trade: state.trade });
+    });
+  }
+
+  function advanceTradeOther(skip) {
+    var inp = document.getElementById('pgTradeOtherInput');
+    var val = skip ? '' : inp ? sanitizeCustomText(inp.value) : '';
+    state.other_trade_text = val;
+    saveState();
+    if (val) track('SurveyOtherTextProvided', { question_id: 'trade', other_text_provided: true });
+    var otherField = document.getElementById('pgTradeOtherField');
+    if (otherField) otherField.hidden = true;
+    goTo('current_workflow');
+  }
+
+  function advanceWorkflowOther(skip) {
+    var inp = document.getElementById('pgWorkflowOtherInput');
+    var val = skip ? '' : inp ? sanitizeCustomText(inp.value) : '';
+    state.other_workflow_text = val;
+    saveState();
+    if (val) track('SurveyOtherTextProvided', { question_id: 'current_workflow', custom_workflow_provided: true });
+    var wfField = document.getElementById('pgWorkflowOtherField');
+    if (wfField) wfField.hidden = true;
+    showWorkflowConfirm(state.current_workflow);
+    scheduleAdvance('jobs_per_week', WORKFLOW_CONFIRM_MSGS[state.current_workflow] ? 300 : AUTO_ADVANCE_MS);
+  }
+
+  function bindOtherFields() {
+    document.querySelectorAll('[data-pg-other-continue="trade"]').forEach(function (btn) { btn.addEventListener('click', function () { advanceTradeOther(false); }); });
+    document.querySelectorAll('[data-pg-other-skip="trade"]').forEach(function (btn) { btn.addEventListener('click', function () { advanceTradeOther(true); }); });
+    document.querySelectorAll('[data-pg-other-continue="workflow"]').forEach(function (btn) { btn.addEventListener('click', function () { advanceWorkflowOther(false); }); });
+    document.querySelectorAll('[data-pg-other-skip="workflow"]').forEach(function (btn) { btn.addEventListener('click', function () { advanceWorkflowOther(true); }); });
+  }
+
+  function initChoices() {
+    renderChoices('trade', trades, state.trade);
+    renderChoices('current_workflow', workflows, state.current_workflow);
+    renderChoices('jobs_per_week', jobsBuckets, state.jobs_per_week_bucket);
+    renderChoices('public_proof_percentage', proofPct, state.public_proof_percentage);
+  }
+
+  /* ─── Init ─── */
+
+  function init() {
+    var resumed = loadState();
+    ensureSession();
+    state.attribution = Object.assign({}, state.attribution || {}, attrPayload());
+    initCreativeConcept();
+    if (state.trade) preloadTradePhoto(state.trade);
+    saveState();
+
+    if (!landingTracked) {
+      try { if (sessionStorage.getItem('jcp_pg_landing_tracked') === '1') landingTracked = true; } catch (eLand) {}
+    }
+
+    function fireLandingOnce() {
+      if (landingTracked) return;
+      landingTracked = true;
+      try { sessionStorage.setItem('jcp_pg_landing_tracked', '1'); } catch (eSet) {}
+      try {
+        if (window.JCPPostHog && typeof window.JCPPostHog.getDistinctId === 'function') {
+          window.JCPPostHog.getDistinctId();
+        }
+      } catch (eWarm) {}
+      track('SurveyLandingViewed', {});
+      track('proof_gap_viewed', {});
+      try {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: 'PaidLandingView', page_path: location.pathname, lp_variant: LP_VARIANT, session_id: state.session_id });
+      } catch (e) {}
+    }
+
+    // Brief delay so GTM PostHog can supply distinct_id before first capture when present.
+    if (!landingTracked) {
+      if (window.posthog && window.posthog.__loaded) fireLandingOnce();
+      else setTimeout(fireLandingOnce, 400);
+    }
+
+    bind();
+    initChoices();
+
+    var startState = 'welcome';
+    if (resumed) {
+      track('SurveyResumed', { question_id: state.current_state, trade: state.trade });
+      if (state.email_captured) startState = 'trial_bridge';
+      else startState = firstIncomplete();
+      if (state.completed_states.indexOf('welcome') !== -1 || state.trade) startedTracked = true;
+    }
+
+    goTo(startState);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();

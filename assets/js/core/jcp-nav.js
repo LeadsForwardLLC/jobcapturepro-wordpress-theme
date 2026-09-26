@@ -320,10 +320,10 @@
         return;
       }
 
-      // Resources dropdown: show active when on Blog, Help Center, or Contact (not Directory)
+      // Resources dropdown: show active when on Blog, Help Center, or Support (not Directory)
       const isBlogPage = page === 'blog' || pathname === '/blog' || (document.body && document.body.classList.contains('blog'));
       const isHelpPage = page === 'help' || pathname === '/help';
-      const isContactPage = page === 'contact' || pathname === '/contact';
+      const isContactPage = page === 'support' || page === 'contact' || pathname === '/support' || pathname === '/support/' || pathname === '/contact' || pathname === '/contact/';
       const isReferralPage = page === 'referral-program' || pathname === '/referral-program';
       const isResourcesPage = isBlogPage || isHelpPage || isContactPage || isReferralPage;
       if (isResourcesPage) {
@@ -379,7 +379,7 @@
       isOnboardingOutbound = host.indexOf('jobcapturepro.com') !== -1 && path.indexOf('/onboarding') === 0;
     }
     if (!ctaName && !isTargetHref && !isReferralOutbound && !isOnboardingOutbound) return;
-    ctaName = ctaName || (isReferralOutbound ? 'Join Referral Program' : isOnboardingOutbound ? 'Start free trial' : (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80) || 'CTA');
+    ctaName = ctaName || (isReferralOutbound ? 'Join Referral Program' : isOnboardingOutbound ? 'Start Free Trial' : (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80) || 'CTA');
     var pathname = (window.location.pathname || '/').replace(/\/$/, '') || '/';
     var ctaLocation = el.getAttribute('data-cta-location') || (el.closest('header') || el.closest('#jcpGlobalHeader') ? 'header' : el.closest('footer') ? 'footer' : pathname === '/' || pathname === '/home' ? 'homepage' : pathname === '/referral-program' ? 'referral_program' : 'page');
     try {

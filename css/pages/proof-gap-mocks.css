@@ -1,0 +1,1512 @@
+/* Ported product mock visuals from proof-sprint (scoped for /proof-gap/). */
+body.jcp-proof-gap .ps-mock {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.95rem;
+  border-radius: 0.95rem;
+  background: #fff;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.1);
+  animation: ps-mock-in 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes ps-mock-in {
+  from { opacity: 0; transform: translateY(0.55rem) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+
+body.jcp-proof-gap .ps-mock__photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 0.65rem;
+  background: #0f172a;
+}
+
+body.jcp-proof-gap .ps-mock__media {
+  position: relative;
+  overflow: hidden;
+  border-radius: 0.65rem;
+}
+
+body.jcp-proof-gap .ps-mock__media--sm .ps-mock__photo {
+  aspect-ratio: 4 / 3;
+}
+
+body.jcp-proof-gap .ps-mock__geo {
+  position: absolute;
+  left: 0.55rem;
+  bottom: 0.55rem;
+  padding: 0.28rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 750;
+}
+
+body.jcp-proof-gap .ps-mock__chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+body.jcp-proof-gap .ps-mock__chip {
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+body.jcp-proof-gap .ps-mock__chip.is-good {
+  background: #ecfdf5;
+  color: var(--pg-success);
+}
+
+body.jcp-proof-gap .ps-mock__job-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: end;
+}
+
+body.jcp-proof-gap .ps-mock__job-foot strong {
+  display: block;
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+body.jcp-proof-gap .ps-mock__job-foot span,
+body.jcp-proof-gap .ps-mock__job-foot em {
+  font-size: 0.78rem;
+  color: var(--pg-muted);
+  font-style: normal;
+}
+
+body.jcp-proof-gap .ps-mock__job-foot em {
+  color: var(--pg-accent);
+  font-weight: 750;
+}
+
+body.jcp-proof-gap .ps-mock__meta {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+body.jcp-proof-gap .ps-mock__checkin-head {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+body.jcp-proof-gap .ps-mock__logo {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  background: var(--pg-accent) !important;
+  color: #fff !important;
+  font-size: 0.95rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0;
+  flex-shrink: 0;
+}
+
+body.jcp-proof-gap .ps-mock__checkin-head strong {
+  display: block;
+  font-size: 0.92rem;
+}
+
+body.jcp-proof-gap .ps-mock__checkin-head span {
+  font-size: 0.75rem;
+  color: var(--pg-muted);
+}
+
+body.jcp-proof-gap .ps-mock__checkin-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 560px) {
+  body.jcp-proof-gap .ps-mock__checkin-grid {
+    grid-template-columns: 0.9fr 1.1fr;
+    align-items: start;
+  }
+}
+
+body.jcp-proof-gap .ps-mock__checklist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+body.jcp-proof-gap .ps-mock__checklist li {
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.55rem;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+body.jcp-proof-gap .ps-mock__checklist li.is-done::before {
+  content: "✓ ";
+  color: var(--pg-success);
+  font-weight: 800;
+}
+
+body.jcp-proof-gap .ps-mock__checklist li.is-on {
+  border-color: rgba(255, 80, 62, 0.35);
+  background: #fff7f5;
+  color: var(--pg-accent);
+}
+
+body.jcp-proof-gap .ps-mock--browser {
+  padding: 0;
+  overflow: hidden;
+  gap: 0;
+}
+
+body.jcp-proof-gap .ps-mock-browser__bar {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem 0.75rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+body.jcp-proof-gap .ps-mock-browser__bar > span {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #cbd5e1;
+}
+
+body.jcp-proof-gap .ps-mock-browser__bar > span:nth-child(1) { background: #f87171; }
+body.jcp-proof-gap .ps-mock-browser__bar > span:nth-child(2) { background: #fbbf24; }
+body.jcp-proof-gap .ps-mock-browser__bar > span:nth-child(3) { background: #34d399; }
+
+body.jcp-proof-gap .ps-mock-browser__url {
+  flex: 1;
+  margin-left: 0.35rem;
+  padding: 0.28rem 0.6rem;
+  border-radius: 0.45rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  font-size: 0.72rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.jcp-proof-gap .ps-mock-browser__body {
+  padding: 0.9rem 0.95rem 1rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+body.jcp-proof-gap .ps-mock-browser__kicker {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pg-accent);
+}
+
+body.jcp-proof-gap .ps-mock-browser__body h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+body.jcp-proof-gap .ps-mock-jobcard {
+  display: flex;
+  gap: 0.85rem;
+  align-items: stretch;
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+body.jcp-proof-gap .ps-mock-jobcard .ps-mock__photo {
+  display: none;
+}
+
+body.jcp-proof-gap .ps-mock-jobcard strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+body.jcp-proof-gap .ps-mock-jobcard span,
+body.jcp-proof-gap .ps-mock-jobcard em {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  color: #64748b;
+  font-style: normal;
+}
+
+body.jcp-proof-gap .ps-mock-jobcard p {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: #475569;
+}
+
+body.jcp-proof-gap .ps-mock-jobcard em {
+  color: var(--pg-success);
+  font-weight: 750;
+}
+
+@media (max-width: 520px) {
+  body.jcp-proof-gap .ps-mock-jobcard {
+    flex-direction: column;
+  }
+}
+
+body.jcp-proof-gap .ps-mock--gbp {
+  gap: 0;
+  padding: 0.75rem 0 0;
+  overflow: hidden;
+}
+
+body.jcp-proof-gap .ps-mock--gbp .ps-mock-gbp__brand,
+body.jcp-proof-gap .ps-mock--gbp .ps-mock-gbp__copy,
+body.jcp-proof-gap .ps-mock--gbp .ps-mock-gbp__foot,
+body.jcp-proof-gap .ps-mock--gbp .ps-mock-gbp__actions {
+  padding-left: 0.85rem;
+  padding-right: 0.85rem;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.65rem;
+}
+
+body.jcp-proof-gap .ps-mock--gbp .pg-dest-mark,
+body.jcp-proof-gap .ps-mock--gbp .ps-mock__logo {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: var(--pg-accent) !important;
+  color: #fff !important;
+  font-weight: 900;
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__g {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #4285f4;
+  font-size: 0.95rem;
+  font-weight: 900;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__meta {
+  min-width: 0;
+  flex: 1;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__brand strong {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #202124;
+  line-height: 1.2;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__brand span {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.72rem;
+  color: #5f6368;
+  font-weight: 500;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__more {
+  flex-shrink: 0;
+  color: #5f6368;
+  margin-left: auto;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__brand em {
+  display: none;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__media {
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  border-radius: 0;
+  background: #0f172a;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__media .ps-mock__photo {
+  border-radius: 0;
+  aspect-ratio: 4 / 3;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__copy {
+  margin: 0.75rem 0 0.65rem;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__copy strong {
+  display: inline;
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #202124;
+  line-height: 1.4;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__copy p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: #3c4043;
+  font-weight: 450;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.35rem;
+  margin: 0 0.85rem 0.65rem;
+  padding: 0 1rem;
+  border-radius: 999px;
+  border: 1px solid #dadce0;
+  background: #fff;
+  color: #1a73e8;
+  font-size: 0.88rem;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0;
+  padding-top: 0.55rem;
+  padding-bottom: 0.75rem;
+  border-top: 1px solid #e8eaed;
+  font-size: 0.75rem;
+  color: #5f6368;
+  font-weight: 550;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__foot span:last-child {
+  color: #1a73e8;
+  font-weight: 650;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__actions {
+  display: flex;
+  gap: 0.45rem;
+  margin-bottom: 0.75rem;
+}
+
+body.jcp-proof-gap .ps-mock-gbp__actions span {
+  flex: 1;
+  text-align: center;
+  padding: 0.45rem 0.35rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+body.jcp-proof-gap .ps-mock--review {
+  display: grid;
+  gap: 0.65rem;
+}
+
+body.jcp-proof-gap .ps-mock-review__job {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 80, 54, 0.22);
+  background: #fff7f5;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Beat .pg-dest-panel .ps-mock__photo full-bleed rules — thumbs stay square beside copy. */
+body.jcp-proof-gap .pg-dest-panel .ps-mock-review__job .ps-mock__thumb,
+body.jcp-proof-gap .pg-dest-panel .ps-mock-review__job .ps-mock__photo,
+body.jcp-proof-gap .ps-mock-review__job .ps-mock__thumb,
+body.jcp-proof-gap .ps-mock-review__job .ps-mock__photo {
+  display: block;
+  width: 3.5rem;
+  height: 3.5rem;
+  min-width: 3.5rem;
+  min-height: 3.5rem;
+  max-width: 3.5rem;
+  max-height: 3.5rem;
+  aspect-ratio: 1;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+
+body.jcp-proof-gap .ps-mock-review__job > div,
+body.jcp-proof-gap .ps-mock-review__job-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+body.jcp-proof-gap .ps-mock-review__job strong {
+  display: block;
+  font-size: 0.88rem;
+  color: var(--pg-ink);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+body.jcp-proof-gap .ps-mock-review__job span {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--pg-success);
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+body.jcp-proof-gap .ps-mock-review__phone {
+  border-radius: 0.85rem;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: #fff;
+}
+
+body.jcp-proof-gap .ps-mock-review__phone-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.55rem 0.75rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+body.jcp-proof-gap .ps-mock-review__app {
+  font-size: var(--pg-fs-tertiary, 0.85rem);
+  font-weight: 700;
+  color: var(--pg-muted, #64748b);
+  letter-spacing: 0.02em;
+}
+
+body.jcp-proof-gap .ps-mock-review__contact {
+  font-size: var(--pg-fs-secondary, 1rem);
+  font-weight: 800;
+  color: var(--pg-ink);
+  line-height: 1.2;
+}
+
+body.jcp-proof-gap .ps-mock-review__thread {
+  padding: 0.65rem 0.75rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+body.jcp-proof-gap .ps-mock-review__time {
+  margin: 0.15rem 0 0;
+  font-size: var(--pg-fs-tertiary, 0.85rem);
+  font-weight: 700;
+  color: var(--pg-muted, #64748b);
+}
+
+body.jcp-proof-gap .ps-mock-qr--compact {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.35rem;
+  padding: 0.7rem 0.75rem;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+body.jcp-proof-gap .ps-mock-qr--compact img {
+  width: 4rem;
+  height: 4rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+body.jcp-proof-gap .ps-mock-qr--compact strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+body.jcp-proof-gap .ps-mock-qr--compact span {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: var(--pg-muted, #64748b);
+}
+
+body.jcp-proof-gap .ps-mock--review {
+  display: grid;
+  gap: 0.75rem;
+}
+
+body.jcp-proof-gap .ps-mock-review__thread {
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+body.jcp-proof-gap .ps-mock-map--neutral {
+  position: relative;
+  height: 4.5rem;
+  margin: 0 0 0.5rem;
+  border-radius: 0.65rem;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 35% 40%, rgba(255, 80, 54, 0.18), transparent 42%),
+    linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 45%, #e8eef5 100%);
+}
+
+body.jcp-proof-gap .ps-mock-map--neutral .ps-mock-map__pin {
+  position: absolute;
+  left: 52%;
+  top: 42%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--pg-accent);
+  box-shadow: 0 0 0 3px rgba(255, 80, 54, 0.28);
+}
+
+body.jcp-proof-gap .ps-mock-map--neutral .ps-mock-map__label {
+  position: absolute;
+  left: 0.55rem;
+  bottom: 0.45rem;
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 750;
+}
+
+/* Website destination: real map + pins, natural height (stage scrolls) */
+body.jcp-proof-gap .ps-mock--browser-fit {
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+body.jcp-proof-gap .ps-mock-browser__body--fit {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 0.75rem 0.8rem 0.85rem !important;
+  overflow: visible;
+}
+
+body.jcp-proof-gap .ps-mock-browser__body--fit .ps-mock-browser__topline {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+body.jcp-proof-gap .ps-mock-map--pins {
+  position: relative;
+  flex: none;
+  height: 9.5rem;
+  min-height: 9.5rem;
+  margin: 0;
+  border-radius: 0.7rem;
+  overflow: hidden;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: #e2e8f0;
+}
+
+body.jcp-proof-gap .ps-mock-map--pins .ps-mock-map__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-height: none !important;
+  object-fit: cover;
+  object-position: center 40%;
+}
+
+body.jcp-proof-gap .ps-mock-map--pins .ps-mock-map__pin {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #64748b;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
+  transform: translate(-50%, -50%);
+  z-index: 2;
+}
+
+body.jcp-proof-gap .ps-mock-map--pins .ps-mock-map__pin.is-active {
+  width: 12px;
+  height: 12px;
+  background: var(--pg-accent);
+  box-shadow:
+    0 0 0 3px rgba(255, 80, 54, 0.35),
+    0 0 0 2px #fff;
+  z-index: 3;
+}
+
+body.jcp-proof-gap .ps-mock-map--pins .ps-mock-map__veil {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.08) 0%, transparent 28%),
+    linear-gradient(0deg, rgba(15, 23, 42, 0.18) 0%, transparent 35%);
+}
+
+body.jcp-proof-gap .ps-mock-map--pins .ps-mock-map__chip {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.45rem;
+  z-index: 4;
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.01em;
+}
+
+body.jcp-proof-gap .ps-mock-jobcard--fit {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0.5rem 0.55rem;
+  min-height: 3.6rem;
+  border: 1px solid rgba(255, 80, 54, 0.28);
+  background: #fff7f5;
+  box-shadow: 0 1px 0 rgba(255, 80, 54, 0.08);
+}
+
+body.jcp-proof-gap .ps-mock-jobcard--fit .ps-mock__thumb,
+body.jcp-proof-gap .ps-mock-jobcard--fit .ps-mock__photo {
+  display: block !important;
+  width: 4.25rem;
+  height: 4.25rem;
+  min-height: 4.25rem;
+  max-height: 4.25rem;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 0.55rem;
+  flex-shrink: 0;
+  background: #e2e8f0;
+}
+
+body.jcp-proof-gap .ps-mock-jobcard--fit strong {
+  font-size: 0.88rem;
+  line-height: 1.2;
+}
+
+body.jcp-proof-gap .ps-mock-jobcard--fit span {
+  margin-top: 0.12rem;
+  font-size: 0.72rem;
+  color: var(--pg-success);
+  font-weight: 700;
+}
+
+body.jcp-proof-gap .ps-mock__photo--fallback,
+body.jcp-proof-gap .ps-mock__thumb--fallback {
+  display: grid;
+  place-items: center;
+  min-height: 6rem;
+  border-radius: 0.65rem;
+  background: linear-gradient(145deg, #0f172a 0%, #334155 100%);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+body.jcp-proof-gap .ps-mock-dir__avatar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: 1 !important;
+  font-weight: 800;
+}
+
+body.jcp-proof-gap .ps-mock-phone {
+  border-radius: 1.25rem;
+  padding: 0.55rem 0.45rem 0.75rem;
+  background: #0f172a;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+body.jcp-proof-gap .ps-mock-phone__notch {
+  width: 3.2rem;
+  height: 0.35rem;
+  margin: 0.15rem auto 0.55rem;
+  border-radius: 999px;
+  background: #334155;
+}
+
+body.jcp-proof-gap .ps-mock-sms {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.65rem;
+  border-radius: 0.85rem;
+  background: #f8fafc;
+  min-height: 11rem;
+}
+
+body.jcp-proof-gap .ps-mock-sms__label {
+  margin: 0;
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+body.jcp-proof-gap .ps-mock-sms__bubble {
+  justify-self: start;
+  max-width: 92%;
+  padding: 0.55rem 0.7rem;
+  border-radius: 1rem 1rem 1rem 0.3rem;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+body.jcp-proof-gap .ps-mock-sms__bubble.is-link {
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 750;
+  word-break: break-all;
+}
+
+body.jcp-proof-gap .ps-mock-qr {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.45rem;
+  text-align: center;
+  padding: 0.75rem;
+  border-radius: 0.85rem;
+  background: #f8fafc;
+  border: 1px dashed rgba(15, 23, 42, 0.15);
+}
+
+body.jcp-proof-gap .ps-mock-qr__code {
+  width: 5.5rem;
+  height: 5.5rem;
+  border-radius: 0.55rem;
+  background:
+    linear-gradient(90deg, #0f172a 25%, transparent 25%) 0 0 / 0.7rem 0.7rem,
+    linear-gradient(#0f172a 25%, transparent 25%) 0 0 / 0.7rem 0.7rem,
+    #fff;
+  box-shadow: inset 0 0 0 0.45rem #fff, inset 0 0 0 0.7rem #0f172a;
+}
+
+body.jcp-proof-gap .ps-mock-qr strong {
+  font-size: 0.82rem;
+}
+
+body.jcp-proof-gap .ps-mock-qr span {
+  font-size: 0.72rem;
+  color: var(--pg-muted);
+  line-height: 1.35;
+}
+
+body.jcp-proof-gap .ps-mock--social {
+  gap: 0;
+  padding: 0.75rem 0 0;
+  overflow: hidden;
+}
+
+body.jcp-proof-gap .ps-mock--social .ps-mock-social__head,
+body.jcp-proof-gap .ps-mock--social .ps-mock-social__copy,
+body.jcp-proof-gap .ps-mock--social .ps-mock-social__engagement,
+body.jcp-proof-gap .ps-mock--social .ps-mock-social__reactions {
+  padding-left: 0.85rem;
+  padding-right: 0.85rem;
+}
+
+body.jcp-proof-gap .ps-mock-social__head {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.55rem;
+}
+
+body.jcp-proof-gap .ps-mock--social .pg-dest-mark,
+body.jcp-proof-gap .ps-mock--social .ps-mock__logo,
+body.jcp-proof-gap .ps-mock-social__avatar {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: var(--pg-accent) !important;
+  color: #fff !important;
+  font-weight: 900;
+  font-size: 1rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+body.jcp-proof-gap .ps-mock-social__meta {
+  min-width: 0;
+}
+
+body.jcp-proof-gap .ps-mock-social__head strong {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 750;
+  color: #050505;
+  line-height: 1.2;
+}
+
+body.jcp-proof-gap .ps-mock-social__head span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  margin-top: 0.12rem;
+  font-size: 0.72rem;
+  color: #65676b;
+  font-weight: 500;
+}
+
+body.jcp-proof-gap .ps-mock-social__globe {
+  display: inline-block;
+  vertical-align: -0.1em;
+  color: #65676b;
+}
+
+body.jcp-proof-gap .ps-mock-social__copy {
+  margin: 0 0 0.65rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #050505;
+  font-weight: 450;
+}
+
+body.jcp-proof-gap .ps-mock-social__media {
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  border-radius: 0;
+  background: #0f172a;
+}
+
+body.jcp-proof-gap .ps-mock-social__media .ps-mock__photo {
+  border-radius: 0;
+  aspect-ratio: 4 / 3;
+}
+
+body.jcp-proof-gap .ps-mock-social__engagement {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.55rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 1px solid #e4e6eb;
+  font-size: 0.78rem;
+  color: #65676b;
+  font-weight: 500;
+}
+
+body.jcp-proof-gap .ps-mock-social__likes {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+body.jcp-proof-gap .ps-mock-social__likes i {
+  font-style: normal;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+body.jcp-proof-gap .ps-mock-social__likes i + i {
+  margin-left: -0.2rem;
+}
+
+body.jcp-proof-gap .ps-mock-social__reactions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin: 0;
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
+  border-top: 0;
+  font-size: 0.82rem;
+  font-weight: 650;
+  color: #65676b;
+}
+
+body.jcp-proof-gap .ps-mock-social__reactions span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 2.35rem;
+  border-radius: 0.4rem;
+}
+
+body.jcp-proof-gap .ps-mock-social__reactions svg {
+  flex-shrink: 0;
+  color: #65676b;
+}
+
+body.jcp-proof-gap .ps-mock-dir__label {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+body.jcp-proof-gap .ps-mock-dir__card {
+  position: relative;
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.95rem;
+  border-radius: 1rem;
+  border: 2px solid #e5e7eb;
+  background: #fff;
+}
+
+body.jcp-proof-gap .ps-mock-dir__card--listing {
+  border-color: rgba(255, 80, 54, 0.35);
+  box-shadow: 0 12px 28px rgba(255, 80, 54, 0.12);
+  background: linear-gradient(180deg, #fff 0%, #fff7f5 100%);
+}
+
+body.jcp-proof-gap .ps-mock-dir__badge {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 80, 54, 0.12);
+  color: var(--pg-accent);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+body.jcp-proof-gap .ps-mock-dir__verified {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  padding: 0.22rem 0.5rem;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: var(--pg-success);
+  font-size: 0.65rem;
+  font-weight: 800;
+}
+
+body.jcp-proof-gap .ps-mock-dir__head {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding-right: 4.25rem;
+}
+
+body.jcp-proof-gap .ps-mock-dir__head .ps-mock__logo,
+body.jcp-proof-gap .ps-mock-dir__head .pg-dest-mark {
+  width: 2.5rem;
+  height: 2.5rem;
+  font-size: 1.05rem;
+}
+
+body.jcp-proof-gap .ps-mock-dir__identity {
+  min-width: 0;
+}
+
+body.jcp-proof-gap .ps-mock-dir__name {
+  display: block;
+  font-size: 1rem;
+  font-weight: 850;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+body.jcp-proof-gap .ps-mock-dir__trade {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+body.jcp-proof-gap .ps-mock-dir__location {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: #475569;
+}
+
+body.jcp-proof-gap .ps-mock-dir__meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+body.jcp-proof-gap .ps-mock-dir__dot {
+  opacity: 0.7;
+}
+
+body.jcp-proof-gap .ps-mock-dir__avatar {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  background: var(--pg-accent) !important;
+  color: #fff !important;
+  font-weight: 900;
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+body.jcp-proof-gap .ps-mock-dir__head strong {
+  display: block;
+  font-size: 0.95rem;
+}
+
+body.jcp-proof-gap .ps-mock-dir__head span {
+  display: block;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+body.jcp-proof-gap .ps-mock-dir__latest {
+  display: grid;
+  grid-template-columns: 5.75rem 1fr;
+  gap: 0.7rem;
+  padding: 0.6rem;
+  border-radius: 0.75rem;
+  background: #fff;
+  border: 1px solid rgba(255, 80, 54, 0.18);
+}
+
+body.jcp-proof-gap .ps-mock-dir__latest .ps-mock__photo,
+body.jcp-proof-gap .ps-mock-dir__latest .ps-mock__thumb {
+  width: 100%;
+  height: 4.5rem;
+  object-fit: cover;
+  border-radius: 0.55rem;
+}
+
+body.jcp-proof-gap .ps-mock-dir__latest em {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 800;
+  font-style: normal;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pg-accent);
+}
+
+body.jcp-proof-gap .ps-mock-dir__latest strong {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.88rem;
+}
+
+body.jcp-proof-gap .ps-mock-dir__latest span {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+body.jcp-proof-gap .ps-mock-dir__footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.15rem;
+}
+
+body.jcp-proof-gap .ps-mock-dir__cta {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--pg-accent);
+}
+
+body.jcp-proof-gap .ps-mock-dir__cta::after {
+  content: ' →';
+}
+
+body.jcp-proof-gap .ps-mock-dir__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+}
+
+/* Welcome product visual (reuses ps-mock--job) */
+body.jcp-proof-gap .pg-welcome-product {
+  margin: 0.5rem 0 0.15rem;
+  display: grid;
+  gap: 0.45rem;
+  flex: 0 1 auto;
+}
+body.jcp-proof-gap .pg-welcome-product .ps-mock--job {
+  margin: 0;
+  padding: 0.6rem;
+  gap: 0.5rem;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08);
+}
+body.jcp-proof-gap .pg-welcome-product .ps-mock__photo {
+  aspect-ratio: 16 / 9;
+  max-height: 8rem;
+  width: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+  border-radius: 0.65rem;
+}
+body.jcp-proof-gap .pg-welcome-product__bridge {
+  display: flex;
+  justify-content: center;
+}
+body.jcp-proof-gap .pg-welcome-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  margin: 0.15rem 0;
+}
+body.jcp-proof-gap .pg-welcome-flow__line {
+  display: block;
+  width: 1.75rem;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(255, 80, 54, 0.15), rgba(255, 80, 54, 0.55));
+}
+body.jcp-proof-gap .pg-welcome-product__jcp {
+  display: inline-grid;
+  place-items: center;
+  min-width: 2.5rem;
+  height: 1.65rem;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  background: var(--pg-accent);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+body.jcp-proof-gap .pg-welcome-dests {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: center;
+}
+body.jcp-proof-gap .pg-welcome-dests li {
+  padding: 0.28rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: #fff;
+  font-size: 0.72rem;
+  font-weight: 750;
+  color: var(--pg-muted);
+}
+body.jcp-proof-gap .pg-welcome-product__tagline {
+  margin: 0;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--pg-muted);
+}
+body.jcp-proof-gap .pg-state--welcome .pg-welcome-product {
+  margin-top: 0.55rem;
+}
+
+/* Compact answer summaries */
+body.jcp-proof-gap .pg-answer-summary {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.75rem;
+}
+body.jcp-proof-gap .pg-answer-summary__label {
+  margin-bottom: 0.05rem;
+  font-size: 0.62rem;
+}
+body.jcp-proof-gap .pg-answer-summary__value {
+  font-size: 0.88rem;
+}
+
+/* Destination panel — natural height; stage scrolls (no clipped slides) */
+body.jcp-proof-gap .pg-dest-panel {
+  min-height: 0 !important;
+  max-height: none !important;
+  height: auto !important;
+  overflow: visible !important;
+  flex: none !important;
+  transition: opacity 180ms ease;
+}
+body.jcp-proof-gap .pg-state--reveal .pg-dest-panel {
+  flex: none !important;
+  overflow: visible !important;
+}
+body.jcp-proof-gap .pg-state--reveal .pg-dest-mock,
+body.jcp-proof-gap .pg-dest-panel .ps-mock {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible;
+}
+body.jcp-proof-gap .pg-dest-panel .ps-mock {
+  margin: 0;
+  padding: 0.85rem;
+  gap: 0.65rem;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 0.85rem;
+  background: #fff;
+}
+body.jcp-proof-gap .pg-dest-panel .ps-mock__photo {
+  aspect-ratio: 16 / 10;
+  max-height: 10.5rem;
+  width: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  border-radius: 0.55rem;
+}
+body.jcp-proof-gap .pg-dest-panel .ps-mock-map img {
+  max-height: 7rem;
+  width: 100%;
+  object-fit: cover;
+  display: block;
+}
+body.jcp-proof-gap .pg-dest-panel .ps-mock-map--pins .ps-mock-map__img,
+body.jcp-proof-gap .pg-dest-panel .ps-mock-map--pins img {
+  max-height: none !important;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+body.jcp-proof-gap .pg-dest-panel.is-switching {
+  opacity: 0.55;
+}
+body.jcp-proof-gap .pg-job-card--compact .pg-job-card__photo {
+  aspect-ratio: 16 / 8;
+  max-height: 7rem;
+  object-fit: cover;
+  object-position: center 30%;
+}
+body.jcp-proof-gap .pg-job-card--compact .pg-job-card__neutral {
+  min-height: 4.5rem;
+  aspect-ratio: 16 / 8;
+  max-height: 7rem;
+}
+body.jcp-proof-gap .proof-gap-insight-card.is-visible {
+  margin-top: 0.75rem;
+}
+body.jcp-proof-gap .pg-chips {
+  opacity: 0.88;
+}
+body.jcp-proof-gap .pg-state--reveal .pg-job-card--compact {
+  margin-top: 0.35rem;
+  padding: 0.45rem;
+  gap: 0.45rem;
+}
+body.jcp-proof-gap .pg-state--reveal .pg-reveal-kicker {
+  margin: 0.45rem 0 0.3rem;
+  font-size: 0.68rem;
+}
+body.jcp-proof-gap .pg-state--reveal .pg-dest-note,
+body.jcp-proof-gap .pg-state--reveal .pg-continuity {
+  display: none;
+}
+body.jcp-proof-gap .pg-state--reveal .pg-chips {
+  margin-top: 0.35rem;
+  gap: 0.3rem;
+}
+body.jcp-proof-gap .pg-state--reveal .pg-chips li {
+  font-size: 0.68rem;
+  padding: 0.22rem 0.45rem;
+}
+body.jcp-proof-gap .pg-state--reveal .pg-payoff-line {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+}
+body.jcp-proof-gap .pg-dest-panel .ps-mock-browser__body {
+  padding: 0.55rem;
+}
+body.jcp-proof-gap .pg-dest-panel .ps-mock-browser__body--fit {
+  padding: 0.55rem 0.65rem 0.65rem !important;
+}
+body.jcp-proof-gap .pg-dest-panel .ps-mock-map {
+  margin-bottom: 0 !important;
+}
+body.jcp-proof-gap .pg-dest-panel .ps-mock-map--pins .ps-mock-map__img {
+  max-height: none !important;
+}
+body.jcp-proof-gap .pg-dest-panel .ps-mock__photo {
+  max-height: 8rem !important;
+}
+@media (max-height: 900px) {
+  body.jcp-proof-gap .pg-state--reveal .pg-chips,
+  body.jcp-proof-gap .pg-state--reveal .pg-payoff-line {
+    display: none;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card__media {
+    display: block;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card--compact .pg-job-card__photo,
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card--compact .pg-job-card__neutral {
+    max-height: 4.25rem;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-review-slot--reveal {
+    display: block;
+    margin-top: 0.35rem;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-review-slot--reveal .pg-review__quote {
+    display: block;
+    -webkit-line-clamp: unset;
+    overflow: visible;
+    font-size: 0.76rem;
+  }
+  body.jcp-proof-gap .pg-dest-panel .ps-mock__photo {
+    max-height: 6.5rem !important;
+  }
+  body.jcp-proof-gap .pg-dest-panel .ps-mock-map img {
+    max-height: 4.5rem !important;
+  }
+  body.jcp-proof-gap .pg-dest-panel .ps-mock-map--pins .ps-mock-map__img,
+  body.jcp-proof-gap .pg-dest-panel .ps-mock-map--pins img {
+    max-height: none !important;
+  }
+  body.jcp-proof-gap .pg-dest-panel .ps-mock-qr img {
+    width: 64px !important;
+    height: 64px !important;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-benefit-line {
+    margin-top: 0.4rem;
+    font-size: 0.68rem;
+  }
+}
+@media (max-height: 860px) {
+  body.jcp-proof-gap .pg-welcome-product .ps-mock__photo {
+    max-height: 6.25rem;
+  }
+  body.jcp-proof-gap .pg-state--welcome .pg-sub--tight {
+    display: none;
+  }
+  body.jcp-proof-gap .pg-authority--welcome {
+    padding: 0.4rem 0.5rem;
+  }
+  body.jcp-proof-gap .pg-authority--welcome .pg-authority__stats {
+    font-size: 0.64rem;
+  }
+  body.jcp-proof-gap .pg-dest-panel .ps-mock__photo {
+    max-height: 6.75rem !important;
+  }
+  body.jcp-proof-gap .pg-job-card--compact .pg-job-card__photo,
+  body.jcp-proof-gap .pg-job-card--compact .pg-job-card__neutral {
+    max-height: 5.25rem;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-payoff-line {
+    display: none;
+  }
+}
+@media (max-height: 820px) {
+  body.jcp-proof-gap .pg-state--reveal .pg-chips {
+    display: none;
+  }
+  body.jcp-proof-gap .pg-dest-panel .ps-mock-map img {
+    max-height: 4.5rem !important;
+  }
+  body.jcp-proof-gap .pg-dest-panel .ps-mock-map--pins .ps-mock-map__img,
+  body.jcp-proof-gap .pg-dest-panel .ps-mock-map--pins img {
+    max-height: none !important;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card__media {
+    display: block;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card--compact .pg-job-card__photo,
+  body.jcp-proof-gap .pg-state--reveal .pg-job-card--compact .pg-job-card__neutral {
+    max-height: 3.75rem;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-title--sm {
+    font-size: clamp(1.05rem, 4.2vw, 1.25rem);
+    line-height: 1.25;
+  }
+  body.jcp-proof-gap .pg-state--reveal .pg-eyebrow {
+    margin-bottom: 0.15rem;
+  }
+  body.jcp-proof-gap .pg-dest-panel .ps-mock-qr img {
+    width: 64px !important;
+    height: 64px !important;
+  }
+  body.jcp-proof-gap .pg-dest-panel .ps-mock__photo {
+    max-height: 5.75rem !important;
+  }
+  body.jcp-proof-gap .pg-dest-panel .ps-mock {
+    padding: 0.55rem !important;
+    gap: 0.4rem !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.jcp-proof-gap .pg-dest-panel,
+  body.jcp-proof-gap .pg-dest-panel.is-switching {
+    transition: none;
+  }
+}

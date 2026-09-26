@@ -74,6 +74,7 @@ function jcp_global_settings_handle_save(): void {
 		'header_nav' => jcp_global_sanitize_header_nav( $input['header_nav'] ?? [] ),
 		'contact' => [
 			'support_email' => sanitize_email( (string) ( $input['contact']['support_email'] ?? '' ) ),
+			'support_phone' => sanitize_text_field( (string) ( $input['contact']['support_phone'] ?? '' ) ),
 		],
 		'fluent_forms' => [
 			'enabled'            => ! empty( $input['fluent_forms']['enabled'] ),
@@ -81,6 +82,9 @@ function jcp_global_settings_handle_save(): void {
 				? jcp_fluent_sanitize_shortcode( (string) ( $input['fluent_forms']['default_shortcode'] ?? '' ) )
 				: sanitize_text_field( (string) ( $input['fluent_forms']['default_shortcode'] ?? '' ) ),
 			'mount_global_modal' => ! empty( $input['fluent_forms']['mount_global_modal'] ),
+		],
+		'case_study' => [
+			'applications_fill_percent' => max( 0, min( 100, (int) ( $input['case_study']['applications_fill_percent'] ?? 80 ) ) ),
 		],
 	];
 
@@ -251,7 +255,7 @@ function jcp_global_settings_render_page(): void {
 			</table>
 
 			<h2><?php esc_html_e( 'Signup / app URL', 'jcp-core' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'Used for “Start free trial”, “Get Started”, and empty CTA URLs across the site.', 'jcp-core' ); ?></p>
+			<p class="description"><?php esc_html_e( 'Used for “Start Free Trial” and empty CTA URLs across the site.', 'jcp-core' ); ?></p>
 			<table class="form-table" role="presentation">
 				<tr>
 					<th scope="row"><label for="jcp_signup_base"><?php esc_html_e( 'Base URL', 'jcp-core' ); ?></label></th>
@@ -293,11 +297,16 @@ function jcp_global_settings_render_page(): void {
 				</tr>
 			</table>
 
-			<h2><?php esc_html_e( 'Contact', 'jcp-core' ); ?></h2>
+			<h2><?php esc_html_e( 'Support contact', 'jcp-core' ); ?></h2>
+			<p class="description"><?php esc_html_e( 'Shown on the Contact / Support page last-resort strip. The contact form itself is Fluent Forms ([fluentform id="1"]).', 'jcp-core' ); ?></p>
 			<table class="form-table" role="presentation">
 				<tr>
 					<th scope="row"><label for="jcp_support_email"><?php esc_html_e( 'Support email', 'jcp-core' ); ?></label></th>
-					<td><input type="email" class="regular-text" id="jcp_support_email" name="jcp_global[contact][support_email]" value="<?php echo esc_attr( (string) ( $contact['support_email'] ?? '' ) ); ?>" /></td>
+					<td><input type="email" class="regular-text" id="jcp_support_email" name="jcp_global[contact][support_email]" value="<?php echo esc_attr( (string) ( $contact['support_email'] ?? '' ) ); ?>" placeholder="support@jobcapturepro.com" /></td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="jcp_support_phone"><?php esc_html_e( 'Support phone', 'jcp-core' ); ?></label></th>
+					<td><input type="text" class="regular-text" id="jcp_support_phone" name="jcp_global[contact][support_phone]" value="<?php echo esc_attr( (string) ( $contact['support_phone'] ?? '' ) ); ?>" placeholder="(941) 941-9506" /></td>
 				</tr>
 			</table>
 
@@ -307,6 +316,8 @@ function jcp_global_settings_render_page(): void {
 			<h2><?php esc_html_e( 'Fluent Forms bridge', 'jcp-core' ); ?></h2>
 			<p class="description">
 				<?php esc_html_e( 'Theme-owned styling for multi-step Fluent Forms. Leave Fluent Form → Custom CSS blank. Per-page shortcodes live in the Form embed block.', 'jcp-core' ); ?>
+				<br />
+				<?php esc_html_e( 'Support form (ID 1): the theme redirects successful submits to /contact-success/?topic=… You can also set Fluent Confirmation → Redirect to that URL as a backup.', 'jcp-core' ); ?>
 			</p>
 			<table class="form-table" role="presentation">
 				<tr>
@@ -334,6 +345,35 @@ function jcp_global_settings_render_page(): void {
 							<input type="checkbox" name="jcp_global[fluent_forms][mount_global_modal]" value="1" <?php checked( ! empty( $ff['mount_global_modal'] ) ); ?> />
 							<?php esc_html_e( 'Footer modal opened by links to #apply / #jcp-form-modal or [data-jcp-form-trigger]', 'jcp-core' ); ?>
 						</label>
+					</td>
+				</tr>
+			</table>
+
+			<?php
+			$cs      = $s['case_study'] ?? [];
+			$fill_pct = function_exists( 'jcp_case_study_applications_fill_percent' )
+				? jcp_case_study_applications_fill_percent()
+				: max( 0, min( 100, (int) ( $cs['applications_fill_percent'] ?? 80 ) ) );
+			?>
+			<h2><?php esc_html_e( '90-day case study cohort', 'jcp-core' ); ?></h2>
+			<p class="description">
+				<?php esc_html_e( 'We select 10 businesses. The public bar shows how full the application pipeline feels (not how many of the 10 are taken).', 'jcp-core' ); ?>
+			</p>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><label for="jcp_case_fill_pct"><?php esc_html_e( 'Applications fill %', 'jcp-core' ); ?></label></th>
+					<td>
+						<input
+							type="number"
+							class="small-text"
+							id="jcp_case_fill_pct"
+							name="jcp_global[case_study][applications_fill_percent]"
+							min="0"
+							max="100"
+							step="1"
+							value="<?php echo esc_attr( (string) $fill_pct ); ?>"
+						/>
+						<span class="description"><?php esc_html_e( 'Shown as “Applications are X% full” — default 80. Only 10 businesses will be selected.', 'jcp-core' ); ?></span>
 					</td>
 				</tr>
 			</table>
