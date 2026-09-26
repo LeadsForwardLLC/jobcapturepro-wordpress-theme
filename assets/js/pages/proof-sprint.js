@@ -107,7 +107,8 @@
 
         var href = a.getAttribute('href') || base;
         if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.decorateHref === 'function') {
-          href = window.JCPOnboardingHandoff.decorateHref(href, handoffExtra, 'proof_sprint_trial') || href;
+          href =
+            window.JCPOnboardingHandoff.decorateHref(href, handoffExtra, 'proof_sprint_' + placement) || href;
         } else {
           var u = new URL(href, location.origin);
           Object.keys(handoffExtra).forEach(function (k) {
