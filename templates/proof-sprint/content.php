@@ -263,19 +263,36 @@ $channels = [
 									</div>
 								</div>
 							<?php elseif ( 'social' === $ch['id'] ) : ?>
-								<div class="ps-frame ps-frame--social">
-									<div class="ps-social">
-										<div class="ps-social__head">
-											<span class="ps-social__avatar"></span>
+								<article class="ps-social">
+									<div class="ps-social__head">
+										<span class="ps-social__avatar" aria-hidden="true">Y</span>
+										<div class="ps-social__who">
 											<strong><?php esc_html_e( 'Your Company', 'jcp-core' ); ?></strong>
+											<span><?php esc_html_e( '@yourcompany · Just now', 'jcp-core' ); ?></span>
 										</div>
-										<img src="<?php echo esc_url( $photo ); ?>" alt="" width="400" height="280" loading="lazy" decoding="async" />
-										<div class="ps-social__caption">
-											<p><?php esc_html_e( 'Another job in the books. Real work. Real photos. Ready for social.', 'jcp-core' ); ?></p>
-											<span><?php esc_html_e( 'Ready to publish', 'jcp-core' ); ?></span>
-										</div>
+										<span class="ps-social__more" aria-hidden="true">···</span>
 									</div>
-								</div>
+									<img class="ps-social__photo" src="<?php echo esc_url( $photo ); ?>" alt="" width="400" height="400" loading="lazy" decoding="async" />
+									<div class="ps-social__actions" aria-hidden="true">
+										<span class="ps-social__action ps-social__action--like">
+											<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>
+										</span>
+										<span class="ps-social__action">
+											<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
+										</span>
+										<span class="ps-social__action">
+											<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
+										</span>
+										<span class="ps-social__action ps-social__action--save">
+											<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+										</span>
+									</div>
+									<div class="ps-social__meta">
+										<strong><?php esc_html_e( '128 likes', 'jcp-core' ); ?></strong>
+										<p><strong><?php esc_html_e( 'yourcompany', 'jcp-core' ); ?></strong> <?php esc_html_e( 'Another job in the books. Real work. Real photos. Ready for social.', 'jcp-core' ); ?></p>
+										<em><?php esc_html_e( 'Ready to publish', 'jcp-core' ); ?></em>
+									</div>
+								</article>
 							<?php elseif ( 'reviews' === $ch['id'] ) : ?>
 								<div class="ps-frame ps-frame--reviews">
 									<div class="ps-review-ui">
