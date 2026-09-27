@@ -1692,7 +1692,9 @@ body.jcp-proof-sprint .ps-faq .faq-item > summary:focus-visible {
 
 /* ---- Final ---- */
 body.jcp-proof-sprint .ps-final--navy {
-  background: var(--ps-navy);
+  background:
+    radial-gradient(ellipse 85% 75% at 50% -10%, rgba(255, 80, 54, 0.34), transparent 58%),
+    linear-gradient(165deg, #1c2a44 0%, #132033 42%, #0b0f19 100%);
   color: #fff;
   text-align: center;
 }
@@ -1709,6 +1711,7 @@ body.jcp-proof-sprint .ps-final__title {
   line-height: 1.15;
   max-width: 16ch;
   font-weight: 850;
+  color: #fff;
 }
 
 body.jcp-proof-sprint .ps-final__sub {
@@ -1718,10 +1721,14 @@ body.jcp-proof-sprint .ps-final__sub {
 }
 
 /* ---- Footer ---- */
+body.jcp-proof-sprint .ps-footer.jcp-footer,
 body.jcp-proof-sprint .ps-footer {
-  padding: 1.35rem 0 calc(1.35rem + env(safe-area-inset-bottom, 0px));
-  background: #070b12;
-  color: rgba(255, 255, 255, 0.7);
+  margin-top: 0;
+  padding: 1.5rem 0 calc(1.5rem + env(safe-area-inset-bottom, 0px));
+  background: #03050a;
+  color: rgba(255, 255, 255, 0.62);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none;
 }
 
 body.jcp-proof-sprint .ps-footer__inner {
@@ -1737,7 +1744,7 @@ body.jcp-proof-sprint .ps-footer__nav {
 }
 
 body.jcp-proof-sprint .ps-footer__nav a {
-  color: rgba(255, 255, 255, 0.78);
+  color: rgba(255, 255, 255, 0.72);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
@@ -1745,6 +1752,7 @@ body.jcp-proof-sprint .ps-footer__nav a {
 body.jcp-proof-sprint .ps-footer__copy {
   margin: 0;
   font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.55);
 }
 
 /* ---- Sticky mobile CTA ---- */
