@@ -548,9 +548,11 @@ body.jcp-proof-sprint .ps-outputs__tab[aria-selected='true'] {
 
 body.jcp-proof-sprint .ps-outputs__stage {
   position: relative;
+  display: grid;
 }
 
 body.jcp-proof-sprint .ps-outputs__panel {
+  grid-area: 1 / 1;
   display: grid;
   gap: 1.15rem;
   padding: 1.15rem;
@@ -558,12 +560,25 @@ body.jcp-proof-sprint .ps-outputs__panel {
   background: linear-gradient(180deg, #fffaf6 0%, #fff 55%);
   border: 1px solid var(--ps-line);
   box-shadow: var(--ps-shadow);
+  align-content: center;
+  width: 100%;
+  min-width: 0;
   animation: ps-panel-in 200ms var(--ps-ease);
 }
 
+/* Keep inactive panels in layout so stage height stays stable across tabs. */
 body.jcp-proof-sprint .ps-outputs__panel[hidden] {
-  display: none !important;
+  display: grid !important;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 0;
   animation: none;
+}
+
+body.jcp-proof-sprint .ps-outputs__panel.is-active:not([hidden]) {
+  visibility: visible;
+  z-index: 1;
+  pointer-events: auto;
 }
 
 @keyframes ps-panel-in {
@@ -586,18 +601,25 @@ body.jcp-proof-sprint .ps-outputs__channel-label {
   color: var(--ps-accent) !important;
 }
 
+body.jcp-proof-sprint .ps-outputs__copy {
+  min-width: 0;
+  align-self: center;
+}
+
 body.jcp-proof-sprint .ps-outputs__copy h3 {
   margin: 0 0 0.55rem;
   font-size: clamp(1.2rem, 3vw, 1.4rem);
   line-height: 1.25;
   font-weight: 800;
   color: var(--ps-navy);
+  min-height: 2.5em;
 }
 
 body.jcp-proof-sprint .ps-outputs__copy > p {
   margin: 0;
   color: var(--ps-muted);
   font-size: var(--ps-fs-body);
+  min-height: 1.5em;
 }
 
 body.jcp-proof-sprint .ps-outputs__points {
@@ -629,6 +651,16 @@ body.jcp-proof-sprint .ps-outputs__points li::before {
 
 body.jcp-proof-sprint .ps-outputs__preview {
   min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 22rem;
+}
+
+body.jcp-proof-sprint .ps-outputs__preview > * {
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
 }
 
 /* Channel frames */
@@ -688,6 +720,7 @@ body.jcp-proof-sprint .ps-card-project {
 
 body.jcp-proof-sprint .ps-card-project img {
   aspect-ratio: 16 / 10;
+  max-height: 180px;
 }
 
 body.jcp-proof-sprint .ps-card-project__meta {
@@ -772,6 +805,7 @@ body.jcp-proof-sprint .ps-gbp__post {
 
 body.jcp-proof-sprint .ps-gbp__post img {
   aspect-ratio: 16 / 10;
+  max-height: 180px;
 }
 
 body.jcp-proof-sprint .ps-gbp__post p {
@@ -854,7 +888,8 @@ body.jcp-proof-sprint .ps-social__more {
 body.jcp-proof-sprint .ps-social__photo {
   display: block;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 4 / 3;
+  max-height: 220px;
   object-fit: cover;
   background: var(--ps-soft);
 }
@@ -925,6 +960,9 @@ body.jcp-proof-sprint .ps-review-ui {
   padding: 1rem;
   background: var(--ps-band);
   border-radius: var(--ps-radius);
+  width: 100%;
+  min-height: 18rem;
+  align-content: center;
 }
 
 body.jcp-proof-sprint .ps-review-ui__job {
@@ -979,19 +1017,12 @@ body.jcp-proof-sprint .ps-review-ui__ask p {
   font-size: 0.98rem;
 }
 
-body.jcp-proof-sprint .ps-outputs__panel[data-ps-panel='directory'] {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  padding-left: 0;
-  padding-right: 0;
-}
-
 body.jcp-proof-sprint .ps-dir {
   display: grid;
   gap: 0.55rem;
-  max-width: 380px;
+  max-width: 360px;
   margin: 0 auto;
+  width: 100%;
 }
 
 body.jcp-proof-sprint .ps-dir__label {
@@ -1843,27 +1874,21 @@ body.jcp-proof-sprint.ps-has-sticky .ps-main {
     text-align: center;
   }
 
-  body.jcp-proof-sprint .ps-outputs__panel.is-active:not([hidden]) {
+  body.jcp-proof-sprint .ps-outputs__panel {
     grid-template-columns: minmax(0, 0.38fr) minmax(0, 0.62fr);
     align-items: center;
     gap: 1.5rem;
     padding: 1.35rem;
+    min-height: 28rem;
   }
 
-  body.jcp-proof-sprint .ps-outputs__panel[data-ps-panel='social'].is-active:not([hidden]) {
-    padding-left: 0;
-    padding-right: 0;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
+  body.jcp-proof-sprint .ps-outputs__panel.is-active:not([hidden]),
+  body.jcp-proof-sprint .ps-outputs__panel[hidden] {
+    grid-template-columns: minmax(0, 0.38fr) minmax(0, 0.62fr);
   }
 
-  body.jcp-proof-sprint .ps-outputs__panel[data-ps-panel='directory'].is-active:not([hidden]) {
-    padding-left: 0;
-    padding-right: 0;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
+  body.jcp-proof-sprint .ps-outputs__preview {
+    min-height: 24rem;
   }
 
   body.jcp-proof-sprint .ps-waste__compare {
