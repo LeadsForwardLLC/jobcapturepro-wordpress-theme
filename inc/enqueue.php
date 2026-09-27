@@ -58,6 +58,7 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-job-proof-demo', 'css/pages/job-proof-demo.css', $jpd_style_deps );
 
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
+        jcp_core_enqueue_script( 'jcp-core-posthog', 'js/core/jcp-posthog.js', [ 'jcp-core-attribution' ] );
         jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );
         if ( $jpd_lp || $jpd_run ) {
             jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
@@ -66,12 +67,23 @@ function jcp_core_enqueue_assets(): void {
         if ( $jpd_lp ) {
             jcp_core_enqueue_script( 'jcp-core-campaign', 'js/pages/campaign.js', [] );
         }
-        jcp_core_enqueue_script( 'jcp-core-job-proof-demo', 'js/pages/job-proof-demo.js', [ 'jcp-core-attribution', 'jcp-core-onboarding-handoff' ] );
+        jcp_core_enqueue_script( 'jcp-core-job-proof-demo', 'js/pages/job-proof-demo.js', [ 'jcp-core-attribution', 'jcp-core-posthog', 'jcp-core-onboarding-handoff' ] );
 
         $demo_run_url = function_exists( 'jcp_job_proof_demo_run_url' )
             ? jcp_job_proof_demo_run_url()
             : home_url( '/job-proof-demo/demo/' );
 
+        wp_add_inline_script(
+            'jcp-core-posthog',
+            'window.JCP_POSTHOG=window.JCP_POSTHOG||' . wp_json_encode(
+                [
+                    'apiKey'  => apply_filters( 'jcp_posthog_project_api_key', 'phc_v8emzqtZ8beAjLsqj2byb5fK8wRHbW2g6hXBqAEZPMyS' ),
+                    'apiHost' => apply_filters( 'jcp_posthog_api_host', 'https://us.i.posthog.com' ),
+                    'uiHost'  => apply_filters( 'jcp_posthog_ui_host', 'https://us.posthog.com' ),
+                ]
+            ) . ';',
+            'before'
+        );
         wp_add_inline_script(
             'jcp-core-job-proof-demo',
             'window.JCP_CONFIG=window.JCP_CONFIG||{env:"live",baseUrl:' . wp_json_encode( site_url() ) . '};',
@@ -463,19 +475,31 @@ function jcp_core_enqueue_assets(): void {
             jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-sections', 'jcp-core-hero-live-demo' ] );
             jcp_core_enqueue_style( 'jcp-core-story-moments', 'css/components/story-moments.css', [ 'jcp-core-niche-landing' ] );
             jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
+            jcp_core_enqueue_script( 'jcp-core-posthog', 'js/core/jcp-posthog.js', [ 'jcp-core-attribution' ] );
             jcp_core_enqueue_script( 'jcp-core-testimonials', 'js/pages/testimonials.js', [] );
             jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
             jcp_core_enqueue_script( 'jcp-core-campaign', 'js/pages/campaign.js', [], false, true );
             jcp_core_enqueue_script( 'jcp-core-story-moments', 'js/pages/story-moments.js', [], false, true );
-            // Lightweight paid LP view signal for GTM/Meta (maps to PaidLandingView).
             wp_add_inline_script(
-                'jcp-core-attribution',
-                "(function(){try{window.dataLayer=window.dataLayer||[];var map={'/contractor-demo':'contractor_demo','/contractor-formula':'formula','/contractor-nature':'nature_doc','/job-proof':'proof_waste','/why-we-built-jcp':'founder','/job-proof-demo':'job_proof_demo','/proof-sprint':'proof_sprint'};var path=(location.pathname||'').replace(/\\/+$/,'')||'/';var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||map[path]||'';if(v&&document.body&&!document.body.getAttribute('data-jcp-lp-variant')){document.body.setAttribute('data-jcp-lp-variant',v);document.documentElement.setAttribute('data-jcp-lp-variant',v);}window.dataLayer.push({event:'PaidLandingView',page_path:location.pathname,lp_variant:v||'default'});}catch(e){}})();",
+                'jcp-core-posthog',
+                'window.JCP_POSTHOG=window.JCP_POSTHOG||' . wp_json_encode(
+                    [
+                        'apiKey'  => apply_filters( 'jcp_posthog_project_api_key', 'phc_v8emzqtZ8beAjLsqj2byb5fK8wRHbW2g6hXBqAEZPMyS' ),
+                        'apiHost' => apply_filters( 'jcp_posthog_api_host', 'https://us.i.posthog.com' ),
+                        'uiHost'  => apply_filters( 'jcp_posthog_ui_host', 'https://us.posthog.com' ),
+                    ]
+                ) . ';',
+                'before'
+            );
+            // Paid LP view: dataLayer PascalCase for GTM/Meta; snake_case PostHog only (not Proof Gap/Sprint).
+            wp_add_inline_script(
+                'jcp-core-posthog',
+                "(function(){try{window.dataLayer=window.dataLayer||[];var map={'/contractor-demo':'contractor_demo','/contractor-formula':'formula','/contractor-nature':'nature_doc','/job-proof':'proof_waste','/why-we-built-jcp':'founder','/job-proof-demo':'job_proof_demo'};var path=(location.pathname||'').replace(/\\/+$/,'')||'/';if(path==='/proof-gap'||path==='/proof-sprint')return;var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||map[path]||'';if(v&&document.body&&!document.body.getAttribute('data-jcp-lp-variant')){document.body.setAttribute('data-jcp-lp-variant',v);document.documentElement.setAttribute('data-jcp-lp-variant',v);}var attr=(window.JCPLeadAttribution&&window.JCPLeadAttribution.getPayload)?(window.JCPLeadAttribution.getPayload()||{}):{};var props={surface:v||'default',lp_variant:v||'default',landing_page:location.pathname+(location.search||''),funnel_surface:'paid_landing'};['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid'].forEach(function(k){if(attr[k])props[k]=attr[k];});window.dataLayer.push(Object.assign({event:'PaidLandingView',page_path:location.pathname},props));if(window.JCPPostHog&&typeof window.JCPPostHog.capture==='function'){window.JCPPostHog.capture('paid_landing_viewed',props);}}catch(e){}})();",
                 'after'
             );
             wp_add_inline_script(
                 'jcp-core-attribution',
-                "document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[href*=\"/demo\"]'):null;if(!a)return;try{if(window.__jcpDemoCtaFired)return;window.__jcpDemoCtaFired=1;window.dataLayer=window.dataLayer||[];var map={'/contractor-demo':'contractor_demo','/contractor-formula':'formula','/contractor-nature':'nature_doc','/job-proof':'proof_waste','/why-we-built-jcp':'founder','/job-proof-demo':'job_proof_demo','/proof-sprint':'proof_sprint'};var path=(location.pathname||'').replace(/\\/+$/,'')||'/';var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||map[path]||'';window.dataLayer.push({event:'DemoCTA',cta_label:(a.textContent||'').trim().slice(0,80),href:a.href,lp_variant:v||'default'});}catch(err){}});",
+                "document.addEventListener('click',function(e){var a=e.target&&e.target.closest?e.target.closest('a[href*=\"/demo\"]'):null;if(!a)return;try{if(window.__jcpDemoCtaFired)return;window.__jcpDemoCtaFired=1;window.dataLayer=window.dataLayer||[];var map={'/contractor-demo':'contractor_demo','/contractor-formula':'formula','/contractor-nature':'nature_doc','/job-proof':'proof_waste','/why-we-built-jcp':'founder','/job-proof-demo':'job_proof_demo'};var path=(location.pathname||'').replace(/\\/+$/,'')||'/';var v=(document.body&&document.body.getAttribute('data-jcp-lp-variant'))||(document.documentElement&&document.documentElement.getAttribute('data-jcp-lp-variant'))||map[path]||'';window.dataLayer.push({event:'DemoCTA',cta_label:(a.textContent||'').trim().slice(0,80),href:a.href,lp_variant:v||'default'});}catch(err){}});",
                 'after'
             );
         }

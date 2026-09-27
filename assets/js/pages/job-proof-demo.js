@@ -1,7 +1,8 @@
 /**
  * Job Proof Demo funnel — product-led LP + /job-proof-demo/demo/ run.
  * GHL upsert + Meta Lead (demo_opt_in) only after successful CRM response.
- * Analytics: dataLayer only (no posthog.capture). One event per funnel stage.
+ * Analytics: dataLayer (legacy PascalCase for GTM/Meta) + PostHog snake_case
+ * via JCPPostHog for a compact governed taxonomy only.
  */
 (function () {
   'use strict';
@@ -179,6 +180,19 @@
     return 'desktop';
   }
 
+  /**
+   * dataLayer keeps legacy PascalCase for GTM/Meta.
+   * PostHog receives ONLY compact snake_case canonical events (never both names).
+   */
+  var POSTHOG_FROM_DATALAYER = {
+    PaidLandingView: 'paid_landing_viewed',
+    PersonalizedDemoStarted: 'demo_started',
+    DemoFormSubmitted: 'demo_form_submitted',
+    DemoResultsViewed: 'demo_results_viewed',
+    TrialCTAViewed: 'demo_trial_cta_viewed',
+    TrialCTAClicked: 'demo_trial_cta_clicked',
+  };
+
   /** Fire once per session per event name (unless extra.force). */
   function track(eventName, extra) {
     var force = !!(extra && extra.force);
@@ -205,6 +219,8 @@
       session_id: getDemoSessionId(),
       opted_in: !!(state.optedIn || hasOptInSessionSafe()),
       demo_completed: !!state.demoCompleted,
+      funnel_surface: 'job_proof_demo',
+      surface: page,
     };
     ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid'].forEach(function (k) {
       if (attr[k]) payload[k] = attr[k];
@@ -232,6 +248,17 @@
         console.info('[JPD]', eventName, payload);
       }
     } catch (err) {}
+
+    var phName = POSTHOG_FROM_DATALAYER[eventName];
+    if (phName) {
+      try {
+        if (window.JCPPostHog && typeof window.JCPPostHog.capture === 'function') {
+          var phProps = Object.assign({}, payload);
+          delete phProps.event;
+          window.JCPPostHog.capture(phName, phProps);
+        }
+      } catch (ePh) {}
+    }
   }
 
   function hasOptInSessionSafe() {
@@ -1711,6 +1738,30 @@
     } catch (e) {}
   }
 
+  /** Once per session when any trial CTA enters viewport. */
+  function observeTrialCtaViews() {
+    if (!('IntersectionObserver' in window)) return;
+    var nodes = document.querySelectorAll('[data-jpd-trial]');
+    if (!nodes.length) return;
+    try {
+      var io = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            var el = entry.target;
+            var source = el.getAttribute('data-jpd-source') || 'trial';
+            track('TrialCTAViewed', { section: 'trial', source: source, cta_source: source });
+            io.disconnect();
+          });
+        },
+        { threshold: 0.4 }
+      );
+      nodes.forEach(function (n) {
+        io.observe(n);
+      });
+    } catch (e) {}
+  }
+
   function setupFormStarted() {
     var fired = false;
     function markStarted() {
@@ -1999,6 +2050,7 @@
     });
     document.addEventListener('click', onClick, true);
     setupExitIntent();
+    observeTrialCtaViews();
     var bar = document.querySelector('[data-jcp-landing-brandbar]');
     if (bar) bar.classList.add('is-compact');
   }

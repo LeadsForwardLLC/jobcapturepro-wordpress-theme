@@ -214,8 +214,52 @@ Canonical event meanings for paid acquisition (`/proof-gap/`, `/proof-sprint/`) 
 
 ---
 
+## Demo funnel (Job Proof Demo) — PostHog snake_case only
+
+| Event | Meaning |
+|-------|---------|
+| `paid_landing_viewed` | Paid LP view (properties: `surface`, `lp_variant`, UTMs). Not fired on Proof Gap/Sprint. |
+| `demo_started` | Personalized demo run started |
+| `demo_form_submitted` | Lead email captured (CRM success) |
+| `demo_results_viewed` | Demo results / rankings shown |
+| `demo_trial_cta_viewed` | Trial CTA in viewport |
+| `demo_trial_cta_clicked` | Trial CTA clicked |
+
+dataLayer retains PascalCase (`DemoFormSubmitted`, etc.) for existing GTM/Meta. PostHog never receives those PascalCase names.
+
+**Observability only** — demo is not a third paid acquisition variant alongside Proof Gap / Proof Sprint.
+
+### Naming rule (Approach A)
+
+| Layer | Convention | Example |
+|-------|------------|---------|
+| dataLayer / GTM | Legacy PascalCase (unchanged where GTM/Meta depends on it) | `DemoFormSubmitted` |
+| PostHog | snake_case **only** — never mirror PascalCase | `demo_form_submitted` |
+
+Same business action may exist in both layers under different names; PostHog must not receive both.
+
+### Compact taxonomy
+
+Prefer reusable events + properties over LP-specific event names. Paid LPs use `paid_landing_viewed` with `surface` / `lp_variant` / UTMs — not per-LP events. Proof Gap / Proof Sprint keep their canonical view events (`proof_gap_viewed`, `proof_sprint_viewed`); `paid_landing_viewed` is **not** dual-fired on those pages.
+
+### PostHog governed Actions
+
+| Action | Event |
+|--------|-------|
+| Marketing Lead | `proof_gap_email_submitted` |
+| Trial CTA Click | `trial_cta_clicked` |
+| Demo Completed | `demo_results_viewed` |
+| Trial Started | `trial_started` |
+
+### Marketing Acquisition dashboard
+
+Pinned dashboard: [Marketing Acquisition](https://us.posthog.com/project/593169/dashboard/2141869) — traffic by surface, Proof Gap / Proof Sprint / Demo funnels, trial starts, conversion by experience.
+
+---
+
 ## Document history
 
 - Created for paid acquisition launch handoff (Proof Gap + Proof Sprint).
 - 2026-09-27: Marketing-owned Stripe webhook is the authoritative `trial_started` / Meta `StartTrial` path (no app code required).
+- 2026-09-27: Approach A — snake_case PostHog only; demo dual-emit; Marketing Acquisition dashboard + governed Actions.
 - Update this file when Meta CAPI mappings or Stripe qualification rules change.
