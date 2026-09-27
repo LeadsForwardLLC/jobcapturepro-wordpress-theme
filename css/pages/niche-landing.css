@@ -5475,7 +5475,9 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
 /* Anonymous Local Falcon–style case study (CSS geo-grid heatmaps on maps)     */
 /* -------------------------------------------------------------------------- */
 
-:is(.jcp-page-campaign, .jcp-home, body.jcp-proof-sprint) .jcp-block-root[data-jcp-block-type="local_rank_case_study"] {
+:is(.jcp-page-campaign, .jcp-home, body.jcp-proof-sprint) .jcp-block-root[data-jcp-block-type="local_rank_case_study"],
+:is(.jcp-page-campaign, .jcp-home, body.jcp-proof-sprint) .jcp-block-lf-case,
+body.jcp-proof-sprint .ps-case {
   --jcp-lf-top: #16a34a;
   --jcp-lf-top-deep: #15803d;
   --jcp-lf-mid: #f59e0b;
@@ -5751,19 +5753,23 @@ body.jcp-landing-chrome-hidden .jcp-footer-landing-copy {
 }
 
 :is(.jcp-page-campaign, .jcp-home, body.jcp-proof-sprint) .jcp-maps-scan__pin.is-rank-top {
-  background: radial-gradient(circle at 35% 30%, #4ade80, var(--jcp-lf-top) 55%, var(--jcp-lf-top-deep));
+  background: #16a34a;
+  background: radial-gradient(circle at 35% 30%, #4ade80, #16a34a 55%, #15803d);
 }
 
 :is(.jcp-page-campaign, .jcp-home, body.jcp-proof-sprint) .jcp-maps-scan__pin.is-rank-mid {
-  background: radial-gradient(circle at 35% 30%, #fcd34d, var(--jcp-lf-mid) 60%, #d97706);
+  background: #f59e0b;
+  background: radial-gradient(circle at 35% 30%, #fcd34d, #f59e0b 60%, #d97706);
 }
 
 :is(.jcp-page-campaign, .jcp-home, body.jcp-proof-sprint) .jcp-maps-scan__pin.is-rank-low {
-  background: radial-gradient(circle at 35% 30%, #fb923c, var(--jcp-lf-low) 60%, #c2410c);
+  background: #ea580c;
+  background: radial-gradient(circle at 35% 30%, #fb923c, #ea580c 60%, #c2410c);
 }
 
 :is(.jcp-page-campaign, .jcp-home, body.jcp-proof-sprint) .jcp-maps-scan__pin.is-rank-out {
-  background: radial-gradient(circle at 35% 30%, #f87171, var(--jcp-lf-out) 55%, var(--jcp-lf-out-deep));
+  background: #dc2626;
+  background: radial-gradient(circle at 35% 30%, #f87171, #dc2626 55%, #991b1b);
 }
 
 :is(.jcp-page-campaign, .jcp-home, body.jcp-proof-sprint) .jcp-lf-case__result {

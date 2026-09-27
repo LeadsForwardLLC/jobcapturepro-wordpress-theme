@@ -1354,6 +1354,31 @@ body.jcp-proof-sprint .ps-case .jcp-maps-scan {
   overflow: hidden;
 }
 
+/* Heatmap dots must stay vivid on Proof Sprint even if LF tokens are missing. */
+body.jcp-proof-sprint .ps-case .jcp-maps-scan__pin.is-rank-top,
+body.jcp-proof-sprint .ps-case__full .jcp-maps-scan__pin.is-rank-top {
+  background: #16a34a;
+  background: radial-gradient(circle at 35% 30%, #4ade80, #16a34a 55%, #15803d);
+}
+
+body.jcp-proof-sprint .ps-case .jcp-maps-scan__pin.is-rank-mid,
+body.jcp-proof-sprint .ps-case__full .jcp-maps-scan__pin.is-rank-mid {
+  background: #f59e0b;
+  background: radial-gradient(circle at 35% 30%, #fcd34d, #f59e0b 60%, #d97706);
+}
+
+body.jcp-proof-sprint .ps-case .jcp-maps-scan__pin.is-rank-low,
+body.jcp-proof-sprint .ps-case__full .jcp-maps-scan__pin.is-rank-low {
+  background: #ea580c;
+  background: radial-gradient(circle at 35% 30%, #fb923c, #ea580c 60%, #c2410c);
+}
+
+body.jcp-proof-sprint .ps-case .jcp-maps-scan__pin.is-rank-out,
+body.jcp-proof-sprint .ps-case__full .jcp-maps-scan__pin.is-rank-out {
+  background: #dc2626;
+  background: radial-gradient(circle at 35% 30%, #f87171, #dc2626 55%, #991b1b);
+}
+
 body.jcp-proof-sprint .ps-case__metric {
   margin: 1.15rem 0 0.35rem;
   font-size: clamp(1.7rem, 5vw, 2.5rem);
