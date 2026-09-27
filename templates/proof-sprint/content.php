@@ -580,7 +580,7 @@ $channels = [
 		<header class="ps-section-head">
 			<h2 id="ps-faq-title" class="ps-section-title"><?php esc_html_e( 'Clear answers before you start.', 'jcp-core' ); ?></h2>
 		</header>
-		<div class="ps-faq__list">
+		<div class="faq-grid">
 			<?php
 			$faqs = [
 				[
@@ -618,7 +618,7 @@ $channels = [
 			];
 			foreach ( $faqs as $i => $faq ) :
 				?>
-				<details class="ps-faq__item" data-ps-faq="<?php echo esc_attr( (string) $i ); ?>"<?php echo 0 === $i ? ' open' : ''; ?>>
+				<details class="faq-item" data-ps-faq="<?php echo esc_attr( (string) $i ); ?>"<?php echo 0 === $i ? ' open' : ''; ?>>
 					<summary><?php echo esc_html( $faq['q'] ); ?></summary>
 					<p><?php echo esc_html( $faq['a'] ); ?></p>
 				</details>
