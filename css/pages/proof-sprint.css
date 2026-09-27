@@ -789,14 +789,6 @@ body.jcp-proof-sprint .ps-gbp__post span {
   font-weight: 650;
 }
 
-body.jcp-proof-sprint .ps-outputs__panel[data-ps-panel='social'] {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  padding-left: 0;
-  padding-right: 0;
-}
-
 body.jcp-proof-sprint .ps-social {
   background: #fff;
   border: 1px solid var(--ps-line);
