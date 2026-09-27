@@ -310,18 +310,39 @@ $channels = [
 									</div>
 								</div>
 							<?php else : ?>
-								<div class="ps-frame ps-frame--directory">
-									<div class="ps-dir">
-										<span class="ps-dir__label"><?php esc_html_e( 'JobCapturePro Directory', 'jcp-core' ); ?></span>
-										<article class="ps-dir__card">
-											<img src="<?php echo esc_url( $photo ); ?>" alt="" width="360" height="200" loading="lazy" decoding="async" />
-											<div class="ps-dir__meta">
-												<strong><?php esc_html_e( 'Water heater replacement', 'jcp-core' ); ?></strong>
-												<span><?php esc_html_e( 'Recent work · HVAC · Austin area', 'jcp-core' ); ?></span>
-												<em><?php esc_html_e( 'Discoverable local proof', 'jcp-core' ); ?></em>
+								<div class="ps-dir">
+									<span class="ps-dir__label"><?php esc_html_e( 'JobCapturePro Directory', 'jcp-core' ); ?></span>
+									<article class="ps-dir__card">
+										<span class="ps-dir__badge"><?php esc_html_e( 'Active', 'jcp-core' ); ?></span>
+										<div class="ps-dir__head">
+											<span class="ps-dir__avatar" aria-hidden="true">Y</span>
+											<div class="ps-dir__identity">
+												<strong><?php esc_html_e( 'Your Company', 'jcp-core' ); ?></strong>
+												<span><?php esc_html_e( 'HVAC · Austin, TX', 'jcp-core' ); ?></span>
 											</div>
-										</article>
-									</div>
+										</div>
+										<div class="ps-dir__rating" aria-label="<?php esc_attr_e( '4.9 out of 5 stars', 'jcp-core' ); ?>">
+											<span class="ps-dir__stars" aria-hidden="true">★★★★★</span>
+											<strong>4.9</strong>
+											<span><?php esc_html_e( '(48 reviews)', 'jcp-core' ); ?></span>
+										</div>
+										<div class="ps-dir__meta-row">
+											<span><?php esc_html_e( '12 jobs documented', 'jcp-core' ); ?></span>
+											<span class="ps-dir__dot" aria-hidden="true">·</span>
+											<span><?php esc_html_e( 'Active today', 'jcp-core' ); ?></span>
+										</div>
+										<div class="ps-dir__latest">
+											<img src="<?php echo esc_url( $photo ); ?>" alt="" width="88" height="66" loading="lazy" decoding="async" />
+											<div>
+												<em><?php esc_html_e( 'Latest completed job', 'jcp-core' ); ?></em>
+												<strong><?php esc_html_e( 'Water heater replacement', 'jcp-core' ); ?></strong>
+												<span><?php esc_html_e( 'Documented on site · Just published', 'jcp-core' ); ?></span>
+											</div>
+										</div>
+										<div class="ps-dir__footer">
+											<span class="ps-dir__cta"><?php esc_html_e( 'View activity', 'jcp-core' ); ?></span>
+										</div>
+									</article>
 								</div>
 							<?php endif; ?>
 						</div>
