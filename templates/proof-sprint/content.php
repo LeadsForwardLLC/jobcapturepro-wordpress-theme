@@ -47,30 +47,55 @@ $channels = [
 		'title' => __( 'Website', 'jcp-core' ),
 		'h'     => __( 'Turn completed jobs into real project and service-area content.', 'jcp-core' ),
 		'b'     => __( 'Show future customers real work you’ve completed near them.', 'jcp-core' ),
+		'points' => [
+			__( 'Project-ready photos', 'jcp-core' ),
+			__( 'Service-area context', 'jcp-core' ),
+			__( 'Proof on your site', 'jcp-core' ),
+		],
 	],
 	[
 		'id'    => 'google',
 		'title' => __( 'Google', 'jcp-core' ),
 		'h'     => __( 'Keep your Google Business Profile active with real job activity.', 'jcp-core' ),
 		'b'     => __( 'Turn completed jobs into consistent local proof.', 'jcp-core' ),
+		'points' => [
+			__( 'Fresh GBP posts', 'jcp-core' ),
+			__( 'Local activity signal', 'jcp-core' ),
+			__( 'Real job photos', 'jcp-core' ),
+		],
 	],
 	[
 		'id'    => 'social',
 		'title' => __( 'Social', 'jcp-core' ),
 		'h'     => __( 'Turn the same job into a ready-to-publish social post.', 'jcp-core' ),
 		'b'     => __( 'No sitting in the truck trying to figure out what to write.', 'jcp-core' ),
+		'points' => [
+			__( 'Caption ready', 'jcp-core' ),
+			__( 'Same job photo', 'jcp-core' ),
+			__( 'Publish faster', 'jcp-core' ),
+		],
 	],
 	[
 		'id'    => 'reviews',
 		'title' => __( 'Reviews', 'jcp-core' ),
 		'h'     => __( 'Turn a finished job into a review opportunity.', 'jcp-core' ),
 		'b'     => __( 'Create more consistent opportunities to ask at the right time.', 'jcp-core' ),
+		'points' => [
+			__( 'Ask at the right moment', 'jcp-core' ),
+			__( 'QR / link ready', 'jcp-core' ),
+			__( 'More review chances', 'jcp-core' ),
+		],
 	],
 	[
 		'id'    => 'directory',
 		'title' => __( 'Directory', 'jcp-core' ),
 		'h'     => __( 'Give every completed job another place to be discovered.', 'jcp-core' ),
 		'b'     => __( 'Show recent work, services and service-area activity.', 'jcp-core' ),
+		'points' => [
+			__( 'Local discovery', 'jcp-core' ),
+			__( 'Recent work visible', 'jcp-core' ),
+			__( 'Service-area proof', 'jcp-core' ),
+		],
 	],
 ];
 ?>
@@ -80,7 +105,12 @@ $channels = [
 	<div class="jcp-container ps-hero__grid">
 		<div class="ps-hero__copy">
 			<p class="ps-eyebrow ps-eyebrow--accent"><?php esc_html_e( 'For home-service contractors who already take job photos', 'jcp-core' ); ?></p>
-			<h1 id="ps-hero-title" class="ps-hero__title"><?php esc_html_e( 'Turn every finished job into proof that helps win the next one.', 'jcp-core' ); ?></h1>
+			<h1 id="ps-hero-title" class="ps-hero__title"><?php
+				echo wp_kses(
+					__( 'Turn every finished job<br> into proof that helps<br> win the next one.', 'jcp-core' ),
+					[ 'br' => [] ]
+				);
+			?></h1>
 			<p class="ps-hero__sub"><?php esc_html_e( 'Your crew already takes the photos. JobCapturePro turns completed jobs into website content, Google activity, social posts, review opportunities and local proof — without giving your team another marketing job.', 'jcp-core' ); ?></p>
 			<div class="ps-hero__actions">
 				<a class="btn btn-primary ps-btn-xl" href="<?php echo esc_url( $trial_href ); ?>" data-ps-trial data-ps-placement="hero" data-ps-track="trial_cta"><?php echo esc_html( $cta_label ); ?></a>
@@ -127,22 +157,26 @@ $channels = [
 <!-- 2. WORKFLOW REASSURANCE -->
 <section class="jcp-section ps-workflow" id="ps-workflow" aria-labelledby="ps-workflow-title">
 	<div class="jcp-container">
-		<header class="ps-section-head">
-			<p class="ps-eyebrow"><?php esc_html_e( 'Keep your field workflow', 'jcp-core' ); ?></p>
-			<h2 id="ps-workflow-title" class="ps-section-title"><?php esc_html_e( 'Your crew doesn’t need another marketing job.', 'jcp-core' ); ?></h2>
-			<p class="ps-section-sub"><?php esc_html_e( 'Already taking job photos in a supported system? Keep doing it. JobCapturePro can use supported workflows to turn the work your team already captures into marketing.', 'jcp-core' ); ?></p>
-		</header>
-		<ol class="ps-flow-steps" aria-label="<?php esc_attr_e( 'How crews keep working', 'jcp-core' ); ?>">
-			<li><strong><?php esc_html_e( 'Finish job', 'jcp-core' ); ?></strong></li>
-			<li><strong><?php esc_html_e( 'Take photos like normal', 'jcp-core' ); ?></strong></li>
-			<li><strong><?php esc_html_e( 'JobCapturePro puts them to work', 'jcp-core' ); ?></strong></li>
-		</ol>
-		<ul class="ps-logo-row ps-logo-row--supported" aria-label="<?php esc_attr_e( 'Supported workflows', 'jcp-core' ); ?>">
-			<li><img src="<?php echo esc_url( $hcp_logo ); ?>" alt="Housecall Pro" width="148" height="36" loading="lazy" /></li>
-			<li><img src="<?php echo esc_url( $cc_logo ); ?>" alt="CompanyCam" width="140" height="36" loading="lazy" /></li>
-			<li class="ps-logo-mark"><span><?php esc_html_e( 'JobCapturePro App', 'jcp-core' ); ?></span></li>
-		</ul>
-		<p class="ps-workflow__takeaway"><?php esc_html_e( 'Your techs do not become marketers.', 'jcp-core' ); ?></p>
+		<div class="ps-workflow__card">
+			<div class="ps-workflow__intro">
+				<p class="ps-eyebrow"><?php esc_html_e( 'Keep your field workflow', 'jcp-core' ); ?></p>
+				<h2 id="ps-workflow-title" class="ps-section-title"><?php esc_html_e( 'Your crew doesn’t need another marketing job.', 'jcp-core' ); ?></h2>
+				<p class="ps-section-sub"><?php esc_html_e( 'Already taking job photos in a supported system? Keep doing it. JobCapturePro can use supported workflows to turn the work your team already captures into marketing.', 'jcp-core' ); ?></p>
+				<p class="ps-workflow__takeaway"><?php esc_html_e( 'Your techs do not become marketers.', 'jcp-core' ); ?></p>
+			</div>
+			<div class="ps-workflow__side">
+				<ol class="ps-flow-steps" aria-label="<?php esc_attr_e( 'How crews keep working', 'jcp-core' ); ?>">
+					<li><strong><?php esc_html_e( 'Finish the job', 'jcp-core' ); ?></strong></li>
+					<li><strong><?php esc_html_e( 'Take photos like normal', 'jcp-core' ); ?></strong></li>
+					<li><strong><?php esc_html_e( 'JCP puts them to work', 'jcp-core' ); ?></strong></li>
+				</ol>
+				<ul class="ps-logo-row ps-logo-row--supported" aria-label="<?php esc_attr_e( 'Supported workflows', 'jcp-core' ); ?>">
+					<li class="ps-logo-badge"><img src="<?php echo esc_url( $hcp_logo ); ?>" alt="Housecall Pro" width="148" height="36" loading="lazy" /></li>
+					<li class="ps-logo-badge"><img src="<?php echo esc_url( $cc_logo ); ?>" alt="CompanyCam" width="140" height="36" loading="lazy" /></li>
+					<li class="ps-logo-badge ps-logo-mark"><span><?php esc_html_e( 'JobCapturePro App', 'jcp-core' ); ?></span></li>
+				</ul>
+			</div>
+		</div>
 	</div>
 </section>
 
@@ -150,12 +184,12 @@ $channels = [
 <section class="jcp-section ps-outputs" id="ps-outputs" aria-labelledby="ps-outputs-title" data-ps-outputs>
 	<div class="jcp-container">
 		<header class="ps-section-head">
-			<p class="ps-eyebrow"><?php esc_html_e( 'One job. Multiple channels.', 'jcp-core' ); ?></p>
+			<p class="ps-eyebrow"><?php esc_html_e( 'One job → Multiple channels', 'jcp-core' ); ?></p>
 			<h2 id="ps-outputs-title" class="ps-section-title"><?php esc_html_e( 'One finished job. Five ways it can keep working.', 'jcp-core' ); ?></h2>
 			<p class="ps-section-sub"><?php esc_html_e( 'Instead of letting completed-job proof disappear, JobCapturePro turns it into marketing across the channels your future customers already use.', 'jcp-core' ); ?></p>
 		</header>
 
-		<div class="ps-outputs__layout">
+		<div class="ps-outputs__shell">
 			<div class="ps-outputs__tabs" role="tablist" aria-label="<?php esc_attr_e( 'Marketing channels', 'jcp-core' ); ?>">
 				<?php foreach ( $channels as $i => $ch ) : ?>
 					<button
@@ -165,12 +199,13 @@ $channels = [
 						id="ps-tab-<?php echo esc_attr( $ch['id'] ); ?>"
 						aria-selected="<?php echo 0 === $i ? 'true' : 'false'; ?>"
 						aria-controls="ps-panel-<?php echo esc_attr( $ch['id'] ); ?>"
+						tabindex="<?php echo 0 === $i ? '0' : '-1'; ?>"
 						data-ps-channel="<?php echo esc_attr( $ch['id'] ); ?>"
 					><?php echo esc_html( $ch['title'] ); ?></button>
 				<?php endforeach; ?>
 			</div>
 
-			<div class="ps-outputs__panels">
+			<div class="ps-outputs__stage">
 				<?php foreach ( $channels as $i => $ch ) : ?>
 					<div
 						class="ps-outputs__panel<?php echo 0 === $i ? ' is-active' : ''; ?>"
@@ -181,42 +216,97 @@ $channels = [
 						<?php echo 0 === $i ? '' : ' hidden'; ?>
 					>
 						<div class="ps-outputs__copy">
+							<p class="ps-outputs__channel-label"><?php echo esc_html( $ch['title'] ); ?></p>
 							<h3><?php echo esc_html( $ch['h'] ); ?></h3>
 							<p><?php echo esc_html( $ch['b'] ); ?></p>
+							<?php if ( ! empty( $ch['points'] ) ) : ?>
+								<ul class="ps-outputs__points">
+									<?php foreach ( $ch['points'] as $pt ) : ?>
+										<li><?php echo esc_html( $pt ); ?></li>
+									<?php endforeach; ?>
+								</ul>
+							<?php endif; ?>
 						</div>
 						<div class="ps-outputs__preview" aria-hidden="true">
-							<div class="ps-mock ps-mock--<?php echo esc_attr( $ch['id'] ); ?>">
-								<div class="ps-mock__job">
-									<img src="<?php echo esc_url( $photo ); ?>" alt="" width="280" height="180" loading="lazy" decoding="async" />
-									<span><?php esc_html_e( 'Water heater replacement · Austin, TX', 'jcp-core' ); ?></span>
+							<?php if ( 'website' === $ch['id'] ) : ?>
+								<div class="ps-frame ps-frame--website">
+									<div class="ps-frame__chrome"><span></span><span></span><span></span><em>yoursite.com/projects</em></div>
+									<div class="ps-frame__body">
+										<article class="ps-card-project">
+											<img src="<?php echo esc_url( $photo ); ?>" alt="" width="420" height="260" loading="lazy" decoding="async" />
+											<div class="ps-card-project__meta">
+												<strong><?php esc_html_e( 'Water heater replacement', 'jcp-core' ); ?></strong>
+												<span><?php esc_html_e( 'Austin, TX · Project check-in', 'jcp-core' ); ?></span>
+											</div>
+										</article>
+										<div class="ps-card-map">
+											<img src="<?php echo esc_url( $map_url ); ?>" alt="" width="200" height="120" loading="lazy" decoding="async" />
+											<span><?php esc_html_e( 'Service-area proof', 'jcp-core' ); ?></span>
+										</div>
+									</div>
 								</div>
-								<?php if ( 'website' === $ch['id'] ) : ?>
-									<div class="ps-mock__map">
-										<img src="<?php echo esc_url( $map_url ); ?>" alt="" width="320" height="180" loading="lazy" decoding="async" />
-										<span><?php esc_html_e( 'Service-area check-in', 'jcp-core' ); ?></span>
+							<?php elseif ( 'google' === $ch['id'] ) : ?>
+								<div class="ps-frame ps-frame--google">
+									<div class="ps-gbp">
+										<div class="ps-gbp__head">
+											<span class="ps-gbp__g">G</span>
+											<div>
+												<strong><?php esc_html_e( 'Your Business', 'jcp-core' ); ?></strong>
+												<em>★★★★★ · Google Business Profile</em>
+											</div>
+										</div>
+										<div class="ps-gbp__post">
+											<img src="<?php echo esc_url( $photo ); ?>" alt="" width="360" height="220" loading="lazy" decoding="async" />
+											<p><?php esc_html_e( 'Just finished a water heater replacement in Austin — fresh photos from the crew.', 'jcp-core' ); ?></p>
+											<span><?php esc_html_e( 'Posted from JobCapturePro', 'jcp-core' ); ?></span>
+										</div>
 									</div>
-								<?php elseif ( 'google' === $ch['id'] ) : ?>
-									<div class="ps-mock__gbp">
-										<strong><?php esc_html_e( 'Google Business Profile', 'jcp-core' ); ?></strong>
-										<p><?php esc_html_e( 'Just finished a water heater replacement in Austin — fresh photos from the crew.', 'jcp-core' ); ?></p>
+								</div>
+							<?php elseif ( 'social' === $ch['id'] ) : ?>
+								<div class="ps-frame ps-frame--social">
+									<div class="ps-social">
+										<div class="ps-social__head">
+											<span class="ps-social__avatar"></span>
+											<strong><?php esc_html_e( 'Your Company', 'jcp-core' ); ?></strong>
+										</div>
+										<img src="<?php echo esc_url( $photo ); ?>" alt="" width="400" height="280" loading="lazy" decoding="async" />
+										<div class="ps-social__caption">
+											<p><?php esc_html_e( 'Another job in the books. Real work. Real photos. Ready for social.', 'jcp-core' ); ?></p>
+											<span><?php esc_html_e( 'Ready to publish', 'jcp-core' ); ?></span>
+										</div>
 									</div>
-								<?php elseif ( 'social' === $ch['id'] ) : ?>
-									<div class="ps-mock__social">
-										<strong><?php esc_html_e( 'Ready-to-publish post', 'jcp-core' ); ?></strong>
-										<p><?php esc_html_e( 'Another job in the books. Real work. Real photos. Ready for social.', 'jcp-core' ); ?></p>
+								</div>
+							<?php elseif ( 'reviews' === $ch['id'] ) : ?>
+								<div class="ps-frame ps-frame--reviews">
+									<div class="ps-review-ui">
+										<div class="ps-review-ui__job">
+											<img src="<?php echo esc_url( $photo ); ?>" alt="" width="120" height="90" loading="lazy" decoding="async" />
+											<div>
+												<strong><?php esc_html_e( 'Job complete', 'jcp-core' ); ?></strong>
+												<span><?php esc_html_e( 'Water heater · Austin', 'jcp-core' ); ?></span>
+											</div>
+										</div>
+										<div class="ps-review-ui__ask">
+											<img src="<?php echo esc_url( $campaign . 'ps-dummy-qr.png' ); ?>" alt="" width="72" height="72" loading="lazy" />
+											<p><?php esc_html_e( 'Review ask ready — send while the job is fresh.', 'jcp-core' ); ?></p>
+										</div>
 									</div>
-								<?php elseif ( 'reviews' === $ch['id'] ) : ?>
-									<div class="ps-mock__review">
-										<img src="<?php echo esc_url( $campaign . 'ps-dummy-qr.png' ); ?>" alt="" width="72" height="72" loading="lazy" />
-										<p><?php esc_html_e( 'Review ask at the right moment', 'jcp-core' ); ?></p>
+								</div>
+							<?php else : ?>
+								<div class="ps-frame ps-frame--directory">
+									<div class="ps-dir">
+										<span class="ps-dir__label"><?php esc_html_e( 'JobCapturePro Directory', 'jcp-core' ); ?></span>
+										<article class="ps-dir__card">
+											<img src="<?php echo esc_url( $photo ); ?>" alt="" width="360" height="200" loading="lazy" decoding="async" />
+											<div class="ps-dir__meta">
+												<strong><?php esc_html_e( 'Water heater replacement', 'jcp-core' ); ?></strong>
+												<span><?php esc_html_e( 'Recent work · HVAC · Austin area', 'jcp-core' ); ?></span>
+												<em><?php esc_html_e( 'Discoverable local proof', 'jcp-core' ); ?></em>
+											</div>
+										</article>
 									</div>
-								<?php else : ?>
-									<div class="ps-mock__dir">
-										<strong><?php esc_html_e( 'JobCapturePro Directory', 'jcp-core' ); ?></strong>
-										<p><?php esc_html_e( 'Recent work · services · service-area activity', 'jcp-core' ); ?></p>
-									</div>
-								<?php endif; ?>
-							</div>
+								</div>
+							<?php endif; ?>
 						</div>
 					</div>
 				<?php endforeach; ?>
@@ -239,7 +329,7 @@ $channels = [
 		</header>
 		<div class="ps-waste__compare">
 			<div class="ps-waste__col ps-waste__col--before">
-				<p class="ps-waste__label"><?php esc_html_e( 'Before', 'jcp-core' ); ?></p>
+				<p class="ps-waste__label"><?php esc_html_e( 'Without JCP', 'jcp-core' ); ?></p>
 				<p class="ps-waste__start"><?php esc_html_e( 'Finished Job', 'jcp-core' ); ?></p>
 				<ul>
 					<li><?php esc_html_e( 'Camera Roll', 'jcp-core' ); ?></li>
@@ -249,7 +339,7 @@ $channels = [
 				</ul>
 			</div>
 			<div class="ps-waste__col ps-waste__col--after">
-				<p class="ps-waste__label"><?php esc_html_e( 'With JobCapturePro', 'jcp-core' ); ?></p>
+				<p class="ps-waste__label"><?php esc_html_e( 'With JCP', 'jcp-core' ); ?></p>
 				<p class="ps-waste__start"><?php esc_html_e( 'Finished Job', 'jcp-core' ); ?></p>
 				<ul>
 					<li><?php esc_html_e( 'Website', 'jcp-core' ); ?></li>
@@ -330,7 +420,7 @@ $channels = [
 		</div>
 
 		<details class="ps-case__more" data-ps-case-more>
-			<summary><?php esc_html_e( 'View the full case study →', 'jcp-core' ); ?></summary>
+			<summary><?php esc_html_e( 'View all tracked markets', 'jcp-core' ); ?></summary>
 			<div class="ps-case__full">
 				<?php
 				if ( $case_props !== [] && function_exists( 'jcp_niche_render_local_rank_case_study' ) ) {
