@@ -583,7 +583,7 @@ body.jcp-proof-sprint .ps-outputs__channel-label {
   font-weight: 750;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--ps-accent);
+  color: var(--ps-accent) !important;
 }
 
 body.jcp-proof-sprint .ps-outputs__copy h3 {
@@ -1159,7 +1159,16 @@ body.jcp-proof-sprint .ps-case__more {
   border-radius: var(--ps-radius);
   background: #fff;
   border: 1px solid var(--ps-line);
-  padding: 0 1rem 0.85rem;
+  padding: 0 1rem;
+}
+
+body.jcp-proof-sprint .ps-case__more[open] {
+  padding-bottom: 0.85rem;
+}
+
+/* Niche case-study CSS can force display and defeat UA details hiding */
+body.jcp-proof-sprint .ps-case__more:not([open]) > *:not(summary) {
+  display: none !important;
 }
 
 body.jcp-proof-sprint .ps-case__more > summary {
