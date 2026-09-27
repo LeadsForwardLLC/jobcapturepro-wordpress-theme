@@ -1548,6 +1548,21 @@
       fbclid: attr.fbclid || '',
       referrer: attr.referrer || document.referrer || '',
     };
+    // Durable conversion attribution (server-side only; not for public URLs).
+    if (attr._fbp) body._fbp = attr._fbp;
+    if (attr._fbc) body._fbc = attr._fbc;
+    if (attr.qa_trace_id) body.qa_trace_id = attr.qa_trace_id;
+    if (attr.first_touch_timestamp) body.first_touch_timestamp = attr.first_touch_timestamp;
+    if (attr.ph_distinct_id) {
+      body.ph_distinct_id = attr.ph_distinct_id;
+    } else {
+      try {
+        if (window.JCPPostHog && typeof window.JCPPostHog.getDistinctId === 'function') {
+          var phId = String(window.JCPPostHog.getDistinctId() || '').trim();
+          if (phId) body.ph_distinct_id = phId;
+        }
+      } catch (ePh) {}
+    }
     if (state.other_trade_text) body.other_trade_text = state.other_trade_text;
     if (state.other_workflow_text) body.other_workflow_text = state.other_workflow_text;
 

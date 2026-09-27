@@ -13,8 +13,8 @@ Canonical event meanings for paid acquisition (`/proof-gap/`, `/proof-sprint/`) 
 | Rule | Meaning |
 |------|---------|
 | `trial_cta_clicked` ≠ `trial_started` | CTA click is intent only. |
-| `trial_started` | Fires **only** after successful backend trial provisioning. |
-| `signup_completed` | Fires after successful `POST /api/onboarding` + Firebase Auth sign-in (client). Closest live “account created” signal today. |
+| `signup_completed` ≠ `trial_started` | Account created ≠ Stripe trial provisioned. |
+| `trial_started` | Fires **only** after Stripe confirms a qualifying free trial (`customer.subscription.created` → marketing webhook). |
 | Do not fire Meta primary conversion on CTA click | Lead (email) and trial conversion are separate. |
 
 ---
@@ -156,13 +156,29 @@ Canonical event meanings for paid acquisition (`/proof-gap/`, `/proof-sprint/`) 
 - **Primary conversion:** **Candidate** for “account created,” but not the named `trial_started` contract.
 
 ### `trial_started`
-- **Meaning:** Successful real trial provisioning (Stripe no-card 14-day Scale trial attached to org).
-- **When:** **Intended** immediately after `provisionTrialSubscription` succeeds inside `POST /api/onboarding`.
-- **Current production status (2026-09-26):** **Not present in live app taxonomy.** JCP-API PR #133 added it then was **reverted** (`00597cf`). Live app still only emits `signup_completed`.
-- **PostHog:** Should be yes when re-shipped.
-- **Meta:** Intended primary conversion event for paid acquisition (browser and/or CAPI) — **must share one `event_id` if both fire**.
-- **GHL:** Optional downstream tag; not required for Meta primary.
-- **Primary conversion:** **Yes** (once live).
+- **Meaning:** Successful real trial provisioning — a Stripe subscription exists with `status=trialing` for the JCP Scale free trial.
+- **Source of truth (marketing-owned, 2026-09-27+):** Stripe webhook `customer.subscription.created` handled by `jobcapturepro.com` (`/wp-json/jcp/v1/stripe-trial-webhook`).
+- **Qualification (all required):**
+  - `event.type = customer.subscription.created`
+  - `subscription.status = trialing`
+  - `metadata.lookupKey = scale_monthly` **or** `items.data[0].price.lookup_key = scale_monthly`
+  - `metadata.organizationId` present
+  - not `additional_location_monthly`
+- **Do not treat as trial start:** `customer.subscription.updated`, paid `active` without trial, CTA clicks, or account creation alone.
+- **PostHog:** Server-side `trial_started` to project `593169`. Prefer matched lead `ph_distinct_id` as `distinct_id`.
+- **Meta:** Server CAPI **`StartTrial`** (Pixel `1440845294314184`).
+- **Shared `event_id` / `$insert_id`:** `jcp_trial_<stripe_subscription_id>` (one subscription = one conversion).
+- **Attribution join:** normalized Stripe customer email → durable marketing lead email (newest lead with `created_at <= subscription.created`). Unmatched trials still emit with `attribution_status=unmatched`.
+- **App client event:** Not required. App `signup_completed` remains a separate account-created signal.
+- **GHL:** Optional future tag; not required for Meta/PostHog primary.
+- **Primary conversion:** **YES**.
+
+### Explicit non-equivalences
+| Signal | Equals `trial_started`? |
+|--------|-------------------------|
+| `signup_completed` | **No** — account created; trial not guaranteed |
+| `trial_cta_clicked` / `proof_sprint_cta_clicked` | **No** — intent only |
+| Meta Lead / `proof_gap_email_submitted` | **No** — lead / diagnostic |
 
 ---
 
@@ -171,10 +187,24 @@ Canonical event meanings for paid acquisition (`/proof-gap/`, `/proof-sprint/`) 
 | Field | Role |
 |-------|------|
 | PostHog `distinct_id` | Sticky marketing-site id (`jcp_ph_id` cookie / localStorage). |
-| `ph_distinct_id` URL param | Passed marketing → app for identity bootstrap (**app bootstrap from #133 not live**). |
+| `ph_distinct_id` | Persisted on durable marketing lead (`attribution_json`) and used as PostHog `distinct_id` for server `trial_started`. Also passed marketing → app via URL for optional bootstrap. |
 | `survey_session_id` | Unique Proof Gap survey UUID (not the shared onboarding `sessionId`). |
-| `qa_trace_id` | First-touch QA / campaign trace; persisted in attribution store. |
-| UTMs / `fbclid` / `_fbp` / `_fbc` / `landing_page` / `referrer` / `first_touch_timestamp` | First-touch attribution (`jcp-attribution.js`). |
+| `qa_trace_id` | First-touch QA / campaign trace; persisted in client attribution + durable lead `attribution_json`. |
+| UTMs / `fbclid` / `_fbp` / `_fbc` / `landing_page` / `referrer` / `first_touch_timestamp` | First-touch attribution (`jcp-attribution.js`). Cookies and `ph_distinct_id` are POST-only to the lead REST endpoint (not GHL, not public URLs). |
+
+---
+
+## SUCCESSFUL STRIPE TRIAL (primary conversion)
+
+| Item | Value |
+|------|-------|
+| Source of truth | Stripe `customer.subscription.created` |
+| Conditions | `status=trialing` + `scale_monthly` + `organizationId` present + not `additional_location_monthly` |
+| Marketing endpoint | `POST https://jobcapturepro.com/wp-json/jcp/v1/stripe-trial-webhook` |
+| PostHog | `trial_started` |
+| Meta | `StartTrial` (CAPI) |
+| `event_id` | `jcp_trial_<stripe_subscription_id>` |
+| Primary conversion | **YES** |
 
 ---
 
@@ -187,4 +217,5 @@ Canonical event meanings for paid acquisition (`/proof-gap/`, `/proof-sprint/`) 
 ## Document history
 
 - Created for paid acquisition launch handoff (Proof Gap + Proof Sprint).
-- Update this file when `trial_started` ships on the app or Meta CAPI mappings change.
+- 2026-09-27: Marketing-owned Stripe webhook is the authoritative `trial_started` / Meta `StartTrial` path (no app code required).
+- Update this file when Meta CAPI mappings or Stripe qualification rules change.

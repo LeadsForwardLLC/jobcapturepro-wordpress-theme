@@ -857,7 +857,21 @@
       utm_term: attr.utm_term || '',
       fbclid: attr.fbclid || '',
       referrer: attr.referrer || document.referrer || '',
+      lp_variant: attr.lp_variant || '',
     };
+    if (attr._fbp) body._fbp = attr._fbp;
+    if (attr._fbc) body._fbc = attr._fbc;
+    if (attr.qa_trace_id) body.qa_trace_id = attr.qa_trace_id;
+    if (attr.first_touch_timestamp) body.first_touch_timestamp = attr.first_touch_timestamp;
+    if (attr.ph_distinct_id) body.ph_distinct_id = attr.ph_distinct_id;
+    else {
+      try {
+        if (window.JCPPostHog && typeof window.JCPPostHog.getDistinctId === 'function') {
+          var phDemo = String(window.JCPPostHog.getDistinctId() || '').trim();
+          if (phDemo) body.ph_distinct_id = phDemo;
+        }
+      } catch (ePhDemo) {}
+    }
 
     return fetch(restUrl, {
       method: 'POST',

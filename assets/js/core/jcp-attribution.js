@@ -14,7 +14,9 @@
     'utm_term',
     'fbclid',
   ];
+  // Durable conversion fields. Cookies (_fbp/_fbc) are POST-only — never URL-decorated.
   const EXTRA_KEYS = ['lp_variant', 'qa_trace_id', 'first_touch_timestamp', '_fbp', '_fbc'];
+  const URL_SAFE_EXTRA_KEYS = ['lp_variant', 'qa_trace_id', 'first_touch_timestamp'];
 
   /** Path → analytics key for paid LPs (belt-and-suspenders if PHP attr misses). */
   const PATH_VARIANT_MAP = {
@@ -176,6 +178,20 @@
     }
   }
 
+  function readPhDistinctId() {
+    try {
+      if (window.JCPPostHog && typeof window.JCPPostHog.getDistinctId === 'function') {
+        const id = String(window.JCPPostHog.getDistinctId() || '').trim();
+        if (id && id.length >= 8) return id.slice(0, 128);
+      }
+    } catch (e) {}
+    try {
+      const fromLs = localStorage.getItem('jcp_ph_distinct_id');
+      if (fromLs && String(fromLs).trim().length >= 8) return String(fromLs).trim().slice(0, 128);
+    } catch (e2) {}
+    return '';
+  }
+
   function getLeadAttributionPayload() {
     try {
       const data = readStoredAttribution();
@@ -200,6 +216,8 @@
       if (isValidGhlContactId(data.contact_id)) {
         out.contact_id = String(data.contact_id).trim();
       }
+      const phId = readPhDistinctId();
+      if (phId) out.ph_distinct_id = phId;
       return out;
     } catch (e) {
       return {};
@@ -211,7 +229,8 @@
     try {
       const payload = getLeadAttributionPayload();
       const keys = PARAM_KEYS.filter((k) => payload[k]);
-      EXTRA_KEYS.forEach((k) => {
+      // Never put _fbp/_fbc/ph_distinct_id into public URLs.
+      URL_SAFE_EXTRA_KEYS.forEach((k) => {
         if (payload[k]) keys.push(k);
       });
       if (payload.contact_id) keys.push('contact_id');

@@ -123,6 +123,12 @@ if ( is_readable( $jcp_proof_gap_rest ) ) {
 	require_once $jcp_proof_gap_rest;
 }
 
+// Marketing-owned Stripe trial → PostHog + Meta CAPI (no app changes).
+$jcp_stripe_trial_inc = get_template_directory() . '/inc/stripe-trial-tracking.php';
+if ( is_readable( $jcp_stripe_trial_inc ) ) {
+	require_once $jcp_stripe_trial_inc;
+}
+
 // Demo analytics: DB table + REST endpoint
 require_once get_template_directory() . '/inc/demo-analytics.php';
 

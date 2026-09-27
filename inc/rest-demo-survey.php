@@ -193,6 +193,32 @@ function jcp_demo_ghl_attribution_rest_args(): array {
             'type'              => 'string',
             'sanitize_callback' => 'esc_url_raw',
         ],
+        // Durable conversion attribution (server-side only; NOT forwarded to GHL).
+        '_fbp' => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        '_fbc' => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'qa_trace_id' => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'ph_distinct_id' => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'first_touch_timestamp' => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
         'contact_id'   => [
             'required'          => false,
             'type'              => 'string',
@@ -204,6 +230,61 @@ function jcp_demo_ghl_attribution_rest_args(): array {
             'sanitize_callback' => 'sanitize_text_field',
         ],
     ];
+}
+
+/**
+ * Attribution keys accepted on lead POST that are durable for Stripe trial join
+ * but must never be copied into the GHL webhook body.
+ *
+ * @return list<string>
+ */
+function jcp_demo_lead_conversion_attr_keys(): array {
+	return [
+		'utm_source',
+		'utm_medium',
+		'utm_campaign',
+		'utm_content',
+		'utm_term',
+		'fbclid',
+		'_fbp',
+		'_fbc',
+		'qa_trace_id',
+		'ph_distinct_id',
+		'landing_page',
+		'lp_variant',
+		'funnel_surface',
+		'referrer',
+		'first_touch_timestamp',
+	];
+}
+
+/**
+ * Build durable conversion-attribution JSON for a lead (not sent to GHL).
+ *
+ * @param array<string, mixed> $params Request params.
+ * @return string JSON object.
+ */
+function jcp_demo_lead_build_attribution_json( array $params ): string {
+	$out = [];
+	foreach ( jcp_demo_lead_conversion_attr_keys() as $key ) {
+		if ( ! isset( $params[ $key ] ) ) {
+			continue;
+		}
+		$val = trim( (string) $params[ $key ] );
+		if ( $val === '' ) {
+			continue;
+		}
+		// Bound lengths for cookie / id fields.
+		$max = 512;
+		if ( in_array( $key, [ '_fbp', '_fbc', 'ph_distinct_id', 'qa_trace_id' ], true ) ) {
+			$max = 256;
+		}
+		if ( $key === 'landing_page' || $key === 'referrer' ) {
+			$max = 1024;
+		}
+		$out[ $key ] = mb_substr( $val, 0, $max );
+	}
+	return wp_json_encode( $out, JSON_UNESCAPED_SLASHES ) ?: '{}';
 }
 
 /**
@@ -409,6 +490,7 @@ function jcp_demo_lead_queue_maybe_create_table(): void {
 		event_name varchar(64) NOT NULL DEFAULT 'demo-opt-in',
 		event_id varchar(64) NOT NULL DEFAULT '',
 		payload longtext NOT NULL,
+		attribution_json longtext DEFAULT NULL,
 		status varchar(20) NOT NULL DEFAULT 'pending',
 		attempts int(11) NOT NULL DEFAULT 0,
 		last_error text DEFAULT NULL,
@@ -425,6 +507,14 @@ function jcp_demo_lead_queue_maybe_create_table(): void {
 
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 	dbDelta( $sql );
+
+	// Soft-add attribution_json for installs that already had the table.
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$col = $wpdb->get_results( "SHOW COLUMNS FROM `$table` LIKE 'attribution_json'" );
+	if ( empty( $col ) ) {
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query( "ALTER TABLE `$table` ADD COLUMN attribution_json longtext DEFAULT NULL AFTER payload" );
+	}
 }
 
 /**
@@ -470,22 +560,27 @@ function jcp_demo_lead_queue_insert( array $params, string $body, string $event_
 		$event = 'demo-opt-in';
 	}
 
+	$attribution_json = function_exists( 'jcp_demo_lead_build_attribution_json' )
+		? jcp_demo_lead_build_attribution_json( $params )
+		: '{}';
+
 	$now = current_time( 'mysql' );
 	$ok  = $wpdb->insert(
 		$table,
 		[
-			'email'          => $contact['email'],
-			'business_type'  => $contact['business_type'],
-			'event_name'     => $event,
-			'event_id'       => $event_id,
-			'payload'        => $body,
-			'status'         => 'pending',
-			'attempts'       => 0,
-			'created_at'     => $now,
-			'updated_at'     => $now,
-			'next_attempt_at'=> $now,
+			'email'             => $contact['email'],
+			'business_type'     => $contact['business_type'],
+			'event_name'        => $event,
+			'event_id'          => $event_id,
+			'payload'           => $body,
+			'attribution_json'  => $attribution_json,
+			'status'            => 'pending',
+			'attempts'          => 0,
+			'created_at'        => $now,
+			'updated_at'        => $now,
+			'next_attempt_at'   => $now,
 		],
-		[ '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s' ]
+		[ '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s', '%s' ]
 	);
 
 	if ( ! $ok ) {
