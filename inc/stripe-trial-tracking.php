@@ -130,6 +130,15 @@ function jcp_trial_register_rest_routes(): void {
 			'callback'            => 'jcp_trial_posthog_signup_bridge_handler',
 		]
 	);
+	register_rest_route(
+		'jcp/v1',
+		'/trial-enrich',
+		[
+			'methods'             => 'POST',
+			'permission_callback' => '__return_true',
+			'callback'            => 'jcp_trial_enrich_rest_handler',
+		]
+	);
 }
 add_action( 'rest_api_init', 'jcp_trial_register_rest_routes' );
 
@@ -853,6 +862,134 @@ function jcp_trial_schedule_enrichment( string $conversion_id ): void {
 	if ( function_exists( 'spawn_cron' ) ) {
 		spawn_cron( time() );
 	}
+	// Non-blocking loopback — SiteGround often uses DISABLE_WP_CRON + infrequent system cron.
+	jcp_trial_fire_enrich_loopback( $conversion_id );
+	jcp_trial_queue_shutdown_enrich( $conversion_id );
+}
+
+/**
+ * Queue same-request post-response enrichment retries (covers ~2s race without WP-Cron).
+ *
+ * Uses fastcgi_finish_request when available so Stripe already has its 200.
+ *
+ * @param string $conversion_id Conversion id.
+ */
+function jcp_trial_queue_shutdown_enrich( string $conversion_id ): void {
+	$conversion_id = trim( $conversion_id );
+	if ( $conversion_id === '' ) {
+		return;
+	}
+
+	static $queued = [];
+	if ( isset( $queued[ $conversion_id ] ) ) {
+		return;
+	}
+	$queued[ $conversion_id ] = true;
+
+	add_action(
+		'shutdown',
+		static function () use ( $conversion_id ): void {
+			if ( function_exists( 'fastcgi_finish_request' ) ) {
+				@fastcgi_finish_request(); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			}
+			// Cumulative sleeps: ~2s, +3s, +5s, +8s, +12s ≈ 30s total after response.
+			foreach ( [ 2, 3, 5, 8, 12 ] as $sleep ) {
+				sleep( $sleep );
+				jcp_trial_enrich_and_deliver( $conversion_id );
+
+				global $wpdb;
+				$table = $wpdb->prefix . JCP_TRIAL_CONVERSIONS_TABLE;
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$row = $wpdb->get_row(
+					$wpdb->prepare(
+						"SELECT posthog_status, meta_status, attribution_status FROM `$table` WHERE conversion_id = %s LIMIT 1",
+						$conversion_id
+					)
+				);
+				if (
+					$row
+					&& (string) $row->posthog_status === 'sent'
+					&& (string) $row->meta_status === 'sent'
+				) {
+					return;
+				}
+			}
+		},
+		5
+	);
+}
+
+/**
+ * Non-blocking POST to internal enrich endpoint (backup when cron is delayed).
+ *
+ * @param string $conversion_id Conversion id.
+ */
+function jcp_trial_fire_enrich_loopback( string $conversion_id ): void {
+	$conversion_id = trim( $conversion_id );
+	$secret        = jcp_trial_secret( 'JCP_POSTHOG_SIGNUP_BRIDGE_SECRET' );
+	if ( $secret === '' ) {
+		$secret = jcp_trial_secret( 'JCP_STRIPE_WEBHOOK_SECRET' );
+	}
+	if ( $conversion_id === '' || $secret === '' ) {
+		return;
+	}
+
+	$url = rest_url( 'jcp/v1/trial-enrich' );
+	wp_remote_post(
+		$url,
+		[
+			'timeout'   => 0.01,
+			'blocking'  => false,
+			'headers'   => [
+				'Content-Type'      => 'application/json',
+				'X-JCP-Bridge-Secret' => $secret,
+			],
+			'body'      => wp_json_encode(
+				[
+					'conversion_id' => $conversion_id,
+				]
+			),
+			'sslverify' => true,
+		]
+	);
+}
+
+/**
+ * REST: enrich one pending conversion (internal loopback / ops).
+ *
+ * @param WP_REST_Request $request Request.
+ * @return WP_REST_Response
+ */
+function jcp_trial_enrich_rest_handler( WP_REST_Request $request ): WP_REST_Response {
+	if ( ! jcp_trial_signup_bridge_auth_ok( $request ) ) {
+		// Also accept Stripe webhook secret as bearer for loopback.
+		$stripe_secret = jcp_trial_secret( 'JCP_STRIPE_WEBHOOK_SECRET' );
+		$provided      = (string) $request->get_header( 'x-jcp-bridge-secret' );
+		if ( $provided === '' ) {
+			$auth = (string) $request->get_header( 'authorization' );
+			if ( preg_match( '/^Bearer\s+(.+)$/i', $auth, $m ) ) {
+				$provided = trim( $m[1] );
+			}
+		}
+		if ( $stripe_secret === '' || $provided === '' || ! hash_equals( $stripe_secret, $provided ) ) {
+			return new WP_REST_Response( [ 'error' => 'unauthorized' ], 401 );
+		}
+	}
+
+	$params = $request->get_json_params();
+	if ( ! is_array( $params ) ) {
+		$params = [];
+	}
+	$conversion_id = isset( $params['conversion_id'] ) ? trim( (string) $params['conversion_id'] ) : '';
+	if ( $conversion_id === '' ) {
+		$conversion_id = trim( (string) $request->get_param( 'conversion_id' ) );
+	}
+	if ( $conversion_id === '' || strpos( $conversion_id, 'jcp_trial_' ) !== 0 ) {
+		return new WP_REST_Response( [ 'error' => 'invalid_conversion_id' ], 400 );
+	}
+
+	jcp_trial_enrich_and_deliver( $conversion_id );
+	return new WP_REST_Response( [ 'ok' => true, 'conversion_id' => $conversion_id ], 200 );
 }
 
 /**
