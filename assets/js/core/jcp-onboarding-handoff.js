@@ -117,7 +117,37 @@
         return window.JCPLeadAttribution.getPayload() || {};
       }
     } catch (e) {}
-    return {};
+    // Fallback when attribution.js is not on the page: read persisted current-touch store.
+    try {
+      const raw =
+        (window.localStorage && window.localStorage.getItem('jcp_lead_attribution_v2')) ||
+        (window.sessionStorage && window.sessionStorage.getItem('jcp_lead_attribution')) ||
+        '';
+      if (!raw) return {};
+      const data = JSON.parse(raw);
+      if (!data || typeof data !== 'object') return {};
+      const out = {};
+      [
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_content',
+        'utm_term',
+        'fbclid',
+        'lp_variant',
+        'qa_trace_id',
+        'landing_page',
+        'referrer',
+        'contact_id',
+        'ph_distinct_id',
+      ].forEach((key) => {
+        const val = data[key];
+        if (val != null && String(val).trim() !== '') out[key] = String(val).trim();
+      });
+      return out;
+    } catch (e2) {
+      return {};
+    }
   };
 
   const isMarketingDefault = (key, value) => {
