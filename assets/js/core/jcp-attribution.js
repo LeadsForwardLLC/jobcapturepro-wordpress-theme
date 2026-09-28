@@ -126,8 +126,8 @@
 
   /**
    * Snapshot first-touch fields once (historical acquisition).
-   * Flat utm_*/qa_trace_id/lp_variant/landing_page remain the CURRENT paid touch
-   * so Gap↔Sprint experiment handoff and PostHog props are not polluted by a
+   * Flat utm_*, qa_trace_id, lp_variant, landing_page remain the CURRENT paid touch
+   * so Gap vs Sprint experiment handoff and PostHog props are not polluted by a
    * sticky first-touch record from an earlier LP visit in the same browser.
    */
   function ensureFirstTouchSnapshot(data) {
