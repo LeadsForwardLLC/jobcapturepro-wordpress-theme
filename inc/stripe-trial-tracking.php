@@ -497,6 +497,9 @@ function jcp_trial_posthog_signup_bridge_handler( WP_REST_Request $request ): WP
 		[ '%s', '%s', '%s', '%s', '%s', '%s', '%s' ]
 	);
 
+	// Wake any Stripe conversions waiting on this email (covers ~2s race).
+	jcp_trial_enrich_pending_for_email( $email );
+
 	return new WP_REST_Response(
 		[
 			'received'       => true,
@@ -708,11 +711,15 @@ function jcp_trial_find_attr_via_posthog_signup( string $email_norm ): array {
 
 	// HogQL string literal — email already normalized to lowercase [a-z0-9@._+-].
 	$email_lit = str_replace( [ '\\', "'" ], [ '\\\\', "\\'" ], $email_norm );
+	// Prefer person.email; also accept event-level email if identify lags.
 	$sql       = "SELECT properties.\$current_url AS current_url
 		FROM events
 		WHERE event = 'signup_completed'
 		  AND timestamp >= now() - INTERVAL 2 DAY
-		  AND lower(toString(person.properties.email)) = '{$email_lit}'
+		  AND (
+		    lower(toString(person.properties.email)) = '{$email_lit}'
+		    OR lower(toString(properties.email)) = '{$email_lit}'
+		  )
 		ORDER BY timestamp DESC
 		LIMIT 1";
 
@@ -811,7 +818,15 @@ function jcp_trial_resolve_attribution( string $email_norm, int $before_ts ): ar
  * @param object $row Conversion row.
  */
 function jcp_trial_enrichment_window_open( object $row ): bool {
-	$created = strtotime( (string) ( $row->created_at ?? '' ) );
+	$raw = trim( (string) ( $row->created_at ?? '' ) );
+	if ( $raw === '' ) {
+		return false;
+	}
+	// Prefer UTC parse (new rows store GMT via current_time(…, true)).
+	$created = strtotime( $raw . ' UTC' );
+	if ( ! $created ) {
+		$created = strtotime( $raw );
+	}
 	if ( ! $created ) {
 		return false;
 	}
@@ -821,6 +836,9 @@ function jcp_trial_enrichment_window_open( object $row ): bool {
 /**
  * Schedule short single-event enrichment retries (race: Stripe before signup_completed).
  *
+ * Cadence covers the observed ~2s Stripe→signup race plus PostHog/CDP lag.
+ * Idempotent: duplicate schedules for the same args are ignored by WP-Cron.
+ *
  * @param string $conversion_id Conversion id.
  */
 function jcp_trial_schedule_enrichment( string $conversion_id ): void {
@@ -828,8 +846,47 @@ function jcp_trial_schedule_enrichment( string $conversion_id ): void {
 	if ( $conversion_id === '' ) {
 		return;
 	}
-	foreach ( [ 15, 45, 90, 180, 300 ] as $delay ) {
+	foreach ( [ 3, 8, 15, 30, 60, 120, 300 ] as $delay ) {
 		wp_schedule_single_event( time() + $delay, 'jcp_trial_enrich_conversion', [ $conversion_id ] );
+	}
+	// Nudge WP-Cron so short delays fire without waiting for a visitor page load.
+	if ( function_exists( 'spawn_cron' ) ) {
+		spawn_cron( time() );
+	}
+}
+
+/**
+ * Enrich + deliver any pending conversions for a normalized email (bridge wake-up).
+ *
+ * @param string $email_norm Normalized email.
+ */
+function jcp_trial_enrich_pending_for_email( string $email_norm ): void {
+	$email_norm = jcp_trial_normalize_email( $email_norm );
+	if ( $email_norm === '' ) {
+		return;
+	}
+
+	global $wpdb;
+	jcp_trial_conversions_maybe_create_table();
+	$table = $wpdb->prefix . JCP_TRIAL_CONVERSIONS_TABLE;
+
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$rows = $wpdb->get_results(
+		$wpdb->prepare(
+			"SELECT conversion_id FROM `$table`
+			WHERE email_norm = %s
+			  AND attribution_status != 'matched'
+			  AND (posthog_status IN ('pending','failed') OR meta_status IN ('pending','failed'))
+			ORDER BY id ASC
+			LIMIT 10",
+			$email_norm
+		)
+	);
+	if ( ! $rows ) {
+		return;
+	}
+	foreach ( $rows as $row ) {
+		jcp_trial_enrich_and_deliver( (string) $row->conversion_id );
 	}
 }
 
@@ -849,7 +906,8 @@ function jcp_trial_upsert_conversion( array $fields ) {
 		$wpdb->prepare( "SELECT * FROM `$table` WHERE conversion_id = %s LIMIT 1", $conversion_id )
 	);
 
-	$now = current_time( 'mysql' );
+	// Store UTC so enrichment window math compares cleanly to time().
+	$now = current_time( 'mysql', true );
 	if ( $existing ) {
 		$update = [
 			'updated_at' => $now,
@@ -871,6 +929,14 @@ function jcp_trial_upsert_conversion( array $fields ) {
 			if ( array_key_exists( $key, $fields ) && $fields[ $key ] !== null ) {
 				$update[ $key ] = $fields[ $key ];
 			}
+		}
+		// Never downgrade a matched conversion back to unmatched on Stripe retries.
+		if (
+			isset( $update['attribution_status'] )
+			&& (string) $existing->attribution_status === 'matched'
+			&& (string) $update['attribution_status'] !== 'matched'
+		) {
+			unset( $update['attribution_status'], $update['lead_id'], $update['attribution_json'] );
 		}
 		$wpdb->update( $table, $update, [ 'id' => (int) $existing->id ] );
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
@@ -912,7 +978,7 @@ function jcp_trial_upsert_conversion( array $fields ) {
 function jcp_trial_update_conversion( int $id, array $fields ): void {
 	global $wpdb;
 	$table           = $wpdb->prefix . JCP_TRIAL_CONVERSIONS_TABLE;
-	$fields['updated_at'] = current_time( 'mysql' );
+	$fields['updated_at'] = current_time( 'mysql', true );
 	$wpdb->update( $table, $fields, [ 'id' => $id ] );
 }
 
@@ -1240,18 +1306,25 @@ function jcp_trial_process_qualified( array $event, array $sub ): array {
 
 	if ( $row ) {
 		/*
-		 * Architecture: durable trial immediately; side effects once.
-		 * If unmatched but PostHog bridge is configured, defer PostHog/Meta
-		 * briefly so signup_completed can land (Stripe often wins the race by ~2s).
+		 * Architecture: durable conversion row immediately; side effects once.
+		 * If unmatched with an email, ALWAYS defer PostHog/Meta for the enrichment
+		 * window so signup_completed (CDP local bridge / HogQL) can land — Stripe
+		 * often wins the race by ~2s. Never emit unmatched first then matched later.
 		 * Never emit a second trial_started after enrichment.
 		 */
-		$defer = $attr_status !== 'matched'
-			&& $email !== ''
-			&& jcp_trial_posthog_bridge_configured();
+		$already_sent = (string) $row->posthog_status === 'sent'
+			&& (string) $row->meta_status === 'sent';
 
-		if ( $defer ) {
+		if ( $already_sent ) {
+			// Stripe retry after finalize — no-op.
+		} elseif ( $attr_status === 'matched' ) {
+			jcp_trial_deliver_side_effects( $row );
+		} elseif ( $email !== '' ) {
 			jcp_trial_schedule_enrichment( $conversion_id );
+			// Immediate first attempt (covers bridge already present).
+			jcp_trial_enrich_and_deliver( $conversion_id );
 		} else {
+			// No email → cannot match; finalize unmatched once.
 			jcp_trial_deliver_side_effects( $row );
 		}
 	}
@@ -1381,10 +1454,10 @@ function jcp_trial_enrich_and_deliver( string $conversion_id ): void {
 
 	$matched = (string) $row->attribution_status === 'matched';
 	$expired = ! jcp_trial_enrichment_window_open( $row );
-	$can_bridge = jcp_trial_posthog_bridge_configured();
 
-	// Deliver once matched, or once the enrichment window expires / bridge unavailable.
-	if ( $matched || $expired || ! $can_bridge ) {
+	// Deliver once matched, or once the enrichment window expires (final unmatched).
+	// Do NOT require bridge config — waiting still helps when CDP arrives mid-window.
+	if ( $matched || $expired ) {
 		jcp_trial_deliver_side_effects( $row );
 	}
 }

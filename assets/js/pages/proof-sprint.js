@@ -7,7 +7,8 @@
 
   var LP_VARIANT = 'proof_sprint';
   var viewedOnce = false;
-  var ctaViewed = {};
+  var ctaViewedOnce = false;
+  var ctaClickedOnce = false;
   var channelViewed = {};
   var caseViewed = false;
   var faqOpened = {};
@@ -119,20 +120,30 @@
         a.href = href;
       } catch (err) {}
 
-      a.addEventListener('click', function () {
+      a.addEventListener('click', function (ev) {
         var placement = a.getAttribute('data-ps-placement') || 'trial';
         var dest = a.href || '';
-        track('proof_sprint_cta_clicked', {
-          placement: placement,
-          destination: dest,
-          source: 'proof_sprint',
-        });
-        track('trial_cta_clicked', {
-          source: 'proof_sprint',
-          placement: placement,
-          destination: dest,
-        });
+        if (!ctaClickedOnce) {
+          ctaClickedOnce = true;
+          track('proof_sprint_cta_clicked', {
+            placement: placement,
+            destination: dest,
+            source: 'proof_sprint',
+          });
+          track('trial_cta_clicked', {
+            source: 'proof_sprint',
+            placement: placement,
+            destination: dest,
+          });
+        }
         // Intentionally NO trial_started — that fires only after backend provisioning.
+        // Force navigation after sync beacon so click is not lost on unload.
+        if (dest && dest.indexOf('onboarding') !== -1) {
+          if (ev && typeof ev.preventDefault === 'function') ev.preventDefault();
+          window.setTimeout(function () {
+            window.location.assign(dest);
+          }, 0);
+        }
       });
     });
   }
@@ -287,19 +298,22 @@
     update();
   }
 
-  /* ---- Trial CTA viewed ---- */
+  /* ---- Trial CTA viewed (once per page — first visible trial CTA) ---- */
   function setupCtaViewed() {
     if (!('IntersectionObserver' in window)) return;
     var io = new IntersectionObserver(
       function (entries) {
+        if (ctaViewedOnce) {
+          io.disconnect();
+          return;
+        }
         entries.forEach(function (entry) {
-          if (!entry.isIntersecting) return;
+          if (!entry.isIntersecting || ctaViewedOnce) return;
+          ctaViewedOnce = true;
           var el = entry.target;
           var placement = el.getAttribute('data-ps-placement') || 'unknown';
-          if (ctaViewed[placement]) return;
-          ctaViewed[placement] = true;
           track('trial_cta_viewed', { source: 'proof_sprint', placement: placement });
-          io.unobserve(el);
+          io.disconnect();
         });
       },
       { threshold: 0.5 }
