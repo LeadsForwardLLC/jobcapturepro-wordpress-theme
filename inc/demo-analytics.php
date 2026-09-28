@@ -1357,12 +1357,13 @@ function jcp_demo_analytics_get_session_detail( string $session_id ): ?array {
 
 /**
  * Reset demo analytics: truncate events and sessions tables; set analytics_start_date option.
- * Requires manage_options. No side effects on failure.
+ * Requires manage_options unless $force is true.
  *
+ * @param bool $force Bypass capability check (internal / one-shot reset).
  * @return bool True on success.
  */
-function jcp_demo_analytics_reset(): bool {
-    if ( ! current_user_can( 'manage_options' ) ) {
+function jcp_demo_analytics_reset( bool $force = false ): bool {
+    if ( ! $force && ! current_user_can( 'manage_options' ) ) {
         return false;
     }
     global $wpdb;

@@ -464,6 +464,57 @@ function jcp_funnel_analytics_bump_meta( string $key, $value = 1, bool $incr = t
 }
 
 /**
+ * Reset first-party funnel analytics (truncate events + clear meta counters).
+ *
+ * @param bool $force Bypass capability check (for one-shot deploy / internal callers).
+ * @return bool True on success.
+ */
+function jcp_funnel_analytics_reset( bool $force = false ): bool {
+	if ( ! $force && ! current_user_can( 'manage_options' ) ) {
+		return false;
+	}
+	global $wpdb;
+	jcp_funnel_analytics_maybe_create_table();
+	$table = $wpdb->prefix . JCP_FUNNEL_EVENTS_TABLE;
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$wpdb->query( "TRUNCATE TABLE `$table`" );
+	delete_option( JCP_FUNNEL_ANALYTICS_META_OPTION );
+	update_option( 'jcp_funnel_analytics_start_date', current_time( 'mysql' ), false );
+	return true;
+}
+
+/**
+ * Reset all first-party acquisition analytics tables (Funnel + Demo).
+ * Does not touch GHL lead queue, Stripe, or PostHog.
+ *
+ * @param bool $force Bypass capability check.
+ * @return array{funnel:bool,demo:bool}
+ */
+function jcp_acquisition_analytics_reset_all( bool $force = false ): array {
+	$funnel = jcp_funnel_analytics_reset( $force );
+	$demo   = function_exists( 'jcp_demo_analytics_reset' )
+		? jcp_demo_analytics_reset( $force )
+		: false;
+	return [
+		'funnel' => (bool) $funnel,
+		'demo'   => (bool) $demo,
+	];
+}
+
+/**
+ * One-shot clean slate after deploy (runs once, then latches).
+ */
+function jcp_acquisition_analytics_oneshot_slate_reset(): void {
+	$key = 'jcp_acquisition_analytics_slate_20260928';
+	if ( get_option( $key, '' ) === 'done' ) {
+		return;
+	}
+	jcp_acquisition_analytics_reset_all( true );
+	update_option( $key, 'done', false );
+}
+add_action( 'init', 'jcp_acquisition_analytics_oneshot_slate_reset', 99 );
+
+/**
  * Known funnels for admin UI.
  *
  * @return array<string,string>

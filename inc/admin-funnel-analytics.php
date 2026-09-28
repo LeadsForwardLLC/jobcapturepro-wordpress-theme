@@ -201,6 +201,31 @@ function jcp_funnel_analytics_handle_excluded_ips(): void {
 add_action( 'admin_post_jcp_funnel_analytics_excluded_ips', 'jcp_funnel_analytics_handle_excluded_ips' );
 
 /**
+ * Admin: reset funnel + demo analytics tables (clean slate).
+ */
+function jcp_funnel_analytics_handle_reset_all(): void {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		wp_die( esc_html__( 'Forbidden', 'jcp-core' ), 403 );
+	}
+	check_admin_referer( 'jcp_funnel_analytics_reset_all' );
+	$result = function_exists( 'jcp_acquisition_analytics_reset_all' )
+		? jcp_acquisition_analytics_reset_all( false )
+		: [ 'funnel' => false, 'demo' => false ];
+	$ok = ! empty( $result['funnel'] ) && ! empty( $result['demo'] );
+	wp_safe_redirect(
+		add_query_arg(
+			[
+				'page'         => 'jcp-funnel-analytics',
+				'jcp_fa_reset' => $ok ? 'ok' : 'fail',
+			],
+			admin_url( 'admin.php' )
+		)
+	);
+	exit;
+}
+add_action( 'admin_post_jcp_funnel_analytics_reset_all', 'jcp_funnel_analytics_handle_reset_all' );
+
+/**
  * Format ms.
  *
  * @param mixed $ms Milliseconds.
@@ -333,6 +358,11 @@ function jcp_funnel_analytics_render_admin(): void {
 		? jcp_funnel_analytics_request_ip()
 		: '';
 	$ip_notice = isset( $_GET['jcp_fa_ip'] ) ? sanitize_key( (string) $_GET['jcp_fa_ip'] ) : '';
+	$reset_notice = isset( $_GET['jcp_fa_reset'] ) ? sanitize_key( (string) $_GET['jcp_fa_reset'] ) : '';
+	$reset_url = wp_nonce_url(
+		admin_url( 'admin-post.php?action=jcp_funnel_analytics_reset_all' ),
+		'jcp_funnel_analytics_reset_all'
+	);
 	?>
 	<div class="wrap jcp-fa jcp-funnel-analytics">
 		<div class="jcp-fa__header">
@@ -353,8 +383,15 @@ function jcp_funnel_analytics_render_admin(): void {
 					<span class="jcp-fa__pill"><?php echo esc_html( sprintf( /* translators: %d IPs */ __( '%d IPs filtered', 'jcp-core' ), count( $excluded_ips ) ) ); ?></span>
 				<?php endif; ?>
 				<a class="jcp-fa__btn jcp-fa__btn--ghost" href="<?php echo esc_url( $csv_url ); ?>"><?php esc_html_e( 'Export CSV', 'jcp-core' ); ?></a>
+				<a class="jcp-fa__btn jcp-fa__btn--danger" href="<?php echo esc_url( $reset_url ); ?>" onclick="return confirm('<?php echo esc_js( __( 'Truncate Funnel Analytics + Demo Analytics tables? This cannot be undone. GHL leads and PostHog are not affected.', 'jcp-core' ) ); ?>');"><?php esc_html_e( 'Reset all analytics', 'jcp-core' ); ?></a>
 			</div>
 		</div>
+
+		<?php if ( $reset_notice === 'ok' ) : ?>
+			<div class="jcp-fa__notice jcp-fa__notice--ok"><?php esc_html_e( 'Analytics reset complete. Funnel events and demo sessions/events were cleared.', 'jcp-core' ); ?></div>
+		<?php elseif ( $reset_notice === 'fail' ) : ?>
+			<div class="jcp-fa__notice jcp-fa__notice--warn"><?php esc_html_e( 'Analytics reset failed or was partial. Check permissions and try again.', 'jcp-core' ); ?></div>
+		<?php endif; ?>
 
 		<?php if ( $ip_notice === 'saved' ) : ?>
 			<div class="jcp-fa__notice jcp-fa__notice--ok"><?php echo esc_html( sprintf( /* translators: %d count */ __( 'Excluded IP list saved (%d addresses). New events from those IPs will not be stored.', 'jcp-core' ), (int) ( $_GET['jcp_fa_ip_n'] ?? count( $excluded_ips ) ) ) ); ?></div>
