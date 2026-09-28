@@ -2,9 +2,12 @@
 /**
  * Marketing-owned Stripe trial conversion tracking.
  *
- * Stripe customer.subscription.created → qualify JCP free trial → join lead by email
- * (or PostHog signup_completed URL bridge for Proof Sprint) → one PostHog trial_started
- * + one Meta CAPI StartTrial per subscription.
+ * Architecture (event-driven):
+ * 1. Stripe customer.subscription.created → durable conversion row (pending attribution OK).
+ * 2. Meta StartTrial fires immediately (Stripe-authoritative, exactly-once via event_id).
+ * 3. PostHog trial_started waits for signup_completed CDP push → /posthog-signup-bridge wake,
+ *    or finalizes unmatched after a bounded enrichment window.
+ * Primary path is CDP push, not HogQL / sleep / long WP-Cron polling.
  *
  * Secrets (wp-config.php or environment — never commit):
  * - JCP_STRIPE_WEBHOOK_SECRET
@@ -12,7 +15,7 @@
  * - JCP_META_CAPI_ACCESS_TOKEN
  * - JCP_META_CAPI_TEST_EVENT_CODE (optional QA)
  * - JCP_POSTHOG_PROJECT_API_KEY (optional; falls back to public project key)
- * - JCP_POSTHOG_PERSONAL_API_KEY (optional HogQL fallback for unmatched Sprint trials)
+ * - JCP_POSTHOG_PERSONAL_API_KEY (optional last-resort HogQL; not the primary path)
  * - JCP_POSTHOG_SIGNUP_BRIDGE_SECRET (PostHog CDP → WP signup_completed bridge)
  * - JCP_POSTHOG_PROJECT_ID (optional; default 593169)
  *
@@ -27,7 +30,8 @@ define( 'JCP_TRIAL_CONVERSIONS_TABLE', 'jcp_trial_conversions' );
 define( 'JCP_SIGNUP_BRIDGE_TABLE', 'jcp_signup_bridges' );
 define( 'JCP_TRIAL_PLAN_LOOKUP_KEY', 'scale_monthly' );
 define( 'JCP_TRIAL_DAYS', 14 );
-define( 'JCP_TRIAL_ENRICHMENT_WINDOW_SEC', 300 );
+/** Max seconds a conversion may stay PostHog-pending waiting for CDP bridge. */
+define( 'JCP_TRIAL_ENRICHMENT_WINDOW_SEC', 120 );
 define( 'JCP_META_PIXEL_ID_DEFAULT', '1440845294314184' );
 define( 'JCP_POSTHOG_PROJECT_KEY_DEFAULT', 'phc_v8emzqtZ8beAjLsqj2byb5fK8wRHbW2g6hXBqAEZPMyS' );
 define( 'JCP_POSTHOG_PROJECT_ID_DEFAULT', '593169' );
@@ -417,6 +421,9 @@ function jcp_trial_signup_bridge_auth_ok( WP_REST_Request $request ): bool {
 /**
  * Persist signup_completed identity bridge from PostHog CDP webhook.
  *
+ * Accepts flat CDP payload fields (preferred) or nested event/person objects.
+ * Matching primary key: normalized email → pending Stripe conversion wake.
+ *
  * @param WP_REST_Request $request Request.
  * @return WP_REST_Response
  */
@@ -433,6 +440,9 @@ function jcp_trial_posthog_signup_bridge_handler( WP_REST_Request $request ): WP
 	$email = '';
 	if ( ! empty( $params['email'] ) && is_scalar( $params['email'] ) ) {
 		$email = jcp_trial_normalize_email( (string) $params['email'] );
+	}
+	if ( $email === '' && ! empty( $params['email_norm'] ) && is_scalar( $params['email_norm'] ) ) {
+		$email = jcp_trial_normalize_email( (string) $params['email_norm'] );
 	}
 	if ( $email === '' && ! empty( $params['person'] ) && is_array( $params['person'] ) ) {
 		$props = $params['person']['properties'] ?? [];
@@ -459,34 +469,63 @@ function jcp_trial_posthog_signup_bridge_handler( WP_REST_Request $request ): WP
 		$app_distinct = trim( (string) $params['event']['distinct_id'] );
 	}
 
-	if ( $email === '' || $url === '' ) {
+	// Prefer URL-parsed marketing identity; overlay explicit CDP fields when present.
+	$attr = $url !== '' ? jcp_trial_parse_onboarding_url_attr( $url ) : [];
+	$flat_keys = [
+		'ph_distinct_id',
+		'qa_trace_id',
+		'source',
+		'lp_variant',
+		'funnel_surface',
+		'jcp_surface',
+		'utm_source',
+		'utm_medium',
+		'utm_campaign',
+		'utm_content',
+		'utm_term',
+		'organization_id',
+		'landing_page',
+	];
+	foreach ( $flat_keys as $key ) {
+		if ( ! empty( $params[ $key ] ) && is_scalar( $params[ $key ] ) ) {
+			$val = trim( (string) $params[ $key ] );
+			if ( $val !== '' ) {
+				$attr[ $key ] = $val;
+			}
+		}
+	}
+	if ( empty( $attr['ph_distinct_id'] ) && ! empty( $params['marketing_ph_distinct_id'] ) && is_scalar( $params['marketing_ph_distinct_id'] ) ) {
+		$attr['ph_distinct_id'] = trim( (string) $params['marketing_ph_distinct_id'] );
+	}
+
+	if ( $email === '' ) {
 		return new WP_REST_Response(
 			[
 				'received' => true,
 				'stored'   => false,
-				'reason'   => 'missing_email_or_url',
+				'reason'   => 'missing_email',
 			],
 			200
 		);
 	}
 
-	$attr = jcp_trial_parse_onboarding_url_attr( $url );
-	if ( $attr === [] || empty( $attr['ph_distinct_id'] ) ) {
+	if ( empty( $attr['ph_distinct_id'] ) ) {
 		return new WP_REST_Response(
 			[
 				'received' => true,
 				'stored'   => false,
-				'reason'   => 'no_ph_distinct_id_in_url',
+				'reason'   => 'no_ph_distinct_id',
 			],
 			200
 		);
 	}
 
-	if ( ! empty( $attr['ph_distinct_id'] ) ) {
-		$attr = array_merge( $attr, jcp_trial_cookies_from_lead_by_ph_id( (string) $attr['ph_distinct_id'] ) );
-	}
+	$attr = jcp_trial_normalize_surface_attr( $attr );
+	$attr = array_merge( $attr, jcp_trial_cookies_from_lead_by_ph_id( (string) $attr['ph_distinct_id'] ) );
 	$attr['attribution_bridge'] = 'posthog_signup_completed';
-	$attr['onboarding_url']     = $url;
+	if ( $url !== '' ) {
+		$attr['onboarding_url'] = $url;
+	}
 
 	global $wpdb;
 	jcp_trial_conversions_maybe_create_table();
@@ -496,7 +535,7 @@ function jcp_trial_posthog_signup_bridge_handler( WP_REST_Request $request ): WP
 		$table,
 		[
 			'email_norm'      => $email,
-			'current_url'     => $url,
+			'current_url'     => $url !== '' ? $url : ( 'bridge://signup_completed/' . rawurlencode( $email ) ),
 			'ph_distinct_id'  => (string) $attr['ph_distinct_id'],
 			'app_distinct_id' => $app_distinct,
 			'attribution_json'=> wp_json_encode( $attr, JSON_UNESCAPED_SLASHES ),
@@ -506,7 +545,7 @@ function jcp_trial_posthog_signup_bridge_handler( WP_REST_Request $request ): WP
 		[ '%s', '%s', '%s', '%s', '%s', '%s', '%s' ]
 	);
 
-	// Wake any Stripe conversions waiting on this email (covers ~2s race).
+	// Event-driven wake: finalize any pending Stripe conversion for this email.
 	jcp_trial_enrich_pending_for_email( $email );
 
 	return new WP_REST_Response(
@@ -515,6 +554,7 @@ function jcp_trial_posthog_signup_bridge_handler( WP_REST_Request $request ): WP
 			'stored'         => true,
 			'email_norm'     => $email,
 			'ph_distinct_id' => (string) $attr['ph_distinct_id'],
+			'woke'           => true,
 		],
 		200
 	);
@@ -680,11 +720,10 @@ function jcp_trial_cookies_from_lead_by_ph_id( string $ph_id ): array {
 }
 
 /**
- * Resolve signup URL attribution: local CDP cache first, optional HogQL fallback.
+ * Resolve signup URL attribution: local CDP cache first.
  *
- * Proven on QA: Stripe email → Firebase-identified person → signup_completed URL
- * carries ph_distinct_id + Sprint UTMs (even when webhook beats the browser by ~2s,
- * short deferred retries recover it).
+ * Primary path is PostHog CDP → local bridge table. Optional HogQL is opt-in
+ * via JCP_POSTHOG_HOGQL_FALLBACK (not used for the Stripe→signup race).
  *
  * @param string $email_norm Normalized email.
  * @return array<string, string> Attribution map (empty on miss / misconfig).
@@ -701,6 +740,10 @@ function jcp_trial_find_attr_via_posthog_signup( string $email_norm ): array {
 			$local['attribution_bridge'] = 'posthog_signup_completed';
 		}
 		return $local;
+	}
+
+	if ( ! defined( 'JCP_POSTHOG_HOGQL_FALLBACK' ) || ! JCP_POSTHOG_HOGQL_FALLBACK ) {
+		return [];
 	}
 
 	$token = jcp_trial_secret( 'JCP_POSTHOG_PERSONAL_API_KEY' );
@@ -782,8 +825,9 @@ function jcp_trial_find_attr_via_posthog_signup( string $email_norm ): array {
 		$attr = array_merge( $attr, jcp_trial_cookies_from_lead_by_ph_id( (string) $attr['ph_distinct_id'] ) );
 	}
 
-	$attr['attribution_bridge'] = 'posthog_signup_completed';
-	return $attr;
+	$attr['attribution_bridge'] = 'posthog_hogql_signup';
+	$attr['onboarding_url']     = $url;
+	return jcp_trial_normalize_surface_attr( $attr );
 }
 
 /**
@@ -843,10 +887,10 @@ function jcp_trial_enrichment_window_open( object $row ): bool {
 }
 
 /**
- * Schedule short single-event enrichment retries (race: Stripe before signup_completed).
+ * Schedule bounded safety-net enrichment (CDP wake is primary).
  *
- * Cadence covers the observed ~2s Stripe→signup race plus PostHog/CDP lag.
- * Idempotent: duplicate schedules for the same args are ignored by WP-Cron.
+ * Only two delayed retries: mid-window and at expiry. No shutdown sleeps,
+ * no loopback storms, no HogQL polling cadence.
  *
  * @param string $conversion_id Conversion id.
  */
@@ -855,145 +899,18 @@ function jcp_trial_schedule_enrichment( string $conversion_id ): void {
 	if ( $conversion_id === '' ) {
 		return;
 	}
-	foreach ( [ 3, 8, 15, 30, 60, 120, 300 ] as $delay ) {
-		wp_schedule_single_event( time() + $delay, 'jcp_trial_enrich_conversion', [ $conversion_id ] );
+	foreach ( [ 30, JCP_TRIAL_ENRICHMENT_WINDOW_SEC ] as $delay ) {
+		wp_schedule_single_event( time() + (int) $delay, 'jcp_trial_enrich_conversion', [ $conversion_id ] );
 	}
-	// Nudge WP-Cron so short delays fire without waiting for a visitor page load.
 	if ( function_exists( 'spawn_cron' ) ) {
 		spawn_cron( time() );
 	}
-	// Non-blocking loopback — SiteGround often uses DISABLE_WP_CRON + infrequent system cron.
-	jcp_trial_fire_enrich_loopback( $conversion_id );
-	jcp_trial_queue_shutdown_enrich( $conversion_id );
 }
 
 /**
- * Queue same-request post-response enrichment retries (covers ~2s race without WP-Cron).
+ * Enrich + deliver any pending PostHog conversions for a normalized email (CDP wake).
  *
- * Uses fastcgi_finish_request when available so Stripe already has its 200.
- *
- * @param string $conversion_id Conversion id.
- */
-function jcp_trial_queue_shutdown_enrich( string $conversion_id ): void {
-	$conversion_id = trim( $conversion_id );
-	if ( $conversion_id === '' ) {
-		return;
-	}
-
-	static $queued = [];
-	if ( isset( $queued[ $conversion_id ] ) ) {
-		return;
-	}
-	$queued[ $conversion_id ] = true;
-
-	add_action(
-		'shutdown',
-		static function () use ( $conversion_id ): void {
-			if ( function_exists( 'fastcgi_finish_request' ) ) {
-				@fastcgi_finish_request(); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
-			}
-			// Cumulative sleeps: ~2s, +3s, +5s, +8s, +12s ≈ 30s total after response.
-			foreach ( [ 2, 3, 5, 8, 12 ] as $sleep ) {
-				sleep( $sleep );
-				jcp_trial_enrich_and_deliver( $conversion_id );
-
-				global $wpdb;
-				$table = $wpdb->prefix . JCP_TRIAL_CONVERSIONS_TABLE;
-				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-				$row = $wpdb->get_row(
-					$wpdb->prepare(
-						"SELECT posthog_status, meta_status, attribution_status FROM `$table` WHERE conversion_id = %s LIMIT 1",
-						$conversion_id
-					)
-				);
-				if (
-					$row
-					&& (string) $row->posthog_status === 'sent'
-					&& (string) $row->meta_status === 'sent'
-				) {
-					return;
-				}
-			}
-		},
-		5
-	);
-}
-
-/**
- * Non-blocking POST to internal enrich endpoint (backup when cron is delayed).
- *
- * @param string $conversion_id Conversion id.
- */
-function jcp_trial_fire_enrich_loopback( string $conversion_id ): void {
-	$conversion_id = trim( $conversion_id );
-	$secret        = jcp_trial_secret( 'JCP_POSTHOG_SIGNUP_BRIDGE_SECRET' );
-	if ( $secret === '' ) {
-		$secret = jcp_trial_secret( 'JCP_STRIPE_WEBHOOK_SECRET' );
-	}
-	if ( $conversion_id === '' || $secret === '' ) {
-		return;
-	}
-
-	$url = rest_url( 'jcp/v1/trial-enrich' );
-	wp_remote_post(
-		$url,
-		[
-			'timeout'   => 0.01,
-			'blocking'  => false,
-			'headers'   => [
-				'Content-Type'      => 'application/json',
-				'X-JCP-Bridge-Secret' => $secret,
-			],
-			'body'      => wp_json_encode(
-				[
-					'conversion_id' => $conversion_id,
-				]
-			),
-			'sslverify' => true,
-		]
-	);
-}
-
-/**
- * REST: enrich one pending conversion (internal loopback / ops).
- *
- * @param WP_REST_Request $request Request.
- * @return WP_REST_Response
- */
-function jcp_trial_enrich_rest_handler( WP_REST_Request $request ): WP_REST_Response {
-	if ( ! jcp_trial_signup_bridge_auth_ok( $request ) ) {
-		// Also accept Stripe webhook secret as bearer for loopback.
-		$stripe_secret = jcp_trial_secret( 'JCP_STRIPE_WEBHOOK_SECRET' );
-		$provided      = (string) $request->get_header( 'x-jcp-bridge-secret' );
-		if ( $provided === '' ) {
-			$auth = (string) $request->get_header( 'authorization' );
-			if ( preg_match( '/^Bearer\s+(.+)$/i', $auth, $m ) ) {
-				$provided = trim( $m[1] );
-			}
-		}
-		if ( $stripe_secret === '' || $provided === '' || ! hash_equals( $stripe_secret, $provided ) ) {
-			return new WP_REST_Response( [ 'error' => 'unauthorized' ], 401 );
-		}
-	}
-
-	$params = $request->get_json_params();
-	if ( ! is_array( $params ) ) {
-		$params = [];
-	}
-	$conversion_id = isset( $params['conversion_id'] ) ? trim( (string) $params['conversion_id'] ) : '';
-	if ( $conversion_id === '' ) {
-		$conversion_id = trim( (string) $request->get_param( 'conversion_id' ) );
-	}
-	if ( $conversion_id === '' || strpos( $conversion_id, 'jcp_trial_' ) !== 0 ) {
-		return new WP_REST_Response( [ 'error' => 'invalid_conversion_id' ], 400 );
-	}
-
-	jcp_trial_enrich_and_deliver( $conversion_id );
-	return new WP_REST_Response( [ 'ok' => true, 'conversion_id' => $conversion_id ], 200 );
-}
-
-/**
- * Enrich + deliver any pending conversions for a normalized email (bridge wake-up).
+ * Meta may already be sent; this wakes PostHog trial_started once matched.
  *
  * @param string $email_norm Normalized email.
  */
@@ -1012,8 +929,7 @@ function jcp_trial_enrich_pending_for_email( string $email_norm ): void {
 		$wpdb->prepare(
 			"SELECT conversion_id FROM `$table`
 			WHERE email_norm = %s
-			  AND attribution_status != 'matched'
-			  AND (posthog_status IN ('pending','failed') OR meta_status IN ('pending','failed'))
+			  AND posthog_status IN ('pending','failed')
 			ORDER BY id ASC
 			LIMIT 10",
 			$email_norm
@@ -1316,11 +1232,12 @@ function jcp_trial_send_meta( object $row, array $trial, array $attr ): array {
 }
 
 /**
- * Attempt PostHog + Meta delivery for a conversion row (idempotent per channel).
+ * Attempt PostHog and/or Meta delivery for a conversion row (idempotent per channel).
  *
- * @param object $row Conversion row.
+ * @param object $row    Conversion row.
+ * @param string $channel 'both'|'posthog'|'meta'.
  */
-function jcp_trial_deliver_side_effects( object $row ): void {
+function jcp_trial_deliver_side_effects( object $row, string $channel = 'both' ): void {
 	$trial = [];
 	if ( ! empty( $row->trial_payload_json ) ) {
 		$decoded = json_decode( (string) $row->trial_payload_json, true );
@@ -1340,9 +1257,11 @@ function jcp_trial_deliver_side_effects( object $row ): void {
 		}
 	}
 
-	$errors = [];
+	$errors     = [];
+	$do_posthog = ( $channel === 'both' || $channel === 'posthog' );
+	$do_meta    = ( $channel === 'both' || $channel === 'meta' );
 
-	if ( (string) $row->posthog_status !== 'sent' ) {
+	if ( $do_posthog && (string) $row->posthog_status !== 'sent' ) {
 		$ph = jcp_trial_send_posthog( $row, $trial, $attr );
 		if ( $ph['ok'] ) {
 			jcp_trial_update_conversion( (int) $row->id, [ 'posthog_status' => 'sent' ] );
@@ -1353,7 +1272,7 @@ function jcp_trial_deliver_side_effects( object $row ): void {
 		}
 	}
 
-	if ( (string) $row->meta_status !== 'sent' ) {
+	if ( $do_meta && (string) $row->meta_status !== 'sent' ) {
 		$meta = jcp_trial_send_meta( $row, $trial, $attr );
 		if ( $meta['ok'] ) {
 			jcp_trial_update_conversion( (int) $row->id, [ 'meta_status' => 'sent' ] );
@@ -1371,6 +1290,9 @@ function jcp_trial_deliver_side_effects( object $row ): void {
 
 /**
  * Process a qualified subscription into durable conversion + side effects.
+ *
+ * Meta StartTrial is Stripe-authoritative and fires immediately (exactly once).
+ * PostHog trial_started waits for CDP signup_completed wake or bounded unmatched finalize.
  *
  * @param array<string, mixed> $event Stripe event.
  * @param array<string, mixed> $sub   Subscription object.
@@ -1442,27 +1364,30 @@ function jcp_trial_process_qualified( array $event, array $sub ): array {
 	);
 
 	if ( $row ) {
-		/*
-		 * Architecture: durable conversion row immediately; side effects once.
-		 * If unmatched with an email, ALWAYS defer PostHog/Meta for the enrichment
-		 * window so signup_completed (CDP local bridge / HogQL) can land — Stripe
-		 * often wins the race by ~2s. Never emit unmatched first then matched later.
-		 * Never emit a second trial_started after enrichment.
-		 */
-		$already_sent = (string) $row->posthog_status === 'sent'
-			&& (string) $row->meta_status === 'sent';
+		$ph_sent   = (string) $row->posthog_status === 'sent';
+		$meta_sent = (string) $row->meta_status === 'sent';
 
-		if ( $already_sent ) {
-			// Stripe retry after finalize — no-op.
+		if ( $ph_sent && $meta_sent ) {
+			// Stripe retry after both channels finalized — no-op.
 		} elseif ( $attr_status === 'matched' ) {
-			jcp_trial_deliver_side_effects( $row );
-		} elseif ( $email !== '' ) {
-			jcp_trial_schedule_enrichment( $conversion_id );
-			// Immediate first attempt (covers bridge already present).
-			jcp_trial_enrich_and_deliver( $conversion_id );
+			// Attribution already known (lead or prior CDP bridge): send both now.
+			jcp_trial_deliver_side_effects( $row, 'both' );
 		} else {
-			// No email → cannot match; finalize unmatched once.
-			jcp_trial_deliver_side_effects( $row );
+			// Meta must not wait on PostHog enrichment — Stripe-authoritative, exactly once.
+			if ( ! $meta_sent ) {
+				jcp_trial_deliver_side_effects( $row, 'meta' );
+			}
+			if ( ! $ph_sent ) {
+				if ( $email !== '' ) {
+					// Wait for signup_completed CDP wake; bounded cron finalizes unmatched.
+					jcp_trial_schedule_enrichment( $conversion_id );
+					// One immediate attempt in case bridge already landed.
+					jcp_trial_enrich_and_deliver( $conversion_id );
+				} else {
+					// No email → cannot match; finalize PostHog unmatched once.
+					jcp_trial_deliver_side_effects( $row, 'posthog' );
+				}
+			}
 		}
 	}
 
@@ -1531,7 +1456,10 @@ function jcp_trial_stripe_webhook_handler( WP_REST_Request $request ): WP_REST_R
 }
 
 /**
- * Re-resolve attribution for an unmatched conversion, then deliver when ready.
+ * Re-resolve attribution for an unmatched conversion, then deliver PostHog when ready.
+ *
+ * Meta is normally already sent on Stripe ingest. This path finalizes trial_started
+ * on CDP wake (matched) or after the bounded enrichment window (unmatched).
  *
  * @param string $conversion_id Conversion id.
  */
@@ -1552,8 +1480,11 @@ function jcp_trial_enrich_and_deliver( string $conversion_id ): void {
 		return;
 	}
 
-	// Already emitted — never send a second trial_started / StartTrial.
-	if ( (string) $row->posthog_status === 'sent' && (string) $row->meta_status === 'sent' ) {
+	$ph_sent   = (string) $row->posthog_status === 'sent';
+	$meta_sent = (string) $row->meta_status === 'sent';
+
+	// Already finalized both channels — never send a second trial_started / StartTrial.
+	if ( $ph_sent && $meta_sent ) {
 		return;
 	}
 
@@ -1592,11 +1523,69 @@ function jcp_trial_enrich_and_deliver( string $conversion_id ): void {
 	$matched = (string) $row->attribution_status === 'matched';
 	$expired = ! jcp_trial_enrichment_window_open( $row );
 
-	// Deliver once matched, or once the enrichment window expires (final unmatched).
-	// Do NOT require bridge config — waiting still helps when CDP arrives mid-window.
-	if ( $matched || $expired ) {
-		jcp_trial_deliver_side_effects( $row );
+	// Safety: Meta must never disappear if Stripe ingest somehow skipped it.
+	if ( (string) $row->meta_status !== 'sent' ) {
+		jcp_trial_deliver_side_effects( $row, 'meta' );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$row = $wpdb->get_row(
+			$wpdb->prepare( "SELECT * FROM `$table` WHERE id = %d", (int) $row->id )
+		);
+		if ( ! $row ) {
+			return;
+		}
 	}
+
+	// PostHog: only on match (CDP wake) or bounded unmatched finalization.
+	if ( (string) $row->posthog_status === 'sent' ) {
+		return;
+	}
+
+	if ( $matched || $expired ) {
+		if ( $expired && ! $matched ) {
+			error_log(
+				'jcp_trial_enrich: unmatched finalize after window ' . $conversion_id
+				. ' email=' . $email
+			);
+		}
+		jcp_trial_deliver_side_effects( $row, 'posthog' );
+	}
+}
+
+/**
+ * REST: enrich one pending conversion (ops / rare manual recovery).
+ *
+ * @param WP_REST_Request $request Request.
+ * @return WP_REST_Response
+ */
+function jcp_trial_enrich_rest_handler( WP_REST_Request $request ): WP_REST_Response {
+	if ( ! jcp_trial_signup_bridge_auth_ok( $request ) ) {
+		$stripe_secret = jcp_trial_secret( 'JCP_STRIPE_WEBHOOK_SECRET' );
+		$provided      = (string) $request->get_header( 'x-jcp-bridge-secret' );
+		if ( $provided === '' ) {
+			$auth = (string) $request->get_header( 'authorization' );
+			if ( preg_match( '/^Bearer\s+(.+)$/i', $auth, $m ) ) {
+				$provided = trim( $m[1] );
+			}
+		}
+		if ( $stripe_secret === '' || $provided === '' || ! hash_equals( $stripe_secret, $provided ) ) {
+			return new WP_REST_Response( [ 'error' => 'unauthorized' ], 401 );
+		}
+	}
+
+	$params = $request->get_json_params();
+	if ( ! is_array( $params ) ) {
+		$params = [];
+	}
+	$conversion_id = isset( $params['conversion_id'] ) ? trim( (string) $params['conversion_id'] ) : '';
+	if ( $conversion_id === '' ) {
+		$conversion_id = trim( (string) $request->get_param( 'conversion_id' ) );
+	}
+	if ( $conversion_id === '' || strpos( $conversion_id, 'jcp_trial_' ) !== 0 ) {
+		return new WP_REST_Response( [ 'error' => 'invalid_conversion_id' ], 400 );
+	}
+
+	jcp_trial_enrich_and_deliver( $conversion_id );
+	return new WP_REST_Response( [ 'ok' => true, 'conversion_id' => $conversion_id ], 200 );
 }
 
 /**

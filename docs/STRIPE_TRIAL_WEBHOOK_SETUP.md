@@ -16,38 +16,46 @@ define( 'JCP_META_CAPI_ACCESS_TOKEN', 'EAA...' );        // Meta system user tok
 // define( 'JCP_META_PIXEL_ID', '1440845294314184' );
 // define( 'JCP_META_CAPI_TEST_EVENT_CODE', 'TEST12345' ); // QA only — remove for production
 // define( 'JCP_POSTHOG_PROJECT_API_KEY', 'phc_...' );     // defaults to existing project key
-// Required for Proof Sprint matched attribution (no marketing email gate):
 define( 'JCP_POSTHOG_SIGNUP_BRIDGE_SECRET', '…' );     // shared secret for PostHog CDP → WP
-// Optional HogQL fallback (if CDP is delayed):
-// define( 'JCP_POSTHOG_PERSONAL_API_KEY', 'phx_...' ); // PostHog → Settings → Personal API keys
 define( 'JCP_POSTHOG_PROJECT_ID', '593169' );          // JobCapturePro Default project
+// Optional last-resort HogQL only (NOT the primary race path):
+// define( 'JCP_POSTHOG_HOGQL_FALLBACK', true );
+// define( 'JCP_POSTHOG_PERSONAL_API_KEY', 'phx_...' );
 ```
 
 Environment-variable equivalents with the same names are also accepted.
+
+## Architecture (event-driven)
+
+1. Stripe `customer.subscription.created` → durable conversion row immediately.
+2. **Meta `StartTrial`** fires immediately (Stripe-authoritative, `event_id = jcp_trial_<subscription_id>`). PostHog enrichment failure must never suppress Meta.
+3. **PostHog `trial_started`** waits for `signup_completed` CDP push → `/posthog-signup-bridge` → email match wake.
+4. If CDP wake fails within **120s**, finalize PostHog as unmatched (exactly once). Bounded WP-Cron safety net only — no HogQL polling loop / shutdown sleeps.
+
+Matching hierarchy on bridge wake:
+
+1. Normalized email (unique) → pending conversion row
+2. Lead attribution when email already known on marketing site (Proof Gap)
+3. Local signup bridge (`ph_distinct_id`, UTMs, `qa_trace_id` from onboarding URL / CDP fields)
 
 ## Proof Sprint attribution bridge
 
 Proof Sprint does not collect email on the marketing site. After Stripe creates the trial:
 
-1. Webhook records the conversion immediately (authoritative).
-2. Email lead join runs first (Proof Gap path).
-3. If unmatched, look up locally cached `signup_completed` bridges (PostHog CDP posts `email` + `$current_url` to `/wp-json/jcp/v1/posthog-signup-bridge`) and parse `ph_distinct_id`, UTMs, `lp_variant`, `qa_trace_id`.
-4. Optional HogQL fallback if `JCP_POSTHOG_PERSONAL_API_KEY` is set.
-5. Side effects (`trial_started` + Meta `StartTrial`) are deferred up to ~5 minutes while that bridge resolves — **one** emission per subscription (`event_id` / `$insert_id` = `jcp_trial_<subscription_id>`).
+1. Webhook records the conversion + sends Meta immediately.
+2. Email lead join runs (Proof Gap path when a lead exists).
+3. PostHog CDP destination posts `signup_completed` to `/wp-json/jcp/v1/posthog-signup-bridge`.
+4. Bridge stores attribution and **wakes** any pending conversion for that email → one matched `trial_started`.
 
 **PostHog CDP destination** (Data pipelines → Destinations → HTTP Webhook):
 
 - Filter: event `signup_completed`
 - URL: `https://jobcapturepro.com/wp-json/jcp/v1/posthog-signup-bridge`
 - Header: `X-JCP-Bridge-Secret: <same as JCP_POSTHOG_SIGNUP_BRIDGE_SECRET>`
-- Body JSON:
-  ```json
-  {
-    "email": "{person.properties.email}",
-    "current_url": "{event.properties.$current_url}",
-    "distinct_id": "{event.distinct_id}"
-  }
-  ```
+- Body JSON includes email, `current_url`, `distinct_id`, `ph_distinct_id`, UTMs, `qa_trace_id`, `lp_variant`, `funnel_surface`, `source`
+- Hog must require `"received":true` in the response body (SiteGround captcha HTML returns HTTP 202 and must not count as success)
+
+**SiteGround Anti-Bot:** exclude `/wp-json/jcp/v1/posthog-signup-bridge` (and ideally `/wp-json/jcp/v1/*`) from Anti-Bot AI so PostHog AWS IPs are not challenged. Stripe webhook already reaches PHP; CDP must too.
 
 ## Stripe Dashboard steps
 
