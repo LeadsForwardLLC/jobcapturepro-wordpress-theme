@@ -1,7 +1,10 @@
 /**
- * First-touch lead attribution for paid LP → demo funnel
+ * Lead attribution for paid LP → demo / trial funnel
  * (UTMs, fbclid, landing page, referrer, optional GHL contact_id).
- * Stored in sessionStorage for the tab session and sent with GHL webhook payloads.
+ *
+ * Flat fields are CURRENT touch (refreshed when a paid URL lands).
+ * first_touch_snapshot preserves historical first-touch for acquisition reporting.
+ * Stored in localStorage + sessionStorage; sent with GHL / PostHog / onboarding handoff.
  */
 (function () {
   const STORAGE_KEY = 'jcp_lead_attribution';
@@ -122,8 +125,42 @@
   }
 
   /**
-   * Capture first-touch UTMs once; always merge a valid contact_id from the URL
-   * so social-comment deep links keep the original GHL contact for the session.
+   * Snapshot first-touch fields once (historical acquisition).
+   * Flat utm_*/qa_trace_id/lp_variant/landing_page remain the CURRENT paid touch
+   * so Gap↔Sprint experiment handoff and PostHog props are not polluted by a
+   * sticky first-touch record from an earlier LP visit in the same browser.
+   */
+  function ensureFirstTouchSnapshot(data) {
+    if (!data || typeof data !== 'object') return;
+    if (data.first_touch_snapshot) return;
+    const snap = {};
+    PARAM_KEYS.forEach((key) => {
+      if (data[key]) snap[key] = String(data[key]);
+    });
+    if (data.lp_variant) snap.lp_variant = String(data.lp_variant);
+    if (data.qa_trace_id) snap.qa_trace_id = String(data.qa_trace_id);
+    if (data.landing_page) snap.landing_page = String(data.landing_page);
+    if (data.referrer) snap.referrer = String(data.referrer);
+    if (data.first_touch_timestamp) snap.first_touch_timestamp = String(data.first_touch_timestamp);
+    data.first_touch_snapshot = snap;
+  }
+
+  function urlHasPaidTouch(params) {
+    try {
+      if (params.get('qa_trace_id') || params.get('jcp_qa_trace') || params.get('qa_trace')) return true;
+      return PARAM_KEYS.some((key) => {
+        const v = params.get(key);
+        return !!(v && String(v).trim());
+      });
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /**
+   * Capture attribution: first-touch once (snapshot), current-touch from URL/page
+   * whenever a paid visit brings fresh UTMs / qa_trace_id / LP variant.
+   * Always merge a valid contact_id from the URL for GHL deep links.
    */
   function captureLeadAttribution() {
     try {
@@ -150,15 +187,30 @@
         data.referrer = document.referrer;
       }
 
-      // Preserve first-touch UTMs; always stamp LP variant from page or URL when present.
+      // Freeze historical first-touch before any current-touch refresh.
+      ensureFirstTouchSnapshot(data);
+
+      // Refresh CURRENT paid touch when this navigation carries campaign params.
+      if (urlHasPaidTouch(params)) {
+        PARAM_KEYS.forEach((key) => {
+          const v = params.get(key);
+          if (v != null && String(v).trim() !== '') {
+            data[key] = String(v).trim();
+          }
+        });
+        data.landing_page = window.location.pathname + window.location.search;
+        if (document.referrer) data.referrer = document.referrer;
+      }
+
+      // Current LP variant always follows the page the visitor is on (experiment surface).
       const pageVariant = readLpVariantFromPage() || params.get('lp_variant') || '';
-      if (pageVariant && !data.lp_variant) {
-        data.lp_variant = pageVariant;
+      if (pageVariant) {
+        data.lp_variant = String(pageVariant).trim().slice(0, 64);
       }
 
       const qaTrace =
         params.get('qa_trace_id') || params.get('jcp_qa_trace') || params.get('qa_trace') || '';
-      if (qaTrace && !data.qa_trace_id) {
+      if (qaTrace) {
         data.qa_trace_id = String(qaTrace).trim().slice(0, 80);
       }
 
@@ -258,9 +310,22 @@
     }
   }
 
+  function getFirstTouchPayload() {
+    try {
+      const data = readStoredAttribution();
+      if (!data || !data.first_touch_snapshot || typeof data.first_touch_snapshot !== 'object') {
+        return {};
+      }
+      return Object.assign({}, data.first_touch_snapshot);
+    } catch (e) {
+      return {};
+    }
+  }
+
   window.JCPLeadAttribution = {
     capture: captureLeadAttribution,
     getPayload: getLeadAttributionPayload,
+    getFirstTouchPayload: getFirstTouchPayload,
     decorateDemoLinks: decorateDemoLinks,
     isValidContactId: isValidGhlContactId,
   };
