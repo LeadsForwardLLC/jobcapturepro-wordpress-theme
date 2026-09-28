@@ -30,7 +30,7 @@ Environment-variable equivalents with the same names are also accepted.
 1. Stripe `customer.subscription.created` → durable conversion row immediately.
 2. **Meta `StartTrial`** fires immediately (Stripe-authoritative, `event_id = jcp_trial_<subscription_id>`). PostHog enrichment failure must never suppress Meta.
 3. **PostHog `trial_started`** waits for `signup_completed` CDP push → `/posthog-signup-bridge` → email match wake.
-4. If CDP wake fails within **120s**, finalize PostHog as unmatched (exactly once). Bounded WP-Cron safety net only — no HogQL polling loop / shutdown sleeps.
+4. If CDP wake fails within **300s**, finalize PostHog as unmatched (exactly once). Bounded WP-Cron safety net only — no HogQL polling loop / shutdown sleeps.
 
 Matching hierarchy on bridge wake:
 

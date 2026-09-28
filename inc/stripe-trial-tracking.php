@@ -31,7 +31,7 @@ define( 'JCP_SIGNUP_BRIDGE_TABLE', 'jcp_signup_bridges' );
 define( 'JCP_TRIAL_PLAN_LOOKUP_KEY', 'scale_monthly' );
 define( 'JCP_TRIAL_DAYS', 14 );
 /** Max seconds a conversion may stay PostHog-pending waiting for CDP bridge. */
-define( 'JCP_TRIAL_ENRICHMENT_WINDOW_SEC', 120 );
+define( 'JCP_TRIAL_ENRICHMENT_WINDOW_SEC', 300 );
 define( 'JCP_META_PIXEL_ID_DEFAULT', '1440845294314184' );
 define( 'JCP_POSTHOG_PROJECT_KEY_DEFAULT', 'phc_v8emzqtZ8beAjLsqj2byb5fK8wRHbW2g6hXBqAEZPMyS' );
 define( 'JCP_POSTHOG_PROJECT_ID_DEFAULT', '593169' );
