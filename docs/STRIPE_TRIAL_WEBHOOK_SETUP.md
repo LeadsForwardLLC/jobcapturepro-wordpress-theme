@@ -50,12 +50,12 @@ Proof Sprint does not collect email on the marketing site. After Stripe creates 
 **PostHog CDP destination** (Data pipelines → Destinations → HTTP Webhook):
 
 - Filter: event `signup_completed`
-- URL: `https://jobcapturepro.com/wp-json/jcp/v1/posthog-signup-bridge`
+- URL: `https://jobcapturepro.com/index.php?rest_route=/jcp/v1/posthog-signup-bridge` (PostHog CDN IPs reach this path reliably; `/wp-json/...` was intermittently SiteGround-captcha'd; bare `.php` returned 403)
 - Header: `X-JCP-Bridge-Secret: <same as JCP_POSTHOG_SIGNUP_BRIDGE_SECRET>`
 - Body JSON includes email, `current_url`, `distinct_id`, `ph_distinct_id`, UTMs, `qa_trace_id`, `lp_variant`, `funnel_surface`, `source`
-- Hog must require `"received":true` in the response body (SiteGround captcha HTML returns HTTP 202 and must not count as success)
+- Hog must treat `position()` as **1-based** (0 = not found) and accept JSON object `body.received == true` (not only a string search for `"received":true`)
 
-**SiteGround Anti-Bot:** exclude `/wp-json/jcp/v1/posthog-signup-bridge` (and ideally `/wp-json/jcp/v1/*`) from Anti-Bot AI so PostHog AWS IPs are not challenged. Stripe webhook already reaches PHP; CDP must too.
+**SiteGround Anti-Bot:** Prefer the `index.php?rest_route=/jcp/v1/posthog-signup-bridge` URL for CDP. Optionally exclude `/wp-json/jcp/v1/*` from Anti-Bot AI.
 
 ## Stripe Dashboard steps
 
