@@ -58,7 +58,7 @@ function jcpAppendAttributionToUrl(href, extraParams) {
   }
 }
 
-/** Build app onboarding URL; merges UTM defaults, then extra params (demo_session, email, names, utm_content, …). */
+/** Build app onboarding URL; merges handoff params. Never fabricates acquisition UTMs. */
 function jcpBuildOnboardingUrl(extraParams) {
   const fallback =
     'https://app.jobcapturepro.com/onboarding?sessionId=75ad8454-312e-4224-95b7-8f48f5cd0277&step=1';
@@ -66,29 +66,66 @@ function jcpBuildOnboardingUrl(extraParams) {
     typeof window.JCP_ONBOARDING === 'object' && window.JCP_ONBOARDING && window.JCP_ONBOARDING.url
       ? window.JCP_ONBOARDING.url
       : fallback;
-  const utmFallback = { utm_source: 'jobcapturepro.com', utm_medium: 'website', utm_campaign: 'onboarding' };
   try {
     const u = base.startsWith('http') ? new URL(base) : new URL(base, window.location.origin);
+    // Apply non-acquisition defaults (jcp_surface) from PHP if present — never fake UTMs.
     const defs =
       typeof window.JCP_ONBOARDING === 'object' &&
       window.JCP_ONBOARDING &&
       window.JCP_ONBOARDING.utmDefaults &&
       typeof window.JCP_ONBOARDING.utmDefaults === 'object'
         ? window.JCP_ONBOARDING.utmDefaults
-        : utmFallback;
+        : {};
     Object.keys(defs).forEach((key) => {
       const val = defs[key];
-      if (val !== undefined && val !== null && String(val).trim() !== '') {
-        u.searchParams.set(key, String(val));
+      if (val === undefined || val === null || String(val).trim() === '') return;
+      if (key.indexOf('utm_') === 0) return; // never apply acquisition UTM defaults
+      u.searchParams.set(key, String(val));
+    });
+    // Strip legacy fabricated acquisition UTMs if present on the base URL.
+    ['utm_source', 'utm_medium', 'utm_campaign'].forEach((k) => {
+      const cur = u.searchParams.get(k) || '';
+      if (
+        (k === 'utm_source' && cur === 'jobcapturepro.com') ||
+        (k === 'utm_medium' && cur === 'website') ||
+        (k === 'utm_campaign' && cur === 'onboarding')
+      ) {
+        u.searchParams.delete(k);
       }
     });
+    const legacyContent = u.searchParams.get('utm_content') || '';
+    if (legacyContent && /_trial$|^nav_|^home_|^pricing$|^demo_|^sitewide_/.test(legacyContent)) {
+      if (!u.searchParams.get('jcp_surface')) u.searchParams.set('jcp_surface', legacyContent);
+      u.searchParams.delete('utm_content');
+    }
+    // Paid / current-touch attribution.
+    try {
+      const attr =
+        window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function'
+          ? window.JCPLeadAttribution.getPayload() || {}
+          : {};
+      ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'lp_variant', 'qa_trace_id'].forEach(
+        (key) => {
+          const val = attr[key];
+          if (val != null && String(val).trim() !== '' && String(val).indexOf('jobcapturepro.com') === -1) {
+            u.searchParams.set(key, String(val).trim());
+          }
+        }
+      );
+    } catch (eAttr) {}
     if (extraParams && typeof extraParams === 'object') {
       Object.keys(extraParams).forEach((key) => {
         const val = extraParams[key];
-        if (val !== undefined && val !== null && String(val).trim() !== '') {
-          u.searchParams.set(key, String(val));
+        if (val === undefined || val === null || String(val).trim() === '') return;
+        if (key === 'utm_content' && /_trial$|^nav_|^pricing$|^demo_/.test(String(val))) {
+          u.searchParams.set('jcp_surface', String(val));
+          return;
         }
+        u.searchParams.set(key, String(val));
       });
+    }
+    if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.decorateHref === 'function') {
+      return window.JCPOnboardingHandoff.decorateHref(u.toString(), extraParams || {}) || u.toString();
     }
     return u.toString();
   } catch (e) {
@@ -96,11 +133,11 @@ function jcpBuildOnboardingUrl(extraParams) {
   }
 }
 
-/** Query params for handoff after demo (session + PII the app can prefill), plus optional utm_content. */
+/** Query params for handoff after demo (session + PII the app can prefill). Surface → jcp_surface. */
 function jcpDemoOnboardingHandoffQuery(utmContent) {
   const extra = {
     demo_session: getDemoSessionId(),
-    utm_content: utmContent || 'demo_handoff'
+    jcp_surface: utmContent || 'demo_handoff'
   };
   try {
     if (demoUser && typeof demoUser.email === 'string' && demoUser.email.trim()) {

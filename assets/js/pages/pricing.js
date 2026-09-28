@@ -10,21 +10,54 @@
     typeof window !== 'undefined' && window.JCP_ONBOARDING && window.JCP_ONBOARDING.url
       ? window.JCP_ONBOARDING.url
       : 'https://app.jobcapturepro.com/onboarding?sessionId=75ad8454-312e-4224-95b7-8f48f5cd0277&step=1';
-  const onboardingUtmFallback = { utm_source: 'jobcapturepro.com', utm_medium: 'website', utm_campaign: 'onboarding' };
   const onboardingCtaHref = (() => {
     try {
       const u = onboardingBaseHref.startsWith('http')
         ? new URL(onboardingBaseHref)
         : new URL(onboardingBaseHref, window.location.origin);
+      // Strip fabricated acquisition UTMs if present on the base URL.
+      ['utm_source', 'utm_medium', 'utm_campaign'].forEach((k) => {
+        const cur = u.searchParams.get(k) || '';
+        if (
+          (k === 'utm_source' && cur === 'jobcapturepro.com') ||
+          (k === 'utm_medium' && cur === 'website') ||
+          (k === 'utm_campaign' && cur === 'onboarding')
+        ) {
+          u.searchParams.delete(k);
+        }
+      });
+      const legacyContent = u.searchParams.get('utm_content') || '';
+      if (legacyContent === 'pricing' || /_trial$/.test(legacyContent)) {
+        u.searchParams.delete('utm_content');
+      }
+      u.searchParams.set('jcp_surface', 'pricing');
       const defs =
         window.JCP_ONBOARDING && window.JCP_ONBOARDING.utmDefaults && typeof window.JCP_ONBOARDING.utmDefaults === 'object'
           ? window.JCP_ONBOARDING.utmDefaults
-          : onboardingUtmFallback;
+          : {};
       Object.keys(defs).forEach((key) => {
         const val = defs[key];
-        if (val !== undefined && val !== null && String(val).trim() !== '') u.searchParams.set(key, String(val));
+        if (val === undefined || val === null || String(val).trim() === '') return;
+        if (key.indexOf('utm_') === 0) return;
+        u.searchParams.set(key, String(val));
       });
-      u.searchParams.set('utm_content', 'pricing');
+      // Paid current-touch attribution.
+      try {
+        const attr =
+          window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function'
+            ? window.JCPLeadAttribution.getPayload() || {}
+            : {};
+        ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'lp_variant', 'qa_trace_id'].forEach(
+          (key) => {
+            if (attr[key] && String(attr[key]).indexOf('jobcapturepro.com') === -1) {
+              u.searchParams.set(key, String(attr[key]));
+            }
+          }
+        );
+      } catch (eAttr) {}
+      if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.decorateHref === 'function') {
+        return window.JCPOnboardingHandoff.decorateHref(u.toString(), {}, 'pricing') || u.toString();
+      }
       return u.toString();
     } catch (e) {
       return onboardingBaseHref;

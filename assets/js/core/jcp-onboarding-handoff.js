@@ -1,8 +1,9 @@
 /**
  * App onboarding link decorator — merges demo user + paid attribution into trial URLs.
  *
- * Paid acquisition UTMs (utm_*, fbclid, lp_variant) overwrite marketing-site defaults
- * (jobcapturepro.com / website / onboarding). Internal CTA surface is stored as jcp_surface.
+ * Acquisition UTMs (utm_*) come ONLY from JCPLeadAttribution current-touch payload.
+ * Fake marketing defaults (jobcapturepro.com / website / onboarding) are stripped.
+ * Internal CTA placement uses jcp_surface — never utm_content.
  */
 (() => {
   const ONB_HOST = 'app.jobcapturepro.com';
@@ -14,6 +15,21 @@
     utm_campaign: 'onboarding',
   };
 
+  /** Legacy CTA labels wrongly stuffed into utm_content — migrate to jcp_surface. */
+  const INTERNAL_UTM_CONTENT = {
+    proof_sprint_trial: 1,
+    proof_gap_survey_trial: 1,
+    job_proof_demo_trial: 1,
+    job_proof_demo_run_trial: 1,
+    nav_get_started: 1,
+    home_hero: 1,
+    pricing: 1,
+    sitewide_banner: 1,
+    demo_handoff: 1,
+    sales_tool: 1,
+    demo_post_panel: 1,
+  };
+
   const PAID_ATTR_KEYS = [
     'utm_source',
     'utm_medium',
@@ -22,6 +38,7 @@
     'utm_term',
     'fbclid',
     'lp_variant',
+    'qa_trace_id',
   ];
 
   const safeJson = (raw) => {
@@ -41,7 +58,6 @@
 
   const readDemoSession = () => {
     try {
-      // Writers use sessionStorage; fall back to localStorage for older sessions.
       return (
         (window.sessionStorage && window.sessionStorage.getItem('jcp_demo_session_id')) ||
         (window.localStorage && window.localStorage.getItem('jcp_demo_session_id')) ||
@@ -110,6 +126,34 @@
     return String(value || '') === def;
   };
 
+  const isInternalUtmContent = (value) => {
+    const v = String(value || '').trim();
+    if (!v) return false;
+    if (INTERNAL_UTM_CONTENT[v]) return true;
+    // Catch placement-style labels still leaked into utm_content.
+    if (/^proof_sprint_/.test(v)) return true;
+    if (/_trial$/.test(v) && !/^qa_/i.test(v)) return true;
+    return false;
+  };
+
+  /**
+   * Remove fabricated acquisition UTMs and migrate internal utm_content → jcp_surface.
+   */
+  const scrubFakeAcquisition = (u) => {
+    Object.keys(MARKETING_UTM_DEFAULTS).forEach((k) => {
+      if (isMarketingDefault(k, u.searchParams.get(k))) {
+        u.searchParams.delete(k);
+      }
+    });
+    const content = u.searchParams.get('utm_content') || '';
+    if (isInternalUtmContent(content)) {
+      if (!u.searchParams.get('jcp_surface')) {
+        u.searchParams.set('jcp_surface', content);
+      }
+      u.searchParams.delete('utm_content');
+    }
+  };
+
   const buildHandoffParams = () => {
     const u = readDemoUser();
     const params = {};
@@ -168,12 +212,18 @@
       'utm_term',
       'fbclid',
       'lp_variant',
+      'qa_trace_id',
       'landing_page',
       'referrer',
       'contact_id',
+      'ph_distinct_id',
     ].forEach((key) => {
       const val = attr[key];
       if (val != null && String(val).trim() !== '') {
+        // Never propagate fabricated marketing-site source.
+        if (key === 'utm_source' && String(val).indexOf('jobcapturepro.com') !== -1) return;
+        if (key.indexOf('utm_') === 0 && isMarketingDefault(key, val)) return;
+        if (key === 'utm_content' && isInternalUtmContent(val)) return;
         params[key] = String(val).trim();
       }
     });
@@ -197,29 +247,33 @@
 
   /**
    * Merge handoff params into onboarding href.
-   * Paid acquisition keys always overwrite marketing defaults.
+   * Always scrub fake acquisition UTMs; paid keys overwrite when present.
    */
   const decorateHref = (href, extraParams, surface) => {
     try {
       const u = href.startsWith('http') ? new URL(href) : new URL(href, window.location.origin);
 
-      // Preserve existing non-default surface utm_content into jcp_surface before overwrites.
-      const existingContent = u.searchParams.get('utm_content') || '';
+      scrubFakeAcquisition(u);
+
       if (surface) {
         u.searchParams.set('jcp_surface', String(surface));
-      } else if (existingContent && !u.searchParams.get('jcp_surface')) {
-        u.searchParams.set('jcp_surface', existingContent);
       }
 
       Object.keys(extraParams || {}).forEach((k) => {
         const val = extraParams[k];
         if (val === undefined || val === null || String(val).trim() === '') return;
+        if (k === 'utm_content' && isInternalUtmContent(val)) {
+          if (!u.searchParams.get('jcp_surface')) {
+            u.searchParams.set('jcp_surface', String(val));
+          }
+          return;
+        }
+        if (k.indexOf('utm_') === 0 && isMarketingDefault(k, val)) return;
+        if (k === 'utm_source' && String(val).indexOf('jobcapturepro.com') !== -1) return;
 
         if (PAID_ATTR_KEYS.indexOf(k) !== -1) {
-          const current = u.searchParams.get(k) || '';
-          if (!current || isMarketingDefault(k, current) || k === 'fbclid' || k === 'lp_variant' || k === 'utm_term' || k === 'utm_content') {
-            u.searchParams.set(k, String(val));
-          }
+          // Acquisition / attribution keys always win over whatever was in the static href.
+          u.searchParams.set(k, String(val));
           return;
         }
 
@@ -229,6 +283,9 @@
         }
       });
 
+      // Final scrub in case extras reintroduced fakes.
+      scrubFakeAcquisition(u);
+
       return u.toString();
     } catch (e) {
       return href;
@@ -236,24 +293,19 @@
   };
 
   const decorateAll = () => {
-    const extra = buildHandoffParams();
-    if (!extra) {
-      // Still apply attribution-only decoration when no demoUser exists (paid LPs).
-      const attrOnly = {};
-      const attr = readAttribution();
-      PAID_ATTR_KEYS.forEach((k) => {
-        if (attr[k]) attrOnly[k] = attr[k];
-      });
-      if (!Object.keys(attrOnly).length) return;
+    const attr = readAttribution();
+    const attrOnly = {};
+    PAID_ATTR_KEYS.forEach((k) => {
+      if (attr[k]) {
+        if (k === 'utm_source' && String(attr[k]).indexOf('jobcapturepro.com') !== -1) return;
+        if (k.indexOf('utm_') === 0 && isMarketingDefault(k, attr[k])) return;
+        if (k === 'utm_content' && isInternalUtmContent(attr[k])) return;
+        attrOnly[k] = attr[k];
+      }
+    });
+    if (attr.ph_distinct_id) attrOnly.ph_distinct_id = attr.ph_distinct_id;
 
-      document.querySelectorAll('a[href]').forEach((a) => {
-        const href = a.getAttribute('href') || '';
-        if (!isOnboardingUrl(href)) return;
-        const next = decorateHref(href, attrOnly);
-        if (next && next !== href) a.setAttribute('href', next);
-      });
-      return;
-    }
+    const extra = Object.assign({}, attrOnly, buildHandoffParams() || {});
 
     document.querySelectorAll('a[href]').forEach((a) => {
       const href = a.getAttribute('href') || '';
@@ -273,9 +325,13 @@
       const extra = buildHandoffParams() || {};
       const attr = readAttribution();
       PAID_ATTR_KEYS.forEach((k) => {
-        if (attr[k]) extra[k] = attr[k];
+        if (!attr[k]) return;
+        if (k === 'utm_source' && String(attr[k]).indexOf('jobcapturepro.com') !== -1) return;
+        if (k.indexOf('utm_') === 0 && isMarketingDefault(k, attr[k])) return;
+        if (k === 'utm_content' && isInternalUtmContent(attr[k])) return;
+        extra[k] = attr[k];
       });
-      if (!Object.keys(extra).length) return;
+      if (attr.ph_distinct_id) extra.ph_distinct_id = attr.ph_distinct_id;
       const next = decorateHref(href, extra);
       if (next && next !== href) a.setAttribute('href', next);
     },

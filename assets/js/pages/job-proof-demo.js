@@ -358,26 +358,33 @@
     } catch (e) {
       return base;
     }
-    var attr = attrPayload();
+    // Strip fabricated acquisition UTMs — never re-inject them.
     Object.keys(MARKETING_DEFAULTS).forEach(function (k) {
-      if (!u.searchParams.get(k)) u.searchParams.set(k, MARKETING_DEFAULTS[k]);
+      if (isMarketingDefault(k, u.searchParams.get(k))) u.searchParams.delete(k);
     });
-    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'lp_variant'].forEach(function (k) {
+    var legacyContent = u.searchParams.get('utm_content') || '';
+    if (legacyContent && /_trial$/.test(legacyContent)) {
+      u.searchParams.delete('utm_content');
+    }
+    if (surface) u.searchParams.set('jcp_surface', surface);
+    var attr = attrPayload();
+    ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'fbclid', 'lp_variant', 'qa_trace_id'].forEach(function (k) {
       var val = attr[k];
       if (!val) return;
-      var current = u.searchParams.get(k) || '';
-      if (!current || isMarketingDefault(k, current) || k === 'utm_content' || k === 'fbclid' || k === 'lp_variant' || k === 'utm_term') {
-        u.searchParams.set(k, String(val));
-      }
+      if (k === 'utm_source' && String(val).indexOf('jobcapturepro.com') !== -1) return;
+      if (isMarketingDefault(k, val)) return;
+      u.searchParams.set(k, val);
     });
     if (!u.searchParams.get('lp_variant')) u.searchParams.set('lp_variant', LP_VARIANT);
-    if (surface) u.searchParams.set('jcp_surface', String(surface));
     if (state.email && !u.searchParams.get('email')) u.searchParams.set('email', state.email);
     if (state.niche && !u.searchParams.get('industryId') && !u.searchParams.get('niche')) {
       u.searchParams.set('niche', state.niche);
     }
     var first = deriveFirstName(state.email);
     if (first && !u.searchParams.get('first_name')) u.searchParams.set('first_name', first);
+    if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.decorateHref === 'function') {
+      return window.JCPOnboardingHandoff.decorateHref(u.toString(), {}, surface) || u.toString();
+    }
     return u.toString();
   }
 
