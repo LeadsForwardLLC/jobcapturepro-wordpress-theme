@@ -12,7 +12,8 @@
  * - JCP_META_CAPI_ACCESS_TOKEN
  * - JCP_META_CAPI_TEST_EVENT_CODE (optional QA)
  * - JCP_POSTHOG_PROJECT_API_KEY (optional; falls back to public project key)
- * - JCP_POSTHOG_PERSONAL_API_KEY (HogQL bridge for unmatched Sprint trials)
+ * - JCP_POSTHOG_PERSONAL_API_KEY (optional HogQL fallback for unmatched Sprint trials)
+ * - JCP_POSTHOG_SIGNUP_BRIDGE_SECRET (PostHog CDP → WP signup_completed bridge)
  * - JCP_POSTHOG_PROJECT_ID (optional; default 593169)
  *
  * @package JCP_Core
@@ -23,6 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'JCP_TRIAL_CONVERSIONS_TABLE', 'jcp_trial_conversions' );
+define( 'JCP_SIGNUP_BRIDGE_TABLE', 'jcp_signup_bridges' );
 define( 'JCP_TRIAL_PLAN_LOOKUP_KEY', 'scale_monthly' );
 define( 'JCP_TRIAL_DAYS', 14 );
 define( 'JCP_TRIAL_ENRICHMENT_WINDOW_SEC', 300 );
@@ -83,6 +85,22 @@ function jcp_trial_conversions_maybe_create_table(): void {
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 	dbDelta( $sql );
 
+	$bridge = $wpdb->prefix . JCP_SIGNUP_BRIDGE_TABLE;
+	$bridge_sql = "CREATE TABLE IF NOT EXISTS $bridge (
+		id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+		email_norm varchar(255) NOT NULL,
+		current_url text DEFAULT NULL,
+		ph_distinct_id varchar(128) NOT NULL DEFAULT '',
+		app_distinct_id varchar(128) NOT NULL DEFAULT '',
+		attribution_json longtext DEFAULT NULL,
+		source_event varchar(64) NOT NULL DEFAULT 'signup_completed',
+		received_at datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		PRIMARY KEY (id),
+		UNIQUE KEY email_norm (email_norm),
+		KEY ph_distinct_id (ph_distinct_id)
+	) $charset;";
+	dbDelta( $bridge_sql );
+
 	if ( function_exists( 'jcp_demo_lead_queue_maybe_create_table' ) ) {
 		jcp_demo_lead_queue_maybe_create_table();
 	}
@@ -91,7 +109,7 @@ add_action( 'after_switch_theme', 'jcp_trial_conversions_maybe_create_table' );
 add_action( 'init', 'jcp_trial_conversions_maybe_create_table', 5 );
 
 /**
- * Register Stripe webhook REST route.
+ * Register Stripe webhook + PostHog signup bridge REST routes.
  */
 function jcp_trial_register_rest_routes(): void {
 	register_rest_route(
@@ -101,6 +119,15 @@ function jcp_trial_register_rest_routes(): void {
 			'methods'             => 'POST',
 			'permission_callback' => '__return_true',
 			'callback'            => 'jcp_trial_stripe_webhook_handler',
+		]
+	);
+	register_rest_route(
+		'jcp/v1',
+		'/posthog-signup-bridge',
+		[
+			'methods'             => 'POST',
+			'permission_callback' => '__return_true',
+			'callback'            => 'jcp_trial_posthog_signup_bridge_handler',
 		]
 	);
 }
@@ -341,10 +368,180 @@ function jcp_trial_lead_attribution( object $lead ): array {
 }
 
 /**
- * Whether the PostHog HogQL signup bridge is configured.
+ * Whether any signup→attribution bridge is configured (CDP local cache and/or HogQL).
  */
 function jcp_trial_posthog_bridge_configured(): bool {
+	if ( jcp_trial_secret( 'JCP_POSTHOG_SIGNUP_BRIDGE_SECRET' ) !== '' ) {
+		return true;
+	}
 	return jcp_trial_secret( 'JCP_POSTHOG_PERSONAL_API_KEY' ) !== '';
+}
+
+/**
+ * Authenticate PostHog CDP → WP signup bridge requests.
+ *
+ * @param WP_REST_Request $request Request.
+ */
+function jcp_trial_signup_bridge_auth_ok( WP_REST_Request $request ): bool {
+	$secret = jcp_trial_secret( 'JCP_POSTHOG_SIGNUP_BRIDGE_SECRET' );
+	if ( $secret === '' ) {
+		return false;
+	}
+
+	$provided = (string) $request->get_header( 'x-jcp-bridge-secret' );
+	if ( $provided === '' ) {
+		$auth = (string) $request->get_header( 'authorization' );
+		if ( preg_match( '/^Bearer\s+(.+)$/i', $auth, $m ) ) {
+			$provided = trim( $m[1] );
+		}
+	}
+	if ( $provided === '' ) {
+		$params = $request->get_json_params();
+		if ( is_array( $params ) && ! empty( $params['bridge_secret'] ) && is_scalar( $params['bridge_secret'] ) ) {
+			$provided = (string) $params['bridge_secret'];
+		}
+	}
+
+	return $provided !== '' && hash_equals( $secret, $provided );
+}
+
+/**
+ * Persist signup_completed identity bridge from PostHog CDP webhook.
+ *
+ * @param WP_REST_Request $request Request.
+ * @return WP_REST_Response
+ */
+function jcp_trial_posthog_signup_bridge_handler( WP_REST_Request $request ): WP_REST_Response {
+	if ( ! jcp_trial_signup_bridge_auth_ok( $request ) ) {
+		return new WP_REST_Response( [ 'error' => 'unauthorized' ], 401 );
+	}
+
+	$params = $request->get_json_params();
+	if ( ! is_array( $params ) ) {
+		$params = [];
+	}
+
+	$email = '';
+	if ( ! empty( $params['email'] ) && is_scalar( $params['email'] ) ) {
+		$email = jcp_trial_normalize_email( (string) $params['email'] );
+	}
+	if ( $email === '' && ! empty( $params['person'] ) && is_array( $params['person'] ) ) {
+		$props = $params['person']['properties'] ?? [];
+		if ( is_array( $props ) && ! empty( $props['email'] ) && is_scalar( $props['email'] ) ) {
+			$email = jcp_trial_normalize_email( (string) $props['email'] );
+		}
+	}
+
+	$url = '';
+	if ( ! empty( $params['current_url'] ) && is_scalar( $params['current_url'] ) ) {
+		$url = trim( (string) $params['current_url'] );
+	}
+	if ( $url === '' && ! empty( $params['event'] ) && is_array( $params['event'] ) ) {
+		$eprops = $params['event']['properties'] ?? [];
+		if ( is_array( $eprops ) && ! empty( $eprops['$current_url'] ) && is_scalar( $eprops['$current_url'] ) ) {
+			$url = trim( (string) $eprops['$current_url'] );
+		}
+	}
+
+	$app_distinct = '';
+	if ( ! empty( $params['distinct_id'] ) && is_scalar( $params['distinct_id'] ) ) {
+		$app_distinct = trim( (string) $params['distinct_id'] );
+	} elseif ( ! empty( $params['event'] ) && is_array( $params['event'] ) && ! empty( $params['event']['distinct_id'] ) ) {
+		$app_distinct = trim( (string) $params['event']['distinct_id'] );
+	}
+
+	if ( $email === '' || $url === '' ) {
+		return new WP_REST_Response(
+			[
+				'received' => true,
+				'stored'   => false,
+				'reason'   => 'missing_email_or_url',
+			],
+			200
+		);
+	}
+
+	$attr = jcp_trial_parse_onboarding_url_attr( $url );
+	if ( $attr === [] || empty( $attr['ph_distinct_id'] ) ) {
+		return new WP_REST_Response(
+			[
+				'received' => true,
+				'stored'   => false,
+				'reason'   => 'no_ph_distinct_id_in_url',
+			],
+			200
+		);
+	}
+
+	if ( ! empty( $attr['ph_distinct_id'] ) ) {
+		$attr = array_merge( $attr, jcp_trial_cookies_from_lead_by_ph_id( (string) $attr['ph_distinct_id'] ) );
+	}
+	$attr['attribution_bridge'] = 'posthog_signup_completed';
+	$attr['onboarding_url']     = $url;
+
+	global $wpdb;
+	jcp_trial_conversions_maybe_create_table();
+	$table = $wpdb->prefix . JCP_SIGNUP_BRIDGE_TABLE;
+
+	$wpdb->replace(
+		$table,
+		[
+			'email_norm'      => $email,
+			'current_url'     => $url,
+			'ph_distinct_id'  => (string) $attr['ph_distinct_id'],
+			'app_distinct_id' => $app_distinct,
+			'attribution_json'=> wp_json_encode( $attr, JSON_UNESCAPED_SLASHES ),
+			'source_event'    => 'signup_completed',
+			'received_at'     => current_time( 'mysql', true ),
+		],
+		[ '%s', '%s', '%s', '%s', '%s', '%s', '%s' ]
+	);
+
+	return new WP_REST_Response(
+		[
+			'received'       => true,
+			'stored'         => true,
+			'email_norm'     => $email,
+			'ph_distinct_id' => (string) $attr['ph_distinct_id'],
+		],
+		200
+	);
+}
+
+/**
+ * Look up locally cached signup bridge (populated by PostHog CDP webhook).
+ *
+ * @param string $email_norm Normalized email.
+ * @return array<string, string>
+ */
+function jcp_trial_find_attr_via_local_signup_bridge( string $email_norm ): array {
+	$email_norm = jcp_trial_normalize_email( $email_norm );
+	if ( $email_norm === '' ) {
+		return [];
+	}
+
+	global $wpdb;
+	jcp_trial_conversions_maybe_create_table();
+	$table = $wpdb->prefix . JCP_SIGNUP_BRIDGE_TABLE;
+
+	$row = $wpdb->get_row(
+		$wpdb->prepare(
+			"SELECT attribution_json, current_url FROM `$table` WHERE email_norm = %s LIMIT 1",
+			$email_norm
+		)
+	);
+	if ( ! $row ) {
+		return [];
+	}
+
+	if ( ! empty( $row->attribution_json ) ) {
+		$decoded = json_decode( (string) $row->attribution_json, true );
+		if ( is_array( $decoded ) && ! empty( $decoded['ph_distinct_id'] ) ) {
+			return jcp_trial_normalize_surface_attr( $decoded );
+		}
+	}
+
+	return jcp_trial_parse_onboarding_url_attr( (string) ( $row->current_url ?? '' ) );
 }
 
 /**
@@ -471,7 +668,7 @@ function jcp_trial_cookies_from_lead_by_ph_id( string $ph_id ): array {
 }
 
 /**
- * Query PostHog for signup_completed.$current_url by person email (app identity bridge).
+ * Resolve signup URL attribution: local CDP cache first, optional HogQL fallback.
  *
  * Proven on QA: Stripe email → Firebase-identified person → signup_completed URL
  * carries ph_distinct_id + Sprint UTMs (even when webhook beats the browser by ~2s,
@@ -482,8 +679,20 @@ function jcp_trial_cookies_from_lead_by_ph_id( string $ph_id ): array {
  */
 function jcp_trial_find_attr_via_posthog_signup( string $email_norm ): array {
 	$email_norm = jcp_trial_normalize_email( $email_norm );
-	$token      = jcp_trial_secret( 'JCP_POSTHOG_PERSONAL_API_KEY' );
-	if ( $email_norm === '' || $token === '' ) {
+	if ( $email_norm === '' ) {
+		return [];
+	}
+
+	$local = jcp_trial_find_attr_via_local_signup_bridge( $email_norm );
+	if ( $local !== [] && ! empty( $local['ph_distinct_id'] ) ) {
+		if ( empty( $local['attribution_bridge'] ) ) {
+			$local['attribution_bridge'] = 'posthog_signup_completed';
+		}
+		return $local;
+	}
+
+	$token = jcp_trial_secret( 'JCP_POSTHOG_PERSONAL_API_KEY' );
+	if ( $token === '' ) {
 		return [];
 	}
 

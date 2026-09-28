@@ -17,7 +17,9 @@ define( 'JCP_META_CAPI_ACCESS_TOKEN', 'EAA...' );        // Meta system user tok
 // define( 'JCP_META_CAPI_TEST_EVENT_CODE', 'TEST12345' ); // QA only — remove for production
 // define( 'JCP_POSTHOG_PROJECT_API_KEY', 'phc_...' );     // defaults to existing project key
 // Required for Proof Sprint matched attribution (no marketing email gate):
-define( 'JCP_POSTHOG_PERSONAL_API_KEY', 'phx_...' );   // PostHog → Settings → Personal API keys (query scope)
+define( 'JCP_POSTHOG_SIGNUP_BRIDGE_SECRET', '…' );     // shared secret for PostHog CDP → WP
+// Optional HogQL fallback (if CDP is delayed):
+// define( 'JCP_POSTHOG_PERSONAL_API_KEY', 'phx_...' ); // PostHog → Settings → Personal API keys
 define( 'JCP_POSTHOG_PROJECT_ID', '593169' );          // JobCapturePro Default project
 ```
 
@@ -29,10 +31,23 @@ Proof Sprint does not collect email on the marketing site. After Stripe creates 
 
 1. Webhook records the conversion immediately (authoritative).
 2. Email lead join runs first (Proof Gap path).
-3. If unmatched, HogQL looks up `signup_completed` for that email and parses `$current_url` for `ph_distinct_id`, UTMs, `lp_variant`, `qa_trace_id`.
-4. Side effects (`trial_started` + Meta `StartTrial`) are deferred up to ~5 minutes while that bridge resolves — **one** emission per subscription (`event_id` / `$insert_id` = `jcp_trial_<subscription_id>`).
+3. If unmatched, look up locally cached `signup_completed` bridges (PostHog CDP posts `email` + `$current_url` to `/wp-json/jcp/v1/posthog-signup-bridge`) and parse `ph_distinct_id`, UTMs, `lp_variant`, `qa_trace_id`.
+4. Optional HogQL fallback if `JCP_POSTHOG_PERSONAL_API_KEY` is set.
+5. Side effects (`trial_started` + Meta `StartTrial`) are deferred up to ~5 minutes while that bridge resolves — **one** emission per subscription (`event_id` / `$insert_id` = `jcp_trial_<subscription_id>`).
 
-Requires `JCP_POSTHOG_PERSONAL_API_KEY` with Query access on project `593169`.
+**PostHog CDP destination** (Data pipelines → Destinations → HTTP Webhook):
+
+- Filter: event `signup_completed`
+- URL: `https://jobcapturepro.com/wp-json/jcp/v1/posthog-signup-bridge`
+- Header: `X-JCP-Bridge-Secret: <same as JCP_POSTHOG_SIGNUP_BRIDGE_SECRET>`
+- Body JSON:
+  ```json
+  {
+    "email": "{person.properties.email}",
+    "current_url": "{event.properties.$current_url}",
+    "distinct_id": "{event.distinct_id}"
+  }
+  ```
 
 ## Stripe Dashboard steps
 
