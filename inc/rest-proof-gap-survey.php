@@ -158,8 +158,119 @@ function jcp_proof_gap_append_ghl_fields( string $body, array $extra ): string {
 		if ( $key === '' || $val === '' ) {
 			continue;
 		}
-		$body .= '&' . rawurlencode( $key ) . '=' . rawurlencode( $val );
+		$body .= ( $body === '' ? '' : '&' ) . rawurlencode( $key ) . '=' . rawurlencode( $val );
 	}
+	return $body;
+}
+
+/**
+ * Build Proof Gap GHL webhook body with canonical field names (not demo keys).
+ *
+ * First Name is never fabricated from the email local-part.
+ * Business niche / weekly volume / assessment notes reuse existing GHL fields.
+ * Tag is proof-gap-lead only.
+ *
+ * @param array<string, mixed> $params Contact + attribution params.
+ * @param array<string, string> $survey Discrete survey fields.
+ */
+function jcp_proof_gap_build_webhook_body( array $params, array $survey ): string {
+	$email = isset( $params['email'] ) ? trim( (string) $params['email'] ) : '';
+	// Only pass through an explicit first name — never invent one from the email.
+	$first_name = isset( $params['first_name'] ) ? trim( (string) $params['first_name'] ) : '';
+	$last_name  = isset( $params['last_name'] ) ? trim( (string) $params['last_name'] ) : '';
+
+	$business_niche = isset( $params['business_type'] ) ? trim( (string) $params['business_type'] ) : '';
+	if ( $business_niche !== '' && function_exists( 'jcp_core_early_access_business_type_label' ) ) {
+		$label = jcp_core_early_access_business_type_label( $business_niche );
+		if ( is_string( $label ) && $label !== '' ) {
+			$business_niche = $label;
+		}
+	}
+
+	$assessment = isset( $params['use_case'] ) ? trim( (string) $params['use_case'] ) : '';
+
+	$scalar = [
+		JCP_GHL_KEY_EVENT        => JCP_PROOF_GAP_GHL_EVENT,
+		JCP_GHL_KEY_LAST_NAME    => $last_name,
+		JCP_GHL_KEY_EMAIL        => $email,
+		JCP_GHL_KEY_PHONE        => isset( $params['phone'] ) ? trim( (string) $params['phone'] ) : '',
+		JCP_GHL_KEY_COMPANY      => isset( $params['company'] ) ? trim( (string) $params['company'] ) : '',
+		JCP_GHL_KEY_SERVICE_AREA => isset( $params['service_area'] ) ? trim( (string) $params['service_area'] ) : '',
+		JCP_GHL_KEY_UTM_SOURCE   => isset( $params['utm_source'] ) ? trim( (string) $params['utm_source'] ) : '',
+		JCP_GHL_KEY_UTM_MEDIUM   => isset( $params['utm_medium'] ) ? trim( (string) $params['utm_medium'] ) : '',
+		JCP_GHL_KEY_UTM_CAMPAIGN => isset( $params['utm_campaign'] ) ? trim( (string) $params['utm_campaign'] ) : '',
+		JCP_GHL_KEY_UTM_CONTENT  => isset( $params['utm_content'] ) ? trim( (string) $params['utm_content'] ) : '',
+		JCP_GHL_KEY_UTM_TERM     => isset( $params['utm_term'] ) ? trim( (string) $params['utm_term'] ) : '',
+		JCP_GHL_KEY_FBCLID       => isset( $params['fbclid'] ) ? trim( (string) $params['fbclid'] ) : '',
+		JCP_GHL_KEY_LANDING_PAGE => isset( $params['landing_page'] ) ? trim( (string) $params['landing_page'] ) : '',
+		JCP_GHL_KEY_REFERRER     => isset( $params['referrer'] ) ? trim( (string) $params['referrer'] ) : '',
+	];
+	// Only include First Name when a real value was collected — never fabricate from email,
+	// and never send blank (avoids wiping an existing contact name on Find/Update).
+	if ( $first_name !== '' ) {
+		$scalar[ JCP_GHL_KEY_FIRST_NAME ] = $first_name;
+	}
+
+	// Reused existing GHL custom fields (canonical Proof Gap mapping).
+	$scalar[ JCP_GHL_KEY_BUSINESS_NICHE ]     = $business_niche;
+	$scalar[ JCP_GHL_KEY_ASSESSMENT_NOTES ]   = $assessment;
+	$scalar[ JCP_GHL_KEY_WEEKLY_JOB_VOLUME ]  = isset( $survey['jobs_per_week'] ) ? trim( (string) $survey['jobs_per_week'] ) : '';
+
+	// Dedicated Proof Gap fields (payload keys = GHL Field names as created in CRM).
+	$scalar[ JCP_GHL_KEY_PHOTO_WORKFLOW ]     = isset( $survey['photo_workflow'] ) ? trim( (string) $survey['photo_workflow'] ) : '';
+	$scalar[ JCP_GHL_KEY_MARKETING_USAGE ]    = isset( $survey['marketing_usage'] ) ? trim( (string) $survey['marketing_usage'] ) : '';
+	$scalar[ JCP_GHL_KEY_SURVEY_SESSION_ID ]  = isset( $survey['survey_session_id'] ) ? trim( (string) $survey['survey_session_id'] ) : '';
+	$qa = isset( $params['qa_trace_id'] ) ? trim( (string) $params['qa_trace_id'] ) : '';
+	if ( $qa !== '' ) {
+		$scalar[ JCP_GHL_KEY_QA_TRACE_ID ] = mb_substr( $qa, 0, 80 );
+	}
+
+	if ( ! empty( $params['lp_variant'] ) && defined( 'JCP_GHL_KEY_LP_VARIANT' ) ) {
+		$scalar[ JCP_GHL_KEY_LP_VARIANT ] = trim( (string) $params['lp_variant'] );
+	}
+	if ( ! empty( $params['funnel_surface'] ) && defined( 'JCP_GHL_KEY_FUNNEL_SURFACE' ) ) {
+		$scalar[ JCP_GHL_KEY_FUNNEL_SURFACE ] = trim( (string) $params['funnel_surface'] );
+	}
+
+	// Drop empty scalars so GHL does not overwrite with blanks.
+	$body_parts = [];
+	foreach ( $scalar as $key => $val ) {
+		if ( $val === '' ) {
+			continue;
+		}
+		$body_parts[ $key ] = $val;
+	}
+	$body = http_build_query( $body_parts, '', '&', PHP_QUERY_RFC3986 );
+
+	$referral = isset( $params['referral_source'] ) ? trim( (string) $params['referral_source'] ) : '';
+	if ( $referral !== '' && defined( 'JCP_GHL_KEY_REFERRAL_SOURCE' ) ) {
+		$body .= '&' . rawurlencode( JCP_GHL_KEY_REFERRAL_SOURCE ) . '%5B%5D=' . rawurlencode( $referral );
+	}
+
+	// Tag proof-gap-lead only — never demo-interest / demo-*.
+	$body .= '&Tags%5B%5D=' . rawurlencode( JCP_PROOF_GAP_GHL_EVENT );
+
+	$optional = [];
+	if ( ! empty( $survey['other_trade'] ) ) {
+		$optional['Other Trade'] = (string) $survey['other_trade'];
+	}
+	if ( ! empty( $survey['other_workflow'] ) ) {
+		$optional['Other Workflow'] = (string) $survey['other_workflow'];
+	}
+	if ( ! empty( $survey['annual_jobs_min'] ) || ! empty( $survey['annual_jobs_max'] ) ) {
+		$optional['Annual Jobs Min'] = (string) ( $survey['annual_jobs_min'] ?? '' );
+		if ( ! empty( $survey['annual_jobs_max'] ) ) {
+			$optional['Annual Jobs Max'] = (string) $survey['annual_jobs_max'];
+		}
+	}
+	if ( ! empty( $survey['unused_jobs_min'] ) || ! empty( $survey['unused_jobs_max'] ) ) {
+		$optional['Unused Jobs Min'] = (string) ( $survey['unused_jobs_min'] ?? '' );
+		if ( ! empty( $survey['unused_jobs_max'] ) ) {
+			$optional['Unused Jobs Max'] = (string) $survey['unused_jobs_max'];
+		}
+	}
+	$body = jcp_proof_gap_append_ghl_fields( $body, $optional );
+
 	return $body;
 }
 
@@ -219,7 +330,7 @@ function jcp_proof_gap_build_use_case( array $survey ): string {
  * @return WP_REST_Response
  */
 function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_REST_Response {
-	if ( ! function_exists( 'jcp_demo_lead_queue_insert' ) || ! function_exists( 'jcp_demo_ghl_build_webhook_body' ) ) {
+	if ( ! function_exists( 'jcp_demo_lead_queue_insert' ) || ! function_exists( 'jcp_proof_gap_build_webhook_body' ) ) {
 		return new WP_REST_Response(
 			[
 				'success'  => false,
@@ -298,8 +409,8 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 		);
 	}
 
-	$local      = sanitize_text_field( (string) strstr( $email, '@', true ) );
-	$first_name = $local !== '' ? $local : 'there';
+	// Never fabricate First Name from the email local-part (avoids "Hi john.smith82" in nurture).
+	$first_name = '';
 
 	$business_type       = sanitize_text_field( (string) $request->get_param( 'business_type' ) );
 	$session_id          = sanitize_text_field( (string) $request->get_param( 'survey_session_id' ) );
@@ -347,42 +458,24 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 
 	// Force Proof Gap semantics regardless of client.
 	$params['event']          = JCP_PROOF_GAP_GHL_EVENT;
+	$params['first_name']     = ''; // Re-assert after merge — never invent a name.
 	$params['lp_variant']     = ! empty( $params['lp_variant'] ) ? $params['lp_variant'] : ( defined( 'JCP_PROOF_GAP_VARIANT' ) ? JCP_PROOF_GAP_VARIANT : 'proof_gap_survey_v1' );
 	$params['funnel_surface'] = 'proof_gap_survey';
 	$params['landing_page']   = ! empty( $params['landing_page'] ) ? $params['landing_page'] : home_url( '/proof-gap/' );
 
-	$tags        = [ JCP_PROOF_GAP_GHL_EVENT ];
-	$body_string = jcp_demo_ghl_build_webhook_body( JCP_PROOF_GAP_GHL_EVENT, $params, $tags );
-
-	$extra = [
-		defined( 'JCP_GHL_KEY_JOBS_PER_WEEK' ) ? JCP_GHL_KEY_JOBS_PER_WEEK : 'Jobs Per Week'             => $jobs_bucket,
-		defined( 'JCP_GHL_KEY_PHOTO_WORKFLOW' ) ? JCP_GHL_KEY_PHOTO_WORKFLOW : 'Photo Workflow'           => $workflow,
-		defined( 'JCP_GHL_KEY_MARKETING_USAGE' ) ? JCP_GHL_KEY_MARKETING_USAGE : 'Marketing Usage'       => $proof_pct,
-		defined( 'JCP_GHL_KEY_SURVEY_SESSION_ID' ) ? JCP_GHL_KEY_SURVEY_SESSION_ID : 'Survey Session Id' => $session_id,
+	$survey_fields = [
+		'jobs_per_week'     => $jobs_bucket,
+		'photo_workflow'    => $workflow,
+		'marketing_usage'   => $proof_pct,
+		'survey_session_id' => $session_id,
+		'other_trade'       => $other_trade_text,
+		'other_workflow'    => $other_workflow_text,
+		'annual_jobs_min'   => $annual_min > 0 ? (string) $annual_min : '',
+		'annual_jobs_max'   => $annual_max > 0 ? (string) $annual_max : '',
+		'unused_jobs_min'   => $unused_min > 0 ? (string) $unused_min : '',
+		'unused_jobs_max'   => $unused_max > 0 ? (string) $unused_max : '',
 	];
-	$qa_trace = isset( $params['qa_trace_id'] ) ? trim( (string) $params['qa_trace_id'] ) : '';
-	if ( $qa_trace !== '' ) {
-		$extra[ defined( 'JCP_GHL_KEY_QA_TRACE_ID' ) ? JCP_GHL_KEY_QA_TRACE_ID : 'qa_trace_id' ] = mb_substr( $qa_trace, 0, 80 );
-	}
-	if ( $other_trade_text !== '' ) {
-		$extra['Other Trade'] = $other_trade_text;
-	}
-	if ( $other_workflow_text !== '' ) {
-		$extra['Other Workflow'] = $other_workflow_text;
-	}
-	if ( $annual_min > 0 || $annual_max > 0 ) {
-		$extra['Annual Jobs Min'] = (string) $annual_min;
-		if ( $annual_max > 0 ) {
-			$extra['Annual Jobs Max'] = (string) $annual_max;
-		}
-	}
-	if ( $unused_min > 0 || $unused_max > 0 ) {
-		$extra['Unused Jobs Min'] = (string) $unused_min;
-		if ( $unused_max > 0 ) {
-			$extra['Unused Jobs Max'] = (string) $unused_max;
-		}
-	}
-	$body_string = jcp_proof_gap_append_ghl_fields( $body_string, $extra );
+	$body_string = jcp_proof_gap_build_webhook_body( $params, $survey_fields );
 
 	if ( defined( 'JCP_GHL_KEY_EVENT_ID' ) && $event_id !== '' ) {
 		$body_string .= '&' . rawurlencode( JCP_GHL_KEY_EVENT_ID ) . '=' . rawurlencode( $event_id );

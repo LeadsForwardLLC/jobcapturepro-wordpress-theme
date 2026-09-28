@@ -42,12 +42,19 @@ define( 'JCP_GHL_KEY_EVENT', 'Event' );
 define( 'JCP_GHL_KEY_TOPIC', 'Topic' );
 define( 'JCP_GHL_KEY_MESSAGE', 'Message' );
 define( 'JCP_GHL_KEY_ATTACHMENT', 'Attachment' );
-/** Proof Gap survey custom fields (dedicated intake webhook). */
-define( 'JCP_GHL_KEY_JOBS_PER_WEEK', 'Jobs Per Week' );
+/**
+ * Proof Gap → GHL field names (dedicated intake webhook only).
+ * Reuse existing CRM fields where mapped; do not change demo Business Type / Use Case keys.
+ */
+define( 'JCP_GHL_KEY_BUSINESS_NICHE', 'Business Niche' );
+define( 'JCP_GHL_KEY_WEEKLY_JOB_VOLUME', 'Weekly Job Volume' );
+define( 'JCP_GHL_KEY_ASSESSMENT_NOTES', 'Assessment Notes' );
 define( 'JCP_GHL_KEY_PHOTO_WORKFLOW', 'Photo Workflow' );
 define( 'JCP_GHL_KEY_MARKETING_USAGE', 'Marketing Usage' );
 define( 'JCP_GHL_KEY_SURVEY_SESSION_ID', 'Survey Session Id' );
 define( 'JCP_GHL_KEY_QA_TRACE_ID', 'qa_trace_id' );
+/** @deprecated Alias — Proof Gap sends Weekly Job Volume. */
+define( 'JCP_GHL_KEY_JOBS_PER_WEEK', 'Weekly Job Volume' );
 
 /**
  * REST request param names (snake_case, used in JSON body from frontend).
