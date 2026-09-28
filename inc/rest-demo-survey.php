@@ -18,6 +18,13 @@
 define( 'JCP_GHL_DEMO_SURVEY_WEBHOOK_URL', 'https://services.leadconnectorhq.com/hooks/kMIwmFm9I7LJPEYo35qi/webhook-trigger/zYfSsYRsSdSdHlD5vqUv' );
 
 /**
+ * GHL webhook URL for Proof Gap lead intake (separate from Demo Survey).
+ * Workflow: JCP Proof Gap – Create Contact + Tag. Event/tag: proof-gap-lead.
+ * Never reuse the demo webhook or demo-interest / demo-viewed tags here.
+ */
+define( 'JCP_GHL_PROOF_GAP_WEBHOOK_URL', 'https://services.leadconnectorhq.com/hooks/kMIwmFm9I7LJPEYo35qi/webhook-trigger/818e6ce8-348a-419f-aed1-ba8b106a970a' );
+
+/**
  * Register REST routes for Demo Survey.
  */
 function jcp_core_register_demo_survey_rest_routes(): void {
@@ -591,13 +598,31 @@ function jcp_demo_lead_queue_insert( array $params, string $body, string $event_
 }
 
 /**
- * POST a queued payload to the Demo Survey GHL webhook.
+ * Resolve GHL webhook URL for a queued lead event.
  *
+ * Proof Gap leads must never hit the Demo Survey webhook.
+ *
+ * @param string $event_name Queue event_name.
+ */
+function jcp_demo_lead_queue_webhook_url_for_event( string $event_name ): string {
+	$proof_gap = [ 'proof-gap-lead', 'proof-gap-survey' ];
+	if ( in_array( $event_name, $proof_gap, true ) && defined( 'JCP_GHL_PROOF_GAP_WEBHOOK_URL' ) ) {
+		return JCP_GHL_PROOF_GAP_WEBHOOK_URL;
+	}
+	return JCP_GHL_DEMO_SURVEY_WEBHOOK_URL;
+}
+
+/**
+ * POST a queued payload to a GHL inbound webhook.
+ *
+ * @param string $body        Form-urlencoded body.
+ * @param string $webhook_url Absolute webhook URL (defaults to Demo Survey).
  * @return array{ok:bool,code:int,error:string}
  */
-function jcp_demo_lead_queue_deliver_body( string $body ): array {
+function jcp_demo_lead_queue_deliver_body( string $body, string $webhook_url = '' ): array {
+	$url = $webhook_url !== '' ? $webhook_url : JCP_GHL_DEMO_SURVEY_WEBHOOK_URL;
 	$response = wp_remote_post(
-		JCP_GHL_DEMO_SURVEY_WEBHOOK_URL,
+		$url,
 		[
 			'timeout' => 15,
 			'headers' => [
@@ -735,8 +760,12 @@ function jcp_demo_lead_queue_attempt_row( $row ): bool {
 	if ( ! $row || empty( $row->id ) || empty( $row->payload ) ) {
 		return false;
 	}
-	$result   = jcp_demo_lead_queue_deliver_body( (string) $row->payload );
-	$attempts = (int) $row->attempts + 1;
+	$event_name = isset( $row->event_name ) ? (string) $row->event_name : '';
+	$url        = function_exists( 'jcp_demo_lead_queue_webhook_url_for_event' )
+		? jcp_demo_lead_queue_webhook_url_for_event( $event_name )
+		: JCP_GHL_DEMO_SURVEY_WEBHOOK_URL;
+	$result     = jcp_demo_lead_queue_deliver_body( (string) $row->payload, $url );
+	$attempts   = (int) $row->attempts + 1;
 	jcp_demo_lead_queue_mark_result( (int) $row->id, $result, $attempts );
 	return ! empty( $result['ok'] );
 }
