@@ -16,9 +16,23 @@ define( 'JCP_META_CAPI_ACCESS_TOKEN', 'EAA...' );        // Meta system user tok
 // define( 'JCP_META_PIXEL_ID', '1440845294314184' );
 // define( 'JCP_META_CAPI_TEST_EVENT_CODE', 'TEST12345' ); // QA only — remove for production
 // define( 'JCP_POSTHOG_PROJECT_API_KEY', 'phc_...' );     // defaults to existing project key
+// Required for Proof Sprint matched attribution (no marketing email gate):
+define( 'JCP_POSTHOG_PERSONAL_API_KEY', 'phx_...' );   // PostHog → Settings → Personal API keys (query scope)
+define( 'JCP_POSTHOG_PROJECT_ID', '593169' );          // JobCapturePro Default project
 ```
 
 Environment-variable equivalents with the same names are also accepted.
+
+## Proof Sprint attribution bridge
+
+Proof Sprint does not collect email on the marketing site. After Stripe creates the trial:
+
+1. Webhook records the conversion immediately (authoritative).
+2. Email lead join runs first (Proof Gap path).
+3. If unmatched, HogQL looks up `signup_completed` for that email and parses `$current_url` for `ph_distinct_id`, UTMs, `lp_variant`, `qa_trace_id`.
+4. Side effects (`trial_started` + Meta `StartTrial`) are deferred up to ~5 minutes while that bridge resolves — **one** emission per subscription (`event_id` / `$insert_id` = `jcp_trial_<subscription_id>`).
+
+Requires `JCP_POSTHOG_PERSONAL_API_KEY` with Query access on project `593169`.
 
 ## Stripe Dashboard steps
 

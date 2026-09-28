@@ -3,7 +3,8 @@
  * Marketing-owned Stripe trial conversion tracking.
  *
  * Stripe customer.subscription.created → qualify JCP free trial → join lead by email
- * → PostHog trial_started + Meta CAPI StartTrial.
+ * (or PostHog signup_completed URL bridge for Proof Sprint) → one PostHog trial_started
+ * + one Meta CAPI StartTrial per subscription.
  *
  * Secrets (wp-config.php or environment — never commit):
  * - JCP_STRIPE_WEBHOOK_SECRET
@@ -11,6 +12,8 @@
  * - JCP_META_CAPI_ACCESS_TOKEN
  * - JCP_META_CAPI_TEST_EVENT_CODE (optional QA)
  * - JCP_POSTHOG_PROJECT_API_KEY (optional; falls back to public project key)
+ * - JCP_POSTHOG_PERSONAL_API_KEY (HogQL bridge for unmatched Sprint trials)
+ * - JCP_POSTHOG_PROJECT_ID (optional; default 593169)
  *
  * @package JCP_Core
  */
@@ -22,8 +25,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 define( 'JCP_TRIAL_CONVERSIONS_TABLE', 'jcp_trial_conversions' );
 define( 'JCP_TRIAL_PLAN_LOOKUP_KEY', 'scale_monthly' );
 define( 'JCP_TRIAL_DAYS', 14 );
+define( 'JCP_TRIAL_ENRICHMENT_WINDOW_SEC', 300 );
 define( 'JCP_META_PIXEL_ID_DEFAULT', '1440845294314184' );
 define( 'JCP_POSTHOG_PROJECT_KEY_DEFAULT', 'phc_v8emzqtZ8beAjLsqj2byb5fK8wRHbW2g6hXBqAEZPMyS' );
+define( 'JCP_POSTHOG_PROJECT_ID_DEFAULT', '593169' );
+define( 'JCP_POSTHOG_APP_HOST_DEFAULT', 'https://us.posthog.com' );
 
 /**
  * Resolve a secret from constant or environment.
@@ -335,6 +341,290 @@ function jcp_trial_lead_attribution( object $lead ): array {
 }
 
 /**
+ * Whether the PostHog HogQL signup bridge is configured.
+ */
+function jcp_trial_posthog_bridge_configured(): bool {
+	return jcp_trial_secret( 'JCP_POSTHOG_PERSONAL_API_KEY' ) !== '';
+}
+
+/**
+ * Normalize surface fields after URL / lead recovery.
+ *
+ * @param array<string, string> $attr Attribution.
+ * @return array<string, string>
+ */
+function jcp_trial_normalize_surface_attr( array $attr ): array {
+	$lp      = strtolower( (string) ( $attr['lp_variant'] ?? '' ) );
+	$surface = strtolower( (string) ( $attr['jcp_surface'] ?? $attr['funnel_surface'] ?? '' ) );
+
+	if ( $lp === 'proof_sprint' || strpos( $surface, 'proof_sprint' ) === 0 ) {
+		$attr['source']         = 'proof_sprint';
+		$attr['funnel_surface'] = 'proof_sprint';
+		if ( empty( $attr['lp_variant'] ) ) {
+			$attr['lp_variant'] = 'proof_sprint';
+		}
+	} elseif ( strpos( $lp, 'proof_gap' ) === 0 || strpos( $surface, 'proof_gap' ) === 0 ) {
+		if ( empty( $attr['funnel_surface'] ) ) {
+			$attr['funnel_surface'] = 'proof_gap_survey';
+		}
+		if ( empty( $attr['source'] ) ) {
+			$attr['source'] = (string) $attr['funnel_surface'];
+		}
+	} elseif ( empty( $attr['source'] ) && ! empty( $attr['funnel_surface'] ) ) {
+		$attr['source'] = (string) $attr['funnel_surface'];
+	}
+
+	return $attr;
+}
+
+/**
+ * Parse marketing attribution from an app onboarding URL.
+ *
+ * @param string $url Absolute or relative URL.
+ * @return array<string, string>
+ */
+function jcp_trial_parse_onboarding_url_attr( string $url ): array {
+	$url = trim( $url );
+	if ( $url === '' ) {
+		return [];
+	}
+
+	$parts = wp_parse_url( $url );
+	if ( ! is_array( $parts ) || empty( $parts['query'] ) ) {
+		return [];
+	}
+
+	parse_str( (string) $parts['query'], $q );
+	if ( ! is_array( $q ) ) {
+		return [];
+	}
+
+	$keys = [
+		'ph_distinct_id',
+		'qa_trace_id',
+		'source',
+		'lp_variant',
+		'funnel_surface',
+		'jcp_surface',
+		'utm_source',
+		'utm_medium',
+		'utm_campaign',
+		'utm_content',
+		'utm_term',
+		'fbclid',
+		'landing_page',
+	];
+	$attr = [];
+	foreach ( $keys as $key ) {
+		if ( ! empty( $q[ $key ] ) && is_scalar( $q[ $key ] ) ) {
+			$attr[ $key ] = trim( (string) $q[ $key ] );
+		}
+	}
+
+	if ( empty( $attr['landing_page'] ) && ! empty( $parts['path'] ) ) {
+		$attr['landing_page'] = (string) $parts['path'] . ( ! empty( $parts['query'] ) ? '?' . $parts['query'] : '' );
+	}
+
+	return jcp_trial_normalize_surface_attr( $attr );
+}
+
+/**
+ * Pull _fbp/_fbc from a marketing lead that stored the same ph_distinct_id.
+ *
+ * @param string $ph_id Marketing PostHog distinct id.
+ * @return array<string, string>
+ */
+function jcp_trial_cookies_from_lead_by_ph_id( string $ph_id ): array {
+	global $wpdb;
+	$ph_id = trim( $ph_id );
+	if ( $ph_id === '' || ! defined( 'JCP_DEMO_LEAD_QUEUE_TABLE' ) ) {
+		return [];
+	}
+
+	jcp_demo_lead_queue_maybe_create_table();
+	$table = $wpdb->prefix . JCP_DEMO_LEAD_QUEUE_TABLE;
+	$like  = '%"ph_distinct_id":"' . $wpdb->esc_like( $ph_id ) . '"%';
+
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$row = $wpdb->get_row(
+		$wpdb->prepare(
+			"SELECT attribution_json FROM `$table` WHERE attribution_json LIKE %s ORDER BY id DESC LIMIT 1",
+			$like
+		)
+	);
+	if ( ! $row || empty( $row->attribution_json ) ) {
+		return [];
+	}
+
+	$decoded = json_decode( (string) $row->attribution_json, true );
+	if ( ! is_array( $decoded ) ) {
+		return [];
+	}
+
+	$out = [];
+	foreach ( [ '_fbp', '_fbc', 'fbclid' ] as $key ) {
+		if ( ! empty( $decoded[ $key ] ) && is_scalar( $decoded[ $key ] ) ) {
+			$out[ $key ] = (string) $decoded[ $key ];
+		}
+	}
+	return $out;
+}
+
+/**
+ * Query PostHog for signup_completed.$current_url by person email (app identity bridge).
+ *
+ * Proven on QA: Stripe email → Firebase-identified person → signup_completed URL
+ * carries ph_distinct_id + Sprint UTMs (even when webhook beats the browser by ~2s,
+ * short deferred retries recover it).
+ *
+ * @param string $email_norm Normalized email.
+ * @return array<string, string> Attribution map (empty on miss / misconfig).
+ */
+function jcp_trial_find_attr_via_posthog_signup( string $email_norm ): array {
+	$email_norm = jcp_trial_normalize_email( $email_norm );
+	$token      = jcp_trial_secret( 'JCP_POSTHOG_PERSONAL_API_KEY' );
+	if ( $email_norm === '' || $token === '' ) {
+		return [];
+	}
+
+	$project = jcp_trial_secret( 'JCP_POSTHOG_PROJECT_ID' );
+	if ( $project === '' ) {
+		$project = JCP_POSTHOG_PROJECT_ID_DEFAULT;
+	}
+	$host = jcp_trial_secret( 'JCP_POSTHOG_APP_HOST' );
+	if ( $host === '' ) {
+		$host = JCP_POSTHOG_APP_HOST_DEFAULT;
+	}
+	$host = untrailingslashit( $host );
+
+	// HogQL string literal — email already normalized to lowercase [a-z0-9@._+-].
+	$email_lit = str_replace( [ '\\', "'" ], [ '\\\\', "\\'" ], $email_norm );
+	$sql       = "SELECT properties.\$current_url AS current_url
+		FROM events
+		WHERE event = 'signup_completed'
+		  AND timestamp >= now() - INTERVAL 2 DAY
+		  AND lower(toString(person.properties.email)) = '{$email_lit}'
+		ORDER BY timestamp DESC
+		LIMIT 1";
+
+	$response = wp_remote_post(
+		$host . '/api/projects/' . rawurlencode( $project ) . '/query/',
+		[
+			'timeout' => 20,
+			'headers' => [
+				'Content-Type'  => 'application/json',
+				'Authorization' => 'Bearer ' . $token,
+			],
+			'body'    => wp_json_encode(
+				[
+					'query' => [
+						'kind'  => 'HogQLQuery',
+						'query' => $sql,
+					],
+				]
+			),
+		]
+	);
+
+	if ( is_wp_error( $response ) ) {
+		error_log( 'jcp_trial_posthog_bridge: ' . $response->get_error_message() );
+		return [];
+	}
+	$code = (int) wp_remote_retrieve_response_code( $response );
+	$body = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+	if ( $code < 200 || $code >= 300 || ! is_array( $body ) ) {
+		error_log( 'jcp_trial_posthog_bridge: http_' . $code );
+		return [];
+	}
+
+	$results = $body['results'] ?? null;
+	if ( ! is_array( $results ) || ! isset( $results[0] ) ) {
+		return [];
+	}
+	$row0 = $results[0];
+	$url  = '';
+	if ( is_array( $row0 ) ) {
+		$url = (string) ( $row0[0] ?? $row0['current_url'] ?? '' );
+	} elseif ( is_string( $row0 ) ) {
+		$url = $row0;
+	}
+	$attr = jcp_trial_parse_onboarding_url_attr( $url );
+	if ( $attr === [] ) {
+		return [];
+	}
+
+	if ( ! empty( $attr['ph_distinct_id'] ) ) {
+		$attr = array_merge( $attr, jcp_trial_cookies_from_lead_by_ph_id( (string) $attr['ph_distinct_id'] ) );
+	}
+
+	$attr['attribution_bridge'] = 'posthog_signup_completed';
+	return $attr;
+}
+
+/**
+ * Resolve attribution: marketing lead email join, else PostHog signup URL bridge.
+ *
+ * @param string $email_norm Normalized email.
+ * @param int    $before_ts  Stripe subscription created (unix UTC).
+ * @return array{status:string,lead_id:?int,attr:array<string,string>}
+ */
+function jcp_trial_resolve_attribution( string $email_norm, int $before_ts ): array {
+	$email_norm = jcp_trial_normalize_email( $email_norm );
+	if ( $email_norm === '' ) {
+		return [ 'status' => 'unmatched', 'lead_id' => null, 'attr' => [] ];
+	}
+
+	$lead = jcp_trial_find_lead_before( $email_norm, $before_ts );
+	if ( $lead ) {
+		$attr = jcp_trial_normalize_surface_attr( jcp_trial_lead_attribution( $lead ) );
+		return [
+			'status'  => 'matched',
+			'lead_id' => (int) $lead->id,
+			'attr'    => $attr,
+		];
+	}
+
+	$bridge = jcp_trial_find_attr_via_posthog_signup( $email_norm );
+	if ( $bridge !== [] && ! empty( $bridge['ph_distinct_id'] ) ) {
+		return [
+			'status'  => 'matched',
+			'lead_id' => null,
+			'attr'    => $bridge,
+		];
+	}
+
+	return [ 'status' => 'unmatched', 'lead_id' => null, 'attr' => [] ];
+}
+
+/**
+ * Whether enrichment window is still open for a conversion row.
+ *
+ * @param object $row Conversion row.
+ */
+function jcp_trial_enrichment_window_open( object $row ): bool {
+	$created = strtotime( (string) ( $row->created_at ?? '' ) );
+	if ( ! $created ) {
+		return false;
+	}
+	return ( time() - $created ) < JCP_TRIAL_ENRICHMENT_WINDOW_SEC;
+}
+
+/**
+ * Schedule short single-event enrichment retries (race: Stripe before signup_completed).
+ *
+ * @param string $conversion_id Conversion id.
+ */
+function jcp_trial_schedule_enrichment( string $conversion_id ): void {
+	$conversion_id = trim( $conversion_id );
+	if ( $conversion_id === '' ) {
+		return;
+	}
+	foreach ( [ 15, 45, 90, 180, 300 ] as $delay ) {
+		wp_schedule_single_event( time() + $delay, 'jcp_trial_enrich_conversion', [ $conversion_id ] );
+	}
+}
+
+/**
  * Upsert conversion row; return current row.
  *
  * @param array<string, mixed> $fields Fields.
@@ -478,6 +768,9 @@ function jcp_trial_send_posthog( object $row, array $trial, array $attr ): array
 			'fbclid',
 			'qa_trace_id',
 			'landing_page',
+			'ph_distinct_id',
+			'jcp_surface',
+			'attribution_bridge',
 		] as $key
 	) {
 		if ( isset( $trial[ $key ] ) && $trial[ $key ] !== '' && $trial[ $key ] !== null ) {
@@ -701,12 +994,10 @@ function jcp_trial_process_qualified( array $event, array $sub ): array {
 	$lead_id     = null;
 	$attr        = [];
 	if ( $email !== '' ) {
-		$lead = jcp_trial_find_lead_before( $email, $created );
-		if ( $lead ) {
-			$attr_status = 'matched';
-			$lead_id     = (int) $lead->id;
-			$attr        = jcp_trial_lead_attribution( $lead );
-		}
+		$resolved    = jcp_trial_resolve_attribution( $email, $created );
+		$attr_status = (string) $resolved['status'];
+		$lead_id     = $resolved['lead_id'];
+		$attr        = $resolved['attr'];
 	}
 
 	$trial_payload = [
@@ -739,8 +1030,21 @@ function jcp_trial_process_qualified( array $event, array $sub ): array {
 	);
 
 	if ( $row ) {
-		// Idempotent: skip channels already marked sent.
-		jcp_trial_deliver_side_effects( $row );
+		/*
+		 * Architecture: durable trial immediately; side effects once.
+		 * If unmatched but PostHog bridge is configured, defer PostHog/Meta
+		 * briefly so signup_completed can land (Stripe often wins the race by ~2s).
+		 * Never emit a second trial_started after enrichment.
+		 */
+		$defer = $attr_status !== 'matched'
+			&& $email !== ''
+			&& jcp_trial_posthog_bridge_configured();
+
+		if ( $defer ) {
+			jcp_trial_schedule_enrichment( $conversion_id );
+		} else {
+			jcp_trial_deliver_side_effects( $row );
+		}
 	}
 
 	return [
@@ -808,7 +1112,76 @@ function jcp_trial_stripe_webhook_handler( WP_REST_Request $request ): WP_REST_R
 }
 
 /**
- * Cron: retry failed / pending PostHog + Meta deliveries.
+ * Re-resolve attribution for an unmatched conversion, then deliver when ready.
+ *
+ * @param string $conversion_id Conversion id.
+ */
+function jcp_trial_enrich_and_deliver( string $conversion_id ): void {
+	global $wpdb;
+	$conversion_id = trim( $conversion_id );
+	if ( $conversion_id === '' ) {
+		return;
+	}
+
+	jcp_trial_conversions_maybe_create_table();
+	$table = $wpdb->prefix . JCP_TRIAL_CONVERSIONS_TABLE;
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$row = $wpdb->get_row(
+		$wpdb->prepare( "SELECT * FROM `$table` WHERE conversion_id = %s LIMIT 1", $conversion_id )
+	);
+	if ( ! $row ) {
+		return;
+	}
+
+	// Already emitted — never send a second trial_started / StartTrial.
+	if ( (string) $row->posthog_status === 'sent' && (string) $row->meta_status === 'sent' ) {
+		return;
+	}
+
+	$trial = [];
+	if ( ! empty( $row->trial_payload_json ) ) {
+		$decoded = json_decode( (string) $row->trial_payload_json, true );
+		if ( is_array( $decoded ) ) {
+			$trial = $decoded;
+		}
+	}
+	$created = isset( $trial['event_time'] ) ? (int) $trial['event_time'] : (int) strtotime( (string) $row->created_at );
+	$email   = (string) $row->email_norm;
+
+	if ( (string) $row->attribution_status !== 'matched' && $email !== '' ) {
+		$resolved = jcp_trial_resolve_attribution( $email, $created > 0 ? $created : time() );
+		if ( $resolved['status'] === 'matched' ) {
+			jcp_trial_update_conversion(
+				(int) $row->id,
+				[
+					'attribution_status' => 'matched',
+					'lead_id'            => $resolved['lead_id'],
+					'attribution_json'   => wp_json_encode( $resolved['attr'], JSON_UNESCAPED_SLASHES ),
+				]
+			);
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$row = $wpdb->get_row(
+				$wpdb->prepare( "SELECT * FROM `$table` WHERE id = %d", (int) $row->id )
+			);
+		}
+	}
+
+	if ( ! $row ) {
+		return;
+	}
+
+	$matched = (string) $row->attribution_status === 'matched';
+	$expired = ! jcp_trial_enrichment_window_open( $row );
+	$can_bridge = jcp_trial_posthog_bridge_configured();
+
+	// Deliver once matched, or once the enrichment window expires / bridge unavailable.
+	if ( $matched || $expired || ! $can_bridge ) {
+		jcp_trial_deliver_side_effects( $row );
+	}
+}
+
+/**
+ * Cron: retry failed / pending PostHog + Meta deliveries (with attribution enrichment).
  */
 function jcp_trial_retry_deliveries(): void {
 	global $wpdb;
@@ -826,7 +1199,7 @@ function jcp_trial_retry_deliveries(): void {
 		return;
 	}
 	foreach ( $rows as $row ) {
-		jcp_trial_deliver_side_effects( $row );
+		jcp_trial_enrich_and_deliver( (string) $row->conversion_id );
 	}
 }
 
@@ -838,6 +1211,7 @@ function jcp_trial_schedule_cron(): void {
 		wp_schedule_event( time() + 120, 'five_minutes', 'jcp_trial_conversion_retry' );
 	}
 }
+add_action( 'jcp_trial_enrich_conversion', 'jcp_trial_enrich_and_deliver' );
 add_action( 'jcp_trial_conversion_retry', 'jcp_trial_retry_deliveries' );
 add_action( 'init', 'jcp_trial_schedule_cron' );
 add_action( 'after_switch_theme', 'jcp_trial_schedule_cron' );
