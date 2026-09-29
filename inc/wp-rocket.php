@@ -24,6 +24,8 @@ function jcp_core_rocket_exclude_css( array $excluded ): array {
 	$excluded[] = '/themes/jobcapturepro-core/css/components/story-moments.css';
 	$excluded[] = '/themes/jobcapturepro-core/css/pages/niche-landing.css';
 	$excluded[] = '/themes/jobcapturepro-core/css/pages/home.css';
+	$excluded[] = '/themes/jobcapturepro-core/css/pages/proof-sprint.css';
+	$excluded[] = '/themes/jobcapturepro-core/css/pages/proof-gap.css';
 	return array_values( array_unique( $excluded ) );
 }
 add_filter( 'rocket_exclude_css', 'jcp_core_rocket_exclude_css' );
@@ -88,6 +90,10 @@ function jcp_core_rocket_exclude_js( array $excluded ): array {
 	$excluded[] = '/themes/jobcapturepro-core/assets/js/pages/survey.js';
 	$excluded[] = '/themes/jobcapturepro-core/js/features/demo/jcp-demo.js';
 	$excluded[] = '/themes/jobcapturepro-core/assets/js/features/demo/jcp-demo.js';
+	$excluded[] = '/themes/jobcapturepro-core/js/pages/proof-sprint.js';
+	$excluded[] = '/themes/jobcapturepro-core/assets/js/pages/proof-sprint.js';
+	$excluded[] = '/themes/jobcapturepro-core/js/pages/proof-gap.js';
+	$excluded[] = '/themes/jobcapturepro-core/assets/js/pages/proof-gap.js';
 	return array_values( array_unique( $excluded ) );
 }
 add_filter( 'rocket_exclude_js', 'jcp_core_rocket_exclude_js' );
@@ -97,7 +103,7 @@ add_filter( 'rocket_exclude_js', 'jcp_core_rocket_exclude_js' );
  * Bump $bust when critical front-end assets change and anonymous CSS must refresh.
  */
 function jcp_core_rocket_bust_stale_minify(): void {
-	$bust = '2026-09-29-proof-gap-mobile-polish-v6';
+	$bust = '2026-09-29-proof-sprint-hybrid-c-v1';
 	if ( get_option( 'jcp_core_rocket_bust' ) === $bust ) {
 		return;
 	}

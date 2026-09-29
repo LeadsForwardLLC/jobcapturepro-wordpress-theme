@@ -65,13 +65,21 @@ function jcp_proof_sprint_url( array $args = [] ): string {
 
 /**
  * Campaign asset URL helper.
+ * Keep already-sized files (e.g. *-640.webp); don't rewrite them to the full asset.
+ *
+ * @param string $file  Relative campaign filename.
+ * @param int    $width Optional display width hint for unsized assets.
  */
-function jcp_proof_sprint_asset_url( string $file ): string {
+function jcp_proof_sprint_asset_url( string $file, int $width = 0 ): string {
 	$file = ltrim( $file, '/' );
 	$base = trailingslashit( get_template_directory_uri() ) . 'assets/campaign/';
 	$url  = $base . $file;
+	// Already size-suffixed — use as authored (avoid optimize downgrading to full .webp).
+	if ( preg_match( '/-(64|192|360|640)\.(webp|jpe?g)$/i', $file ) ) {
+		return $url;
+	}
 	if ( function_exists( 'jcp_core_campaign_lp_optimize_asset_url' ) ) {
-		$opt = jcp_core_campaign_lp_optimize_asset_url( $url );
+		$opt = jcp_core_campaign_lp_optimize_asset_url( $url, $width );
 		if ( is_string( $opt ) && $opt !== '' ) {
 			return $opt;
 		}

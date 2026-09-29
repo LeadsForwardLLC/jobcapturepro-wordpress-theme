@@ -119,9 +119,16 @@ body.jcp-proof-sprint .ps-micro--light {
 body.jcp-proof-sprint .btn.btn-primary,
 body.jcp-proof-sprint .ps-btn-xl,
 body.jcp-proof-sprint .ps-brandbar .jcp-landing-brandbar__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
   background: var(--ps-accent);
-  border-color: var(--ps-accent);
+  border: 2px solid var(--ps-accent);
   color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
 }
 
 body.jcp-proof-sprint .btn.btn-primary:hover,
@@ -171,10 +178,22 @@ body.jcp-proof-sprint .ps-brandbar {
   position: sticky;
   top: 0;
   z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 56px;
+  padding: 0.55rem 1rem;
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+body.jcp-proof-sprint .ps-brandbar .jcp-landing-brandbar__link {
+  display: inline-flex;
+  align-items: center;
+  line-height: 0;
+  flex-shrink: 0;
 }
 
 body.jcp-proof-sprint .ps-brandbar .jcp-landing-brandbar__inner {
@@ -188,6 +207,7 @@ body.jcp-proof-sprint .ps-brandbar .jcp-landing-brandbar__inner {
 }
 
 body.jcp-proof-sprint .ps-brandbar .jcp-landing-brandbar__logo {
+  display: block;
   width: auto;
   height: 28px;
 }
@@ -203,6 +223,9 @@ body.jcp-proof-sprint .ps-brandbar .jcp-landing-brandbar__cta {
   font-size: 0.95rem;
   text-decoration: none;
   white-space: nowrap;
+  opacity: 1;
+  pointer-events: auto;
+  transform: none;
 }
 
 /* ---- Hero ---- */
@@ -1697,20 +1720,129 @@ body.jcp-proof-sprint .ps-btn-light:hover {
   color: var(--ps-navy) !important;
 }
 
-/* ---- FAQ (uses global .faq-grid / .faq-item) ---- */
+/* ---- FAQ (self-contained — no sections.css dependency) ---- */
 body.jcp-proof-sprint .ps-faq {
   background: #fff;
 }
 
 body.jcp-proof-sprint .ps-faq .faq-grid {
+  display: grid;
+  gap: 0.75rem;
   max-width: none;
   width: 100%;
   margin: 0;
 }
 
+body.jcp-proof-sprint .ps-faq .faq-item {
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: var(--ps-radius-sm);
+  background: #fff;
+  overflow: hidden;
+}
+
+body.jcp-proof-sprint .ps-faq .faq-item > summary {
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ps-navy);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  user-select: none;
+}
+
+body.jcp-proof-sprint .ps-faq .faq-item > summary::-webkit-details-marker {
+  display: none;
+}
+
+body.jcp-proof-sprint .ps-faq .faq-item > summary::after {
+  content: '+';
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--ps-accent);
+  line-height: 1;
+}
+
+body.jcp-proof-sprint .ps-faq .faq-item[open] > summary::after {
+  content: '−';
+}
+
 body.jcp-proof-sprint .ps-faq .faq-item > summary:focus-visible {
   outline: 2px solid var(--ps-accent);
   outline-offset: 2px;
+}
+
+body.jcp-proof-sprint .ps-faq .faq-item p {
+  margin: 0;
+  padding: 0 1rem 0.95rem;
+  font-size: 0.95rem;
+  color: var(--ps-muted);
+  line-height: 1.5;
+}
+
+/* ---- Maps scan (case study — was niche-landing.css) ---- */
+body.jcp-proof-sprint .jcp-maps-scan {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  width: 100%;
+  max-width: 280px;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: #e8eef5;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.12);
+}
+
+body.jcp-proof-sprint .jcp-maps-scan__map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  z-index: 0;
+}
+
+body.jcp-proof-sprint .jcp-maps-scan__cells {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 10px;
+  padding: 16px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  place-items: center;
+  background: transparent;
+}
+
+body.jcp-proof-sprint .jcp-maps-scan:not(.jcp-maps-scan--mapped) .jcp-maps-scan__cells {
+  padding: 0;
+  gap: 2.5px;
+}
+
+body.jcp-proof-sprint .jcp-maps-scan__pin {
+  display: block;
+  width: 58%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22);
 }
 
 /* ---- Final ---- */

@@ -16,6 +16,9 @@ $integ    = trailingslashit( get_template_directory_uri() ) . 'assets/integratio
 $photo    = function_exists( 'jcp_proof_sprint_asset_url' )
 	? jcp_proof_sprint_asset_url( 'jcp-campaign-job-proof-640.webp' )
 	: $campaign . 'jcp-campaign-job-proof-640.webp';
+$photo_360 = function_exists( 'jcp_proof_sprint_asset_url' )
+	? jcp_proof_sprint_asset_url( 'jcp-campaign-job-proof-360.webp' )
+	: $campaign . 'jcp-campaign-job-proof-360.webp';
 $map_url  = get_template_directory_uri() . '/assets/map-3c5b675f-f28d-41a5-ba3a-972b4c189f10.png';
 $hcp_logo = $integ . 'housecall-pro.svg';
 $cc_logo  = $integ . 'companycam.svg';
@@ -130,7 +133,17 @@ $channels = [
 				<div class="ps-theater__stage">
 					<article class="ps-theater__job is-on">
 						<div class="ps-theater__job-media">
-							<img src="<?php echo esc_url( $photo ); ?>" alt="<?php esc_attr_e( 'Completed water heater replacement job', 'jcp-core' ); ?>" width="480" height="320" decoding="async" fetchpriority="high" data-no-lazy />
+							<img
+								src="<?php echo esc_url( $photo ); ?>"
+								srcset="<?php echo esc_url( $photo_360 ); ?> 360w, <?php echo esc_url( $photo ); ?> 640w"
+								sizes="(max-width: 640px) 92vw, 526px"
+								alt="<?php esc_attr_e( 'Completed water heater replacement job', 'jcp-core' ); ?>"
+								width="480"
+								height="320"
+								decoding="async"
+								fetchpriority="high"
+								data-no-lazy
+							/>
 							<span class="ps-badge"><?php esc_html_e( 'Completed job', 'jcp-core' ); ?></span>
 						</div>
 						<div class="ps-theater__job-meta">

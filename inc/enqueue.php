@@ -133,18 +133,10 @@ function jcp_core_enqueue_assets(): void {
         return;
     }
 
-    // /proof-sprint/ paid acquisition funnel — standalone conversion chrome.
+    // /proof-sprint/ paid acquisition funnel — lean CSS (base + page).
     if ( $ps_lp ) {
         jcp_core_enqueue_style( 'jcp-core-base', 'css/base.css' );
-        jcp_core_enqueue_style( 'jcp-core-layout', 'css/layout.css', [ 'jcp-core-base' ] );
-        jcp_core_enqueue_style( 'jcp-core-buttons', 'css/buttons.css', [ 'jcp-core-layout' ] );
-        jcp_core_enqueue_style( 'jcp-core-components', 'css/components.css', [ 'jcp-core-buttons' ] );
-        jcp_core_enqueue_style( 'jcp-core-utilities', 'css/utilities.css', [ 'jcp-core-components' ] );
-        jcp_core_enqueue_style( 'jcp-core-sections', 'css/sections.css', [ 'jcp-core-components' ] );
-        jcp_core_enqueue_style( 'jcp-core-niche-landing', 'css/pages/niche-landing.css', [ 'jcp-core-sections' ] );
-        jcp_core_enqueue_style( 'jcp-core-home', 'css/pages/home.css', [ 'jcp-core-niche-landing' ] );
-        jcp_core_enqueue_style( 'jcp-core-story-moments', 'css/components/story-moments.css', [ 'jcp-core-components' ] );
-        jcp_core_enqueue_style( 'jcp-core-proof-sprint', 'css/pages/proof-sprint.css', [ 'jcp-core-home', 'jcp-core-story-moments', 'jcp-core-niche-landing' ] );
+        jcp_core_enqueue_style( 'jcp-core-proof-sprint', 'css/pages/proof-sprint.css', [ 'jcp-core-base' ] );
 
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
         jcp_core_enqueue_script( 'jcp-core-posthog', 'js/core/jcp-posthog.js', [ 'jcp-core-attribution' ] );

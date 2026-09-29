@@ -152,6 +152,10 @@ function jcp_core_should_delay_third_party_analytics(): bool {
 		$delay = true;
 	} elseif ( function_exists( 'jcp_proof_gap_is_current' ) && jcp_proof_gap_is_current() ) {
 		$delay = true;
+	} elseif ( function_exists( 'jcp_core_is_proof_sprint_request' ) && jcp_core_is_proof_sprint_request() ) {
+		$delay = true;
+	} elseif ( function_exists( 'jcp_proof_sprint_is_current' ) && jcp_proof_sprint_is_current() ) {
+		$delay = true;
 	}
 	/**
 	 * Filter whether third-party analytics (GTM/PostHog SDK/Matomo/FPR) are deferred.
