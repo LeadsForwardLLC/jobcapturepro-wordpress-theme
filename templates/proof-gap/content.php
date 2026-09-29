@@ -122,7 +122,7 @@ $render_case = static function (): void {
 <div class="pg-layout">
 	<div class="pg-stage" id="pgStage" aria-live="polite">
 
-		<section class="pg-state pg-state--welcome" data-pg-state="welcome" hidden>
+		<section class="pg-state pg-state--welcome" data-pg-state="welcome">
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( 'The 60 second job visibility check', 'jcp-core' ); ?></p>
 				<h1 class="pg-title pg-title--welcome"><?php esc_html_e( 'Your crew already takes the photos. Are they helping you win the next job?', 'jcp-core' ); ?></h1>
@@ -333,8 +333,10 @@ $render_case = static function (): void {
 		</section>
 	</div>
 
-	<footer class="pg-bottom-action" id="pgBottomAction" hidden>
-		<p class="pg-bottom-action__micro" id="pgBottomMicro" hidden></p>
-		<div class="pg-bottom-action__cta" id="pgBottomCtaHost"></div>
+	<footer class="pg-bottom-action" id="pgBottomAction">
+		<p class="pg-bottom-action__micro" id="pgBottomMicro"><?php esc_html_e( '4 quick questions · About 60 seconds · No phone · No credit card', 'jcp-core' ); ?></p>
+		<div class="pg-bottom-action__cta" id="pgBottomCtaHost">
+			<button type="button" class="btn btn-primary pg-btn" id="pgWelcomeCta"><?php esc_html_e( 'See What Your Jobs Could Be Doing →', 'jcp-core' ); ?></button>
+		</div>
 	</footer>
 </div>

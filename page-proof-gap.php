@@ -36,10 +36,28 @@ $trial_base = function_exists( 'jcp_core_onboarding_app_url_raw' )
 			display: none !important; visibility: hidden !important; pointer-events: none !important;
 		}
 	</style>
+	<style id="pg-critical">
+		html:has(body.jcp-proof-gap){height:100%;height:100dvh}
+		body.jcp-proof-gap{margin:0;background:#fff;color:#111827;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;--pg-accent:#ff5036;--pg-ink:#111827;--pg-muted:#6b7280;--pg-bottom-pad:7.5rem}
+		body.jcp-proof-gap .pg-shell{min-height:100dvh;display:flex;flex-direction:column}
+		body.jcp-proof-gap .pg-chrome__bar{display:flex;align-items:center;justify-content:space-between;min-height:52px;padding:.65rem 1rem;border-bottom:1px solid #e5e7eb;background:#fff}
+		body.jcp-proof-gap .pg-chrome__brand img{display:block;height:28px;width:auto}
+		body.jcp-proof-gap .pg-chrome__back[hidden],body.jcp-proof-gap .pg-progress[hidden],body.jcp-proof-gap .pg-state[hidden]{display:none!important}
+		body.jcp-proof-gap .pg-app{flex:1;display:flex;flex-direction:column;min-height:0}
+		body.jcp-proof-gap .pg-stage{flex:1;overflow:auto;padding:1.25rem 1.1rem calc(var(--pg-bottom-pad) + 1rem)}
+		body.jcp-proof-gap .pg-state__inner{max-width:34rem;margin:0 auto}
+		body.jcp-proof-gap .pg-eyebrow{margin:0 0 .65rem;font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-accent)}
+		body.jcp-proof-gap .pg-title--welcome{margin:0 0 .85rem;font-size:clamp(1.55rem,5.2vw,2.05rem);line-height:1.15;letter-spacing:-.02em;font-weight:850;color:var(--pg-ink)}
+		body.jcp-proof-gap .pg-sub{margin:0 0 1.15rem;font-size:1.02rem;line-height:1.45;color:var(--pg-muted)}
+		body.jcp-proof-gap .pg-bottom-action{position:fixed;left:0;right:0;bottom:0;z-index:40;padding:.85rem 1rem calc(.85rem + env(safe-area-inset-bottom,0px));background:rgba(255,255,255,.96);border-top:1px solid #e5e7eb;backdrop-filter:blur(8px)}
+		body.jcp-proof-gap .pg-bottom-action__micro{margin:0 auto .45rem;max-width:34rem;text-align:center;font-size:.78rem;font-weight:600;color:var(--pg-muted);line-height:1.3}
+		body.jcp-proof-gap .pg-bottom-action__cta{max-width:34rem;margin:0 auto}
+		body.jcp-proof-gap .pg-btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:3.15rem;margin:0;padding:.9rem 1.2rem;border:0;border-radius:.85rem;background:var(--pg-accent);color:#fff;font-size:1rem;font-weight:800;cursor:pointer;text-decoration:none;box-sizing:border-box}
+	</style>
 	<?php wp_head(); ?>
 </head>
 <body
-	<?php body_class(); ?>
+	<?php body_class( 'pg-has-bottom-action' ); ?>
 	data-jcp-lp-variant="proof_gap_survey_v1"
 	data-pg-survey-id="proof_gap_survey_v1"
 	data-pg-survey-version="<?php echo esc_attr( JCP_PROOF_GAP_SURVEY_VERSION ); ?>"

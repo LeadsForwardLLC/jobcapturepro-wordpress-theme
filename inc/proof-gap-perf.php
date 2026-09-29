@@ -117,8 +117,8 @@ function jcp_core_proof_gap_head_hints(): void {
 add_action( 'wp_head', 'jcp_core_proof_gap_head_hints', 1 );
 
 /**
- * Early Meta Pixel PageView — ads signal without waiting for delayed GTM.
- * Uses the same default pixel as CAPI StartTrial.
+ * Early Meta Pixel — after first paint so it does not compete with LCP.
+ * fbclid is still captured immediately by jcp-attribution.js.
  */
 function jcp_core_proof_gap_early_meta_pixel(): void {
 	if ( ! jcp_core_is_proof_gap_request() ) {
@@ -141,28 +141,36 @@ function jcp_core_proof_gap_early_meta_pixel(): void {
 	}
 
 	echo "<script id=\"jcp-pg-meta-pixel\" data-rocket-skip>\n";
+	echo "(function(){\n";
+	echo "var PIXEL=" . wp_json_encode( $pixel ) . ";\n";
+	echo "function inject(){\n";
+	echo "if(window.fbq)return;\n";
 	echo "!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?\n";
 	echo "n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;\n";
 	echo "n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;\n";
 	echo "t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script',\n";
 	echo "'https://connect.facebook.net/en_US/fbevents.js');\n";
-	echo 'fbq("init",' . wp_json_encode( $pixel ) . ");\n";
-	echo "fbq('track','PageView');\n";
+	echo "fbq('init',PIXEL);fbq('track','PageView');\n";
+	echo "}\n";
+	// After first paint — keeps Meta ASAP without blocking H1 LCP.
+	echo "if('requestIdleCallback' in window)requestIdleCallback(inject,{timeout:1200});\n";
+	echo "else window.addEventListener('load',function(){setTimeout(inject,0);});\n";
+	echo "})();\n";
 	echo "</script>\n";
-	echo '<noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id='
-		. esc_attr( $pixel )
-		. '&ev=PageView&noscript=1"/></noscript>' . "\n";
 }
 add_action( 'wp_head', 'jcp_core_proof_gap_early_meta_pixel', 4 );
 
 /**
- * Load mocks CSS async — not needed for welcome LCP.
+ * Async-load full proof-gap.css — welcome critical CSS is inlined in the template.
  *
  * @param string $html   Link tag.
  * @param string $handle Style handle.
  */
-function jcp_core_proof_gap_async_mocks_css( string $html, string $handle ): string {
-	if ( ! jcp_core_is_proof_gap_request() || $handle !== 'jcp-core-proof-gap-mocks' ) {
+function jcp_core_proof_gap_async_page_css( string $html, string $handle ): string {
+	if ( ! jcp_core_is_proof_gap_request() ) {
+		return $html;
+	}
+	if ( $handle !== 'jcp-core-proof-gap' && $handle !== 'jcp-core-proof-gap-mocks' && $handle !== 'jcp-core-base' ) {
 		return $html;
 	}
 	if ( strpos( $html, 'onload=' ) !== false ) {
@@ -177,7 +185,7 @@ function jcp_core_proof_gap_async_mocks_css( string $html, string $handle ): str
 	}
 	return $async;
 }
-add_filter( 'style_loader_tag', 'jcp_core_proof_gap_async_mocks_css', 25, 2 );
+add_filter( 'style_loader_tag', 'jcp_core_proof_gap_async_page_css', 24, 2 );
 
 /**
  * Keep survey + attribution scripts out of Rocket Delay JS.
