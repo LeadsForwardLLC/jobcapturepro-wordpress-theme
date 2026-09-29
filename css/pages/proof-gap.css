@@ -338,14 +338,15 @@ body.jcp-proof-gap .pg-stage {
 }
 
 body.jcp-proof-gap.pg-has-bottom-action .pg-stage {
-  padding-bottom: calc(var(--pg-bottom-pad, 96px) + env(safe-area-inset-bottom, 0px) + 1.25rem);
+  padding-bottom: calc(var(--pg-bottom-pad, 96px) + env(safe-area-inset-bottom, 0px) + 1.5rem);
 }
 
-body.jcp-proof-gap.pg-has-bottom-action .pg-state--reveal .pg-state__inner--wide,
+/* Extra clearance so sticky CTA never clips last lines on key moments. */
+body.jcp-proof-gap.pg-has-bottom-action .pg-state--welcome .pg-state__inner,
+body.jcp-proof-gap.pg-has-bottom-action .pg-state--result-email .pg-state__inner,
 body.jcp-proof-gap.pg-has-bottom-action .pg-state--trial .pg-state__inner,
-body.jcp-proof-gap.pg-has-bottom-action .pg-state[data-pg-state="email_capture"] .pg-state__inner,
-body.jcp-proof-gap.pg-has-bottom-action .pg-state[data-pg-state="proof_gap_result"] .pg-state__inner {
-  padding-bottom: calc(var(--pg-bottom-pad, 96px) + env(safe-area-inset-bottom, 0px) + 1.5rem);
+body.jcp-proof-gap.pg-has-bottom-action .pg-state--reveal .pg-state__inner--wide {
+  padding-bottom: calc(var(--pg-bottom-pad, 96px) + env(safe-area-inset-bottom, 0px) + 2rem);
 }
 
 body.jcp-proof-gap .pg-state {

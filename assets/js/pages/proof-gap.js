@@ -1736,14 +1736,7 @@
         milestoneViewed.email_view = true;
         track('EmailCaptureViewed', { trade: state.trade });
       }
-      try {
-        var emailBlock = document.querySelector('.pg-result-email');
-        if (emailBlock) {
-          setTimeout(function () {
-            emailBlock.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-          }, 80);
-        }
-      } catch (eScroll) {}
+      // Stay at top so the proof-gap payoff is seen before the email ask.
     }
     if (id === 'app_sim') {
       startAppSimSequence();
