@@ -193,14 +193,10 @@ function jcp_core_enqueue_assets(): void {
         return;
     }
 
-    // /proof-gap/ paid acquisition survey — isolated app shell (Phase 1 foundation).
+    // /proof-gap/ paid acquisition survey — lean CSS (base + page + async mocks).
     if ( $pg_lp ) {
         jcp_core_enqueue_style( 'jcp-core-base', 'css/base.css' );
-        jcp_core_enqueue_style( 'jcp-core-layout', 'css/layout.css', [ 'jcp-core-base' ] );
-        jcp_core_enqueue_style( 'jcp-core-buttons', 'css/buttons.css', [ 'jcp-core-layout' ] );
-        jcp_core_enqueue_style( 'jcp-core-components', 'css/components.css', [ 'jcp-core-buttons' ] );
-        jcp_core_enqueue_style( 'jcp-core-utilities', 'css/utilities.css', [ 'jcp-core-components' ] );
-        jcp_core_enqueue_style( 'jcp-core-proof-gap', 'css/pages/proof-gap.css', [ 'jcp-core-buttons', 'jcp-core-components' ] );
+        jcp_core_enqueue_style( 'jcp-core-proof-gap', 'css/pages/proof-gap.css', [ 'jcp-core-base' ] );
         jcp_core_enqueue_style( 'jcp-core-proof-gap-mocks', 'css/pages/proof-gap-mocks.css', [ 'jcp-core-proof-gap' ] );
 
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );

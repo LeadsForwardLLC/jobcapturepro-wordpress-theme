@@ -140,16 +140,25 @@ add_action( 'template_redirect', 'jcp_core_demo_shell_trim_wp_chrome', 20 );
 
 /**
  * Pages where third-party analytics must not block interactivity.
- * Demo funnel + paid campaign LPs (heavy ad traffic).
+ * Demo funnel + paid campaign LPs + Proof Gap (Hybrid: Meta Pixel early, GTM deferred).
  */
 function jcp_core_should_delay_third_party_analytics(): bool {
+	$delay = false;
 	if ( jcp_core_is_demo_shell_request() ) {
-		return true;
+		$delay = true;
+	} elseif ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() ) {
+		$delay = true;
+	} elseif ( function_exists( 'jcp_core_is_proof_gap_request' ) && jcp_core_is_proof_gap_request() ) {
+		$delay = true;
+	} elseif ( function_exists( 'jcp_proof_gap_is_current' ) && jcp_proof_gap_is_current() ) {
+		$delay = true;
 	}
-	if ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() ) {
-		return true;
-	}
-	return false;
+	/**
+	 * Filter whether third-party analytics (GTM/PostHog SDK/Matomo/FPR) are deferred.
+	 *
+	 * @param bool $delay Whether to delay.
+	 */
+	return (bool) apply_filters( 'jcp_core_should_delay_third_party_analytics', $delay );
 }
 
 /**
@@ -368,6 +377,17 @@ function jcp_core_demo_shell_strip_early_analytics( string $html ): string {
 	) ?? $html;
 	$html = preg_replace(
 		'#<script[^>]+src=["\'][^"\']*connect\.facebook\.net[^"\']*["\'][^>]*>\s*</script>#i',
+		'',
+		$html
+	) ?? $html;
+	// Matomo — defer with the rest of third-party analytics on conversion pages.
+	$html = preg_replace(
+		'#<script[^>]+src=["\'][^"\']*matomo[^"\']*["\'][^>]*>\s*</script>#i',
+		'',
+		$html
+	) ?? $html;
+	$html = preg_replace(
+		'#<script[^>]*>[^<]*_paq[^<]*</script>#is',
 		'',
 		$html
 	) ?? $html;

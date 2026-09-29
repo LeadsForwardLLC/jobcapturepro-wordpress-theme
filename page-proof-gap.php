@@ -10,13 +10,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Sized WebP (~4.5KB) — never the full uploads PNG (1613×383 / ~29KB).
 $logo_url = get_template_directory_uri() . '/assets/brand/jcp-logo-dark-320.webp';
-if ( function_exists( 'jcp_form_landing_logo_url' ) ) {
-	$maybe = jcp_form_landing_logo_url( [] );
-	if ( is_string( $maybe ) && $maybe !== '' ) {
-		$logo_url = $maybe;
-	}
-}
 
 $trial_base = function_exists( 'jcp_core_onboarding_app_url_raw' )
 	? jcp_core_onboarding_app_url_raw(

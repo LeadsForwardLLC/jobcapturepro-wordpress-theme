@@ -52,6 +52,7 @@ require_once get_template_directory() . '/inc/jcp-api-cpt.php';
 require_once get_template_directory() . '/inc/enqueue.php';
 require_once get_template_directory() . '/inc/demo-run-perf.php';
 require_once get_template_directory() . '/inc/campaign-lp-perf.php';
+require_once get_template_directory() . '/inc/proof-gap-perf.php';
 
 // WP Rocket: exclude critical CSS/JS from stale minify + Delay JS.
 require_once get_template_directory() . '/inc/wp-rocket.php';

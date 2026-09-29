@@ -212,8 +212,12 @@
     document.body.classList.add('pg-has-bottom-action');
     if (opts.animate !== false && wasHidden && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       bar.classList.remove('is-entering');
-      void bar.offsetWidth;
-      bar.classList.add('is-entering');
+      // Double-rAF restarts CSS enter without forced synchronous layout (offsetWidth).
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          bar.classList.add('is-entering');
+        });
+      });
     }
     requestAnimationFrame(syncBottomPad);
     setTimeout(syncBottomPad, 50);
@@ -1307,8 +1311,16 @@
     setAppSimTicks('');
     setAppSimMeter(0, 0);
     var meterEl = document.getElementById('pgAppSimMeter');
-    if (meterEl) void meterEl.offsetWidth;
-    setAppSimMeter(reduced ? 100 : 10, reduced ? duration : 350);
+    if (meterEl) {
+      // Restart meter transition without forced layout.
+      meterEl.style.transition = 'none';
+      requestAnimationFrame(function () {
+        meterEl.style.transition = '';
+        setAppSimMeter(reduced ? 100 : 10, reduced ? duration : 350);
+      });
+    } else {
+      setAppSimMeter(reduced ? 100 : 10, reduced ? duration : 350);
+    }
     setAppSimStatus('Starting with your job\u2026');
     if (skip) skip.hidden = true;
 
