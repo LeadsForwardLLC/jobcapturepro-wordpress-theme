@@ -166,7 +166,8 @@ function jcp_core_proof_gap_early_meta_pixel(): void {
 add_action( 'wp_head', 'jcp_core_proof_gap_early_meta_pixel', 4 );
 
 /**
- * Async-load full proof-gap.css — welcome critical CSS is inlined in the template.
+ * Async-load mocks CSS only — base + proof-gap stay render-blocking so the
+ * welcome fold does not reflow when late styles arrive (CLS).
  *
  * @param string $html   Link tag.
  * @param string $handle Style handle.
@@ -175,7 +176,8 @@ function jcp_core_proof_gap_async_page_css( string $html, string $handle ): stri
 	if ( ! jcp_core_is_proof_gap_request() ) {
 		return $html;
 	}
-	if ( $handle !== 'jcp-core-proof-gap' && $handle !== 'jcp-core-proof-gap-mocks' && $handle !== 'jcp-core-base' ) {
+	// Only destination mocks are safely below-fold on welcome.
+	if ( $handle !== 'jcp-core-proof-gap-mocks' ) {
 		return $html;
 	}
 	if ( strpos( $html, 'onload=' ) !== false ) {

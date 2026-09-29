@@ -356,6 +356,11 @@ body.jcp-proof-gap .pg-state {
   min-height: 0;
 }
 
+/* Welcome is server-painted — never replay enter animation (CLS). */
+body.jcp-proof-gap .pg-state--welcome {
+  animation: none;
+}
+
 body.jcp-proof-gap .pg-state[hidden] {
   display: none !important;
 }
