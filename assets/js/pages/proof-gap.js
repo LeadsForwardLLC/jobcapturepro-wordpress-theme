@@ -125,12 +125,18 @@
 
   function syncBottomPad() {
     var bar = document.getElementById('pgBottomAction');
-    var pad = 0;
-    if (bar && !bar.hidden) {
-      pad = Math.ceil(bar.getBoundingClientRect().height) || 88;
+    if (!bar || bar.hidden) {
+      document.documentElement.style.setProperty('--pg-bottom-pad', '0px');
+      document.body.style.setProperty('--pg-bottom-pad', '0px');
+      return;
     }
-    document.documentElement.style.setProperty('--pg-bottom-pad', pad + 'px');
-    document.body.style.setProperty('--pg-bottom-pad', pad + 'px');
+    // Defer geometry read to the next frame to avoid forced sync reflow during paint.
+    requestAnimationFrame(function () {
+      if (!bar || bar.hidden) return;
+      var pad = Math.ceil(bar.getBoundingClientRect().height) || 120;
+      document.documentElement.style.setProperty('--pg-bottom-pad', pad + 'px');
+      document.body.style.setProperty('--pg-bottom-pad', pad + 'px');
+    });
   }
 
   function clearBottomAction() {
