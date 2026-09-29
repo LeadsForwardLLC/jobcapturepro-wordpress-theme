@@ -143,8 +143,9 @@ function jcp_core_proof_gap_early_meta_pixel(): void {
 	echo "<script id=\"jcp-pg-meta-pixel\" data-rocket-skip>\n";
 	echo "(function(){\n";
 	echo "var PIXEL=" . wp_json_encode( $pixel ) . ";\n";
+	echo "var done=false;\n";
 	echo "function inject(){\n";
-	echo "if(window.fbq)return;\n";
+	echo "if(done||window.fbq)return;done=true;\n";
 	echo "!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?\n";
 	echo "n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;\n";
 	echo "n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;\n";
@@ -152,9 +153,13 @@ function jcp_core_proof_gap_early_meta_pixel(): void {
 	echo "'https://connect.facebook.net/en_US/fbevents.js');\n";
 	echo "fbq('init',PIXEL);fbq('track','PageView');\n";
 	echo "}\n";
-	// After first paint — keeps Meta ASAP without blocking H1 LCP.
-	echo "if('requestIdleCallback' in window)requestIdleCallback(inject,{timeout:1200});\n";
-	echo "else window.addEventListener('load',function(){setTimeout(inject,0);});\n";
+	// After paint: interaction first (real ads sessions), else idle/timeout backup.
+	// Keeps PageView for Meta; avoids competing with LCP/TBT in the first ~3s.
+	echo "var ev=['pointerdown','keydown','touchstart','scroll'];\n";
+	echo "function onInteract(){ev.forEach(function(t){window.removeEventListener(t,onInteract,{capture:true});});inject();}\n";
+	echo "ev.forEach(function(t){window.addEventListener(t,onInteract,{once:true,passive:true,capture:true});});\n";
+	echo "if('requestIdleCallback' in window)requestIdleCallback(inject,{timeout:3500});\n";
+	echo "else window.addEventListener('load',function(){setTimeout(inject,2500);});\n";
 	echo "})();\n";
 	echo "</script>\n";
 }

@@ -134,6 +134,11 @@
     requestAnimationFrame(function () {
       if (!bar || bar.hidden) return;
       var pad = Math.ceil(bar.getBoundingClientRect().height) || 120;
+      var cur = parseFloat(
+        getComputedStyle(document.body).getPropertyValue('--pg-bottom-pad')
+      );
+      // Skip tiny adjustments — avoids CLS from 7.5rem ↔ measured px flicker.
+      if (isFinite(cur) && Math.abs(cur - pad) < 3) return;
       document.documentElement.style.setProperty('--pg-bottom-pad', pad + 'px');
       document.body.style.setProperty('--pg-bottom-pad', pad + 'px');
     });
@@ -231,6 +236,39 @@
 
   function syncBottomActionForState(id) {
     if (id === 'welcome') {
+      // Reuse server-rendered CTA — avoid wipe/rebuild CLS on first paint.
+      var existingCta = document.getElementById('pgWelcomeCta');
+      var existingBar = document.getElementById('pgBottomAction');
+      var existingMicro = document.getElementById('pgBottomMicro');
+      if (existingCta && existingBar && !existingBar.hidden) {
+        bottomActionHandler = function () {
+          markCompleted('welcome');
+          if (!startedTracked) {
+            startedTracked = true;
+            track('SurveyStarted', { question_id: 'welcome', cta_source: 'welcome' });
+            track('proof_gap_started', {});
+          }
+          saveState();
+          goTo('trade');
+        };
+        if (!existingCta.getAttribute('data-pg-bound')) {
+          existingCta.setAttribute('data-pg-bound', '1');
+          existingCta.addEventListener('click', function (ev) {
+            if (bottomActionHandler) {
+              ev.preventDefault();
+              bottomActionHandler(ev);
+            }
+          });
+        }
+        if (existingMicro) {
+          existingMicro.hidden = false;
+          existingMicro.textContent =
+            '4 quick questions \u00b7 About 60 seconds \u00b7 No phone \u00b7 No credit card';
+        }
+        document.body.classList.add('pg-has-bottom-action');
+        requestAnimationFrame(syncBottomPad);
+        return;
+      }
       setBottomAction({
         id: 'pgWelcomeCta',
         label: 'See What Your Jobs Could Be Doing \u2192',

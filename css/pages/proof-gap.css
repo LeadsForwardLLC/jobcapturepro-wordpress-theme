@@ -43,7 +43,8 @@ body.jcp-proof-gap {
   --pg-radius-lg: 1rem;
   --pg-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --pg-gutter: 1.25rem; /* ~20px mobile gutters */
-  --pg-bottom-pad: 0px;
+  /* Match critical CSS — async sheet must not drop pad to 0 (CLS). JS refines. */
+  --pg-bottom-pad: 7.5rem;
   --pg-keyboard-offset: 0px;
   --pg-content-max: 44rem; /* ~704px question/insight column */
   --pg-shell-max: 58rem;
@@ -4356,9 +4357,13 @@ body.jcp-proof-gap .pg-app-sim > #pgAppSimStage {
   }
 }
 
-/* Welcome hero copy + channel checklist */
+/* Welcome hero copy + channel checklist — keep H1 size stable vs critical CSS */
 body.jcp-proof-gap .pg-title--welcome {
-  margin-bottom: 0.85rem;
+  margin: 0 0 0.85rem;
+  font-size: clamp(1.55rem, 5.2vw, 2.05rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  font-weight: 850;
 }
 
 body.jcp-proof-gap .pg-sub--emphasis {
