@@ -591,6 +591,7 @@ body.jcp-proof-sprint .ps-logo-mark span {
 /* ---- Outputs (single active panel) ---- */
 body.jcp-proof-sprint .ps-outputs {
   background: #fff;
+  scroll-margin-top: 4.5rem;
 }
 
 body.jcp-proof-sprint .ps-outputs__shell {
