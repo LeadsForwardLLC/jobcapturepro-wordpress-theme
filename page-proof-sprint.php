@@ -47,8 +47,6 @@ $login_href = function_exists( 'jcp_core_app_login_url_raw' )
 >
 <?php wp_body_open(); ?>
 
-<a class="skip-link screen-reader-text" href="#ps-main"><?php esc_html_e( 'Skip to content', 'jcp-core' ); ?></a>
-
 <header class="jcp-landing-brandbar is-compact ps-brandbar" role="banner">
 	<div class="jcp-landing-brandbar__inner">
 		<span class="jcp-landing-brandbar__link ps-brandbar__logo" aria-label="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>">

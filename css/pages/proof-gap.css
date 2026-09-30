@@ -8,16 +8,33 @@
 
 body.jcp-proof-gap .skip-link.screen-reader-text {
   position: absolute;
-  left: -9999px;
-  top: 0;
-  z-index: 100000;
-  padding: 0.5rem 0.75rem;
-  background: #fff;
-  color: #111;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 body.jcp-proof-gap .skip-link.screen-reader-text:focus {
-  left: 0.75rem;
+  position: fixed;
   top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100000;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0.55rem 0.85rem;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  border-radius: 0.5rem;
+  background: #0b0f19;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.25);
 }
 
 html:has(body.jcp-proof-gap) {

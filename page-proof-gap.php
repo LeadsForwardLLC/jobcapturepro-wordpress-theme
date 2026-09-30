@@ -37,6 +37,7 @@ $trial_base = function_exists( 'jcp_core_onboarding_app_url_raw' )
 		}
 	</style>
 	<style id="pg-critical">
+		body.jcp-proof-gap .skip-link,.skip-link.screen-reader-text{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
 		html:has(body.jcp-proof-gap){height:100%;height:100dvh}
 		body.jcp-proof-gap{margin:0;padding:0;background:#fff;color:#111827;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased;height:100%;height:100dvh;max-height:100dvh;overflow:hidden;overflow-x:hidden;width:100%;max-width:100%;box-sizing:border-box;--pg-accent:#ff5036;--pg-ink:#111827;--pg-muted:#6b7280;--pg-card:#fff;--pg-border:rgba(15,23,42,.08);--pg-radius:.85rem;--pg-radius-sm:.65rem;--pg-radius-lg:1rem;--pg-warning:#f59e0b;--pg-gutter:1.25rem;--pg-content-max:44rem;--pg-shell-max:58rem;--pg-bottom-pad:7.5rem;--pg-fs-body:1.02rem;--pg-fs-secondary:.97rem;--pg-fs-tertiary:.8125rem;--pg-fs-eyebrow:.84rem;--pg-tracking-eyebrow:.06em}
 		body.jcp-proof-gap .pg-shell{height:100%;height:100dvh;max-height:100dvh;width:100%;max-width:100%;display:flex;flex-direction:column;overflow:hidden}
@@ -90,8 +91,6 @@ $trial_base = function_exists( 'jcp_core_onboarding_app_url_raw' )
 	data-pg-survey-version="<?php echo esc_attr( JCP_PROOF_GAP_SURVEY_VERSION ); ?>"
 >
 <?php wp_body_open(); ?>
-
-<a class="skip-link screen-reader-text" href="#pg-app"><?php esc_html_e( 'Skip to survey', 'jcp-core' ); ?></a>
 
 <div class="pg-shell" id="pg-shell">
 	<header class="pg-chrome" role="banner">
