@@ -244,10 +244,10 @@ H1
 Subheadline
 [1–2 sentences, max ~35 words — keyword in first or second sentence of the page]
 CTA
-Start free trial
+Start Free Trial
 See how it works
 Trust Line
-No credit card · Free trial · Setup in under 10 minutes
+No credit card · Start Free Trial · Setup in under 10 minutes
 
 WHAT IT IS
 Headline
@@ -276,11 +276,11 @@ CTA
 
 CORE MECHANIC
 1 photo
- Proof created instantly
-4 channels
- Google, website, social, directory
-0 busywork
- Nothing new for your crew
+ Starts the workflow
+5 places
+ Web · Google · Social · Directory · Reviews
+More jobs
+ From finished work
 
 MEDIA CORE
 Headline
@@ -298,7 +298,7 @@ HOW IT WORKS
 Headline
 [H2 — 6–12 words; include keyword in this or another H2 on the page]
 Subheadline
-Four steps. One app. Zero busywork for your crew
+Four steps. One app. Built around the jobs you already finish
 
 01 Capture
 [Step one line one]
@@ -513,7 +513,7 @@ CTA Note
 [Text under the button — optional]
 
 CTA
-Start free trial
+Start Free Trial
 See how it works
 BODY;
 }
@@ -579,10 +579,11 @@ PROMPT;
 		$intro .= <<<'CRO'
 
 CAMPAIGN / CRO RULES (this page is for cold traffic):
-- Lead with ONE clear offer (free trial, limited cohort, case study, etc.) — state scarcity or deadline honestly if you use it
+- Lead with ONE clear offer (Start Free Trial, limited cohort, case study, etc.) — state scarcity or deadline honestly if you use it
 - Hero: outcome-focused H1, subheadline = who it's for + what they get + why act now
 - Repeat the SAME primary CTA button label in hero, how-it-works, and final CTA
 - Secondary CTA only for low-commitment proof (demo video) — never compete with the primary action
+- When the primary CTA is signup, prefer “Start Free Trial” with “No credit card required” as the note
 - Problem section: agitate pains they already feel; benefits = outcomes not features
 - FAQ must handle real objections: time, crew burden, tools they already use, offer terms, what happens next
 - Shorter sentences; no long SEO essays — every line should move someone toward the form or signup
@@ -766,10 +767,10 @@ H1
 Subheadline
 [1–2 sentences — keyword in first or second sentence of the page]
 CTA
-Start free trial
+Start Free Trial
 See how it works
 Trust Line
-No credit card · Free trial · Setup in under 10 minutes
+No credit card · Start Free Trial · Setup in under 10 minutes
 SNIP,
 		'WHAT IT IS' => <<<'SNIP'
 WHAT IT IS
@@ -799,11 +800,11 @@ SNIP,
 		'CORE MECHANIC' => <<<'SNIP'
 CORE MECHANIC
 1 photo
- Proof created instantly
-4 channels
- Google, website, social, directory
-0 busywork
- Nothing new for your crew
+ Starts the workflow
+5 places
+ Web · Google · Social · Directory · Reviews
+More jobs
+ From finished work
 SNIP,
 		'HOW IT WORKS' => <<<'SNIP'
 HOW IT WORKS
@@ -981,7 +982,7 @@ Subheadline
 CTA Note
 [Text under the button — optional]
 CTA
-Start free trial
+Start Free Trial
 See how it works
 SNIP,
 		'MEDIA CORE' => <<<'SNIP'
@@ -1084,8 +1085,8 @@ Website
  Automatically added as live job content
 Social Media
  Shared as job proof on social channels
-Reviews
- Auto review collection
+Directory
+ Listed with verified job activity homeowners can trust
 
 Callout Badge
 Verified Job Proof

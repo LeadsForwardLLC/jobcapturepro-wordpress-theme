@@ -21,6 +21,7 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 	$doc['settings']['hide_breadcrumb']  = true;
 	$doc['settings']['campaign_landing'] = true;
 	$doc['settings']['hide_site_chrome'] = true;
+	$doc['settings']['noindex']          = true;
 
 	if ( empty( $doc['blocks'] ) || ! is_array( $doc['blocks'] ) ) {
 		return $doc;
@@ -47,17 +48,35 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 			if ( empty( $props['media_type'] ) ) {
 				$props['media_type'] = 'phone_mockup';
 			}
-			// Mirror core_mechanic into hero meta_stats (homepage pattern) using existing labels only.
-			if ( empty( $props['meta_stats'] ) || ! is_array( $props['meta_stats'] ) ) {
-				$props['meta_stats'] = jcp_page_campaign_meta_stats_from_doc( $doc );
+			// Keep hero meta_stats in sync with core_mechanic (campaign proof strip).
+			$mirrored = jcp_page_campaign_meta_stats_from_doc( $doc );
+			if ( $mirrored !== [] ) {
+				$props['meta_stats'] = $mirrored;
+			} elseif ( empty( $props['meta_stats'] ) || ! is_array( $props['meta_stats'] ) ) {
+				$props['meta_stats'] = [];
 			}
 			$doc['blocks'][ $i ]['props'] = $props;
 		}
 		if ( $type === 'demo_preview' ) {
+			$base = is_array( $block['layout'] ?? null )
+				? $block['layout']
+				: jcp_block_default_layout( 'demo_preview', 'marketing' );
+			$doc['blocks'][ $i ]['layout'] = array_merge(
+				$base,
+				[
+					'width' => 'contained',
+					'align' => 'left',
+				]
+			);
 			$props = is_array( $block['props'] ?? null ) ? $block['props'] : [];
-			if ( empty( $props['media_type'] ) ) {
-				$props['media_type'] = 'phone_mockup';
-			}
+			// Campaign landers always show the animated app mockup on the right.
+			$props['media_type']         = 'phone_mockup';
+			$props['phone_mockup_style'] = ! empty( $props['phone_mockup_style'] )
+				? (string) $props['phone_mockup_style']
+				: 'app_shell';
+			$props['media_position']     = ! empty( $props['media_position'] )
+				? (string) $props['media_position']
+				: 'right';
 			$doc['blocks'][ $i ]['props'] = $props;
 		}
 		if ( $type === 'how_it_works' ) {
@@ -81,6 +100,54 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
 			$base['columns']              = 2;
 			$doc['blocks'][ $i ]['layout'] = $base;
 		}
+		if ( $type === 'final_cta' ) {
+			$base = is_array( $block['layout'] ?? null )
+				? $block['layout']
+				: jcp_block_default_layout( 'final_cta', 'marketing' );
+			$doc['blocks'][ $i ]['layout'] = array_merge(
+				$base,
+				[
+					'width' => 'contained',
+					'align' => 'center',
+				]
+			);
+		}
+		if ( $type === 'authority' ) {
+			$base = is_array( $block['layout'] ?? null )
+				? $block['layout']
+				: jcp_block_default_layout( 'authority', 'marketing' );
+			$doc['blocks'][ $i ]['layout'] = array_merge(
+				$base,
+				[
+					'width' => 'contained',
+					'align' => 'left',
+				]
+			);
+		}
+		if ( $type === 'testimonials' ) {
+			$base = is_array( $block['layout'] ?? null )
+				? $block['layout']
+				: jcp_block_default_layout( 'testimonials', 'marketing' );
+			$doc['blocks'][ $i ]['layout'] = array_merge(
+				$base,
+				[
+					'width' => 'contained',
+					'align' => 'center',
+				]
+			);
+		}
+		if ( $type === 'local_rank_case_study' ) {
+			$base = is_array( $block['layout'] ?? null )
+				? $block['layout']
+				: jcp_block_default_layout( 'local_rank_case_study', 'marketing' );
+			$doc['blocks'][ $i ]['layout'] = array_merge(
+				$base,
+				[
+					'width' => 'contained',
+					'align' => 'center',
+				]
+			);
+		}
 	}
 
 	return $doc;
@@ -93,7 +160,7 @@ function jcp_page_finalize_campaign_document( array $doc ): array {
  * @return array<int, array<string, string>>
  */
 function jcp_page_campaign_meta_stats_from_doc( array $doc ): array {
-	$icons  = [ 'camera', 'map', 'clock' ];
+	$icons  = [ 'camera', 'map', 'badge-check' ];
 	$classes = [ 'meta-stat-photo', 'meta-stat-channels', 'meta-stat-busywork' ];
 	$items  = [];
 
@@ -211,3 +278,151 @@ function jcp_page_current_is_campaign_landing(): bool {
 	}
 	return jcp_page_is_campaign_landing( jcp_page_get_content( $post_id ) );
 }
+
+/**
+ * Whether the current singular request should be noindexed (paid LPs / previews).
+ */
+function jcp_page_should_noindex_current(): bool {
+	if ( is_admin() || ! is_singular() ) {
+		return false;
+	}
+	if ( is_page( 'home-preview' ) || is_page( 'contractor-demo' ) ) {
+		return true;
+	}
+	if ( function_exists( 'jcp_page_current_is_campaign_landing' ) && jcp_page_current_is_campaign_landing() ) {
+		return true;
+	}
+	$post_id = (int) get_queried_object_id();
+	if ( $post_id <= 0 || ! function_exists( 'jcp_page_get_content' ) ) {
+		return false;
+	}
+	$content = jcp_page_get_content( $post_id );
+	if ( function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ) ) {
+		return true;
+	}
+	return ! empty( $content['settings']['noindex'] ) || ! empty( $content['settings']['home_preview'] );
+}
+
+/**
+ * Paid campaign landings are Meta traffic destinations — keep them out of organic indexes.
+ * Home preview pages are also noindexed until cutover.
+ */
+function jcp_page_campaign_noindex(): void {
+	if ( ! jcp_page_should_noindex_current() ) {
+		return;
+	}
+	echo '<meta name="robots" content="noindex, follow">' . "\n";
+}
+add_action( 'wp_head', 'jcp_page_campaign_noindex', 1 );
+
+/**
+ * Force Rank Math (and similar) robots for campaign landings — avoid conflicting index,follow.
+ *
+ * @param array<string, string> $robots Robots directives.
+ * @return array<string, string>
+ */
+function jcp_page_campaign_rank_math_robots( $robots ) {
+	if ( ! jcp_page_should_noindex_current() ) {
+		return $robots;
+	}
+	if ( ! is_array( $robots ) ) {
+		$robots = [];
+	}
+	$robots['index']  = 'noindex';
+	$robots['follow'] = 'follow';
+	return $robots;
+}
+add_filter( 'rank_math/frontend/robots', 'jcp_page_campaign_rank_math_robots', 999 );
+
+/**
+ * WordPress core robots API fallback for campaign landings.
+ *
+ * @param array<string, mixed> $robots Robots directives.
+ * @return array<string, mixed>
+ */
+function jcp_page_campaign_wp_robots( $robots ) {
+	if ( ! jcp_page_should_noindex_current() ) {
+		return $robots;
+	}
+	if ( ! is_array( $robots ) ) {
+		$robots = [];
+	}
+	$robots['noindex'] = true;
+	$robots['follow']  = true;
+	unset( $robots['index'] );
+	return $robots;
+}
+add_filter( 'wp_robots', 'jcp_page_campaign_wp_robots', 999 );
+
+/**
+ * Keep campaign / noindex pages out of the core XML sitemap.
+ *
+ * @param array             $entry Sitemap entry.
+ * @param \WP_Post          $post  Post object.
+ * @param string            $post_type Post type.
+ * @return array|false
+ */
+function jcp_page_campaign_exclude_from_wp_sitemap( $entry, $post, $post_type ) {
+	if ( $post_type !== 'page' || ! ( $post instanceof WP_Post ) || ! function_exists( 'jcp_page_get_content' ) ) {
+		return $entry;
+	}
+	if ( in_array( $post->post_name, [ 'contractor-demo', 'home-preview' ], true ) ) {
+		return false;
+	}
+	if ( function_exists( 'jcp_is_sales_tool_template' ) && jcp_is_sales_tool_template( $post ) ) {
+		return false;
+	}
+	$content = jcp_page_get_content( (int) $post->ID );
+	if ( function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ) ) {
+		return false;
+	}
+	if ( ! empty( $content['settings']['noindex'] ) || ! empty( $content['settings']['home_preview'] ) ) {
+		return false;
+	}
+	return $entry;
+}
+add_filter( 'wp_sitemaps_posts_entry', 'jcp_page_campaign_exclude_from_wp_sitemap', 10, 3 );
+
+/**
+ * Keep campaign / noindex pages out of Rank Math sitemaps.
+ *
+ * @param array|false $url    Sitemap URL data.
+ * @param string      $type   Object type.
+ * @param mixed       $object Object.
+ * @return array|false
+ */
+function jcp_page_campaign_exclude_from_rank_math_sitemap( $url, $type, $object ) {
+	if ( $type !== 'post' || ! ( $object instanceof WP_Post ) || $object->post_type !== 'page' ) {
+		return $url;
+	}
+	if ( in_array( $object->post_name, [ 'contractor-demo', 'home-preview' ], true ) ) {
+		return false;
+	}
+	if ( function_exists( 'jcp_is_sales_tool_template' ) && jcp_is_sales_tool_template( $object ) ) {
+		return false;
+	}
+	if ( ! function_exists( 'jcp_page_get_content' ) ) {
+		return $url;
+	}
+	$content = jcp_page_get_content( (int) $object->ID );
+	if ( function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ) ) {
+		return false;
+	}
+	if ( ! empty( $content['settings']['noindex'] ) || ! empty( $content['settings']['home_preview'] ) ) {
+		return false;
+	}
+	return $url;
+}
+add_filter( 'rank_math/sitemap/entry', 'jcp_page_campaign_exclude_from_rank_math_sitemap', 10, 3 );
+
+/**
+ * Redirect retired /home-preview/ to the live homepage.
+ */
+function jcp_page_redirect_retired_home_preview(): void {
+	if ( is_admin() || ! is_page( 'home-preview' ) ) {
+		return;
+	}
+	wp_safe_redirect( home_url( '/' ), 301 );
+	exit;
+}
+add_action( 'template_redirect', 'jcp_page_redirect_retired_home_preview', 1 );

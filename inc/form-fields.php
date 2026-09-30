@@ -30,12 +30,31 @@ define( 'JCP_GHL_KEY_UTM_SOURCE', 'UTM Source' );
 define( 'JCP_GHL_KEY_UTM_MEDIUM', 'UTM Medium' );
 define( 'JCP_GHL_KEY_UTM_CAMPAIGN', 'UTM Campaign' );
 define( 'JCP_GHL_KEY_UTM_CONTENT', 'UTM Content' );
+define( 'JCP_GHL_KEY_UTM_TERM', 'UTM Term' );
+define( 'JCP_GHL_KEY_FBCLID', 'Facebook Click ID' );
 define( 'JCP_GHL_KEY_LANDING_PAGE', 'Landing Page' );
+define( 'JCP_GHL_KEY_LP_VARIANT', 'LP Variant' );
+define( 'JCP_GHL_KEY_FUNNEL_SURFACE', 'Funnel Surface' );
 define( 'JCP_GHL_KEY_REFERRER', 'Referrer' );
+define( 'JCP_GHL_KEY_CONTACT_ID', 'contactId' );
+define( 'JCP_GHL_KEY_EVENT_ID', 'Event Id' );
 define( 'JCP_GHL_KEY_EVENT', 'Event' );
 define( 'JCP_GHL_KEY_TOPIC', 'Topic' );
 define( 'JCP_GHL_KEY_MESSAGE', 'Message' );
 define( 'JCP_GHL_KEY_ATTACHMENT', 'Attachment' );
+/**
+ * Proof Gap → GHL field names (dedicated intake webhook only).
+ * Reuse existing CRM fields where mapped; do not change demo Business Type / Use Case keys.
+ */
+define( 'JCP_GHL_KEY_BUSINESS_NICHE', 'Business Niche' );
+define( 'JCP_GHL_KEY_WEEKLY_JOB_VOLUME', 'Weekly Job Volume' );
+define( 'JCP_GHL_KEY_ASSESSMENT_NOTES', 'Assessment Notes' );
+define( 'JCP_GHL_KEY_PHOTO_WORKFLOW', 'Photo Workflow' );
+define( 'JCP_GHL_KEY_MARKETING_USAGE', 'Marketing Usage' );
+define( 'JCP_GHL_KEY_SURVEY_SESSION_ID', 'Survey Session Id' );
+define( 'JCP_GHL_KEY_QA_TRACE_ID', 'qa_trace_id' );
+/** @deprecated Alias — Proof Gap sends Weekly Job Volume. */
+define( 'JCP_GHL_KEY_JOBS_PER_WEEK', 'Weekly Job Volume' );
 
 /**
  * REST request param names (snake_case, used in JSON body from frontend).
@@ -55,5 +74,11 @@ define( 'JCP_REST_PARAM_UTM_SOURCE', 'utm_source' );
 define( 'JCP_REST_PARAM_UTM_MEDIUM', 'utm_medium' );
 define( 'JCP_REST_PARAM_UTM_CAMPAIGN', 'utm_campaign' );
 define( 'JCP_REST_PARAM_UTM_CONTENT', 'utm_content' );
+define( 'JCP_REST_PARAM_UTM_TERM', 'utm_term' );
+define( 'JCP_REST_PARAM_FBCLID', 'fbclid' );
 define( 'JCP_REST_PARAM_LANDING_PAGE', 'landing_page' );
+define( 'JCP_REST_PARAM_LP_VARIANT', 'lp_variant' );
+define( 'JCP_REST_PARAM_FUNNEL_SURFACE', 'funnel_surface' );
 define( 'JCP_REST_PARAM_REFERRER', 'referrer' );
+define( 'JCP_REST_PARAM_CONTACT_ID', 'contact_id' );
+define( 'JCP_REST_PARAM_EVENT_ID', 'event_id' );
