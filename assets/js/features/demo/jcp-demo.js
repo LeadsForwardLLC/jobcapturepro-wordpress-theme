@@ -4880,16 +4880,13 @@ function buildDirectoryPreview() {
 }
 
 function unlockDirectoryButton() {
+  // Directory click-through is disabled sitewide — never reveal this CTA.
   const btn = document.getElementById('btnViewDirectory');
   if (!btn) return;
-
-  btn.classList.remove('is-hidden');
-  btn.classList.add('dir-unlock');
-
-  // Remove animation class after it runs once
-  setTimeout(() => {
-    btn.classList.remove('dir-unlock');
-  }, 900);
+  btn.classList.add('is-hidden');
+  btn.setAttribute('hidden', '');
+  btn.setAttribute('aria-hidden', 'true');
+  btn.setAttribute('tabindex', '-1');
 }
 
 async function sendReviewRequest() {
@@ -5617,6 +5614,7 @@ function clearReturnState() {
 }
 
 function openDirectoryProfileFromDemo() {
+  // Directory click-through is disabled sitewide. Keep the visitor in the demo.
   // Final hard stop of tour
   tour.isHidden = true;
   tour.isMinimized = true;
@@ -5646,8 +5644,9 @@ function openDirectoryProfileFromDemo() {
     })
   );
 
-  // Go to the main Directory page (not a single listing)
-  window.location.href = `${baseUrl}/directory/`;
+  if (typeof showPostDemoPanel === 'function') {
+    showPostDemoPanel();
+  }
 }
 
 /* =========================================================

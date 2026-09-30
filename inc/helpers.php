@@ -280,6 +280,43 @@ function jcp_is_directory_mode(): bool {
 }
 
 /**
+ * True when a URL points at the public contractor directory (or a listing under it).
+ *
+ * @param string $url Absolute or relative URL.
+ */
+function jcp_url_is_directory_path( string $url ): bool {
+    if ( $url === '' ) {
+        return false;
+    }
+    $path = (string) parse_url( $url, PHP_URL_PATH );
+    if ( $path === '' ) {
+        // Relative paths like "/directory" have no host; parse_url may put them in path anyway.
+        $path = $url;
+    }
+    $path = '/' . ltrim( strtolower( $path ), '/' );
+    return (bool) preg_match( '#^/directory(/|$)#', $path );
+}
+
+/**
+ * Remove WP nav menu items that link to /directory (keep labels elsewhere; no click-through).
+ *
+ * @param array<int, WP_Post> $items Menu items.
+ * @return array<int, WP_Post>
+ */
+function jcp_filter_out_directory_nav_items( array $items ): array {
+    $filtered = [];
+    foreach ( $items as $item ) {
+        $url = isset( $item->url ) ? (string) $item->url : '';
+        if ( jcp_url_is_directory_path( $url ) ) {
+            continue;
+        }
+        $filtered[] = $item;
+    }
+    return $filtered;
+}
+add_filter( 'wp_nav_menu_objects', 'jcp_filter_out_directory_nav_items', 20 );
+
+/**
  * Add noindex/nofollow to UI library page
  *
  * The UI library page is internal documentation and should not be indexed

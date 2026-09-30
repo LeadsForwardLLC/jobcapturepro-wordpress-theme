@@ -300,12 +300,6 @@ function jcp_internal_link_page_keywords( int $post_id, array $flat ): array {
 function jcp_internal_link_static_pages(): array {
 	$routes = [
 		[
-			'path'     => '/directory',
-			'label'    => __( 'Directory', 'jcp-core' ),
-			'hub'      => 'resource',
-			'keywords' => [ 'directory', 'contractors', 'listings', 'find', 'contractor' ],
-		],
-		[
 			'path'     => '/features',
 			'label'    => __( 'Features', 'jcp-core' ),
 			'hub'      => 'feature',

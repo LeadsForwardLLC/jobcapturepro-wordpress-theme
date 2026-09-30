@@ -70,7 +70,7 @@ $dir_trust = $dir_url . '/#trust';
   <div class="header-actions">
     <?php if ( $is_demo ) : ?>
       <button class="btn btn-secondary" id="btnReset">↺ Reset</button>
-      <button class="btn btn-secondary is-hidden" id="btnViewDirectory" type="button">View Demo Directory →</button>
+      <button class="btn btn-secondary is-hidden" id="btnViewDirectory" type="button" hidden aria-hidden="true" tabindex="-1">View Demo Directory →</button>
       <button class="btn btn-primary" id="btnNext">Run Guided Demo →</button>
     <?php elseif ( $directory_mode ) : ?>
       <?php

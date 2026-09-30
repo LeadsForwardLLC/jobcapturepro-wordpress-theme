@@ -455,25 +455,6 @@
               </div>
             </div>
 
-            <div class="real-job-proof-callout">
-              <div class="real-job-proof-callout-badge demo-badge">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>
-                <span>Verified Job Proof</span>
-              </div>
-              <h3 class="real-job-proof-callout-title">All JobCapturePro customers are added to the verified directory</h3>
-              <p class="real-job-proof-callout-text">This isn't a demo or sample. Every listing represents a real business, real jobs, and real proof created by JobCapturePro.</p>
-            </div>
-
-            <div class="timeline-cta" style="margin-top: var(--jcp-space-3xl);">
-              <a href="#directory-preview" class="timeline-cta-link">
-                Learn more about the JobCapturePro directory
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M5 12h14M13 5l7 7-7 7"/>
-                </svg>
-              </a>
-            </div>
           </div>
         </section>
 
@@ -639,133 +620,6 @@
         </section>
 
         <!-- ============================================================
-             DIRECTORY PREVIEW SECTION
-             ============================================================ -->
-        <section class="jcp-section rankings-section directory-preview" id="directory-preview">
-          <div class="jcp-container">
-            <div class="rankings-header">
-              <h2>Your work powers a public directory homeowners trust</h2>
-              <p class="rankings-subtitle">
-                As a JobCapturePro member, your business appears in a public directory powered by real activity, verified proof, and trust signals that influence homeowner decisions. Visibility and ranking grow naturally as you use the system.
-              </p>
-            </div>
-
-            <div class="directory-grid preview-grid">
-              <a class="directory-card" href="/directory">
-                <span class="directory-badge verified">Verified</span>
-                <div class="card-header">
-                  <div class="company-mark">
-                    <div class="company-avatar">SR</div>
-                  </div>
-                  <div class="card-header-content">
-                    <h3 class="card-name">Summit Roofing</h3>
-                  </div>
-                </div>
-                <div class="card-location">
-                  <img src="${icon('map-pin')}" class="lucide-icon lucide-icon-xs" alt="">
-                  <span>Austin, TX</span>
-                </div>
-                <div class="card-meta-row">
-                  <span class="meta-inline">
-                    <img src="${icon('camera')}" class="lucide-icon lucide-icon-xs" alt="">
-                    82 jobs
-                  </span>
-                  <span class="meta-divider">·</span>
-                  <span class="meta-inline">
-                    <img src="${icon('clock')}" class="lucide-icon lucide-icon-xs" alt="">
-                    Active recently
-                  </span>
-                </div>
-                <div class="card-rating">
-                  <div class="stars">★★★★★</div>
-                  <span class="rating-text">4.9 (120)</span>
-                </div>
-                <div class="card-footer">
-                  <span class="view-profile">View activity</span>
-                </div>
-              </a>
-
-              <a class="directory-card directory-card-highlight" href="/directory">
-                <span class="directory-badge verified">Verified</span>
-                <div class="card-header">
-                  <div class="company-mark">
-                    <div class="company-avatar">YB</div>
-                  </div>
-                  <div class="card-header-content">
-                    <h3 class="card-name">Your Business</h3>
-                  </div>
-                </div>
-                <div class="card-location">
-                  <img src="${icon('map-pin')}" class="lucide-icon lucide-icon-xs" alt="">
-                  <span>Your City, ST</span>
-                </div>
-                <div class="card-meta-row">
-                  <span class="meta-inline">
-                    <img src="${icon('camera')}" class="lucide-icon lucide-icon-xs" alt="">
-                    64 jobs
-                  </span>
-                  <span class="meta-divider">·</span>
-                  <span class="meta-inline">
-                    <img src="${icon('clock')}" class="lucide-icon lucide-icon-xs" alt="">
-                    Active today
-                  </span>
-                </div>
-                <div class="card-rating">
-                  <div class="stars">★★★★★</div>
-                  <span class="rating-text">4.8 (98)</span>
-                </div>
-                <div class="card-footer">
-                  <span class="view-profile">View activity</span>
-                </div>
-              </a>
-
-              <a class="directory-card" href="/directory">
-                <span class="directory-badge listed">Listed</span>
-                <div class="card-header">
-                  <div class="company-mark">
-                    <div class="company-avatar">HF</div>
-                  </div>
-                  <div class="card-header-content">
-                    <h3 class="card-name">Heritage Fence Co.</h3>
-                  </div>
-                </div>
-                <div class="card-location">
-                  <img src="${icon('map-pin')}" class="lucide-icon lucide-icon-xs" alt="">
-                  <span>Houston, TX</span>
-                </div>
-                <div class="card-meta-row">
-                  <span class="meta-inline">
-                    <img src="${icon('camera')}" class="lucide-icon lucide-icon-xs" alt="">
-                    41 jobs
-                  </span>
-                  <span class="meta-divider">·</span>
-                  <span class="meta-inline">
-                    <img src="${icon('clock')}" class="lucide-icon lucide-icon-xs" alt="">
-                    Active this week
-                  </span>
-                </div>
-                <div class="card-rating">
-                  <div class="stars">★★★★★</div>
-                  <span class="rating-text">4.7 (64)</span>
-                </div>
-                <div class="card-footer">
-                  <span class="view-profile">View activity</span>
-                </div>
-              </a>
-            </div>
-            <p class="directory-preview-outro">Activity earns attention. Inactive listings fade.</p>
-            <div class="directory-preview-cta">
-              <a href="/demo/" class="btn btn-primary directory-demo-cta">
-                <span>See It for My Business →</span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M5 12h14M13 5l7 7-7 7"/>
-                </svg>
-              </a>
-            </div>
-          </div>
-        </section>
-
-        <!-- ============================================================
              FAQ SECTION
              ============================================================ -->
         <section class="jcp-section rankings-section faq-section" id="faq">
@@ -829,10 +683,6 @@
                 <p>Yes. Each location can have its own Google Business Profile and connected social accounts, with organization level management for multi location teams.</p>
               </details>
 
-              <details class="faq-item">
-                <summary>What is the JobCapturePro public directory and why does it matter?</summary>
-                <p>Every member gets a public directory listing that is powered by real job activity and proof. Homeowners can see who is active and credible, and companies that post consistently earn stronger placement and more trust over time.</p>
-              </details>
             </div>
           </div>
         </section>

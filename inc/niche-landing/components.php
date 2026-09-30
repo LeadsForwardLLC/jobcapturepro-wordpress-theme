@@ -492,10 +492,10 @@ function jcp_component_directory_preview_card( array $card, int $i = 0 ): void {
 	$activity = (string) ( $card['activity'] ?? '' );
 	$rating   = (string) ( $card['rating'] ?? '' );
 	$highlight = ! empty( $card['highlight'] );
-	$url      = ! empty( $card['url'] ) ? (string) $card['url'] : home_url( '/directory/' );
 	$path     = 'directory_preview.cards.' . $i;
+	// Directory click-through is disabled sitewide; keep the card as a non-link label/preview.
 	?>
-	<a class="directory-card<?php echo $highlight ? ' directory-card-highlight' : ''; ?>" href="<?php echo esc_url( $url ); ?>">
+	<div class="directory-card<?php echo $highlight ? ' directory-card-highlight' : ''; ?>" role="group" aria-label="<?php echo esc_attr( $name ); ?>">
 		<span class="directory-badge <?php echo esc_attr( $badge_class ); ?>"<?php jcp_niche_editable_attr( $path . '.badge' ); ?>><?php echo esc_html( $badge ); ?></span>
 		<div class="card-header">
 			<div class="company-mark">
@@ -527,7 +527,7 @@ function jcp_component_directory_preview_card( array $card, int $i = 0 ): void {
 		<div class="card-footer">
 			<span class="view-profile"><?php esc_html_e( 'View activity', 'jcp-core' ); ?></span>
 		</div>
-	</a>
+	</div>
 	<?php
 }
 
