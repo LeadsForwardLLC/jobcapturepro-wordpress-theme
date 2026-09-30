@@ -178,11 +178,19 @@
   /* ---- Channel tabs ---- */
   function setupOutputs() {
     var root = document.querySelector('[data-ps-outputs]');
-    if (!root) return;
+    if (!root) return null;
     var tabs = root.querySelectorAll('[data-ps-channel]');
     var panels = root.querySelectorAll('[data-ps-panel]');
+    var theaterOuts = document.querySelectorAll('[data-theater-outputs] [data-out]');
+
+    function syncTheaterHighlight(id) {
+      theaterOuts.forEach(function (el) {
+        el.classList.toggle('is-on', el.getAttribute('data-out') === id);
+      });
+    }
 
     function activate(id, fromUser) {
+      if (!id) return;
       tabs.forEach(function (tab) {
         var on = tab.getAttribute('data-ps-channel') === id;
         tab.classList.toggle('is-active', on);
@@ -195,9 +203,19 @@
         if (on) panel.removeAttribute('hidden');
         else panel.setAttribute('hidden', '');
       });
+      syncTheaterHighlight(id);
       if (fromUser && !channelViewed[id]) {
         channelViewed[id] = true;
         track('proof_sprint_output_viewed', { channel: id });
+      }
+    }
+
+    function scrollToOutputs() {
+      var reduce = prefersReducedMotion();
+      try {
+        root.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      } catch (eScroll) {
+        root.scrollIntoView(true);
       }
     }
 
@@ -219,6 +237,16 @@
       });
     });
 
+    document.querySelectorAll('[data-ps-theater-channel]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var id = btn.getAttribute('data-ps-theater-channel');
+        if (!id) return;
+        activate(id, true);
+        scrollToOutputs();
+        track('proof_sprint_theater_channel_click', { channel: id });
+      });
+    });
+
     // First panel counts as viewed when section enters viewport.
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(
@@ -237,6 +265,8 @@
       );
       io.observe(root);
     }
+
+    return { activate: activate };
   }
 
   /* ---- Case study expand ---- */

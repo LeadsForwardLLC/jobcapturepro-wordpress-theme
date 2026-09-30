@@ -155,11 +155,21 @@ $channels = [
 						<span class="ps-theater__core">JCP</span>
 					</div>
 					<ul class="ps-theater__outputs" data-theater-outputs>
-						<li data-out="website" class="is-on"><strong><?php esc_html_e( 'Website', 'jcp-core' ); ?></strong></li>
-						<li data-out="google"><strong><?php esc_html_e( 'Google', 'jcp-core' ); ?></strong></li>
-						<li data-out="social"><strong><?php esc_html_e( 'Social', 'jcp-core' ); ?></strong></li>
-						<li data-out="reviews"><strong><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></strong></li>
-						<li data-out="directory"><strong><?php esc_html_e( 'Directory', 'jcp-core' ); ?></strong></li>
+						<li data-out="website" class="is-on">
+							<button type="button" class="ps-theater__out-btn" data-ps-theater-channel="website"><?php esc_html_e( 'Website', 'jcp-core' ); ?></button>
+						</li>
+						<li data-out="google">
+							<button type="button" class="ps-theater__out-btn" data-ps-theater-channel="google"><?php esc_html_e( 'Google', 'jcp-core' ); ?></button>
+						</li>
+						<li data-out="social">
+							<button type="button" class="ps-theater__out-btn" data-ps-theater-channel="social"><?php esc_html_e( 'Social', 'jcp-core' ); ?></button>
+						</li>
+						<li data-out="reviews">
+							<button type="button" class="ps-theater__out-btn" data-ps-theater-channel="reviews"><?php esc_html_e( 'Reviews', 'jcp-core' ); ?></button>
+						</li>
+						<li data-out="directory">
+							<button type="button" class="ps-theater__out-btn" data-ps-theater-channel="directory"><?php esc_html_e( 'Directory', 'jcp-core' ); ?></button>
+						</li>
 					</ul>
 				</div>
 			</div>
