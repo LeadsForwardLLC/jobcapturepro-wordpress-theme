@@ -34,9 +34,30 @@ const baseUrl = window.JCP_CONFIG && window.JCP_CONFIG.baseUrl
    STATE
 ========================================================= */
 
-const allListings = Array.isArray(window.JCP_DIRECTORY_DATA?.listings)
+/* =========================================================
+   TEMPORARY HIDE LIST
+   Case-insensitive name substrings. Empty array = show all.
+   Re-show Acculevel later by removing it from this list
+   (and clearing jcp_directory_temporarily_hidden_name_terms() in PHP).
+========================================================= */
+
+const DIRECTORY_TEMPORARILY_HIDDEN_NAME_TERMS = ['Acculevel'];
+
+function isTemporarilyHiddenListing(listing) {
+  const terms = DIRECTORY_TEMPORARILY_HIDDEN_NAME_TERMS;
+  if (!Array.isArray(terms) || !terms.length) return false;
+  const name = String(listing?.name || listing?.title || '').toLowerCase();
+  if (!name) return false;
+  return terms.some((term) => {
+    const t = String(term || '').trim().toLowerCase();
+    return t && name.includes(t);
+  });
+}
+
+const allListings = (Array.isArray(window.JCP_DIRECTORY_DATA?.listings)
   ? window.JCP_DIRECTORY_DATA.listings
-  : [];
+  : []
+).filter((listing) => !isTemporarilyHiddenListing(listing));
 let visibleCount = 6;
 let filteredListings = [...allListings];
 

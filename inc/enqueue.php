@@ -622,6 +622,10 @@ function jcp_core_enqueue_assets(): void {
             $listings = array_merge( $listings, jcp_core_get_demo_companies() );
         }
 
+        if ( function_exists( 'jcp_directory_filter_visible_listings' ) ) {
+            $listings = jcp_directory_filter_visible_listings( $listings );
+        }
+
         $directory_data = wp_json_encode( [ 'listings' => $listings ] );
         wp_add_inline_script( 'jcp-core-directory', "window.JCP_DIRECTORY_DATA = {$directory_data};", 'before' );
         return;
