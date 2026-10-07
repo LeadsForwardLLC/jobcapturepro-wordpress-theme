@@ -74,18 +74,24 @@ function jcp_funnel_analytics_maybe_create_table(): void {
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 	dbDelta( $sql );
 
-	// Existing installs: ensure ip_hash column + index (dbDelta with IF NOT EXISTS is unreliable).
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$col = $wpdb->get_results( "SHOW COLUMNS FROM $table LIKE 'ip_hash'" );
-	if ( empty( $col ) ) {
+	// Existing installs: ensure columns + indexes (dbDelta with IF NOT EXISTS is unreliable).
+	$ensure_cols = [
+		'ip_hash'          => "ALTER TABLE $table ADD COLUMN ip_hash varchar(64) DEFAULT NULL AFTER referrer",
+		'creative_concept' => "ALTER TABLE $table ADD COLUMN creative_concept varchar(128) DEFAULT NULL AFTER utm_term",
+	];
+	foreach ( $ensure_cols as $col_name => $alter_sql ) {
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$wpdb->query( "ALTER TABLE $table ADD COLUMN ip_hash varchar(64) DEFAULT NULL AFTER referrer" );
-	}
-	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-	$idx = $wpdb->get_results( "SHOW INDEX FROM $table WHERE Key_name = 'ip_hash'" );
-	if ( empty( $idx ) ) {
+		$col = $wpdb->get_results( $wpdb->prepare( "SHOW COLUMNS FROM $table LIKE %s", $col_name ) );
+		if ( empty( $col ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( $alter_sql );
+		}
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$wpdb->query( "ALTER TABLE $table ADD KEY ip_hash (ip_hash)" );
+		$idx = $wpdb->get_results( $wpdb->prepare( "SHOW INDEX FROM $table WHERE Key_name = %s", $col_name ) );
+		if ( empty( $idx ) ) {
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->query( "ALTER TABLE $table ADD KEY `$col_name` (`$col_name`)" );
+		}
 	}
 }
 add_action( 'after_switch_theme', 'jcp_funnel_analytics_maybe_create_table' );
@@ -502,17 +508,10 @@ function jcp_acquisition_analytics_reset_all( bool $force = false ): array {
 }
 
 /**
- * One-shot clean slate after deploy (runs once, then latches).
+ * REMOVED: One-shot slate reset (jcp_acquisition_analytics_slate_20260928) wiped
+ * funnel + demo tables on first init after the 2026-09-28 deploy. Latch remains
+ * in options as 'done' — do not reintroduce auto-TRUNCATE on init.
  */
-function jcp_acquisition_analytics_oneshot_slate_reset(): void {
-	$key = 'jcp_acquisition_analytics_slate_20260928';
-	if ( get_option( $key, '' ) === 'done' ) {
-		return;
-	}
-	jcp_acquisition_analytics_reset_all( true );
-	update_option( $key, 'done', false );
-}
-add_action( 'init', 'jcp_acquisition_analytics_oneshot_slate_reset', 99 );
 
 /**
  * Known funnels for admin UI.
