@@ -1112,6 +1112,15 @@ function jcp_trial_send_posthog( object $row, array $trial, array $attr ): array
 		$properties['source'] = $properties['funnel_surface'];
 	}
 
+	$qa_trace = isset( $properties['qa_trace_id'] ) ? (string) $properties['qa_trace_id'] : '';
+	if ( $qa_trace !== '' && preg_match( '/^qa[_-]/i', $qa_trace ) ) {
+		$properties['is_qa'] = true;
+		$properties['$set']  = array_merge(
+			isset( $properties['$set'] ) && is_array( $properties['$set'] ) ? $properties['$set'] : [],
+			[ 'is_qa' => true ]
+		);
+	}
+
 	$timestamp = ! empty( $trial['event_time_iso'] )
 		? (string) $trial['event_time_iso']
 		: gmdate( 'c' );

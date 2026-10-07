@@ -48,6 +48,9 @@ require_once get_template_directory() . '/inc/company-data.php';
 // JCP Companies CPT + API sync (Import from API, daily cron, shortcode). API key: set JCP_API_TOKEN in wp-config.php.
 require_once get_template_directory() . '/inc/jcp-api-cpt.php';
 
+// PostHog public config (Rocket-safe head + localize helpers)
+require_once get_template_directory() . '/inc/posthog-config.php';
+
 // Load asset enqueuing logic
 require_once get_template_directory() . '/inc/enqueue.php';
 require_once get_template_directory() . '/inc/demo-run-perf.php';

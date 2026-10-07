@@ -111,6 +111,8 @@
   var advanceTimer = null;
   var startedTracked = false;
   var landingTracked = false;
+  /** PostHog once-keys so lifecycle events do not multi-fire on re-taps. */
+  var phOnceKeys = {};
   var questionViewed = {};
   var milestoneViewed = {};
   var stepEnteredAt = Date.now();
@@ -487,10 +489,35 @@
     // Canonical names only — legacy PascalCase stays on dataLayer/REST.
     if (!POSTHOG_CANONICAL[name]) return;
     try {
+      // Once-per-lifecycle for milestone events (re-taps must not inflate funnels).
+      var onceKey = name;
+      if (name === 'proof_gap_answered' && payload && payload.question) {
+        onceKey = name + ':' + payload.question;
+      } else if (name === 'proof_gap_preview_clicked' && payload && payload.channel) {
+        onceKey = name + ':' + payload.channel;
+      } else if (
+        name === 'proof_gap_viewed' ||
+        name === 'proof_gap_started' ||
+        name === 'proof_gap_completed' ||
+        name === 'proof_gap_email_submitted' ||
+        name === 'proof_gap_transformation_viewed' ||
+        name === 'trial_cta_viewed' ||
+        name === 'trial_cta_clicked'
+      ) {
+        onceKey = name;
+      } else {
+        onceKey = '';
+      }
+      if (onceKey && phOnceKeys[onceKey]) return;
+      if (onceKey) phOnceKeys[onceKey] = true;
+
       if (window.JCPPostHog && typeof window.JCPPostHog.capture === 'function') {
         var phProps = Object.assign({}, payload);
         delete phProps.event;
         phProps.survey_session_id = state.session_id;
+        if (window.JCPPostHog.isQaTraffic && window.JCPPostHog.isQaTraffic()) {
+          phProps.is_qa = true;
+        }
         window.JCPPostHog.capture(name, phProps);
       }
     } catch (ePh) {}

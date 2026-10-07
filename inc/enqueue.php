@@ -72,18 +72,9 @@ function jcp_core_enqueue_assets(): void {
         $demo_run_url = function_exists( 'jcp_job_proof_demo_run_url' )
             ? jcp_job_proof_demo_run_url()
             : home_url( '/job-proof-demo/demo/' );
-
-        wp_add_inline_script(
-            'jcp-core-posthog',
-            'window.JCP_POSTHOG=window.JCP_POSTHOG||' . wp_json_encode(
-                [
-                    'apiKey'  => apply_filters( 'jcp_posthog_project_api_key', 'phc_v8emzqtZ8beAjLsqj2byb5fK8wRHbW2g6hXBqAEZPMyS' ),
-                    'apiHost' => apply_filters( 'jcp_posthog_api_host', 'https://us.i.posthog.com' ),
-                    'uiHost'  => apply_filters( 'jcp_posthog_ui_host', 'https://us.posthog.com' ),
-                ]
-            ) . ';',
-            'before'
-        );
+        if ( function_exists( 'jcp_core_localize_posthog_script' ) ) {
+            jcp_core_localize_posthog_script();
+        }
         wp_add_inline_script(
             'jcp-core-job-proof-demo',
             'window.JCP_CONFIG=window.JCP_CONFIG||{env:"live",baseUrl:' . wp_json_encode( site_url() ) . '};',
@@ -142,18 +133,9 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_script( 'jcp-core-posthog', 'js/core/jcp-posthog.js', [ 'jcp-core-attribution' ] );
         jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );
         jcp_core_enqueue_script( 'jcp-core-proof-sprint', 'js/pages/proof-sprint.js', [ 'jcp-core-attribution', 'jcp-core-posthog', 'jcp-core-onboarding-handoff' ] );
-
-        wp_add_inline_script(
-            'jcp-core-posthog',
-            'window.JCP_POSTHOG=window.JCP_POSTHOG||' . wp_json_encode(
-                [
-                    'apiKey'  => apply_filters( 'jcp_posthog_project_api_key', 'phc_v8emzqtZ8beAjLsqj2byb5fK8wRHbW2g6hXBqAEZPMyS' ),
-                    'apiHost' => apply_filters( 'jcp_posthog_api_host', 'https://us.i.posthog.com' ),
-                    'uiHost'  => apply_filters( 'jcp_posthog_ui_host', 'https://us.posthog.com' ),
-                ]
-            ) . ';',
-            'before'
-        );
+        if ( function_exists( 'jcp_core_localize_posthog_script' ) ) {
+            jcp_core_localize_posthog_script();
+        }
         wp_add_inline_script(
             'jcp-core-proof-sprint',
             'window.JCP_CONFIG=window.JCP_CONFIG||{env:"live",baseUrl:' . wp_json_encode( site_url() ) . '};',
@@ -195,19 +177,9 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_script( 'jcp-core-posthog', 'js/core/jcp-posthog.js', [ 'jcp-core-attribution' ] );
         jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );
         jcp_core_enqueue_script( 'jcp-core-proof-gap', 'js/pages/proof-gap.js', [ 'jcp-core-attribution', 'jcp-core-posthog', 'jcp-core-onboarding-handoff' ] );
-
-        wp_add_inline_script(
-            'jcp-core-posthog',
-            'window.JCP_POSTHOG=window.JCP_POSTHOG||' . wp_json_encode(
-                [
-                    // Public project API key (same token used by the web SDK / GTM).
-                    'apiKey'  => apply_filters( 'jcp_posthog_project_api_key', 'phc_v8emzqtZ8beAjLsqj2byb5fK8wRHbW2g6hXBqAEZPMyS' ),
-                    'apiHost' => apply_filters( 'jcp_posthog_api_host', 'https://us.i.posthog.com' ),
-                    'uiHost'  => apply_filters( 'jcp_posthog_ui_host', 'https://us.posthog.com' ),
-                ]
-            ) . ';',
-            'before'
-        );
+        if ( function_exists( 'jcp_core_localize_posthog_script' ) ) {
+            jcp_core_localize_posthog_script();
+        }
         wp_add_inline_script(
             'jcp-core-proof-gap',
             'window.JCP_CONFIG=window.JCP_CONFIG||{env:"live",baseUrl:' . wp_json_encode( site_url() ) . '};',
@@ -470,17 +442,9 @@ function jcp_core_enqueue_assets(): void {
             jcp_core_enqueue_script( 'jcp-core-authority', 'js/pages/authority.js', [] );
             jcp_core_enqueue_script( 'jcp-core-campaign', 'js/pages/campaign.js', [], false, true );
             jcp_core_enqueue_script( 'jcp-core-story-moments', 'js/pages/story-moments.js', [], false, true );
-            wp_add_inline_script(
-                'jcp-core-posthog',
-                'window.JCP_POSTHOG=window.JCP_POSTHOG||' . wp_json_encode(
-                    [
-                        'apiKey'  => apply_filters( 'jcp_posthog_project_api_key', 'phc_v8emzqtZ8beAjLsqj2byb5fK8wRHbW2g6hXBqAEZPMyS' ),
-                        'apiHost' => apply_filters( 'jcp_posthog_api_host', 'https://us.i.posthog.com' ),
-                        'uiHost'  => apply_filters( 'jcp_posthog_ui_host', 'https://us.posthog.com' ),
-                    ]
-                ) . ';',
-                'before'
-            );
+        if ( function_exists( 'jcp_core_localize_posthog_script' ) ) {
+            jcp_core_localize_posthog_script();
+        }
             // Paid LP view: dataLayer PascalCase for GTM/Meta; snake_case PostHog only (not Proof Gap/Sprint).
             wp_add_inline_script(
                 'jcp-core-posthog',

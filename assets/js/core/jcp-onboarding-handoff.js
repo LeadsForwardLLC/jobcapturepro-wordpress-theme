@@ -184,6 +184,27 @@
     }
   };
 
+  const readPhDistinctId = () => {
+    try {
+      if (window.JCPPostHog && typeof window.JCPPostHog.getDistinctId === 'function') {
+        const id = String(window.JCPPostHog.getDistinctId() || '').trim();
+        if (id.length >= 8) return id.slice(0, 128);
+      }
+    } catch (e) {}
+    try {
+      const fromLs = window.localStorage && window.localStorage.getItem('jcp_ph_distinct_id');
+      if (fromLs && String(fromLs).trim().length >= 8) return String(fromLs).trim().slice(0, 128);
+    } catch (e2) {}
+    try {
+      const m = document.cookie.match(/(?:^|; )jcp_ph_id=([^;]*)/);
+      if (m && m[1]) {
+        const id = decodeURIComponent(m[1]).trim();
+        if (id.length >= 8) return id.slice(0, 128);
+      }
+    } catch (e3) {}
+    return '';
+  };
+
   const buildHandoffParams = () => {
     const u = readDemoUser();
     const params = {};
@@ -258,6 +279,10 @@
       }
     });
 
+    // Always prefer live marketing distinct_id so app can bootstrap identity.
+    const livePh = readPhDistinctId();
+    if (livePh) params.ph_distinct_id = livePh;
+
     return Object.keys(params).length ? params : null;
   };
 
@@ -315,6 +340,12 @@
 
       // Final scrub in case extras reintroduced fakes.
       scrubFakeAcquisition(u);
+
+      // Guarantee cross-domain identity param even if extras omitted it.
+      if (!u.searchParams.get('ph_distinct_id')) {
+        const livePh = readPhDistinctId();
+        if (livePh) u.searchParams.set('ph_distinct_id', livePh);
+      }
 
       return u.toString();
     } catch (e) {
