@@ -419,13 +419,13 @@
             min-width: 0;
         }
 
-        /* Live app: org switcher + help */
+        /* Live app: org switcher + help — keep base .app-header top inset so notch/island does not clip. */
         .app-header--org {
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 10px;
-            padding-top: 8px;
+            padding-top: 44px;
             padding-bottom: 4px;
         }
 
@@ -3043,6 +3043,7 @@ body.jcp-prototype-page #home-screen .content-area {
 body.jcp-prototype-page #home-screen .app-header--org {
     border-bottom: 0;
     background: #fff;
+    padding-top: 48px;
 }
 
 body.jcp-prototype-page #new-screen #submit-btn {
@@ -3840,7 +3841,7 @@ body.is-mobile-mode.jcp-guided-demo:not(.jcp-prototype-page) .app-screen.active 
 }
 
 body.is-mobile-mode.jcp-guided-demo:not(.jcp-prototype-page) .app-header {
-  padding-top: max(10px, env(safe-area-inset-top, 0px));
+  padding-top: max(44px, calc(env(safe-area-inset-top, 0px) + 12px));
   padding-bottom: 10px;
   flex-shrink: 0;
 }
