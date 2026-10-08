@@ -1278,6 +1278,89 @@ body.jcp-inline-editing .ranking-factor-card[data-jcp-card-link-path].ranking-fa
   color: var(--jcp-color-primary);
 }
 
+.jcp-footer-apps {
+  margin-top: var(--jcp-space-3xl);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--jcp-space-md) var(--jcp-space-xl);
+}
+
+.jcp-footer-apps-label {
+  margin: 0;
+  font-size: var(--jcp-font-size-sm);
+  font-weight: var(--jcp-font-weight-semibold);
+  color: var(--jcp-color-text-primary);
+  letter-spacing: 0.01em;
+}
+
+.jcp-footer-apps-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--jcp-space-md);
+}
+
+.jcp-footer-app-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 7px 14px 7px 12px;
+  background: #000;
+  color: #fff;
+  border: 1px solid #000;
+  border-radius: 8px;
+  text-decoration: none;
+  line-height: 1.1;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  transition: opacity var(--jcp-transition-base), transform 0.15s ease;
+}
+
+.jcp-footer-app-badge:hover {
+  color: #fff;
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.jcp-footer-app-badge:focus-visible {
+  outline: 2px solid var(--jcp-color-primary);
+  outline-offset: 3px;
+}
+
+.jcp-footer-app-badge__icon {
+  flex-shrink: 0;
+  display: block;
+  color: #fff;
+}
+
+.jcp-footer-app-badge__icon--play {
+  width: 20px;
+  height: 20px;
+}
+
+.jcp-footer-app-badge__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.jcp-footer-app-badge__eyebrow {
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  opacity: 0.92;
+}
+
+.jcp-footer-app-badge__name {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
 /* ============================================================
    NAV MEGA MENUS (desktop) + MOBILE EXPANDING PANELS
    ============================================================ */
@@ -1711,6 +1794,15 @@ body.jcp-inline-editing .ranking-factor-card[data-jcp-card-link-path].ranking-fa
   }
 
   .jcp-footer-social {
+    justify-content: center;
+  }
+
+  .jcp-footer-apps {
+    justify-content: center;
+    margin-top: var(--jcp-space-2xl);
+  }
+
+  .jcp-footer-apps-badges {
     justify-content: center;
   }
 }
