@@ -477,6 +477,7 @@ function getDemoContactPayload() {
 
 function jcpDemoTrack(eventType, stepNumber, metadata, options) {
   jcpDemoPushDataLayerAlias(eventType, stepNumber, metadata);
+  jcpDemoCapturePostHog(eventType, stepNumber, metadata);
   const url = window.JCP_DEMO_EVENT && window.JCP_DEMO_EVENT.rest_url;
   if (!url) return;
   try {
@@ -501,6 +502,45 @@ function jcpDemoTrack(eventType, stepNumber, metadata, options) {
       body: payload,
       keepalive,
     }).catch(function() {});
+  } catch (e) {}
+}
+
+/** Compact PostHog events for guided /demo/?mode=run (entry + key milestones). */
+function jcpDemoCapturePostHog(eventType, stepNumber, metadata) {
+  try {
+    if (!window.JCPPostHog || typeof window.JCPPostHog.capture !== 'function') return;
+    const map = {
+      demo_run_started: 'demo_started',
+      demo_publish_completed: 'demo_results_viewed',
+      demo_outcomes_opened: 'demo_results_viewed',
+      demo_converted: 'demo_trial_cta_clicked',
+      cta_clicked: null,
+    };
+    let phName = map[eventType];
+    if (eventType === 'cta_clicked' && metadata && metadata.cta === 'get_started_free') {
+      phName = 'demo_trial_cta_clicked';
+    }
+    if (!phName) return;
+    const attr =
+      window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function'
+        ? window.JCPLeadAttribution.getPayload() || {}
+        : {};
+    const props = {
+      funnel_surface: 'demo',
+      surface: 'demo_run',
+      page_path: location.pathname,
+      session_id: typeof getDemoSessionId === 'function' ? getDemoSessionId() : '',
+      demo_variant: 'guided_v2',
+      ...attr,
+    };
+    if (stepNumber != null) props.step_number = stepNumber;
+    if (metadata && typeof metadata === 'object') {
+      Object.keys(metadata).forEach(function (k) {
+        if (k === 'email' || k === 'phone' || k === 'first_name' || k === 'last_name') return;
+        props[k] = metadata[k];
+      });
+    }
+    window.JCPPostHog.capture(phName, props);
   } catch (e) {}
 }
 

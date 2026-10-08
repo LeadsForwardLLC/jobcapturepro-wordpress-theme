@@ -487,8 +487,48 @@
     }
   }
 
+  // Compact PostHog names for /demo gate (parity with proof-gap / job-proof-demo).
+  const SURVEY_POSTHOG_EVENTS = {
+    demo_started: 'demo_viewed',
+    form_step_completed: 'demo_form_step_completed',
+    demo_link_copied: 'demo_link_copied',
+    demo_link_shared: 'demo_link_shared',
+  };
+
+  function surveyCapturePostHog(eventType, stepNumber, metadata) {
+    try {
+      if (!window.JCPPostHog || typeof window.JCPPostHog.capture !== 'function') return;
+      const phName = SURVEY_POSTHOG_EVENTS[eventType];
+      if (!phName) return;
+      const attr = typeof getAttributionPayload === 'function' ? getAttributionPayload() : {};
+      const props = {
+        funnel_surface: 'demo',
+        surface: 'demo',
+        page_path: location.pathname,
+        session_id: getSurveySessionId(),
+        business_type: getBusinessTypeValue() || '',
+        ...attr,
+      };
+      if (stepNumber != null) props.step_number = stepNumber;
+      if (metadata && typeof metadata === 'object') {
+        Object.keys(metadata).forEach((k) => {
+          if (k === 'email' || k === 'phone' || k === 'first_name' || k === 'last_name') return;
+          props[k] = metadata[k];
+        });
+      }
+      delete props.email;
+      delete props.phone;
+      delete props.first_name;
+      delete props.last_name;
+      window.JCPPostHog.capture(phName, props);
+    } catch (e) {
+      // no-op
+    }
+  }
+
   function surveyTrack(eventType, stepNumber, metadata) {
     const restEventUrl = (typeof window.JCP_DEMO_SURVEY !== 'undefined' && window.JCP_DEMO_SURVEY.rest_event_url) ? window.JCP_DEMO_SURVEY.rest_event_url : baseUrl + '/wp-json/jcp/v1/demo-event';
+    surveyCapturePostHog(eventType, stepNumber, metadata);
     try {
       const body = {
         session_id: getSurveySessionId(),
@@ -1029,6 +1069,22 @@
         business_type: bizType || '',
         ...attr,
       });
+      try {
+        if (window.JCPPostHog && typeof window.JCPPostHog.capture === 'function') {
+          window.JCPPostHog.capture('demo_form_submitted', {
+            funnel_surface: 'demo',
+            surface: 'demo',
+            page_path: location.pathname,
+            source: 'demo_survey',
+            lead_type: 'demo',
+            business_type: bizType || '',
+            session_id: getSurveySessionId(),
+            ...attr,
+          });
+        }
+      } catch (ePh) {
+        // no-op
+      }
       sessionStorage.setItem('jcp_datalayer_demo_opt_in', '1');
     } catch (err) {
       // no-op

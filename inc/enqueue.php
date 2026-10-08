@@ -208,7 +208,11 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-survey-shared', 'assets/shared/assets/survey.css', [ 'jcp-core-base' ] );
         jcp_core_enqueue_style( 'jcp-core-survey', 'css/pages/survey.css', [ 'jcp-core-survey-shared' ] );
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
-        jcp_core_enqueue_script( 'jcp-core-survey', 'js/pages/survey.js', [ 'jcp-core-attribution' ] );
+        jcp_core_enqueue_script( 'jcp-core-posthog', 'js/core/jcp-posthog.js', [ 'jcp-core-attribution' ] );
+        jcp_core_enqueue_script( 'jcp-core-survey', 'js/pages/survey.js', [ 'jcp-core-attribution', 'jcp-core-posthog' ] );
+        if ( function_exists( 'jcp_core_localize_posthog_script' ) ) {
+            jcp_core_localize_posthog_script();
+        }
         wp_add_inline_script(
             'jcp-core-survey',
             'window.JCP_CONFIG=window.JCP_CONFIG||{env:"live",baseUrl:' . wp_json_encode( site_url() ) . '};',
@@ -246,9 +250,13 @@ function jcp_core_enqueue_assets(): void {
         jcp_core_enqueue_style( 'jcp-core-demo-shared', 'assets/shared/assets/demo.css' );
         jcp_core_enqueue_style( 'jcp-core-demo', 'css/pages/demo.css', [ 'jcp-core-demo-shared' ] );
         jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
+        jcp_core_enqueue_script( 'jcp-core-posthog', 'js/core/jcp-posthog.js', [ 'jcp-core-attribution' ] );
         jcp_core_enqueue_script( 'jcp-core-onboarding-handoff', 'js/core/jcp-onboarding-handoff.js', [ 'jcp-core-attribution' ] );
         jcp_core_enqueue_script( $render_handle, 'js/core/jcp-render.js', [] );
-        jcp_core_enqueue_script( 'jcp-core-demo', 'js/features/demo/jcp-demo.js', [ $render_handle, 'jcp-core-attribution', 'jcp-core-onboarding-handoff' ] );
+        jcp_core_enqueue_script( 'jcp-core-demo', 'js/features/demo/jcp-demo.js', [ $render_handle, 'jcp-core-attribution', 'jcp-core-posthog', 'jcp-core-onboarding-handoff' ] );
+        if ( function_exists( 'jcp_core_localize_posthog_script' ) ) {
+            jcp_core_localize_posthog_script();
+        }
 
         $globals = "window.JCP_ENV = 'live';\n";
         $globals .= "window.JCP_CONFIG = { env: 'live', baseUrl: '" . esc_url_raw( site_url() ) . "' };\n";
