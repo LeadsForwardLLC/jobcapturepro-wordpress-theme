@@ -1973,17 +1973,73 @@
             flex-shrink: 0;
         }
 
-        .location-info h3 {
+        .location-current-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: #9ca3af;
+            margin: 0 0 2px 0;
+            text-transform: uppercase;
+        }
+
+        .map-thumb--pin {
+            background: #f3f4f6;
+        }
+
+        .map-thumb--pin .lucide-icon {
+            color: #FF503E;
+            filter: invert(42%) sepia(93%) saturate(1984%) hue-rotate(339deg) brightness(101%) contrast(101%);
+        }
+
+        .location-info h3,
+        .location-info .location-street {
             font-size: 16px;
             font-weight: 700;
             color: #111827;
             margin: 0 0 2px 0;
         }
 
-        .location-info p {
+        .location-info p,
+        .location-info .location-city {
             font-size: 13px;
             color: #6b7280;
             margin: 0 0 4px 0;
+        }
+
+        .location-card--new {
+            margin-top: 4px;
+        }
+
+        body.jcp-prototype-page #uploadIntegrationsNote,
+        body.jcp-prototype-page #create-action-review,
+        body.jcp-prototype-page #step4,
+        body.jcp-prototype-page #processingSub,
+        body.jcp-prototype-page #edit-screen .status-pill,
+        body.jcp-prototype-page #btnRequestReview,
+        body.jcp-prototype-page .create-sheet-item__desc {
+            display: none !important;
+        }
+
+        body.jcp-prototype-page .upload-hint {
+            text-align: center;
+            color: #6b7280;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+
+        body.jcp-prototype-page .upload-btn-label {
+            display: none;
+        }
+
+        body.jcp-prototype-page .upload-buttons {
+            justify-content: center;
+            gap: 20px;
+        }
+
+        body.jcp-prototype-page .upload-btn {
+            width: 72px;
+            height: 72px;
+            border-radius: 999px;
         }
 
         .change-link {

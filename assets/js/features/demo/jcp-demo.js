@@ -1253,6 +1253,10 @@ function updateLocationUI() {
   const loc = getActiveLocation();
   const label = document.querySelector('.location-switcher .location-switcher__label');
   if (label) label.textContent = getLocationDisplay(loc);
+  const cityLine = getLocationDisplay(loc);
+  document.querySelectorAll('.location-city').forEach((el) => {
+    el.textContent = cityLine;
+  });
 }
 
 function haversineMi(lat1, lon1, lat2, lon2) {
@@ -1408,6 +1412,14 @@ function initLocationSwitcher() {
       openLocationSheet();
     });
   }
+  ['btnNewEditAddress', 'btnEditEditAddress'].forEach((id) => {
+    const btn = $(id);
+    if (!btn) return;
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openLocationSheet();
+    });
+  });
   if (closeBtn) closeBtn.addEventListener('click', closeLocationSheet);
   if (overlay) {
     overlay.addEventListener('click', (e) => {
@@ -2229,6 +2241,53 @@ function ensurePrototypeControlsEnabled() {
     btn.classList.remove('is-disabled');
     btn.disabled = false;
   });
+  applyPrototypeAppLabels();
+}
+
+/** Match live app copy on /prototype (guided demo keeps its own marketing strings). */
+function applyPrototypeAppLabels() {
+  if (!isPrototype) return;
+
+  const note = document.getElementById('uploadIntegrationsNote');
+  if (note) note.hidden = true;
+
+  const createReview = document.getElementById('create-action-review');
+  if (createReview) createReview.hidden = true;
+
+  const step4 = document.getElementById('step4');
+  if (step4) step4.hidden = true;
+
+  const processingSub = document.getElementById('processingSub');
+  if (processingSub) {
+    processingSub.textContent = '';
+    processingSub.hidden = true;
+  }
+
+  const statusPill = document.querySelector('#edit-screen .status-pill');
+  if (statusPill) statusPill.hidden = true;
+
+  const requestReviewBtn = document.getElementById('btnRequestReview');
+  if (requestReviewBtn) requestReviewBtn.hidden = true;
+}
+
+/** Guided demo keeps longer marketing processing copy. */
+function applyDemoProcessingLabels() {
+  if (isPrototype) return;
+  const labels = [
+    ['step1', 'Scanning the job photos…'],
+    ['step2', 'Adding location context…'],
+    ['step3', 'Creating job content…'],
+    ['step4', 'Preparing Google & website…'],
+  ];
+  labels.forEach(([id, text]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.dataset.processingLabel = text;
+    const span = el.querySelector('span');
+    if (span) span.textContent = text;
+  });
+  setProcessingTitle('Building your job check-in…');
+  setProcessingSub('JobCapturePro is turning one job photo into usable marketing proof.');
 }
 
 function setScreen(screenId) {
@@ -2387,7 +2446,7 @@ function renderHomeCheckins() {
     if (sourceList.length === 0) {
       if (emptyState) {
         emptyState.querySelector('h3').textContent = 'No archived check-ins';
-        emptyState.querySelector('p').textContent = 'Archived check-ins will appear here.';
+        emptyState.querySelector('p').textContent = 'Jobs you archive will be stored here for easy access later.';
         emptyState.style.display = 'block';
       }
       return;
@@ -2477,8 +2536,8 @@ function startPendingJob(job, jobIndex) {
   setScreen('edit-screen');
   
   // Populate edit screen with pending job data
-  const addressEl = document.querySelector('#edit-screen .location-info h3');
-  const cityEl = document.querySelector('#edit-screen .location-info p');
+  const addressEl = document.querySelector('#edit-screen .location-street');
+  const cityEl = document.querySelector('#edit-screen .location-city');
   const descEl = $('description-field');
   
   if (addressEl) addressEl.textContent = job.address;
@@ -2765,15 +2824,19 @@ function saveEditProfile() {
 
 let demoCameraBusy = false;
 
-const PROCESSING_TITLE_CYCLE = [
-  'Building your job check-in…',
-  'Scanning the job photos…',
-  'Adding location context…',
-  'Creating job content…',
-  'Preparing Google & website…',
-];
+const PROCESSING_TITLE_CYCLE = isPrototype
+  ? ['Creating your check-in…']
+  : [
+      'Building your job check-in…',
+      'Scanning the job photos…',
+      'Adding location context…',
+      'Creating job content…',
+      'Preparing Google & website…',
+    ];
 
-const PROCESSING_STEP_IDS = ['step1', 'step2', 'step3', 'step4'];
+const PROCESSING_STEP_IDS = isPrototype
+  ? ['step1', 'step2', 'step3']
+  : ['step1', 'step2', 'step3', 'step4'];
 let processingTitleTimer = null;
 
 function startProcessingTitleCycle() {
@@ -2990,7 +3053,7 @@ async function processPhotos() {
   jcpDemoPushDataLayerAlias('demo_processing_started', 3, { source: 'process_photos' });
 
   resetProcessingSteps(PROCESSING_STEP_IDS);
-  setProcessingSub('JobCapturePro is turning one job photo into usable marketing proof.');
+  setProcessingSub(isPrototype ? '' : 'JobCapturePro is turning one job photo into usable marketing proof.');
   setProcessingStepActive('step1');
   startProcessingTitleCycle();
 
@@ -2999,17 +3062,23 @@ async function processPhotos() {
     window.dispatchEvent(new CustomEvent('jcp-prototype-screen-change', { detail: { screenId: 'checkin-creation-screen' } }));
   }
 
-  const beats = [
-    { id: 'step1', sub: 'Reading what was completed on site.' },
-    { id: 'step2', sub: 'Attaching where the work happened.' },
-    { id: 'step3', sub: 'Building clear job content from the photos.' },
-    { id: 'step4', sub: 'Preparing proof for website, Google, and social.' },
-  ];
+  const beats = isPrototype
+    ? [
+        { id: 'step1', sub: '' },
+        { id: 'step2', sub: '' },
+        { id: 'step3', sub: '' },
+      ]
+    : [
+        { id: 'step1', sub: 'Reading what was completed on site.' },
+        { id: 'step2', sub: 'Attaching where the work happened.' },
+        { id: 'step3', sub: 'Building clear job content from the photos.' },
+        { id: 'step4', sub: 'Preparing proof for website, Google, and social.' },
+      ];
 
   for (let i = 0; i < beats.length; i++) {
     const beat = beats[i];
     setProcessingStepActive(beat.id);
-    setProcessingSub(beat.sub);
+    if (beat.sub) setProcessingSub(beat.sub);
     // Simulated beats only — keep total processing UI around 2–3s.
     await wait(i === 0 ? 480 : 520);
     markProcessingStepDone(beat.id);
@@ -3017,8 +3086,8 @@ async function processPhotos() {
   }
 
   stopProcessingTitleCycle();
-  setProcessingTitle('Check-in ready');
-  setProcessingSub('Opening your finished job proof…');
+  setProcessingTitle(isPrototype ? 'Creating your check-in…' : 'Check-in ready');
+  if (!isPrototype) setProcessingSub('Opening your finished job proof…');
   await wait(280);
 
   overlay.classList.remove('active');
@@ -3073,8 +3142,8 @@ function resetProcessingSteps(ids) {
 function showEditScreen() {
   const editGrid = $('edit-photo-grid');
   const descriptionField = $('description-field');
-  const addressEl = document.querySelector('#edit-screen .location-info h3');
-  const locationEl = document.querySelector('#edit-screen .location-info p');
+  const addressEl = document.querySelector('#edit-screen .location-street');
+  const locationEl = document.querySelector('#edit-screen .location-city');
 
   if (state.comingFromProcessPhotos && state.activeCheckinIndex !== null) {
     const checkin = state.savedCheckins[state.activeCheckinIndex];
@@ -3349,8 +3418,11 @@ if (publishBtn) {
     });
   }
 
-  // Prototype: save only, no publish to website/social
-  if (isPrototype) return;
+  // Prototype: save only, then return to Check-ins overview
+  if (isPrototype) {
+    goToHome();
+    return;
+  }
 
   // Metrics
   state.metrics.checkins++;
@@ -4975,8 +5047,8 @@ function openCheckinForEdit(index, fromArchived = false) {
     descriptionField.value = checkin.summary || 'Replaced water heater.';
   }
 
-  const addressEl = document.querySelector('#edit-screen .location-info h3');
-  const locationEl = document.querySelector('#edit-screen .location-info p');
+  const addressEl = document.querySelector('#edit-screen .location-street');
+  const locationEl = document.querySelector('#edit-screen .location-city');
   if (addressEl) addressEl.textContent = checkin.address || getCanonicalStreet();
   if (locationEl) locationEl.textContent = checkin.location || getCanonicalCityState();
 
@@ -5017,12 +5089,12 @@ function updateArchiveButtonUI() {
     btn.disabled = false;
     btn.classList.remove('is-disabled');
   } else if (isNew) {
-    label.textContent = 'Archive Check-In';
+    label.textContent = 'Archive';
     btn.title = 'Publish first to archive';
     btn.disabled = true;
     btn.classList.add('is-disabled');
   } else {
-    label.textContent = 'Archive Check-In';
+    label.textContent = 'Archive';
     btn.title = '';
     btn.disabled = false;
     btn.classList.remove('is-disabled');
@@ -5053,6 +5125,9 @@ function saveArchivedCheckinEdits() {
   const descField = $('description-field');
   if (descField) checkin.summary = descField.value;
   persistCheckins();
+  state.activeCheckinIndex = null;
+  state.activeCheckinFromArchived = false;
+  goToHome();
 }
 
 function deleteArchivedCheckin() {
@@ -5523,6 +5598,8 @@ function init() {
     endDemoPrepOverlay();
     return;
   }
+
+  applyDemoProcessingLabels();
 
   const returnState = readReturnState();
   if (returnState) {

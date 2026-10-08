@@ -65,7 +65,7 @@
                                 </button>
                                 <button type="button" class="btn btn-secondary" id="tab-archived" data-tab="archived">
                                     <img src="../../shared/assets/icons/lucide/archive.svg" class="lucide-icon" alt="">
-                                    <span>Archived</span>
+                                    <span>Archive</span>
                                 </button>
                             </div>
 
@@ -111,13 +111,28 @@
                     <div class="app-screen" id="new-screen">
                         <div class="app-header">
                             <div class="app-header__left"><button class="back-btn" id="btnBackToHome" onclick="goToHome()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
-                            <p class="app-header__title">New Check-In</h1>
+                            <p class="app-header__title">New Check-in</h1>
                             <div class="app-header__right"></div>
                         </div>
                         <div class="content-area">
 
+                            <div class="section-title new-screen-location-title">LOCATION</div>
+                            <div class="location-card location-card--new" id="new-location-card">
+                                <div class="location-header">
+                                    <div class="map-thumb map-thumb--pin">
+                                        <img src="../../shared/assets/icons/lucide/map-pin.svg" class="lucide-icon lucide-icon-lg" alt="">
+                                    </div>
+                                    <div class="location-info">
+                                        <p class="location-current-label">CURRENT LOCATION</p>
+                                        <h3 class="location-street">1242 Mason Rd</h3>
+                                        <p class="location-city">Austin, TX 78704</p>
+                                        <button type="button" class="edit-action-link" id="btnNewEditAddress"><img src="../../shared/assets/icons/lucide/pencil.svg" class="lucide-icon lucide-icon-sm" alt=""> Edit Address</button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="upload-area">
-                                <div class="upload-hint">This is the only thing your crew needs to capture.</div>
+                                <div class="upload-hint">Take photos or upload images to generate your check-in</div>
                                 <p class="upload-integrations-note" id="uploadIntegrationsNote">Already use Housecall Pro, Jobber, ServiceTitan or CompanyCam? Keep your current workflow — JCP can pull in job data and photos automatically.</p>
                                 <div class="upload-buttons">
                                     <button type="button" class="upload-btn upload-btn--labeled" id="uploadBtnCamera" data-action="add-photos" aria-label="Take a photo">
@@ -176,7 +191,7 @@
                     <div class="app-screen" id="edit-screen">
                         <div class="app-header">
                             <div class="app-header__left"><button class="back-btn" id="btnEditBack" onclick="goToHome()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
-                            <p class="app-header__title">Edit Check-In</h1>
+                            <p class="app-header__title">Edit Check-in</h1>
                             <div class="app-header__right"></div>
                         </div>
                         <div class="content-area edit-content">
@@ -184,13 +199,14 @@
                             <div class="section-title">LOCATION</div>
                             <div class="location-card" id="edit-location-card">
                                 <div class="location-header">
-                                    <div class="map-thumb">
-                                        <img src="../../shared/assets/icons/lucide/map.svg" class="lucide-icon lucide-icon-lg" alt="">
+                                    <div class="map-thumb map-thumb--pin">
+                                        <img src="../../shared/assets/icons/lucide/map-pin.svg" class="lucide-icon lucide-icon-lg" alt="">
                                     </div>
                                     <div class="location-info">
-                                        <h3>1242 Mason Rd</h3>
-                                        <p>Austin, TX 78704</p>
-                                        <button type="button" class="edit-action-link"><img src="../../shared/assets/icons/lucide/pencil.svg" class="lucide-icon lucide-icon-sm" alt=""> Change Location</button>
+                                        <p class="location-current-label">CURRENT LOCATION</p>
+                                        <h3 class="location-street">1242 Mason Rd</h3>
+                                        <p class="location-city">Austin, TX 78704</p>
+                                        <button type="button" class="edit-action-link" id="btnEditEditAddress"><img src="../../shared/assets/icons/lucide/pencil.svg" class="lucide-icon lucide-icon-sm" alt=""> Edit Address</button>
                                     </div>
                                 </div>
                             </div>
@@ -223,7 +239,7 @@
 
                             <div class="action-buttons action-buttons--normal" id="edit-screen-buttons-normal">
                                 <button class="btn btn-primary" id="btnSavePublish" onclick="saveCheckin()"><img src="../../shared/assets/icons/lucide/upload.svg" class="lucide-icon lucide-icon-sm" alt=""> Publish Everywhere</button>
-                                <button type="button" class="btn btn-warning" id="btnArchiveCheckin"><img src="../../shared/assets/icons/lucide/archive.svg" class="lucide-icon lucide-icon-sm" alt=""> <span id="btnArchiveCheckinLabel">Archive Check-In</span></button>
+                                <button type="button" class="btn btn-warning" id="btnArchiveCheckin"><img src="../../shared/assets/icons/lucide/archive.svg" class="lucide-icon lucide-icon-sm" alt=""> <span id="btnArchiveCheckinLabel">Archive</span></button>
                                 <button class="btn btn-primary action-buttons__item--spaced" id="btnRequestReview" onclick="goToRequestReview()"><img src="../../shared/assets/icons/lucide/star.svg" class="lucide-icon lucide-icon-sm" alt=""> Preview Review Request</button>
                             </div>
                             <div class="action-buttons action-buttons--archived" id="edit-screen-buttons-archived" style="display: none;">
@@ -394,20 +410,20 @@
                     <!-- Processing Overlay -->
                     <div class="processing-overlay" id="processing" aria-live="polite">
                         <div class="spinner" aria-hidden="true"></div>
-                        <div class="processing-title" id="processingTitle">Building your job check-in...</div>
+                        <div class="processing-title" id="processingTitle">Creating your check-in…</div>
                         <p class="processing-sub" id="processingSub">JobCapturePro is turning one job photo into usable marketing proof.</p>
                         <div class="processing-steps">
-                            <div class="processing-step" id="step1" data-processing-label="Scanning the job photos…">
+                            <div class="processing-step" id="step1" data-processing-label="Analyzing photos…">
                                 <div class="step-icon"></div>
-                                <span>Scanning the job photos…</span>
+                                <span>Analyzing photos…</span>
                             </div>
-                            <div class="processing-step" id="step2" data-processing-label="Adding location context…">
+                            <div class="processing-step" id="step2" data-processing-label="Detecting location…">
                                 <div class="step-icon"></div>
-                                <span>Adding location context…</span>
+                                <span>Detecting location…</span>
                             </div>
-                            <div class="processing-step" id="step3" data-processing-label="Creating job content…">
+                            <div class="processing-step" id="step3" data-processing-label="Generating description…">
                                 <div class="step-icon"></div>
-                                <span>Creating job content…</span>
+                                <span>Generating description…</span>
                             </div>
                             <div class="processing-step" id="step4" data-processing-label="Preparing Google & website…">
                                 <div class="step-icon"></div>
@@ -500,7 +516,7 @@
                     <button type="button" class="create-sheet-item create-sheet-item--primary" id="create-action-checkin">
                         <span class="create-sheet-item__icon-wrap"><img src="../../shared/assets/icons/lucide/circle-plus.svg" class="lucide-icon" alt=""></span>
                         <span class="create-sheet-item__text-wrap">
-                            <span class="create-sheet-item__title">New Check-in</span>
+                            <span class="create-sheet-item__title">Check-in</span>
                             <span class="create-sheet-item__desc">Capture photos, add details, and publish proof of work.</span>
                         </span>
                         <img src="../../shared/assets/icons/lucide/arrow-right.svg" class="lucide-icon lucide-icon-sm" alt="" aria-hidden="true">
