@@ -1249,10 +1249,19 @@ function getLocationDisplay(loc) {
   return loc ? `${loc.city}, ${loc.state}` : 'Austin, TX';
 }
 
+function getOrgSwitcherLabel() {
+  if (isPrototype) {
+    const biz = (demoUser.businessName || '').trim();
+    if (biz && biz !== 'Your Business') return biz;
+    return 'LeadsForward';
+  }
+  return getLocationDisplay(getActiveLocation());
+}
+
 function updateLocationUI() {
   const loc = getActiveLocation();
   const label = document.querySelector('.location-switcher .location-switcher__label');
-  if (label) label.textContent = getLocationDisplay(loc);
+  if (label) label.textContent = getOrgSwitcherLabel();
   const cityLine = getLocationDisplay(loc);
   document.querySelectorAll('.location-city').forEach((el) => {
     el.textContent = cityLine;
@@ -2248,6 +2257,11 @@ function ensurePrototypeControlsEnabled() {
 function applyPrototypeAppLabels() {
   if (!isPrototype) return;
 
+  if (!demoUser.businessName || demoUser.businessName === 'Your Business') {
+    demoUser.businessName = 'LeadsForward';
+  }
+  updateLocationUI();
+
   const note = document.getElementById('uploadIntegrationsNote');
   if (note) note.hidden = true;
 
@@ -2421,13 +2435,72 @@ function loadSampleCheckins() {
    Home Screen (Phone)
 ========================================================= */
 
+function getHomeSearchQuery() {
+  const input = $('home-search-input');
+  return ((input && input.value) || '').trim().toLowerCase();
+}
+
+function checkinMatchesSearch(checkin, query) {
+  if (!query) return true;
+  const hay = [
+    checkin.address,
+    checkin.location,
+    checkin.summary,
+    checkin.title,
+    checkin.customer,
+  ].filter(Boolean).join(' ').toLowerCase();
+  return hay.includes(query);
+}
+
+function setHomeEmptyState({ title, body, mode, showHint }) {
+  const emptyState = document.querySelector('#home-screen .empty-state');
+  if (!emptyState) return;
+  const h3 = emptyState.querySelector('h3');
+  const p = emptyState.querySelector('p');
+  const hint = emptyState.querySelector('.empty-hint');
+  const icon = emptyState.querySelector('.empty-state__icon img');
+  if (h3) h3.textContent = title;
+  if (p) p.textContent = body;
+  if (hint) hint.hidden = !showHint;
+  emptyState.dataset.emptyMode = mode || 'default';
+  if (icon) {
+    const base = assetBase || '../..';
+    const iconName = mode === 'search' ? 'search' : (mode === 'archive' ? 'archive' : 'clipboard-list');
+    icon.src = `${base}/shared/assets/icons/lucide/${iconName}.svg`;
+  }
+  emptyState.style.display = 'block';
+}
+
+function renderCheckinCard(checkin, index, fromArchived) {
+  const item = document.createElement('div');
+  item.className = 'home-checkin-item';
+  item.innerHTML = `
+    <div class="home-checkin-left">
+      <h3>${checkin.address || getCanonicalStreet()}</h3>
+      <div class="home-checkin-location">${checkin.location || ''}</div>
+      <div class="home-checkin-desc">${excerptText(checkin.summary || 'Replaced water heater.', 10)}</div>
+      <div class="home-checkin-meta">
+        <span class="home-checkin-user">${checkin.customer || 'John Doe'}</span>
+        <span class="home-checkin-time">${checkin.time || '2h ago'}</span>
+      </div>
+    </div>
+    <div class="home-checkin-thumb"><img src="${checkin.image}" alt="Job photo"></div>
+  `;
+  item.onclick = () => {
+    if (isDemoMode) { showDemoRestrictionTooltip(item, 'Check-in editing is disabled in the demo'); return; }
+    openCheckinForEdit(index, fromArchived);
+  };
+  return item;
+}
+
 function renderHomeCheckins() {
   const list = $('home-checkin-list');
   const emptyState = document.querySelector('#home-screen .empty-state');
   if (!list) return;
 
   list.innerHTML = '';
-  
+  const query = getHomeSearchQuery();
+
   // Load and display pending jobs
   let pendingJobs = [];
   try {
@@ -2438,46 +2511,50 @@ function renderHomeCheckins() {
   } catch (e) {
     console.warn('Could not load pending jobs');
   }
-  
+
   const isArchived = state.homeActiveTab === 'archived';
   const sourceList = isArchived ? state.archivedCheckins : state.savedCheckins;
+  const filtered = sourceList
+    .map((checkin, index) => ({ checkin, index }))
+    .filter(({ checkin }) => checkinMatchesSearch(checkin, query));
 
   if (isArchived) {
     if (sourceList.length === 0) {
-      if (emptyState) {
-        emptyState.querySelector('h3').textContent = 'No archived check-ins';
-        emptyState.querySelector('p').textContent = 'Jobs you archive will be stored here for easy access later.';
-        emptyState.style.display = 'block';
-      }
+      setHomeEmptyState({
+        title: 'No archived check-ins',
+        body: 'Jobs you archive will be stored here for easy access later.',
+        mode: 'archive',
+        showHint: false,
+      });
+      return;
+    }
+    if (filtered.length === 0) {
+      setHomeEmptyState({
+        title: 'No results found',
+        body: 'No check-ins match that street or city. Try a different spelling or clear search.',
+        mode: 'search',
+        showHint: false,
+      });
       return;
     }
     if (emptyState) emptyState.style.display = 'none';
-    sourceList.forEach((checkin, index) => {
-      const item = document.createElement('div');
-      item.className = 'home-checkin-item';
-      item.innerHTML = `
-        <div class="home-checkin-left">
-          <h3>${checkin.address || getCanonicalStreet()}</h3>
-          <div class="home-checkin-location">${checkin.location}</div>
-          <div class="home-checkin-desc">${excerptText(checkin.summary || 'Replaced water heater.', 10)}</div>
-          <div class="home-checkin-meta">
-            <span class="home-checkin-user">${checkin.customer || 'John Doe'}</span>
-            <span class="home-checkin-time">${checkin.time || '2h ago'}</span>
-          </div>
-        </div>
-        <div class="home-checkin-thumb"><img src="${checkin.image}" alt="Job photo"></div>
-      `;
-      item.onclick = () => {
-        if (isDemoMode) { showDemoRestrictionTooltip(item, 'Check-in editing is disabled in the demo'); return; }
-        openCheckinForEdit(index, true);
-      };
-      list.appendChild(item);
+    filtered.forEach(({ checkin, index }) => {
+      list.appendChild(renderCheckinCard(checkin, index, true));
     });
     return;
   }
 
   // My Jobs: show pending first, then saved check-ins
-  pendingJobs.forEach((job, index) => {
+  const filteredPending = query
+    ? pendingJobs.filter((job) => {
+        const hay = [job.address, job.city, job.scopeSummary?.service, job.scopeSummary?.scope]
+          .filter(Boolean).join(' ').toLowerCase();
+        return hay.includes(query);
+      })
+    : pendingJobs;
+
+  filteredPending.forEach((job) => {
+    const index = pendingJobs.indexOf(job);
     const item = document.createElement('div');
     item.className = 'home-checkin-item pending-job-item';
     item.innerHTML = `
@@ -2498,36 +2575,31 @@ function renderHomeCheckins() {
   });
 
   if (state.savedCheckins.length === 0 && pendingJobs.length === 0) {
-    if (emptyState) {
-      emptyState.querySelector('h3').textContent = 'Start capturing proof';
-      emptyState.querySelector('p').textContent = 'Take a few photos, submit, and turn finished work into public-facing proof.';
-      emptyState.style.display = 'block';
-    }
+    setHomeEmptyState({
+      title: 'Start capturing proof',
+      body: isPrototype
+        ? 'Take a photo → submit → ready to publish across connected channels.'
+        : 'Take a few photos, submit, and turn finished work into public-facing proof.',
+      mode: 'default',
+      showHint: true,
+    });
+    return;
+  }
+
+  if (filtered.length === 0 && filteredPending.length === 0) {
+    setHomeEmptyState({
+      title: 'No results found',
+      body: 'No check-ins match that street or city. Try a different spelling or clear search.',
+      mode: 'search',
+      showHint: false,
+    });
     return;
   }
 
   if (emptyState) emptyState.style.display = 'none';
 
-  state.savedCheckins.forEach((checkin, index) => {
-    const item = document.createElement('div');
-    item.className = 'home-checkin-item';
-    item.innerHTML = `
-      <div class="home-checkin-left">
-        <h3>${checkin.address || getCanonicalStreet()}</h3>
-        <div class="home-checkin-location">${checkin.location}</div>
-        <div class="home-checkin-desc">${excerptText(checkin.summary || 'Replaced water heater.', 10)}</div>
-        <div class="home-checkin-meta">
-          <span class="home-checkin-user">${checkin.customer || 'John Doe'}</span>
-          <span class="home-checkin-time">${checkin.time || '2h ago'}</span>
-        </div>
-      </div>
-      <div class="home-checkin-thumb"><img src="${checkin.image}" alt="Job photo"></div>
-    `;
-    item.onclick = () => {
-      if (isDemoMode) { showDemoRestrictionTooltip(item, 'Check-in editing is disabled in the demo'); return; }
-      openCheckinForEdit(index, false);
-    };
-    list.appendChild(item);
+  filtered.forEach(({ checkin, index }) => {
+    list.appendChild(renderCheckinCard(checkin, index, false));
   });
 }
 
@@ -5449,6 +5521,30 @@ function wireControls() {
   document.querySelectorAll('.action-tiles [data-tab]').forEach((el) => {
     el.addEventListener('click', () => setHomeTab(el.getAttribute('data-tab')));
   });
+
+  const homeSearchInput = $('home-search-input');
+  const homeSearchCancel = $('home-search-cancel');
+  if (homeSearchInput) {
+    const syncSearchChrome = () => {
+      const hasQuery = !!homeSearchInput.value.trim();
+      if (homeSearchCancel) homeSearchCancel.hidden = !hasQuery;
+      document.querySelector('.home-search')?.classList.toggle('is-active', hasQuery || document.activeElement === homeSearchInput);
+      renderHomeCheckins();
+    };
+    homeSearchInput.addEventListener('input', syncSearchChrome);
+    homeSearchInput.addEventListener('focus', syncSearchChrome);
+    homeSearchInput.addEventListener('blur', () => {
+      document.querySelector('.home-search')?.classList.toggle('is-active', !!homeSearchInput.value.trim());
+    });
+  }
+  if (homeSearchCancel) {
+    homeSearchCancel.addEventListener('click', () => {
+      if (homeSearchInput) homeSearchInput.value = '';
+      homeSearchCancel.hidden = true;
+      document.querySelector('.home-search')?.classList.remove('is-active');
+      renderHomeCheckins();
+    });
+  }
 
   $('btnArchiveCheckin')?.addEventListener('click', () => archiveCheckin());
 

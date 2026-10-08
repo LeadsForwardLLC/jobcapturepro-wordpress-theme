@@ -42,12 +42,16 @@
                     </div>
                     <!-- Home Screen -->
                     <div class="app-screen active" id="home-screen">
-                        <div class="app-header app-header--title-left">
-                            <p class="app-header__title">Check-ins</h1>
-                            <button type="button" class="location-switcher" id="location-switcher" data-action="switch-location" aria-label="Switch location">
-                                <img src="../../shared/assets/icons/lucide/map-pin.svg" class="location-switcher__icon" alt="" aria-hidden="true">
-                                <span class="location-switcher__label">Austin, TX</span>
-                                <img src="../../shared/assets/icons/lucide/chevron-down.svg" class="location-switcher__chevron" alt="" aria-hidden="true">
+                        <div class="app-header app-header--org">
+                            <button type="button" class="org-switcher location-switcher" id="location-switcher" data-action="switch-location" aria-label="Switch location">
+                                <span class="org-switcher__mark" aria-hidden="true">
+                                    <img src="../../shared/assets/icons/lucide/map-pin.svg" class="org-switcher__mark-icon" alt="">
+                                </span>
+                                <span class="location-switcher__label org-switcher__label">LeadsForward</span>
+                                <img src="../../shared/assets/icons/lucide/chevron-down.svg" class="location-switcher__chevron org-switcher__chevron" alt="" aria-hidden="true">
+                            </button>
+                            <button type="button" class="home-help-btn" id="btnHomeHelp" aria-label="Help">
+                                <img src="../../shared/assets/icons/lucide/circle-question-mark.svg" class="lucide-icon" alt="">
                             </button>
                         </div>
                         <div class="content-area">
@@ -69,7 +73,23 @@
                                 </button>
                             </div>
 
-                            <div class="empty-state">
+                            <div class="home-toolbar">
+                                <label class="home-search" for="home-search-input">
+                                    <img src="../../shared/assets/icons/lucide/navigation.svg" class="home-search__icon home-search__icon--nav" alt="" aria-hidden="true">
+                                    <img src="../../shared/assets/icons/lucide/clock.svg" class="home-search__icon" alt="" aria-hidden="true">
+                                    <img src="../../shared/assets/icons/lucide/search.svg" class="home-search__icon" alt="" aria-hidden="true">
+                                    <input type="search" id="home-search-input" class="home-search__input" placeholder="Search" autocomplete="off">
+                                    <button type="button" class="home-search__cancel" id="home-search-cancel" hidden>Cancel</button>
+                                </label>
+                                <button type="button" class="home-map-btn" id="btnHomeMap" aria-label="Map view">
+                                    <img src="../../shared/assets/icons/lucide/map-pinned.svg" class="lucide-icon" alt="">
+                                </button>
+                            </div>
+
+                            <div class="empty-state" id="home-empty-state" data-empty-mode="default">
+                                <div class="empty-state__icon" aria-hidden="true">
+                                    <img src="../../shared/assets/icons/lucide/clipboard-list.svg" class="lucide-icon" alt="">
+                                </div>
                                 <h3>Start capturing proof</h3>
                                 <p>Take a few photos, submit, and turn finished work into public-facing proof.</p>
                                 <div class="empty-hint">
