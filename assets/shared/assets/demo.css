@@ -1045,47 +1045,210 @@
         }
 
         /* Profile Screen */
+        #profile-screen .app-header {
+            display: none;
+        }
+
+        #profile-screen .profile-content {
+            background: #f5f5f7;
+            padding: 20px 16px 24px;
+        }
+
         .profile-card {
             display: flex;
             align-items: center;
-            gap: 16px;
+            gap: 14px;
             background: #fff;
-            border: 1px solid #e5e7eb;
-            border-radius: 16px;
+            border: 1px solid #e8e8ed;
+            border-radius: 18px;
             padding: 16px;
-            margin-bottom: 24px;
+            margin-bottom: 22px;
         }
+
         .profile-card__avatar {
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #93c5fd 0%, #fef3c7 100%);
+            background: #fff;
+            border: 1.5px solid #d1d5db;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
+
+        .profile-card__avatar .lucide-icon {
+            width: 26px;
+            height: 26px;
+            color: #111827;
+            filter: brightness(0) saturate(100%);
+        }
+
         .profile-card__info {
             min-width: 0;
         }
+
         .profile-card__name {
             font-size: 17px;
             font-weight: 700;
             color: #111827;
+            letter-spacing: -0.01em;
+            line-height: 1.25;
         }
+
         .profile-card__email {
-            font-size: 14px;
-            color: #6b7280;
-            margin-top: 2px;
+            font-size: 13px;
+            color: #8e8e93;
+            margin-top: 3px;
+            line-height: 1.3;
+            word-break: break-word;
         }
+
         .profile-section-title {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 700;
             color: #111827;
-            margin: 0 0 12px 0;
+            margin: 0 0 10px 2px;
+            letter-spacing: -0.01em;
         }
-        #profile-screen .content-area .btn-full {
-            margin-bottom: 10px;
+
+        .profile-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 18px;
         }
-        #profile-screen .content-area .btn-full:last-of-type {
+
+        .profile-setting-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            width: 100%;
+            background: #fff;
+            border: 1px solid #e8e8ed;
+            border-radius: 16px;
+            padding: 14px 16px;
+            text-align: left;
+            font: inherit;
+            color: inherit;
+            cursor: default;
+        }
+
+        button.profile-setting-card--action {
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        button.profile-setting-card--action:hover {
+            background: #fafafa;
+        }
+
+        .profile-setting-card__text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+
+        .profile-setting-card__title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #111827;
+            letter-spacing: -0.01em;
+        }
+
+        .profile-setting-card__subtitle {
+            font-size: 13px;
+            color: #8e8e93;
+            line-height: 1.35;
+        }
+
+        .profile-setting-card__icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            color: #111827;
+            filter: brightness(0) saturate(100%);
+        }
+
+        .profile-toggle {
+            position: relative;
+            display: inline-flex;
+            flex-shrink: 0;
+            width: 48px;
+            height: 28px;
+            cursor: default;
+        }
+
+        .profile-toggle__input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .profile-toggle__track {
+            display: block;
+            width: 48px;
+            height: 28px;
+            border-radius: 999px;
+            background: #e5e5ea;
+            position: relative;
+            transition: background 0.2s ease;
+        }
+
+        .profile-toggle__track::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+            transition: transform 0.2s ease;
+        }
+
+        .profile-toggle__input:checked + .profile-toggle__track {
+            background: #ff503e;
+        }
+
+        .profile-toggle__input:checked + .profile-toggle__track::after {
+            transform: translateX(20px);
+        }
+
+        .profile-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        #profile-screen .profile-actions .btn-full {
             margin-bottom: 0;
+            border-radius: 16px;
+            font-weight: 700;
+            min-height: 52px;
+            padding: 14px 18px;
+        }
+
+        #profile-screen .profile-actions .btn-secondary {
+            border-width: 1px;
+            border-color: #e8e8ed;
+            background: #fff;
+        }
+
+        #profile-screen .profile-actions .btn-primary {
+            border: none;
+        }
+
+        #profile-screen .profile-actions .btn-warning {
+            border-width: 1px;
+            margin-top: 2px;
+            font-size: 15px;
+            font-weight: 700;
+            min-height: 48px;
         }
 
         /* Edit Profile Screen */
@@ -1097,13 +1260,24 @@
             width: 96px;
             height: 96px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #93c5fd 0%, #fef3c7 100%);
+            background: #fff;
             margin: 0 auto 8px;
-            border: 2px solid #e5e7eb;
+            border: 1.5px solid #d1d5db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .edit-profile-photo::before {
+            content: '';
+            width: 40px;
+            height: 40px;
+            background: url('icons/lucide/user.svg') center / contain no-repeat;
+            filter: brightness(0) saturate(100%);
+            opacity: 0.85;
         }
         .edit-profile-photo-hint {
             font-size: 13px;
-            color: #6b7280;
+            color: #8e8e93;
             margin: 0;
         }
         .edit-profile-field {
@@ -1111,16 +1285,20 @@
         }
         .edit-profile-label {
             display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: #6b7280;
+            font-size: 12px;
+            font-weight: 700;
+            color: #8e8e93;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
             margin-bottom: 8px;
         }
         #edit-profile-screen .content-area .input-field {
             margin-bottom: 0;
+            border-radius: 14px;
         }
         #edit-profile-screen .content-area .btn-full {
             margin-top: 8px;
+            border-radius: 16px;
         }
 
         /* Change Password Screen */

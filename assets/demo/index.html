@@ -286,22 +286,47 @@
                     <div class="app-screen" id="profile-screen">
                         <div class="app-header">
                             <div class="app-header__left"></div>
-                            <p class="app-header__title">Profile</h1>
+                            <p class="app-header__title">Profile</p>
                             <div class="app-header__right"></div>
                         </div>
-                        <div class="content-area">
+                        <div class="content-area profile-content">
                             <div class="profile-card">
-                                <div class="profile-card__avatar" id="profile-avatar"></div>
+                                <div class="profile-card__avatar" id="profile-avatar" aria-hidden="true">
+                                    <img src="../../shared/assets/icons/lucide/user.svg" class="lucide-icon" alt="">
+                                </div>
                                 <div class="profile-card__info">
                                     <div class="profile-card__name" id="profile-name">Trevor</div>
                                     <div class="profile-card__email" id="profile-email">trevor@leadsforward.com</div>
                                 </div>
                             </div>
+
                             <h2 class="profile-section-title">Account Settings</h2>
-                            <button type="button" class="btn btn-secondary btn-full" id="btnChangePassword" onclick="goToChangePassword()">Change Password</button>
-                            <button type="button" class="btn btn-secondary btn-full" id="btnEditProfile" onclick="goToEditProfile()">Edit Profile</button>
-                            <button type="button" class="btn btn-primary btn-full">Log Out</button>
-                            <button type="button" class="btn btn-warning btn-full">Delete Account</button>
+                            <div class="profile-settings">
+                                <div class="profile-setting-card">
+                                    <div class="profile-setting-card__text">
+                                        <span class="profile-setting-card__title">App Theme</span>
+                                        <span class="profile-setting-card__subtitle">Light Mode</span>
+                                    </div>
+                                    <label class="profile-toggle" aria-label="App theme">
+                                        <input type="checkbox" class="profile-toggle__input" disabled>
+                                        <span class="profile-toggle__track" aria-hidden="true"></span>
+                                    </label>
+                                </div>
+                                <button type="button" class="profile-setting-card profile-setting-card--action">
+                                    <div class="profile-setting-card__text">
+                                        <span class="profile-setting-card__title">App Settings</span>
+                                        <span class="profile-setting-card__subtitle">Manage your app preferences.</span>
+                                    </div>
+                                    <img src="../../shared/assets/icons/lucide/settings.svg" class="lucide-icon profile-setting-card__icon" alt="">
+                                </button>
+                            </div>
+
+                            <div class="profile-actions">
+                                <button type="button" class="btn btn-secondary btn-full" id="btnChangePassword" onclick="goToChangePassword()">Change Password</button>
+                                <button type="button" class="btn btn-secondary btn-full" id="btnEditProfile" onclick="goToEditProfile()">Edit Profile</button>
+                                <button type="button" class="btn btn-primary btn-full">Log Out</button>
+                                <button type="button" class="btn btn-warning btn-full">Delete Account</button>
+                            </div>
                         </div>
                         <div class="tab-bar">
                             <button type="button" class="tab-item" onclick="goToHome()">
@@ -320,7 +345,7 @@
                     <div class="app-screen" id="edit-profile-screen">
                         <div class="app-header">
                             <div class="app-header__left"><button type="button" class="back-btn" onclick="goToProfile()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
-                            <p class="app-header__title">Edit Profile</h1>
+                            <p class="app-header__title">Edit Profile</p>
                             <div class="app-header__right"></div>
                         </div>
                         <div class="content-area">
@@ -340,7 +365,7 @@
                     <div class="app-screen" id="change-password-screen">
                         <div class="app-header">
                             <div class="app-header__left"><button type="button" class="back-btn" onclick="goToProfile()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
-                            <p class="app-header__title">Change Password</h1>
+                            <p class="app-header__title">Change Password</p>
                             <div class="app-header__right"></div>
                         </div>
                         <div class="content-area">
