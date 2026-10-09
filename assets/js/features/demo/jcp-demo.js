@@ -1593,6 +1593,9 @@ function showSmartLocationPrompt(closerLocation) {
  */
 function initLocationSmartPrompt() {
   if (!isPrototype || isDemoMode) return;
+  // Public onboarding hub: open on a clean Check-Ins home (no auto location modal).
+  // Location switcher + prompt still work when the user initiates them.
+  if (window.JCP_IS_ONBOARDING_HUB === true) return;
   const active = getActiveLocation();
   const suggested = active.id === LOCATIONS[0].id ? LOCATIONS[1] : LOCATIONS[0];
   setTimeout(() => showSmartLocationPrompt(suggested), 800);

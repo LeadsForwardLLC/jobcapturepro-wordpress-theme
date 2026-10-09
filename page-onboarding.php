@@ -80,19 +80,18 @@ add_filter(
 <main class="jcp-ob-main">
 	<section class="jcp-ob-hero" aria-labelledby="jcp-ob-title">
 		<p class="jcp-ob-eyebrow"><?php esc_html_e( 'Welcome to JobCapturePro', 'jcp-core' ); ?></p>
-		<h1 id="jcp-ob-title"><?php esc_html_e( "Let's get your jobs working for you.", 'jcp-core' ); ?></h1>
+		<h1 id="jcp-ob-title"><?php esc_html_e( "Let's get you up and running.", 'jcp-core' ); ?></h1>
 		<p class="jcp-ob-lead">
-			<?php esc_html_e( "Welcome aboard! JobCapturePro turns the work your team already completes into valuable marketing proof. Explore the app below, or get ready to connect the tools your crew already uses. We'll help you get everything working during onboarding.", 'jcp-core' ); ?>
+			<?php esc_html_e( 'Explore the app, download it if needed, and get ready to turn your completed jobs into marketing proof.', 'jcp-core' ); ?>
 		</p>
 	</section>
 
 	<section class="jcp-ob-stage" id="jcp-ob-preview" aria-labelledby="jcp-ob-preview-title">
 		<div class="jcp-ob-stage__preview">
-			<div class="jcp-ob-preview-intro">
-				<p class="jcp-ob-label"><?php esc_html_e( 'Interactive app preview', 'jcp-core' ); ?></p>
-				<h2 id="jcp-ob-preview-title"><?php esc_html_e( 'Take a look around', 'jcp-core' ); ?></h2>
-				<p><?php esc_html_e( 'Try the interactive preview to see how easy it is to capture a completed job with JobCapturePro.', 'jcp-core' ); ?></p>
-			</div>
+			<p id="jcp-ob-preview-title" class="jcp-ob-phone-label">
+				<span class="jcp-ob-phone-label__dot" aria-hidden="true"></span>
+				<?php esc_html_e( 'Try the interactive app', 'jcp-core' ); ?>
+			</p>
 			<div class="jcp-ob-phone" data-jcp-ob-preview>
 				<?php /* Must be data-jcp-page="prototype" — jcp-render.js only boots the phone shell for prototype|demo. */ ?>
 				<div id="jcp-app" data-jcp-page="prototype" data-demo-mode="false"></div>
@@ -100,9 +99,9 @@ add_filter(
 		</div>
 
 		<aside class="jcp-ob-downloads" aria-labelledby="jcp-ob-download-title">
-			<h2 id="jcp-ob-download-title"><?php esc_html_e( 'Ready to use JCP on your phone?', 'jcp-core' ); ?></h2>
+			<h2 id="jcp-ob-download-title"><?php esc_html_e( 'Get the JCP mobile app', 'jcp-core' ); ?></h2>
 			<p class="jcp-ob-downloads__lead">
-				<?php esc_html_e( "If you'll be creating Check-Ins directly with the JobCapturePro app, download it before your onboarding call so you're ready to go.", 'jcp-core' ); ?>
+				<?php esc_html_e( 'Scan with your phone or select your app store.', 'jcp-core' ); ?>
 			</p>
 
 			<div class="jcp-ob-store-grid">
@@ -124,7 +123,7 @@ add_filter(
 						/>
 					</span>
 					<img
-						class="jcp-ob-badge"
+						class="jcp-ob-badge jcp-ob-badge--ios"
 						src="<?php echo esc_url( $badge_ios ); ?>"
 						alt="<?php esc_attr_e( 'Download on the App Store', 'jcp-core' ); ?>"
 						width="120"
@@ -151,7 +150,7 @@ add_filter(
 						/>
 					</span>
 					<img
-						class="jcp-ob-badge"
+						class="jcp-ob-badge jcp-ob-badge--android"
 						src="<?php echo esc_url( $badge_android ); ?>"
 						alt="<?php esc_attr_e( 'Get it on Google Play', 'jcp-core' ); ?>"
 						width="135"
@@ -161,9 +160,10 @@ add_filter(
 				</a>
 			</div>
 
-			<p class="jcp-ob-downloads__note">
-				<?php esc_html_e( 'Using a supported CRM or photo app instead? You may not need to install anything — see below.', 'jcp-core' ); ?>
-			</p>
+			<div class="jcp-ob-downloads__note">
+				<strong><?php esc_html_e( 'Already using a CRM or photo app?', 'jcp-core' ); ?></strong>
+				<span><?php esc_html_e( "You may not need the JCP app. We'll help connect your existing workflow.", 'jcp-core' ); ?></span>
+			</div>
 		</aside>
 	</section>
 
@@ -171,9 +171,6 @@ add_filter(
 		<h2 id="jcp-ob-alt-title"><?php esc_html_e( 'Already using a CRM or photo app?', 'jcp-core' ); ?></h2>
 		<p>
 			<?php esc_html_e( "Your crew may not need another app. If you're already capturing job photos in a supported system, JobCapturePro can use your existing workflow to turn completed jobs into marketing proof.", 'jcp-core' ); ?>
-		</p>
-		<p class="jcp-ob-alt__support">
-			<?php esc_html_e( "During onboarding, we'll review your setup and help connect the right tools where supported.", 'jcp-core' ); ?>
 		</p>
 		<p class="jcp-ob-alt__platforms">
 			<span><?php esc_html_e( 'Examples of supported capture workflows:', 'jcp-core' ); ?></span>
@@ -183,7 +180,6 @@ add_filter(
 			<span aria-hidden="true">·</span>
 			<strong><?php esc_html_e( 'Phone camera roll', 'jcp-core' ); ?></strong>
 		</p>
-		<p class="jcp-ob-alt__reassure"><?php esc_html_e( 'No unnecessary extra steps for your crew.', 'jcp-core' ); ?></p>
 	</section>
 
 	<section class="jcp-ob-prep" aria-labelledby="jcp-ob-prep-title">
