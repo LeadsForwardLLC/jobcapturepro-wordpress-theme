@@ -110,6 +110,16 @@ function jcp_proof_gap_register_rest_routes(): void {
 					'type'              => 'number',
 					'sanitize_callback' => 'absint',
 				],
+				'estimated_jobs_per_year' => [
+					'required'          => false,
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+				'potentially_unused_percent' => [
+					'required'          => false,
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				],
 				'event_id' => [
 					'required'          => false,
 					'type'              => 'string',
@@ -164,13 +174,113 @@ function jcp_proof_gap_append_ghl_fields( string $body, array $extra ): string {
 }
 
 /**
- * Build Proof Gap GHL webhook body with canonical field names (not demo keys).
+ * Decode a form-urlencoded GHL body to a flat associative array (for QA preview).
  *
- * First Name is never fabricated from the email local-part.
- * Business niche / weekly volume / assessment notes reuse existing GHL fields.
- * Tag is proof-gap-lead only.
+ * Does not use parse_str() — PHP's parse_str converts spaces to underscores and would
+ * misrepresent keys like "Business Type" / "Jobs Per Week" in the audit payload.
  *
- * @param array<string, mixed> $params Contact + attribution params.
+ * @param string $body Form-urlencoded body.
+ * @return array<string, mixed>
+ */
+function jcp_proof_gap_webhook_body_to_array( string $body ): array {
+	$out = [];
+	if ( $body === '' ) {
+		return $out;
+	}
+	foreach ( explode( '&', $body ) as $pair ) {
+		if ( $pair === '' ) {
+			continue;
+		}
+		$parts = explode( '=', $pair, 2 );
+		$key   = rawurldecode( str_replace( '+', ' ', (string) ( $parts[0] ?? '' ) ) );
+		$val   = rawurldecode( str_replace( '+', ' ', (string) ( $parts[1] ?? '' ) ) );
+		if ( $key === '' ) {
+			continue;
+		}
+		// Collapse Referral Source[] / Tags[] into arrays.
+		if ( substr( $key, -2 ) === '[]' ) {
+			$base = substr( $key, 0, -2 );
+			if ( ! isset( $out[ $base ] ) || ! is_array( $out[ $base ] ) ) {
+				$out[ $base ] = [];
+			}
+			$out[ $base ][] = $val;
+			continue;
+		}
+		$out[ $key ] = $val;
+	}
+	return $out;
+}
+
+/**
+ * Format estimated jobs/year range from production result math (no new scoring).
+ *
+ * @param int $annual_min Annual jobs floor.
+ * @param int $annual_max Annual jobs ceiling (0 = open-ended).
+ */
+function jcp_proof_gap_format_estimated_jobs_per_year( int $annual_min, int $annual_max ): string {
+	if ( $annual_min <= 0 && $annual_max <= 0 ) {
+		return '';
+	}
+	if ( $annual_max > 0 ) {
+		return (string) $annual_min . '-' . (string) $annual_max;
+	}
+	return (string) $annual_min . '+';
+}
+
+/**
+ * Potentially unused % midpoint from the same proof-band table the UI uses.
+ *
+ * @param string $marketing_usage Machine key e.g. 11_25.
+ */
+function jcp_proof_gap_format_potentially_unused_percent( string $marketing_usage ): string {
+	if ( $marketing_usage === '' || ! function_exists( 'jcp_proof_gap_proof_percentage_options' ) ) {
+		return '';
+	}
+	$opts = jcp_proof_gap_proof_percentage_options();
+	if ( ! isset( $opts[ $marketing_usage ] ) || ! is_array( $opts[ $marketing_usage ] ) ) {
+		return '';
+	}
+	$band = $opts[ $marketing_usage ];
+	if ( ! isset( $band['min'], $band['max'] ) || $band['min'] === null || $band['max'] === null ) {
+		return '';
+	}
+	$pub_mid = (int) round( ( ( (float) $band['min'] + (float) $band['max'] ) / 2 ) * 100 );
+	return (string) ( 100 - $pub_mid );
+}
+
+/**
+ * Whether this Proof Gap submit is QA/test traffic (must not enter production sales automation).
+ *
+ * @param array<string, mixed> $params Merged contact + attribution params.
+ */
+function jcp_proof_gap_request_is_qa( array $params ): bool {
+	if ( ! empty( $params['is_qa'] ) ) {
+		$raw = $params['is_qa'];
+		if ( $raw === true || $raw === 1 || $raw === '1' || $raw === 'true' ) {
+			return true;
+		}
+	}
+	if ( ! empty( $params['jcp_qa'] ) && (string) $params['jcp_qa'] === '1' ) {
+		return true;
+	}
+	$qa = isset( $params['qa_trace_id'] ) ? trim( (string) $params['qa_trace_id'] ) : '';
+	if ( $qa !== '' ) {
+		return true;
+	}
+	$utm = isset( $params['utm_source'] ) ? strtolower( trim( (string) $params['utm_source'] ) ) : '';
+	return $utm === 'qa';
+}
+
+/**
+ * Build Proof Gap GHL webhook body.
+ *
+ * Sends canonical machine keys (business_niche, …) PLUS legacy Title Case aliases
+ * the published GHL inbound workflow still maps (Business Type, Jobs Per Week, …).
+ * Survey answer values stay machine-readable (hvac, 1_5, phones_camera_roll, 11_25).
+ * Empty contact fields are omitted so later onboarding cannot wipe acquisition data via blanks.
+ * Tag is proof-gap-lead only (never for QA — caller must skip delivery).
+ *
+ * @param array<string, mixed>  $params Contact + attribution params.
  * @param array<string, string> $survey Discrete survey fields.
  */
 function jcp_proof_gap_build_webhook_body( array $params, array $survey ): string {
@@ -179,15 +289,39 @@ function jcp_proof_gap_build_webhook_body( array $params, array $survey ): strin
 	$first_name = isset( $params['first_name'] ) ? trim( (string) $params['first_name'] ) : '';
 	$last_name  = isset( $params['last_name'] ) ? trim( (string) $params['last_name'] ) : '';
 
-	$business_niche = isset( $params['business_type'] ) ? trim( (string) $params['business_type'] ) : '';
-	if ( $business_niche !== '' && function_exists( 'jcp_core_early_access_business_type_label' ) ) {
-		$label = jcp_core_early_access_business_type_label( $business_niche );
-		if ( is_string( $label ) && $label !== '' ) {
-			$business_niche = $label;
-		}
+	// Machine-readable survey answers — do NOT convert to human labels.
+	$business_niche    = isset( $params['business_type'] ) ? trim( (string) $params['business_type'] ) : '';
+	$weekly_job_volume = isset( $survey['jobs_per_week'] ) ? trim( (string) $survey['jobs_per_week'] ) : '';
+	$photo_workflow    = isset( $survey['photo_workflow'] ) ? trim( (string) $survey['photo_workflow'] ) : '';
+	$marketing_usage   = isset( $survey['marketing_usage'] ) ? trim( (string) $survey['marketing_usage'] ) : '';
+	$session_id        = isset( $survey['survey_session_id'] ) ? trim( (string) $survey['survey_session_id'] ) : '';
+
+	$annual_min = isset( $survey['annual_jobs_min'] ) ? absint( $survey['annual_jobs_min'] ) : 0;
+	$annual_max = isset( $survey['annual_jobs_max'] ) ? absint( $survey['annual_jobs_max'] ) : 0;
+	$estimated  = isset( $survey['estimated_jobs_per_year'] ) ? trim( (string) $survey['estimated_jobs_per_year'] ) : '';
+	if ( $estimated === '' ) {
+		$estimated = jcp_proof_gap_format_estimated_jobs_per_year( $annual_min, $annual_max );
+	}
+	$unused_pct = isset( $survey['potentially_unused_percent'] ) ? trim( (string) $survey['potentially_unused_percent'] ) : '';
+	if ( $unused_pct === '' ) {
+		$unused_pct = jcp_proof_gap_format_potentially_unused_percent( $marketing_usage );
 	}
 
 	$assessment = isset( $params['use_case'] ) ? trim( (string) $params['use_case'] ) : '';
+	$lp_variant = isset( $params['lp_variant'] ) ? trim( (string) $params['lp_variant'] ) : '';
+	$jcp_pg     = isset( $params['jcp_pg_variant'] ) ? trim( (string) $params['jcp_pg_variant'] ) : $lp_variant;
+	$funnel_ver = isset( $params['funnel_version'] ) ? trim( (string) $params['funnel_version'] ) : '';
+	if ( $funnel_ver === '' && defined( 'JCP_PROOF_GAP_FUNNEL_VERSION' ) ) {
+		$funnel_ver = (string) JCP_PROOF_GAP_FUNNEL_VERSION;
+	}
+	if ( $funnel_ver === '' ) {
+		$funnel_ver = 'proof_gap_survey_v1';
+	}
+	$survey_ver = isset( $params['survey_version'] ) ? trim( (string) $params['survey_version'] ) : '';
+	if ( $survey_ver === '' && isset( $survey['survey_version'] ) ) {
+		$survey_ver = trim( (string) $survey['survey_version'] );
+	}
+	$ph_id = isset( $params['ph_distinct_id'] ) ? trim( (string) $params['ph_distinct_id'] ) : '';
 
 	$scalar = [
 		JCP_GHL_KEY_EVENT        => JCP_PROOF_GAP_GHL_EVENT,
@@ -205,37 +339,72 @@ function jcp_proof_gap_build_webhook_body( array $params, array $survey ): strin
 		JCP_GHL_KEY_LANDING_PAGE => isset( $params['landing_page'] ) ? trim( (string) $params['landing_page'] ) : '',
 		JCP_GHL_KEY_REFERRER     => isset( $params['referrer'] ) ? trim( (string) $params['referrer'] ) : '',
 	];
-	// Only include First Name when a real value was collected — never fabricate from email,
-	// and never send blank (avoids wiping an existing contact name on Find/Update).
+
+	if ( defined( 'JCP_GHL_KEY_UTM_ID' ) && ! empty( $params['utm_id'] ) ) {
+		$scalar[ JCP_GHL_KEY_UTM_ID ] = trim( (string) $params['utm_id'] );
+	}
+
+	// Only include First Name when collected — never fabricate; never send blank (avoids wipe).
 	if ( $first_name !== '' ) {
 		$scalar[ JCP_GHL_KEY_FIRST_NAME ] = $first_name;
 	}
 
-	// Reused existing GHL custom fields (canonical Proof Gap mapping).
-	$scalar[ JCP_GHL_KEY_BUSINESS_NICHE ]     = $business_niche;
-	$scalar[ JCP_GHL_KEY_ASSESSMENT_NOTES ]   = $assessment;
-	$scalar[ JCP_GHL_KEY_WEEKLY_JOB_VOLUME ]  = isset( $survey['jobs_per_week'] ) ? trim( (string) $survey['jobs_per_week'] ) : '';
+	// Canonical machine keys (new GHL mappings).
+	$scalar[ JCP_GHL_KEY_CANONICAL_BUSINESS_NICHE ]     = $business_niche;
+	$scalar[ JCP_GHL_KEY_CANONICAL_WEEKLY_JOB_VOLUME ]  = $weekly_job_volume;
+	$scalar[ JCP_GHL_KEY_CANONICAL_PHOTO_WORKFLOW ]     = $photo_workflow;
+	$scalar[ JCP_GHL_KEY_CANONICAL_MARKETING_USAGE ]    = $marketing_usage;
+	$scalar[ JCP_GHL_KEY_CANONICAL_SURVEY_SESSION_ID ]  = $session_id;
 
-	// Dedicated Proof Gap fields (payload keys = GHL Field names as created in CRM).
-	$scalar[ JCP_GHL_KEY_PHOTO_WORKFLOW ]     = isset( $survey['photo_workflow'] ) ? trim( (string) $survey['photo_workflow'] ) : '';
-	$scalar[ JCP_GHL_KEY_MARKETING_USAGE ]    = isset( $survey['marketing_usage'] ) ? trim( (string) $survey['marketing_usage'] ) : '';
-	$scalar[ JCP_GHL_KEY_SURVEY_SESSION_ID ]  = isset( $survey['survey_session_id'] ) ? trim( (string) $survey['survey_session_id'] ) : '';
-	$qa = isset( $params['qa_trace_id'] ) ? trim( (string) $params['qa_trace_id'] ) : '';
-	if ( $qa !== '' ) {
-		$scalar[ JCP_GHL_KEY_QA_TRACE_ID ] = mb_substr( $qa, 0, 80 );
+	// Legacy Title Case aliases the published inbound webhook still expects.
+	// Business Type / Jobs Per Week were the missing mappings in live GHL contacts.
+	$scalar[ JCP_GHL_KEY_BUSINESS_TYPE ]       = $business_niche;
+	$scalar[ JCP_GHL_KEY_JOBS_PER_WEEK ]       = $weekly_job_volume;
+	$scalar[ JCP_GHL_KEY_PHOTO_WORKFLOW ]      = $photo_workflow;
+	$scalar[ JCP_GHL_KEY_MARKETING_USAGE ]     = $marketing_usage;
+	$scalar[ JCP_GHL_KEY_BUSINESS_NICHE ]      = $business_niche;
+	$scalar[ JCP_GHL_KEY_WEEKLY_JOB_VOLUME ]   = $weekly_job_volume;
+	$scalar[ JCP_GHL_KEY_SURVEY_SESSION_ID ]   = $session_id;
+	$scalar[ JCP_GHL_KEY_ASSESSMENT_NOTES ]    = $assessment;
+
+	if ( $estimated !== '' ) {
+		$scalar[ JCP_GHL_KEY_ESTIMATED_JOBS_PER_YEAR ] = $estimated;
 	}
-
-	if ( ! empty( $params['lp_variant'] ) && defined( 'JCP_GHL_KEY_LP_VARIANT' ) ) {
-		$scalar[ JCP_GHL_KEY_LP_VARIANT ] = trim( (string) $params['lp_variant'] );
+	if ( $unused_pct !== '' ) {
+		$scalar[ JCP_GHL_KEY_POTENTIALLY_UNUSED_PERCENT ] = $unused_pct;
+	}
+	if ( $ph_id !== '' ) {
+		$scalar[ JCP_GHL_KEY_PH_DISTINCT_ID ] = mb_substr( $ph_id, 0, 256 );
+	}
+	if ( $lp_variant !== '' && defined( 'JCP_GHL_KEY_LP_VARIANT' ) ) {
+		$scalar[ JCP_GHL_KEY_LP_VARIANT ] = $lp_variant;
+		$scalar['lp_variant']             = $lp_variant;
+	}
+	if ( $jcp_pg !== '' ) {
+		$scalar[ JCP_GHL_KEY_JCP_PG_VARIANT ] = $jcp_pg;
+	}
+	if ( $funnel_ver !== '' ) {
+		$scalar[ JCP_GHL_KEY_FUNNEL_VERSION ] = $funnel_ver;
+	}
+	if ( $survey_ver !== '' ) {
+		$scalar[ JCP_GHL_KEY_SURVEY_VERSION ] = $survey_ver;
 	}
 	if ( ! empty( $params['funnel_surface'] ) && defined( 'JCP_GHL_KEY_FUNNEL_SURFACE' ) ) {
 		$scalar[ JCP_GHL_KEY_FUNNEL_SURFACE ] = trim( (string) $params['funnel_surface'] );
 	}
 
-	// Drop empty scalars so GHL does not overwrite with blanks.
+	$qa = isset( $params['qa_trace_id'] ) ? trim( (string) $params['qa_trace_id'] ) : '';
+	if ( $qa !== '' ) {
+		$scalar[ JCP_GHL_KEY_QA_TRACE_ID ] = mb_substr( $qa, 0, 80 );
+	}
+	if ( jcp_proof_gap_request_is_qa( $params ) ) {
+		$scalar[ JCP_GHL_KEY_IS_QA ] = 'true';
+	}
+
+	// Drop empty scalars so GHL does not overwrite existing contact fields with blanks.
 	$body_parts = [];
 	foreach ( $scalar as $key => $val ) {
-		if ( $val === '' ) {
+		if ( $val === '' || $val === null ) {
 			continue;
 		}
 		$body_parts[ $key ] = $val;
@@ -257,17 +426,17 @@ function jcp_proof_gap_build_webhook_body( array $params, array $survey ): strin
 	if ( ! empty( $survey['other_workflow'] ) ) {
 		$optional['Other Workflow'] = (string) $survey['other_workflow'];
 	}
-	if ( ! empty( $survey['annual_jobs_min'] ) || ! empty( $survey['annual_jobs_max'] ) ) {
-		$optional['Annual Jobs Min'] = (string) ( $survey['annual_jobs_min'] ?? '' );
-		if ( ! empty( $survey['annual_jobs_max'] ) ) {
-			$optional['Annual Jobs Max'] = (string) $survey['annual_jobs_max'];
-		}
+	if ( $annual_min > 0 ) {
+		$optional['Annual Jobs Min'] = (string) $annual_min;
 	}
-	if ( ! empty( $survey['unused_jobs_min'] ) || ! empty( $survey['unused_jobs_max'] ) ) {
-		$optional['Unused Jobs Min'] = (string) ( $survey['unused_jobs_min'] ?? '' );
-		if ( ! empty( $survey['unused_jobs_max'] ) ) {
-			$optional['Unused Jobs Max'] = (string) $survey['unused_jobs_max'];
-		}
+	if ( $annual_max > 0 ) {
+		$optional['Annual Jobs Max'] = (string) $annual_max;
+	}
+	if ( ! empty( $survey['unused_jobs_min'] ) ) {
+		$optional['Unused Jobs Min'] = (string) $survey['unused_jobs_min'];
+	}
+	if ( ! empty( $survey['unused_jobs_max'] ) ) {
+		$optional['Unused Jobs Max'] = (string) $survey['unused_jobs_max'];
 	}
 	$body = jcp_proof_gap_append_ghl_fields( $body, $optional );
 
@@ -368,47 +537,6 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 		? jcp_demo_lead_resolve_event_id( $request->get_param( 'event_id' ) )
 		: '';
 
-	// Idempotent: same client event_id must not create a second GHL fire.
-	$existing = $event_id !== '' ? jcp_proof_gap_find_lead_by_event_id( $event_id ) : null;
-	if ( $existing ) {
-		$delivered = (string) ( $existing->status ?? '' ) === 'delivered';
-		if ( ! $delivered && function_exists( 'jcp_demo_lead_queue_attempt_row' ) ) {
-			$delivered = jcp_demo_lead_queue_attempt_row( $existing );
-		}
-
-		$handoff = function_exists( 'jcp_proof_gap_create_handoff_token' )
-			? jcp_proof_gap_create_handoff_token(
-				$email,
-				[
-					'trade'                   => sanitize_text_field( (string) $request->get_param( 'business_type' ) ),
-					'current_workflow'        => sanitize_text_field( (string) $request->get_param( 'current_workflow' ) ),
-					'jobs_per_week_bucket'    => sanitize_text_field( (string) $request->get_param( 'jobs_per_week_bucket' ) ),
-					'public_proof_percentage' => sanitize_text_field( (string) $request->get_param( 'public_proof_percentage' ) ),
-					'annual_jobs_min'         => absint( $request->get_param( 'annual_jobs_min' ) ),
-					'annual_jobs_max'         => absint( $request->get_param( 'annual_jobs_max' ) ),
-					'unused_jobs_min'         => absint( $request->get_param( 'unused_jobs_min' ) ),
-					'unused_jobs_max'         => absint( $request->get_param( 'unused_jobs_max' ) ),
-					'survey_session_id'       => sanitize_text_field( (string) $request->get_param( 'survey_session_id' ) ),
-					'lp_variant'              => defined( 'JCP_PROOF_GAP_VARIANT' ) ? JCP_PROOF_GAP_VARIANT : 'proof_gap_survey_v1',
-				]
-			)
-			: '';
-
-		return new WP_REST_Response(
-			[
-				'success'       => true,
-				'captured'      => true,
-				'delivered'     => (bool) $delivered,
-				'queued'        => ! $delivered,
-				'lead_id'       => (int) $existing->id,
-				'event_id'      => $event_id,
-				'handoff_token' => $handoff,
-				'dedupe'        => true,
-			],
-			200
-		);
-	}
-
 	// Never fabricate First Name from the email local-part (avoids "Hi john.smith82" in nurture).
 	$first_name = '';
 
@@ -423,6 +551,9 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 	$annual_max          = absint( $request->get_param( 'annual_jobs_max' ) );
 	$unused_min          = absint( $request->get_param( 'unused_jobs_min' ) );
 	$unused_max          = absint( $request->get_param( 'unused_jobs_max' ) );
+	$survey_version      = sanitize_text_field( (string) $request->get_param( 'survey_version' ) );
+	$estimated_jobs      = sanitize_text_field( (string) $request->get_param( 'estimated_jobs_per_year' ) );
+	$unused_pct_param    = sanitize_text_field( (string) $request->get_param( 'potentially_unused_percent' ) );
 
 	$params = [
 		'first_name'      => $first_name,
@@ -435,6 +566,7 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 		'demo_goals'      => [],
 		'referral_source' => 'proof-gap-lead',
 		'event'           => JCP_PROOF_GAP_GHL_EVENT,
+		'survey_version'  => $survey_version,
 		'use_case'        => jcp_proof_gap_build_use_case(
 			[
 				'survey_session_id'         => $session_id,
@@ -459,21 +591,90 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 	// Force Proof Gap semantics regardless of client.
 	$params['event']          = JCP_PROOF_GAP_GHL_EVENT;
 	$params['first_name']     = ''; // Re-assert after merge — never invent a name.
-	$params['lp_variant']     = ! empty( $params['lp_variant'] ) ? $params['lp_variant'] : ( defined( 'JCP_PROOF_GAP_VARIANT' ) ? JCP_PROOF_GAP_VARIANT : 'proof_gap_survey_v1' );
 	$params['funnel_surface'] = 'proof_gap_survey';
 	$params['landing_page']   = ! empty( $params['landing_page'] ) ? $params['landing_page'] : home_url( '/proof-gap/' );
+	// Prefer client experiment arm (control|direct_question); do not fall back to funnel id.
+	if ( empty( $params['lp_variant'] ) ) {
+		$params['lp_variant'] = 'control';
+	}
+	if ( empty( $params['jcp_pg_variant'] ) ) {
+		$params['jcp_pg_variant'] = (string) $params['lp_variant'];
+	}
+	if ( empty( $params['funnel_version'] ) ) {
+		$params['funnel_version'] = defined( 'JCP_PROOF_GAP_FUNNEL_VERSION' )
+			? JCP_PROOF_GAP_FUNNEL_VERSION
+			: 'proof_gap_survey_v1';
+	}
+	if ( empty( $params['survey_version'] ) ) {
+		$params['survey_version'] = $survey_version;
+	}
+
+	$is_qa = jcp_proof_gap_request_is_qa( $params );
+
+	$lp_for_handoff = (string) $params['lp_variant'];
+
+	// Idempotent: same client event_id must not create a second GHL fire.
+	$existing = $event_id !== '' ? jcp_proof_gap_find_lead_by_event_id( $event_id ) : null;
+	if ( $existing ) {
+		$existing_status = (string) ( $existing->status ?? '' );
+		$delivered       = $existing_status === 'delivered';
+		$skipped_qa      = $existing_status === 'skipped_qa';
+		// Never re-attempt delivery for QA-skipped rows, and never deliver QA traffic.
+		if ( ! $delivered && ! $skipped_qa && ! $is_qa && function_exists( 'jcp_demo_lead_queue_attempt_row' ) ) {
+			$delivered = jcp_demo_lead_queue_attempt_row( $existing );
+		}
+
+		$handoff = function_exists( 'jcp_proof_gap_create_handoff_token' )
+			? jcp_proof_gap_create_handoff_token(
+				$email,
+				[
+					'trade'                   => $business_type,
+					'current_workflow'        => $workflow,
+					'jobs_per_week_bucket'    => $jobs_bucket,
+					'public_proof_percentage' => $proof_pct,
+					'annual_jobs_min'         => $annual_min,
+					'annual_jobs_max'         => $annual_max,
+					'unused_jobs_min'         => $unused_min,
+					'unused_jobs_max'         => $unused_max,
+					'survey_session_id'       => $session_id,
+					'lp_variant'              => $lp_for_handoff,
+				]
+			)
+			: '';
+
+		$preview = jcp_proof_gap_webhook_body_to_array( (string) ( $existing->payload ?? '' ) );
+
+		return new WP_REST_Response(
+			[
+				'success'         => true,
+				'captured'        => true,
+				'delivered'       => (bool) $delivered,
+				'queued'          => ! $delivered && ! $skipped_qa && ! $is_qa,
+				'ghl_skipped_qa'  => $skipped_qa || $is_qa,
+				'lead_id'         => (int) $existing->id,
+				'event_id'        => $event_id,
+				'handoff_token'   => $handoff,
+				'dedupe'          => true,
+				'webhook_payload' => $preview,
+			],
+			200
+		);
+	}
 
 	$survey_fields = [
-		'jobs_per_week'     => $jobs_bucket,
-		'photo_workflow'    => $workflow,
-		'marketing_usage'   => $proof_pct,
-		'survey_session_id' => $session_id,
-		'other_trade'       => $other_trade_text,
-		'other_workflow'    => $other_workflow_text,
-		'annual_jobs_min'   => $annual_min > 0 ? (string) $annual_min : '',
-		'annual_jobs_max'   => $annual_max > 0 ? (string) $annual_max : '',
-		'unused_jobs_min'   => $unused_min > 0 ? (string) $unused_min : '',
-		'unused_jobs_max'   => $unused_max > 0 ? (string) $unused_max : '',
+		'jobs_per_week'               => $jobs_bucket,
+		'photo_workflow'              => $workflow,
+		'marketing_usage'             => $proof_pct,
+		'survey_session_id'           => $session_id,
+		'survey_version'              => $survey_version,
+		'other_trade'                 => $other_trade_text,
+		'other_workflow'              => $other_workflow_text,
+		'annual_jobs_min'             => $annual_min > 0 ? (string) $annual_min : '',
+		'annual_jobs_max'             => $annual_max > 0 ? (string) $annual_max : '',
+		'unused_jobs_min'             => $unused_min > 0 ? (string) $unused_min : '',
+		'unused_jobs_max'             => $unused_max > 0 ? (string) $unused_max : '',
+		'estimated_jobs_per_year'     => $estimated_jobs,
+		'potentially_unused_percent'  => $unused_pct_param,
 	];
 	$body_string = jcp_proof_gap_build_webhook_body( $params, $survey_fields );
 
@@ -482,7 +683,62 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 	}
 
 	$params['event'] = JCP_PROOF_GAP_GHL_EVENT;
-	$lead_id         = jcp_demo_lead_queue_insert( $params, $body_string, $event_id );
+	$payload_preview = jcp_proof_gap_webhook_body_to_array( $body_string );
+
+	// QA / test traffic: persist for audit but NEVER fire the production proof-gap-lead webhook.
+	if ( $is_qa ) {
+		$lead_id = jcp_demo_lead_queue_insert( $params, $body_string, $event_id );
+		if ( $lead_id ) {
+			global $wpdb;
+			$table = $wpdb->prefix . JCP_DEMO_LEAD_QUEUE_TABLE;
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$wpdb->update(
+				$table,
+				[
+					'status'     => 'skipped_qa',
+					'updated_at' => current_time( 'mysql' ),
+				],
+				[ 'id' => (int) $lead_id ],
+				[ '%s', '%s' ],
+				[ '%d' ]
+			);
+		}
+
+		$handoff = function_exists( 'jcp_proof_gap_create_handoff_token' )
+			? jcp_proof_gap_create_handoff_token(
+				$email,
+				[
+					'trade'                   => $business_type,
+					'current_workflow'        => $workflow,
+					'jobs_per_week_bucket'    => $jobs_bucket,
+					'public_proof_percentage' => $proof_pct,
+					'annual_jobs_min'         => $annual_min,
+					'annual_jobs_max'         => $annual_max,
+					'unused_jobs_min'         => $unused_min,
+					'unused_jobs_max'         => $unused_max,
+					'survey_session_id'       => $session_id,
+					'lp_variant'              => $lp_for_handoff,
+				]
+			)
+			: '';
+
+		return new WP_REST_Response(
+			[
+				'success'         => true,
+				'captured'        => true,
+				'delivered'       => false,
+				'queued'          => false,
+				'ghl_skipped_qa'  => true,
+				'lead_id'         => $lead_id ? (int) $lead_id : 0,
+				'event_id'        => $event_id,
+				'handoff_token'   => $handoff,
+				'webhook_payload' => $payload_preview,
+			],
+			200
+		);
+	}
+
+	$lead_id = jcp_demo_lead_queue_insert( $params, $body_string, $event_id );
 
 	if ( ! $lead_id ) {
 		return new WP_REST_Response(
@@ -508,7 +764,7 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 				'unused_jobs_min'         => $unused_min,
 				'unused_jobs_max'         => $unused_max,
 				'survey_session_id'       => $session_id,
-				'lp_variant'              => defined( 'JCP_PROOF_GAP_VARIANT' ) ? JCP_PROOF_GAP_VARIANT : 'proof_gap_survey_v1',
+				'lp_variant'              => $lp_for_handoff,
 			]
 		)
 		: '';
@@ -522,13 +778,15 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 
 	return new WP_REST_Response(
 		[
-			'success'       => true,
-			'captured'      => true,
-			'delivered'     => (bool) $delivered,
-			'queued'        => ! $delivered,
-			'lead_id'       => (int) $lead_id,
-			'event_id'      => $event_id,
-			'handoff_token' => $handoff,
+			'success'         => true,
+			'captured'        => true,
+			'delivered'       => (bool) $delivered,
+			'queued'          => ! $delivered,
+			'ghl_skipped_qa'  => false,
+			'lead_id'         => (int) $lead_id,
+			'event_id'        => $event_id,
+			'handoff_token'   => $handoff,
+			'webhook_payload' => $payload_preview,
 		],
 		200
 	);

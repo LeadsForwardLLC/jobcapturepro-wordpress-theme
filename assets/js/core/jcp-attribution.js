@@ -15,6 +15,7 @@
     'utm_campaign',
     'utm_content',
     'utm_term',
+    'utm_id',
     'fbclid',
   ];
   // Durable conversion fields. Cookies (_fbp/_fbc) are POST-only — never URL-decorated.

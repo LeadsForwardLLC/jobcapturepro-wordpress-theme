@@ -1109,6 +1109,21 @@
     return '\u2248' + gap + '%';
   }
 
+  /** Machine value for GHL — same midpoint math as unusedPercentLabel (no new scoring). */
+  function potentiallyUnusedPercentValue() {
+    var band = proofPct[state.public_proof_percentage];
+    if (!band || typeof band !== 'object' || band.min == null || band.max == null) return '';
+    var pubMid = Math.round(((band.min + band.max) / 2) * 100);
+    return String(100 - pubMid);
+  }
+
+  /** Machine range for GHL — same bounds as formatAnnualRange. */
+  function estimatedJobsPerYearValue() {
+    if (state.annual_jobs_min == null) return '';
+    if (state.annual_jobs_max == null) return String(state.annual_jobs_min) + '+';
+    return String(state.annual_jobs_min) + '-' + String(state.annual_jobs_max);
+  }
+
   /* ─── Result rendering ─── */
 
   function renderGapViz() {
@@ -1695,6 +1710,7 @@
 
     var eventId = getOrCreateLeadEventId();
     var attr = attrPayload();
+    var qa = isQaSession();
     var body = {
       email: email,
       business_type: state.trade || '',
@@ -1707,9 +1723,13 @@
       annual_jobs_max: state.annual_jobs_max,
       unused_jobs_min: state.unused_jobs_min,
       unused_jobs_max: state.unused_jobs_max,
+      estimated_jobs_per_year: estimatedJobsPerYearValue(),
+      potentially_unused_percent: potentiallyUnusedPercentValue(),
       event_id: eventId,
       landing_page: location.href,
       lp_variant: attr.lp_variant || LP_VARIANT,
+      jcp_pg_variant: attr.jcp_pg_variant || LP_VARIANT,
+      funnel_version: FUNNEL_VERSION,
       funnel_surface: 'proof_gap_survey',
       utm_source: attr.utm_source || '',
       utm_medium: attr.utm_medium || '',
@@ -1718,7 +1738,13 @@
       utm_term: attr.utm_term || '',
       fbclid: attr.fbclid || '',
       referrer: attr.referrer || document.referrer || '',
+      is_qa: qa,
     };
+    if (attr.utm_id) body.utm_id = attr.utm_id;
+    try {
+      var qQa = new URLSearchParams(location.search);
+      if (qQa.get('jcp_qa') === '1') body.jcp_qa = '1';
+    } catch (eJq) {}
     // Durable conversion attribution (server-side only; not for public URLs).
     if (attr._fbp) body._fbp = attr._fbp;
     if (attr._fbc) body._fbc = attr._fbc;

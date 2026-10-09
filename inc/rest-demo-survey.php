@@ -195,6 +195,29 @@ function jcp_demo_ghl_attribution_rest_args(): array {
             'type'              => 'string',
             'sanitize_callback' => 'sanitize_text_field',
         ],
+        'funnel_version' => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'jcp_pg_variant' => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'utm_id' => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
+        'is_qa' => [
+            'required' => false,
+        ],
+        'jcp_qa' => [
+            'required'          => false,
+            'type'              => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+        ],
         'referrer'     => [
             'required'          => false,
             'type'              => 'string',
@@ -252,6 +275,7 @@ function jcp_demo_lead_conversion_attr_keys(): array {
 		'utm_campaign',
 		'utm_content',
 		'utm_term',
+		'utm_id',
 		'fbclid',
 		'_fbp',
 		'_fbc',
@@ -259,9 +283,13 @@ function jcp_demo_lead_conversion_attr_keys(): array {
 		'ph_distinct_id',
 		'landing_page',
 		'lp_variant',
+		'jcp_pg_variant',
 		'funnel_surface',
+		'funnel_version',
 		'referrer',
 		'first_touch_timestamp',
+		'is_qa',
+		'jcp_qa',
 	];
 }
 

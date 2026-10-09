@@ -44,7 +44,10 @@ define( 'JCP_GHL_KEY_MESSAGE', 'Message' );
 define( 'JCP_GHL_KEY_ATTACHMENT', 'Attachment' );
 /**
  * Proof Gap → GHL field names (dedicated intake webhook only).
- * Reuse existing CRM fields where mapped; do not change demo Business Type / Use Case keys.
+ *
+ * Canonical machine keys (preferred for new GHL mappings) + legacy Title Case
+ * aliases that the currently published inbound webhook expects.
+ * Do not change demo Business Type / Use Case keys used by Demo Survey.
  */
 define( 'JCP_GHL_KEY_BUSINESS_NICHE', 'Business Niche' );
 define( 'JCP_GHL_KEY_WEEKLY_JOB_VOLUME', 'Weekly Job Volume' );
@@ -53,8 +56,22 @@ define( 'JCP_GHL_KEY_PHOTO_WORKFLOW', 'Photo Workflow' );
 define( 'JCP_GHL_KEY_MARKETING_USAGE', 'Marketing Usage' );
 define( 'JCP_GHL_KEY_SURVEY_SESSION_ID', 'Survey Session Id' );
 define( 'JCP_GHL_KEY_QA_TRACE_ID', 'qa_trace_id' );
-/** @deprecated Alias — Proof Gap sends Weekly Job Volume. */
-define( 'JCP_GHL_KEY_JOBS_PER_WEEK', 'Weekly Job Volume' );
+/** Legacy inbound-webhook key the published GHL workflow maps for Q3 (was wrongly aliased to Weekly Job Volume). */
+define( 'JCP_GHL_KEY_JOBS_PER_WEEK', 'Jobs Per Week' );
+/** Canonical snake_case Proof Gap survey keys. */
+define( 'JCP_GHL_KEY_CANONICAL_BUSINESS_NICHE', 'business_niche' );
+define( 'JCP_GHL_KEY_CANONICAL_WEEKLY_JOB_VOLUME', 'weekly_job_volume' );
+define( 'JCP_GHL_KEY_CANONICAL_PHOTO_WORKFLOW', 'photo_workflow' );
+define( 'JCP_GHL_KEY_CANONICAL_MARKETING_USAGE', 'marketing_usage' );
+define( 'JCP_GHL_KEY_CANONICAL_SURVEY_SESSION_ID', 'survey_session_id' );
+define( 'JCP_GHL_KEY_ESTIMATED_JOBS_PER_YEAR', 'estimated_jobs_per_year' );
+define( 'JCP_GHL_KEY_POTENTIALLY_UNUSED_PERCENT', 'potentially_unused_percent' );
+define( 'JCP_GHL_KEY_PH_DISTINCT_ID', 'ph_distinct_id' );
+define( 'JCP_GHL_KEY_FUNNEL_VERSION', 'funnel_version' );
+define( 'JCP_GHL_KEY_JCP_PG_VARIANT', 'jcp_pg_variant' );
+define( 'JCP_GHL_KEY_SURVEY_VERSION', 'survey_version' );
+define( 'JCP_GHL_KEY_IS_QA', 'is_qa' );
+define( 'JCP_GHL_KEY_UTM_ID', 'utm_id' );
 
 /**
  * REST request param names (snake_case, used in JSON body from frontend).
