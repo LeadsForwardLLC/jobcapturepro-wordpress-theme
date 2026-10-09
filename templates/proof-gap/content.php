@@ -122,7 +122,8 @@ $render_case = static function (): void {
 <div class="pg-layout">
 	<div class="pg-stage" id="pgStage" aria-live="polite">
 
-		<section class="pg-state pg-state--welcome" data-pg-state="welcome">
+		<!-- CONTROL entry: existing welcome + separate Start CTA (unchanged). -->
+		<section class="pg-state pg-state--welcome pg-entry-shell pg-entry-shell--control" data-pg-state="welcome" data-pg-entry="control">
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( 'The 60 second job visibility check', 'jcp-core' ); ?></p>
 				<h1 class="pg-title pg-title--welcome"><?php esc_html_e( 'Your crew already takes the photos. Are they helping you win the next job?', 'jcp-core' ); ?></h1>
@@ -163,11 +164,33 @@ $render_case = static function (): void {
 			</div>
 		</section>
 
+		<!-- DIRECT QUESTION entry: same message match + Q1 immediately (no Start CTA). Showing Q1 ≠ SurveyStarted. -->
+		<section class="pg-state pg-state--welcome-direct pg-entry-shell pg-entry-shell--direct" data-pg-state="welcome_direct" data-pg-entry="direct_question">
+			<div class="pg-state__inner">
+				<p class="pg-eyebrow"><?php esc_html_e( 'The 60 second job visibility check', 'jcp-core' ); ?></p>
+				<h1 class="pg-title pg-title--welcome"><?php esc_html_e( 'Your crew already takes the photos. Are they helping you win the next job?', 'jcp-core' ); ?></h1>
+				<p class="pg-sub"><?php esc_html_e( 'Answer 4 quick questions to see how much of your work is going unseen — and what JobCapturePro could be doing with it.', 'jcp-core' ); ?></p>
+				<p class="pg-trust-line pg-dq-trust"><?php esc_html_e( 'Takes about 60 seconds. No phone. No credit card.', 'jcp-core' ); ?></p>
+
+				<p class="pg-eyebrow pg-dq-step"><?php esc_html_e( '1 of 4', 'jcp-core' ); ?></p>
+				<h2 class="pg-title pg-title--sm" id="pg-trade-title-dq"><?php esc_html_e( 'What kind of work does your company do most?', 'jcp-core' ); ?></h2>
+				<div class="pg-choices pg-choices--grid pg-choices--trade" role="group" aria-labelledby="pg-trade-title-dq" data-pg-choices="trade" data-pg-choices-host="direct"></div>
+				<div class="pg-other-field" id="pgTradeOtherFieldDirect" hidden>
+					<label class="pg-other-field__label" for="pgTradeOtherInputDirect"><?php esc_html_e( 'Your trade (optional)', 'jcp-core' ); ?></label>
+					<input class="pg-other-field__input" id="pgTradeOtherInputDirect" type="text" maxlength="80" placeholder="<?php esc_attr_e( 'e.g. Pool service, flooring, solar', 'jcp-core' ); ?>" autocomplete="off" />
+					<div class="pg-other-field__actions">
+						<button type="button" class="btn btn-primary pg-btn pg-other-continue" data-pg-other-continue="trade"><?php esc_html_e( 'Continue', 'jcp-core' ); ?></button>
+						<button type="button" class="pg-other-skip" data-pg-other-skip="trade"><?php esc_html_e( 'Skip', 'jcp-core' ); ?></button>
+					</div>
+				</div>
+			</div>
+		</section>
+
 		<section class="pg-state" data-pg-state="trade" hidden>
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( '1. Your work', 'jcp-core' ); ?></p>
 				<h1 class="pg-title pg-title--sm" id="pg-trade-title"><?php esc_html_e( 'What kind of work does your company do most?', 'jcp-core' ); ?></h1>
-			<div class="pg-choices pg-choices--grid pg-choices--trade" role="group" aria-labelledby="pg-trade-title" data-pg-choices="trade"></div>
+			<div class="pg-choices pg-choices--grid pg-choices--trade" role="group" aria-labelledby="pg-trade-title" data-pg-choices="trade" data-pg-choices-host="control"></div>
 				<div class="pg-other-field" id="pgTradeOtherField" hidden>
 					<label class="pg-other-field__label" for="pgTradeOtherInput"><?php esc_html_e( 'Your trade (optional)', 'jcp-core' ); ?></label>
 					<input class="pg-other-field__input" id="pgTradeOtherInput" type="text" maxlength="80" placeholder="<?php esc_attr_e( 'e.g. Pool service, flooring, solar', 'jcp-core' ); ?>" autocomplete="off" />

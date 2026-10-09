@@ -12,10 +12,55 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 define( 'JCP_PROOF_GAP_SLUG', 'proof-gap' );
+/** Canonical funnel/version identifier (historical meaning of lp_variant before proof_gap_entry_v1). */
 define( 'JCP_PROOF_GAP_VARIANT', 'proof_gap_survey_v1' );
+define( 'JCP_PROOF_GAP_FUNNEL_VERSION', 'proof_gap_survey_v1' );
 define( 'JCP_PROOF_GAP_SURVEY_ID', 'proof_gap_survey_v1' );
 define( 'JCP_PROOF_GAP_SURVEY_VERSION', '11' );
 define( 'JCP_PROOF_GAP_SEED_VERSION', '11' );
+/** Entry A/B experiment (first-party assignment; not PostHog). */
+define( 'JCP_PG_ENTRY_EXPERIMENT', 'proof_gap_entry_v1' );
+define( 'JCP_PG_ENTRY_STARTED_AT_OPTION', 'jcp_pg_entry_v1_started_at' );
+
+/**
+ * Valid entry experiment arms (stored in lp_variant going forward).
+ *
+ * @return list<string>
+ */
+function jcp_pg_entry_variants(): array {
+	return [ 'control', 'direct_question' ];
+}
+
+/**
+ * Whether a value is a valid experiment arm.
+ */
+function jcp_pg_entry_is_valid_variant( string $variant ): bool {
+	return in_array( $variant, jcp_pg_entry_variants(), true );
+}
+
+/**
+ * Experiment reporting cutoff (UTC). Set once on first init after deploy.
+ */
+function jcp_pg_entry_experiment_started_at(): string {
+	$existing = (string) get_option( JCP_PG_ENTRY_STARTED_AT_OPTION, '' );
+	if ( $existing !== '' && preg_match( '/^\d{4}-\d{2}-\d{2}/', $existing ) ) {
+		return $existing;
+	}
+	$stamp = gmdate( 'Y-m-d H:i:s' );
+	update_option( JCP_PG_ENTRY_STARTED_AT_OPTION, $stamp, false );
+	return $stamp;
+}
+
+/**
+ * Stamp experiment start once after theme code is live (does not rewrite history).
+ */
+function jcp_pg_entry_maybe_stamp_started_at(): void {
+	if ( (string) get_option( JCP_PG_ENTRY_STARTED_AT_OPTION, '' ) !== '' ) {
+		return;
+	}
+	jcp_pg_entry_experiment_started_at();
+}
+add_action( 'init', 'jcp_pg_entry_maybe_stamp_started_at', 6 );
 
 /**
  * Request path without leading/trailing slashes.

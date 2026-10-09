@@ -22,12 +22,33 @@ $trial_base = function_exists( 'jcp_core_onboarding_app_url_raw' )
 	: 'https://app.jobcapturepro.com/onboarding';
 
 ?><!DOCTYPE html>
-<html <?php language_attributes(); ?> data-jcp-lp-variant="proof_gap_survey_v1">
+<html <?php language_attributes(); ?> class="pg-ab-pending" data-pg-funnel-version="<?php echo esc_attr( JCP_PROOF_GAP_FUNNEL_VERSION ); ?>" data-pg-survey-id="<?php echo esc_attr( JCP_PROOF_GAP_SURVEY_ID ); ?>">
 <head>
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 	<meta name="robots" content="noindex,nofollow">
 	<meta name="theme-color" content="#0b1220">
+	<style id="pg-ab-critical">
+		/* Hide both entry shells until first-party assignment resolves (cache-safe). */
+		html.pg-ab-pending .pg-entry-shell{visibility:hidden!important}
+		html[data-pg-entry-variant="control"] .pg-entry-shell--direct,
+		html[data-pg-entry-variant="control"] [data-pg-state="welcome_direct"]{display:none!important}
+		html[data-pg-entry-variant="direct_question"] .pg-entry-shell--control,
+		html[data-pg-entry-variant="direct_question"] [data-pg-state="welcome"]:not([data-pg-entry="direct_question"]){display:none!important}
+		html[data-pg-entry-variant="direct_question"] .pg-entry-shell--direct:not([hidden]){display:block!important;visibility:visible!important}
+		html[data-pg-entry-variant="direct_question"] body.pg-has-bottom-action:not(.pg-dq-started) #pgBottomAction{display:none!important}
+		html[data-pg-entry-variant="direct_question"] body.pg-has-bottom-action:not(.pg-dq-started){--pg-bottom-pad:0px}
+		html[data-pg-entry-variant="direct_question"] body.pg-has-bottom-action:not(.pg-dq-started) .pg-stage{padding-bottom:1.25rem}
+		.pg-dq-trust{margin:.35rem 0 1rem;font-size:var(--pg-fs-tertiary);font-weight:650;color:var(--pg-muted);line-height:1.35}
+		.pg-dq-step{margin-top:1.1rem!important}
+	</style>
+	<script id="pg-entry-ab"><?php
+		$ab_js = get_template_directory() . '/assets/js/pages/proof-gap-entry-ab.js';
+		if ( is_readable( $ab_js ) ) {
+			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static theme JS bootstrap.
+			echo file_get_contents( $ab_js );
+		}
+	?></script>
 	<style id="pg-hide-chat">
 		#chat-widget-container, #lc_text-widget, .lc_text-widget,
 		[id*="chat-widget"], [class*="chat-widget"],
@@ -86,9 +107,10 @@ $trial_base = function_exists( 'jcp_core_onboarding_app_url_raw' )
 </head>
 <body
 	<?php body_class( 'pg-has-bottom-action' ); ?>
-	data-jcp-lp-variant="proof_gap_survey_v1"
-	data-pg-survey-id="proof_gap_survey_v1"
+	data-pg-survey-id="<?php echo esc_attr( JCP_PROOF_GAP_SURVEY_ID ); ?>"
+	data-pg-funnel-version="<?php echo esc_attr( JCP_PROOF_GAP_FUNNEL_VERSION ); ?>"
 	data-pg-survey-version="<?php echo esc_attr( JCP_PROOF_GAP_SURVEY_VERSION ); ?>"
+	data-pg-experiment="<?php echo esc_attr( JCP_PG_ENTRY_EXPERIMENT ); ?>"
 >
 <?php wp_body_open(); ?>
 
@@ -133,7 +155,9 @@ echo wp_json_encode(
 	[
 		'surveyId'          => JCP_PROOF_GAP_SURVEY_ID,
 		'surveyVersion'     => JCP_PROOF_GAP_SURVEY_VERSION,
-		'lpVariant'         => JCP_PROOF_GAP_VARIANT,
+		'funnelVersion'     => JCP_PROOF_GAP_FUNNEL_VERSION,
+		'experiment'        => JCP_PG_ENTRY_EXPERIMENT,
+		'entryVariants'     => function_exists( 'jcp_pg_entry_variants' ) ? jcp_pg_entry_variants() : [ 'control', 'direct_question' ],
 		'restUrl'           => rest_url( 'jcp/v1/proof-gap-survey-submit' ),
 		'funnelEventUrl'    => rest_url( 'jcp/v1/funnel-event' ),
 		'trialBase'         => $trial_base,

@@ -18,8 +18,8 @@
     'fbclid',
   ];
   // Durable conversion fields. Cookies (_fbp/_fbc) are POST-only — never URL-decorated.
-  const EXTRA_KEYS = ['lp_variant', 'qa_trace_id', 'first_touch_timestamp', '_fbp', '_fbc'];
-  const URL_SAFE_EXTRA_KEYS = ['lp_variant', 'qa_trace_id', 'first_touch_timestamp'];
+  const EXTRA_KEYS = ['lp_variant', 'jcp_pg_variant', 'funnel_version', 'qa_trace_id', 'first_touch_timestamp', '_fbp', '_fbc'];
+  const URL_SAFE_EXTRA_KEYS = ['lp_variant', 'jcp_pg_variant', 'funnel_version', 'qa_trace_id', 'first_touch_timestamp'];
 
   /** Path → analytics key for paid LPs (belt-and-suspenders if PHP attr misses). */
   const PATH_VARIANT_MAP = {
@@ -30,7 +30,8 @@
     '/why-we-built-jcp': 'founder',
     '/job-proof-demo': 'job_proof_demo',
     '/proof-sprint': 'proof_sprint',
-    '/proof-gap': 'proof_gap_survey_v1',
+    // Proof Gap entry A/B: lp_variant is control|direct_question (set by proof-gap-entry-ab.js).
+    // Do not map path → proof_gap_survey_v1 (that id is now funnel_version).
   };
 
   function readLpVariantFromPath() {

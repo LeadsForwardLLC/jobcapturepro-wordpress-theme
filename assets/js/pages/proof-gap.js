@@ -10,7 +10,6 @@
   var TTL_MS = 7 * 24 * 60 * 60 * 1000;
   var LEAD_EVENT_ID_KEY = 'jcp_pg_lead_event_id';
   var AUTO_ADVANCE_MS = 250;
-  var LP_VARIANT = 'proof_gap_survey_v1';
 
   var STATES = [
     'welcome',
@@ -97,6 +96,25 @@
   } catch (eBoot) {
     boot = {};
   }
+
+  /** Funnel/version identifier (historical meaning of lp_variant before proof_gap_entry_v1). */
+  var FUNNEL_VERSION =
+    (boot && boot.funnelVersion) ||
+    (document.documentElement && document.documentElement.getAttribute('data-pg-funnel-version')) ||
+    'proof_gap_survey_v1';
+  /** Experiment arm — canonical first-party assignment (control | direct_question). */
+  var ENTRY_VARIANT = (function () {
+    try {
+      if (window.JCP_PG_ENTRY && window.JCP_PG_ENTRY.variant) return String(window.JCP_PG_ENTRY.variant);
+    } catch (e0) {}
+    try {
+      var fromHtml = document.documentElement && document.documentElement.getAttribute('data-pg-entry-variant');
+      if (fromHtml === 'control' || fromHtml === 'direct_question') return fromHtml;
+    } catch (e1) {}
+    return 'control';
+  })();
+  var LP_VARIANT = ENTRY_VARIANT;
+  var IS_DIRECT_ENTRY = ENTRY_VARIANT === 'direct_question';
 
   var trades = boot.trades || {};
   var workflows = boot.workflows || {};
@@ -245,11 +263,7 @@
       if (existingCta && existingBar && !existingBar.hidden) {
         bottomActionHandler = function () {
           markCompleted('welcome');
-          if (!startedTracked) {
-            startedTracked = true;
-            track('SurveyStarted', { question_id: 'welcome', cta_source: 'welcome' });
-            track('proof_gap_started', {});
-          }
+          ensureSurveyStarted('welcome');
           saveState();
           goTo('trade');
         };
@@ -278,11 +292,7 @@
         animate: false,
         onClick: function () {
           markCompleted('welcome');
-          if (!startedTracked) {
-            startedTracked = true;
-            track('SurveyStarted', { question_id: 'welcome', cta_source: 'welcome' });
-            track('proof_gap_started', {});
-          }
+          ensureSurveyStarted('welcome');
           saveState();
           goTo('trade');
         },
@@ -290,7 +300,7 @@
       return;
     }
 
-    if (id === 'trade' || id === 'current_workflow' || id === 'jobs_per_week' || id === 'public_proof_percentage') {
+    if (id === 'welcome_direct' || id === 'trade' || id === 'current_workflow' || id === 'jobs_per_week' || id === 'public_proof_percentage') {
       clearBottomAction();
       return;
     }
@@ -400,11 +410,56 @@
     return 'pg_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
   }
 
+  /**
+   * Device category — UA-first (Meta in-app browsers), viewport fallback only.
+   * Viewport-only was splitting Meta mobile traffic into tablet/desktop incorrectly.
+   */
   function deviceClass() {
+    var ua = '';
+    try {
+      ua = String(navigator.userAgent || navigator.vendor || '');
+    } catch (eUa) {}
+    var uaLower = ua.toLowerCase();
+    if (/ipad|tablet|kindle|silk|(android(?!.*mobile))/.test(uaLower)) return 'tablet';
+    if (/mobi|iphone|ipod|android.*mobile|windows phone|opera mini|fbav|instagram|line\//.test(uaLower)) {
+      return 'mobile';
+    }
+    try {
+      if (navigator.userAgentData && Array.isArray(navigator.userAgentData.brands)) {
+        if (navigator.userAgentData.mobile) return 'mobile';
+      }
+    } catch (eCh) {}
     var w = window.innerWidth || 0;
-    if (w < 768) return 'mobile';
-    if (w < 1280) return 'tablet';
+    if (w > 0 && w < 768) return 'mobile';
+    if (w >= 768 && w < 1024) return 'tablet';
     return 'desktop';
+  }
+
+  function isQaSession() {
+    try {
+      if (window.JCPPostHog && typeof window.JCPPostHog.isQaTraffic === 'function' && window.JCPPostHog.isQaTraffic()) {
+        return true;
+      }
+    } catch (eQa) {}
+    try {
+      var q = new URLSearchParams(location.search);
+      if (q.get('jcp_qa') === '1' || q.get('jcp_internal') === '1') return true;
+      var trace = q.get('qa_trace_id') || '';
+      if (trace && /^qa[_-]/i.test(trace)) return true;
+    } catch (eQ) {}
+    var attr = attrPayload();
+    if (attr.qa_trace_id && /^qa[_-]/i.test(String(attr.qa_trace_id))) return true;
+    return false;
+  }
+
+  function ensureSurveyStarted(source) {
+    if (startedTracked) return;
+    startedTracked = true;
+    track('SurveyStarted', { question_id: 'welcome', cta_source: source || 'welcome' });
+    track('proof_gap_started', {});
+    try {
+      document.body.classList.add('pg-dq-started');
+    } catch (eBody) {}
   }
 
   function attrPayload() {
@@ -428,10 +483,14 @@
       session_id: state.session_id,
       survey_session_id: state.session_id,
       lp_variant: LP_VARIANT,
+      proof_gap_variant: LP_VARIANT,
+      jcp_pg_variant: LP_VARIANT,
       device_class: deviceClass(),
       current_state: state.current_state,
       funnel_id: 'proof_gap',
-      funnel_version: state.survey_version,
+      funnel_version: FUNNEL_VERSION,
+      experiment: 'proof_gap_entry_v1',
+      survey_version: state.survey_version,
       trade: state.trade || undefined,
       workflow: state.current_workflow || undefined,
       jobs_per_week_bucket: state.jobs_per_week_bucket || undefined,
@@ -515,7 +574,10 @@
         var phProps = Object.assign({}, payload);
         delete phProps.event;
         phProps.survey_session_id = state.session_id;
-        if (window.JCPPostHog.isQaTraffic && window.JCPPostHog.isQaTraffic()) {
+        phProps.lp_variant = LP_VARIANT;
+        phProps.proof_gap_variant = LP_VARIANT;
+        phProps.funnel_version = FUNNEL_VERSION;
+        if (isQaSession()) {
           phProps.is_qa = true;
         }
         window.JCPPostHog.capture(name, phProps);
@@ -529,7 +591,7 @@
       event_uuid: eventUuid,
       session_id: state.session_id || '',
       funnel_id: 'proof_gap',
-      funnel_version: String(state.survey_version || ''),
+      funnel_version: FUNNEL_VERSION,
       lp_variant: LP_VARIANT,
       event_name: name,
       screen: state.current_state || '',
@@ -554,6 +616,11 @@
         destination: payload.destination || '',
         cta_source: payload.cta_source || '',
         duration_ms: payload.duration_ms || '',
+        survey_version: state.survey_version || '',
+        experiment: 'proof_gap_entry_v1',
+        proof_gap_variant: LP_VARIANT,
+        qa_trace_id: payload.qa_trace_id || '',
+        is_qa: isQaSession() ? 1 : 0,
       },
       creative_concept: payload.creative_concept || '',
     };
@@ -661,7 +728,9 @@
     for (var i = 0; i < STATES.length; i++) {
       var id = STATES[i];
       if (id === 'welcome') {
-        if (state.completed_states.indexOf('welcome') === -1 && !state.trade) return 'welcome';
+        if (state.completed_states.indexOf('welcome') === -1 && !state.trade) {
+          return IS_DIRECT_ENTRY ? 'welcome_direct' : 'welcome';
+        }
         continue;
       }
       if (id === 'trade' || id === 'current_workflow' || id === 'jobs_per_week' || id === 'public_proof_percentage') {
@@ -710,7 +779,11 @@
   function setBackVisible() {
     var back = document.getElementById('pgBack');
     if (!back) return;
-    back.hidden = state.current_state === 'welcome' || state.current_state === 'app_sim';
+    var onEntry =
+      state.current_state === 'welcome' ||
+      state.current_state === 'app_sim' ||
+      (IS_DIRECT_ENTRY && !startedTracked && !state.trade);
+    back.hidden = onEntry;
   }
 
   function readUrlParam(key) {
@@ -772,36 +845,38 @@
   }
 
   function renderChoices(field, map, selectedKey) {
-    var host = document.querySelector('[data-pg-choices="' + field + '"]');
-    if (!host) return;
-    host.innerHTML = '';
-    Object.keys(map).forEach(function (key) {
-      var item = map[key];
-      var btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'pg-choice' + (selectedKey === key ? ' is-selected' : '');
-      btn.setAttribute('data-pg-field', field);
-      btn.setAttribute('data-pg-value', key);
-      if (field === 'public_proof_percentage' && item && typeof item === 'object') {
-        btn.className += ' pg-choice--stacked';
-        var t = document.createElement('span');
-        t.className = 'pg-choice__title';
-        t.textContent = item.title || item.label || key;
-        btn.appendChild(t);
-        if (item.band) {
-          var b = document.createElement('span');
-          b.className = 'pg-choice__band';
-          b.textContent = item.band;
-          btn.appendChild(b);
+    var hosts = document.querySelectorAll('[data-pg-choices="' + field + '"]');
+    if (!hosts.length) return;
+    hosts.forEach(function (host) {
+      host.innerHTML = '';
+      Object.keys(map).forEach(function (key) {
+        var item = map[key];
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pg-choice' + (selectedKey === key ? ' is-selected' : '');
+        btn.setAttribute('data-pg-field', field);
+        btn.setAttribute('data-pg-value', key);
+        if (field === 'public_proof_percentage' && item && typeof item === 'object') {
+          btn.className += ' pg-choice--stacked';
+          var t = document.createElement('span');
+          t.className = 'pg-choice__title';
+          t.textContent = item.title || item.label || key;
+          btn.appendChild(t);
+          if (item.band) {
+            var b = document.createElement('span');
+            b.className = 'pg-choice__band';
+            b.textContent = item.band;
+            btn.appendChild(b);
+          }
+        } else if (field === 'current_workflow') {
+          btn.className += ' pg-choice--workflow';
+          btn.innerHTML = workflowChoiceInner(key, choiceLabel(map, key));
+        } else {
+          btn.textContent = choiceLabel(map, key);
         }
-      } else if (field === 'current_workflow') {
-        btn.className += ' pg-choice--workflow';
-        btn.innerHTML = workflowChoiceInner(key, choiceLabel(map, key));
-      } else {
-        btn.textContent = choiceLabel(map, key);
-      }
-      btn.addEventListener('click', function () { onChoice(field, key, btn); });
-      host.appendChild(btn);
+        btn.addEventListener('click', function () { onChoice(field, key, btn); });
+        host.appendChild(btn);
+      });
     });
   }
 
@@ -854,13 +929,20 @@
     if (prev && prev !== key) invalidateDownstream(field);
 
     if (field === 'trade') {
+      // Direct Question: first trade selection IS SurveyStarted (showing Q1 alone is not).
+      if (IS_DIRECT_ENTRY) {
+        markCompleted('welcome');
+        ensureSurveyStarted('direct_question_first_answer');
+      }
       state.trade = key;
       markCompleted('trade');
       preloadTradePhoto(key);
 
       if (key === 'other') {
         var otherField = document.getElementById('pgTradeOtherField');
+        var otherFieldDq = document.getElementById('pgTradeOtherFieldDirect');
         if (otherField) otherField.hidden = false;
+        if (otherFieldDq) otherFieldDq.hidden = false;
         clearBottomAction();
         saveState();
         track('SurveyQuestionAnswered', {
@@ -872,7 +954,9 @@
       }
 
       var otherFieldHide = document.getElementById('pgTradeOtherField');
+      var otherFieldHideDq = document.getElementById('pgTradeOtherFieldDirect');
       if (otherFieldHide) otherFieldHide.hidden = true;
+      if (otherFieldHideDq) otherFieldHideDq.hidden = true;
       state.other_trade_text = '';
       saveState();
       track('SurveyQuestionAnswered', {
@@ -1473,7 +1557,11 @@
       boot.trialBase ||
       'https://app.jobcapturepro.com/onboarding';
     try {
-      var handoffExtra = { lp_variant: LP_VARIANT };
+      var handoffExtra = {
+        lp_variant: LP_VARIANT,
+        jcp_pg_variant: LP_VARIANT,
+        funnel_version: FUNNEL_VERSION,
+      };
       if (state.handoff_token) handoffExtra.pg_handoff = state.handoff_token;
       if (state.session_id) handoffExtra.survey_session_id = state.session_id;
       if (state.email) {
@@ -1704,7 +1792,8 @@
   function goTo(id) {
     clearAdvance();
     clearAppSimTimers();
-    if (STATES.indexOf(id) === -1) return;
+    // welcome_direct is entry-only (not in STATES progression); everything else must be canonical.
+    if (id !== 'welcome_direct' && STATES.indexOf(id) === -1) return;
 
     if (stepEnteredId && stepEnteredAt) {
       var dwell = Date.now() - stepEnteredAt;
@@ -1712,7 +1801,7 @@
         track('SurveyStepTiming', { question_id: stepEnteredId, screen: stepEnteredId, duration_ms: dwell, answer_value: String(dwell) });
       }
     }
-    stepEnteredId = id;
+    stepEnteredId = id === 'welcome_direct' ? 'trade' : id;
     stepEnteredAt = Date.now();
 
     hideWorkflowConfirm();
@@ -1721,6 +1810,10 @@
       state.current_state = 'result_email';
       saveState();
       state.current_state = 'app_sim';
+    } else if (id === 'welcome_direct') {
+      // Persist as welcome so resume/back semantics stay coherent; UI shell is welcome_direct.
+      state.current_state = 'welcome';
+      saveState();
     } else {
       state.current_state = id;
       saveState();
@@ -1733,9 +1826,11 @@
     updateProgress();
     setBackVisible();
 
-    document.body.classList.toggle('pg-is-welcome', id === 'welcome');
+    document.body.classList.toggle('pg-is-welcome', id === 'welcome' || id === 'welcome_direct');
     document.body.classList.toggle('pg-is-app-sim', id === 'app_sim');
+    document.body.classList.toggle('pg-dq-started', startedTracked || !!state.trade);
 
+    // Do NOT fire SurveyQuestionViewed for welcome_direct — seeing Q1 is not a start.
     if (!questionViewed[id]) {
       questionViewed[id] = true;
       if (['trade', 'current_workflow', 'jobs_per_week', 'public_proof_percentage'].indexOf(id) !== -1) {
@@ -1821,13 +1916,22 @@
   }
 
   function advanceTradeOther(skip) {
-    var inp = document.getElementById('pgTradeOtherInput');
+    var inp =
+      document.getElementById('pgTradeOtherInputDirect') ||
+      document.getElementById('pgTradeOtherInput');
+    // Prefer the visible host's input when both exist.
+    try {
+      var vis = document.querySelector('[data-pg-state="welcome_direct"]:not([hidden]) #pgTradeOtherInputDirect');
+      if (vis) inp = vis;
+    } catch (eInp) {}
     var val = skip ? '' : inp ? sanitizeCustomText(inp.value) : '';
     state.other_trade_text = val;
     saveState();
     if (val) track('SurveyOtherTextProvided', { question_id: 'trade', other_text_provided: true });
     var otherField = document.getElementById('pgTradeOtherField');
+    var otherFieldDq = document.getElementById('pgTradeOtherFieldDirect');
     if (otherField) otherField.hidden = true;
+    if (otherFieldDq) otherFieldDq.hidden = true;
     goTo('current_workflow');
   }
 
@@ -1897,13 +2001,25 @@
     bind();
     initChoices();
 
-    var startState = 'welcome';
+    var startState = IS_DIRECT_ENTRY ? 'welcome_direct' : 'welcome';
     if (resumed) {
       track('SurveyResumed', { question_id: state.current_state, trade: state.trade });
       if (state.email_captured) startState = 'trial_bridge';
       else startState = firstIncomplete();
       if (state.completed_states.indexOf('welcome') !== -1 || state.trade) startedTracked = true;
+      // Resumed mid-funnel after trade: use canonical states (not entry shell).
+      if (startState === 'welcome' && IS_DIRECT_ENTRY && !state.trade) startState = 'welcome_direct';
+      if (startState === 'welcome' && IS_DIRECT_ENTRY && state.trade) {
+        /* keep firstIncomplete result */
+      }
     }
+
+    // Sync attribution with experiment arm (do not leave proof_gap_survey_v1 as lp_variant).
+    try {
+      if (window.JCPLeadAttribution && typeof window.JCPLeadAttribution.capture === 'function') {
+        window.JCPLeadAttribution.capture({ lp_variant: LP_VARIANT });
+      }
+    } catch (eAttr) {}
 
     goTo(startState);
   }

@@ -340,7 +340,7 @@ function jcp_funnel_analytics_render_admin(): void {
 
 	$funnel_label = $funnels[ $filters['funnel'] ] ?? $filters['funnel'];
 	$cards        = [
-		'visitors'          => __( 'Starts', 'jcp-core' ),
+		'visitors'          => __( 'Landing Sessions', 'jcp-core' ),
 		'survey_starts'     => __( 'Assessment started', 'jcp-core' ),
 		'survey_completion' => __( 'Assessment complete', 'jcp-core' ),
 		'emails_captured'   => __( 'Email captures', 'jcp-core' ),
@@ -350,6 +350,9 @@ function jcp_funnel_analytics_render_admin(): void {
 		'trials_started'    => __( 'Trial starts', 'jcp-core' ),
 		'paid_customers'    => __( 'Paid', 'jcp-core' ),
 	];
+	$ab_entry = ( $filters['funnel'] === 'proof_gap' && ! empty( $report['ab_entry'] ) && is_array( $report['ab_entry'] ) )
+		? $report['ab_entry']
+		: null;
 
 	$excluded_ips = function_exists( 'jcp_funnel_analytics_get_excluded_ips' )
 		? jcp_funnel_analytics_get_excluded_ips()
@@ -431,7 +434,14 @@ function jcp_funnel_analytics_render_admin(): void {
 			<label><?php esc_html_e( 'UTM medium', 'jcp-core' ); ?> <input type="text" name="utm_medium" value="<?php echo esc_attr( (string) ( $filters['utm_medium'] ?? '' ) ); ?>" /></label>
 			<label><?php esc_html_e( 'UTM campaign', 'jcp-core' ); ?> <input type="text" name="utm_campaign" value="<?php echo esc_attr( (string) $filters['utm_campaign'] ); ?>" /></label>
 			<label><?php esc_html_e( 'UTM content', 'jcp-core' ); ?> <input type="text" name="utm_content" value="<?php echo esc_attr( (string) $filters['utm_content'] ); ?>" /></label>
-			<label><?php esc_html_e( 'lp_variant', 'jcp-core' ); ?> <input type="text" name="lp_variant" value="<?php echo esc_attr( (string) $filters['lp_variant'] ); ?>" /></label>
+			<label><?php esc_html_e( 'lp_variant', 'jcp-core' ); ?>
+				<select name="lp_variant">
+					<option value=""><?php esc_html_e( 'All', 'jcp-core' ); ?></option>
+					<option value="control" <?php selected( (string) $filters['lp_variant'], 'control' ); ?>><?php esc_html_e( 'control', 'jcp-core' ); ?></option>
+					<option value="direct_question" <?php selected( (string) $filters['lp_variant'], 'direct_question' ); ?>><?php esc_html_e( 'direct_question', 'jcp-core' ); ?></option>
+					<option value="proof_gap_survey_v1" <?php selected( (string) $filters['lp_variant'], 'proof_gap_survey_v1' ); ?>><?php esc_html_e( 'proof_gap_survey_v1 (legacy)', 'jcp-core' ); ?></option>
+				</select>
+			</label>
 			<label><?php esc_html_e( 'creative_concept', 'jcp-core' ); ?> <input type="text" name="creative_concept" value="<?php echo esc_attr( (string) ( $filters['creative_concept'] ?? '' ) ); ?>" /></label>
 			<label><?php esc_html_e( 'Trade', 'jcp-core' ); ?> <input type="text" name="trade" value="<?php echo esc_attr( (string) $filters['trade'] ); ?>" /></label>
 			<label><?php esc_html_e( 'Workflow', 'jcp-core' ); ?> <input type="text" name="workflow" value="<?php echo esc_attr( (string) ( $filters['workflow'] ?? '' ) ); ?>" /></label>
@@ -457,6 +467,103 @@ function jcp_funnel_analytics_render_admin(): void {
 				</div>
 			<?php endforeach; ?>
 		</div>
+
+		<?php if ( $ab_entry ) : ?>
+			<?php
+			$ab_fmt_pct = static function ( $v ): string {
+				return is_numeric( $v ) ? esc_html( (string) $v ) . '%' : '—';
+			};
+			$ab_fmt_lift = static function ( $v ): string {
+				if ( ! is_numeric( $v ) ) {
+					return '—';
+				}
+				$n = (float) $v;
+				$cls = $n > 0 ? 'is-up' : ( $n < 0 ? 'is-down' : '' );
+				$sign = $n > 0 ? '+' : '';
+				return '<span class="jcp-fa-ab__lift ' . esc_attr( $cls ) . '">' . esc_html( $sign . (string) $n ) . '%</span>';
+			};
+			$ab_rows = $ab_entry['by_variant'] ?? [];
+			$control = $ab_rows['control'] ?? null;
+			$direct  = $ab_rows['direct_question'] ?? null;
+			$lift    = $ab_entry['lift'] ?? [];
+			?>
+			<div class="jcp-fa__section-head">
+				<h2><?php esc_html_e( 'Entry A/B — proof_gap_entry_v1', 'jcp-core' ); ?></h2>
+				<p>
+					<?php
+					echo esc_html(
+						sprintf(
+							/* translators: %s: UTC timestamp */
+							__( 'Experiment-only sessions since %s. Valid lp_variant only. QA/IP excluded. Trial/Activated/Paid not connected.', 'jcp-core' ),
+							(string) ( $ab_entry['started_at'] ?? '—' )
+						)
+					);
+					?>
+				</p>
+			</div>
+			<?php if ( ! empty( $ab_entry['tradeoff_flag'] ) && ! empty( $ab_entry['tradeoff_note'] ) ) : ?>
+				<div class="jcp-fa__notice jcp-fa__notice--warn jcp-fa-ab__tradeoff"><?php echo esc_html( (string) $ab_entry['tradeoff_note'] ); ?></div>
+			<?php endif; ?>
+			<div class="jcp-fa__table-wrap jcp-fa-ab">
+				<table class="jcp-fa-table jcp-fa-ab__table">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Variant', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'Landing Sessions', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'Assessment Starts', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'Start %', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'Completes', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'Complete / Landing', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'Complete / Start', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'Email Captures', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'Email / Landing', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'CTA Clicks', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'CTA / Landing', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'Trial Starts', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'Activated', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'Paid', 'jcp-core' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( [ $control, $direct ] as $ab_row ) : ?>
+							<?php if ( ! is_array( $ab_row ) ) { continue; } ?>
+							<tr>
+								<td><strong><?php echo esc_html( (string) ( $ab_row['label'] ?? '' ) ); ?></strong></td>
+								<td><?php echo (int) ( $ab_row['landing_sessions'] ?? 0 ); ?></td>
+								<td><?php echo (int) ( $ab_row['assessment_starts'] ?? 0 ); ?></td>
+								<td><?php echo $ab_fmt_pct( $ab_row['start_pct'] ?? null ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+								<td><?php echo (int) ( $ab_row['completes'] ?? 0 ); ?></td>
+								<td><?php echo $ab_fmt_pct( $ab_row['complete_landing_pct'] ?? null ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+								<td><?php echo $ab_fmt_pct( $ab_row['complete_start_pct'] ?? null ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+								<td><?php echo (int) ( $ab_row['email_captures'] ?? 0 ); ?></td>
+								<td><?php echo $ab_fmt_pct( $ab_row['email_landing_pct'] ?? null ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+								<td><?php echo (int) ( $ab_row['cta_clicks'] ?? 0 ); ?></td>
+								<td><?php echo $ab_fmt_pct( $ab_row['cta_landing_pct'] ?? null ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+								<td><span class="jcp-fa__badge jcp-fa__badge--muted"><?php esc_html_e( 'Not connected', 'jcp-core' ); ?></span></td>
+								<td><span class="jcp-fa__badge jcp-fa__badge--muted"><?php esc_html_e( 'Not connected', 'jcp-core' ); ?></span></td>
+								<td><span class="jcp-fa__badge jcp-fa__badge--muted"><?php esc_html_e( 'Not connected', 'jcp-core' ); ?></span></td>
+							</tr>
+						<?php endforeach; ?>
+						<tr class="jcp-fa-ab__lift-row">
+							<td><strong><?php esc_html_e( 'Lift vs Control', 'jcp-core' ); ?></strong></td>
+							<td>—</td>
+							<td>—</td>
+							<td><?php echo $ab_fmt_lift( $lift['start_pct']['value'] ?? null ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+							<td>—</td>
+							<td><?php echo $ab_fmt_lift( $lift['complete_landing_pct']['value'] ?? null ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+							<td><?php echo $ab_fmt_lift( $lift['complete_start_pct']['value'] ?? null ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+							<td>—</td>
+							<td><?php echo $ab_fmt_lift( $lift['email_landing_pct']['value'] ?? null ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+							<td>—</td>
+							<td><?php echo $ab_fmt_lift( $lift['cta_landing_pct']['value'] ?? null ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></td>
+							<td>—</td>
+							<td>—</td>
+							<td>—</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		<?php endif; ?>
 
 		<?php if ( ! empty( $rates ) ) : ?>
 			<div class="jcp-fa__rates">
@@ -714,8 +821,9 @@ function jcp_funnel_analytics_render_admin(): void {
 							<th><?php esc_html_e( 'Source', 'jcp-core' ); ?></th>
 							<th><?php esc_html_e( 'Campaign', 'jcp-core' ); ?></th>
 							<th><?php esc_html_e( 'Content / Ad', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'LP Variant', 'jcp-core' ); ?></th>
 							<th><?php esc_html_e( 'Landing', 'jcp-core' ); ?></th>
-							<th><?php esc_html_e( 'Starts', 'jcp-core' ); ?></th>
+							<th><?php esc_html_e( 'Assessment starts', 'jcp-core' ); ?></th>
 							<th><?php esc_html_e( 'Survey %', 'jcp-core' ); ?></th>
 							<th><?php esc_html_e( 'Email %', 'jcp-core' ); ?></th>
 							<th><?php esc_html_e( 'Trial CTA %', 'jcp-core' ); ?></th>
@@ -729,6 +837,7 @@ function jcp_funnel_analytics_render_admin(): void {
 							<td><?php echo esc_html( (string) $t['source'] ); ?></td>
 							<td><?php echo esc_html( (string) $t['campaign'] ); ?></td>
 							<td><?php echo esc_html( (string) $t['content'] ); ?></td>
+							<td><?php echo esc_html( (string) ( $t['lp_variant'] ?? '(none)' ) ); ?></td>
 							<td><?php echo (int) $t['landing_sessions']; ?></td>
 							<td><?php echo (int) $t['starts']; ?></td>
 							<td><?php echo esc_html( (string) $t['survey_completion'] ); ?>%</td>

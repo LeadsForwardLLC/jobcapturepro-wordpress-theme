@@ -626,3 +626,28 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/* Entry A/B compact table */
+.jcp-fa-ab {
+  margin: 0 0 22px;
+}
+.jcp-fa-ab__table {
+  font-size: 12px;
+}
+.jcp-fa-ab__table th,
+.jcp-fa-ab__table td {
+  white-space: nowrap;
+}
+.jcp-fa-ab__lift-row td {
+  background: var(--fa-soft);
+  font-weight: 600;
+}
+.jcp-fa-ab__lift.is-up {
+  color: var(--fa-ok);
+}
+.jcp-fa-ab__lift.is-down {
+  color: var(--fa-drop);
+}
+.jcp-fa-ab__tradeoff {
+  margin-bottom: 12px;
+}

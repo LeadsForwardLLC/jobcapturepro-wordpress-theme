@@ -787,11 +787,12 @@ function jcp_funnel_analytics_proof_gap_report_window( array $filters, int $offs
 		'destination_insight' => jcp_funnel_analytics_destination_insight( $table, $cohort ),
 		'devices'             => jcp_funnel_analytics_device_stats( $table, $cohort ),
 		'traffic'             => jcp_funnel_analytics_traffic_stats( $table, $cohort, $since ),
+		'ab_entry'            => jcp_funnel_analytics_proof_gap_entry_ab_report( $filters ),
 		'diagnostics'         => jcp_funnel_analytics_diagnostics( $table ),
 		'lifecycle_connected' => false,
 		'cohort_size'         => count( $cohort ),
 		'window'              => [ 'since' => $since, 'until' => $win['until'] ],
-		'calculation_note'    => __( 'Stage funnel uses unique session_ids whose SurveyLandingViewed or SurveyStarted occurred in the selected window. Conversion % is previous-stage and landing-relative, not raw event counts. Destination tabs count only first user-selected ProductRevealDestinationSelected per destination. Median step time uses SurveyStepTiming. Trial/activation/paid require cross-domain lifecycle wiring (shown as Not connected).', 'jcp-core' ),
+		'calculation_note'    => __( 'Stage funnel uses unique session_ids whose SurveyLandingViewed or SurveyStarted occurred in the selected window. Conversion % is previous-stage and landing-relative, not raw event counts. Destination tabs count only first user-selected ProductRevealDestinationSelected per destination. Median step time uses SurveyStepTiming. Trial/activation/paid require cross-domain lifecycle wiring (shown as Not connected). Landing Sessions = entry cohort. Assessment started = SurveyStarted. lp_variant is the entry experiment arm (control|direct_question); funnel_version is proof_gap_survey_v1.', 'jcp-core' ),
 	];
 }
 
@@ -1146,13 +1147,14 @@ function jcp_funnel_analytics_traffic_stats( string $table, array $cohort, strin
 			"SELECT COALESCE(NULLIF(utm_source,''),'(none)') AS source,
 				COALESCE(NULLIF(utm_campaign,''),'(none)') AS campaign,
 				COALESCE(NULLIF(utm_content,''),'(none)') AS content,
+				COALESCE(NULLIF(lp_variant,''),'(none)') AS lp_variant,
 				COUNT(DISTINCT session_id) AS landing_sessions
 			FROM $table
 			WHERE session_id IN ($placeholders)
 			AND event_name IN ('SurveyLandingViewed','SurveyStarted')
-			GROUP BY source, campaign, content
+			GROUP BY source, campaign, content, lp_variant
 			ORDER BY landing_sessions DESC
-			LIMIT 40",
+			LIMIT 60",
 			$cohort
 		),
 		ARRAY_A
@@ -1164,6 +1166,7 @@ function jcp_funnel_analytics_traffic_stats( string $table, array $cohort, strin
 		$src = (string) $row['source'];
 		$cmp = (string) $row['campaign'];
 		$ct  = (string) $row['content'];
+		$lpv = (string) $row['lp_variant'];
 		$sess_sql_parts = [ "session_id IN ($placeholders)" ];
 		$args           = $cohort;
 		if ( $src === '(none)' ) {
@@ -1183,6 +1186,12 @@ function jcp_funnel_analytics_traffic_stats( string $table, array $cohort, strin
 		} else {
 			$sess_sql_parts[] = 'utm_content = %s';
 			$args[]           = $ct;
+		}
+		if ( $lpv === '(none)' ) {
+			$sess_sql_parts[] = "(lp_variant IS NULL OR lp_variant = '')";
+		} else {
+			$sess_sql_parts[] = 'lp_variant = %s';
+			$args[]           = $lpv;
 		}
 		$where = implode( ' AND ', $sess_sql_parts );
 		$metric = static function ( string $event ) use ( $wpdb, $table, $where, $args ): int {
@@ -1204,6 +1213,7 @@ function jcp_funnel_analytics_traffic_stats( string $table, array $cohort, strin
 			'source'             => $src,
 			'campaign'           => $cmp,
 			'content'            => $ct,
+			'lp_variant'         => $lpv,
 			'landing_sessions'   => $landing,
 			'starts'             => $starts,
 			'survey_completion'  => $landing ? round( ( $result / $landing ) * 100, 1 ) : 0,
@@ -1440,3 +1450,179 @@ function jcp_funnel_analytics_retention_purge(): void {
 	);
 }
 add_action( 'jcp_funnel_analytics_retention_purge', 'jcp_funnel_analytics_retention_purge' );
+
+/**
+ * proof_gap_entry_v1 compact A/B comparison (experiment-only; post cutover).
+ *
+ * @param array $filters Admin filters (utm/device still applied when set).
+ * @return array{experiment:string,started_at:string,rows:array,lift:array,tradeoff_flag:bool,tradeoff_note:string}
+ */
+function jcp_funnel_analytics_proof_gap_entry_ab_report( array $filters = [] ): array {
+	global $wpdb;
+	jcp_funnel_analytics_maybe_create_table();
+	$table = $wpdb->prefix . JCP_FUNNEL_EVENTS_TABLE;
+
+	$started_at = function_exists( 'jcp_pg_entry_experiment_started_at' )
+		? jcp_pg_entry_experiment_started_at()
+		: (string) get_option( 'jcp_pg_entry_v1_started_at', '' );
+	$variants   = function_exists( 'jcp_pg_entry_variants' ) ? jcp_pg_entry_variants() : [ 'control', 'direct_question' ];
+
+	$ip_ex   = jcp_funnel_analytics_excluded_ip_sql();
+	$where   = [
+		'funnel_id = %s',
+		'created_at >= %s',
+		'lp_variant IN (' . implode( ',', array_fill( 0, count( $variants ), '%s' ) ) . ')',
+		$ip_ex['sql'],
+	];
+	$args    = array_merge( [ 'proof_gap', $started_at ], $variants, $ip_ex['args'] );
+
+	foreach ( [ 'utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'device' ] as $fkey ) {
+		$val = (string) ( $filters[ $fkey === 'device' ? 'device' : $fkey ] ?? '' );
+		if ( $val === '' ) {
+			continue;
+		}
+		$col     = $fkey === 'device' ? 'device_category' : $fkey;
+		$where[] = "$col = %s";
+		$args[]  = $val;
+	}
+
+	$where_sql = implode( ' AND ', $where );
+
+	// Exclude QA sessions (metadata.is_qa or qa_trace_id).
+	$qa_exclude = " AND session_id NOT IN (
+		SELECT DISTINCT session_id FROM $table
+		WHERE funnel_id = 'proof_gap'
+		AND created_at >= %s
+		AND (
+			metadata LIKE %s
+			OR metadata LIKE %s
+			OR metadata LIKE %s
+		)
+	)";
+	$qa_args = [ $started_at, '%\"is_qa\":1%', '%\"is_qa\": true%', '%\"qa_trace_id\":\"qa%' ];
+
+	$rows_out = [];
+	foreach ( $variants as $variant ) {
+		$v_args = array_merge( $args, [ $variant ] );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$cohort_sql = $wpdb->prepare(
+			"SELECT DISTINCT session_id FROM $table
+			WHERE $where_sql AND lp_variant = %s
+			AND event_name IN ('SurveyLandingViewed','SurveyStarted')
+			$qa_exclude",
+			array_merge( $v_args, $qa_args )
+		);
+		$cohort = $wpdb->get_col( $cohort_sql );
+		$cohort = array_values( array_filter( array_map( 'strval', $cohort ?: [] ) ) );
+
+		$count_ev = static function ( string $event ) use ( $wpdb, $table, $cohort ): int {
+			if ( empty( $cohort ) ) {
+				return 0;
+			}
+			$ph = implode( ',', array_fill( 0, count( $cohort ), '%s' ) );
+			$a  = array_merge( $cohort, [ $event ] );
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			return (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(DISTINCT session_id) FROM $table WHERE session_id IN ($ph) AND event_name = %s",
+					$a
+				)
+			);
+		};
+
+		$landing  = $count_ev( 'SurveyLandingViewed' );
+		// Prefer landing; if only SurveyStarted exists for a session, still count via cohort size.
+		if ( $landing <= 0 ) {
+			$landing = count( $cohort );
+		} else {
+			// Union: sessions with landing OR start still in cohort size.
+			$landing = max( $landing, count( $cohort ) );
+		}
+		$starts   = $count_ev( 'SurveyStarted' );
+		$complete = $count_ev( 'SurveyResultViewed' );
+		$email    = $count_ev( 'EmailSubmitted' );
+		$cta      = $count_ev( 'TrialCTAClicked' );
+
+		$pct = static function ( int $num, int $den ): ?float {
+			if ( $den <= 0 ) {
+				return null;
+			}
+			return round( ( $num / $den ) * 100, 1 );
+		};
+
+		$rows_out[ $variant ] = [
+			'variant'              => $variant,
+			'label'                => $variant === 'direct_question' ? __( 'Direct Question', 'jcp-core' ) : __( 'Control', 'jcp-core' ),
+			'landing_sessions'     => $landing,
+			'assessment_starts'    => $starts,
+			'start_pct'            => $pct( $starts, $landing ),
+			'completes'            => $complete,
+			'complete_landing_pct' => $pct( $complete, $landing ),
+			'complete_start_pct'   => $pct( $complete, $starts ),
+			'email_captures'       => $email,
+			'email_landing_pct'    => $pct( $email, $landing ),
+			'cta_clicks'           => $cta,
+			'cta_landing_pct'      => $pct( $cta, $landing ),
+			'trial_starts'         => null,
+			'activated'            => null,
+			'paid'                 => null,
+		];
+	}
+
+	$control = $rows_out['control'] ?? null;
+	$direct  = $rows_out['direct_question'] ?? null;
+	$lift    = [];
+	$lift_keys = [
+		'start_pct'            => 'Start %',
+		'complete_landing_pct' => 'Complete / Landing',
+		'complete_start_pct'   => 'Complete / Start',
+		'email_landing_pct'    => 'Email / Landing',
+		'cta_landing_pct'      => 'CTA / Landing',
+	];
+	foreach ( $lift_keys as $key => $label ) {
+		$c = is_array( $control ) ? ( $control[ $key ] ?? null ) : null;
+		$d = is_array( $direct ) ? ( $direct[ $key ] ?? null ) : null;
+		$rel = null;
+		if ( is_numeric( $c ) && is_numeric( $d ) && (float) $c > 0 ) {
+			$rel = round( ( ( (float) $d - (float) $c ) / (float) $c ) * 100, 1 );
+		} elseif ( is_numeric( $c ) && is_numeric( $d ) && (float) $c == 0.0 && (float) $d > 0 ) {
+			$rel = null; // undefined relative lift from zero — show absolute only in UI.
+		}
+		$lift[ $key ] = [
+			'label' => $label,
+			'value' => $rel,
+		];
+	}
+
+	$tradeoff = false;
+	$note     = '';
+	if (
+		is_array( $control ) && is_array( $direct )
+		&& is_numeric( $control['start_pct'] ) && is_numeric( $direct['start_pct'] )
+		&& (float) $direct['start_pct'] > (float) $control['start_pct']
+	) {
+		$worse = [];
+		foreach ( [ 'complete_landing_pct', 'email_landing_pct', 'cta_landing_pct' ] as $k ) {
+			$c = $control[ $k ];
+			$d = $direct[ $k ];
+			if ( is_numeric( $c ) && is_numeric( $d ) && (float) $c > 0 && (float) $d < (float) $c * 0.9 ) {
+				$worse[] = $k;
+			}
+		}
+		if ( $worse ) {
+			$tradeoff = true;
+			$note     = __( 'Start % improved for Direct Question, but downstream Complete / Email / CTA conversion fell vs Control. Do not declare a winner on Start % alone.', 'jcp-core' );
+		}
+	}
+
+	return [
+		'experiment'    => defined( 'JCP_PG_ENTRY_EXPERIMENT' ) ? JCP_PG_ENTRY_EXPERIMENT : 'proof_gap_entry_v1',
+		'started_at'    => $started_at,
+		'rows'          => array_values( $rows_out ),
+		'by_variant'    => $rows_out,
+		'lift'          => $lift,
+		'tradeoff_flag' => $tradeoff,
+		'tradeoff_note' => $note,
+		'lifecycle'     => 'not_connected',
+	];
+}

@@ -202,6 +202,9 @@ add_filter( 'style_loader_tag', 'jcp_core_proof_gap_async_page_css', 24, 2 );
 function jcp_core_proof_gap_rocket_delay_exclusions( array $excluded ): array {
 	$excluded[] = 'jcp-core-proof-gap';
 	$excluded[] = 'proof-gap.js';
+	$excluded[] = 'proof-gap-entry-ab';
+	$excluded[] = 'proof-gap-entry-ab.js';
+	$excluded[] = 'pg-entry-ab';
 	$excluded[] = 'jcp-core-onboarding-handoff';
 	$excluded[] = 'jcp-onboarding-handoff.js';
 	$excluded[] = 'jcp-core-posthog';
@@ -213,6 +216,8 @@ function jcp_core_proof_gap_rocket_delay_exclusions( array $excluded ): array {
 	return array_values( array_unique( $excluded ) );
 }
 add_filter( 'rocket_delay_js_exclusions', 'jcp_core_proof_gap_rocket_delay_exclusions' );
+add_filter( 'rocket_exclude_js', 'jcp_core_proof_gap_rocket_delay_exclusions' );
+add_filter( 'rocket_exclude_defer_js', 'jcp_core_proof_gap_rocket_delay_exclusions' );
 
 /**
  * Skip duplicate robots meta from theme when Rank Math / core already printed one.

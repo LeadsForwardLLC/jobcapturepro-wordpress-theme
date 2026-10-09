@@ -38,6 +38,8 @@
     'utm_term',
     'fbclid',
     'lp_variant',
+    'jcp_pg_variant',
+    'funnel_version',
     'qa_trace_id',
   ];
 
@@ -135,6 +137,8 @@
         'utm_term',
         'fbclid',
         'lp_variant',
+        'jcp_pg_variant',
+        'funnel_version',
         'qa_trace_id',
         'landing_page',
         'referrer',
@@ -263,6 +267,8 @@
       'utm_term',
       'fbclid',
       'lp_variant',
+      'jcp_pg_variant',
+      'funnel_version',
       'qa_trace_id',
       'landing_page',
       'referrer',
