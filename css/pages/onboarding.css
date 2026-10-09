@@ -38,9 +38,6 @@ body.jcp-onboarding-page {
   --jcp-ob-line: #e8e8e8;
   --jcp-ob-soft: #fafafa;
   --jcp-ob-max: 1080px;
-  /* Phone frame is ~360×710; scale so phone + QR panel fit screen-share viewports */
-  --jcp-ob-phone-scale: 0.82;
-  --jcp-ob-phone-frame-h: 710px;
   margin: 0;
   padding: 0;
   min-height: 100vh;
@@ -76,10 +73,7 @@ body.jcp-onboarding-page.jcp-phone-shell .demo-container {
 
 body.jcp-onboarding-page.jcp-phone-shell .phone-wrapper {
   margin: 0 auto;
-  transform: scale(var(--jcp-ob-phone-scale));
-  transform-origin: top center;
-  /* Collapse layout space left by CSS transform so the stage doesn't balloon */
-  margin-bottom: calc(var(--jcp-ob-phone-frame-h) * (var(--jcp-ob-phone-scale) - 1));
+  /* Do NOT transform/scale the phone — it breaks hit-testing and clips the frame. */
 }
 
 .jcp-ob-header {
@@ -149,7 +143,7 @@ body.jcp-onboarding-page.jcp-phone-shell .phone-wrapper {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 300px;
   gap: 1.25rem 1.75rem;
-  align-items: center;
+  align-items: start;
   justify-content: center;
   margin: 0 auto 2.25rem;
   max-width: 920px;
@@ -185,8 +179,6 @@ body.jcp-onboarding-page.jcp-phone-shell .phone-wrapper {
   width: 100%;
   display: flex;
   justify-content: center;
-  /* Reserve scaled height so the grid doesn't leave a void */
-  min-height: calc(var(--jcp-ob-phone-frame-h) * var(--jcp-ob-phone-scale));
 }
 
 .jcp-ob-phone #jcp-app {
@@ -199,7 +191,8 @@ body.jcp-onboarding-page.jcp-phone-shell .phone-wrapper {
   border: 1px solid var(--jcp-ob-line);
   border-radius: 16px;
   padding: 1.1rem 1rem 1rem;
-  align-self: center;
+  /* Sit beside the phone frame, not the preview intro */
+  margin-top: 4.25rem;
 }
 
 .jcp-ob-downloads h2 {
@@ -402,10 +395,6 @@ body.jcp-onboarding-page.jcp-phone-shell .phone-wrapper {
     max-width: 28rem;
   }
 
-  body.jcp-onboarding-page {
-    --jcp-ob-phone-scale: 0.9;
-  }
-
   .jcp-ob-downloads {
     max-width: 28rem;
     margin: 0 auto;
@@ -431,23 +420,10 @@ body.jcp-onboarding-page.jcp-phone-shell .phone-wrapper {
   .jcp-ob-downloads__note {
     text-align: left;
   }
-
-  body.jcp-onboarding-page {
-    --jcp-ob-phone-scale: 0.85;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .jcp-ob-store-card {
     transition: none;
-  }
-
-  body.jcp-onboarding-page.jcp-phone-shell .phone-wrapper {
-    transform: none;
-    margin-bottom: 0;
-  }
-
-  body.jcp-onboarding-page {
-    --jcp-ob-phone-scale: 1;
   }
 }
