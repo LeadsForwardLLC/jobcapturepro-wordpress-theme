@@ -1,5 +1,6 @@
 /* =========================================================
    JobCapturePro Demo JS (Clean, Organized, Stable)
+   Cache-bust: 2026-10-09 onboarding-hub identity
    - Keeps all features currently used
    - Preserves global functions called by HTML onclick
    - Fixes broken handlers / stray code / flow issues
