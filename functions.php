@@ -195,7 +195,7 @@ add_action( 'wp_enqueue_scripts', 'jcp_core_remove_tailwind', 999 );
  */
 function jcp_core_prototype_dequeue_conflicting_scripts(): void {
 	$pages = jcp_core_get_page_detection();
-	if ( empty( $pages['is_prototype'] ) ) {
+	if ( empty( $pages['is_prototype'] ) && empty( $pages['is_onboarding'] ) ) {
 		return;
 	}
 	$wp_scripts = wp_scripts();

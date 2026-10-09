@@ -192,10 +192,13 @@ function jcp_core_is_demo_survey_request(): bool {
 function jcp_core_get_page_detection(): array {
     $path = trim( (string) parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH ), '/' );
     $path_segments = array_filter( explode( '/', $path ) );
-    $is_prototype_path = ( $path === 'prototype' || in_array( 'prototype', $path_segments, true ) );
+    $is_prototype_path  = ( $path === 'prototype' || in_array( 'prototype', $path_segments, true ) );
+    $is_onboarding_path = ( $path === 'onboarding' || in_array( 'onboarding', $path_segments, true ) );
 
     return [
         'is_home'         => is_front_page() || $path === '' || $path === 'home',
+        // Customer onboarding hub (marketing site). Independent of app.jobcapturepro.com/onboarding.
+        'is_onboarding'   => is_page_template( 'page-onboarding.php' ) || is_page( 'onboarding' ) || $is_onboarding_path,
         'is_prototype'    => is_page_template( 'page-prototype.php' ) || is_page( 'prototype' ) || $is_prototype_path,
         'is_demo'         => ( ! function_exists( 'jcp_job_proof_demo_run_is_current' ) || ! jcp_job_proof_demo_run_is_current() )
             && (

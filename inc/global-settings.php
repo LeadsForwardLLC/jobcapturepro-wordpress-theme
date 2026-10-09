@@ -464,6 +464,7 @@ function jcp_global_should_show_banner( array $pages ): bool {
 		return true;
 	}
 	return empty( $pages['is_prototype'] )
+		&& empty( $pages['is_onboarding'] )
 		&& empty( $pages['is_wp_plugin_prototype'] )
 		&& empty( $pages['is_demo'] )
 		&& empty( $pages['is_directory'] )

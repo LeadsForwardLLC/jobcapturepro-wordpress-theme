@@ -329,7 +329,8 @@ function jcp_niche_cta_tracking_attr( string $url, string $location, string $cta
 	$path = is_string( $path ) ? rtrim( $path, '/' ) : '';
 
 	$is_referral_outbound = $host !== '' && str_contains( $host, 'firstpromoter.com' );
-	$is_onboarding        = $host !== '' && str_contains( $host, 'jobcapturepro.com' ) && str_contains( $path, '/onboarding' );
+	// App signup only — not the marketing-site customer hub at jobcapturepro.com/onboarding/.
+	$is_onboarding        = $host === 'app.jobcapturepro.com' && str_contains( $path, '/onboarding' );
 	$is_key_conversion    = in_array( $path, [ '/demo', '/referral-program' ], true );
 
 	if ( ! $is_referral_outbound && ! $is_onboarding && ! $is_key_conversion ) {

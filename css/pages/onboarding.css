@@ -1,0 +1,447 @@
+/**
+ * Customer onboarding hub (/onboarding/)
+ * Minimal chrome + phone preview + store QR cards.
+ */
+
+.jcp-ob-skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: #111;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 0 0 8px 0;
+}
+
+.jcp-ob-skip:focus {
+  left: 0;
+}
+
+.screen-reader-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+body.jcp-onboarding-page {
+  --jcp-ob-coral: #ff503e;
+  --jcp-ob-ink: #1a1a1a;
+  --jcp-ob-muted: #5c5c5c;
+  --jcp-ob-line: #e8e8e8;
+  --jcp-ob-soft: #fafafa;
+  --jcp-ob-max: 1120px;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background: #fff;
+  color: var(--jcp-ob-ink);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.jcp-onboarding-page.jcp-phone-shell .mobile-stepper,
+body.jcp-onboarding-page .directory-header,
+body.jcp-onboarding-page .site-footer,
+body.jcp-onboarding-page .jcp-site-banner {
+  display: none !important;
+}
+
+/* Phone shell: constrain to stage, don't force full viewport */
+body.jcp-onboarding-page.jcp-phone-shell .demo-container {
+  min-height: 0;
+  height: auto;
+  padding: 0;
+  width: auto;
+  max-width: none;
+}
+
+body.jcp-onboarding-page.jcp-phone-shell .phone-wrapper {
+  margin: 0 auto;
+  transform-origin: top center;
+}
+
+.jcp-ob-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 1.5rem 0.5rem;
+}
+
+.jcp-ob-logo {
+  display: inline-flex;
+  line-height: 0;
+}
+
+.jcp-ob-logo img {
+  display: block;
+  height: 32px;
+  width: auto;
+}
+
+.jcp-ob-main {
+  width: min(100% - 2rem, var(--jcp-ob-max));
+  margin: 0 auto;
+  padding: 1rem 0 3rem;
+}
+
+.jcp-ob-hero {
+  text-align: center;
+  max-width: 40rem;
+  margin: 0 auto 1.25rem;
+}
+
+.jcp-ob-eyebrow {
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--jcp-ob-coral);
+}
+
+.jcp-ob-hero h1 {
+  margin: 0 0 0.85rem;
+  font-size: clamp(1.75rem, 3.2vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--jcp-ob-ink);
+}
+
+.jcp-ob-lead {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--jcp-ob-muted);
+}
+
+.jcp-ob-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--jcp-ob-coral);
+}
+
+.jcp-ob-stage {
+  display: grid;
+  /* Phone is the visual centerpiece; downloads stay secondary and compact */
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.65fr);
+  gap: 1.25rem 1.5rem;
+  align-items: start;
+  margin-bottom: 2.5rem;
+}
+
+.jcp-ob-stage__preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.jcp-ob-preview-intro {
+  text-align: center;
+  max-width: 28rem;
+}
+
+.jcp-ob-preview-intro h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.jcp-ob-preview-intro p {
+  margin: 0;
+  color: var(--jcp-ob-muted);
+  font-size: 0.98rem;
+}
+
+.jcp-ob-phone {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  /* Screen-share friendly: phone + both QRs in one desktop viewport */
+  --jcp-ob-phone-h: 734px;
+  --jcp-ob-phone-scale: 0.78;
+  height: calc(var(--jcp-ob-phone-h) * var(--jcp-ob-phone-scale));
+}
+
+.jcp-ob-phone #jcp-app {
+  flex: 0 0 auto;
+  transform: scale(var(--jcp-ob-phone-scale));
+  transform-origin: top center;
+  /* Collapse unused layout space after CSS transform */
+  margin-bottom: calc(var(--jcp-ob-phone-h) * (var(--jcp-ob-phone-scale) - 1));
+}
+
+.jcp-ob-downloads {
+  background: var(--jcp-ob-soft);
+  border: 1px solid var(--jcp-ob-line);
+  border-radius: 16px;
+  padding: 1.1rem 1rem 1rem;
+  align-self: start;
+  position: sticky;
+  top: 1rem;
+}
+
+.jcp-ob-downloads h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.jcp-ob-downloads__lead {
+  margin: 0 0 1.15rem;
+  color: var(--jcp-ob-muted);
+  font-size: 0.95rem;
+}
+
+.jcp-ob-store-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+.jcp-ob-store-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.9rem 0.7rem 0.85rem;
+  background: #fff;
+  border: 1px solid var(--jcp-ob-line);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.jcp-ob-store-card:hover,
+.jcp-ob-store-card:focus-visible {
+  border-color: #ffb3aa;
+  box-shadow: 0 4px 14px rgba(255, 80, 62, 0.12);
+  outline: none;
+}
+
+.jcp-ob-store-card:focus-visible {
+  outline: 2px solid var(--jcp-ob-coral);
+  outline-offset: 2px;
+}
+
+.jcp-ob-store-card__platform {
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--jcp-ob-muted);
+}
+
+.jcp-ob-store-card__qr {
+  display: block;
+  padding: 0.35rem;
+  background: #fff;
+  border-radius: 8px;
+  line-height: 0;
+}
+
+.jcp-ob-store-card__qr img {
+  display: block;
+  width: 120px;
+  height: 120px;
+}
+
+.jcp-ob-badge {
+  display: block;
+  width: auto;
+  height: 40px;
+  max-width: 100%;
+}
+
+.jcp-ob-downloads__note {
+  margin: 1rem 0 0;
+  font-size: 0.85rem;
+  color: var(--jcp-ob-muted);
+  text-align: center;
+}
+
+.jcp-ob-alt,
+.jcp-ob-prep,
+.jcp-ob-close {
+  max-width: 40rem;
+  margin: 0 auto 2.25rem;
+  text-align: center;
+}
+
+.jcp-ob-alt h2,
+.jcp-ob-prep h2,
+.jcp-ob-close h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+.jcp-ob-alt p,
+.jcp-ob-prep__lead,
+.jcp-ob-close p {
+  margin: 0 0 0.75rem;
+  color: var(--jcp-ob-muted);
+}
+
+.jcp-ob-alt__support {
+  font-size: 0.98rem;
+}
+
+.jcp-ob-alt__platforms {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 0.55rem;
+  margin: 1rem 0 0.75rem !important;
+  padding: 0.85rem 1rem;
+  background: var(--jcp-ob-soft);
+  border: 1px solid var(--jcp-ob-line);
+  border-radius: 12px;
+  font-size: 0.9rem;
+  color: var(--jcp-ob-muted);
+}
+
+.jcp-ob-alt__platforms strong {
+  color: var(--jcp-ob-ink);
+  font-weight: 650;
+}
+
+.jcp-ob-alt__reassure {
+  margin: 0 !important;
+  font-weight: 650;
+  color: var(--jcp-ob-ink) !important;
+}
+
+.jcp-ob-prep__list {
+  list-style: none;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  text-align: left;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.jcp-ob-prep__list li {
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--jcp-ob-line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.jcp-ob-prep__list strong {
+  font-size: 0.98rem;
+}
+
+.jcp-ob-prep__list span {
+  color: var(--jcp-ob-muted);
+  font-size: 0.92rem;
+}
+
+.jcp-ob-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  padding: 1.5rem 1.25rem 2rem;
+  border-top: 1px solid var(--jcp-ob-line);
+  color: var(--jcp-ob-muted);
+  font-size: 0.85rem;
+}
+
+.jcp-ob-footer__copy {
+  margin: 0;
+}
+
+.jcp-ob-footer__nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.jcp-ob-footer__nav a {
+  color: var(--jcp-ob-muted);
+  text-decoration: none;
+}
+
+.jcp-ob-footer__nav a:hover,
+.jcp-ob-footer__nav a:focus-visible {
+  color: var(--jcp-ob-coral);
+  outline: none;
+}
+
+@media (max-width: 1024px) {
+  .jcp-ob-stage {
+    grid-template-columns: 1fr;
+  }
+
+  .jcp-ob-phone {
+    --jcp-ob-phone-scale: 0.88;
+  }
+
+  .jcp-ob-downloads {
+    max-width: 28rem;
+    margin: 0 auto;
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .jcp-ob-store-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .jcp-ob-store-card__qr {
+    display: none;
+  }
+
+  .jcp-ob-store-card {
+    flex-direction: row;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+  }
+
+  .jcp-ob-downloads__note {
+    text-align: left;
+  }
+
+  .jcp-ob-phone {
+    --jcp-ob-phone-scale: 0.82;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jcp-ob-store-card {
+    transition: none;
+  }
+
+  .jcp-ob-phone #jcp-app {
+    transform: none;
+    margin-bottom: 0;
+  }
+
+  .jcp-ob-phone {
+    --jcp-ob-phone-scale: 1;
+    height: auto;
+  }
+}

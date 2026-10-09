@@ -325,8 +325,8 @@ function jcp_core_enqueue_assets(): void {
         return;
     }
 
-    // Always load navigation JS (skip on prototype - no header/footer)
-    if ( ! $pages['is_prototype'] ) {
+    // Always load navigation JS (skip on prototype / onboarding hub — minimal chrome)
+    if ( empty( $pages['is_prototype'] ) && empty( $pages['is_onboarding'] ) ) {
         jcp_core_enqueue_script( 'jcp-core-nav', 'js/core/jcp-nav.js' );
         // Site banner dismiss behavior (no-op if banner not present).
         jcp_core_enqueue_script( 'jcp-core-site-banner', 'js/core/jcp-site-banner.js', [ 'jcp-core-nav' ] );
@@ -511,7 +511,7 @@ function jcp_core_enqueue_assets(): void {
     }
 
     // Blog archive sticky CTA (post archives — markup gated in PHP).
-    if ( function_exists( 'jcp_blog_is_post_archive' ) && jcp_blog_is_post_archive() && ! $pages['is_prototype'] ) {
+    if ( function_exists( 'jcp_blog_is_post_archive' ) && jcp_blog_is_post_archive() && empty( $pages['is_prototype'] ) && empty( $pages['is_onboarding'] ) ) {
         jcp_core_enqueue_script( 'jcp-core-blog-sticky-cta', 'js/core/jcp-blog-sticky-cta.js', [ 'jcp-core-nav' ] );
     }
 
@@ -527,7 +527,7 @@ function jcp_core_enqueue_assets(): void {
         $home_uses_blocks = $front_id > 0 && (bool) get_post_meta( $front_id, jcp_page_content_meta_key(), true );
     }
     $needs_render = ( $pages['is_home'] && ! $home_uses_blocks ) || $pages['is_pricing']
-        || $pages['is_prototype'] || $pages['is_demo'] || $pages['is_directory'] || $pages['is_company'] || $pages['is_estimate'];
+        || $pages['is_prototype'] || ! empty( $pages['is_onboarding'] ) || $pages['is_demo'] || $pages['is_directory'] || $pages['is_company'] || $pages['is_estimate'];
     if ( $needs_render ) {
         jcp_core_enqueue_script( $render_handle, 'js/core/jcp-render.js', $render_deps );
         // Onboarding handoff (name/email from demo) is loaded sitewide with nav above.
@@ -551,8 +551,8 @@ function jcp_core_enqueue_assets(): void {
         wp_add_inline_script( $render_handle, $globals, 'before' );
     }
 
-    // App Prototype page - full interactive experience (source of truth)
-    if ( $pages['is_prototype'] ) {
+    // App Prototype + Customer Onboarding Hub — same interactive phone shell.
+    if ( ! empty( $pages['is_prototype'] ) || ! empty( $pages['is_onboarding'] ) ) {
         jcp_core_enqueue_style( 'jcp-core-demo-shared', 'assets/shared/assets/demo.css' );
         jcp_core_enqueue_style( 'jcp-core-demo', 'css/pages/demo.css', [ 'jcp-core-demo-shared' ] );
         jcp_core_enqueue_style( 'jcp-core-leaflet', 'demo/leaflet/leaflet.css', [ 'jcp-core-demo' ] );
@@ -563,6 +563,16 @@ function jcp_core_enqueue_assets(): void {
         ] );
         // Prototype mode: no demo flow, no tour, start on app home; full access
         wp_add_inline_script( 'jcp-core-demo', 'window.JCP_IS_DEMO_MODE = false; window.JCP_IS_PROTOTYPE = true;', 'before' );
+
+        if ( ! empty( $pages['is_onboarding'] ) ) {
+            jcp_core_enqueue_style( 'jcp-core-onboarding', 'css/pages/onboarding.css', [ 'jcp-core-demo' ] );
+            jcp_core_enqueue_script( 'jcp-core-attribution', 'js/core/jcp-attribution.js', [] );
+            jcp_core_enqueue_script( 'jcp-core-posthog', 'js/core/jcp-posthog.js', [ 'jcp-core-attribution' ] );
+            if ( function_exists( 'jcp_core_localize_posthog_script' ) ) {
+                jcp_core_localize_posthog_script();
+            }
+            jcp_core_enqueue_script( 'jcp-core-onboarding-hub', 'js/pages/onboarding.js', [ 'jcp-core-posthog' ] );
+        }
         return;
     }
 
@@ -664,7 +674,7 @@ add_action( 'wp_enqueue_scripts', 'jcp_core_enqueue_assets' );
  */
 function jcp_core_strip_conflicting_scripts_on_prototype(): void {
     $pages = jcp_core_get_page_detection();
-    if ( ! $pages['is_prototype'] && ! $pages['is_wp_plugin_prototype'] ) {
+    if ( empty( $pages['is_prototype'] ) && empty( $pages['is_onboarding'] ) && empty( $pages['is_wp_plugin_prototype'] ) ) {
         return;
     }
 

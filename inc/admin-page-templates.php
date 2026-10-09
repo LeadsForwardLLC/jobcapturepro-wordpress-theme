@@ -29,6 +29,7 @@ function jcp_admin_special_page_templates(): array {
 		'referral-program'    => 'page-referral-program.php',
 		'estimate'            => 'page-estimate.php',
 		'prototype'           => 'page-prototype.php',
+		'onboarding'          => 'page-onboarding.php',
 		'company'             => 'page-company.php',
 		'job-proof-demo'      => 'page-job-proof-demo.php',
 		'proof-sprint'        => 'page-proof-sprint.php',

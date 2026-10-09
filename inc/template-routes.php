@@ -169,10 +169,10 @@ function jcp_core_maybe_flush_route_rewrites(): void {
 add_action( 'init', 'jcp_core_maybe_flush_route_rewrites', 99 );
 
 /**
- * Force prototype templates by route path.
+ * Force prototype / onboarding templates by route path.
  *
- * This protects live environments where the WP page/template assignment for
- * /prototype or /wp-plugin-prototype may be missing or incorrect.
+ * Protects live environments where WP page/template assignment may be missing.
+ * /prototype → redirected to /onboarding (see jcp_core_redirect_retired_routes).
  *
  * @param string $template Current template path.
  * @return string
@@ -180,6 +180,13 @@ add_action( 'init', 'jcp_core_maybe_flush_route_rewrites', 99 );
 function jcp_core_force_prototype_templates( string $template ): string {
     $path = trim( (string) parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH ), '/' );
     $segment = strpos( $path, '/' ) !== false ? strtok( $path, '/' ) : $path;
+
+    if ( $segment === 'onboarding' ) {
+        $forced = get_stylesheet_directory() . '/page-onboarding.php';
+        if ( file_exists( $forced ) ) {
+            return $forced;
+        }
+    }
 
     if ( $segment === 'prototype' ) {
         $forced = get_stylesheet_directory() . '/page-prototype.php';
@@ -225,6 +232,8 @@ function jcp_core_redirect_retired_routes(): void {
 	$redirects = [
 		'early-access'         => home_url( '/demo/' ),
 		'early-access-success' => home_url( '/demo/' ),
+		// Internal phone lab → customer-facing onboarding hub.
+		'prototype'            => home_url( '/onboarding/' ),
 	];
 
 	if ( ! isset( $redirects[ $segment ] ) ) {
