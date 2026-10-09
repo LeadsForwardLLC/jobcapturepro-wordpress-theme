@@ -62,7 +62,7 @@ add_filter(
 	</script>
 	<?php wp_head(); ?>
 </head>
-<body <?php body_class( 'jcp-onboarding-page jcp-phone-shell' ); ?>>
+<body <?php body_class( 'jcp-onboarding-page jcp-prototype-page jcp-phone-shell' ); ?>>
 <a class="jcp-ob-skip" href="#jcp-ob-preview"><?php esc_html_e( 'Skip to app preview', 'jcp-core' ); ?></a>
 
 <header class="jcp-ob-header">
@@ -94,7 +94,8 @@ add_filter(
 				<p><?php esc_html_e( 'Try the interactive preview to see how easy it is to capture a completed job with JobCapturePro.', 'jcp-core' ); ?></p>
 			</div>
 			<div class="jcp-ob-phone" data-jcp-ob-preview>
-				<div id="jcp-app" data-jcp-page="onboarding" data-demo-mode="false"></div>
+				<?php /* Must be data-jcp-page="prototype" — jcp-render.js only boots the phone shell for prototype|demo. */ ?>
+				<div id="jcp-app" data-jcp-page="prototype" data-demo-mode="false"></div>
 			</div>
 		</div>
 

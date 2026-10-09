@@ -245,7 +245,7 @@ function _jcpIsPrototype() {
     if (document.body && document.body.classList.contains('jcp-prototype-page')) return true;
 
     const path = (window.location.pathname || '').toLowerCase();
-    if (path === '/prototype' || path === '/prototype/') return true;
+    if (path === '/prototype' || path === '/prototype/' || path === '/onboarding' || path === '/onboarding/') return true;
   } catch (e) {}
   return false;
 }
