@@ -251,6 +251,9 @@ function _jcpIsPrototype() {
 }
 const isPrototype = _jcpIsPrototype();
 const isDemoMode = window.JCP_IS_DEMO_MODE === true;
+function isOnboardingHub() {
+  return window.JCP_IS_ONBOARDING_HUB === true;
+}
 
 const MOBILE_DEMO_MQ = '(max-width: 1024px)';
 
@@ -641,36 +644,47 @@ function getDemoUserFromUrl() {
 }
 
 try {
-  const fromUrl = getDemoUserFromUrl();
-  if (fromUrl) {
+  // Marketing /onboarding/ hub uses fixed generic identity — never inherit demo localStorage/URL PII.
+  if (window.JCP_IS_ONBOARDING_HUB === true) {
     demoUser = {
-      firstName: fromUrl.firstName || demoUser.firstName,
-      lastName: fromUrl.lastName || demoUser.lastName,
-      businessName: fromUrl.businessName || demoUser.businessName,
-      niche: fromUrl.niche || demoUser.niche,
-      email: fromUrl.email || demoUser.email || ''
+      ...demoUser,
+      firstName: 'User',
+      lastName: '',
+      businessName: 'Company Name',
+      email: 'company@gmail.com',
     };
-    try {
-      localStorage.setItem('demoUser', JSON.stringify(demoUser));
-    } catch (e) {
-      // ignore
-    }
   } else {
-    const stored = localStorage.getItem('demoUser');
-    if (stored) {
-      const parsed = JSON.parse(stored);
-
+    const fromUrl = getDemoUserFromUrl();
+    if (fromUrl) {
       demoUser = {
-        firstName: Object.prototype.hasOwnProperty.call(parsed, 'firstName')
-          ? String(parsed.firstName || '').trim()
-          : demoUser.firstName,
-        lastName: Object.prototype.hasOwnProperty.call(parsed, 'lastName')
-          ? String(parsed.lastName || '').trim()
-          : demoUser.lastName,
-        businessName: String(parsed.businessName || '').trim() || demoUser.businessName,
-        niche: parsed.niche || demoUser.niche,
-        email: parsed.email || ''
+        firstName: fromUrl.firstName || demoUser.firstName,
+        lastName: fromUrl.lastName || demoUser.lastName,
+        businessName: fromUrl.businessName || demoUser.businessName,
+        niche: fromUrl.niche || demoUser.niche,
+        email: fromUrl.email || demoUser.email || ''
       };
+      try {
+        localStorage.setItem('demoUser', JSON.stringify(demoUser));
+      } catch (e) {
+        // ignore
+      }
+    } else {
+      const stored = localStorage.getItem('demoUser');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+
+        demoUser = {
+          firstName: Object.prototype.hasOwnProperty.call(parsed, 'firstName')
+            ? String(parsed.firstName || '').trim()
+            : demoUser.firstName,
+          lastName: Object.prototype.hasOwnProperty.call(parsed, 'lastName')
+            ? String(parsed.lastName || '').trim()
+            : demoUser.lastName,
+          businessName: String(parsed.businessName || '').trim() || demoUser.businessName,
+          niche: parsed.niche || demoUser.niche,
+          email: parsed.email || ''
+        };
+      }
     }
   }
 } catch (e) {
@@ -1270,6 +1284,11 @@ function applyPersonalization() {
 function updateProfilePersonalization() {
   const nameEl = $('profile-name');
   const emailEl = $('profile-email');
+  if (isOnboardingHub()) {
+    if (nameEl) nameEl.textContent = 'User';
+    if (emailEl) emailEl.textContent = 'company@gmail.com';
+    return;
+  }
   if (nameEl) nameEl.textContent = demoUser.firstName || demoUser.businessName || 'User';
   if (emailEl) {
     const email = demoUser.email || `${(demoUser.firstName || 'user').toLowerCase()}@${(demoUser.businessName || 'company').replace(/\s+/g, '').toLowerCase()}.com`;
@@ -1290,6 +1309,7 @@ function getLocationDisplay(loc) {
 }
 
 function getOrgSwitcherLabel() {
+  if (isOnboardingHub()) return 'Company Name';
   if (isPrototype) {
     const biz = (demoUser.businessName || '').trim();
     if (biz && biz !== 'Your Business') return biz;
@@ -2300,10 +2320,16 @@ function ensurePrototypeControlsEnabled() {
 function applyPrototypeAppLabels() {
   if (!isPrototype) return;
 
-  if (!demoUser.businessName || demoUser.businessName === 'Your Business') {
+  if (isOnboardingHub()) {
+    demoUser.firstName = 'User';
+    demoUser.lastName = '';
+    demoUser.businessName = 'Company Name';
+    demoUser.email = 'company@gmail.com';
+  } else if (!demoUser.businessName || demoUser.businessName === 'Your Business') {
     demoUser.businessName = 'LeadsForward';
   }
   updateLocationUI();
+  updateProfilePersonalization();
 
   const note = document.getElementById('uploadIntegrationsNote');
   if (note) note.hidden = true;
@@ -2523,7 +2549,7 @@ function renderCheckinCard(checkin, index, fromArchived) {
       <div class="home-checkin-location">${checkin.location || ''}</div>
       <div class="home-checkin-desc">${excerptText(checkin.summary || 'Replaced water heater.', 10)}</div>
       <div class="home-checkin-meta">
-        <span class="home-checkin-user">${checkin.customer || 'John Doe'}</span>
+        <span class="home-checkin-user">${isOnboardingHub() ? 'User' : (checkin.customer || 'John Doe')}</span>
         <span class="home-checkin-time">${checkin.time || '2h ago'}</span>
       </div>
     </div>
@@ -3218,7 +3244,7 @@ async function processPhotos() {
       address: getCanonicalStreet(),
       location: getCanonicalCityState(),
       summary,
-      customer: getCanonicalSampleJob().customer,
+      customer: isOnboardingHub() ? 'User' : getCanonicalSampleJob().customer,
       time: 'Just now',
       image: demoPhotos[0]
     });
