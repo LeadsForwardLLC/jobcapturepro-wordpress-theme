@@ -133,8 +133,9 @@ body.jcp-onboarding-page.jcp-phone-shell .phone-wrapper {
 /* Stage: phone + downloads as one composition */
 .jcp-ob-stage {
   display: grid;
-  grid-template-columns: auto minmax(360px, 1fr);
-  gap: 1.5rem 3rem;
+  /* Fixed download column keeps phone + panel as one centered composition */
+  grid-template-columns: auto 420px;
+  gap: 1.5rem 2.75rem;
   align-items: start;
   justify-content: center;
   margin: 0 auto 2.5rem;
@@ -184,11 +185,10 @@ body.jcp-onboarding-page.jcp-phone-shell .phone-wrapper {
   background: var(--jcp-ob-soft);
   border: 1px solid var(--jcp-ob-line);
   border-radius: 18px;
-  padding: 1.35rem 1.35rem 1.2rem;
+  padding: 1.35rem 1.25rem 1.2rem;
   /* Align with phone frame (below the short label) */
   margin-top: 1.55rem;
-  max-width: 440px;
-  justify-self: stretch;
+  width: 100%;
 }
 
 .jcp-ob-downloads h2 {
