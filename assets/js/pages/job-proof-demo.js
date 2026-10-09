@@ -873,6 +873,16 @@
       (window.JCP_DEMO_SURVEY && window.JCP_DEMO_SURVEY.rest_url) ||
       '/wp-json/jcp/v1/demo-survey-submit';
     var attr = attrPayload();
+    var jpdSessionId = '';
+    try {
+      jpdSessionId = sessionStorage.getItem('jcp_demo_session_id') || '';
+      if (!jpdSessionId) {
+        jpdSessionId = 'd_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+        sessionStorage.setItem('jcp_demo_session_id', jpdSessionId);
+      }
+    } catch (eSid) {
+      jpdSessionId = 'd_' + Date.now();
+    }
     var body = {
       first_name: deriveFirstName(email),
       last_name: '',
@@ -892,7 +902,11 @@
       fbclid: attr.fbclid || '',
       referrer: attr.referrer || document.referrer || '',
       lp_variant: attr.lp_variant || '',
+      funnel_version: attr.funnel_version || 'demo_survey_v1',
+      survey_version: '1',
+      survey_session_id: jpdSessionId,
     };
+    if (attr.utm_id) body.utm_id = attr.utm_id;
     if (attr._fbp) body._fbp = attr._fbp;
     if (attr._fbc) body._fbc = attr._fbc;
     if (attr.qa_trace_id) body.qa_trace_id = attr.qa_trace_id;
@@ -906,6 +920,19 @@
         }
       } catch (ePhDemo) {}
     }
+    try {
+      var qQa = new URLSearchParams(location.search);
+      var isQa =
+        qQa.get('jcp_qa') === '1' ||
+        String(qQa.get('utm_source') || '').toLowerCase() === 'qa' ||
+        !!(attr.qa_trace_id && /^qa[_-]/i.test(String(attr.qa_trace_id))) ||
+        String(attr.utm_source || '').toLowerCase() === 'qa';
+      if (isQa) {
+        body.is_qa = true;
+        body.jcp_qa = '1';
+        if (!body.qa_trace_id) body.qa_trace_id = 'qa_jpd_' + Date.now();
+      }
+    } catch (eQaJpd) {}
 
     return fetch(restUrl, {
       method: 'POST',

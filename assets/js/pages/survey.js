@@ -264,6 +264,63 @@
       : {}
   );
 
+  const DEMO_FUNNEL_VERSION = 'demo_survey_v1';
+  const DEMO_SURVEY_VERSION = '1';
+
+  const isQaSession = () => {
+    try {
+      if (window.JCPPostHog && typeof window.JCPPostHog.isQaTraffic === 'function' && window.JCPPostHog.isQaTraffic()) {
+        return true;
+      }
+    } catch (eQa) {}
+    try {
+      const q = new URLSearchParams(location.search);
+      if (q.get('jcp_qa') === '1' || q.get('jcp_internal') === '1') return true;
+      const trace = q.get('qa_trace_id') || '';
+      if (trace && /^qa[_-]/i.test(trace)) return true;
+      if (String(q.get('utm_source') || '').toLowerCase() === 'qa') return true;
+    } catch (eQ) {}
+    const attr = getAttributionPayload();
+    if (attr.qa_trace_id && /^qa[_-]/i.test(String(attr.qa_trace_id))) return true;
+    if (String(attr.utm_source || '').toLowerCase() === 'qa') return true;
+    return false;
+  };
+
+  /** Niche slug for GHL business_niche (keeps free-text other separate). */
+  const getBusinessTypeSlug = () => {
+    commitNicheFromSearch();
+    const selected = getValue('niche');
+    if (!selected) return '';
+    if (selected === BUSINESS_TYPE_OTHER) return BUSINESS_TYPE_OTHER;
+    return selected;
+  };
+
+  const getBusinessTypeOtherText = () => {
+    commitNicheFromSearch();
+    return getValue('niche') === BUSINESS_TYPE_OTHER ? getValue('nicheOther') : '';
+  };
+
+  const buildDemoLeadExtras = () => {
+    const attr = getAttributionPayload();
+    const extras = {
+      ...attr,
+      survey_session_id: getSurveySessionId(),
+      funnel_version: attr.funnel_version || DEMO_FUNNEL_VERSION,
+      survey_version: DEMO_SURVEY_VERSION,
+      business_type: getBusinessTypeSlug() || getBusinessTypeValue(),
+    };
+    const other = getBusinessTypeOtherText();
+    if (other) extras.business_type_other = other;
+    if (isQaSession()) {
+      extras.is_qa = true;
+      extras.jcp_qa = '1';
+      if (!extras.qa_trace_id) {
+        extras.qa_trace_id = 'qa_demo_' + Date.now();
+      }
+    }
+    return extras;
+  };
+
   const PROGRESS_KEY = 'jcp_survey_progress';
   const RETURN_URL_KEY = 'jcp_survey_return_url';
   const INTAKE_COMPLETE_KEY = 'jcp_demo_intake_complete';
@@ -970,10 +1027,9 @@
             email: getValue('email'),
             phone: getValue('phone'),
             company: getValue('businessName'),
-            business_type: getBusinessTypeValue(),
             demo_goals: [],
             referral_source: getReferralSourceValue(),
-            ...getAttributionPayload(),
+            ...buildDemoLeadExtras(),
             ...(fields || {}),
             first_name: firstName,
           }),
@@ -1109,11 +1165,10 @@
             email: getValue('email'),
             phone: getValue('phone'),
             company: getValue('businessName'),
-            business_type: getBusinessTypeValue(),
             demo_goals: goals,
             referral_source: getReferralSourceValue(),
             event: 'demo-opt-in',
-            ...getAttributionPayload(),
+            ...buildDemoLeadExtras(),
           }),
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),
@@ -1209,10 +1264,9 @@
             email,
             phone: getValue('phone'),
             company: enteredBusiness,
-            business_type: niche,
             demo_goals: goals,
             referral_source: referralSource,
-            ...getAttributionPayload(),
+            ...buildDemoLeadExtras(),
           }),
         }),
         new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000)),

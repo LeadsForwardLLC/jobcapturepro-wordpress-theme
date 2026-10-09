@@ -73,6 +73,55 @@ define( 'JCP_GHL_KEY_SURVEY_VERSION', 'survey_version' );
 define( 'JCP_GHL_KEY_IS_QA', 'is_qa' );
 define( 'JCP_GHL_KEY_UTM_ID', 'utm_id' );
 
+/** Canonical snake_case contact / attribution aliases (sent alongside Title Case legacy keys). */
+define( 'JCP_GHL_KEY_CANONICAL_FIRST_NAME', 'first_name' );
+define( 'JCP_GHL_KEY_CANONICAL_LAST_NAME', 'last_name' );
+define( 'JCP_GHL_KEY_CANONICAL_EMAIL', 'email' );
+define( 'JCP_GHL_KEY_CANONICAL_PHONE', 'phone' );
+define( 'JCP_GHL_KEY_CANONICAL_COMPANY', 'company' );
+define( 'JCP_GHL_KEY_CANONICAL_UTM_SOURCE', 'utm_source' );
+define( 'JCP_GHL_KEY_CANONICAL_UTM_MEDIUM', 'utm_medium' );
+define( 'JCP_GHL_KEY_CANONICAL_UTM_CAMPAIGN', 'utm_campaign' );
+define( 'JCP_GHL_KEY_CANONICAL_UTM_CONTENT', 'utm_content' );
+define( 'JCP_GHL_KEY_CANONICAL_UTM_TERM', 'utm_term' );
+define( 'JCP_GHL_KEY_CANONICAL_LANDING_PAGE', 'landing_page' );
+define( 'JCP_GHL_KEY_CANONICAL_REFERRER', 'referrer' );
+define( 'JCP_GHL_KEY_CANONICAL_LP_VARIANT', 'lp_variant' );
+define( 'JCP_GHL_KEY_CANONICAL_ASSESSMENT_NOTES', 'assessment_notes' );
+
+/** Demo gate funnel / survey version identifiers (stable machine values). */
+if ( ! defined( 'JCP_DEMO_FUNNEL_VERSION' ) ) {
+	define( 'JCP_DEMO_FUNNEL_VERSION', 'demo_survey_v1' );
+}
+if ( ! defined( 'JCP_DEMO_SURVEY_VERSION' ) ) {
+	define( 'JCP_DEMO_SURVEY_VERSION', '1' );
+}
+
+/**
+ * Whether a lead request is QA/test traffic (must not fire production GHL webhooks).
+ *
+ * True when is_qa is truthy, jcp_qa=1, qa_trace_id is present, or utm_source=qa.
+ *
+ * @param array<string, mixed> $params Merged contact + attribution params.
+ */
+function jcp_ghl_request_is_qa( array $params ): bool {
+	if ( ! empty( $params['is_qa'] ) ) {
+		$raw = $params['is_qa'];
+		if ( $raw === true || $raw === 1 || $raw === '1' || $raw === 'true' ) {
+			return true;
+		}
+	}
+	if ( ! empty( $params['jcp_qa'] ) && (string) $params['jcp_qa'] === '1' ) {
+		return true;
+	}
+	$qa = isset( $params['qa_trace_id'] ) ? trim( (string) $params['qa_trace_id'] ) : '';
+	if ( $qa !== '' ) {
+		return true;
+	}
+	$utm = isset( $params['utm_source'] ) ? strtolower( trim( (string) $params['utm_source'] ) ) : '';
+	return $utm === 'qa';
+}
+
 /**
  * REST request param names (snake_case, used in JSON body from frontend).
  * Use these when registering REST args and reading request params.

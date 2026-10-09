@@ -254,21 +254,9 @@ function jcp_proof_gap_format_potentially_unused_percent( string $marketing_usag
  * @param array<string, mixed> $params Merged contact + attribution params.
  */
 function jcp_proof_gap_request_is_qa( array $params ): bool {
-	if ( ! empty( $params['is_qa'] ) ) {
-		$raw = $params['is_qa'];
-		if ( $raw === true || $raw === 1 || $raw === '1' || $raw === 'true' ) {
-			return true;
-		}
-	}
-	if ( ! empty( $params['jcp_qa'] ) && (string) $params['jcp_qa'] === '1' ) {
-		return true;
-	}
-	$qa = isset( $params['qa_trace_id'] ) ? trim( (string) $params['qa_trace_id'] ) : '';
-	if ( $qa !== '' ) {
-		return true;
-	}
-	$utm = isset( $params['utm_source'] ) ? strtolower( trim( (string) $params['utm_source'] ) ) : '';
-	return $utm === 'qa';
+	return function_exists( 'jcp_ghl_request_is_qa' )
+		? jcp_ghl_request_is_qa( $params )
+		: false;
 }
 
 /**

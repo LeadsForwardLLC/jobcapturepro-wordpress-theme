@@ -86,6 +86,21 @@ function jcp_core_register_demo_survey_rest_routes(): void {
                 'type'              => 'string',
                 'sanitize_callback' => 'sanitize_text_field',
             ],
+            'survey_session_id' => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
+            'survey_version' => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
+            'business_type_other' => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
         ] + jcp_demo_ghl_attribution_rest_args(),
     ] );
 
@@ -133,6 +148,21 @@ function jcp_core_register_demo_survey_rest_routes(): void {
                 'items'             => [ 'type' => 'string' ],
             ],
             'referral_source' => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
+            'survey_session_id' => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
+            'survey_version' => [
+                'required'          => false,
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+            ],
+            'business_type_other' => [
                 'required'          => false,
                 'type'              => 'string',
                 'sanitize_callback' => 'sanitize_text_field',
@@ -354,68 +384,223 @@ function jcp_demo_ghl_merge_attribution_from_request( array $params, \WP_REST_Re
 }
 
 /**
+ * Resolve demo business niche into machine key + legacy display label.
+ *
+ * Does not invent values: known catalog slugs stay machine-readable; free-text
+ * "other" answers become niche=other with the typed text preserved separately.
+ *
+ * @param string $raw         business_type from the client (slug or free text).
+ * @param string $other_text  Optional explicit other free text.
+ * @return array{niche: string, label: string, other_text: string}
+ */
+function jcp_demo_resolve_business_niche( string $raw, string $other_text = '' ): array {
+	$raw        = trim( $raw );
+	$other_text = trim( $other_text );
+	$other_key  = function_exists( 'jcp_core_business_type_other_value' )
+		? jcp_core_business_type_other_value()
+		: 'other';
+
+	if ( $raw === '' && $other_text === '' ) {
+		return [ 'niche' => '', 'label' => '', 'other_text' => '' ];
+	}
+
+	$options = function_exists( 'jcp_core_business_type_flat_options' )
+		? jcp_core_business_type_flat_options()
+		: [];
+
+	foreach ( $options as $opt ) {
+		$value = isset( $opt['value'] ) ? (string) $opt['value'] : '';
+		$label = isset( $opt['label'] ) ? (string) $opt['label'] : '';
+		if ( $value !== '' && $value === $raw ) {
+			return [
+				'niche'      => $value,
+				'label'      => $label !== '' ? $label : $value,
+				'other_text' => ( $value === $other_key ) ? $other_text : '',
+			];
+		}
+	}
+
+	foreach ( $options as $opt ) {
+		$value = isset( $opt['value'] ) ? (string) $opt['value'] : '';
+		$label = isset( $opt['label'] ) ? (string) $opt['label'] : '';
+		if ( $label !== '' && strcasecmp( $label, $raw ) === 0 ) {
+			return [
+				'niche'      => $value,
+				'label'      => $label,
+				'other_text' => ( $value === $other_key ) ? $other_text : '',
+			];
+		}
+	}
+
+	// Free-text / legacy "other" payloads where the client sent the typed trade only.
+	$free = $other_text !== '' ? $other_text : $raw;
+	return [
+		'niche'      => $other_key,
+		'label'      => $free,
+		'other_text' => $free,
+	];
+}
+
+/**
  * Normalize demo contact fields for GHL webhook payloads.
  *
  * @param array<string, mixed> $params Request params.
- * @return array{first_name: string, last_name: string, email: string, phone: string, company: string, business_type: string, service_area: string, use_case: string, referral_source: string, utm_source: string, utm_medium: string, utm_campaign: string, utm_content: string, utm_term: string, fbclid: string, landing_page: string, lp_variant: string, funnel_surface: string, referrer: string, contact_id: string}
+ * @return array<string, string>
  */
 function jcp_demo_ghl_normalize_contact_params( array $params ): array {
-    $first_name    = isset( $params['first_name'] ) ? trim( (string) $params['first_name'] ) : '';
-    $last_name     = isset( $params['last_name'] ) ? trim( (string) $params['last_name'] ) : '';
-    $email         = isset( $params['email'] ) ? trim( (string) $params['email'] ) : '';
-    $phone         = isset( $params['phone'] ) ? trim( (string) $params['phone'] ) : '';
-    $company       = isset( $params['company'] ) ? trim( (string) $params['company'] ) : '';
-    $business_type = isset( $params['business_type'] ) ? trim( (string) $params['business_type'] ) : '';
-    $service_area  = isset( $params['service_area'] ) ? trim( (string) $params['service_area'] ) : '';
+    $first_name      = isset( $params['first_name'] ) ? trim( (string) $params['first_name'] ) : '';
+    $last_name       = isset( $params['last_name'] ) ? trim( (string) $params['last_name'] ) : '';
+    $email           = isset( $params['email'] ) ? trim( (string) $params['email'] ) : '';
+    $phone           = isset( $params['phone'] ) ? trim( (string) $params['phone'] ) : '';
+    $company         = isset( $params['company'] ) ? trim( (string) $params['company'] ) : '';
+    $business_raw    = isset( $params['business_type'] ) ? trim( (string) $params['business_type'] ) : '';
+    $business_other  = isset( $params['business_type_other'] ) ? trim( (string) $params['business_type_other'] ) : '';
+    $service_area    = isset( $params['service_area'] ) ? trim( (string) $params['service_area'] ) : '';
     $referral_source = isset( $params['referral_source'] ) ? trim( (string) $params['referral_source'] ) : '';
 
     $demo_goals = $params['demo_goals'] ?? [];
     if ( ! is_array( $demo_goals ) ) {
         $demo_goals = [];
     }
-    $demo_goals = array_filter( array_map( static function ( $goal ) {
+    $demo_goals = array_values( array_filter( array_map( static function ( $goal ) {
         return trim( (string) $goal );
-    }, $demo_goals ) );
+    }, $demo_goals ) ) );
 
-    $business_type_label = function_exists( 'jcp_core_early_access_business_type_label' )
-        ? jcp_core_early_access_business_type_label( $business_type )
-        : $business_type;
-    if ( $business_type_label === '' ) {
-        $business_type_label = $business_type;
-    }
+    $resolved = jcp_demo_resolve_business_niche( $business_raw, $business_other );
 
     $use_case_param = isset( $params['use_case'] ) ? trim( (string) $params['use_case'] ) : '';
+    $use_case       = $use_case_param !== '' ? $use_case_param : implode( ', ', $demo_goals );
+
+    $assessment_parts = [];
+    if ( $resolved['other_text'] !== '' ) {
+        $assessment_parts[] = 'other_trade:' . $resolved['other_text'];
+    }
+    if ( $demo_goals ) {
+        $assessment_parts[] = 'goals:' . implode( ',', $demo_goals );
+    }
+    $assessment_notes = isset( $params['assessment_notes'] ) ? trim( (string) $params['assessment_notes'] ) : '';
+    if ( $assessment_notes === '' && $assessment_parts ) {
+        $assessment_notes = implode( ' | ', $assessment_parts );
+    }
+
+    $session_id = isset( $params['survey_session_id'] ) ? trim( (string) $params['survey_session_id'] ) : '';
+    $funnel_ver = isset( $params['funnel_version'] ) ? trim( (string) $params['funnel_version'] ) : '';
+    if ( $funnel_ver === '' && defined( 'JCP_DEMO_FUNNEL_VERSION' ) ) {
+        $funnel_ver = (string) JCP_DEMO_FUNNEL_VERSION;
+    }
+    $survey_ver = isset( $params['survey_version'] ) ? trim( (string) $params['survey_version'] ) : '';
+    if ( $survey_ver === '' && defined( 'JCP_DEMO_SURVEY_VERSION' ) ) {
+        $survey_ver = (string) JCP_DEMO_SURVEY_VERSION;
+    }
 
     return [
-        'first_name'       => $first_name,
-        'last_name'        => $last_name,
-        'email'            => $email,
-        'phone'            => $phone,
-        'company'          => $company,
-        'business_type'    => $business_type_label,
-        'service_area'     => $service_area,
-        // Prefer an explicit use_case (Proof Gap packs survey answers here).
-        // Fall back to demo_goals for classic demo opt-in payloads.
-        'use_case'         => $use_case_param !== '' ? $use_case_param : implode( ', ', $demo_goals ),
-        'referral_source'  => $referral_source,
-        'utm_source'       => isset( $params['utm_source'] ) ? trim( (string) $params['utm_source'] ) : '',
-        'utm_medium'       => isset( $params['utm_medium'] ) ? trim( (string) $params['utm_medium'] ) : '',
-        'utm_campaign'     => isset( $params['utm_campaign'] ) ? trim( (string) $params['utm_campaign'] ) : '',
-        'utm_content'      => isset( $params['utm_content'] ) ? trim( (string) $params['utm_content'] ) : '',
-        'utm_term'         => isset( $params['utm_term'] ) ? trim( (string) $params['utm_term'] ) : '',
-        'fbclid'           => isset( $params['fbclid'] ) ? trim( (string) $params['fbclid'] ) : '',
-        'landing_page'     => isset( $params['landing_page'] ) ? trim( (string) $params['landing_page'] ) : '',
-        'lp_variant'       => isset( $params['lp_variant'] ) ? trim( (string) $params['lp_variant'] ) : '',
-        'funnel_surface'   => isset( $params['funnel_surface'] ) ? trim( (string) $params['funnel_surface'] ) : '',
-        'referrer'         => isset( $params['referrer'] ) ? trim( (string) $params['referrer'] ) : '',
-        'contact_id'       => function_exists( 'jcp_demo_ghl_sanitize_contact_id' )
+        'first_name'          => $first_name,
+        'last_name'           => $last_name,
+        'email'               => $email,
+        'phone'               => $phone,
+        'company'             => $company,
+        'business_niche'      => $resolved['niche'],
+        'business_type'       => $resolved['label'],
+        'business_type_other' => $resolved['other_text'],
+        'service_area'        => $service_area,
+        // Prefer an explicit use_case; fall back to demo_goals for classic demo opt-in.
+        'use_case'            => $use_case,
+        'assessment_notes'    => $assessment_notes,
+        'referral_source'     => $referral_source,
+        'utm_source'          => isset( $params['utm_source'] ) ? trim( (string) $params['utm_source'] ) : '',
+        'utm_medium'          => isset( $params['utm_medium'] ) ? trim( (string) $params['utm_medium'] ) : '',
+        'utm_campaign'        => isset( $params['utm_campaign'] ) ? trim( (string) $params['utm_campaign'] ) : '',
+        'utm_content'         => isset( $params['utm_content'] ) ? trim( (string) $params['utm_content'] ) : '',
+        'utm_term'            => isset( $params['utm_term'] ) ? trim( (string) $params['utm_term'] ) : '',
+        'utm_id'              => isset( $params['utm_id'] ) ? trim( (string) $params['utm_id'] ) : '',
+        'fbclid'              => isset( $params['fbclid'] ) ? trim( (string) $params['fbclid'] ) : '',
+        'landing_page'        => isset( $params['landing_page'] ) ? trim( (string) $params['landing_page'] ) : '',
+        'lp_variant'          => isset( $params['lp_variant'] ) ? trim( (string) $params['lp_variant'] ) : '',
+        'funnel_surface'      => isset( $params['funnel_surface'] ) ? trim( (string) $params['funnel_surface'] ) : '',
+        'funnel_version'      => $funnel_ver,
+        'survey_version'      => $survey_ver,
+        'survey_session_id'   => $session_id,
+        'ph_distinct_id'      => isset( $params['ph_distinct_id'] ) ? trim( (string) $params['ph_distinct_id'] ) : '',
+        'qa_trace_id'         => isset( $params['qa_trace_id'] ) ? trim( (string) $params['qa_trace_id'] ) : '',
+        'referrer'            => isset( $params['referrer'] ) ? trim( (string) $params['referrer'] ) : '',
+        'contact_id'          => function_exists( 'jcp_demo_ghl_sanitize_contact_id' )
             ? jcp_demo_ghl_sanitize_contact_id( $params['contact_id'] ?? '' )
             : '',
     ];
 }
 
 /**
+ * Parse a form-urlencoded GHL webhook body into an associative array (QA audit preview).
+ *
+ * @param string $body Form-urlencoded body.
+ * @return array<string, mixed>
+ */
+function jcp_demo_ghl_webhook_body_to_array( string $body ): array {
+	if ( function_exists( 'jcp_proof_gap_webhook_body_to_array' ) ) {
+		return jcp_proof_gap_webhook_body_to_array( $body );
+	}
+	$out = [];
+	if ( $body === '' ) {
+		return $out;
+	}
+	foreach ( explode( '&', $body ) as $pair ) {
+		if ( $pair === '' ) {
+			continue;
+		}
+		$parts = explode( '=', $pair, 2 );
+		$key   = rawurldecode( str_replace( '+', ' ', (string) ( $parts[0] ?? '' ) ) );
+		$val   = rawurldecode( str_replace( '+', ' ', (string) ( $parts[1] ?? '' ) ) );
+		if ( $key === '' ) {
+			continue;
+		}
+		if ( substr( $key, -2 ) === '[]' ) {
+			$base = substr( $key, 0, -2 );
+			if ( ! isset( $out[ $base ] ) || ! is_array( $out[ $base ] ) ) {
+				$out[ $base ] = [];
+			}
+			$out[ $base ][] = $val;
+			continue;
+		}
+		$out[ $key ] = $val;
+	}
+	return $out;
+}
+
+/**
+ * Persist a demo lead as skipped_qa (never deliver to production GHL).
+ *
+ * @param array<string, mixed> $params      Contact + attribution.
+ * @param string               $body_string Webhook body preview.
+ * @param string               $event_id    Meta event id.
+ * @return int Lead queue row id (0 on failure).
+ */
+function jcp_demo_lead_queue_mark_skipped_qa( array $params, string $body_string, string $event_id ): int {
+	$lead_id = jcp_demo_lead_queue_insert( $params, $body_string, $event_id );
+	if ( ! $lead_id ) {
+		return 0;
+	}
+	global $wpdb;
+	$table = $wpdb->prefix . JCP_DEMO_LEAD_QUEUE_TABLE;
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$wpdb->update(
+		$table,
+		[
+			'status'     => 'skipped_qa',
+			'updated_at' => current_time( 'mysql' ),
+		],
+		[ 'id' => (int) $lead_id ],
+		[ '%s', '%s' ],
+		[ '%d' ]
+	);
+	return (int) $lead_id;
+}
+
+/**
  * Build application/x-www-form-urlencoded GHL webhook body with contact + event + optional tags.
+ *
+ * Sends canonical snake_case keys (business_niche, utm_source, …) PLUS legacy Title Case
+ * aliases the published Demo Start inbound webhook still maps (Business Type, UTM Source, …).
+ * Only includes fields present in the current demo state — never fabricates qualification answers.
  *
  * @param string               $event  GHL Event value.
  * @param array<string, mixed> $params Contact request params.
@@ -423,7 +608,10 @@ function jcp_demo_ghl_normalize_contact_params( array $params ): array {
  */
 function jcp_demo_ghl_build_webhook_body( string $event, array $params, array $tags = [] ): string {
     $contact = jcp_demo_ghl_normalize_contact_params( $params );
-    $scalar  = [
+    $is_qa   = function_exists( 'jcp_ghl_request_is_qa' ) && jcp_ghl_request_is_qa( $params );
+
+    // Legacy Title Case keys (existing GHL Demo Start workflow).
+    $scalar = [
         JCP_GHL_KEY_EVENT         => $event,
         JCP_GHL_KEY_FIRST_NAME    => $contact['first_name'],
         JCP_GHL_KEY_LAST_NAME     => $contact['last_name'],
@@ -442,18 +630,99 @@ function jcp_demo_ghl_build_webhook_body( string $event, array $params, array $t
         JCP_GHL_KEY_LANDING_PAGE  => $contact['landing_page'],
         JCP_GHL_KEY_REFERRER      => $contact['referrer'],
     ];
+
+    // Canonical snake_case contact + attribution (new GHL custom-field mappings).
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_FIRST_NAME' ) && $contact['first_name'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_FIRST_NAME ] = $contact['first_name'];
+    }
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_LAST_NAME' ) && $contact['last_name'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_LAST_NAME ] = $contact['last_name'];
+    }
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_EMAIL' ) && $contact['email'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_EMAIL ] = $contact['email'];
+    }
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_PHONE' ) && $contact['phone'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_PHONE ] = $contact['phone'];
+    }
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_COMPANY' ) && $contact['company'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_COMPANY ] = $contact['company'];
+    }
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_BUSINESS_NICHE' ) && $contact['business_niche'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_BUSINESS_NICHE ] = $contact['business_niche'];
+    }
+    if ( defined( 'JCP_GHL_KEY_BUSINESS_NICHE' ) && $contact['business_niche'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_BUSINESS_NICHE ] = $contact['business_niche'];
+    }
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_UTM_SOURCE' ) && $contact['utm_source'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_UTM_SOURCE ] = $contact['utm_source'];
+    }
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_UTM_MEDIUM' ) && $contact['utm_medium'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_UTM_MEDIUM ] = $contact['utm_medium'];
+    }
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_UTM_CAMPAIGN' ) && $contact['utm_campaign'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_UTM_CAMPAIGN ] = $contact['utm_campaign'];
+    }
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_UTM_CONTENT' ) && $contact['utm_content'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_UTM_CONTENT ] = $contact['utm_content'];
+    }
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_UTM_TERM' ) && $contact['utm_term'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_UTM_TERM ] = $contact['utm_term'];
+    }
+    if ( defined( 'JCP_GHL_KEY_UTM_ID' ) && $contact['utm_id'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_UTM_ID ] = $contact['utm_id'];
+    }
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_LANDING_PAGE' ) && $contact['landing_page'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_LANDING_PAGE ] = $contact['landing_page'];
+    }
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_REFERRER' ) && $contact['referrer'] !== '' ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_REFERRER ] = $contact['referrer'];
+    }
+
     if ( $contact['lp_variant'] !== '' && defined( 'JCP_GHL_KEY_LP_VARIANT' ) ) {
         $scalar[ JCP_GHL_KEY_LP_VARIANT ] = $contact['lp_variant'];
+        if ( defined( 'JCP_GHL_KEY_CANONICAL_LP_VARIANT' ) ) {
+            $scalar[ JCP_GHL_KEY_CANONICAL_LP_VARIANT ] = $contact['lp_variant'];
+        }
     }
     if ( $contact['funnel_surface'] !== '' && defined( 'JCP_GHL_KEY_FUNNEL_SURFACE' ) ) {
         $scalar[ JCP_GHL_KEY_FUNNEL_SURFACE ] = $contact['funnel_surface'];
     }
+    if ( $contact['funnel_version'] !== '' && defined( 'JCP_GHL_KEY_FUNNEL_VERSION' ) ) {
+        $scalar[ JCP_GHL_KEY_FUNNEL_VERSION ] = $contact['funnel_version'];
+    }
+    if ( $contact['survey_version'] !== '' && defined( 'JCP_GHL_KEY_SURVEY_VERSION' ) ) {
+        $scalar[ JCP_GHL_KEY_SURVEY_VERSION ] = $contact['survey_version'];
+    }
+    if ( $contact['survey_session_id'] !== '' && defined( 'JCP_GHL_KEY_CANONICAL_SURVEY_SESSION_ID' ) ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_SURVEY_SESSION_ID ] = $contact['survey_session_id'];
+        if ( defined( 'JCP_GHL_KEY_SURVEY_SESSION_ID' ) ) {
+            $scalar[ JCP_GHL_KEY_SURVEY_SESSION_ID ] = $contact['survey_session_id'];
+        }
+    }
+    if ( $contact['ph_distinct_id'] !== '' && defined( 'JCP_GHL_KEY_PH_DISTINCT_ID' ) ) {
+        $scalar[ JCP_GHL_KEY_PH_DISTINCT_ID ] = mb_substr( $contact['ph_distinct_id'], 0, 256 );
+    }
+    if ( $contact['assessment_notes'] !== '' ) {
+        if ( defined( 'JCP_GHL_KEY_ASSESSMENT_NOTES' ) ) {
+            $scalar[ JCP_GHL_KEY_ASSESSMENT_NOTES ] = $contact['assessment_notes'];
+        }
+        if ( defined( 'JCP_GHL_KEY_CANONICAL_ASSESSMENT_NOTES' ) ) {
+            $scalar[ JCP_GHL_KEY_CANONICAL_ASSESSMENT_NOTES ] = $contact['assessment_notes'];
+        }
+    }
+    if ( $contact['qa_trace_id'] !== '' && defined( 'JCP_GHL_KEY_QA_TRACE_ID' ) ) {
+        $scalar[ JCP_GHL_KEY_QA_TRACE_ID ] = mb_substr( $contact['qa_trace_id'], 0, 80 );
+    }
+    if ( $is_qa && defined( 'JCP_GHL_KEY_IS_QA' ) ) {
+        $scalar[ JCP_GHL_KEY_IS_QA ] = 'true';
+    }
+
     // When present, GHL workflows should Find/Update this contact instead of creating a duplicate.
     if ( $contact['contact_id'] !== '' && defined( 'JCP_GHL_KEY_CONTACT_ID' ) ) {
         $scalar[ JCP_GHL_KEY_CONTACT_ID ] = $contact['contact_id'];
-        // Human-readable alias for easier inbound-webhook field mapping in GHL.
-        $scalar['Contact Id'] = $contact['contact_id'];
+        $scalar['Contact Id']             = $contact['contact_id'];
     }
+
     $body = http_build_query( $scalar, '', '&', PHP_QUERY_RFC3986 );
     if ( $contact['referral_source'] !== '' ) {
         // Match Early Access: Referral Source[] for GHL multi-select custom fields.
@@ -879,16 +1148,19 @@ function jcp_core_demo_survey_submit_handler( \WP_REST_Request $request ): \WP_R
 
     $params = jcp_demo_ghl_merge_attribution_from_request(
         [
-            'first_name'      => $first_name,
-            'last_name'       => $request->get_param( 'last_name' ),
-            'email'           => $email,
-            'phone'           => $request->get_param( 'phone' ),
-            'company'         => $request->get_param( 'company' ),
-            'business_type'   => $request->get_param( 'business_type' ),
-            'service_area'    => $request->get_param( 'service_area' ),
-            'demo_goals'      => $request->get_param( 'demo_goals' ),
-            'referral_source' => $request->get_param( 'referral_source' ),
-            'event'           => $request->get_param( 'event' ),
+            'first_name'          => $first_name,
+            'last_name'           => $request->get_param( 'last_name' ),
+            'email'               => $email,
+            'phone'               => $request->get_param( 'phone' ),
+            'company'             => $request->get_param( 'company' ),
+            'business_type'       => $request->get_param( 'business_type' ),
+            'business_type_other' => $request->get_param( 'business_type_other' ),
+            'service_area'        => $request->get_param( 'service_area' ),
+            'demo_goals'          => $request->get_param( 'demo_goals' ),
+            'referral_source'     => $request->get_param( 'referral_source' ),
+            'event'               => $request->get_param( 'event' ),
+            'survey_session_id'   => $request->get_param( 'survey_session_id' ),
+            'survey_version'      => $request->get_param( 'survey_version' ),
         ],
         $request
     );
@@ -899,7 +1171,29 @@ function jcp_core_demo_survey_submit_handler( \WP_REST_Request $request ): \WP_R
     if ( defined( 'JCP_GHL_KEY_EVENT_ID' ) && $event_id !== '' ) {
         $body_string .= '&' . rawurlencode( JCP_GHL_KEY_EVENT_ID ) . '=' . rawurlencode( $event_id );
     }
-    $lead_id     = jcp_demo_lead_queue_insert( $params, $body_string, $event_id );
+
+    $payload_preview = jcp_demo_ghl_webhook_body_to_array( $body_string );
+    $is_qa           = function_exists( 'jcp_ghl_request_is_qa' ) && jcp_ghl_request_is_qa( $params );
+
+    // QA / test traffic: persist for audit but NEVER fire the production Demo Survey webhook.
+    if ( $is_qa ) {
+        $lead_id = jcp_demo_lead_queue_mark_skipped_qa( $params, $body_string, $event_id );
+        return new \WP_REST_Response(
+            [
+                'success'         => true,
+                'captured'        => true,
+                'delivered'       => false,
+                'queued'          => false,
+                'ghl_skipped_qa'  => true,
+                'lead_id'         => $lead_id,
+                'event_id'        => $event_id,
+                'webhook_payload' => $payload_preview,
+            ],
+            200
+        );
+    }
+
+    $lead_id = jcp_demo_lead_queue_insert( $params, $body_string, $event_id );
 
     if ( ! $lead_id ) {
         return new \WP_REST_Response(
@@ -1126,6 +1420,11 @@ function jcp_demo_ghl_maybe_forward_demo_milestone(
         return;
     }
 
+    // Never forward QA / test traffic into the production Demo Survey workflow.
+    if ( function_exists( 'jcp_ghl_request_is_qa' ) && jcp_ghl_request_is_qa( $contact_params ) ) {
+        return;
+    }
+
     $contact = jcp_demo_ghl_normalize_contact_params( $contact_params );
     if ( $contact['email'] === '' || ! is_email( $contact['email'] ) ) {
         return;
@@ -1190,21 +1489,43 @@ function jcp_core_demo_viewed_submit_handler( \WP_REST_Request $request ): \WP_R
         $first_name = $local !== '' ? $local : 'there';
     }
 
-    $body_string = jcp_core_build_demo_viewed_ghl_body(
-        jcp_demo_ghl_merge_attribution_from_request(
-            [
-                'first_name'    => $first_name,
-                'last_name'     => $last_name,
-                'email'         => $email,
-                'company'       => $request->get_param( 'company' ),
-                'business_type' => $request->get_param( 'business_type' ),
-                'service_area'  => $request->get_param( 'service_area' ),
-                'demo_goals'    => $request->get_param( 'demo_goals' ),
-                'referral_source' => $request->get_param( 'referral_source' ),
-            ],
-            $request
-        )
+    $params = jcp_demo_ghl_merge_attribution_from_request(
+        [
+            'first_name'          => $first_name,
+            'last_name'           => $last_name,
+            'email'               => $email,
+            'company'             => $request->get_param( 'company' ),
+            'business_type'       => $request->get_param( 'business_type' ),
+            'business_type_other' => $request->get_param( 'business_type_other' ),
+            'service_area'        => $request->get_param( 'service_area' ),
+            'demo_goals'          => $request->get_param( 'demo_goals' ),
+            'referral_source'     => $request->get_param( 'referral_source' ),
+            'survey_session_id'   => $request->get_param( 'survey_session_id' ),
+            'survey_version'      => $request->get_param( 'survey_version' ),
+        ],
+        $request
     );
+
+    $body_string     = jcp_core_build_demo_viewed_ghl_body( $params );
+    $payload_preview = jcp_demo_ghl_webhook_body_to_array( $body_string );
+    $is_qa           = function_exists( 'jcp_ghl_request_is_qa' ) && jcp_ghl_request_is_qa( $params );
+
+    if ( $is_qa ) {
+        $event_id = jcp_demo_lead_resolve_event_id( $request->get_param( 'event_id' ) );
+        $params['event'] = 'demo-viewed';
+        $lead_id = jcp_demo_lead_queue_mark_skipped_qa( $params, $body_string, $event_id );
+        return new \WP_REST_Response(
+            [
+                'success'         => true,
+                'captured'        => true,
+                'delivered'       => false,
+                'ghl_skipped_qa'  => true,
+                'lead_id'         => $lead_id,
+                'webhook_payload' => $payload_preview,
+            ],
+            200
+        );
+    }
 
     $response = wp_remote_post(
         JCP_GHL_DEMO_SURVEY_WEBHOOK_URL,

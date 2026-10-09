@@ -4799,6 +4799,14 @@ function enrichContactWithPhone(phone, firstNameOverride) {
     const local = String(email).split('@')[0] || '';
     firstName = local || 'there';
   }
+  const attr =
+    window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function'
+      ? window.JCPLeadAttribution.getPayload() || {}
+      : {};
+  let surveySessionId = '';
+  try {
+    surveySessionId = sessionStorage.getItem('jcp_demo_session_id') || '';
+  } catch (eSid) {}
   const body = {
     event: 'demo-phone-entered',
     email,
@@ -4810,10 +4818,24 @@ function enrichContactWithPhone(phone, firstNameOverride) {
         ? String(demoUser.businessName).trim()
         : '',
     business_type: (demoUser.niche || '').trim(),
-    ...(window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function'
-      ? window.JCPLeadAttribution.getPayload() || {}
-      : {}),
+    survey_session_id: surveySessionId,
+    funnel_version: attr.funnel_version || 'demo_survey_v1',
+    survey_version: '1',
+    ...attr,
   };
+  try {
+    const q = new URLSearchParams(location.search);
+    const qa =
+      q.get('jcp_qa') === '1' ||
+      String(q.get('utm_source') || '').toLowerCase() === 'qa' ||
+      !!(attr.qa_trace_id && /^qa[_-]/i.test(String(attr.qa_trace_id))) ||
+      String(attr.utm_source || '').toLowerCase() === 'qa';
+    if (qa) {
+      body.is_qa = true;
+      body.jcp_qa = '1';
+      if (!body.qa_trace_id) body.qa_trace_id = 'qa_demo_phone_' + Date.now();
+    }
+  } catch (eQa) {}
   try {
     fetch(surveyUrl, {
       method: 'POST',
