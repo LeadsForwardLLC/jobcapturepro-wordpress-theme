@@ -54,7 +54,7 @@ add_filter(
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="noindex, follow">
-	<meta name="description" content="<?php echo esc_attr__( 'Get started with JobCapturePro. Explore the mobile app, download it for iPhone or Android, and learn how JCP works with your existing job photo workflow.', 'jcp-core' ); ?>">
+	<meta name="description" content="<?php echo esc_attr__( 'JobCapturePro onboarding: download the app and walk through your first Check-In.', 'jcp-core' ); ?>">
 	<script>
 		window.JCP_IS_PROTOTYPE = true;
 		window.JCP_IS_DEMO_MODE = false;
@@ -82,15 +82,14 @@ add_filter(
 		<p class="jcp-ob-eyebrow"><?php esc_html_e( 'Welcome to JobCapturePro', 'jcp-core' ); ?></p>
 		<h1 id="jcp-ob-title"><?php esc_html_e( "Let's get you up and running.", 'jcp-core' ); ?></h1>
 		<p class="jcp-ob-lead">
-			<?php esc_html_e( 'Explore the app, download it if needed, and get ready to turn your completed jobs into marketing proof.', 'jcp-core' ); ?>
+			<?php esc_html_e( 'Use this page during onboarding to download the app and walk through your first Check-In.', 'jcp-core' ); ?>
 		</p>
 	</section>
 
 	<section class="jcp-ob-stage" id="jcp-ob-preview" aria-labelledby="jcp-ob-preview-title">
 		<div class="jcp-ob-stage__preview">
 			<p id="jcp-ob-preview-title" class="jcp-ob-phone-label">
-				<span class="jcp-ob-phone-label__dot" aria-hidden="true"></span>
-				<?php esc_html_e( 'Try the interactive app', 'jcp-core' ); ?>
+				<?php esc_html_e( 'Mobile app preview', 'jcp-core' ); ?>
 			</p>
 			<div class="jcp-ob-phone" data-jcp-ob-preview>
 				<?php /* Must be data-jcp-page="prototype" — jcp-render.js only boots the phone shell for prototype|demo. */ ?>
@@ -101,7 +100,7 @@ add_filter(
 		<aside class="jcp-ob-downloads" aria-labelledby="jcp-ob-download-title">
 			<h2 id="jcp-ob-download-title"><?php esc_html_e( 'Get the JCP mobile app', 'jcp-core' ); ?></h2>
 			<p class="jcp-ob-downloads__lead">
-				<?php esc_html_e( 'Scan with your phone or select your app store.', 'jcp-core' ); ?>
+				<?php esc_html_e( 'Scan with your phone or choose your app store.', 'jcp-core' ); ?>
 			</p>
 
 			<div class="jcp-ob-store-grid">
@@ -161,53 +160,10 @@ add_filter(
 			</div>
 
 			<div class="jcp-ob-downloads__note">
-				<strong><?php esc_html_e( 'Already using a CRM or photo app?', 'jcp-core' ); ?></strong>
-				<span><?php esc_html_e( "You may not need the JCP app. We'll help connect your existing workflow.", 'jcp-core' ); ?></span>
+				<strong><?php esc_html_e( 'Using an integrated CRM or photo workflow?', 'jcp-core' ); ?></strong>
+				<span><?php esc_html_e( 'You may not need the JCP app.', 'jcp-core' ); ?></span>
 			</div>
 		</aside>
-	</section>
-
-	<section class="jcp-ob-alt" aria-labelledby="jcp-ob-alt-title">
-		<h2 id="jcp-ob-alt-title"><?php esc_html_e( 'Already using a CRM or photo app?', 'jcp-core' ); ?></h2>
-		<p>
-			<?php esc_html_e( "Your crew may not need another app. If you're already capturing job photos in a supported system, JobCapturePro can use your existing workflow to turn completed jobs into marketing proof.", 'jcp-core' ); ?>
-		</p>
-		<p class="jcp-ob-alt__platforms">
-			<span><?php esc_html_e( 'Examples of supported capture workflows:', 'jcp-core' ); ?></span>
-			<strong>Housecall Pro</strong>
-			<span aria-hidden="true">·</span>
-			<strong>CompanyCam</strong>
-			<span aria-hidden="true">·</span>
-			<strong><?php esc_html_e( 'Phone camera roll', 'jcp-core' ); ?></strong>
-		</p>
-	</section>
-
-	<section class="jcp-ob-prep" aria-labelledby="jcp-ob-prep-title">
-		<h2 id="jcp-ob-prep-title"><?php esc_html_e( 'A little prep goes a long way.', 'jcp-core' ); ?></h2>
-		<p class="jcp-ob-prep__lead">
-			<?php esc_html_e( "A few things to have ready so we can spend your onboarding getting JCP working, not tracking down logins.", 'jcp-core' ); ?>
-		</p>
-		<ol class="jcp-ob-prep__list">
-			<li>
-				<strong><?php esc_html_e( 'Know where your job photos live', 'jcp-core' ); ?></strong>
-				<span><?php esc_html_e( "Are your technicians using their phone cameras, Housecall Pro, CompanyCam, or another system? We'll help you choose the right capture workflow.", 'jcp-core' ); ?></span>
-			</li>
-			<li>
-				<strong><?php esc_html_e( 'Have your business logins handy', 'jcp-core' ); ?></strong>
-				<span><?php esc_html_e( 'You may need access to your website, Google Business Profile, and existing CRM or photo platform. Never share passwords through this page.', 'jcp-core' ); ?></span>
-			</li>
-			<li>
-				<strong><?php esc_html_e( 'Have a recent job in mind', 'jcp-core' ); ?></strong>
-				<span><?php esc_html_e( 'If possible, have a few photos from a completed job ready so we can demonstrate the workflow using a real example.', 'jcp-core' ); ?></span>
-			</li>
-		</ol>
-	</section>
-
-	<section class="jcp-ob-close" aria-labelledby="jcp-ob-close-title">
-		<h2 id="jcp-ob-close-title"><?php esc_html_e( "We'll take it from here.", 'jcp-core' ); ?></h2>
-		<p>
-			<?php esc_html_e( "You don't need to figure everything out on your own. Your onboarding specialist will walk you through the setup and help you get your first real Check-In working.", 'jcp-core' ); ?>
-		</p>
 	</section>
 </main>
 
