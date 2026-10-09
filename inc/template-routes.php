@@ -361,13 +361,15 @@ function jcp_core_fallback_template_routes(): void {
     $path_segment = strpos( $path, '/' ) !== false ? strtok( $path, '/' ) : $path;
 
     $template_map = [
-        'demo'              => 'page-demo.php',
-        'pricing'           => 'page-pricing.php',
-        'support'           => 'page-support.php',
-        'contact'           => 'page-support.php',
-        'contact-success'   => 'page-contact-success.php',
-        'estimate'          => 'page-estimate.php',
-        'ui-library'        => 'page-ui-library.php',
+        'demo'                => 'page-demo.php',
+        'onboarding'          => 'page-onboarding.php',
+        'wp-plugin-prototype' => 'page-wp-plugin-prototype.php',
+        'pricing'             => 'page-pricing.php',
+        'support'             => 'page-support.php',
+        'contact'             => 'page-support.php',
+        'contact-success'     => 'page-contact-success.php',
+        'estimate'            => 'page-estimate.php',
+        'ui-library'          => 'page-ui-library.php',
     ];
     if ( $path_segment === 'directory' || $path_segment === 'company' ) {
         return;
@@ -391,6 +393,7 @@ function jcp_core_fallback_template_routes(): void {
     }
 
     $route_titles = [
+        'onboarding'      => __( 'Getting Started', 'jcp-core' ),
         'pricing'         => __( 'Pricing', 'jcp-core' ),
         'support'         => __( 'Support', 'jcp-core' ),
         'contact'         => __( 'Support', 'jcp-core' ),
