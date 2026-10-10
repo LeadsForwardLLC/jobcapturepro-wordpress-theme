@@ -631,6 +631,19 @@ function jcp_demo_ghl_build_webhook_body( string $event, array $params, array $t
         JCP_GHL_KEY_REFERRER      => $contact['referrer'],
     ];
 
+    $acq_source = function_exists( 'jcp_normalize_acquisition_source' )
+        ? jcp_normalize_acquisition_source( (string) $contact['utm_source'], (string) $contact['referrer'] )
+        : ( $contact['utm_source'] !== '' ? $contact['utm_source'] : 'direct' );
+    if ( defined( 'JCP_GHL_KEY_ACQUISITION_SOURCE' ) ) {
+        $scalar[ JCP_GHL_KEY_ACQUISITION_SOURCE ] = $acq_source;
+    }
+    if ( defined( 'JCP_GHL_KEY_CANONICAL_ACQUISITION_SOURCE' ) ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_ACQUISITION_SOURCE ] = $acq_source;
+    }
+    if ( $contact['fbclid'] !== '' && defined( 'JCP_GHL_KEY_CANONICAL_FACEBOOK_CLICK_ID' ) ) {
+        $scalar[ JCP_GHL_KEY_CANONICAL_FACEBOOK_CLICK_ID ] = $contact['fbclid'];
+    }
+
     // Canonical snake_case contact + attribution (new GHL custom-field mappings).
     if ( defined( 'JCP_GHL_KEY_CANONICAL_FIRST_NAME' ) && $contact['first_name'] !== '' ) {
         $scalar[ JCP_GHL_KEY_CANONICAL_FIRST_NAME ] = $contact['first_name'];

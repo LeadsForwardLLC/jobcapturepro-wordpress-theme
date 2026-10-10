@@ -311,6 +311,12 @@ function jcp_proof_gap_build_webhook_body( array $params, array $survey ): strin
 	}
 	$ph_id = isset( $params['ph_distinct_id'] ) ? trim( (string) $params['ph_distinct_id'] ) : '';
 
+	$utm_source = isset( $params['utm_source'] ) ? trim( (string) $params['utm_source'] ) : '';
+	$referrer   = isset( $params['referrer'] ) ? trim( (string) $params['referrer'] ) : '';
+	$acq_source = function_exists( 'jcp_normalize_acquisition_source' )
+		? jcp_normalize_acquisition_source( $utm_source, $referrer )
+		: ( $utm_source !== '' ? $utm_source : 'direct' );
+
 	$scalar = [
 		JCP_GHL_KEY_EVENT        => JCP_PROOF_GAP_GHL_EVENT,
 		JCP_GHL_KEY_LAST_NAME    => $last_name,
@@ -318,15 +324,47 @@ function jcp_proof_gap_build_webhook_body( array $params, array $survey ): strin
 		JCP_GHL_KEY_PHONE        => isset( $params['phone'] ) ? trim( (string) $params['phone'] ) : '',
 		JCP_GHL_KEY_COMPANY      => isset( $params['company'] ) ? trim( (string) $params['company'] ) : '',
 		JCP_GHL_KEY_SERVICE_AREA => isset( $params['service_area'] ) ? trim( (string) $params['service_area'] ) : '',
-		JCP_GHL_KEY_UTM_SOURCE   => isset( $params['utm_source'] ) ? trim( (string) $params['utm_source'] ) : '',
+		JCP_GHL_KEY_UTM_SOURCE   => $utm_source,
 		JCP_GHL_KEY_UTM_MEDIUM   => isset( $params['utm_medium'] ) ? trim( (string) $params['utm_medium'] ) : '',
 		JCP_GHL_KEY_UTM_CAMPAIGN => isset( $params['utm_campaign'] ) ? trim( (string) $params['utm_campaign'] ) : '',
 		JCP_GHL_KEY_UTM_CONTENT  => isset( $params['utm_content'] ) ? trim( (string) $params['utm_content'] ) : '',
 		JCP_GHL_KEY_UTM_TERM     => isset( $params['utm_term'] ) ? trim( (string) $params['utm_term'] ) : '',
 		JCP_GHL_KEY_FBCLID       => isset( $params['fbclid'] ) ? trim( (string) $params['fbclid'] ) : '',
 		JCP_GHL_KEY_LANDING_PAGE => isset( $params['landing_page'] ) ? trim( (string) $params['landing_page'] ) : '',
-		JCP_GHL_KEY_REFERRER     => isset( $params['referrer'] ) ? trim( (string) $params['referrer'] ) : '',
+		JCP_GHL_KEY_REFERRER     => $referrer,
 	];
+
+	if ( defined( 'JCP_GHL_KEY_ACQUISITION_SOURCE' ) ) {
+		$scalar[ JCP_GHL_KEY_ACQUISITION_SOURCE ] = $acq_source;
+	}
+	if ( defined( 'JCP_GHL_KEY_CANONICAL_ACQUISITION_SOURCE' ) ) {
+		$scalar[ JCP_GHL_KEY_CANONICAL_ACQUISITION_SOURCE ] = $acq_source;
+	}
+	if ( defined( 'JCP_GHL_KEY_CANONICAL_UTM_SOURCE' ) && $utm_source !== '' ) {
+		$scalar[ JCP_GHL_KEY_CANONICAL_UTM_SOURCE ] = $utm_source;
+	}
+	if ( defined( 'JCP_GHL_KEY_CANONICAL_UTM_MEDIUM' ) && ! empty( $params['utm_medium'] ) ) {
+		$scalar[ JCP_GHL_KEY_CANONICAL_UTM_MEDIUM ] = trim( (string) $params['utm_medium'] );
+	}
+	if ( defined( 'JCP_GHL_KEY_CANONICAL_UTM_CAMPAIGN' ) && ! empty( $params['utm_campaign'] ) ) {
+		$scalar[ JCP_GHL_KEY_CANONICAL_UTM_CAMPAIGN ] = trim( (string) $params['utm_campaign'] );
+	}
+	if ( defined( 'JCP_GHL_KEY_CANONICAL_UTM_CONTENT' ) && ! empty( $params['utm_content'] ) ) {
+		$scalar[ JCP_GHL_KEY_CANONICAL_UTM_CONTENT ] = trim( (string) $params['utm_content'] );
+	}
+	if ( defined( 'JCP_GHL_KEY_CANONICAL_UTM_TERM' ) && ! empty( $params['utm_term'] ) ) {
+		$scalar[ JCP_GHL_KEY_CANONICAL_UTM_TERM ] = trim( (string) $params['utm_term'] );
+	}
+	if ( defined( 'JCP_GHL_KEY_CANONICAL_LANDING_PAGE' ) && ! empty( $params['landing_page'] ) ) {
+		$scalar[ JCP_GHL_KEY_CANONICAL_LANDING_PAGE ] = trim( (string) $params['landing_page'] );
+	}
+	if ( defined( 'JCP_GHL_KEY_CANONICAL_REFERRER' ) && $referrer !== '' ) {
+		$scalar[ JCP_GHL_KEY_CANONICAL_REFERRER ] = $referrer;
+	}
+	$fbclid = isset( $params['fbclid'] ) ? trim( (string) $params['fbclid'] ) : '';
+	if ( $fbclid !== '' && defined( 'JCP_GHL_KEY_CANONICAL_FACEBOOK_CLICK_ID' ) ) {
+		$scalar[ JCP_GHL_KEY_CANONICAL_FACEBOOK_CLICK_ID ] = $fbclid;
+	}
 
 	if ( defined( 'JCP_GHL_KEY_UTM_ID' ) && ! empty( $params['utm_id'] ) ) {
 		$scalar[ JCP_GHL_KEY_UTM_ID ] = trim( (string) $params['utm_id'] );

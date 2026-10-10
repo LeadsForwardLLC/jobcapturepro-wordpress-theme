@@ -72,6 +72,10 @@ define( 'JCP_GHL_KEY_JCP_PG_VARIANT', 'jcp_pg_variant' );
 define( 'JCP_GHL_KEY_SURVEY_VERSION', 'survey_version' );
 define( 'JCP_GHL_KEY_IS_QA', 'is_qa' );
 define( 'JCP_GHL_KEY_UTM_ID', 'utm_id' );
+/** Normalized acquisition source (utm_source → referrer host → direct). */
+define( 'JCP_GHL_KEY_ACQUISITION_SOURCE', 'Acquisition Source' );
+define( 'JCP_GHL_KEY_CANONICAL_ACQUISITION_SOURCE', 'acquisition_source' );
+define( 'JCP_GHL_KEY_CANONICAL_FACEBOOK_CLICK_ID', 'facebook_click_id' );
 
 /** Canonical snake_case contact / attribution aliases (sent alongside Title Case legacy keys). */
 define( 'JCP_GHL_KEY_CANONICAL_FIRST_NAME', 'first_name' );
@@ -95,6 +99,54 @@ if ( ! defined( 'JCP_DEMO_FUNNEL_VERSION' ) ) {
 }
 if ( ! defined( 'JCP_DEMO_SURVEY_VERSION' ) ) {
 	define( 'JCP_DEMO_SURVEY_VERSION', '1' );
+}
+
+/**
+ * Normalize acquisition_source for organic/referral when UTMs are blank.
+ * 1) utm_source if non-empty
+ * 2) else referrer hostname (m.facebook.com → facebook.com)
+ * 3) else "direct"
+ * Never fabricates UTM values.
+ *
+ * @param string $utm_source Raw utm_source (may be empty).
+ * @param string $referrer   Raw referrer URL or host (may be empty).
+ */
+function jcp_normalize_acquisition_source( string $utm_source, string $referrer ): string {
+	$utm = trim( $utm_source );
+	if ( $utm !== '' ) {
+		return mb_substr( $utm, 0, 128 );
+	}
+
+	$ref = trim( $referrer );
+	if ( $ref === '' || $ref === '$direct' || strcasecmp( $ref, 'direct' ) === 0 ) {
+		return 'direct';
+	}
+
+	if ( ! preg_match( '#^https?://#i', $ref ) ) {
+		$ref = 'https://' . $ref;
+	}
+	$host = wp_parse_url( $ref, PHP_URL_HOST );
+	if ( ! is_string( $host ) || $host === '' ) {
+		return 'direct';
+	}
+	$host = strtolower( $host );
+	if ( str_starts_with( $host, 'www.' ) ) {
+		$host = substr( $host, 4 );
+	}
+	if (
+		$host === 'm.facebook.com'
+		|| $host === 'l.facebook.com'
+		|| $host === 'lm.facebook.com'
+		|| str_ends_with( $host, '.facebook.com' )
+		|| $host === 'fb.com'
+		|| str_ends_with( $host, '.fb.com' )
+	) {
+		return 'facebook.com';
+	}
+	if ( str_ends_with( $host, 'instagram.com' ) ) {
+		return 'instagram.com';
+	}
+	return mb_substr( $host, 0, 128 );
 }
 
 /**

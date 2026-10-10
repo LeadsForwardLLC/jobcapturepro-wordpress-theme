@@ -1576,6 +1576,7 @@
         lp_variant: LP_VARIANT,
         jcp_pg_variant: LP_VARIANT,
         funnel_version: FUNNEL_VERSION,
+        survey_version: String(state.survey_version || boot.surveyVersion || '11'),
       };
       if (state.handoff_token) handoffExtra.pg_handoff = state.handoff_token;
       if (state.session_id) handoffExtra.survey_session_id = state.session_id;
@@ -1586,6 +1587,7 @@
       }
       if (state.trade) {
         handoffExtra.business_type = state.trade;
+        handoffExtra.business_niche = state.trade;
         var industry = mapTradeToIndustry(state.trade);
         if (industry) {
           handoffExtra.industry = industry;
@@ -1593,6 +1595,25 @@
           handoffExtra.industry_id = industry;
         }
       }
+      // Proof Gap survey answers for app → GHL signup upsert (first-touch).
+      if (state.jobs_per_week_bucket) {
+        handoffExtra.weekly_job_volume = state.jobs_per_week_bucket;
+        handoffExtra.jobs_per_week_bucket = state.jobs_per_week_bucket;
+      }
+      if (state.current_workflow) {
+        handoffExtra.photo_workflow = state.current_workflow;
+        handoffExtra.current_workflow = state.current_workflow;
+      }
+      if (state.public_proof_percentage) {
+        handoffExtra.marketing_usage = state.public_proof_percentage;
+        handoffExtra.public_proof_percentage = state.public_proof_percentage;
+      }
+      try {
+        var estJobs = typeof estimatedJobsPerYearValue === 'function' ? estimatedJobsPerYearValue() : '';
+        if (estJobs) handoffExtra.estimated_jobs_per_year = String(estJobs);
+        var unusedPct = typeof potentiallyUnusedPercentValue === 'function' ? potentiallyUnusedPercentValue() : '';
+        if (unusedPct) handoffExtra.potentially_unused_percent = String(unusedPct);
+      } catch (eEst) {}
 
       // Identity continuity for PostHog across marketing → app subdomain.
       try {
@@ -1604,8 +1625,8 @@
 
       var attrHandoff = attrPayload();
       if (attrHandoff.qa_trace_id) handoffExtra.qa_trace_id = attrHandoff.qa_trace_id;
-      // Pass first-touch UTMs when present (not the marketing-site defaults alone).
-      ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'].forEach(function (k) {
+      // Pass first-touch UTMs + landing/referrer when present (not marketing-site defaults).
+      ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term', 'utm_id', 'fbclid', 'landing_page', 'referrer'].forEach(function (k) {
         if (attrHandoff[k] && String(attrHandoff[k]).indexOf('jobcapturepro.com') === -1) {
           handoffExtra[k] = attrHandoff[k];
         }
