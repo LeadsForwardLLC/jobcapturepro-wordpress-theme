@@ -17,9 +17,29 @@ require_once get_template_directory() . '/inc/onboarding.php';
 
 // Sitewide settings (banner, signup URL, nav CTAs)
 require_once get_template_directory() . '/inc/global-settings.php';
+require_once get_template_directory() . '/inc/case-study-cohort.php';
+require_once get_template_directory() . '/inc/retire-promo-copy.php';
 require_once get_template_directory() . '/inc/fluent-forms-bridge.php';
 require_once get_template_directory() . '/inc/code-embed.php';
 require_once get_template_directory() . '/inc/form-landing.php';
+// Guard: never include a mid-deploy truncated PHP file (would dump source sitewide).
+$jcp_job_proof_demo_inc = get_template_directory() . '/inc/job-proof-demo.php';
+if ( is_readable( $jcp_job_proof_demo_inc ) ) {
+	$jcp_jpd_head = (string) @file_get_contents( $jcp_job_proof_demo_inc, false, null, 0, 5 );
+	if ( $jcp_jpd_head === '<?php' ) {
+		require_once $jcp_job_proof_demo_inc;
+	}
+}
+$jcp_proof_sprint_inc = get_template_directory() . '/inc/proof-sprint.php';
+if ( is_readable( $jcp_proof_sprint_inc ) ) {
+	require_once $jcp_proof_sprint_inc;
+}
+$jcp_proof_gap_inc = get_template_directory() . '/inc/proof-gap.php';
+if ( is_readable( $jcp_proof_gap_inc ) ) {
+	require_once $jcp_proof_gap_inc;
+}
+require_once get_template_directory() . '/inc/pricing-plans.php';
+require_once get_template_directory() . '/inc/sales-tool/bootstrap.php';
 require_once get_template_directory() . '/inc/nav-mega-menu.php';
 
 // Load company data functions (description resolution, demo companies, save_post description generation)
@@ -28,8 +48,18 @@ require_once get_template_directory() . '/inc/company-data.php';
 // JCP Companies CPT + API sync (Import from API, daily cron, shortcode). API key: set JCP_API_TOKEN in wp-config.php.
 require_once get_template_directory() . '/inc/jcp-api-cpt.php';
 
+// PostHog public config (Rocket-safe head + localize helpers)
+require_once get_template_directory() . '/inc/posthog-config.php';
+
 // Load asset enqueuing logic
 require_once get_template_directory() . '/inc/enqueue.php';
+require_once get_template_directory() . '/inc/demo-run-perf.php';
+require_once get_template_directory() . '/inc/campaign-lp-perf.php';
+require_once get_template_directory() . '/inc/proof-gap-perf.php';
+require_once get_template_directory() . '/inc/proof-sprint-perf.php';
+
+// WP Rocket: exclude critical CSS/JS from stale minify + Delay JS.
+require_once get_template_directory() . '/inc/wp-rocket.php';
 
 // Load template routing
 require_once get_template_directory() . '/inc/template-routes.php';
@@ -49,11 +79,19 @@ require_once get_template_directory() . '/inc/page-blocks/layout.php';
 require_once get_template_directory() . '/inc/page-blocks/section-surface.php';
 require_once get_template_directory() . '/inc/page-blocks/presets.php';
 require_once get_template_directory() . '/inc/page-blocks/campaign-preset.php';
+require_once get_template_directory() . '/inc/page-blocks/campaign-variants.php';
 require_once get_template_directory() . '/inc/page-blocks/writer-tools.php';
 require_once get_template_directory() . '/inc/page-blocks/schema.php';
+require_once get_template_directory() . '/inc/simple-editable-pages.php';
 require_once get_template_directory() . '/inc/page-blocks/writer-import.php';
 require_once get_template_directory() . '/inc/page-blocks/industry-media.php';
 require_once get_template_directory() . '/inc/page-blocks/demo-migration.php';
+require_once get_template_directory() . '/inc/page-blocks/case-study-form-modal.php';
+require_once get_template_directory() . '/inc/page-blocks/testimonials-upgrade.php';
+require_once get_template_directory() . '/inc/page-blocks/authority-upgrade.php';
+require_once get_template_directory() . '/inc/page-blocks/story-moments-upgrade.php';
+require_once get_template_directory() . '/inc/page-blocks/campaign-funnel-upgrade.php';
+require_once get_template_directory() . '/inc/page-blocks/start-free-trial-cta-upgrade.php';
 require_once get_template_directory() . '/inc/page-blocks/doc-sections.php';
 require_once get_template_directory() . '/inc/niche-landing/cpt.php';
 require_once get_template_directory() . '/inc/niche-landing/schema.php';
@@ -61,6 +99,7 @@ require_once get_template_directory() . '/inc/niche-landing/doc-parser.php';
 require_once get_template_directory() . '/inc/page-blocks/doc-parser.php';
 require_once get_template_directory() . '/inc/niche-landing/partials.php';
 require_once get_template_directory() . '/inc/niche-landing/components.php';
+require_once get_template_directory() . '/inc/niche-landing/story-moments.php';
 require_once get_template_directory() . '/inc/niche-landing/media.php';
 require_once get_template_directory() . '/inc/niche-landing/editable.php';
 require_once get_template_directory() . '/inc/niche-landing/split-block.php';
@@ -84,12 +123,25 @@ require_once get_template_directory() . '/inc/form-fields.php';
 
 // REST: Demo Survey form → GHL webhook
 require_once get_template_directory() . '/inc/rest-demo-survey.php';
+$jcp_proof_gap_rest = get_template_directory() . '/inc/rest-proof-gap-survey.php';
+if ( is_readable( $jcp_proof_gap_rest ) ) {
+	require_once $jcp_proof_gap_rest;
+}
 
-// REST: Contact form → GHL webhook
-require_once get_template_directory() . '/inc/rest-contact.php';
+// Marketing-owned Stripe trial → PostHog + Meta CAPI (no app changes).
+$jcp_stripe_trial_inc = get_template_directory() . '/inc/stripe-trial-tracking.php';
+if ( is_readable( $jcp_stripe_trial_inc ) ) {
+	require_once $jcp_stripe_trial_inc;
+}
 
 // Demo analytics: DB table + REST endpoint
 require_once get_template_directory() . '/inc/demo-analytics.php';
+
+// Funnel analytics: first-party events (no PII) + REST ingest + report helper
+require_once get_template_directory() . '/inc/funnel-analytics.php';
+
+// Migrate /contact → /support + 301
+require_once get_template_directory() . '/inc/support-page-migrate.php';
 
 // Page template dropdown filter (must load on REST too — block editor template list).
 require_once get_template_directory() . '/inc/admin-page-templates.php';
@@ -98,6 +150,7 @@ if ( is_admin() ) {
     require_once get_template_directory() . '/inc/admin-theme-docs.php';
     require_once get_template_directory() . '/inc/admin-block-library.php';
     require_once get_template_directory() . '/inc/admin-demo-analytics.php';
+    require_once get_template_directory() . '/inc/admin-funnel-analytics.php';
     require_once get_template_directory() . '/inc/admin-global-settings.php';
 }
 
@@ -142,7 +195,7 @@ add_action( 'wp_enqueue_scripts', 'jcp_core_remove_tailwind', 999 );
  */
 function jcp_core_prototype_dequeue_conflicting_scripts(): void {
 	$pages = jcp_core_get_page_detection();
-	if ( empty( $pages['is_prototype'] ) ) {
+	if ( empty( $pages['is_prototype'] ) && empty( $pages['is_onboarding'] ) ) {
 		return;
 	}
 	$wp_scripts = wp_scripts();
@@ -164,3 +217,4 @@ function jcp_core_prototype_dequeue_conflicting_scripts(): void {
 	}
 }
 add_action( 'wp_enqueue_scripts', 'jcp_core_prototype_dequeue_conflicting_scripts', 9999 );
+

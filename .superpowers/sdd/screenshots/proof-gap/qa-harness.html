@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en" data-jcp-lp-variant="proof_gap_survey_v1">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Proof Gap Survey — QA harness</title>
+<link rel="stylesheet" href="../../../../css/pages/proof-gap.css"/>
+<link rel="stylesheet" href="../../../../css/pages/proof-gap-mocks.css"/>
+<style>
+:root{--jcp-color-text-primary:#111827;--jcp-color-text-secondary:#6b7280;--jcp-color-primary:#ff5036;--jcp-color-bg-secondary:#f9fafb}
+html,body{margin:0;min-height:100%;font-family:Inter,system-ui,sans-serif}
+@media (max-width:767px){html,body{height:100%;height:100dvh;overflow:hidden}}
+</style>
+</head>
+<body class="jcp-proof-gap" data-jcp-lp-variant="proof_gap_survey_v1" data-pg-survey-id="proof_gap_survey_v1" data-pg-survey-version="11">
+<div  class="pg-shell" id="pg-shell">
+	<header  class="pg-chrome" role="banner">
+		<div  class="pg-chrome__bar">
+			<span class="pg-chrome__brand" aria-label="JobCapturePro">
+				<img
+					src="../../../../assets/brand/jcp-logo-dark-320.webp"
+					alt="JobCapturePro"
+					width="120"
+					height="28"
+					decoding="async"
+					fetchpriority="high"
+					data-no-lazy
+				/>
+			</span>
+			<button type="button" class="pg-chrome__back" id="pgBack" hidden>
+				Back			</button>
+		</div>
+		<div  class="pg-progress" id="pgProgress" hidden aria-label="Survey progress">
+			<div class="pg-progress__phases" role="list">
+				<span class="pg-progress__phase is-active" data-phase="work" role="listitem">Your work</span>
+				<span class="pg-progress__phase" data-phase="gap" role="listitem">What gets seen</span>
+				<span class="pg-progress__phase" data-phase="plan" role="listitem">Your plan</span>
+			</div>
+			<div class="pg-progress__track" aria-hidden="true">
+				<div class="pg-progress__fill" id="pgProgressFill"></div>
+			</div>
+		</div>
+	</header>
+
+	<main  id="pg-app" class="pg-app" data-pg-app>
+		
+<div  class="pg-layout">
+	<div class="pg-stage" id="pgStage" aria-live="polite">
+
+		<section class="pg-state pg-state--welcome" data-pg-state="welcome" hidden>
+			<div class="pg-state__inner">
+				<p class="pg-eyebrow">The 60 second job visibility check</p>
+				<h1 class="pg-title pg-title--welcome">Your crew already takes the photos. Are they helping you win the next job?</h1>
+				<p class="pg-sub">Answer 4 quick questions to see how much of your work is going unseen — and what JobCapturePro could be doing with it.</p>
+
+				<div class="pg-welcome-checklist" data-pg-welcome-visual data-creative="default" aria-hidden="true">
+					<p class="pg-welcome-checklist__heading">One completed job can automatically become:</p>
+					<ul class="pg-welcome-checklist__list">
+						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span>Website Content</li>
+						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span>Google Update</li>
+						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span>Review Request</li>
+						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span>Social Post</li>
+						<li><span class="pg-welcome-checklist__check" aria-hidden="true">✓</span>Directory Activity</li>
+					</ul>
+				</div>
+			<div class="pg-trust pg-trust--compact">
+				<div class="pg-trust__proof">
+					<div class="pg-trust__proof-copy">
+						<span class="pg-trust__stars" aria-label="5 out of 5 stars">★★★★★</span>
+						<span class="pg-trust__label">5-star feedback from contractors and home-service operators</span>
+					</div>
+					<span class="pg-trust__avatars" aria-hidden="true">
+													<img src="../../../../assets/campaign/jcp-campaign-face-owner-64.webp?v=1790078947" alt="" width="36" height="36" decoding="async"  />
+													<img src="../../../../assets/campaign/jcp-campaign-face-crew-man-64.webp?v=1790078947" alt="" width="36" height="36" decoding="async"  />
+													<img src="../../../../assets/campaign/jcp-campaign-face-manager-64.webp?v=1790078947" alt="" width="36" height="36" decoding="async"  />
+													<img src="../../../../assets/campaign/jcp-campaign-face-operator-64.webp?v=1790078947" alt="" width="36" height="36" decoding="async"  />
+											</span>
+				</div>
+				<div class="pg-trust__divider" aria-hidden="true"></div>
+				<div class="pg-trust__authority-block">
+					<p class="pg-trust__authority">Built by the team behind <strong>LeadsForward</strong></p>
+					<ul class="pg-trust__metrics">
+						<li><strong>10 yrs</strong><span>home services</span></li>
+						<li><strong>250K+</strong><span>contractor leads</span></li>
+						<li><strong>$150M+</strong><span>client revenue</span></li>
+					</ul>
+				</div>
+			</div>
+			</div>
+		</section>
+
+		<section class="pg-state" data-pg-state="trade" hidden>
+			<div class="pg-state__inner">
+				<p class="pg-eyebrow">1. Your work</p>
+				<h1 class="pg-title pg-title--sm" id="pg-trade-title">What kind of work does your company do most?</h1>
+			<div class="pg-choices pg-choices--grid pg-choices--trade" role="group" aria-labelledby="pg-trade-title" data-pg-choices="trade"></div>
+				<div class="pg-other-field" id="pgTradeOtherField" hidden>
+					<label class="pg-other-field__label" for="pgTradeOtherInput">Your trade (optional)</label>
+					<input class="pg-other-field__input" id="pgTradeOtherInput" type="text" maxlength="80" placeholder="e.g. Pool service, flooring, solar" autocomplete="off" />
+					<div class="pg-other-field__actions" id="pgTradeOtherActions">
+						<button type="button" class="btn btn-primary pg-btn pg-other-continue" data-pg-other-continue="trade">Continue</button>
+						<button type="button" class="pg-other-skip" data-pg-other-skip="trade">Skip</button>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<section class="pg-state" data-pg-state="current_workflow" hidden>
+			<div class="pg-state__inner">
+				<p class="pg-eyebrow">2. Your work</p>
+				<h1 class="pg-title pg-title--sm" id="pg-workflow-title">Where do most of your finished-job photos live today?</h1>
+			<div class="pg-choices pg-choices--workflow" role="group" aria-labelledby="pg-workflow-title" data-pg-choices="current_workflow"
+				data-logo-hcp="../../../../assets/integrations/housecall-pro.svg"
+				data-logo-cc="../../../../assets/integrations/companycam.svg"></div>
+				<div class="pg-other-field" id="pgWorkflowOtherField" hidden>
+					<label class="pg-other-field__label" for="pgWorkflowOtherInput">Which one? (optional)</label>
+					<input class="pg-other-field__input" id="pgWorkflowOtherInput" type="text" maxlength="80" placeholder="e.g. FieldEdge, Service Fusion" autocomplete="off" />
+					<div class="pg-other-field__actions" id="pgWorkflowOtherActions">
+						<button type="button" class="btn btn-primary pg-btn pg-other-continue" data-pg-other-continue="workflow">Continue</button>
+						<button type="button" class="pg-other-skip" data-pg-other-skip="workflow">Skip</button>
+					</div>
+				</div>
+				<p class="pg-micro-confirm" id="pgWorkflowConfirm" hidden role="status"></p>
+			</div>
+		</section>
+
+		<section class="pg-state" data-pg-state="jobs_per_week" hidden>
+			<div class="pg-state__inner">
+				<p class="pg-eyebrow">3. Your work</p>
+			<h1 class="pg-title pg-title--sm" id="pg-jobs-title">How many jobs does your company complete per week?</h1>
+				<p class="pg-hint">We'll estimate how much valuable marketing material your company creates every year.</p>
+				<div class="pg-choices pg-choices--compact" role="group" aria-labelledby="pg-jobs-title" data-pg-choices="jobs_per_week"></div>
+			</div>
+		</section>
+
+		<section class="pg-state" data-pg-state="public_proof_percentage" hidden>
+			<div class="pg-state__inner">
+				<p class="pg-eyebrow">4. What gets seen</p>
+				<h1 class="pg-title pg-title--sm" id="pg-proof-title">Of those finished jobs, about how many actually make it into your marketing?</h1>
+				<p class="pg-hint">Website content, Google Business Profile, social media, or review requests.</p>
+				<div class="pg-choices pg-choices--proof" role="group" aria-labelledby="pg-proof-title" data-pg-choices="public_proof_percentage"></div>
+			</div>
+		</section>
+
+		<section class="pg-state pg-state--result-email" data-pg-state="result_email" hidden>
+			<div class="pg-state__inner">
+				<p class="pg-eyebrow">Your proof gap</p>
+				<div class="pg-result pg-result--visual" id="pgResultCard">
+					<div class="pg-result__hero">
+						<strong class="pg-result__hero-num" id="pgResultCompleted">—</strong>
+						<span class="pg-result__hero-label" id="pgResultHeroLabel">finished jobs / year</span>
+						<p class="pg-result__hero-sub" id="pgResultHeroSub" hidden></p>
+					</div>
+					<h1 class="pg-title pg-title--sm pg-result__title" id="pgResultTitle"></h1>
+					<div class="pg-gap-viz" id="pgGapViz" aria-hidden="true"></div>
+					<ul class="pg-result__stats" id="pgResultStats">
+						<li><span>Completed jobs / year</span><strong id="pgResultPublic">—</strong></li>
+						<li id="pgResultInvisibleWrap" hidden><span>Currently reused in marketing</span><strong id="pgResultInvisible">—</strong></li>
+						<li id="pgResultUnusedWrap" hidden><span>Potentially unused</span><strong id="pgResultUnused">—</strong></li>
+					</ul>
+					<p class="pg-result__note" id="pgResultNote">Based on the ranges you selected.</p>
+					<div class="pg-result__support" id="pgResultSupport"></div>
+				</div>
+				<div class="pg-result-email">
+					<h2 class="pg-title pg-title--sm">See what one of those jobs could become.</h2>
+					<p class="pg-sub">Enter your email to build your personalized example and save your results.</p>
+					<form class="pg-email" id="pgEmailForm" novalidate>
+						<label class="pg-email__label" for="pgEmail">Email <span class="pg-req">*</span></label>
+						<input class="pg-email__input" id="pgEmail" name="email" type="email" autocomplete="email" inputmode="email" required placeholder="you@company.com" />
+						<p class="pg-email__error" id="pgEmailError" role="alert" hidden></p>
+						<p class="pg-email__consent">We'll send your results — no spam.</p>
+					</form>
+				</div>
+				<div class="pg-email-proof">
+					<aside class="pg-case" aria-label="Local visibility case study"><p class="pg-case__eyebrow">Local visibility case study</p><p class="pg-case__lead">One foundation repair company saw:</p><p class="pg-case__metric"><strong class="pg-case__metric-lo">0%</strong><span class="pg-case__metric-arrow" aria-hidden="true">→</span><strong class="pg-case__metric-hi">84–100%</strong></p><p class="pg-case__body">Top-3 Local Falcon grid visibility across four tracked keyword/market combinations in ~12 weeks.</p><p class="pg-case__attr">LeadsForward + JobCapturePro local-search strategy</p><p class="pg-case__note">Past performance does not guarantee future rankings.</p></aside>				</div>
+			</div>
+		</section>
+
+				<section class="pg-state pg-state--app-sim" data-pg-state="app_sim" hidden>
+			<div class="pg-state__inner pg-app-sim">
+				<p class="pg-eyebrow">See it work</p>
+				<h1 class="pg-title pg-title--sm" id="pgAppSimTitle">Building your job into marketing…</h1>
+				<p class="pg-sub pg-sub--tight" id="pgAppSimSub">Watch JobCapturePro turn one finished job into live outputs.</p>
+
+				<div class="pg-app-sim__device" role="img" aria-label="JobCapturePro app preview">
+					<div class="pg-app-sim__bezel">
+						<span class="pg-app-sim__island" aria-hidden="true"></span>
+						<div class="pg-app-sim__screen">
+							<div class="pg-app-sim__chrome" aria-hidden="true">
+								<span class="pg-app-sim__time">9:41</span>
+								<span class="pg-app-sim__live">Live</span>
+							</div>
+							<div class="pg-app-sim__panel" id="pgAppSimStage">
+								<div class="pg-app-sim__panel-head">
+									<span class="pg-app-sim__mark" aria-hidden="true">JCP</span>
+									<p class="pg-app-sim__status" id="pgAppSimStatus" aria-live="polite">Starting with your finished job…</p>
+								</div>
+								<div class="pg-app-sim__meter" aria-hidden="true">
+									<span class="pg-app-sim__meter-fill" id="pgAppSimMeter"></span>
+								</div>
+								<ul class="pg-app-sim__ticks" id="pgAppSimTicks" aria-label="Progress checklist">
+									<li data-sim-tick="capture">Photo captured</li>
+									<li data-sim-tick="build">Proof built</li>
+									<li data-sim-tick="website">Website</li>
+									<li data-sim-tick="google">Google</li>
+									<li data-sim-tick="social">Social</li>
+									<li data-sim-tick="reviews">Reviews</li>
+									<li data-sim-tick="directory">Directory</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+				<button type="button" class="pg-app-sim__skip" id="pgAppSimSkip" hidden>Skip preview →</button>
+			</div>
+		</section>
+
+		<section class="pg-state pg-state--trial" data-pg-state="trial_bridge" hidden>
+			<div class="pg-state__inner">
+				<p class="pg-eyebrow">Your plan</p>
+				<h1 class="pg-title">Put the next job to work.</h1>
+				<p class="pg-sub">Start free for 14 days. Connect your workflow, use one real completed job, and see JobCapturePro turn it into marketing.</p>
+
+				<div class="pg-plan-card" id="pgPlanCard">
+					<div class="pg-plan-setup">
+						<p class="pg-plan-card__kicker">Your setup</p>
+						<ul class="pg-plan-chips" id="pgTrialSummary"></ul>
+					</div>
+
+					<div class="pg-plan-win">
+						<p class="pg-plan-win__label">Easiest first win</p>
+						<p class="pg-plan-first-win" id="pgTrialFirstWin"></p>
+					</div>
+				</div>
+
+				<aside class="pg-review-slot pg-review-slot--live pg-review-slot--trial" data-pg-review-slot="trial"><blockquote class="pg-review pg-review--compact"><div class="pg-stars" aria-label="5 out of 5 stars"><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span><span class="pg-stars__star is-on" aria-hidden="true">★</span></div><p class="pg-review__quote">"Easy to use and really smart. Makes it super simple to turn completed work into useful online content, and the review side is amazing."</p><footer class="pg-review__footer"><img class="pg-review__avatar" src="../../../../assets/campaign/jcp-campaign-face-operator-64.webp?v=1790078947" alt="" width="32" height="32" decoding="async"  /><span class="pg-review__meta"><strong>Trent Ellison</strong><em>Home service operator</em></span></footer></blockquote></aside>
+				<div class="pg-trial-previews">
+					<h2 class="pg-title pg-title--sm" id="pgRevealTitle">See what one finished job can become.</h2>
+					<p class="pg-sub pg-sub--tight" id="pgRevealSubline">Preview where JobCapturePro can put the same job to work.</p>
+					<div class="pg-dest-tabs-wrap">
+						<div class="pg-dest-tabs" role="tablist" aria-label="Preview each marketing channel">
+							<button type="button" class="pg-dest-tab is-active" role="tab" aria-selected="true" data-dest="website">Website</button>
+							<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="google">Google</button>
+							<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="social">Social</button>
+							<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="reviews">Reviews</button>
+							<button type="button" class="pg-dest-tab" role="tab" aria-selected="false" data-dest="directory">Directory</button>
+						</div>
+						<p class="pg-dest-tabs-hint" id="pgDestTabsHint" aria-hidden="true">Swipe or tap to switch previews</p>
+					</div>
+					<p class="pg-dest-caption" id="pgDestCaption" hidden></p>
+					<div class="pg-dest-panel" id="pgDestPanel" role="tabpanel"
+						data-map="../../../../assets/map-3c5b675f-f28d-41a5-ba3a-972b4c189f10.png"
+						data-qr="../../../../assets/campaign/ps-dummy-qr.png"></div>
+				</div>
+			</div>
+		</section>
+	</div>
+
+	<footer class="pg-bottom-action" id="pgBottomAction" hidden>
+		<p class="pg-bottom-action__micro" id="pgBottomMicro" hidden></p>
+		<div class="pg-bottom-action__cta" id="pgBottomCtaHost"></div>
+	</footer>
+</div>
+	</main>
+</div>
+
+
+<script type="application/json" id="pg-boot">{"surveyId":"proof_gap_survey_v1","surveyVersion":"11","lpVariant":"proof_gap_survey_v1","restUrl":"/wp-json/jcp/v1/proof-gap-survey-submit","funnelEventUrl":"/wp-json/jcp/v1/funnel-event","trialBase":"https://app.jobcapturepro.com/onboarding?sessionId=qa&step=1","campaignBase":"../../../../assets/campaign/","trades":{"hvac":"HVAC","plumbing":"Plumbing","electrical":"Electrical","roofing":"Roofing","remodeling":"Remodeling","painting":"Painting","landscaping":"Landscaping","garage_door":"Garage door","pest_control":"Pest control","tree_service":"Tree service","power_washing":"Power washing","other":"Other"},"workflows":{"housecall_pro":"Housecall Pro","companycam":"CompanyCam","other_crm":"Another CRM / field app","phones_camera_roll":"Phones / camera roll","group_text_shared_folder":"Group text / shared folder","scattered":"Scattered across places"},"jobsBuckets":{"1_5":{"label":"1\u20135","weekly_label":"1\u20135","min":52,"max":260},"6_10":{"label":"6\u201310","weekly_label":"6\u201310","min":312,"max":520},"11_20":{"label":"11\u201320","weekly_label":"11\u201320","min":572,"max":1040},"21_35":{"label":"21\u201335","weekly_label":"21\u201335","min":1092,"max":1820},"36_50":{"label":"36\u201350","weekly_label":"36\u201350","min":1872,"max":2600},"50_plus":{"label":"50+","weekly_label":"50+","min":2600,"max":null}},"proofPct":{"0_10":{"label":"Almost none","title":"Almost none","band":"0\u201310%","min":0,"max":0.1},"11_25":{"label":"A few","title":"A few","band":"11\u201325%","min":0.11,"max":0.25},"26_50":{"label":"About half","title":"About half","band":"26\u201350%","min":0.26,"max":0.5},"51_75":{"label":"Most jobs","title":"Most jobs","band":"51\u201375%","min":0.51,"max":0.75},"76_100":{"label":"Nearly every job","title":"Nearly every job","band":"76\u2013100%","min":0.76,"max":1},"unknown":{"label":"Not sure","title":"Not sure","band":"","min":null,"max":null}},"tradeAssets":{"hvac":{"title":"HVAC service call","photo":"../../../../assets/campaign/jcp-campaign-hvac-capture-640.webp","neutral":false},"plumbing":{"title":"Water heater replacement","photo":"../../../../assets/campaign/jcp-campaign-job-proof-640.webp","neutral":false},"electrical":{"title":"Electrical panel upgrade","photo":"../../../../assets/campaign/jobs/electrical.webp","neutral":false},"roofing":{"title":"Roofing project","photo":"../../../../assets/campaign/jobs/roofing.webp","neutral":false},"remodeling":{"title":"Remodel finish","photo":"../../../../assets/campaign/jobs/remodeling.webp","neutral":false},"painting":{"title":"Paint job","photo":"../../../../assets/campaign/jobs/painting.webp","neutral":false},"landscaping":{"title":"Landscaping job","photo":"../../../../assets/campaign/jobs/landscaping.webp","neutral":false},"garage_door":{"title":"Garage door service","photo":"../../../../assets/campaign/jobs/garage_door.webp","neutral":false},"pest_control":{"title":"Pest control visit","photo":"../../../../assets/campaign/jobs/default.webp","neutral":false},"tree_service":{"title":"Tree service job","photo":"../../../../assets/campaign/jobs/tree_service.webp","neutral":false},"power_washing":{"title":"Power washing job","photo":"../../../../assets/campaign/jobs/power_washing.webp","neutral":false},"other":{"title":"Finished field job","photo":"../../../../assets/campaign/jobs/default.webp","neutral":false}},"creativeConcepts":["default","empty_window","concept_02","concept_03"]}</script>
+<script src="../../../../assets/js/pages/proof-gap.js"></script>
+</body>
+</html>

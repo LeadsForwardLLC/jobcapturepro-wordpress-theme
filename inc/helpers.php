@@ -111,12 +111,28 @@ function jcp_core_demo_run_url( array $args = [] ): string {
 }
 
 /**
+ * Supported field-software names for demo CRM reassurance copy.
+ * Prefer the sales-tool integration callouts list when available.
+ *
+ * @return list<string>
+ */
+function jcp_core_demo_field_software_integrations(): array {
+	if ( function_exists( 'jcp_sales_tool_integration_callouts' ) ) {
+		$names = jcp_sales_tool_integration_callouts( [] );
+		if ( is_array( $names ) && $names !== [] ) {
+			return array_values( array_map( 'strval', $names ) );
+		}
+	}
+	return [ 'Housecall Pro', 'Jobber', 'ServiceTitan', 'CompanyCam' ];
+}
+
+/**
  * Sanitized query args allowed on demo run URLs.
  *
  * @return array<string, string>
  */
 function jcp_core_demo_run_query_args(): array {
-    $allowed = [ 'mode', 'name', 'first_name', 'last_name', 'business', 'company', 'niche', 'business_type', 'email', 'forceSurvey' ];
+    $allowed = [ 'mode', 'name', 'first_name', 'last_name', 'business', 'company', 'niche', 'business_type', 'email', 'forceSurvey', 'embed', 'source' ];
     $out     = [ 'mode' => 'run' ];
     foreach ( $allowed as $key ) {
         if ( ! isset( $_GET[ $key ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
@@ -136,6 +152,9 @@ function jcp_core_demo_run_query_args(): array {
  * @return bool
  */
 function jcp_core_is_demo_run_request(): bool {
+    if ( function_exists( 'jcp_job_proof_demo_run_is_current' ) && jcp_job_proof_demo_run_is_current() ) {
+        return false;
+    }
     if ( ! isset( $_GET['mode'] ) || $_GET['mode'] !== 'run' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         return false;
     }
@@ -152,6 +171,9 @@ function jcp_core_is_demo_run_request(): bool {
  * @return bool
  */
 function jcp_core_is_demo_survey_request(): bool {
+    if ( function_exists( 'jcp_job_proof_demo_run_is_current' ) && jcp_job_proof_demo_run_is_current() ) {
+        return false;
+    }
     if ( isset( $_GET['mode'] ) && $_GET['mode'] === 'run' ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
         return false;
     }
@@ -170,21 +192,34 @@ function jcp_core_is_demo_survey_request(): bool {
 function jcp_core_get_page_detection(): array {
     $path = trim( (string) parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH ), '/' );
     $path_segments = array_filter( explode( '/', $path ) );
-    $is_prototype_path = ( $path === 'prototype' || in_array( 'prototype', $path_segments, true ) );
+    $is_prototype_path  = ( $path === 'prototype' || in_array( 'prototype', $path_segments, true ) );
+    $is_onboarding_path = ( $path === 'onboarding' || in_array( 'onboarding', $path_segments, true ) );
 
     return [
         'is_home'         => is_front_page() || $path === '' || $path === 'home',
+        // Customer onboarding hub (marketing site). Independent of app.jobcapturepro.com/onboarding.
+        'is_onboarding'   => is_page_template( 'page-onboarding.php' ) || is_page( 'onboarding' ) || $is_onboarding_path,
         'is_prototype'    => is_page_template( 'page-prototype.php' ) || is_page( 'prototype' ) || $is_prototype_path,
-        'is_demo'         => is_page_template( 'page-demo.php' ) || is_page( 'demo' ) || $path === 'demo' || get_query_var( 'jcp_route', '' ) === 'demo',
+        'is_demo'         => ( ! function_exists( 'jcp_job_proof_demo_run_is_current' ) || ! jcp_job_proof_demo_run_is_current() )
+            && (
+                is_page_template( 'page-demo.php' )
+                || ( is_page( 'demo' ) && ( ! function_exists( 'jcp_job_proof_demo_is_run_path' ) || ! jcp_job_proof_demo_is_run_path() ) )
+                || $path === 'demo'
+                || get_query_var( 'jcp_route', '' ) === 'demo'
+            ),
         'is_pricing'      => is_page_template( 'page-pricing.php' ) || is_page( 'pricing' ) || $path === 'pricing',
-        'is_contact'      => is_page_template( 'page-contact.php' ) || is_page( 'contact' ) || $path === 'contact',
+        'is_contact'      => is_page_template( 'page-support.php' ) || is_page_template( 'page-contact.php' ) || is_page( 'support' ) || is_page( 'contact' ) || $path === 'support' || $path === 'contact',
         'is_contact_success' => $path === 'contact-success',
+        'is_support'      => is_page_template( 'page-support.php' ) || is_page( 'support' ) || $path === 'support',
         'is_directory'    => is_page_template( 'page-directory.php' ) || is_page( 'directory' ) || $path === 'directory',
         'is_estimate'     => is_page_template( 'page-estimate.php' ) || is_page( 'estimate' ) || $path === 'estimate',
         'is_company'      => is_singular( 'jcp_company' ) || is_page( 'company' ) || $path === 'company' || ( preg_match( '#^directory/[^/]+$#', $path ) === 1 ),
         'is_ui_library'   => is_page_template( 'page-ui-library.php' ) || is_page( 'ui-library' ) || $path === 'ui-library',
         'is_wp_plugin_prototype' => is_page_template( 'page-wp-plugin-prototype.php' ) || is_page( 'wp-plugin-prototype' ) || $path === 'wp-plugin-prototype',
         'is_form_landing' => is_page_template( 'page-form-landing.php' ),
+        'is_sales_tool'   => ( function_exists( 'jcp_is_sales_tool_request' ) && jcp_is_sales_tool_request() )
+            || is_page_template( 'page-sales-tool.php' )
+            || is_singular( 'jcp_sales_deck' ),
         'is_blog'         => is_home() || is_archive() || is_single() || is_search(),
         'is_single'       => is_single() && ! is_singular( 'jcp_company' ),
         'is_page'         => is_page() && ! is_page_template(),
@@ -248,6 +283,43 @@ function jcp_is_directory_mode(): bool {
 }
 
 /**
+ * True when a URL points at the public contractor directory (or a listing under it).
+ *
+ * @param string $url Absolute or relative URL.
+ */
+function jcp_url_is_directory_path( string $url ): bool {
+    if ( $url === '' ) {
+        return false;
+    }
+    $path = (string) parse_url( $url, PHP_URL_PATH );
+    if ( $path === '' ) {
+        // Relative paths like "/directory" have no host; parse_url may put them in path anyway.
+        $path = $url;
+    }
+    $path = '/' . ltrim( strtolower( $path ), '/' );
+    return (bool) preg_match( '#^/directory(/|$)#', $path );
+}
+
+/**
+ * Remove WP nav menu items that link to /directory (keep labels elsewhere; no click-through).
+ *
+ * @param array<int, WP_Post> $items Menu items.
+ * @return array<int, WP_Post>
+ */
+function jcp_filter_out_directory_nav_items( array $items ): array {
+    $filtered = [];
+    foreach ( $items as $item ) {
+        $url = isset( $item->url ) ? (string) $item->url : '';
+        if ( jcp_url_is_directory_path( $url ) ) {
+            continue;
+        }
+        $filtered[] = $item;
+    }
+    return $filtered;
+}
+add_filter( 'wp_nav_menu_objects', 'jcp_filter_out_directory_nav_items', 20 );
+
+/**
  * Add noindex/nofollow to UI library page
  *
  * The UI library page is internal documentation and should not be indexed
@@ -278,6 +350,12 @@ function jcp_core_get_page_editor_post_id(): int {
 	$front_id = (int) get_option( 'page_on_front' );
 	if ( $front_id > 0 && is_front_page() && jcp_page_is_content_page( $front_id ) ) {
 		return $front_id;
+	}
+	if ( function_exists( 'jcp_simple_editable_editor_post_id' ) ) {
+		$fallback = jcp_simple_editable_editor_post_id( 0 );
+		if ( $fallback > 0 && jcp_page_is_content_page( $fallback ) ) {
+			return $fallback;
+		}
 	}
 	return 0;
 }

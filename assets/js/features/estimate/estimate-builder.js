@@ -2221,19 +2221,11 @@ function setupGlobalClose() {
   if (!closeBtn) return;
   
   closeBtn.addEventListener('click', () => {
-    // Check if we came from directory
-    const contractorContext = readContractorContext();
-    
-    if (contractorContext.contractor) {
-      // Return to contractor profile
-      window.location.href = `${baseUrl}/directory/${contractorContext.contractor}`;
+    // Directory click-through is disabled sitewide — return to demo, not /directory.
+    if (window.history.length > 1) {
+      window.history.back();
     } else {
-      // Return to demo or close
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        window.location.href = `${baseUrl}/demo/`;
-      }
+      window.location.href = `${baseUrl}/demo/`;
     }
   });
 }

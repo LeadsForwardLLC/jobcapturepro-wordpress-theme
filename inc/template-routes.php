@@ -169,10 +169,10 @@ function jcp_core_maybe_flush_route_rewrites(): void {
 add_action( 'init', 'jcp_core_maybe_flush_route_rewrites', 99 );
 
 /**
- * Force prototype templates by route path.
+ * Force prototype / onboarding templates by route path.
  *
- * This protects live environments where the WP page/template assignment for
- * /prototype or /wp-plugin-prototype may be missing or incorrect.
+ * Protects live environments where WP page/template assignment may be missing.
+ * /prototype → redirected to /onboarding (see jcp_core_redirect_retired_routes).
  *
  * @param string $template Current template path.
  * @return string
@@ -180,6 +180,13 @@ add_action( 'init', 'jcp_core_maybe_flush_route_rewrites', 99 );
 function jcp_core_force_prototype_templates( string $template ): string {
     $path = trim( (string) parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH ), '/' );
     $segment = strpos( $path, '/' ) !== false ? strtok( $path, '/' ) : $path;
+
+    if ( $segment === 'onboarding' ) {
+        $forced = get_stylesheet_directory() . '/page-onboarding.php';
+        if ( file_exists( $forced ) ) {
+            return $forced;
+        }
+    }
 
     if ( $segment === 'prototype' ) {
         $forced = get_stylesheet_directory() . '/page-prototype.php';
@@ -225,6 +232,8 @@ function jcp_core_redirect_retired_routes(): void {
 	$redirects = [
 		'early-access'         => home_url( '/demo/' ),
 		'early-access-success' => home_url( '/demo/' ),
+		// Internal phone lab → customer-facing onboarding hub.
+		'prototype'            => home_url( '/onboarding/' ),
 	];
 
 	if ( ! isset( $redirects[ $segment ] ) ) {
@@ -235,6 +244,33 @@ function jcp_core_redirect_retired_routes(): void {
 	exit;
 }
 add_action( 'template_redirect', 'jcp_core_redirect_retired_routes', 1 );
+
+/**
+ * Common mistaken assessment URL → live form.
+ * /personalized-demo/assessment/form 404s; the form lives at /assessment/.
+ *
+ * @return void
+ */
+function jcp_core_redirect_assessment_form_alias(): void {
+	if ( is_admin() ) {
+		return;
+	}
+
+	$path = trim( (string) parse_url( $_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH ), '/' );
+	if ( $path !== 'personalized-demo/assessment/form' ) {
+		return;
+	}
+
+	$target = home_url( '/personalized-demo/assessment/' );
+	$query  = (string) parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_QUERY );
+	if ( $query !== '' ) {
+		$target = $target . ( str_contains( $target, '?' ) ? '&' : '?' ) . $query;
+	}
+
+	wp_safe_redirect( $target, 301 );
+	exit;
+}
+add_action( 'template_redirect', 'jcp_core_redirect_assessment_form_alias', 1 );
 
 /**
  * Keep /demo/?mode=run on the demo route (avoid canonical redirect to unrelated permalinks).
@@ -325,12 +361,15 @@ function jcp_core_fallback_template_routes(): void {
     $path_segment = strpos( $path, '/' ) !== false ? strtok( $path, '/' ) : $path;
 
     $template_map = [
-        'demo'              => 'page-demo.php',
-        'pricing'           => 'page-pricing.php',
-        'contact'           => 'page-contact.php',
-        'contact-success'   => 'page-contact-success.php',
-        'estimate'          => 'page-estimate.php',
-        'ui-library'        => 'page-ui-library.php',
+        'demo'                => 'page-demo.php',
+        'onboarding'          => 'page-onboarding.php',
+        'wp-plugin-prototype' => 'page-wp-plugin-prototype.php',
+        'pricing'             => 'page-pricing.php',
+        'support'             => 'page-support.php',
+        'contact'             => 'page-support.php',
+        'contact-success'     => 'page-contact-success.php',
+        'estimate'            => 'page-estimate.php',
+        'ui-library'          => 'page-ui-library.php',
     ];
     if ( $path_segment === 'directory' || $path_segment === 'company' ) {
         return;
@@ -354,8 +393,10 @@ function jcp_core_fallback_template_routes(): void {
     }
 
     $route_titles = [
+        'onboarding'      => __( 'Getting Started', 'jcp-core' ),
         'pricing'         => __( 'Pricing', 'jcp-core' ),
-        'contact'         => __( 'Contact', 'jcp-core' ),
+        'support'         => __( 'Support', 'jcp-core' ),
+        'contact'         => __( 'Support', 'jcp-core' ),
         'contact-success' => __( 'Message sent', 'jcp-core' ),
         'estimate'        => __( 'Estimate', 'jcp-core' ),
         'ui-library'      => __( 'UI Library', 'jcp-core' ),

@@ -10,6 +10,8 @@
 $privacy_url = 'https://jobcapturepro.com/privacy-policy/';
 $terms_url  = 'https://jobcapturepro.com/terms-and-conditions/';
 $leadsforward_url = 'https://leadsforward.com/';
+$app_store_url = 'https://apps.apple.com/us/app/jobcapturepro/id6636248590';
+$play_store_url = 'https://play.google.com/store/apps/details?id=com.jobcapturepro.mobile&pcampaignid=web_share';
 $footer_support = '';
 $footer_sales   = '';
 $footer_address = '';
@@ -64,6 +66,12 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
             <img src="<?php echo esc_url( 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png' ); ?>" alt="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>" width="180" height="40" />
           </a>
           <p><?php esc_html_e( 'Verified job proof from active contractors.', 'jcp-core' ); ?></p>
+          <?php
+          get_template_part( 'templates/global/footer', 'apps', [
+            'app_store_url'  => $app_store_url,
+            'play_store_url' => $play_store_url,
+          ] );
+          ?>
         </div>
         <div class="jcp-footer-col">
           <h4><?php esc_html_e( 'For homeowners', 'jcp-core' ); ?></h4>
@@ -81,14 +89,20 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
           <a href="<?php echo esc_url( home_url( '/demo' ) ); ?>"><?php esc_html_e( 'See the live demo', 'jcp-core' ); ?></a>
           <a href="<?php echo esc_url( $jcp_onboarding_url_dir_started ); ?>"<?php
             if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
-              jcp_niche_cta_tracking_attr( $jcp_onboarding_url_dir_started, 'footer', 'Get started' );
+              jcp_niche_cta_tracking_attr( $jcp_onboarding_url_dir_started, 'footer', 'Start Free Trial' );
             }
-          ?>><?php esc_html_e( 'Get started', 'jcp-core' ); ?></a>
+          ?>><?php esc_html_e( 'Start Free Trial', 'jcp-core' ); ?></a>
         </div>
       <?php else : ?>
         <div class="jcp-footer-brand">
           <img src="<?php echo esc_url( 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png' ); ?>" alt="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>" width="180" height="40" />
           <p>Turn real job photos into proof, visibility, reviews, and more jobs.</p>
+          <?php
+          get_template_part( 'templates/global/footer', 'apps', [
+            'app_store_url'  => $app_store_url,
+            'play_store_url' => $play_store_url,
+          ] );
+          ?>
         </div>
         <div class="jcp-footer-col">
           <h4>Product</h4>
@@ -96,7 +110,6 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
           <a href="<?php echo esc_url( home_url( '/#features' ) ); ?>">Features</a>
           <a href="<?php echo esc_url( home_url( '/industries/' ) ); ?>"><?php esc_html_e( 'By Trade', 'jcp-core' ); ?></a>
           <a href="<?php echo esc_url( home_url( '/pricing' ) ); ?>">Pricing</a>
-          <a href="<?php echo esc_url( home_url( '/directory' ) ); ?>">Directory</a>
         </div>
         <div class="jcp-footer-col">
           <h4>Resources</h4>
@@ -107,12 +120,12 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
         </div>
         <div class="jcp-footer-col">
           <h4>Company</h4>
-          <a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a>
+          <a href="<?php echo esc_url( home_url( '/support/' ) ); ?>">Support</a>
           <a href="<?php echo esc_url( $jcp_onboarding_url ); ?>"<?php
             if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
-              jcp_niche_cta_tracking_attr( $jcp_onboarding_url, 'footer', 'Sign up' );
+              jcp_niche_cta_tracking_attr( $jcp_onboarding_url, 'footer', 'Start Free Trial' );
             }
-          ?>><?php esc_html_e( 'Sign up', 'jcp-core' ); ?></a>
+          ?>><?php esc_html_e( 'Start Free Trial', 'jcp-core' ); ?></a>
           <?php
           $about_page = get_page_by_path( 'about' );
           if ( $about_page && $about_page->post_status === 'publish' ) :

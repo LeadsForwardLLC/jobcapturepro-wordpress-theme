@@ -12,6 +12,9 @@
  */
 function jcp_page_render( int $post_id ): void {
 	$content   = jcp_page_get_content( $post_id );
+	if ( function_exists( 'jcp_campaign_stamp_control_lp_ctas' ) ) {
+		$content = jcp_campaign_stamp_control_lp_ctas( $content, $post_id );
+	}
 	$legacy    = jcp_page_blocks_to_legacy( $content );
 	$page_key  = ! empty( $legacy['niche_key'] ) ? sanitize_title( (string) $legacy['niche_key'] ) : sanitize_title( get_post_field( 'post_name', $post_id ) );
 	$page_kind = (string) ( $content['page_kind'] ?? 'marketing' );
@@ -29,6 +32,9 @@ function jcp_page_render( int $post_id ): void {
 	}
 	if ( function_exists( 'jcp_page_is_campaign_landing' ) && jcp_page_is_campaign_landing( $content ) ) {
 		$main_class .= ' jcp-page-campaign jcp-home';
+	}
+	if ( ( $content['preset'] ?? '' ) === 'home_v2' || ! empty( $content['settings']['home_preview'] ) ) {
+		$main_class .= ' jcp-page-home_v2 jcp-home-preview';
 	}
 
 	echo '<main class="' . esc_attr( $main_class ) . '" data-niche="' . esc_attr( $page_key ) . '" data-page-kind="' . esc_attr( $page_kind ) . '">';
@@ -87,7 +93,7 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 
 	$block_id = esc_attr( (string) ( $block['id'] ?? 'b-' . $type ) );
 	$layout   = jcp_block_resolve_layout( $block, (string) ( $ctx['page_kind'] ?? 'industry' ) );
-	$surface  = jcp_section_surface_block_attrs( $layout );
+	$surface  = jcp_section_surface_block_attrs( $layout, $type );
 	$classes  = trim( 'jcp-block-root ' . jcp_block_layout_classes( $layout, $type ) . ' ' . $surface['class'] );
 	$data_str = '';
 	foreach ( $surface['data'] as $key => $val ) {
@@ -175,6 +181,27 @@ function jcp_page_render_block( array $block, array $legacy, array $ctx ): void 
 			break;
 		case 'proof_flow':
 			jcp_niche_render_proof_flow( $props );
+			break;
+		case 'story_moments':
+			if ( function_exists( 'jcp_niche_render_story_moments' ) ) {
+				jcp_niche_render_story_moments( $props, $page_key );
+			}
+			break;
+		case 'testimonials':
+			jcp_niche_render_testimonials( $props );
+			break;
+		case 'authority':
+			jcp_niche_render_authority( $props, $page_key );
+			break;
+		case 'local_falcon_proof':
+			if ( function_exists( 'jcp_niche_render_local_falcon_proof' ) ) {
+				jcp_niche_render_local_falcon_proof( $props, $page_key );
+			}
+			break;
+		case 'local_rank_case_study':
+			if ( function_exists( 'jcp_niche_render_local_rank_case_study' ) ) {
+				jcp_niche_render_local_rank_case_study( $props, $page_key );
+			}
 			break;
 		case 'demo_preview':
 			jcp_niche_render_demo_preview( $props, $page_key );

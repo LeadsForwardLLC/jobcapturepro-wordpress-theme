@@ -286,7 +286,7 @@ function showError(message) {
       <div class="error-state">
         <h2>⚠️ ${message}</h2>
         <p>Please select a contractor from the directory.</p>
-        <a href="${baseUrl}/directory/" class="btn btn-primary">Back to Directory</a>
+        <a href="${baseUrl}/" class="btn btn-primary">Back to Home</a>
       </div>
     `;
   }
