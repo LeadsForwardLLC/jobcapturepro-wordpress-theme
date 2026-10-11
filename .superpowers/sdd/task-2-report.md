@@ -33,7 +33,7 @@ Status: DONE (with concerns noted)
   - All five `footer.socials.*` paths are present.
 - A real logged-out homepage check (brief Step 3) is still outstanding.
 
-## Fix: Company column visitor order (Support → Trial → About)
+## Fix: Company column visitor order (Support → Trial → About) — commit `d28d24b`
 - Trial CTA `<a>` is now a sibling inside `div.jcp-footer-col-links[data-jcp-array="footer.columns.company.links"]`, immediately after the first rendered link item (Support), without `data-jcp-array-item`.
 - `niche-page-editor.js` reindexes with `:scope > [data-jcp-array-item]` only, so collection indices stay correct.
 - Fallback: if no company link renders (editor-only empty state), trial still outputs before `+ Add link`.
