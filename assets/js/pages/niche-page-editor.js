@@ -274,6 +274,14 @@
     : { pages: [], current_path: '' };
   let editing = false;
   let dirty = false;
+  // Marketing footer is stored in a site option (not page JSON); edited via footer.* paths.
+  let footerContent = (bootstrap.footer && typeof bootstrap.footer === 'object')
+    ? JSON.parse(JSON.stringify(bootstrap.footer))
+    : null;
+  const footerPristine = footerContent ? JSON.parse(JSON.stringify(footerContent)) : null;
+  // Rendered href per footer path at load (server resolves relative URLs / fallback CTA URL).
+  const footerHrefBaseline = {};
+  let footerDirty = false;
   let structureOpen = false;
   let dragIndex = null;
   let loaded = Array.isArray(bootstrap.registry) && bootstrap.registry.length > 0;
@@ -375,12 +383,48 @@
     else cur[last] = value;
   };
 
+  const statesEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+  const isFooterPath = (path) => typeof path === 'string' && (path === 'footer' || path.startsWith('footer.'));
+
+  // DOM paths address columns by id (footer.columns.company.links.0.label);
+  // stored footer.columns is a list, so map the id segment to its index.
+  const footerRestPath = (root, path) => {
+    const rest = path === 'footer' ? '' : path.slice('footer.'.length);
+    const m = rest.match(/^columns\.([^.]+)(\..*)?$/);
+    if (!m || /^\d+$/.test(m[1])) return rest;
+    const cols = Array.isArray(root && root.columns) ? root.columns : [];
+    const idx = cols.findIndex((col) => col && col.id === m[1]);
+    return idx >= 0 ? `columns.${idx}${m[2] || ''}` : null;
+  };
+
+  const getFooterPath = (path, root = footerContent) => {
+    if (!root) return undefined;
+    const rest = footerRestPath(root, path);
+    if (rest === null) return undefined;
+    return rest === '' ? root : getPath(root, rest);
+  };
+
+  const setFooterPath = (path, value) => {
+    if (!footerContent || path === 'footer') return;
+    const rest = footerRestPath(footerContent, path);
+    if (!rest) return;
+    if (statesEqual(getPath(footerContent, rest), value)) return;
+    setPath(footerContent, rest, value);
+    footerDirty = true;
+  };
+
+  const readContentPath = (path) => (isFooterPath(path) ? getFooterPath(path) : getPath(flatContent, path));
+  const writeContentPath = (path, value) => {
+    if (isFooterPath(path)) setFooterPath(path, value);
+    else setPath(flatContent, path, value);
+  };
+
   const snapshot = () => ({
     pageDocument: JSON.parse(JSON.stringify(pageDocument)),
     flatContent: JSON.parse(JSON.stringify(flatContent)),
+    footerContent: footerContent ? JSON.parse(JSON.stringify(footerContent)) : null,
   });
-
-  const statesEqual = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
   const bar = document.createElement('div');
   bar.className = 'jcp-niche-edit-bar';
@@ -2686,8 +2730,13 @@
     });
   };
 
+  const computeFooterDirty = () => (
+    savedSnapshot && footerContent ? !statesEqual(footerContent, savedSnapshot.footerContent) : false
+  );
+
   const updateDirtyState = () => {
-    dirty = savedSnapshot ? !statesEqual(snapshot(), savedSnapshot) : false;
+    footerDirty = computeFooterDirty();
+    dirty = savedSnapshot ? (!statesEqual(snapshot(), savedSnapshot) || footerDirty) : false;
     saveBtn.disabled = !dirty;
     saveBtn.classList.toggle('is-ready', dirty);
     statusEl.textContent = dirty ? 'Unsaved changes' : '';
@@ -2737,6 +2786,7 @@
     suppressRecord = true;
     pageDocument = JSON.parse(JSON.stringify(snap.pageDocument));
     flatContent = JSON.parse(JSON.stringify(snap.flatContent));
+    footerContent = snap.footerContent ? JSON.parse(JSON.stringify(snap.footerContent)) : null;
     applyStructureToDom();
     if (typeof window.JCP_SYNC_COLLECTIONS_FROM_CONTENT === 'function') {
       window.JCP_SYNC_COLLECTIONS_FROM_CONTENT();
@@ -2934,7 +2984,7 @@
       const path = el.getAttribute('data-jcp-path');
       if (!path) return;
       if (el.matches('input, textarea, select')) return;
-      const val = getPath(flatContent, path);
+      const val = readContentPath(path);
       if (val === undefined || val === null) return;
       if (isRichField(el)) {
         el.innerHTML = sanitizeRichHtml(String(val));
@@ -2947,15 +2997,21 @@
     document.querySelectorAll('[data-jcp-input-path]').forEach((el) => {
       const path = el.getAttribute('data-jcp-input-path');
       if (!path) return;
-      const val = getPath(flatContent, path);
+      const val = readContentPath(path);
       if (val === undefined || val === null) return;
       el.value = String(val);
     });
     document.querySelectorAll('[data-jcp-href-path]').forEach((el) => {
       const path = el.getAttribute('data-jcp-href-path');
       if (!path) return;
-      const val = getPath(flatContent, path);
-      if (val !== undefined && val !== null) el.setAttribute('href', String(val));
+      const val = readContentPath(path);
+      if (val === undefined || val === null) return;
+      if (isFooterPath(path) && String(val) === '') {
+        // Empty stored URL renders as the server fallback (or '#'), not an empty href.
+        el.setAttribute('href', Object.prototype.hasOwnProperty.call(footerHrefBaseline, path) ? footerHrefBaseline[path] : '#');
+        return;
+      }
+      el.setAttribute('href', String(val));
     });
     document.querySelectorAll('[data-jcp-card-link-path]').forEach((card) => {
       const path = card.getAttribute('data-jcp-card-link-path');
@@ -3452,7 +3508,7 @@
       const host = container.querySelector(':scope > .conversion-points__columns') || container;
       const items = [...host.querySelectorAll(':scope > [data-jcp-array-item]')];
       if (!items.length) {
-        setPath(flatContent, basePath, []);
+        writeContentPath(basePath, []);
         return;
       }
       const firstPathEl = items[0].hasAttribute('data-jcp-path')
@@ -3464,8 +3520,20 @@
       if (!/^\d+$/.test(suffix)) return;
 
       const arr = items.map((item) => readArrayItemText(item));
-      setPath(flatContent, basePath, arr);
+      writeContentPath(basePath, arr);
     });
+  };
+
+  // Footer hrefs: keep the stored value while the href is still what the server rendered
+  // (relative URLs are expanded, empty CTA URL falls back to onboarding); '#' means empty.
+  const collectHrefValue = (path, el) => {
+    const href = el.getAttribute('href') || '';
+    if (!isFooterPath(path)) return href;
+    if (Object.prototype.hasOwnProperty.call(footerHrefBaseline, path) && footerHrefBaseline[path] === href) {
+      const orig = getFooterPath(path, footerPristine);
+      if (typeof orig === 'string') return orig;
+    }
+    return href === '#' ? '' : href;
   };
 
   const collectFromDom = () => {
@@ -3476,27 +3544,27 @@
       if (!path) return;
       if (el.hasAttribute('data-jcp-href-path')) {
         const raw = getLinkLabelText(el);
-        setPath(flatContent, path, isListLinePath(path) ? cleanStepLineText(raw) : raw);
+        writeContentPath(path, isListLinePath(path) ? cleanStepLineText(raw) : raw);
         return;
       }
       if (isRichField(el) || /<a[\s>]/i.test(el.innerHTML || '')) {
         if (!isRichField(el)) el.setAttribute('data-jcp-rich', 'true');
-        setPath(flatContent, path, sanitizeRichHtml(el.innerHTML));
+        writeContentPath(path, sanitizeRichHtml(el.innerHTML));
         return;
       }
       const raw = (el.textContent || '').trim();
       const value = isListLinePath(path) ? cleanStepLineText(raw) : raw;
-      setPath(flatContent, path, value);
+      writeContentPath(path, value);
     });
     document.querySelectorAll('[data-jcp-input-path]').forEach((el) => {
       const path = el.getAttribute('data-jcp-input-path');
       if (!path) return;
-      setPath(flatContent, path, (el.value || '').trim());
+      writeContentPath(path, (el.value || '').trim());
     });
     document.querySelectorAll('[data-jcp-href-path]').forEach((el) => {
       const path = el.getAttribute('data-jcp-href-path');
       if (!path) return;
-      setPath(flatContent, path, el.getAttribute('href') || '');
+      writeContentPath(path, collectHrefValue(path, el));
     });
     document.querySelectorAll('[data-jcp-card-link-path]').forEach((card) => {
       const path = card.getAttribute('data-jcp-card-link-path');
@@ -4312,21 +4380,57 @@
     syncListBlockPropsFromFlat();
     statusEl.textContent = 'Saving…';
     saveBtn.disabled = true;
-    const res = await fetch(cfg.restUrl, {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': cfg.nonce },
-      body: JSON.stringify({ blocks: pageDocument, content: flatContent }),
-    });
-    if (res.ok) {
-      dirty = false;
-      document.body.classList.remove('jcp-has-unsaved');
-      statusEl.textContent = 'Saved';
-      window.location.reload();
-    } else {
-      statusEl.textContent = 'Save failed — try again';
-      updateDirtyState();
+    const postJson = async (url, payload) => {
+      try {
+        const r = await fetch(url, {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': cfg.nonce },
+          body: JSON.stringify(payload),
+        });
+        return r.ok;
+      } catch (err) {
+        return false;
+      }
+    };
+
+    footerDirty = computeFooterDirty();
+    const pageDirty = !savedSnapshot
+      || !statesEqual(pageDocument, savedSnapshot.pageDocument)
+      || !statesEqual(flatContent, savedSnapshot.flatContent);
+
+    if (pageDirty || !footerDirty) {
+      const pageOk = await postJson(cfg.restUrl, { blocks: pageDocument, content: flatContent });
+      if (!pageOk) {
+        statusEl.textContent = 'Save failed — try again';
+        updateDirtyState();
+        return;
+      }
+      if (savedSnapshot) {
+        // Page part is persisted; a footer failure below should only retry the footer.
+        savedSnapshot.pageDocument = JSON.parse(JSON.stringify(pageDocument));
+        savedSnapshot.flatContent = JSON.parse(JSON.stringify(flatContent));
+      }
     }
+
+    if (footerDirty && footerContent && cfg.footerRestUrl) {
+      const footerOk = await postJson(cfg.footerRestUrl, { footer: footerContent });
+      if (!footerOk) {
+        updateDirtyState();
+        statusEl.textContent = (pageDirty || !footerDirty)
+          ? 'Page saved, but footer save failed — try again'
+          : 'Footer save failed — try again';
+        saveBtn.disabled = false;
+        return;
+      }
+      savedSnapshot.footerContent = JSON.parse(JSON.stringify(footerContent));
+      footerDirty = false;
+    }
+
+    dirty = false;
+    document.body.classList.remove('jcp-has-unsaved');
+    statusEl.textContent = 'Saved';
+    window.location.reload();
   });
 
   document.addEventListener('keydown', (e) => {
@@ -4389,6 +4493,10 @@
     });
   };
 
+  document.querySelectorAll('[data-jcp-href-path]').forEach((el) => {
+    const path = el.getAttribute('data-jcp-href-path');
+    if (isFooterPath(path)) footerHrefBaseline[path] = el.getAttribute('href') || '';
+  });
   initHistory();
   normalizePageDocumentBlocks();
   sanitizeFlatContentInPlace();
@@ -4400,8 +4508,12 @@
   bindHeadingFloatEvents();
 
   const editorApi = {
-    getPath,
-    setPath,
+    // footer.* paths resolve against footerContent regardless of the root passed in.
+    getPath: (obj, path) => (isFooterPath(path) ? getFooterPath(path) : getPath(obj, path)),
+    setPath: (obj, path, value) => {
+      if (isFooterPath(path)) setFooterPath(path, value);
+      else setPath(obj, path, value);
+    },
     recordChange,
     collectFromDom,
     registry,
@@ -4409,6 +4521,7 @@
     editing: () => editing,
     strings: cfg.strings || {},
     get flatContent() { return flatContent; },
+    get footerContent() { return footerContent; },
     get pageDocument() { return pageDocument; },
   };
   window.__JCP_EDITOR_API__ = editorApi;

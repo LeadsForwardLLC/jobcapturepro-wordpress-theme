@@ -68,7 +68,11 @@
   const STAT_BADGE_CLASSES = ['meta-stat-photo', 'meta-stat-channels', 'meta-stat-busywork'];
   const STAT_BADGE_ICONS = ['camera', 'map', 'clock'];
 
+  // Marketing footer column link lists (stored in the footer option, not page JSON).
+  const isFooterLinksPath = (basePath) => /^footer\.columns\.[A-Za-z0-9_-]+\.links$/.test(basePath || '');
+
   const arrayDefaultFactory = (basePath) => {
+    if (isFooterLinksPath(basePath)) return () => ({ label: 'New link', url: '' });
     if (ARRAY_DEFAULTS[basePath]) return ARRAY_DEFAULTS[basePath];
     if (/\.lines$/.test(basePath)) return () => 'New point';
     if (isStringArrayPath(basePath)) return () => 'New item';
@@ -388,7 +392,16 @@
       </a>`;
   };
 
+  const buildFooterLink = (basePath, index, data) => {
+    const path = `${basePath}.${index}`;
+    const url = String(data?.url ?? '').trim();
+    return `<div class="jcp-collection-item" data-jcp-array-item="${index}"><a href="${esc(url === '' ? '#' : url)}" data-jcp-path="${path}.label" data-jcp-href-path="${path}.url">${esc(data?.label ?? '')}</a><button type="button" class="jcp-collection-remove jcp-collection-remove--list-item" aria-label="Remove item" title="Remove" tabindex="-1">×</button></div>`;
+  };
+
   const buildItemHtml = (basePath, index, data, container) => {
+    if (isFooterLinksPath(basePath) && data && typeof data === 'object') {
+      return buildFooterLink(basePath, index, data);
+    }
     if (typeof data === 'string') {
       if (basePath.endsWith('.lines')) return buildChecklistItem(basePath, index, data);
       if (basePath.endsWith('.points') || basePath.endsWith('.bullets')) return buildConversionPoint(basePath, index, data);
@@ -468,6 +481,10 @@
     if (!basePath || !api) return;
     const arr = getArray(basePath);
     const host = arrayItemsHost(container);
+    // Footer "company" column carries a non-collection trial CTA anchor; keep it across rebuilds.
+    const trialCta = isFooterLinksPath(basePath)
+      ? container.querySelector(':scope > a[data-jcp-path^="footer.trial_cta"]')
+      : null;
     host.querySelectorAll(':scope > [data-jcp-array-item]').forEach((el) => el.remove());
     container.querySelectorAll(':scope > .jcp-collection-add').forEach((el) => el.remove());
     const temp = document.createElement('div');
@@ -477,6 +494,11 @@
       temp.innerHTML = html.trim();
       if (temp.firstElementChild) host.appendChild(temp.firstElementChild);
     });
+    if (trialCta) {
+      const first = host.querySelector(':scope > [data-jcp-array-item]');
+      if (first) first.after(trialCta);
+      else host.appendChild(trialCta);
+    }
     if (basePath === 'how_it_works.steps') updateTimelineStepNumbers(container);
   };
 
