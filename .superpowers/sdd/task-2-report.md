@@ -1,57 +1,46 @@
-# Task 2 Report: Testimonials block render markup
+# Task 2 Report: Render marketing footer from helpers with editable attrs
 
-## Status
+Status: DONE (with concerns noted)
 
-**DONE**
+## Changes
+`templates/global/footer.php` only; the directory-mode and landing-minimal markup is unchanged.
 
-## Commit hash(es)
+- Added a data-loading block right after the `hide_site_chrome` `else`, for non-directory mode only:
+  - It reads `jcp_get_marketing_footer()`.
+  - Empty `trial_cta.url` falls back to `$jcp_onboarding_url` (footer_signup).
+  - Relative URLs are resolved through `home_url()`.
+- Blurb: `<p data-jcp-path="footer.blurb">`.
+- Columns are looped from data:
+  - Each `h4` gets `footer.columns.{id}.heading`.
+  - Each link is wrapped in `div.jcp-collection-item[data-jcp-array-item=i]`.
+  - Each link `<a>` gets `data-jcp-path=...links.{i}.label` and `data-jcp-href-path=...links.{i}.url`, via `jcp_niche_editable_link_paths`.
+  - Each column's links container is `div.jcp-footer-col-links[data-jcp-array="footer.columns.{id}.links"]`.
+  - `jcp_niche_collection_remove_btn( true )` and `jcp_niche_collection_add_btn( '+ Add link' )` render for editors only.
+- Trial CTA sits in the company column with `footer.trial_cta.label` and `footer.trial_cta.url`. Tracking is `jcp_niche_cta_tracking_attr( $mf_trial_href, 'footer', $mf_trial_label )`.
+- Socials: the loop uses `$footer_social_items`.
+  - Directory mode gets `$social_links` unchanged.
+  - Marketing mode gets data URLs plus `data-jcp-href-path="footer.socials.{key}"`.
+  - Visitors never see empty-URL socials. Editors get an `href="#"` placeholder so they can fill it in.
+- About: visitors don't see About while the page is unpublished, which matches the old behavior. Editors always see it.
+- Links with an empty label or URL are hidden from visitors and shown to editors, with `#` as the href when the URL is empty.
 
-- `66cb4f1` — Render testimonials block with featured quote and secondary strip.
+## Verification
+- `php -l templates/global/footer.php` passed.
+- No local site was reachable, so I used a stub-WP harness (`/tmp/harness.php`) to render `footer.php` as visitor and as editor.
+  - Defaults reproduce the old copy and links.
+  - The trial CTA goes to the onboarding URL with `data-cta="Start Free Trial" data-cta-location="footer"`.
+  - Editor mode emits add/remove buttons; visitor mode emits none.
+  - All five `footer.socials.*` paths are present.
+- A real logged-out homepage check (brief Step 3) is still outstanding.
 
-## Files changed
+## Fix: Company column visitor order (Support → Trial → About)
+- Trial CTA `<a>` is now a sibling inside `div.jcp-footer-col-links[data-jcp-array="footer.columns.company.links"]`, immediately after the first rendered link item (Support), without `data-jcp-array-item`.
+- `niche-page-editor.js` reindexes with `:scope > [data-jcp-array-item]` only, so collection indices stay correct.
+- Fallback: if no company link renders (editor-only empty state), trial still outputs before `+ Add link`.
+- About unpublished gate for visitors unchanged.
 
-| File | Change |
-|------|--------|
-| `inc/niche-landing/render.php` | Added `jcp_niche_render_testimonials()` plus helpers for review normalization, featured resolution, star row, and JSON review store |
-| `inc/page-blocks/render.php` | Wired `case 'testimonials'` dispatch in `jcp_page_render_block()` |
-
-## Markup delivered
-
-- Section: `.jcp-section.rankings-section.jcp-block-testimonials` with `data-jcp-testimonials`, `data-autoplay`, `data-autoplay-ms`, `data-featured-key`
-- Optional eyebrow via `show_eyebrow` / `eyebrow` props (uses `demo-badge` class until Task 3 CSS)
-- Section header via `jcp_niche_render_section_header( $props, 'testimonials' )`
-- Featured panel: `figure.jcp-testimonials-featured[data-jcp-testimonials-featured]` with stars, blockquote, cite name/role
-- Secondary strip: prev/next nav, track with `button.jcp-testimonials-card[data-review-key]`, dots container
-- Review store: `<script type="application/json" data-jcp-testimonials-store>` with normalized review array for Task 4 JS
-
-## Test / verification commands + results
-
-### PHP syntax check
-
-```bash
-php -l inc/niche-landing/render.php
-php -l inc/page-blocks/render.php
-```
-
-**Result:** No syntax errors detected in either file.
-
-### WP-CLI smoke check
-
-```bash
-wp eval '$props = jcp_page_default_block_props("testimonials"); ob_start(); jcp_niche_render_testimonials($props); ...'
-```
-
-**Result:** WP-CLI not available in this environment. Browser/visual check deferred until Task 5 places block on homepage preset.
-
-### Expected render (default props)
-
-- Featured: Peter Bonk (`data-featured-key="peter-bonk"`)
-- Secondary cards: 3 (Trent Ellison, Brian Hardy, Heriberto Eddie Roman)
-- JSON store: 4 normalized reviews with `id`, `name`, `role`, `quote`, `rating`
-
-## Concerns / follow-ups
-
-- **No CSS/JS yet** — block is unstyled and non-interactive until Tasks 3–4.
-- **Homepage not seeded** — block won't appear on live home until Task 5 preset/upgrade.
-- **Eyebrow styling** — reuses `demo-badge`; Task 3 may want a dedicated `.jcp-testimonials-eyebrow` rule under home.css.
-- **Visual check pending** — confirm featured + 3 cards in browser once block is on a page.
+## Concerns
+1. ~~DOM order in the Company column~~ **Resolved** — visitor order matches legacy footer (Support, Trial, About).
+2. Link rows are wrapped in a `div.jcp-collection-item`. The CSS is block and `.jcp-footer-col a` still applies, so the layout is the same for visitors. There is no footer-specific styling yet for the add/remove buttons in editing mode; the existing `.jcp-collection-*` styles come from niche-landing.css, which may not load on every page. That is for Tasks 3–4.
+3. Social anchors have only `data-jcp-href-path` (no `data-jcp-path`). The editor in Tasks 3–4 must handle href-only targets.
+4. The trial label is no longer translatable through `esc_html_e`, because it now comes from the option.

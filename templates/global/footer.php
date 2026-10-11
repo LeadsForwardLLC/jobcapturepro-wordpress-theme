@@ -162,6 +162,7 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
           }
           $mf_col_links = is_array( $mf_col['links'] ?? null ) ? $mf_col['links'] : [];
           $mf_col_path  = 'footer.columns.' . $mf_col_id;
+          $mf_company_trial_after_support = ( $mf_col_id === 'company' );
           ?>
           <div class="jcp-footer-col">
             <h4<?php
@@ -209,23 +210,40 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
                   }
                   ?>
                 </div>
+                <?php
+                if ( $mf_company_trial_after_support ) {
+                  $mf_company_trial_after_support = false;
+                  ?>
+                <a href="<?php echo esc_url( $mf_trial_href ); ?>"<?php
+                  if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+                    jcp_niche_cta_tracking_attr( $mf_trial_href, 'footer', $mf_trial_label );
+                  }
+                  if ( function_exists( 'jcp_niche_editable_link_paths' ) ) {
+                    jcp_niche_editable_link_paths( 'footer.trial_cta.label', 'footer.trial_cta.url' );
+                  }
+                ?>><?php echo esc_html( $mf_trial_label ); ?></a>
+                  <?php
+                }
+                ?>
               <?php endforeach; ?>
               <?php
+              if ( $mf_col_id === 'company' && $mf_company_trial_after_support ) {
+                ?>
+                <a href="<?php echo esc_url( $mf_trial_href ); ?>"<?php
+                  if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+                    jcp_niche_cta_tracking_attr( $mf_trial_href, 'footer', $mf_trial_label );
+                  }
+                  if ( function_exists( 'jcp_niche_editable_link_paths' ) ) {
+                    jcp_niche_editable_link_paths( 'footer.trial_cta.label', 'footer.trial_cta.url' );
+                  }
+                ?>><?php echo esc_html( $mf_trial_label ); ?></a>
+                <?php
+              }
               if ( function_exists( 'jcp_niche_collection_add_btn' ) ) {
                 jcp_niche_collection_add_btn( __( '+ Add link', 'jcp-core' ) );
               }
               ?>
             </div>
-            <?php if ( $mf_col_id === 'company' ) : ?>
-              <a href="<?php echo esc_url( $mf_trial_href ); ?>"<?php
-                if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
-                  jcp_niche_cta_tracking_attr( $mf_trial_href, 'footer', $mf_trial_label );
-                }
-                if ( function_exists( 'jcp_niche_editable_link_paths' ) ) {
-                  jcp_niche_editable_link_paths( 'footer.trial_cta.label', 'footer.trial_cta.url' );
-                }
-              ?>><?php echo esc_html( $mf_trial_label ); ?></a>
-            <?php endif; ?>
           </div>
         <?php endforeach; ?>
       <?php endif; ?>
