@@ -401,8 +401,9 @@ function jcp_core_enqueue_page_block_editor( int $post_id ): void {
 		[
 			'postId'    => $post_id,
 			'assetBase' => get_stylesheet_directory_uri() . '/assets',
-			'restUrl'   => rest_url( 'jcp/v1/page/' . $post_id ),
-			'nonce'     => wp_create_nonce( 'wp_rest' ),
+			'restUrl'       => rest_url( 'jcp/v1/page/' . $post_id ),
+			'footerRestUrl' => rest_url( 'jcp/v1/marketing-footer' ),
+			'nonce'         => wp_create_nonce( 'wp_rest' ),
 			'adminUrl'  => get_edit_post_link( $post_id, 'raw' ),
 			'url'       => get_permalink( $post_id ),
 			'bootstrap' => [
@@ -413,6 +414,9 @@ function jcp_core_enqueue_page_block_editor( int $post_id ): void {
 				'linkIndex'    => function_exists( 'jcp_internal_link_editor_payload' )
 					? jcp_internal_link_editor_payload( $post_id )
 					: [ 'pages' => [], 'current_path' => '' ],
+				'footer'       => function_exists( 'jcp_get_marketing_footer' )
+					? jcp_get_marketing_footer()
+					: null,
 			],
 			'strings'   => [
 				'mediaTitle'  => __( 'Choose or upload media', 'jcp-core' ),
