@@ -395,7 +395,8 @@
   const buildFooterLink = (basePath, index, data) => {
     const path = `${basePath}.${index}`;
     const url = String(data?.url ?? '').trim();
-    return `<div class="jcp-collection-item" data-jcp-array-item="${index}"><a href="${esc(url === '' ? '#' : url)}" data-jcp-path="${path}.label" data-jcp-href-path="${path}.url">${esc(data?.label ?? '')}</a><button type="button" class="jcp-collection-remove jcp-collection-remove--list-item" aria-label="Remove item" title="Remove" tabindex="-1">×</button></div>`;
+    const editedAttr = url === '' ? '' : ' data-jcp-href-edited="1"';
+    return `<div class="jcp-collection-item" data-jcp-array-item="${index}"><a href="${esc(url === '' ? '#' : url)}"${editedAttr} data-jcp-path="${path}.label" data-jcp-href-path="${path}.url">${esc(data?.label ?? '')}</a><button type="button" class="jcp-collection-remove jcp-collection-remove--list-item" aria-label="Remove item" title="Remove" tabindex="-1">×</button></div>`;
   };
 
   const buildItemHtml = (basePath, index, data, container) => {

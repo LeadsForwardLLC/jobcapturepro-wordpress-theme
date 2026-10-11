@@ -278,8 +278,7 @@
   let footerContent = (bootstrap.footer && typeof bootstrap.footer === 'object')
     ? JSON.parse(JSON.stringify(bootstrap.footer))
     : null;
-  const footerPristine = footerContent ? JSON.parse(JSON.stringify(footerContent)) : null;
-  // Rendered href per footer path at load (server resolves relative URLs / fallback CTA URL).
+  // Rendered href per footer path at load; used only to display empty stored URLs (never to decide what to save).
   const footerHrefBaseline = {};
   let footerDirty = false;
   let structureOpen = false;
@@ -3006,10 +3005,14 @@
       if (!path) return;
       const val = readContentPath(path);
       if (val === undefined || val === null) return;
-      if (isFooterPath(path) && String(val) === '') {
-        // Empty stored URL renders as the server fallback (or '#'), not an empty href.
-        el.setAttribute('href', Object.prototype.hasOwnProperty.call(footerHrefBaseline, path) ? footerHrefBaseline[path] : '#');
-        return;
+      if (isFooterPath(path)) {
+        // DOM is now derived from stored content, so any prior explicit-edit intent is consumed.
+        el.removeAttribute('data-jcp-href-edited');
+        if (String(val) === '') {
+          // Empty stored URL renders as the server fallback (or '#'), not an empty href.
+          el.setAttribute('href', Object.prototype.hasOwnProperty.call(footerHrefBaseline, path) ? footerHrefBaseline[path] : '#');
+          return;
+        }
       }
       el.setAttribute('href', String(val));
     });
@@ -3524,14 +3527,15 @@
     });
   };
 
-  // Footer hrefs: keep the stored value while the href is still what the server rendered
-  // (relative URLs are expanded, empty CTA URL falls back to onboarding); '#' means empty.
+  // Footer hrefs: the rendered href is decorated (relative URLs expanded, empty CTA URL falls
+  // back to onboarding, handoff script rewrites onboarding URLs), so it is never trusted unless
+  // the user explicitly applied a URL (data-jcp-href-edited). Otherwise keep the stored value.
   const collectHrefValue = (path, el) => {
     const href = el.getAttribute('href') || '';
     if (!isFooterPath(path)) return href;
-    if (Object.prototype.hasOwnProperty.call(footerHrefBaseline, path) && footerHrefBaseline[path] === href) {
-      const orig = getFooterPath(path, footerPristine);
-      if (typeof orig === 'string') return orig;
+    if (!el.hasAttribute('data-jcp-href-edited')) {
+      const stored = getFooterPath(path);
+      if (typeof stored === 'string') return stored;
     }
     return href === '#' ? '' : href;
   };
@@ -3814,7 +3818,14 @@
     if (!link) return;
     activeLink = link;
     popover.querySelector('#jcpNicheLinkLabel').value = getLinkLabelText(link);
-    popover.querySelector('#jcpNicheLinkUrl').value = link.getAttribute('href') || '';
+    const hrefPath = link.getAttribute('data-jcp-href-path') || '';
+    let prefillUrl = link.getAttribute('href') || '';
+    if (isFooterPath(hrefPath) && !link.hasAttribute('data-jcp-href-edited')) {
+      // Rendered href is decorated (fallback/handoff); show the stored value instead.
+      const stored = getFooterPath(hrefPath);
+      if (typeof stored === 'string') prefillUrl = stored;
+    }
+    popover.querySelector('#jcpNicheLinkUrl').value = prefillUrl;
     openEditorModal(popover, {
       focusSelector: focusLabel ? '#jcpNicheLinkLabel' : '#jcpNicheLinkUrl',
     });
@@ -3872,6 +3883,9 @@
     const url = popover.querySelector('#jcpNicheLinkUrl').value.trim();
     setLinkLabelText(activeLink, label);
     activeLink.setAttribute('href', url);
+    if (isFooterPath(activeLink.getAttribute('data-jcp-href-path') || '')) {
+      activeLink.setAttribute('data-jcp-href-edited', '1');
+    }
     ensureHrefEditControls();
     closeCtaLinkModal();
     recordChange();
