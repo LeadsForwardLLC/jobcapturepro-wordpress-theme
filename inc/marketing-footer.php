@@ -60,7 +60,7 @@ function jcp_marketing_footer_defaults(): array {
 }
 
 /**
- * Deep-merge stored footer with defaults.
+ * Return stored footer sanitized (column link lists replace, not index-merge).
  *
  * @return array<string, mixed>
  */
@@ -69,7 +69,7 @@ function jcp_get_marketing_footer(): array {
 	if ( ! is_array( $stored ) ) {
 		$stored = [];
 	}
-	return jcp_global_settings_merge( jcp_marketing_footer_defaults(), $stored );
+	return jcp_sanitize_marketing_footer( $stored );
 }
 
 /**
@@ -120,7 +120,9 @@ function jcp_sanitize_marketing_footer( array $input ): array {
 		$col_in  = $columns_by_id[ $id ] ?? [];
 		$heading = sanitize_text_field( (string) ( $col_in['heading'] ?? $def_col['heading'] ?? '' ) );
 
-		$links_in = is_array( $col_in['links'] ?? null ) ? $col_in['links'] : [];
+		$links_in = array_key_exists( 'links', $col_in ) && is_array( $col_in['links'] )
+			? $col_in['links']
+			: ( $def_col['links'] ?? [] );
 		$links    = [];
 		$count    = 0;
 		foreach ( $links_in as $link ) {
