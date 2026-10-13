@@ -6,10 +6,18 @@
 (function () {
   'use strict';
 
-  var STORAGE_KEY = 'jcp_proof_gap_state_v1';
+  var STORAGE_KEY = 'jcp_proof_gap_state_v2';
   var TTL_MS = 7 * 24 * 60 * 60 * 1000;
   var LEAD_EVENT_ID_KEY = 'jcp_pg_lead_event_id';
   var AUTO_ADVANCE_MS = 250;
+
+  /** Canonical survey questions — identical for control and direct_question. */
+  var QUESTION_STATES = [
+    'trade',
+    'current_workflow',
+    'jobs_per_week',
+    'public_proof_percentage',
+  ];
 
   var STATES = [
     'welcome',
@@ -379,7 +387,8 @@
   function createEmptyState() {
     return {
       survey_id: boot.surveyId || 'proof_gap_survey_v1',
-      survey_version: boot.surveyVersion || '11',
+      survey_version: boot.surveyVersion || '12',
+      entry_variant: ENTRY_VARIANT,
       session_id: '',
       current_state: 'welcome',
       completed_states: [],
@@ -401,6 +410,25 @@
       created_at: Date.now(),
       updated_at: Date.now(),
     };
+  }
+
+  function clearMarketingUsage() {
+    state.public_proof_percentage = '';
+    state.proof_gap_band = '';
+    state.unused_jobs_min = null;
+    state.unused_jobs_max = null;
+    state.completed_states = state.completed_states.filter(function (c) {
+      return c !== 'public_proof_percentage';
+    });
+  }
+
+  function hasRequiredSurveyAnswers() {
+    return !!(
+      state.trade &&
+      state.current_workflow &&
+      state.jobs_per_week_bucket &&
+      state.public_proof_percentage
+    );
   }
 
   function uuid() {
@@ -657,6 +685,8 @@
 
   function loadState() {
     try {
+      // Drop legacy v1 blobs (could resume past Q4 with a stale marketing_usage).
+      try { localStorage.removeItem('jcp_proof_gap_state_v1'); } catch (eLegacy) {}
       var raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return false;
       var parsed = JSON.parse(raw);
@@ -666,7 +696,17 @@
       }
       var s = parsed.state;
       if (s.survey_id !== (boot.surveyId || 'proof_gap_survey_v1')) return false;
+      if (String(s.survey_version || '') !== String(boot.surveyVersion || '12')) {
+        localStorage.removeItem(STORAGE_KEY);
+        return false;
+      }
+      // Cross-arm resume must not carry answers (control ↔ direct_question).
+      if (s.entry_variant && s.entry_variant !== ENTRY_VARIANT) {
+        localStorage.removeItem(STORAGE_KEY);
+        return false;
+      }
       state = Object.assign(createEmptyState(), s);
+      state.entry_variant = ENTRY_VARIANT;
       if (!state.current_state || STATES.indexOf(state.current_state) === -1) state.current_state = 'welcome';
       return true;
     } catch (e) {
@@ -691,7 +731,7 @@
   }
 
   function invalidateDownstream(fromField) {
-    var order = ['trade', 'current_workflow', 'jobs_per_week', 'public_proof_percentage'];
+    var order = QUESTION_STATES;
     var idx = order.indexOf(fromField);
     if (idx < 0) return;
     for (var i = idx + 1; i < order.length; i++) {
@@ -704,13 +744,10 @@
         state.annual_jobs_max = null;
       }
       if (id === 'public_proof_percentage') {
-        state.public_proof_percentage = '';
-        state.proof_gap_band = '';
-        state.unused_jobs_min = null;
-        state.unused_jobs_max = null;
+        clearMarketingUsage();
       }
     }
-    if (['jobs_per_week', 'public_proof_percentage', 'trade', 'current_workflow'].indexOf(fromField) !== -1) {
+    if (QUESTION_STATES.indexOf(fromField) !== -1) {
       state.unused_jobs_min = null;
       state.unused_jobs_max = null;
     }
@@ -733,11 +770,12 @@
         }
         continue;
       }
-      if (id === 'trade' || id === 'current_workflow' || id === 'jobs_per_week' || id === 'public_proof_percentage') {
+      if (QUESTION_STATES.indexOf(id) !== -1) {
         if (!answerForState(id)) return id;
         continue;
       }
       if (id === 'result_email') {
+        if (!hasRequiredSurveyAnswers()) return 'public_proof_percentage';
         if (!state.email_captured) return id;
         continue;
       }
@@ -1008,6 +1046,10 @@
       state.annual_jobs_min = typeof bucket.min === 'number' ? bucket.min : null;
       state.annual_jobs_max = typeof bucket.max === 'number' ? bucket.max : null;
       markCompleted('jobs_per_week');
+      // Always clear Q4 after Q3 — never carry a stale marketing_usage into results.
+      // (invalidateDownstream only runs when the jobs bucket *changes*, so a leftover
+      // 0_10 from an earlier session could otherwise skip a real Q4 answer.)
+      clearMarketingUsage();
       saveState();
       track('SurveyQuestionAnswered', {
         question_index: stateIndex('jobs_per_week'), question_id: 'jobs_per_week',
@@ -1094,11 +1136,11 @@
   }
 
   function proofTier(key) {
-    if (key === 'unknown') return 'unknown';
+    if (!key || key === 'unknown') return 'unknown';
     if (key === '0_10' || key === '11_25') return 'low';
     if (key === '26_50' || key === '51_75') return 'mid';
     if (key === '76_100') return 'high';
-    return 'mid';
+    return 'unknown';
   }
 
   function unusedPercentLabel() {
@@ -1157,6 +1199,14 @@
     var unused = document.getElementById('pgResultUnused');
     var note = document.getElementById('pgResultNote');
     var support = document.getElementById('pgResultSupport');
+    // Do not fabricate a marketing band (e.g. 0–10%) when Q4 was never answered.
+    if (!state.public_proof_percentage || !proofPct[state.public_proof_percentage]) {
+      if (invWrap) invWrap.hidden = true;
+      if (unusedWrap) unusedWrap.hidden = true;
+      if (inv) inv.textContent = '\u2014';
+      if (title) title.textContent = '';
+      return;
+    }
     var tier = proofTier(state.public_proof_percentage);
     computeUnusedRange();
 
@@ -1842,6 +1892,22 @@
     // welcome_direct is entry-only (not in STATES progression); everything else must be canonical.
     if (id !== 'welcome_direct' && STATES.indexOf(id) === -1) return;
 
+    // Both arms share the same Q1–Q4 sequence; results require all four answers.
+    if ((id === 'result_email' || id === 'app_sim' || id === 'trial_bridge') && !hasRequiredSurveyAnswers()) {
+      var missing = 'public_proof_percentage';
+      for (var qi = 0; qi < QUESTION_STATES.length; qi++) {
+        if (!answerForState(QUESTION_STATES[qi])) {
+          missing = QUESTION_STATES[qi];
+          break;
+        }
+      }
+      if (IS_DIRECT_ENTRY && missing === 'trade' && !state.trade) {
+        id = 'welcome_direct';
+      } else {
+        id = missing;
+      }
+    }
+
     if (stepEnteredId && stepEnteredAt) {
       var dwell = Date.now() - stepEnteredAt;
       if (dwell >= 250 && dwell <= 30 * 60 * 1000) {
@@ -1944,7 +2010,13 @@
     }
     var idx = stateIndex(state.current_state);
     if (idx <= 0) return;
-    goTo(STATES[idx - 1]);
+    var prev = STATES[idx - 1];
+    // Direct Question: entry shell is welcome_direct (control welcome is CSS-hidden).
+    if (prev === 'welcome' && IS_DIRECT_ENTRY) {
+      goTo('welcome_direct');
+      return;
+    }
+    goTo(prev);
   }
 
   /* ─── Binding ─── */
@@ -2013,6 +2085,8 @@
   function init() {
     var resumed = loadState();
     ensureSession();
+    state.entry_variant = ENTRY_VARIANT;
+    state.survey_version = boot.surveyVersion || '12';
     state.attribution = Object.assign({}, state.attribution || {}, attrPayload());
     initCreativeConcept();
     if (state.trade) preloadTradePhoto(state.trade);

@@ -16,7 +16,7 @@ define( 'JCP_PROOF_GAP_SLUG', 'proof-gap' );
 define( 'JCP_PROOF_GAP_VARIANT', 'proof_gap_survey_v1' );
 define( 'JCP_PROOF_GAP_FUNNEL_VERSION', 'proof_gap_survey_v1' );
 define( 'JCP_PROOF_GAP_SURVEY_ID', 'proof_gap_survey_v1' );
-define( 'JCP_PROOF_GAP_SURVEY_VERSION', '11' );
+define( 'JCP_PROOF_GAP_SURVEY_VERSION', '12' );
 define( 'JCP_PROOF_GAP_SEED_VERSION', '11' );
 /** Entry A/B experiment (first-party assignment; not PostHog). */
 define( 'JCP_PG_ENTRY_EXPERIMENT', 'proof_gap_entry_v1' );
