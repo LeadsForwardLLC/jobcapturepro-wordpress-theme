@@ -566,6 +566,8 @@
     proof_gap_answered: true,
     proof_gap_completed: true,
     proof_gap_email_submitted: true,
+    proof_gap_lead_saved: true,
+    proof_gap_lead_save_failed: true,
     proof_gap_transformation_viewed: true,
     proof_gap_preview_clicked: true,
     trial_cta_viewed: true,
@@ -587,11 +589,15 @@
         name === 'proof_gap_started' ||
         name === 'proof_gap_completed' ||
         name === 'proof_gap_email_submitted' ||
+        name === 'proof_gap_lead_saved' ||
         name === 'proof_gap_transformation_viewed' ||
         name === 'trial_cta_viewed' ||
         name === 'trial_cta_clicked'
       ) {
         onceKey = name;
+      } else if (name === 'proof_gap_lead_save_failed') {
+        // Allow retries — each failed attempt is signal.
+        onceKey = '';
       } else {
         onceKey = '';
       }
@@ -1763,6 +1769,51 @@
     } catch (e) {}
   }
 
+  function resolvePhDistinctId(attr) {
+    attr = attr || {};
+    if (attr.ph_distinct_id) return String(attr.ph_distinct_id);
+    try {
+      if (window.JCPPostHog && typeof window.JCPPostHog.getDistinctId === 'function') {
+        return String(window.JCPPostHog.getDistinctId() || '').trim();
+      }
+    } catch (ePh) {}
+    return '';
+  }
+
+  /** Attribution + session props for lead-save analytics (never email/PII). */
+  function leadSaveAnalyticsBase(attr) {
+    attr = attr || attrPayload();
+    var props = {
+      survey_session_id: state.session_id,
+      jcp_pg_variant: attr.jcp_pg_variant || LP_VARIANT,
+      lp_variant: attr.lp_variant || LP_VARIANT,
+      survey_version: state.survey_version,
+      funnel_version: FUNNEL_VERSION,
+      utm_source: attr.utm_source || '',
+      utm_medium: attr.utm_medium || '',
+      utm_campaign: attr.utm_campaign || '',
+      utm_content: attr.utm_content || '',
+      utm_term: attr.utm_term || '',
+      endpoint: 'jcp/v1/proof-gap-survey-submit',
+    };
+    var phId = resolvePhDistinctId(attr);
+    if (phId) props.ph_distinct_id = phId;
+    if (attr.qa_trace_id) props.qa_trace_id = attr.qa_trace_id;
+    if (isQaSession()) props.is_qa = true;
+    return props;
+  }
+
+  function classifyLeadSaveError(httpStatus, json) {
+    if (!httpStatus && httpStatus !== 0) return 'unknown';
+    if (httpStatus === 0) return 'network';
+    if (httpStatus === 400) return 'validation';
+    if (httpStatus === 429) return 'rate_limited';
+    if (httpStatus >= 500) return 'server';
+    if (httpStatus >= 400) return 'client';
+    if (json && json.captured === false) return 'not_captured';
+    return 'unknown';
+  }
+
   function submitEmail(ev) {
     if (ev) ev.preventDefault();
     var input = document.getElementById('pgEmail');
@@ -1782,6 +1833,7 @@
     var eventId = getOrCreateLeadEventId();
     var attr = attrPayload();
     var qa = isQaSession();
+    var restEndpoint = boot.restUrl || '/wp-json/jcp/v1/proof-gap-survey-submit';
     var body = {
       email: email,
       business_type: state.trade || '',
@@ -1821,29 +1873,39 @@
     if (attr._fbc) body._fbc = attr._fbc;
     if (attr.qa_trace_id) body.qa_trace_id = attr.qa_trace_id;
     if (attr.first_touch_timestamp) body.first_touch_timestamp = attr.first_touch_timestamp;
-    if (attr.ph_distinct_id) {
-      body.ph_distinct_id = attr.ph_distinct_id;
-    } else {
-      try {
-        if (window.JCPPostHog && typeof window.JCPPostHog.getDistinctId === 'function') {
-          var phId = String(window.JCPPostHog.getDistinctId() || '').trim();
-          if (phId) body.ph_distinct_id = phId;
-        }
-      } catch (ePh) {}
-    }
+    var phIdBody = resolvePhDistinctId(attr);
+    if (phIdBody) body.ph_distinct_id = phIdBody;
     if (state.other_trade_text) body.other_trade_text = state.other_trade_text;
     if (state.other_workflow_text) body.other_workflow_text = state.other_workflow_text;
 
-    fetch(boot.restUrl || '/wp-json/jcp/v1/proof-gap-survey-submit', {
+    fetch(restEndpoint, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
     })
       .then(function (res) {
-        return res.json().then(function (json) { return { ok: res.ok && !!(json && (json.captured === true || json.success === true)), json: json }; });
+        return res.json().then(
+          function (json) {
+            return {
+              ok: res.ok && !!(json && (json.captured === true || json.success === true)),
+              status: res.status,
+              json: json,
+            };
+          },
+          function () {
+            return { ok: false, status: res.status, json: null };
+          }
+        );
       })
       .then(function (result) {
         if (btn) { btn.disabled = false; btn.textContent = defaultLabel || 'Build My Job Example \u2192'; }
         if (!result.ok) {
           if (err) { err.hidden = false; err.textContent = (result.json && result.json.message) || 'We couldn\u2019t save that right now. Please try again.'; }
+          // Backend rejected or returned non-success — form submit alone is not a saved lead.
+          track('proof_gap_lead_save_failed', Object.assign(leadSaveAnalyticsBase(attr), {
+            http_status: result.status || 0,
+            backend_status: result.status || 0,
+            error_category: classifyLeadSaveError(result.status, result.json),
+            endpoint: 'jcp/v1/proof-gap-survey-submit',
+          }));
           return;
         }
         state.email = email;
@@ -1864,6 +1926,7 @@
           unused_jobs_max: state.unused_jobs_max,
           cta_source: 'result_email',
         });
+        // Fires only after WP REST confirms captured/success (not on button click).
         track('proof_gap_email_submitted', {
           trade: state.trade,
           workflow: state.current_workflow,
@@ -1874,6 +1937,20 @@
           unused_jobs_low: state.unused_jobs_min,
           unused_jobs_high: state.unused_jobs_max,
         });
+        var savedProps = Object.assign(leadSaveAnalyticsBase(attr), {
+          backend_status: result.status || 200,
+          http_status: result.status || 200,
+          delivered: !!(result.json && result.json.delivered),
+          queued: !!(result.json && result.json.queued),
+          ghl_skipped_qa: !!(result.json && result.json.ghl_skipped_qa),
+          dedupe: !!(result.json && result.json.dedupe),
+        });
+        // Queue row id only — never email/PII. Prefer numeric lead_id from WP.
+        if (result.json && result.json.lead_id) {
+          savedProps.lead_id = Number(result.json.lead_id) || undefined;
+        }
+        if (returnedId) savedProps.event_id = returnedId;
+        track('proof_gap_lead_saved', savedProps);
         pushAcquisitionLead(returnedId);
         updateTrialHref();
         goTo('app_sim');
@@ -1881,6 +1958,12 @@
       .catch(function () {
         if (btn) { btn.disabled = false; btn.textContent = defaultLabel || 'Build My Job Example \u2192'; }
         if (err) { err.hidden = false; err.textContent = 'Network error \u2014 please try again.'; }
+        track('proof_gap_lead_save_failed', Object.assign(leadSaveAnalyticsBase(attr), {
+          http_status: 0,
+          backend_status: 0,
+          error_category: 'network',
+          endpoint: 'jcp/v1/proof-gap-survey-submit',
+        }));
       });
   }
 
