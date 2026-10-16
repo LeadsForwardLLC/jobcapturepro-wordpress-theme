@@ -73,6 +73,14 @@ Code changes still need a PR → `main` → deploy.
 2. Hard-refresh / purge cache (WP Rocket / SiteGround) if the change looks stale
 3. Update Jira ticket status
 
+### What does **not** deploy to SiteGround
+
+Excluded by `deploy-main.yml` even if present in checkout:
+
+`.superpowers/`, `.cursor/`, `.tmp/`, `node_modules/`, `scripts/`, `package.json`, `docs/qa/`, `docs/superpowers/`, `docs/archive/`
+
+Ownership docs (`docs/WEBSITE_OWNERSHIP_HANDOFF.md`, etc.) **do** deploy.
+
 ---
 
 ## Questions

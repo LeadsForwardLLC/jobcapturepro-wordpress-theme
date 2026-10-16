@@ -208,13 +208,17 @@ Treat tracking (`docs/JCP_TRACKING_CONTRACT.md`, PostHog) carefully — do not c
 
 ---
 
-## 11. Known hygiene (safe cleanup backlog — do not crash-refactor)
+## 11. Hygiene & cleanup status
 
-From prior audits (verify before deleting):
+Full write-up: [`AUDIT_AND_CLEANUP_2026-10-16.md`](./AUDIT_AND_CLEANUP_2026-10-16.md)
 
-- Duplicate unused icons under `assets/shared/assets/icons/` (keep `lucide/`)
+**Done (Oct 2026):** root icon orphans already gone; `.superpowers/` untracked; QA screenshots under `docs/qa/`; historical audits under `docs/archive/`; deploy excludes non-runtime paths.
+
+**Still open (do not crash-refactor):**
+
 - Many remote feature branches — archive with Chris; don’t mass-delete without agreement
 - Dual `page-blocks` + `niche-landing` — intentional mid-migration
+- `home.js` legacy homepage fallback — keep until all envs have block meta
 - App onboarding “email can’t edit” (`JCPDASH-159`) is **app** (`email` query param → `readOnly`) — not fixed in this theme
 
 ---

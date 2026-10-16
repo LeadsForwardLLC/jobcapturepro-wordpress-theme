@@ -95,14 +95,25 @@ Content is stored in post meta `_jcp_page_content` (canonical). Legacy `_jcp_nic
 
 Each block type = one PHP renderer (`inc/niche-landing/render.php` + `components.php`) + shared CSS (`css/sections.css`, `css/components/*`). JSON stores **content only** (props). Design changes to a block update every page using that type.
 
-### Cleanup audit (June 2026)
+### Cleanup audit
+
+**October 2026** — see [`docs/AUDIT_AND_CLEANUP_2026-10-16.md`](./docs/AUDIT_AND_CLEANUP_2026-10-16.md):
+
+| Item | Status |
+|------|--------|
+| Root-level duplicate icons under `assets/shared/assets/icons/` | **Done** — only `lucide/` remains |
+| `.superpowers/` agent screenshots (~105MB) removed from git + deploy | **Done** |
+| QA screenshots → `docs/qa/`; historical audits → `docs/archive/` | **Done** |
+| Deploy excludes non-runtime paths | **Done** |
+
+**Still open (do not crash-refactor):**
 
 | Priority | Item |
 |----------|------|
-| High | ~3,300 duplicate icon files at `assets/shared/assets/icons/*.{json,svg}` (root) — only `lucide/` is used |
 | Medium | Remove `home.js` fallback after all envs use block homepage |
 | Low | Remove unused alias functions in `schema.php` / `doc-parser.php` |
 | Keep | `inc/page-blocks/` + `inc/niche-landing/` dual system until renderers merge |
+| Process | Archive stale remote feature branches with Chris |
 
 
 ### Deploy
@@ -119,9 +130,10 @@ Use feature/fix branches and PRs. Coordinate with Chris before risky merges. See
 
 ### Repo hygiene
 
-- `.DS_Store` is gitignored; do not commit macOS metadata.
-- `docs/superpowers/` — Internal implementation plans; safe to keep for context.
-- `assets/shared/assets/icons/lucide/` — **Only** icon set used by the theme (~1,667 SVGs). Root-level icon JSON files under `assets/shared/assets/icons/` are legacy/unused bloat; candidate for removal after staging verification.
+- `.DS_Store`, `.cursor/`, `.superpowers/`, `node_modules/` are gitignored — do not commit them.
+- `docs/superpowers/` — Design specs/plans (context). Excluded from production deploy.
+- `docs/qa/`, `docs/archive/` — QA screenshots and historical audits. Excluded from production deploy.
+- `assets/shared/assets/icons/lucide/` — **Only** icon set used by the theme (~1,667 SVGs).
 
 ---
 

@@ -84,6 +84,16 @@ jobs:
               --exclude='.git' \
               --exclude='.github' \
               --exclude='.DS_Store' \
+              --exclude='.cursor' \
+              --exclude='.superpowers' \
+              --exclude='.tmp' \
+              --exclude='node_modules' \
+              --exclude='scripts' \
+              --exclude='package.json' \
+              --exclude='package-lock.json' \
+              --exclude='docs/qa' \
+              --exclude='docs/superpowers' \
+              --exclude='docs/archive' \
               . | "${SSH_CMD[@]}" "${SSH_USER}@${SSH_HOST}" "set -e; TMP=\"${TARGET}.__deploy_\$\$\"; rm -rf \"\$TMP\"; mkdir -p \"\$TMP\"; tar -xzf - -C \"\$TMP\"; test -f \"\$TMP/style.css\"; test -f \"\$TMP/functions.php\"; test -f \"\$TMP/inc/helpers.php\"; if command -v rsync >/dev/null 2>&1; then rsync -a --delete \"\$TMP\"/ \"${TARGET}\"/; else cp -a \"\$TMP\"/. \"${TARGET}\"/\"; fi; rm -rf \"\$TMP\""; then
               echo "tar-over-ssh ok (attempt $i)"
               # Sanity: confirm a sentinel file landed
@@ -101,6 +111,16 @@ jobs:
               -e "${SSH_CMD[*]}" \
               --exclude '.git/' \
               --exclude '.github/' \
+              --exclude '.cursor/' \
+              --exclude '.superpowers/' \
+              --exclude '.tmp/' \
+              --exclude 'node_modules/' \
+              --exclude 'scripts/' \
+              --exclude 'package.json' \
+              --exclude 'package-lock.json' \
+              --exclude 'docs/qa/' \
+              --exclude 'docs/superpowers/' \
+              --exclude 'docs/archive/' \
               ./ "${SSH_USER}@${SSH_HOST}:${TARGET}/"; then
               echo "rsync ok (attempt $i)"
               exit 0
