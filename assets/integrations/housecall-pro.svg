@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 28" role="img" aria-label="Housecall Pro">
+  <text y="20" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" letter-spacing="-0.04em">
+    <tspan x="0" font-weight="800" fill="#FF503E">Housecall</tspan>
+    <tspan dx="5" font-weight="700" fill="#0f172a">Pro</tspan>
+  </text>
+</svg>

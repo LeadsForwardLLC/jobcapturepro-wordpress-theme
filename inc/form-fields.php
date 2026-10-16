@@ -30,12 +30,149 @@ define( 'JCP_GHL_KEY_UTM_SOURCE', 'UTM Source' );
 define( 'JCP_GHL_KEY_UTM_MEDIUM', 'UTM Medium' );
 define( 'JCP_GHL_KEY_UTM_CAMPAIGN', 'UTM Campaign' );
 define( 'JCP_GHL_KEY_UTM_CONTENT', 'UTM Content' );
+define( 'JCP_GHL_KEY_UTM_TERM', 'UTM Term' );
+define( 'JCP_GHL_KEY_FBCLID', 'Facebook Click ID' );
 define( 'JCP_GHL_KEY_LANDING_PAGE', 'Landing Page' );
+define( 'JCP_GHL_KEY_LP_VARIANT', 'LP Variant' );
+define( 'JCP_GHL_KEY_FUNNEL_SURFACE', 'Funnel Surface' );
 define( 'JCP_GHL_KEY_REFERRER', 'Referrer' );
+define( 'JCP_GHL_KEY_CONTACT_ID', 'contactId' );
+define( 'JCP_GHL_KEY_EVENT_ID', 'Event Id' );
 define( 'JCP_GHL_KEY_EVENT', 'Event' );
 define( 'JCP_GHL_KEY_TOPIC', 'Topic' );
 define( 'JCP_GHL_KEY_MESSAGE', 'Message' );
 define( 'JCP_GHL_KEY_ATTACHMENT', 'Attachment' );
+/**
+ * Proof Gap → GHL field names (dedicated intake webhook only).
+ *
+ * Canonical machine keys (preferred for new GHL mappings) + legacy Title Case
+ * aliases that the currently published inbound webhook expects.
+ * Do not change demo Business Type / Use Case keys used by Demo Survey.
+ */
+define( 'JCP_GHL_KEY_BUSINESS_NICHE', 'Business Niche' );
+define( 'JCP_GHL_KEY_WEEKLY_JOB_VOLUME', 'Weekly Job Volume' );
+define( 'JCP_GHL_KEY_ASSESSMENT_NOTES', 'Assessment Notes' );
+define( 'JCP_GHL_KEY_PHOTO_WORKFLOW', 'Photo Workflow' );
+define( 'JCP_GHL_KEY_MARKETING_USAGE', 'Marketing Usage' );
+define( 'JCP_GHL_KEY_SURVEY_SESSION_ID', 'Survey Session Id' );
+define( 'JCP_GHL_KEY_QA_TRACE_ID', 'qa_trace_id' );
+/** Legacy inbound-webhook key the published GHL workflow maps for Q3 (was wrongly aliased to Weekly Job Volume). */
+define( 'JCP_GHL_KEY_JOBS_PER_WEEK', 'Jobs Per Week' );
+/** Canonical snake_case Proof Gap survey keys. */
+define( 'JCP_GHL_KEY_CANONICAL_BUSINESS_NICHE', 'business_niche' );
+define( 'JCP_GHL_KEY_CANONICAL_WEEKLY_JOB_VOLUME', 'weekly_job_volume' );
+define( 'JCP_GHL_KEY_CANONICAL_PHOTO_WORKFLOW', 'photo_workflow' );
+define( 'JCP_GHL_KEY_CANONICAL_MARKETING_USAGE', 'marketing_usage' );
+define( 'JCP_GHL_KEY_CANONICAL_SURVEY_SESSION_ID', 'survey_session_id' );
+define( 'JCP_GHL_KEY_ESTIMATED_JOBS_PER_YEAR', 'estimated_jobs_per_year' );
+define( 'JCP_GHL_KEY_POTENTIALLY_UNUSED_PERCENT', 'potentially_unused_percent' );
+define( 'JCP_GHL_KEY_PH_DISTINCT_ID', 'ph_distinct_id' );
+define( 'JCP_GHL_KEY_FUNNEL_VERSION', 'funnel_version' );
+define( 'JCP_GHL_KEY_JCP_PG_VARIANT', 'jcp_pg_variant' );
+define( 'JCP_GHL_KEY_SURVEY_VERSION', 'survey_version' );
+define( 'JCP_GHL_KEY_IS_QA', 'is_qa' );
+define( 'JCP_GHL_KEY_UTM_ID', 'utm_id' );
+/** Normalized acquisition source (utm_source → referrer host → direct). */
+define( 'JCP_GHL_KEY_ACQUISITION_SOURCE', 'Acquisition Source' );
+define( 'JCP_GHL_KEY_CANONICAL_ACQUISITION_SOURCE', 'acquisition_source' );
+define( 'JCP_GHL_KEY_CANONICAL_FACEBOOK_CLICK_ID', 'facebook_click_id' );
+
+/** Canonical snake_case contact / attribution aliases (sent alongside Title Case legacy keys). */
+define( 'JCP_GHL_KEY_CANONICAL_FIRST_NAME', 'first_name' );
+define( 'JCP_GHL_KEY_CANONICAL_LAST_NAME', 'last_name' );
+define( 'JCP_GHL_KEY_CANONICAL_EMAIL', 'email' );
+define( 'JCP_GHL_KEY_CANONICAL_PHONE', 'phone' );
+define( 'JCP_GHL_KEY_CANONICAL_COMPANY', 'company' );
+define( 'JCP_GHL_KEY_CANONICAL_UTM_SOURCE', 'utm_source' );
+define( 'JCP_GHL_KEY_CANONICAL_UTM_MEDIUM', 'utm_medium' );
+define( 'JCP_GHL_KEY_CANONICAL_UTM_CAMPAIGN', 'utm_campaign' );
+define( 'JCP_GHL_KEY_CANONICAL_UTM_CONTENT', 'utm_content' );
+define( 'JCP_GHL_KEY_CANONICAL_UTM_TERM', 'utm_term' );
+define( 'JCP_GHL_KEY_CANONICAL_LANDING_PAGE', 'landing_page' );
+define( 'JCP_GHL_KEY_CANONICAL_REFERRER', 'referrer' );
+define( 'JCP_GHL_KEY_CANONICAL_LP_VARIANT', 'lp_variant' );
+define( 'JCP_GHL_KEY_CANONICAL_ASSESSMENT_NOTES', 'assessment_notes' );
+
+/** Demo gate funnel / survey version identifiers (stable machine values). */
+if ( ! defined( 'JCP_DEMO_FUNNEL_VERSION' ) ) {
+	define( 'JCP_DEMO_FUNNEL_VERSION', 'demo_survey_v1' );
+}
+if ( ! defined( 'JCP_DEMO_SURVEY_VERSION' ) ) {
+	define( 'JCP_DEMO_SURVEY_VERSION', '1' );
+}
+
+/**
+ * Normalize acquisition_source for organic/referral when UTMs are blank.
+ * 1) utm_source if non-empty
+ * 2) else referrer hostname (m.facebook.com → facebook.com)
+ * 3) else "direct"
+ * Never fabricates UTM values.
+ *
+ * @param string $utm_source Raw utm_source (may be empty).
+ * @param string $referrer   Raw referrer URL or host (may be empty).
+ */
+function jcp_normalize_acquisition_source( string $utm_source, string $referrer ): string {
+	$utm = trim( $utm_source );
+	if ( $utm !== '' ) {
+		return mb_substr( $utm, 0, 128 );
+	}
+
+	$ref = trim( $referrer );
+	if ( $ref === '' || $ref === '$direct' || strcasecmp( $ref, 'direct' ) === 0 ) {
+		return 'direct';
+	}
+
+	if ( ! preg_match( '#^https?://#i', $ref ) ) {
+		$ref = 'https://' . $ref;
+	}
+	$host = wp_parse_url( $ref, PHP_URL_HOST );
+	if ( ! is_string( $host ) || $host === '' ) {
+		return 'direct';
+	}
+	$host = strtolower( $host );
+	if ( str_starts_with( $host, 'www.' ) ) {
+		$host = substr( $host, 4 );
+	}
+	if (
+		$host === 'm.facebook.com'
+		|| $host === 'l.facebook.com'
+		|| $host === 'lm.facebook.com'
+		|| str_ends_with( $host, '.facebook.com' )
+		|| $host === 'fb.com'
+		|| str_ends_with( $host, '.fb.com' )
+	) {
+		return 'facebook.com';
+	}
+	if ( str_ends_with( $host, 'instagram.com' ) ) {
+		return 'instagram.com';
+	}
+	return mb_substr( $host, 0, 128 );
+}
+
+/**
+ * Whether a lead request is QA/test traffic (must not fire production GHL webhooks).
+ *
+ * True when is_qa is truthy, jcp_qa=1, qa_trace_id is present, or utm_source=qa.
+ *
+ * @param array<string, mixed> $params Merged contact + attribution params.
+ */
+function jcp_ghl_request_is_qa( array $params ): bool {
+	if ( ! empty( $params['is_qa'] ) ) {
+		$raw = $params['is_qa'];
+		if ( $raw === true || $raw === 1 || $raw === '1' || $raw === 'true' ) {
+			return true;
+		}
+	}
+	if ( ! empty( $params['jcp_qa'] ) && (string) $params['jcp_qa'] === '1' ) {
+		return true;
+	}
+	$qa = isset( $params['qa_trace_id'] ) ? trim( (string) $params['qa_trace_id'] ) : '';
+	if ( $qa !== '' ) {
+		return true;
+	}
+	$utm = isset( $params['utm_source'] ) ? strtolower( trim( (string) $params['utm_source'] ) ) : '';
+	return $utm === 'qa';
+}
 
 /**
  * REST request param names (snake_case, used in JSON body from frontend).
@@ -55,5 +192,11 @@ define( 'JCP_REST_PARAM_UTM_SOURCE', 'utm_source' );
 define( 'JCP_REST_PARAM_UTM_MEDIUM', 'utm_medium' );
 define( 'JCP_REST_PARAM_UTM_CAMPAIGN', 'utm_campaign' );
 define( 'JCP_REST_PARAM_UTM_CONTENT', 'utm_content' );
+define( 'JCP_REST_PARAM_UTM_TERM', 'utm_term' );
+define( 'JCP_REST_PARAM_FBCLID', 'fbclid' );
 define( 'JCP_REST_PARAM_LANDING_PAGE', 'landing_page' );
+define( 'JCP_REST_PARAM_LP_VARIANT', 'lp_variant' );
+define( 'JCP_REST_PARAM_FUNNEL_SURFACE', 'funnel_surface' );
 define( 'JCP_REST_PARAM_REFERRER', 'referrer' );
+define( 'JCP_REST_PARAM_CONTACT_ID', 'contact_id' );
+define( 'JCP_REST_PARAM_EVENT_ID', 'event_id' );

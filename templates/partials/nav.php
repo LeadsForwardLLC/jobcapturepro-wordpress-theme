@@ -70,7 +70,7 @@ $dir_trust = $dir_url . '/#trust';
   <div class="header-actions">
     <?php if ( $is_demo ) : ?>
       <button class="btn btn-secondary" id="btnReset">↺ Reset</button>
-      <button class="btn btn-secondary is-hidden" id="btnViewDirectory" type="button">View Demo Directory →</button>
+      <button class="btn btn-secondary is-hidden" id="btnViewDirectory" type="button" hidden aria-hidden="true" tabindex="-1">View Demo Directory →</button>
       <button class="btn btn-primary" id="btnNext">Run Guided Demo →</button>
     <?php elseif ( $directory_mode ) : ?>
       <?php
@@ -93,7 +93,7 @@ $dir_trust = $dir_url . '/#trust';
         ? jcp_global_resolve_nav_ctas( $nav_post_id > 0 ? $nav_post_id : null )
         : [
           'primary'   => [
-            'label' => 'Get Started',
+            'label' => 'Start Free Trial',
             'url'   => function_exists( 'jcp_core_onboarding_app_url_raw' )
               ? jcp_core_onboarding_app_url_raw( function_exists( 'jcp_core_onboarding_utm_defaults' ) ? jcp_core_onboarding_utm_defaults( 'nav_get_started' ) : [] )
               : home_url( '/demo' ),

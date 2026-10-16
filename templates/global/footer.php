@@ -10,6 +10,8 @@
 $privacy_url = 'https://jobcapturepro.com/privacy-policy/';
 $terms_url  = 'https://jobcapturepro.com/terms-and-conditions/';
 $leadsforward_url = 'https://leadsforward.com/';
+$app_store_url = 'https://apps.apple.com/us/app/jobcapturepro/id6636248590';
+$play_store_url = 'https://play.google.com/store/apps/details?id=com.jobcapturepro.mobile&pcampaignid=web_share';
 $footer_support = '';
 $footer_sales   = '';
 $footer_address = '';
@@ -56,6 +58,49 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
     </div>
   </footer>
   <?php else : ?>
+  <?php
+  // Marketing footer data (directory mode keeps its own hardcoded markup).
+  $mf_can_edit = function_exists( 'jcp_niche_user_can_inline_edit' ) && jcp_niche_user_can_inline_edit();
+  $footer_social_items = $social_links;
+  if ( ! $directory_mode ) {
+    $mf          = function_exists( 'jcp_get_marketing_footer' ) ? jcp_get_marketing_footer() : [];
+    $mf_blurb    = (string) ( $mf['blurb'] ?? 'Turn real job photos into proof, visibility, reviews, and more jobs.' );
+    $mf_columns  = is_array( $mf['columns'] ?? null ) ? $mf['columns'] : [];
+    $mf_trial    = is_array( $mf['trial_cta'] ?? null ) ? $mf['trial_cta'] : [ 'label' => 'Start Free Trial', 'url' => '' ];
+    $mf_trial_label   = (string) ( $mf_trial['label'] ?? 'Start Free Trial' );
+    $mf_trial_url_raw = trim( (string) ( $mf_trial['url'] ?? '' ) );
+    // Empty URL falls back to the footer_signup onboarding URL built above.
+    $mf_trial_href = $mf_trial_url_raw !== '' ? $mf_trial_url_raw : $jcp_onboarding_url;
+    if ( $mf_trial_url_raw !== '' && $mf_trial_url_raw[0] === '/' ) {
+      $mf_trial_href = home_url( $mf_trial_url_raw );
+    }
+
+    $mf_socials = is_array( $mf['socials'] ?? null ) ? $mf['socials'] : [];
+    if ( ! $mf_socials ) {
+      foreach ( $social_links as $sk => $sitem ) {
+        $mf_socials[ $sk ] = $sitem['url'];
+      }
+    }
+    $footer_social_items = [];
+    foreach ( $social_links as $sk => $sitem ) {
+      $surl = trim( (string) ( $mf_socials[ $sk ] ?? '' ) );
+      if ( $surl === '' && ! $mf_can_edit ) {
+        continue;
+      }
+      $footer_social_items[ $sk ] = [
+        'url'      => $surl !== '' ? $surl : '#',
+        'label'    => $sitem['label'],
+        'path'     => 'footer.socials.' . $sk,
+      ];
+    }
+
+    $mf_about_published = false;
+    $mf_about_page      = get_page_by_path( 'about' );
+    if ( $mf_about_page && $mf_about_page->post_status === 'publish' ) {
+      $mf_about_published = true;
+    }
+  }
+  ?>
   <footer class="jcp-footer">
     <div class="jcp-container jcp-footer-grid">
       <?php if ( $directory_mode ) : ?>
@@ -64,6 +109,12 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
             <img src="<?php echo esc_url( 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png' ); ?>" alt="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>" width="180" height="40" />
           </a>
           <p><?php esc_html_e( 'Verified job proof from active contractors.', 'jcp-core' ); ?></p>
+          <?php
+          get_template_part( 'templates/global/footer', 'apps', [
+            'app_store_url'  => $app_store_url,
+            'play_store_url' => $play_store_url,
+          ] );
+          ?>
         </div>
         <div class="jcp-footer-col">
           <h4><?php esc_html_e( 'For homeowners', 'jcp-core' ); ?></h4>
@@ -81,45 +132,120 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
           <a href="<?php echo esc_url( home_url( '/demo' ) ); ?>"><?php esc_html_e( 'See the live demo', 'jcp-core' ); ?></a>
           <a href="<?php echo esc_url( $jcp_onboarding_url_dir_started ); ?>"<?php
             if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
-              jcp_niche_cta_tracking_attr( $jcp_onboarding_url_dir_started, 'footer', 'Get started' );
+              jcp_niche_cta_tracking_attr( $jcp_onboarding_url_dir_started, 'footer', 'Start Free Trial' );
             }
-          ?>><?php esc_html_e( 'Get started', 'jcp-core' ); ?></a>
+          ?>><?php esc_html_e( 'Start Free Trial', 'jcp-core' ); ?></a>
         </div>
       <?php else : ?>
         <div class="jcp-footer-brand">
           <img src="<?php echo esc_url( 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png' ); ?>" alt="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>" width="180" height="40" />
-          <p>Turn real job photos into proof, visibility, reviews, and more jobs.</p>
-        </div>
-        <div class="jcp-footer-col">
-          <h4>Product</h4>
-          <a href="<?php echo esc_url( home_url( '/#how-it-works' ) ); ?>">How it Works</a>
-          <a href="<?php echo esc_url( home_url( '/#features' ) ); ?>">Features</a>
-          <a href="<?php echo esc_url( home_url( '/industries/' ) ); ?>"><?php esc_html_e( 'By Trade', 'jcp-core' ); ?></a>
-          <a href="<?php echo esc_url( home_url( '/pricing' ) ); ?>">Pricing</a>
-          <a href="<?php echo esc_url( home_url( '/directory' ) ); ?>">Directory</a>
-        </div>
-        <div class="jcp-footer-col">
-          <h4>Resources</h4>
-          <a href="<?php echo esc_url( home_url( '/blog' ) ); ?>">Blog</a>
-          <a href="<?php echo esc_url( home_url( '/help' ) ); ?>">Help Center</a>
-          <a href="<?php echo esc_url( home_url( '/demo' ) ); ?>">Online Demo</a>
-          <a href="<?php echo esc_url( home_url( '/referral-program' ) ); ?>">Referral Program</a>
-        </div>
-        <div class="jcp-footer-col">
-          <h4>Company</h4>
-          <a href="<?php echo esc_url( home_url( '/contact' ) ); ?>">Contact</a>
-          <a href="<?php echo esc_url( $jcp_onboarding_url ); ?>"<?php
-            if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
-              jcp_niche_cta_tracking_attr( $jcp_onboarding_url, 'footer', 'Sign up' );
+          <p<?php
+            if ( function_exists( 'jcp_niche_editable_attr' ) ) {
+              jcp_niche_editable_attr( 'footer.blurb' );
             }
-          ?>><?php esc_html_e( 'Sign up', 'jcp-core' ); ?></a>
+          ?>><?php echo esc_html( $mf_blurb ); ?></p>
           <?php
-          $about_page = get_page_by_path( 'about' );
-          if ( $about_page && $about_page->post_status === 'publish' ) :
-            ?>
-            <a href="<?php echo esc_url( home_url( '/about' ) ); ?>">About JobCapturePro</a>
-          <?php endif; ?>
+          get_template_part( 'templates/global/footer', 'apps', [
+            'app_store_url'  => $app_store_url,
+            'play_store_url' => $play_store_url,
+          ] );
+          ?>
         </div>
+        <?php foreach ( $mf_columns as $mf_col ) : ?>
+          <?php
+          if ( ! is_array( $mf_col ) ) {
+            continue;
+          }
+          $mf_col_id    = sanitize_key( (string) ( $mf_col['id'] ?? '' ) );
+          if ( $mf_col_id === '' ) {
+            continue;
+          }
+          $mf_col_links = is_array( $mf_col['links'] ?? null ) ? $mf_col['links'] : [];
+          $mf_col_path  = 'footer.columns.' . $mf_col_id;
+          $mf_company_trial_after_support = ( $mf_col_id === 'company' );
+          ?>
+          <div class="jcp-footer-col">
+            <h4<?php
+              if ( function_exists( 'jcp_niche_editable_attr' ) ) {
+                jcp_niche_editable_attr( $mf_col_path . '.heading' );
+              }
+            ?>><?php echo esc_html( (string) ( $mf_col['heading'] ?? '' ) ); ?></h4>
+            <div class="jcp-footer-col-links"<?php
+              if ( function_exists( 'jcp_niche_array_attr' ) ) {
+                jcp_niche_array_attr( $mf_col_path . '.links' );
+              }
+            ?>>
+              <?php foreach ( $mf_col_links as $mf_i => $mf_link ) : ?>
+                <?php
+                if ( ! is_array( $mf_link ) ) {
+                  continue;
+                }
+                $mf_link_label = (string) ( $mf_link['label'] ?? '' );
+                $mf_link_url   = trim( (string) ( $mf_link['url'] ?? '' ) );
+                if ( ! $mf_can_edit ) {
+                  if ( $mf_link_label === '' || $mf_link_url === '' ) {
+                    continue;
+                  }
+                  // Keep the old behavior of hiding About until the page is published.
+                  $mf_link_path = (string) wp_parse_url( $mf_link_url, PHP_URL_PATH );
+                  if ( ! $mf_about_published && rtrim( $mf_link_path, '/' ) === rtrim( (string) wp_parse_url( home_url( '/about' ), PHP_URL_PATH ), '/' ) ) {
+                    continue;
+                  }
+                }
+                $mf_link_href = $mf_link_url === '' ? '#' : ( $mf_link_url[0] === '/' ? home_url( $mf_link_url ) : $mf_link_url );
+                ?>
+                <div class="jcp-collection-item"<?php
+                  if ( function_exists( 'jcp_niche_array_item_attr' ) ) {
+                    jcp_niche_array_item_attr( (int) $mf_i );
+                  }
+                ?>>
+                  <a href="<?php echo esc_url( $mf_link_href ); ?>"<?php
+                    if ( function_exists( 'jcp_niche_editable_link_paths' ) ) {
+                      jcp_niche_editable_link_paths( $mf_col_path . '.links.' . $mf_i . '.label', $mf_col_path . '.links.' . $mf_i . '.url' );
+                    }
+                  ?>><?php echo esc_html( $mf_link_label ); ?></a>
+                  <?php
+                  if ( function_exists( 'jcp_niche_collection_remove_btn' ) ) {
+                    jcp_niche_collection_remove_btn( true );
+                  }
+                  ?>
+                </div>
+                <?php
+                if ( $mf_company_trial_after_support ) {
+                  $mf_company_trial_after_support = false;
+                  ?>
+                <a href="<?php echo esc_url( $mf_trial_href ); ?>"<?php
+                  if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+                    jcp_niche_cta_tracking_attr( $mf_trial_href, 'footer', $mf_trial_label );
+                  }
+                  if ( function_exists( 'jcp_niche_editable_link_paths' ) ) {
+                    jcp_niche_editable_link_paths( 'footer.trial_cta.label', 'footer.trial_cta.url' );
+                  }
+                ?>><?php echo esc_html( $mf_trial_label ); ?></a>
+                  <?php
+                }
+                ?>
+              <?php endforeach; ?>
+              <?php
+              if ( $mf_col_id === 'company' && $mf_company_trial_after_support ) {
+                ?>
+                <a href="<?php echo esc_url( $mf_trial_href ); ?>"<?php
+                  if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
+                    jcp_niche_cta_tracking_attr( $mf_trial_href, 'footer', $mf_trial_label );
+                  }
+                  if ( function_exists( 'jcp_niche_editable_link_paths' ) ) {
+                    jcp_niche_editable_link_paths( 'footer.trial_cta.label', 'footer.trial_cta.url' );
+                  }
+                ?>><?php echo esc_html( $mf_trial_label ); ?></a>
+                <?php
+              }
+              if ( function_exists( 'jcp_niche_collection_add_btn' ) ) {
+                jcp_niche_collection_add_btn( __( '+ Add link', 'jcp-core' ) );
+              }
+              ?>
+            </div>
+          </div>
+        <?php endforeach; ?>
       <?php endif; ?>
     </div>
 
@@ -131,8 +257,12 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
           <a href="<?php echo esc_url( $terms_url ); ?>"><?php esc_html_e( 'Terms', 'jcp-core' ); ?></a>
         </nav>
         <div class="jcp-footer-social" role="list">
-          <?php foreach ( $social_links as $key => $item ) : ?>
-            <a href="<?php echo esc_url( $item['url'] ); ?>" class="jcp-footer-social-link" target="_blank" rel="noopener noreferrer" aria-label="<?php echo esc_attr( $item['label'] ); ?>" role="listitem">
+          <?php foreach ( $footer_social_items as $key => $item ) : ?>
+            <a href="<?php echo esc_url( $item['url'] ); ?>" class="jcp-footer-social-link" target="_blank" rel="noopener noreferrer" aria-label="<?php echo esc_attr( $item['label'] ); ?>" role="listitem"<?php
+              if ( ! empty( $item['path'] ) ) {
+                echo ' data-jcp-href-path="' . esc_attr( $item['path'] ) . '"';
+              }
+            ?>>
               <?php if ( $key === 'facebook' ) : ?>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
               <?php elseif ( $key === 'x' ) : ?>

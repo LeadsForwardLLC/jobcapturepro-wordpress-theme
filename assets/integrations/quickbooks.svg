@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 28" role="img" aria-label="QuickBooks">
+  <circle cx="11" cy="13" r="9" fill="#2CA01C"/>
+  <path d="M7.5 13.2l2.2 2.2 4.6-5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="26" y="20" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="800" fill="#0f172a" letter-spacing="-0.03em">QuickBooks</text>
+</svg>

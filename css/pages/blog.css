@@ -1453,7 +1453,7 @@
   font-size: var(--jcp-font-size-xs, 0.75rem);
   font-weight: var(--jcp-font-weight-bold, 700);
   letter-spacing: 0.06em;
-  text-transform: uppercase;
+  text-transform: none;
   color: var(--jcp-color-accent, #2563eb);
 }
 
@@ -1511,7 +1511,7 @@
   font-size: var(--jcp-font-size-xs, 0.75rem);
   font-weight: var(--jcp-font-weight-bold, 700);
   letter-spacing: 0.08em;
-  text-transform: uppercase;
+  text-transform: none;
   color: rgba(255, 255, 255, 0.78);
 }
 
