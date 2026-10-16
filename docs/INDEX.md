@@ -18,7 +18,7 @@ Use this map to find the right doc. Prefer the ownership handoff if you are taki
 
 ## GitHub
 
-- Repo: https://github.com/LeadsForwardLLC/jobcapturepro-web  
+- Repo: https://github.com/LeadsForwardLLC/jobcapturepro-wordpress-theme  
 - Auto-deploy: push/merge to `main` → SiteGround (`.github/workflows/deploy-main.yml`)
 
 ## Out of scope (different repos)

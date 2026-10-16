@@ -2,7 +2,7 @@
 
 **Primary owner:** Abdul  
 **Scope:** Everything on **jobcapturepro.com** — WordPress theme, marketing site, contractor directory, industry/SEO pages, paid funnels hosted on WP, and related theme ops.  
-**Repo:** [LeadsForwardLLC/jobcapturepro-web](https://github.com/LeadsForwardLLC/jobcapturepro-web) (theme folder = this repo root)  
+**Repo:** [LeadsForwardLLC/jobcapturepro-wordpress-theme](https://github.com/LeadsForwardLLC/jobcapturepro-wordpress-theme) (theme folder = this repo root; older `jobcapturepro-web` remote still redirects)  
 **Not in this repo:** `app.jobcapturepro.com` (Next.js / JCP-API), Stripe app billing, Firebase app, n8n (separate). Marketing may *link into* the app; app bugs (e.g. onboarding email lock) live in **JCP-API**, not this theme.
 
 **Last updated:** 2026-10-16
@@ -199,7 +199,7 @@ Treat tracking (`docs/JCP_TRACKING_CONTRACT.md`, PostHog) carefully — do not c
 
 ## 10. Access checklist (request if missing)
 
-- [ ] GitHub: write access to `LeadsForwardLLC/jobcapturepro-web`
+- [ ] GitHub: write access to `LeadsForwardLLC/jobcapturepro-wordpress-theme`
 - [ ] SiteGround / WP Admin (editor or admin as needed)
 - [ ] Ability to view GitHub Actions deploy logs
 - [ ] Rank Math / SEO tools as required by Shannon–Jess

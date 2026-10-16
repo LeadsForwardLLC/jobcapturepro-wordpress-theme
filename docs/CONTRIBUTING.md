@@ -1,7 +1,7 @@
-# Contributing — jobcapturepro-web (theme)
+# Contributing — jobcapturepro-wordpress-theme
 
 **Primary owner:** Abdul  
-**Repo:** [LeadsForwardLLC/jobcapturepro-web](https://github.com/LeadsForwardLLC/jobcapturepro-web)
+**Repo:** [LeadsForwardLLC/jobcapturepro-wordpress-theme](https://github.com/LeadsForwardLLC/jobcapturepro-wordpress-theme)
 
 Read [`WEBSITE_OWNERSHIP_HANDOFF.md`](./WEBSITE_OWNERSHIP_HANDOFF.md) first.
 
