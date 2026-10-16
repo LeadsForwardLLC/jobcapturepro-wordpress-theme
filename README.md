@@ -2,9 +2,16 @@
 
 WordPress theme for JobCapturePro public website, directory, estimator, and block-based marketing pages.
 
+**Primary owner:** Abdul — see the ownership handoff before shipping changes.
+
 ## Documentation
 
-**Start with [DOCUMENTATION.md](./DOCUMENTATION.md)** — especially the [Developer Handoff](./DOCUMENTATION.md#developer-handoff) section.
+| Priority | Doc |
+|----------|-----|
+| **1. Ownership & take-over** | [`docs/WEBSITE_OWNERSHIP_HANDOFF.md`](./docs/WEBSITE_OWNERSHIP_HANDOFF.md) |
+| **2. Branch / PR / deploy** | [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md) |
+| **3. Doc map** | [`docs/INDEX.md`](./docs/INDEX.md) |
+| **4. Full technical reference** | [`DOCUMENTATION.md`](./DOCUMENTATION.md) — [Developer Handoff](./DOCUMENTATION.md#developer-handoff) |
 
 | Topic | Where |
 |-------|--------|
@@ -13,6 +20,7 @@ WordPress theme for JobCapturePro public website, directory, estimator, and bloc
 | Block catalog | WP Admin → **JCP** → **Block Library** |
 | Architecture migration | `docs/superpowers/specs/2026-06-15-jcp-block-page-system-design.md` |
 | Companies / directory API | DOCUMENTATION.md → JCP Companies CPT & API Sync |
+| Tracking / PostHog contract | `docs/JCP_TRACKING_CONTRACT.md` |
 
 ## Quick Start
 
@@ -23,9 +31,11 @@ WordPress theme for JobCapturePro public website, directory, estimator, and bloc
 - **Block system:** `/inc/page-blocks/` (registry, schema, REST) + `/inc/niche-landing/` (section renderers)
 - **Templates:** Root `page-*.php` + `/templates/global/`, `/templates/partials/`, `/templates/survey/`
 
-### Deploy
+### Deploy (critical)
 
-Push to `main` → GitHub Actions (`.github/workflows/deploy-main.yml`) → SiteGround production.
+**Pushing or merging to `main` auto-deploys production** (SiteGround via `.github/workflows/deploy-main.yml`).
+
+Work on feature/fix branches → PR → coordinate with Chris → merge to `main` only when ready for live. Details: [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md).
 
 ### Key files
 

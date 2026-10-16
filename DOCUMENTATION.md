@@ -1,8 +1,9 @@
 # JobCapturePro Core Theme - Master Documentation
 
-**Last Updated:** June 20, 2026  
-**Version:** 2.0  
-**For:** Developers taking over the theme (see [Developer Handoff](#developer-handoff) first)
+**Last Updated:** October 16, 2026  
+**Version:** 2.1  
+**Primary owner:** Abdul  
+**For:** Developers taking over the theme — start with [`docs/WEBSITE_OWNERSHIP_HANDOFF.md`](./docs/WEBSITE_OWNERSHIP_HANDOFF.md), then [Developer Handoff](#developer-handoff) below.
 
 ---
 
@@ -26,10 +27,23 @@
 
 ## 🚀 DEVELOPER HANDOFF
 
+### Ownership (October 2026)
+
+| Role | Responsibility |
+|------|----------------|
+| **Abdul** | Primary owner — entire jobcapturepro.com website, directory, theme repo, SEO page builds with content team |
+| **Chris Allen** | Coordinate branches / merges that affect production or shared systems |
+| **Shannon, Sarah, Jess + SEO** | SEO strategy and page pipeline; Abdul enables frontend + WP backend changes |
+| **Trevor** | Occasional PRs only (ads/funnels) via Jira + PR tagged to Abdul — not primary website developer |
+
+Full process: [`docs/WEBSITE_OWNERSHIP_HANDOFF.md`](./docs/WEBSITE_OWNERSHIP_HANDOFF.md) · Branch/deploy: [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md) · Doc map: [`docs/INDEX.md`](./docs/INDEX.md)
+
 ### Start here
 
 | If you need to… | Read / open |
 |-----------------|-------------|
+| Take ownership of the website | [`docs/WEBSITE_OWNERSHIP_HANDOFF.md`](./docs/WEBSITE_OWNERSHIP_HANDOFF.md) |
+| Branch / PR / auto-deploy rules | [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md) |
 | Understand structured marketing pages | [JCP Page Block System](#jcp-page-block-system) |
 | Work on click-to-edit, undo, add/remove cards | [Live Page Editor](#live-page-editor) |
 | Change section HTML or new block types | `inc/niche-landing/render.php`, `inc/page-blocks/registry.php` |
@@ -93,7 +107,9 @@ Each block type = one PHP renderer (`inc/niche-landing/render.php` + `components
 
 ### Deploy
 
-Pushing to `main` triggers GitHub Actions (`.github/workflows/deploy-main.yml`) → SiteGround production.
+**Pushing or merging to `main` auto-deploys production** via GitHub Actions (`.github/workflows/deploy-main.yml`) → SiteGround.
+
+Use feature/fix branches and PRs. Coordinate with Chris before risky merges. See [`docs/CONTRIBUTING.md`](./docs/CONTRIBUTING.md).
 
 ### Known intentional shims (do not delete)
 
