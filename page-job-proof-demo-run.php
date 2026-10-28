@@ -117,7 +117,7 @@ if ( function_exists( 'jcp_case_study_spots_remaining' ) ) {
 			href="<?php echo esc_url( $trial_href ); ?>"
 			data-jpd-trial
 			data-jpd-source="run_brandbar"
-		><?php esc_html_e( 'Start free trial', 'jcp-core' ); ?></a>
+		><?php esc_html_e( 'Start free 14-day trial', 'jcp-core' ); ?></a>
 	</div>
 </header>
 

@@ -2,7 +2,7 @@
 /**
  * Template Name: Customer Onboarding Hub
  *
- * Minimal chrome + interactive phone preview for live onboarding calls.
+ * Minimal chrome + interactive phone preview for Free First-Job Setup Sessions.
  * Reuses the same #jcp-app / phone-shell simulator as /prototype/.
  * Independent of app.jobcapturepro.com/onboarding (signup flow).
  *
@@ -21,7 +21,7 @@ $privacy_url = 'https://jobcapturepro.com/privacy-policy/';
 $support_url = home_url( '/support/' );
 $year        = (int) gmdate( 'Y' );
 
-$ob_title = __( 'Getting Started | JobCapturePro Onboarding', 'jcp-core' );
+$ob_title = __( 'Getting Started | JobCapturePro Setup Session', 'jcp-core' );
 add_filter(
 	'pre_get_document_title',
 	static function () use ( $ob_title ) {
@@ -54,7 +54,7 @@ add_filter(
 	<meta charset="<?php bloginfo( 'charset' ); ?>">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<meta name="robots" content="noindex, follow">
-	<meta name="description" content="<?php echo esc_attr__( 'JobCapturePro onboarding: download the app and walk through your first Check-In.', 'jcp-core' ); ?>">
+	<meta name="description" content="<?php echo esc_attr__( 'JobCapturePro setup session: download the app and walk through your first Check-In.', 'jcp-core' ); ?>">
 	<script>
 		window.JCP_IS_PROTOTYPE = true;
 		window.JCP_IS_DEMO_MODE = false;
@@ -82,7 +82,7 @@ add_filter(
 		<p class="jcp-ob-eyebrow"><?php esc_html_e( 'Welcome to JobCapturePro', 'jcp-core' ); ?></p>
 		<h1 id="jcp-ob-title"><?php esc_html_e( "Let's get you up and running.", 'jcp-core' ); ?></h1>
 		<p class="jcp-ob-lead">
-			<?php esc_html_e( 'Use this page during onboarding to download the app and walk through your first Check-In.', 'jcp-core' ); ?>
+			<?php esc_html_e( 'Use this page during your Free First-Job Setup Session to download the app and walk through your first Check-In.', 'jcp-core' ); ?>
 		</p>
 	</section>
 

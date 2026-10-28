@@ -164,7 +164,7 @@ $render_map_panel = static function ( array $side, string $phase, string $map_bg
 						</a>
 					</div>
 					<p class="jpd-hero-secondary">
-						<a href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="hero_skip"><?php esc_html_e( 'Already sold? Start free trial →', 'jcp-core' ); ?></a>
+						<a href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="hero_skip"><?php esc_html_e( 'Already sold? Start free 14-day trial →', 'jcp-core' ); ?></a>
 					</p>
 					<p class="jpd-hero-line"><?php esc_html_e( 'Your tech can go back to fixing things. JCP handles the marketing part.', 'jcp-core' ); ?></p>
 				</div>
@@ -454,7 +454,7 @@ $render_map_panel = static function ( array $side, string $phase, string $map_bg
 					<button type="submit" class="btn btn-primary survey-btn" id="jpdOptinSubmit"><?php esc_html_e( 'Show me my demo →', 'jcp-core' ); ?></button>
 					<p class="survey-microcopy jcp-niche-trust-line"><?php esc_html_e( 'Free · About 60 seconds · No phone number · No credit card', 'jcp-core' ); ?></p>
 					<p class="jpd-convert__trial-link">
-						<a href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="optin"><?php esc_html_e( 'Start free trial →', 'jcp-core' ); ?></a>
+						<a href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="optin"><?php esc_html_e( 'Start free 14-day trial →', 'jcp-core' ); ?></a>
 					</p>
 					<p class="survey-legal"><?php esc_html_e( 'By continuing you agree to receive the demo and relevant updates by email. Unsubscribe anytime.', 'jcp-core' ); ?></p>
 				</form>
@@ -554,7 +554,7 @@ $render_map_panel = static function ( array $side, string $phase, string $map_bg
 			<div class="cta-button-wrapper">
 				<a class="btn btn-primary rankings-cta-btn" href="#jpd-optin" data-jpd-scroll-optin data-jpd-track="DemoCTA" data-jpd-section="final" data-jpd-source="final"><?php echo esc_html( $cta_primary ); ?> →</a>
 				<p class="cta-note cta-secondary-link">
-					<a href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="final"><?php esc_html_e( 'Start free trial →', 'jcp-core' ); ?></a>
+					<a href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="final"><?php esc_html_e( 'Start free 14-day trial →', 'jcp-core' ); ?></a>
 				</p>
 			</div>
 		</div>
@@ -595,9 +595,9 @@ $render_map_panel = static function ( array $side, string $phase, string $map_bg
 		</div>
 		<div class="jpd-exit__panel" data-jpd-exit-panel="case" hidden>
 			<p class="jcp-case-exit__wait jpd-exit__eyebrow"><?php esc_html_e( 'Not ready for a trial?', 'jcp-core' ); ?></p>
-			<h2 class="jcp-case-exit__title"><?php esc_html_e( 'Talk to a JCP expert, or see if you qualify for the 90 day case study.', 'jcp-core' ); ?></h2>
+			<h2 class="jcp-case-exit__title"><?php esc_html_e( 'Talk to our setup team, or see if you qualify for the 90 day case study.', 'jcp-core' ); ?></h2>
 			<div class="jcp-case-exit__actions">
-				<a class="jcp-case-exit__primary" href="<?php echo esc_url( $expert_href ); ?>" data-jpd-expert><?php esc_html_e( 'Talk to a JCP expert →', 'jcp-core' ); ?></a>
+				<a class="jcp-case-exit__primary" href="<?php echo esc_url( $expert_href ); ?>" data-jpd-expert><?php esc_html_e( 'Talk to our setup team →', 'jcp-core' ); ?></a>
 				<?php if ( $case_active ) : ?>
 					<a class="jcp-case-exit__dismiss" id="jpdExitCaseCta" href="<?php echo esc_url( $case_href ); ?>"><?php esc_html_e( 'See if I qualify for the case study →', 'jcp-core' ); ?></a>
 				<?php endif; ?>

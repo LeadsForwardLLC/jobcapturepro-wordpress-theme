@@ -64,7 +64,7 @@
     customIntegration: false,
     automation: true,
     salesNotes: "",
-    nextStep: "Start Free Trial and connect one real job workflow.",
+    nextStep: "Start Free 14-Day Trial and connect one real job workflow.",
     followUpDate: "",
     presenting: true,
   };
@@ -303,7 +303,7 @@
   function defaultNextStep(mode = state.mode) {
     if (mode === "affiliate") return "Join the referral program and share your link with one contractor this week.";
     if (mode === "partner") return "Apply as a strategic partner and pick one client for a pilot.";
-    return "Start Free Trial and connect one real job workflow.";
+    return "Start Free 14-Day Trial and connect one real job workflow.";
   }
   function siteUrl(path) {
     try {
@@ -776,7 +776,7 @@
         <span class="plan-kicker">Recommended fit</span><h3>${plan.name}</h3>${state.showPricing ? `<p class="price">${plan.price} <span>/ month</span></p>` : ""}<p class="plan-reason">${plan.reason}</p>
         <ul class="included">${(plan.includes || []).map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
         <p class="plan-note">${state.showPricing ? `${esc(plan.locationNote || `1 location included`)}. ` : ""}Starter is 1 location only. Scale adds locations at $${scaleFee}/mo (1 Local Falcon keyword); Enterprise at $${enterpriseFee}/mo (3 Local Falcon keywords). Prices stay current on <a href="${esc(pricingLink)}" target="_blank" rel="noopener">our pricing page</a>.</p>
-        <a class="plan-cta" href="${esc(cta.primaryUrl || pricingLink)}" target="_blank" rel="noopener">${esc(cta.primaryLabel || "Start Free Trial")} →</a>
+        <a class="plan-cta" href="${esc(cta.primaryUrl || pricingLink)}" target="_blank" rel="noopener">${esc(cta.primaryLabel || "Start Free 14-Day Trial")} →</a>
       </aside>`;
     }
 
@@ -815,7 +815,7 @@
   function objectionsForMode() {
     if (isAffiliate()) {
       return [
-        { title: "Will contractors actually buy?", answer: "You’re recommending something they already do — finish jobs and take photos. JobCapturePro turns that into Maps visibility, geotagged website proof, and reviews. Point them to Start Free Trial; you earn when they become a paid customer." },
+        { title: "Will contractors actually buy?", answer: "You’re recommending something they already do — finish jobs and take photos. JobCapturePro turns that into Maps visibility, geotagged website proof, and reviews. Point them to Start Free 14-Day Trial; you earn when they become a paid customer." },
         { title: "How do I get paid?", answer: "Join the referral program, share your link, and earn 20% recurring commission for 12 months on paid accounts under program terms." },
         { title: "Is this hard to explain?", answer: "Keep it simple: one check-in → local SEO proof on their website and Google → QR review ask on site. That’s the pitch." },
         { title: "Does this guarantee rankings?", answer: "No honest platform can. What you can say honestly: it publishes the real-work proof Google, neighbors, and AI answers reward — geotagged jobs, reviews, and local credibility." },
@@ -838,7 +838,7 @@
       { title: "Will my techs actually use it?", answer: "It’s built around a simple photo check-in. The review is a QR they show before leaving — seconds on site, not another office task next week." },
       { title: "We already post on social", answer: "Helpful — social is one channel. The bigger opportunity is Website (geotagged jobs), Google Maps updates, Directory presence, and a Review opportunity from the same photo." },
       { title: "Does this guarantee rankings?", answer: "No honest platform can. What you get is a steady supply of what today’s search — including AI answers — actually rewards: real jobs, geotagged proof, reviews, and local credibility. Results still depend on your market, site, and execution." },
-      { title: "Is this worth the cost?", answer: "Compare it to the manual work it replaces and the unused proof inventory we just looked at. You can Start Free Trial — no credit card — and pricing stays current on our pricing page." },
+      { title: "Is this worth the cost?", answer: "Compare it to the manual work it replaces and the unused proof inventory we just looked at. You can Start Free 14-Day Trial — no credit card — and pricing stays current on our pricing page." },
       { title: "We don’t have time for another tool", answer: "That’s exactly why it ties to job completion. Capture happens with the work; the QR review takes seconds before you leave." },
     ];
   }
@@ -901,7 +901,7 @@
     let path;
     let pathDetail;
     let primaryHref = cta.primaryUrl || cfg.pricingUrl || "/pricing/";
-    let primaryLabel = cta.primaryLabel || "Start Free Trial";
+    let primaryLabel = cta.primaryLabel || "Start Free 14-Day Trial";
     let secondaryHref = cta.secondaryUrl || "/demo/";
     let secondaryLabel = cta.secondaryLabel || "See It for My Business";
     let lede;
@@ -943,7 +943,7 @@
     }
 
     return `<section class="chapter content-pad">
-    ${chapterHeader(chapterNum("close"), "Next steps", "A clear path forward.", isAffiliate() ? "Get your referral link and start sharing JobCapturePro with contractors who already take job photos." : isPartner() ? "Apply as a strategic partner, pilot one client workflow, then expand." : "One-page summary of this call — plus Start Free Trial when you’re ready.")}
+    ${chapterHeader(chapterNum("close"), "Next steps", "A clear path forward.", isAffiliate() ? "Get your referral link and start sharing JobCapturePro with contractors who already take job photos." : isPartner() ? "Apply as a strategic partner, pilot one client workflow, then expand." : "One-page summary of this call — plus Start Free 14-Day Trial when you’re ready.")}
     <div class="close-layout">
       <div class="close-notes rep-only">
         <div class="field"><label for="nextStep">Agreed next step</label><textarea id="nextStep">${esc(state.nextStep || nextDefault)}</textarea></div>
@@ -987,7 +987,7 @@
     let path = plan.name;
     let pathDetail = plan.reason;
     let priceLine = state.showPricing ? `${plan.price}/month` : "Talk through fit";
-    let primaryLabel = cta.primaryLabel || "Start Free Trial";
+    let primaryLabel = cta.primaryLabel || "Start Free 14-Day Trial";
     let primaryUrl = siteUrl((cta.primaryUrl && !String(cta.primaryUrl).includes("sessionId") ? cta.primaryUrl : null) || cfg.pricingUrl || "/pricing/");
     let ctaPill = "No credit card · 14 days";
     let lede;

@@ -66,8 +66,11 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
     $mf          = function_exists( 'jcp_get_marketing_footer' ) ? jcp_get_marketing_footer() : [];
     $mf_blurb    = (string) ( $mf['blurb'] ?? 'Turn real job photos into proof, visibility, reviews, and more jobs.' );
     $mf_columns  = is_array( $mf['columns'] ?? null ) ? $mf['columns'] : [];
-    $mf_trial    = is_array( $mf['trial_cta'] ?? null ) ? $mf['trial_cta'] : [ 'label' => 'Start Free Trial', 'url' => '' ];
-    $mf_trial_label   = (string) ( $mf_trial['label'] ?? 'Start Free Trial' );
+    $mf_trial    = is_array( $mf['trial_cta'] ?? null ) ? $mf['trial_cta'] : [ 'label' => 'Start Free 14-Day Trial', 'url' => '' ];
+    $mf_trial_label   = (string) ( $mf_trial['label'] ?? 'Start Free 14-Day Trial' );
+    if ( function_exists( 'jcp_global_rewrite_trial_label' ) ) {
+      $mf_trial_label = jcp_global_rewrite_trial_label( $mf_trial_label, 'button' );
+    }
     $mf_trial_url_raw = trim( (string) ( $mf_trial['url'] ?? '' ) );
     // Empty URL falls back to the footer_signup onboarding URL built above.
     $mf_trial_href = $mf_trial_url_raw !== '' ? $mf_trial_url_raw : $jcp_onboarding_url;
@@ -132,9 +135,9 @@ $hide_site_chrome = function_exists( 'jcp_page_current_hides_site_chrome' ) && j
           <a href="<?php echo esc_url( home_url( '/demo' ) ); ?>"><?php esc_html_e( 'See the live demo', 'jcp-core' ); ?></a>
           <a href="<?php echo esc_url( $jcp_onboarding_url_dir_started ); ?>"<?php
             if ( function_exists( 'jcp_niche_cta_tracking_attr' ) ) {
-              jcp_niche_cta_tracking_attr( $jcp_onboarding_url_dir_started, 'footer', 'Start Free Trial' );
+              jcp_niche_cta_tracking_attr( $jcp_onboarding_url_dir_started, 'footer', 'Start Free 14-Day Trial' );
             }
-          ?>><?php esc_html_e( 'Start Free Trial', 'jcp-core' ); ?></a>
+          ?>><?php esc_html_e( 'Start Free 14-Day Trial', 'jcp-core' ); ?></a>
         </div>
       <?php else : ?>
         <div class="jcp-footer-brand">

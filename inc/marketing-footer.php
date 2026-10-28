@@ -46,7 +46,7 @@ function jcp_marketing_footer_defaults(): array {
 			],
 		],
 		'trial_cta' => [
-			'label' => 'Start Free Trial',
+			'label' => 'Start Free 14-Day Trial',
 			'url'   => '',
 		],
 		'socials'   => [

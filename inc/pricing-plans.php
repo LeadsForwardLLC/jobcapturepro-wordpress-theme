@@ -141,7 +141,7 @@ function jcp_pricing_plans(): array {
 				'Custom integrations and API access',
 				'Geotagged local-SEO publish across markets',
 				'Organization-wide reporting',
-				'Dedicated onboarding',
+				'Free First-Job Setup Session',
 			],
 		],
 	];
@@ -195,7 +195,7 @@ function jcp_pricing_trial_cta( string $utm_content = 'sales_tool' ): array {
 		: home_url( '/' );
 
 	return [
-		'label' => __( 'Start Free Trial', 'jcp-core' ),
+		'label' => __( 'Start Free 14-Day Trial', 'jcp-core' ),
 		'url'   => $url,
 		'note'  => __( 'No credit card required', 'jcp-core' ),
 	];

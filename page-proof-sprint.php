@@ -68,7 +68,7 @@ $login_href = function_exists( 'jcp_core_app_login_url_raw' )
 				data-ps-trial
 				data-ps-placement="brandbar"
 				data-ps-track="trial_cta"
-			><?php esc_html_e( 'Start Free Trial →', 'jcp-core' ); ?></a>
+			><?php esc_html_e( 'Start My Free 14-Day Trial →', 'jcp-core' ); ?></a>
 		</div>
 	</div>
 </header>

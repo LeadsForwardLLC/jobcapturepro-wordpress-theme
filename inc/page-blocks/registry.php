@@ -334,7 +334,7 @@ function jcp_page_default_block_props( string $type ): array {
 			'show_subheadline'    => true,
 			'cta_primary'         => [ 'label' => __( 'View the live demo', 'jcp-core' ), 'url' => '/demo' ],
 			'cta_secondary'       => [ 'label' => __( 'See how it works', 'jcp-core' ), 'url' => '#how-it-works' ],
-			'trust_line'          => __( 'No credit card · Start Free Trial · Setup in under 10 minutes', 'jcp-core' ),
+			'trust_line'          => __( 'No credit card · Start Free 14-Day Trial · Setup in under 10 minutes', 'jcp-core' ),
 			'show_cta_primary'    => true,
 			'show_cta_secondary'  => true,
 			'show_trust_line'     => true,
@@ -472,7 +472,7 @@ function jcp_page_default_block_props( string $type ): array {
 		'final_cta' => [
 			'headline'         => __( 'Ready to get started?', 'jcp-core' ),
 			'subheadline'      => '',
-			'cta_primary'      => [ 'label' => __( 'Start Free Trial', 'jcp-core' ), 'url' => '' ],
+			'cta_primary'      => [ 'label' => __( 'Start Free 14-Day Trial', 'jcp-core' ), 'url' => '' ],
 			'cta_secondary'    => [ 'label' => __( 'See how it works', 'jcp-core' ), 'url' => '/demo' ],
 			'cta_note'         => __( 'No credit card required', 'jcp-core' ),
 			'show_subheadline' => true,
@@ -494,7 +494,7 @@ function jcp_page_default_block_props( string $type ): array {
 			'show_subheadline' => false,
 		],
 		'cta_band' => [
-			'cta_primary' => [ 'label' => __( 'Start Free Trial', 'jcp-core' ), 'url' => '' ],
+			'cta_primary' => [ 'label' => __( 'Start Free 14-Day Trial', 'jcp-core' ), 'url' => '' ],
 			'band_key'    => 'cta_band_1',
 		],
 		'proof_flow' => [
@@ -563,7 +563,7 @@ function jcp_page_default_block_props( string $type ): array {
 			'markets'       => [],
 			'disclaimer'    => __( 'This isn’t a ranking guarantee. It’s what consistent, real job proof can do to local Maps presence.', 'jcp-core' ),
 			'cta_primary'   => [ 'label' => __( 'Launch interactive demo', 'jcp-core' ), 'url' => '/demo/' ],
-			'cta_secondary' => [ 'label' => __( 'Start Free Trial', 'jcp-core' ), 'url' => '' ],
+			'cta_secondary' => [ 'label' => __( 'Start Free 14-Day Trial', 'jcp-core' ), 'url' => '' ],
 			'section_id'    => 'maps-proof',
 			'show_eyebrow'  => true,
 			'show_headline' => true,

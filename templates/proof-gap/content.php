@@ -318,7 +318,7 @@ $render_case = static function (): void {
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( 'Your plan', 'jcp-core' ); ?></p>
 				<h1 class="pg-title"><?php esc_html_e( 'Put the next job to work.', 'jcp-core' ); ?></h1>
-				<p class="pg-sub"><?php esc_html_e( 'Start free for 14 days. Connect your workflow, use one real completed job, and see JobCapturePro turn it into marketing.', 'jcp-core' ); ?></p>
+				<p class="pg-sub"><?php esc_html_e( 'Start your 14-Day Free Trial. Connect your workflow, use one real completed job, and see JobCapturePro turn it into marketing.', 'jcp-core' ); ?></p>
 
 				<div class="pg-plan-card" id="pgPlanCard">
 					<div class="pg-plan-setup">

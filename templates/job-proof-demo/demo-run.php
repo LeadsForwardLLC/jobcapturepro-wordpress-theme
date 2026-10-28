@@ -376,10 +376,10 @@ $pipeline_channels = [
 				<p class="cta-paragraph"><?php esc_html_e( 'One job is proof. Twenty a month is a marketing system. Higher visibility, more reviews, more leads. Without adding a marketing job for the crew.', 'jcp-core' ); ?></p>
 			</div>
 			<div class="cta-button-wrapper">
-				<a class="btn btn-primary rankings-cta-btn" href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="run_convert" id="jpdTrialCta"><?php esc_html_e( 'Start my free 14 day trial →', 'jcp-core' ); ?></a>
+				<a class="btn btn-primary rankings-cta-btn" href="<?php echo esc_url( $trial_href ); ?>" data-jpd-trial data-jpd-source="run_convert" id="jpdTrialCta"><?php esc_html_e( 'Start my free 14-day trial →', 'jcp-core' ); ?></a>
 				<p class="cta-note"><?php esc_html_e( 'No credit card required.', 'jcp-core' ); ?></p>
 				<p class="cta-note cta-secondary-link">
-					<a href="<?php echo esc_url( $expert_href ); ?>" data-jpd-expert><?php esc_html_e( 'Talk to a JCP expert →', 'jcp-core' ); ?></a>
+					<a href="<?php echo esc_url( $expert_href ); ?>" data-jpd-expert><?php esc_html_e( 'Talk to our setup team →', 'jcp-core' ); ?></a>
 				</p>
 			</div>
 		</div>
@@ -419,9 +419,9 @@ $pipeline_channels = [
 		<button type="button" class="jcp-case-exit__close" aria-label="<?php esc_attr_e( 'Close', 'jcp-core' ); ?>" data-jpd-exit-dismiss>×</button>
 		<div class="jpd-exit__panel" data-jpd-exit-panel="case">
 			<p class="jcp-case-exit__wait jpd-exit__eyebrow"><?php esc_html_e( 'Not ready for a trial?', 'jcp-core' ); ?></p>
-			<h2 class="jcp-case-exit__title"><?php esc_html_e( 'Talk to a JCP expert, or see if you qualify for the 90 day case study.', 'jcp-core' ); ?></h2>
+			<h2 class="jcp-case-exit__title"><?php esc_html_e( 'Talk to our setup team, or see if you qualify for the 90 day case study.', 'jcp-core' ); ?></h2>
 			<div class="jcp-case-exit__actions">
-				<a class="jcp-case-exit__primary" href="<?php echo esc_url( $expert_href ); ?>" data-jpd-expert><?php esc_html_e( 'Talk to a JCP expert →', 'jcp-core' ); ?></a>
+				<a class="jcp-case-exit__primary" href="<?php echo esc_url( $expert_href ); ?>" data-jpd-expert><?php esc_html_e( 'Talk to our setup team →', 'jcp-core' ); ?></a>
 				<a class="jcp-case-exit__dismiss" id="jpdExitCaseCta" href="<?php echo esc_url( isset( $case_href ) ? $case_href : home_url( '/case-study/' ) ); ?>"><?php esc_html_e( 'See if I qualify →', 'jcp-core' ); ?></a>
 				<button type="button" class="jcp-case-exit__dismiss" data-jpd-exit-dismiss><?php esc_html_e( 'Go back to my demo', 'jcp-core' ); ?></button>
 			</div>
