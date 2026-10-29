@@ -166,9 +166,9 @@ Canonical event meanings for paid acquisition (`/proof-gap/`, `/proof-sprint/`) 
   - not `additional_location_monthly`
 - **Do not treat as trial start:** `customer.subscription.updated`, paid `active` without trial, CTA clicks, or account creation alone.
 - **PostHog:** Server-side `trial_started` to project `593169`. Prefer matched lead `ph_distinct_id` as `distinct_id`.
-- **Meta:** Server CAPI **`StartTrial`** (Pixel `1440845294314184`).
-- **Shared `event_id` / `$insert_id`:** `jcp_trial_<stripe_subscription_id>` (one subscription = one conversion).
-- **Attribution join:** normalized Stripe customer email → durable marketing lead email (newest lead with `created_at <= subscription.created`). Unmatched trials still emit with `attribution_status=unmatched`.
+- **Meta:** Server CAPI **`StartTrial`** (Pixel `1440845294314184`). Deferred until attribution match or 300s enrichment timeout (same window as PostHog). Prefers persisted valid `_fbp`/`_fbc`; does not invent click time from Stripe timestamps.
+- **Shared `event_id` / `$insert_id`:** `jcp_trial_<stripe_subscription_id>` (one subscription = one conversion). Meta also uses an atomic DB claim so concurrent workers cannot double-POST.
+- **Attribution join:** normalized Stripe customer email → durable marketing lead email (newest lead with `created_at <= subscription.created`). Unmatched trials still emit after the enrichment window with `attribution_status=unmatched`.
 - **App client event:** Not required. App `signup_completed` remains a separate account-created signal.
 - **GHL:** Optional future tag; not required for Meta/PostHog primary.
 - **Primary conversion:** **YES**.

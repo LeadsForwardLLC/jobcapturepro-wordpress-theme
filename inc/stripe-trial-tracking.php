@@ -4,9 +4,10 @@
  *
  * Architecture (event-driven):
  * 1. Stripe customer.subscription.created → durable conversion row (pending attribution OK).
- * 2. Meta StartTrial fires immediately (Stripe-authoritative, exactly-once via event_id).
+ * 2. Meta StartTrial waits for attribution match OR the bounded enrichment window (same
+ *    300s gate as PostHog). Exactly-once via atomic meta_status claim + stable event_id.
  * 3. PostHog trial_started waits for signup_completed CDP push → /posthog-signup-bridge wake,
- *    or finalizes unmatched after a bounded enrichment window.
+ *    or finalizes unmatched after the same enrichment window.
  * Primary path is CDP push, not HogQL / sleep / long WP-Cron polling.
  *
  * Secrets (wp-config.php or environment — never commit):
@@ -25,6 +26,8 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+require_once __DIR__ . '/stripe-trial-meta-helpers.php';
 
 define( 'JCP_TRIAL_CONVERSIONS_TABLE', 'jcp_trial_conversions' );
 define( 'JCP_SIGNUP_BRIDGE_TABLE', 'jcp_signup_bridges' );
@@ -908,9 +911,7 @@ function jcp_trial_schedule_enrichment( string $conversion_id ): void {
 }
 
 /**
- * Enrich + deliver any pending PostHog conversions for a normalized email (CDP wake).
- *
- * Meta may already be sent; this wakes PostHog trial_started once matched.
+ * Enrich + deliver any pending PostHog/Meta conversions for a normalized email (CDP wake).
  *
  * @param string $email_norm Normalized email.
  */
@@ -929,7 +930,10 @@ function jcp_trial_enrich_pending_for_email( string $email_norm ): void {
 		$wpdb->prepare(
 			"SELECT conversion_id FROM `$table`
 			WHERE email_norm = %s
-			  AND posthog_status IN ('pending','failed')
+			  AND (
+				posthog_status IN ('pending','failed')
+				OR meta_status IN ('pending','failed','sending')
+			  )
 			ORDER BY id ASC
 			LIMIT 10",
 			$email_norm
@@ -1058,8 +1062,43 @@ function jcp_trial_is_qa_attr( array $attr ): bool {
  * @param object $row Conversion row.
  */
 function jcp_trial_meta_finalized( object $row ): bool {
-	$status = (string) ( $row->meta_status ?? '' );
-	return $status === 'sent' || $status === 'skipped_qa';
+	return jcp_trial_meta_status_finalized( (string) ( $row->meta_status ?? '' ) );
+}
+
+/**
+ * Atomically claim Meta delivery for a conversion row (concurrency-safe).
+ *
+ * Transitions pending|failed → sending, or reclaims stale sending.
+ * Returns false if another worker holds the claim or status is finalized.
+ *
+ * @param int $id Conversion row id.
+ */
+function jcp_trial_claim_meta_delivery( int $id ): bool {
+	global $wpdb;
+	if ( $id <= 0 ) {
+		return false;
+	}
+	$table = $wpdb->prefix . JCP_TRIAL_CONVERSIONS_TABLE;
+	$now   = current_time( 'mysql', true );
+	$stale = gmdate( 'Y-m-d H:i:s', time() - (int) JCP_TRIAL_META_SENDING_STALE_SEC );
+
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+	$affected = $wpdb->query(
+		$wpdb->prepare(
+			"UPDATE `$table`
+			SET meta_status = 'sending', updated_at = %s
+			WHERE id = %d
+			  AND (
+				meta_status IN ('pending','failed')
+				OR ( meta_status = 'sending' AND updated_at < %s )
+			  )",
+			$now,
+			$id,
+			$stale
+		)
+	);
+
+	return $affected === 1;
 }
 
 /**
@@ -1204,14 +1243,13 @@ function jcp_trial_send_meta( object $row, array $trial, array $attr ): array {
 	if ( $email !== '' && is_email( $email ) ) {
 		$user_data['em'] = [ jcp_trial_meta_hash( $email ) ];
 	}
-	if ( ! empty( $attr['_fbp'] ) ) {
-		$user_data['fbp'] = (string) $attr['_fbp'];
-	}
-	if ( ! empty( $attr['_fbc'] ) ) {
-		$user_data['fbc'] = (string) $attr['_fbc'];
+	// Prefer persisted valid _fbp/_fbc only; never invent click time from Stripe trial_start.
+	foreach ( jcp_trial_meta_pick_click_ids( $attr ) as $k => $v ) {
+		$user_data[ $k ] = $v;
 	}
 	// Client IP / UA intentionally omitted: no consent-gated durable capture on marketing leads.
 
+	// Preserve original Stripe trial-start time (not enrichment/send wall clock).
 	$event_time = isset( $trial['event_time'] ) ? (int) $trial['event_time'] : time();
 	$event      = [
 		'event_name'       => 'StartTrial',
@@ -1260,12 +1298,12 @@ function jcp_trial_send_meta( object $row, array $trial, array $attr ): array {
 }
 
 /**
- * Attempt PostHog and/or Meta delivery for a conversion row (idempotent per channel).
+ * Decode trial + attribution payloads from a conversion row.
  *
- * @param object $row    Conversion row.
- * @param string $channel 'both'|'posthog'|'meta'.
+ * @param object $row Conversion row.
+ * @return array{0:array<string,mixed>,1:array<string,string>}
  */
-function jcp_trial_deliver_side_effects( object $row, string $channel = 'both' ): void {
+function jcp_trial_row_trial_and_attr( object $row ): array {
 	$trial = [];
 	if ( ! empty( $row->trial_payload_json ) ) {
 		$decoded = json_decode( (string) $row->trial_payload_json, true );
@@ -1284,6 +1322,21 @@ function jcp_trial_deliver_side_effects( object $row, string $channel = 'both' )
 			}
 		}
 	}
+	return [ $trial, $attr ];
+}
+
+/**
+ * Attempt PostHog and/or Meta delivery for a conversion row (idempotent per channel).
+ *
+ * Meta uses an atomic meta_status claim so concurrent Stripe retries, CDP wakes,
+ * and cron workers cannot double-POST CAPI (event_id alone is not enough).
+ * P0 QA exclusion is re-checked immediately before every Meta send.
+ *
+ * @param object $row    Conversion row.
+ * @param string $channel 'both'|'posthog'|'meta'.
+ */
+function jcp_trial_deliver_side_effects( object $row, string $channel = 'both' ): void {
+	[ $trial, $attr ] = jcp_trial_row_trial_and_attr( $row );
 
 	$errors     = [];
 	$do_posthog = ( $channel === 'both' || $channel === 'posthog' );
@@ -1300,19 +1353,45 @@ function jcp_trial_deliver_side_effects( object $row, string $channel = 'both' )
 		}
 	}
 
-	if ( $do_meta && ! jcp_trial_meta_finalized( $row ) ) {
-		// QA trials stay in PostHog but must never reach Meta CAPI StartTrial.
-		if ( jcp_trial_is_qa_attr( $attr ) || jcp_trial_is_qa_attr( $trial ) ) {
-			jcp_trial_update_conversion( (int) $row->id, [ 'meta_status' => 'skipped_qa' ] );
-			$row->meta_status = 'skipped_qa';
+	if ( $do_meta ) {
+		if ( jcp_trial_meta_finalized( $row ) ) {
+			// Late enrichment after sent/skipped_qa must never send again.
+		} elseif ( ! jcp_trial_claim_meta_delivery( (int) $row->id ) ) {
+			// Another worker claimed or status already terminal/in-flight.
 		} else {
-			$meta = jcp_trial_send_meta( $row, $trial, $attr );
-			if ( $meta['ok'] ) {
-				jcp_trial_update_conversion( (int) $row->id, [ 'meta_status' => 'sent' ] );
-				$row->meta_status = 'sent';
+			$row->meta_status = 'sending';
+			// Re-read attribution after claim so delayed CDP data is used + QA is fresh.
+			global $wpdb;
+			$table = $wpdb->prefix . JCP_TRIAL_CONVERSIONS_TABLE;
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+			$fresh = $wpdb->get_row(
+				$wpdb->prepare( "SELECT * FROM `$table` WHERE id = %d", (int) $row->id )
+			);
+			if ( $fresh ) {
+				$row = $fresh;
+			}
+			[ $trial, $attr ] = jcp_trial_row_trial_and_attr( $row );
+
+			// P0: re-check QA immediately before every Meta send (incl. delayed/retry).
+			if ( jcp_trial_is_qa_attr( $attr ) || jcp_trial_is_qa_attr( $trial ) ) {
+				jcp_trial_update_conversion( (int) $row->id, [ 'meta_status' => 'skipped_qa' ] );
+				$row->meta_status = 'skipped_qa';
 			} else {
-				jcp_trial_update_conversion( (int) $row->id, [ 'meta_status' => 'failed', 'last_error' => $meta['error'] ] );
-				$errors[] = 'meta:' . $meta['error'];
+				$meta = jcp_trial_send_meta( $row, $trial, $attr );
+				if ( $meta['ok'] ) {
+					jcp_trial_update_conversion( (int) $row->id, [ 'meta_status' => 'sent' ] );
+					$row->meta_status = 'sent';
+				} else {
+					jcp_trial_update_conversion(
+						(int) $row->id,
+						[
+							'meta_status' => 'failed',
+							'last_error'  => $meta['error'],
+						]
+					);
+					$row->meta_status = 'failed';
+					$errors[]         = 'meta:' . $meta['error'];
+				}
 			}
 		}
 	}
@@ -1325,8 +1404,8 @@ function jcp_trial_deliver_side_effects( object $row, string $channel = 'both' )
 /**
  * Process a qualified subscription into durable conversion + side effects.
  *
- * Meta StartTrial is Stripe-authoritative and fires immediately (exactly once).
- * PostHog trial_started waits for CDP signup_completed wake or bounded unmatched finalize.
+ * Meta StartTrial and PostHog trial_started both wait for attribution match or the
+ * bounded enrichment window. event_id / event_time stay Stripe-stable.
  *
  * @param array<string, mixed> $event Stripe event.
  * @param array<string, mixed> $sub   Subscription object.
@@ -1407,18 +1486,15 @@ function jcp_trial_process_qualified( array $event, array $sub ): array {
 			// Attribution already known (lead or prior CDP bridge): send both now.
 			jcp_trial_deliver_side_effects( $row, 'both' );
 		} else {
-			// Meta must not wait on PostHog enrichment — Stripe-authoritative, exactly once.
-			if ( ! $meta_done ) {
-				jcp_trial_deliver_side_effects( $row, 'meta' );
-			}
-			if ( ! $ph_sent ) {
-				if ( $email !== '' ) {
-					// Wait for signup_completed CDP wake; bounded cron finalizes unmatched.
-					jcp_trial_schedule_enrichment( $conversion_id );
-					// One immediate attempt in case bridge already landed.
-					jcp_trial_enrich_and_deliver( $conversion_id );
-				} else {
-					// No email → cannot match; finalize PostHog unmatched once.
+			// Defer Meta + PostHog until CDP match or enrichment window expiry.
+			if ( $email !== '' ) {
+				jcp_trial_schedule_enrichment( $conversion_id );
+				// Immediate attempt in case bridge already landed.
+				jcp_trial_enrich_and_deliver( $conversion_id );
+			} else {
+				// No email → cannot match; schedule window expiry for Meta, send PostHog once.
+				jcp_trial_schedule_enrichment( $conversion_id );
+				if ( ! $ph_sent ) {
 					jcp_trial_deliver_side_effects( $row, 'posthog' );
 				}
 			}
@@ -1490,10 +1566,10 @@ function jcp_trial_stripe_webhook_handler( WP_REST_Request $request ): WP_REST_R
 }
 
 /**
- * Re-resolve attribution for an unmatched conversion, then deliver PostHog when ready.
+ * Re-resolve attribution, then deliver Meta/PostHog when matched or window expired.
  *
- * Meta is normally already sent on Stripe ingest. This path finalizes trial_started
- * on CDP wake (matched) or after the bounded enrichment window (unmatched).
+ * Late enrichment after meta_status is sent/skipped_qa cannot trigger another CAPI send
+ * (claim + finalized check). Failed Meta remains retryable via cron.
  *
  * @param string $conversion_id Conversion id.
  */
@@ -1522,15 +1598,12 @@ function jcp_trial_enrich_and_deliver( string $conversion_id ): void {
 		return;
 	}
 
-	$trial = [];
-	if ( ! empty( $row->trial_payload_json ) ) {
-		$decoded = json_decode( (string) $row->trial_payload_json, true );
-		if ( is_array( $decoded ) ) {
-			$trial = $decoded;
-		}
+	[ $trial ] = jcp_trial_row_trial_and_attr( $row );
+	$created   = isset( $trial['event_time'] ) ? (int) $trial['event_time'] : (int) strtotime( (string) $row->created_at . ' UTC' );
+	if ( $created <= 0 ) {
+		$created = (int) strtotime( (string) $row->created_at );
 	}
-	$created = isset( $trial['event_time'] ) ? (int) $trial['event_time'] : (int) strtotime( (string) $row->created_at );
-	$email   = (string) $row->email_norm;
+	$email = (string) $row->email_norm;
 
 	if ( (string) $row->attribution_status !== 'matched' && $email !== '' ) {
 		$resolved = jcp_trial_resolve_attribution( $email, $created > 0 ? $created : time() );
@@ -1556,9 +1629,17 @@ function jcp_trial_enrich_and_deliver( string $conversion_id ): void {
 
 	$matched = (string) $row->attribution_status === 'matched';
 	$expired = ! jcp_trial_enrichment_window_open( $row );
+	$meta_st = (string) ( $row->meta_status ?? '' );
 
-	// Safety: Meta must never disappear if Stripe ingest somehow skipped it.
-	if ( ! jcp_trial_meta_finalized( $row ) ) {
+	if ( $expired && ! $matched ) {
+		error_log(
+			'jcp_trial_enrich: unmatched finalize after window ' . $conversion_id
+			. ' email=' . $email
+		);
+	}
+
+	// Meta + PostHog: only on match (CDP wake) or bounded unmatched finalization.
+	if ( jcp_trial_meta_should_deliver( $matched, $expired, $meta_st ) ) {
 		jcp_trial_deliver_side_effects( $row, 'meta' );
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$row = $wpdb->get_row(
@@ -1569,18 +1650,7 @@ function jcp_trial_enrich_and_deliver( string $conversion_id ): void {
 		}
 	}
 
-	// PostHog: only on match (CDP wake) or bounded unmatched finalization.
-	if ( (string) $row->posthog_status === 'sent' ) {
-		return;
-	}
-
-	if ( $matched || $expired ) {
-		if ( $expired && ! $matched ) {
-			error_log(
-				'jcp_trial_enrich: unmatched finalize after window ' . $conversion_id
-				. ' email=' . $email
-			);
-		}
+	if ( (string) $row->posthog_status !== 'sent' && ( $matched || $expired ) ) {
 		jcp_trial_deliver_side_effects( $row, 'posthog' );
 	}
 }
@@ -1633,7 +1703,8 @@ function jcp_trial_retry_deliveries(): void {
 	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 	$rows = $wpdb->get_results(
 		"SELECT * FROM `$table`
-		WHERE posthog_status IN ('pending','failed') OR meta_status IN ('pending','failed')
+		WHERE posthog_status IN ('pending','failed')
+		   OR meta_status IN ('pending','failed','sending')
 		ORDER BY id ASC
 		LIMIT 25"
 	);
