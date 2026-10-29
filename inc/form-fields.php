@@ -150,13 +150,16 @@ function jcp_normalize_acquisition_source( string $utm_source, string $referrer 
 }
 
 /**
- * Whether a lead request is QA/test traffic (must not fire production GHL webhooks).
+ * Canonical QA/test traffic detection (marketing leads, GHL skip, trial Meta skip).
  *
- * True when is_qa is truthy, jcp_qa=1, qa_trace_id is present, or utm_source=qa.
+ * `qa_trace_id` is reserved exclusively for QA / internal audit traces — it is never
+ * set by production paid ad URLs. Any non-empty value is treated as QA (same rule as
+ * historical GHL skip). Also true for is_qa, jcp_qa=1, jcp_internal=1, utm_source=qa,
+ * or qa_* / qa-* prefixed traces (redundant with the non-empty rule).
  *
- * @param array<string, mixed> $params Merged contact + attribution params.
+ * @param array<string, mixed> $params Attribution / request params.
  */
-function jcp_ghl_request_is_qa( array $params ): bool {
+function jcp_is_qa_traffic( array $params ): bool {
 	if ( ! empty( $params['is_qa'] ) ) {
 		$raw = $params['is_qa'];
 		if ( $raw === true || $raw === 1 || $raw === '1' || $raw === 'true' ) {
@@ -166,12 +169,24 @@ function jcp_ghl_request_is_qa( array $params ): bool {
 	if ( ! empty( $params['jcp_qa'] ) && (string) $params['jcp_qa'] === '1' ) {
 		return true;
 	}
+	if ( ! empty( $params['jcp_internal'] ) && (string) $params['jcp_internal'] === '1' ) {
+		return true;
+	}
 	$qa = isset( $params['qa_trace_id'] ) ? trim( (string) $params['qa_trace_id'] ) : '';
 	if ( $qa !== '' ) {
 		return true;
 	}
 	$utm = isset( $params['utm_source'] ) ? strtolower( trim( (string) $params['utm_source'] ) ) : '';
 	return $utm === 'qa';
+}
+
+/**
+ * Whether a lead request is QA/test traffic (must not fire production GHL webhooks).
+ *
+ * @param array<string, mixed> $params Merged contact + attribution params.
+ */
+function jcp_ghl_request_is_qa( array $params ): bool {
+	return jcp_is_qa_traffic( $params );
 }
 
 /**

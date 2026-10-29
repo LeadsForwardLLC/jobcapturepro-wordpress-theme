@@ -189,7 +189,7 @@ Canonical event meanings for paid acquisition (`/proof-gap/`, `/proof-sprint/`) 
 | PostHog `distinct_id` | Sticky marketing-site id (`jcp_ph_id` cookie / localStorage). |
 | `ph_distinct_id` | Persisted on durable marketing lead (`attribution_json`) and used as PostHog `distinct_id` for server `trial_started`. Also passed marketing → app via URL for optional bootstrap. |
 | `survey_session_id` | Unique Proof Gap survey UUID (not the shared onboarding `sessionId`). |
-| `qa_trace_id` | First-touch QA / campaign trace; persisted in client attribution + durable lead `attribution_json`. |
+| `qa_trace_id` | **QA-exclusive** internal audit/trace id (never set by production paid ads). Any non-empty value ⇒ QA traffic (`is_qa`). Persisted in client attribution + durable lead `attribution_json`. |
 | UTMs / `fbclid` / `_fbp` / `_fbc` / `landing_page` / `referrer` / `first_touch_timestamp` | First-touch attribution (`jcp-attribution.js`). Cookies and `ph_distinct_id` are POST-only to the lead REST endpoint (not GHL, not public URLs). |
 
 ---

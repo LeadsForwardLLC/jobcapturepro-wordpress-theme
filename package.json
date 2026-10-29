@@ -4,7 +4,8 @@
   "private": true,
   "description": "WordPress theme for JobCapturePro public website, directory, estimator, and block-based marketing pages.",
   "scripts": {
-    "capture:jpd-final": "node scripts/capture-jpd-final-rescue.mjs"
+    "capture:jpd-final": "node scripts/capture-jpd-final-rescue.mjs",
+    "test:qa-traffic": "php tests/qa-traffic.php"
   },
   "devDependencies": {
     "playwright": "1.49.1"

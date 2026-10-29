@@ -4827,9 +4827,11 @@ function enrichContactWithPhone(phone, firstNameOverride) {
     const q = new URLSearchParams(location.search);
     const qa =
       q.get('jcp_qa') === '1' ||
+      q.get('jcp_internal') === '1' ||
       String(q.get('utm_source') || '').toLowerCase() === 'qa' ||
-      !!(attr.qa_trace_id && /^qa[_-]/i.test(String(attr.qa_trace_id))) ||
-      String(attr.utm_source || '').toLowerCase() === 'qa';
+      !!String(attr.qa_trace_id || q.get('qa_trace_id') || '').trim() ||
+      String(attr.utm_source || '').toLowerCase() === 'qa' ||
+      (window.JCPPostHog && typeof window.JCPPostHog.isQaTraffic === 'function' && window.JCPPostHog.isQaTraffic(attr));
     if (qa) {
       body.is_qa = true;
       body.jcp_qa = '1';
