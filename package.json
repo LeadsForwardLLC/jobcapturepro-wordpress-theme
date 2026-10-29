@@ -7,6 +7,7 @@
     "capture:jpd-final": "node scripts/capture-jpd-final-rescue.mjs",
     "test:qa-traffic": "php tests/qa-traffic.php",
     "test:meta-p1": "php tests/stripe-trial-meta-p1.php",
+    "test:proof-gap-first-screen": "php tests/proof-gap-first-screen-copy.php",
     "test:trial-tracking": "php tests/qa-traffic.php && php tests/stripe-trial-meta-p1.php"
   },
   "devDependencies": {

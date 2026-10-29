@@ -295,7 +295,7 @@
       }
       setBottomAction({
         id: 'pgWelcomeCta',
-        label: 'See What Your Jobs Could Be Doing \u2192',
+        label: 'Check my job visibility \u2192',
         micro: '4 quick questions \u00b7 About 60 seconds \u00b7 No phone \u00b7 No credit card',
         animate: false,
         onClick: function () {

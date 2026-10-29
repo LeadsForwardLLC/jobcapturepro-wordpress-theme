@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-pg-entry-variant="control">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Proof Gap first-screen preview</title>
+  <link rel="stylesheet" href="../../../css/pages/proof-gap.css" />
+  <style>
+    :root {
+      --pg-accent: #e4572e;
+      --pg-ink: #0f172a;
+      --pg-muted: #64748b;
+      --pg-card: #fff;
+      --pg-border: rgba(15, 23, 42, 0.1);
+      --pg-warning: #f59e0b;
+      --pg-gutter: 1.15rem;
+      --pg-content-max: 28rem;
+      --pg-radius: 0.85rem;
+      --pg-radius-lg: 1rem;
+      --pg-radius-sm: 0.55rem;
+      --pg-fs-eyebrow: 0.72rem;
+      --pg-fs-body: 1rem;
+      --pg-fs-secondary: 0.92rem;
+      --pg-fs-tertiary: 0.78rem;
+      --pg-tracking-eyebrow: 0.06em;
+      --pg-bottom-pad: 5.5rem;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      background: #f8fafc;
+      color: var(--pg-ink);
+    }
+    .pg-chrome__bar {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem var(--pg-gutter);
+      background: #fff;
+      border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+    }
+    .pg-chrome__brand img {
+      display: block;
+      width: 120px;
+      height: 28px;
+      object-fit: contain;
+    }
+    body.jcp-proof-gap .pg-app { min-height: 100dvh; display: flex; flex-direction: column; }
+    body.jcp-proof-gap .pg-layout { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+    body.jcp-proof-gap .pg-stage { flex: 1; overflow: auto; padding: 1.25rem var(--pg-gutter) 0.75rem; }
+    body.jcp-proof-gap.pg-has-bottom-action .pg-stage { padding-bottom: calc(var(--pg-bottom-pad) + 1.25rem); }
+    body.jcp-proof-gap .pg-state__inner { max-width: var(--pg-content-max); margin: 0 auto; width: 100%; }
+    body.jcp-proof-gap .pg-eyebrow { margin: 0 0 0.65rem; font-size: var(--pg-fs-eyebrow); font-weight: 800; letter-spacing: var(--pg-tracking-eyebrow); text-transform: uppercase; color: var(--pg-accent); }
+    body.jcp-proof-gap .pg-title--welcome { margin: 0 0 0.85rem; font-size: clamp(1.55rem, 5.2vw, 2.05rem); line-height: 1.15; letter-spacing: -0.02em; font-weight: 850; }
+    body.jcp-proof-gap .pg-title--sm { margin: 0 0 0.85rem; font-size: 1.25rem; font-weight: 800; line-height: 1.25; }
+    body.jcp-proof-gap .pg-sub { margin: 0 0 0.85rem; font-size: var(--pg-fs-body); line-height: 1.45; color: var(--pg-muted); }
+    body.jcp-proof-gap .pg-welcome-secondary { margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid rgba(15, 23, 42, 0.08); }
+    body.jcp-proof-gap .pg-entry-shell--direct .pg-dq-trust {
+      margin: 0 0 0.85rem;
+      font-size: var(--pg-fs-tertiary);
+      font-weight: 600;
+      line-height: 1.35;
+      color: var(--pg-muted);
+    }
+    @media (max-width: 767px) {
+      body.jcp-proof-gap.pg-has-bottom-action .pg-entry-shell--control .pg-welcome-secondary {
+        margin-top: max(2.75rem, calc(100dvh - var(--pg-bottom-pad, 5.5rem) - 18.5rem));
+      }
+      body.jcp-proof-gap .pg-entry-shell--direct .pg-title--welcome { margin-bottom: 0.55rem; }
+      body.jcp-proof-gap .pg-entry-shell--direct .pg-sub { margin-bottom: 0.45rem; }
+      body.jcp-proof-gap .pg-entry-shell--direct .pg-dq-trust { margin-bottom: 0.7rem; }
+      body.jcp-proof-gap .pg-entry-shell--direct .pg-dq-step { margin-bottom: 0.35rem; }
+      body.jcp-proof-gap .pg-entry-shell--direct .pg-title--sm { margin-bottom: 0.65rem; }
+    }
+    body.jcp-proof-gap .pg-choices--grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+    body.jcp-proof-gap .pg-choice {
+      appearance: none; border: 1px solid rgba(15, 23, 42, 0.12); background: #fff; border-radius: 0.75rem;
+      min-height: 2.75rem; padding: 0.65rem 0.75rem; font-weight: 700; font-size: 0.95rem; color: var(--pg-ink); cursor: pointer;
+    }
+    body.jcp-proof-gap .pg-bottom-action {
+      position: sticky; bottom: 0; z-index: 40; width: 100%; padding: 0.65rem var(--pg-gutter) calc(0.65rem + env(safe-area-inset-bottom, 0px));
+      background: rgba(255, 255, 255, 0.96); border-top: 1px solid rgba(15, 23, 42, 0.08);
+    }
+    body.jcp-proof-gap .pg-bottom-action__micro { margin: 0 auto 0.3rem; max-width: var(--pg-content-max); text-align: center; font-size: var(--pg-fs-tertiary); font-weight: 600; color: var(--pg-muted); }
+    body.jcp-proof-gap .pg-bottom-action__cta { max-width: var(--pg-content-max); margin: 0 auto; }
+    body.jcp-proof-gap .pg-btn {
+      display: flex; align-items: center; justify-content: center; width: 100%; min-height: 3.15rem; border: 0; border-radius: 0.85rem;
+      background: var(--pg-accent); color: #fff; font-size: 1.05rem; font-weight: 800; cursor: pointer;
+    }
+    html[data-pg-entry-variant="control"] .pg-entry-shell--direct { display: none !important; }
+    html[data-pg-entry-variant="direct_question"] .pg-entry-shell--control { display: none !important; }
+    html[data-pg-entry-variant="direct_question"] #pgBottomAction { display: none !important; }
+    html[data-pg-entry-variant="direct_question"] body { --pg-bottom-pad: 0px; }
+  </style>
+</head>
+<body class="jcp-proof-gap pg-has-bottom-action">
+  <div class="pg-app">
+    <header class="pg-chrome" role="banner">
+      <div class="pg-chrome__bar">
+        <span class="pg-chrome__brand" aria-label="JobCapturePro">
+          <img src="../../../assets/brand/jcp-logo-dark-320.webp" alt="JobCapturePro" width="120" height="28" />
+        </span>
+      </div>
+    </header>
+    <div class="pg-layout">
+      <div class="pg-stage" id="pgStage">
+        <section class="pg-state pg-state--welcome pg-entry-shell pg-entry-shell--control" data-pg-entry="control">
+          <div class="pg-state__inner">
+            <p class="pg-eyebrow">The 60 second job visibility check</p>
+            <h1 class="pg-title pg-title--welcome">You finish the job. Does anyone see the work?</h1>
+            <p class="pg-sub">How much of your finished work actually makes it onto your website, Google, or social media? Answer 4 quick questions to estimate how much is going unseen.</p>
+            <div class="pg-welcome-secondary">
+              <div class="pg-welcome-checklist" aria-hidden="true">
+                <p class="pg-welcome-checklist__heading">One completed job can automatically become:</p>
+                <ul class="pg-welcome-checklist__list">
+                  <li><span class="pg-welcome-checklist__check">✓</span>Website Content</li>
+                  <li><span class="pg-welcome-checklist__check">✓</span>Google Update</li>
+                  <li><span class="pg-welcome-checklist__check">✓</span>Review Request</li>
+                  <li><span class="pg-welcome-checklist__check">✓</span>Social Post</li>
+                  <li><span class="pg-welcome-checklist__check">✓</span>Directory Activity</li>
+                </ul>
+              </div>
+              <div class="pg-trust pg-trust--compact">
+                <div class="pg-trust__proof">
+                  <div class="pg-trust__proof-copy">
+                    <span class="pg-trust__stars">★★★★★</span>
+                    <span class="pg-trust__label">5-star feedback from contractors and home-service operators</span>
+                  </div>
+                </div>
+                <div class="pg-trust__divider"></div>
+                <div class="pg-trust__authority-block">
+                  <p class="pg-trust__authority">Built by the team behind <strong>LeadsForward</strong></p>
+                  <ul class="pg-trust__metrics">
+                    <li><strong>10 yrs</strong><span>home services</span></li>
+                    <li><strong>250K+</strong><span>contractor leads</span></li>
+                    <li><strong>$150M+</strong><span>client revenue</span></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="pg-state pg-state--welcome-direct pg-entry-shell pg-entry-shell--direct" data-pg-entry="direct_question">
+          <div class="pg-state__inner">
+            <p class="pg-eyebrow">The 60 second job visibility check</p>
+            <h1 class="pg-title pg-title--welcome">You finish the job. Does anyone see the work?</h1>
+            <p class="pg-sub">How much of your finished work actually makes it onto your website, Google, or social media? Answer 4 quick questions to estimate how much is going unseen.</p>
+            <p class="pg-trust-line pg-dq-trust">About 60 seconds · No phone · No credit card</p>
+            <p class="pg-eyebrow pg-dq-step">1 of 4</p>
+            <h2 class="pg-title pg-title--sm">What kind of work does your company do most?</h2>
+            <div class="pg-choices pg-choices--grid">
+              <button type="button" class="pg-choice">HVAC</button>
+              <button type="button" class="pg-choice">Plumbing</button>
+              <button type="button" class="pg-choice">Electrical</button>
+              <button type="button" class="pg-choice">Roofing</button>
+              <button type="button" class="pg-choice">Remodeling</button>
+              <button type="button" class="pg-choice">Painting</button>
+              <button type="button" class="pg-choice">Landscaping</button>
+              <button type="button" class="pg-choice">Garage door</button>
+              <button type="button" class="pg-choice">Pest control</button>
+              <button type="button" class="pg-choice">Tree service</button>
+              <button type="button" class="pg-choice">Power washing</button>
+              <button type="button" class="pg-choice">Other</button>
+            </div>
+          </div>
+        </section>
+      </div>
+      <footer class="pg-bottom-action" id="pgBottomAction">
+        <p class="pg-bottom-action__micro">4 quick questions · About 60 seconds · No phone · No credit card</p>
+        <div class="pg-bottom-action__cta">
+          <button type="button" class="pg-btn" id="pgWelcomeCta">Check my job visibility →</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const variant = params.get('pg_variant') === 'direct_question' ? 'direct_question' : 'control';
+    document.documentElement.setAttribute('data-pg-entry-variant', variant);
+    if (variant === 'direct_question') document.body.classList.remove('pg-has-bottom-action');
+  </script>
+</body>
+</html>

@@ -75,6 +75,8 @@ $trial_base = function_exists( 'jcp_core_onboarding_app_url_raw' )
 		body.jcp-proof-gap .pg-eyebrow{margin:0 0 .65rem;font-size:var(--pg-fs-eyebrow);font-weight:800;letter-spacing:var(--pg-tracking-eyebrow);text-transform:uppercase;color:var(--pg-accent)}
 		body.jcp-proof-gap .pg-title--welcome{margin:0 0 .85rem;font-size:clamp(1.55rem,5.2vw,2.05rem);line-height:1.15;letter-spacing:-.02em;font-weight:850;color:var(--pg-ink)}
 		body.jcp-proof-gap .pg-sub{margin:0 0 .85rem;font-size:var(--pg-fs-body);line-height:1.45;color:var(--pg-muted)}
+		body.jcp-proof-gap .pg-welcome-secondary{margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid rgba(15,23,42,.08)}
+		body.jcp-proof-gap .pg-entry-shell--direct .pg-dq-trust{margin:0 0 .85rem;font-size:var(--pg-fs-tertiary);font-weight:600;line-height:1.35;color:var(--pg-muted)}
 		body.jcp-proof-gap .pg-welcome-checklist{margin:.95rem 0 .85rem;padding:.9rem .9rem .85rem;border-radius:var(--pg-radius-lg);background:#fff;border:1px solid rgba(15,23,42,.08);box-shadow:0 8px 24px rgba(15,23,42,.05);text-align:center}
 		body.jcp-proof-gap .pg-welcome-checklist__heading{margin:0 0 .65rem;font-size:var(--pg-fs-secondary);font-weight:800;letter-spacing:-.01em;line-height:1.3;color:var(--pg-ink);text-align:left}
 		body.jcp-proof-gap .pg-welcome-checklist__list{list-style:none;margin:0;padding:0;display:grid;gap:.35rem;text-align:left}
