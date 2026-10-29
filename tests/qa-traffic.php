@@ -84,6 +84,7 @@ assert_true( test_meta_finalized( 'sent' ), 'meta sent is finalized' );
 assert_true( test_meta_finalized( 'skipped_qa' ), 'meta skipped_qa is finalized (no retry)' );
 assert_true( ! test_meta_finalized( 'pending' ), 'meta pending is not finalized' );
 assert_true( ! test_meta_finalized( 'failed' ), 'meta failed is not finalized' );
+assert_true( ! test_meta_finalized( 'sending' ), 'meta sending is not finalized (claim in flight)' );
 
 if ( $failures > 0 ) {
 	fwrite( STDERR, "\n$failures failure(s)\n" );
