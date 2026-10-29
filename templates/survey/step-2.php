@@ -1,37 +1,46 @@
 <?php
 /**
- * Survey Step 2: Demo goals (checkboxes)
+ * Optional personalization — after email + trade, before interactive demo.
+ * Business name only (skippable) so the demo and GHL feel personal.
  *
  * @package JCP_Core
  */
 ?>
-<section class="survey-step" data-step="1">
+<section class="survey-step survey-step--personalize" data-step="1">
   <div class="survey-head">
-    <div class="survey-eyebrow">Step 2</div>
-    <h2 class="survey-title">What should this demo prove?</h2>
-    <p class="survey-subtitle">Choose up to two priorities.</p>
+    <p class="survey-step-progress"><?php esc_html_e( 'Step 2 of 2', 'jcp-core' ); ?></p>
+    <div class="survey-eyebrow">
+      <span class="survey-eyebrow-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20h9"/>
+          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+        </svg>
+      </span>
+      <span><?php esc_html_e( 'Make it yours', 'jcp-core' ); ?></span>
+    </div>
+    <h1 class="survey-title"><?php esc_html_e( 'Personalize your demo', 'jcp-core' ); ?></h1>
+    <p class="survey-subtitle">
+      <?php esc_html_e( 'Add your business name and we’ll use it throughout the demo.', 'jcp-core' ); ?>
+    </p>
   </div>
 
-  <div class="survey-goals" id="surveyGoals">
-    <label class="survey-goal">
-      <input type="checkbox" value="calls">
-      <span>More inbound calls</span>
-    </label>
-    <label class="survey-goal">
-      <input type="checkbox" value="google">
-      <span>Better Google visibility</span>
-    </label>
-    <label class="survey-goal">
-      <input type="checkbox" value="reviews">
-      <span>More customer reviews</span>
-    </label>
-    <label class="survey-goal">
-      <input type="checkbox" value="busywork">
-      <span>Less marketing busywork</span>
-    </label>
-  </div>
+  <form class="survey-form survey-form--personalize" autocomplete="on" onsubmit="return false;">
+    <div class="survey-field">
+      <label for="businessName"><?php esc_html_e( 'Business name', 'jcp-core' ); ?></label>
+      <input
+        id="businessName"
+        type="text"
+        class="survey-input"
+        name="organization"
+        placeholder="<?php esc_attr_e( 'Enter your business name', 'jcp-core' ); ?>"
+        autocomplete="organization"
+        maxlength="120"
+      />
+    </div>
+  </form>
 
   <div class="survey-actions-row">
-    <button type="button" class="survey-btn" data-action="next">Continue</button>
+    <button type="button" class="survey-btn" data-action="personalize-continue"><?php esc_html_e( 'Personalize My Demo →', 'jcp-core' ); ?></button>
+    <button type="button" class="survey-skip-link" data-action="personalize-skip"><?php esc_html_e( 'Skip personalization', 'jcp-core' ); ?></button>
   </div>
 </section>

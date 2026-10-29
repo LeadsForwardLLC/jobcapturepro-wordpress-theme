@@ -268,6 +268,71 @@ function jcp_core_company_data( WP_Post $post ): array {
 }
 
 /**
+ * Temporary directory hide-list: case-insensitive name substrings.
+ *
+ * Empty this array (or remove a term) to re-show matching listings.
+ *
+ * @return array<int, string>
+ */
+function jcp_directory_temporarily_hidden_name_terms(): array {
+	return [
+		'Acculevel',
+	];
+}
+
+/**
+ * Whether a directory listing should be temporarily hidden from public results.
+ *
+ * @param array|WP_Post|string $listing Listing row, post, or name string.
+ */
+function jcp_directory_listing_is_temporarily_hidden( $listing ): bool {
+	$terms = jcp_directory_temporarily_hidden_name_terms();
+	if ( empty( $terms ) ) {
+		return false;
+	}
+
+	$name = '';
+	if ( is_string( $listing ) ) {
+		$name = $listing;
+	} elseif ( $listing instanceof WP_Post ) {
+		$name = (string) get_the_title( $listing );
+	} elseif ( is_array( $listing ) ) {
+		$name = (string) ( $listing['name'] ?? $listing['title'] ?? '' );
+	}
+
+	if ( $name === '' ) {
+		return false;
+	}
+
+	$name_l = strtolower( $name );
+	foreach ( $terms as $term ) {
+		$term = trim( (string) $term );
+		if ( $term !== '' && strpos( $name_l, strtolower( $term ) ) !== false ) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * Drop temporarily hidden listings from a directory payload.
+ *
+ * @param array<int, array<string, mixed>> $listings Listing rows.
+ * @return array<int, array<string, mixed>>
+ */
+function jcp_directory_filter_visible_listings( array $listings ): array {
+	return array_values(
+		array_filter(
+			$listings,
+			static function ( $row ) {
+				return ! jcp_directory_listing_is_temporarily_hidden( $row );
+			}
+		)
+	);
+}
+
+/**
  * Return demo company listings with pretty permalinks (/directory/slug).
  * Used for directory listing and profile resolution.
  *

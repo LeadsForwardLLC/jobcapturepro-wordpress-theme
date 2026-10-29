@@ -1,0 +1,15 @@
+{
+  "name": "jobcapturepro-core",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WordPress theme for JobCapturePro public website, directory, estimator, and block-based marketing pages.",
+  "scripts": {
+    "capture:jpd-final": "node scripts/capture-jpd-final-rescue.mjs",
+    "test:qa-traffic": "php tests/qa-traffic.php",
+    "test:meta-p1": "php tests/stripe-trial-meta-p1.php",
+    "test:trial-tracking": "php tests/qa-traffic.php && php tests/stripe-trial-meta-p1.php"
+  },
+  "devDependencies": {
+    "playwright": "1.49.1"
+  }
+}

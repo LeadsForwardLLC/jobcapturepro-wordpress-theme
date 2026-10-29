@@ -66,3 +66,118 @@ body.demo-run-only #jcp-app {
     overscroll-behavior: none;
   }
 }
+
+/* =========================================================
+   Guided demo — center phone + SEO appreciation beat
+========================================================= */
+
+body.jcp-guided-demo .demo-container,
+body.jcp-desktop-guided .demo-container {
+  display: flex !important;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  grid-template-columns: none !important;
+  width: 100%;
+}
+
+body.jcp-guided-demo .phone-wrapper,
+body.jcp-desktop-guided .phone-wrapper {
+  margin-left: auto !important;
+  margin-right: auto !important;
+  justify-self: center;
+}
+
+body.jcp-desktop-guided .iphone-frame {
+  transform: scale(0.9);
+  transform-origin: top center;
+}
+
+#description-field.is-demo-seo-spotlight,
+#edit-screen .location-card.is-demo-seo-spotlight {
+  outline: 2px solid rgba(255, 80, 62, 0.55);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(255, 80, 62, 0.12);
+  border-radius: 12px;
+  transition: outline-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #description-field.is-demo-seo-spotlight,
+  #edit-screen .location-card.is-demo-seo-spotlight {
+    transition: none;
+  }
+
+  body.jcp-desktop-guided .iphone-frame {
+    transform: none;
+  }
+}
+
+/* Demo prep loader (survey → run / boot) */
+.jcp-demo-prep {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.18s ease, visibility 0.18s ease;
+}
+
+.jcp-demo-prep.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.jcp-demo-prep__inner {
+  max-width: 320px;
+  text-align: center;
+}
+
+.jcp-demo-prep__spinner {
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 14px;
+  border: 2.5px solid #e5e7eb;
+  border-top-color: #ff503e;
+  border-radius: 50%;
+  animation: jcp-demo-prep-spin 0.7s linear infinite;
+}
+
+.jcp-demo-prep__title {
+  margin: 0 0 6px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.3;
+}
+
+.jcp-demo-prep__sub {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 400;
+  color: #6b7280;
+  line-height: 1.45;
+}
+
+@keyframes jcp-demo-prep-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jcp-demo-prep__spinner {
+    animation: none;
+    border-top-color: #e5e7eb;
+    border-right-color: #ff503e;
+  }
+  .jcp-demo-prep {
+    transition: none;
+  }
+}

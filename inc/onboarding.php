@@ -2,6 +2,10 @@
 /**
  * App (SaaS) onboarding URLs — temporary hard-coded sessionId until issuance API lands.
  *
+ * Acquisition UTMs (utm_source/medium/campaign/content/term) must NEVER be fabricated
+ * here. Paid/current-touch values come from JCPLeadAttribution → jcp-onboarding-handoff.js.
+ * Internal CTA/funnel identity uses jcp_surface (and lp_variant on the page).
+ *
  * @package JCP_Core
  */
 
@@ -20,22 +24,23 @@ function jcp_core_onboarding_hardcoded_session_id(): string {
 }
 
 /**
- * Default UTM parameters for marketing site → app onboarding (merge into query string).
- * Optional utm_content identifies the CTA surface for analytics.
+ * Non-acquisition query defaults for marketing → app onboarding.
  *
- * @param string $utm_content e.g. nav_get_started, pricing, demo_post_panel.
+ * Historically this injected fake UTMs (jobcapturepro.com / website / onboarding) and
+ * stuffed CTA labels into utm_content. That overwrote Meta acquisition attribution.
+ * Now only jcp_surface is set for internal CTA placement when provided.
+ *
+ * @param string $surface Internal CTA / funnel surface id (e.g. proof_sprint_trial, nav_get_started).
  * @return array<string, string>
  */
-function jcp_core_onboarding_utm_defaults( string $utm_content = '' ): array {
-	$args = [
-		'utm_source'   => 'jobcapturepro.com',
-		'utm_medium'   => 'website',
-		'utm_campaign' => 'onboarding',
-	];
-	if ( $utm_content !== '' ) {
-		$args['utm_content'] = $utm_content;
+function jcp_core_onboarding_utm_defaults( string $surface = '' ): array {
+	$surface = sanitize_text_field( $surface );
+	if ( $surface === '' ) {
+		return [];
 	}
-	return $args;
+	return [
+		'jcp_surface' => $surface,
+	];
 }
 
 /**
@@ -76,7 +81,7 @@ function jcp_core_onboarding_app_url( array $query_extra = [] ): string {
 }
 
 /**
- * App login URL with marketing UTM params (no onboarding sessionId).
+ * App login URL (no fabricated acquisition UTMs).
  *
  * @param array<string, string> $query_extra Merge into query string; overrides defaults if keys match.
  * @return string Absolute URL.

@@ -94,7 +94,7 @@
       words = [];
     }
     if (!words.length) {
-      words = ['visibility', 'calls', 'customers', 'growth'];
+      words = ['opportunities', 'visibility', 'reviews', 'calls', 'proof'];
     }
 
     let index = 0;
