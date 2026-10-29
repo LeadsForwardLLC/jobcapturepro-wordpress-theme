@@ -4412,6 +4412,46 @@ body.jcp-proof-gap .pg-sub__arrow {
   line-height: 1.35;
 }
 
+body.jcp-proof-gap .pg-support {
+  margin: 0 0 1rem;
+  font-size: var(--pg-fs-secondary);
+  line-height: 1.45;
+  font-weight: 650;
+  color: var(--pg-ink);
+}
+
+/* Control: keep product checklist + agency proof below the first-screen CTA fold. */
+body.jcp-proof-gap .pg-welcome-secondary {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+@media (max-width: 767px) {
+  /* Keep checklist/trust under the sticky CTA fold on first paint. */
+  body.jcp-proof-gap.pg-has-bottom-action .pg-entry-shell--control .pg-welcome-secondary {
+    margin-top: max(2.75rem, calc(100dvh - var(--pg-bottom-pad, 5.5rem) - 21.5rem));
+    padding-bottom: 0.5rem;
+  }
+
+  /* Direct question: slightly tighter welcome copy so trade choices stay reachable. */
+  body.jcp-proof-gap .pg-entry-shell--direct .pg-title--welcome {
+    margin-bottom: 0.65rem;
+  }
+
+  body.jcp-proof-gap .pg-entry-shell--direct .pg-sub {
+    margin-bottom: 0.65rem;
+  }
+
+  body.jcp-proof-gap .pg-entry-shell--direct .pg-support {
+    margin-bottom: 0.55rem;
+  }
+
+  body.jcp-proof-gap .pg-entry-shell--direct .pg-dq-trust {
+    margin-bottom: 0.85rem;
+  }
+}
+
 body.jcp-proof-gap .pg-welcome-checklist {
   margin: 0.95rem 0 0.85rem;
   padding: 0.9rem 0.9rem 0.85rem;
