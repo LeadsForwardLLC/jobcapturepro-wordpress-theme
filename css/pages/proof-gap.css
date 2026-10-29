@@ -4412,14 +4412,6 @@ body.jcp-proof-gap .pg-sub__arrow {
   line-height: 1.35;
 }
 
-body.jcp-proof-gap .pg-support {
-  margin: 0 0 1rem;
-  font-size: var(--pg-fs-secondary);
-  line-height: 1.45;
-  font-weight: 650;
-  color: var(--pg-ink);
-}
-
 /* Control: keep product checklist + agency proof below the first-screen CTA fold. */
 body.jcp-proof-gap .pg-welcome-secondary {
   margin-top: 1.75rem;
@@ -4427,28 +4419,40 @@ body.jcp-proof-gap .pg-welcome-secondary {
   border-top: 1px solid rgba(15, 23, 42, 0.08);
 }
 
+body.jcp-proof-gap .pg-entry-shell--direct .pg-dq-trust {
+  margin: 0 0 0.85rem;
+  font-size: var(--pg-fs-tertiary);
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--pg-muted);
+}
+
 @media (max-width: 767px) {
   /* Keep checklist/trust under the sticky CTA fold on first paint. */
   body.jcp-proof-gap.pg-has-bottom-action .pg-entry-shell--control .pg-welcome-secondary {
-    margin-top: max(2.75rem, calc(100dvh - var(--pg-bottom-pad, 5.5rem) - 21.5rem));
+    margin-top: max(2.75rem, calc(100dvh - var(--pg-bottom-pad, 5.5rem) - 18.5rem));
     padding-bottom: 0.5rem;
   }
 
-  /* Direct question: slightly tighter welcome copy so trade choices stay reachable. */
+  /* Direct question: keep Q1 + trades as high as possible under compact welcome copy. */
   body.jcp-proof-gap .pg-entry-shell--direct .pg-title--welcome {
-    margin-bottom: 0.65rem;
-  }
-
-  body.jcp-proof-gap .pg-entry-shell--direct .pg-sub {
-    margin-bottom: 0.65rem;
-  }
-
-  body.jcp-proof-gap .pg-entry-shell--direct .pg-support {
     margin-bottom: 0.55rem;
   }
 
+  body.jcp-proof-gap .pg-entry-shell--direct .pg-sub {
+    margin-bottom: 0.45rem;
+  }
+
   body.jcp-proof-gap .pg-entry-shell--direct .pg-dq-trust {
-    margin-bottom: 0.85rem;
+    margin-bottom: 0.7rem;
+  }
+
+  body.jcp-proof-gap .pg-entry-shell--direct .pg-dq-step {
+    margin-bottom: 0.35rem;
+  }
+
+  body.jcp-proof-gap .pg-entry-shell--direct .pg-title--sm {
+    margin-bottom: 0.65rem;
   }
 }
 

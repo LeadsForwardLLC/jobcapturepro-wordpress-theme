@@ -18,4 +18,8 @@ node scripts/capture-proof-gap-first-screen.mjs
 
 Assessment delivers: 4 questions → estimated unused finished-job volume → email for a personalized job example → product demo → trial CTA.
 
-The new supporting line (“see where … could be working harder”) is directionally right; the immediate on-page result is a **quantitative gap estimate**, with channel-level “where” detail arriving after email / in the demo. Acceptable for this PR; optional follow-up softener documented in the PR body.
+Current sub copy matches that deliverable (“estimate how much is going unseen”).
+
+## Logo note
+
+Production chrome uses `assets/brand/jcp-logo-dark-320.webp` (location-pin lockup). An earlier after-preview used a placeholder orange “J” circle — that was preview-only, not a production change. Preview now loads the real pin logo asset.

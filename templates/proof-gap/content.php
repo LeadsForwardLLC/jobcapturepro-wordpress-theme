@@ -127,8 +127,7 @@ $render_case = static function (): void {
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( 'The 60 second job visibility check', 'jcp-core' ); ?></p>
 				<h1 class="pg-title pg-title--welcome"><?php esc_html_e( 'You finish the job. Does anyone see the work?', 'jcp-core' ); ?></h1>
-				<p class="pg-sub"><?php esc_html_e( 'Every completed job is an opportunity to show future customers what you do. But how much of that work actually makes it onto your website, Google Business Profile, or social media?', 'jcp-core' ); ?></p>
-				<p class="pg-support"><?php esc_html_e( 'Answer 4 quick questions to see where your job photos and customer proof could be working harder.', 'jcp-core' ); ?></p>
+				<p class="pg-sub"><?php esc_html_e( 'How much of your finished work actually makes it onto your website, Google, or social media? Answer 4 quick questions to estimate how much is going unseen.', 'jcp-core' ); ?></p>
 
 				<div class="pg-welcome-secondary" data-pg-welcome-secondary>
 					<div class="pg-welcome-checklist" data-pg-welcome-visual data-creative="default" aria-hidden="true">
@@ -172,9 +171,8 @@ $render_case = static function (): void {
 			<div class="pg-state__inner">
 				<p class="pg-eyebrow"><?php esc_html_e( 'The 60 second job visibility check', 'jcp-core' ); ?></p>
 				<h1 class="pg-title pg-title--welcome"><?php esc_html_e( 'You finish the job. Does anyone see the work?', 'jcp-core' ); ?></h1>
-				<p class="pg-sub"><?php esc_html_e( 'Every completed job is an opportunity to show future customers what you do. But how much of that work actually makes it onto your website, Google Business Profile, or social media?', 'jcp-core' ); ?></p>
-				<p class="pg-support"><?php esc_html_e( 'Answer 4 quick questions to see where your job photos and customer proof could be working harder.', 'jcp-core' ); ?></p>
-				<p class="pg-trust-line pg-dq-trust"><?php esc_html_e( 'Takes about 60 seconds. No phone. No credit card.', 'jcp-core' ); ?></p>
+				<p class="pg-sub"><?php esc_html_e( 'How much of your finished work actually makes it onto your website, Google, or social media? Answer 4 quick questions to estimate how much is going unseen.', 'jcp-core' ); ?></p>
+				<p class="pg-trust-line pg-dq-trust"><?php esc_html_e( 'About 60 seconds · No phone · No credit card', 'jcp-core' ); ?></p>
 
 				<p class="pg-eyebrow pg-dq-step"><?php esc_html_e( '1 of 4', 'jcp-core' ); ?></p>
 				<h2 class="pg-title pg-title--sm" id="pg-trade-title-dq"><?php esc_html_e( 'What kind of work does your company do most?', 'jcp-core' ); ?></h2>
