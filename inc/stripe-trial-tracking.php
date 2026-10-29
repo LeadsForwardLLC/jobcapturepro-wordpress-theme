@@ -1044,6 +1044,25 @@ function jcp_trial_fallback_distinct_id( string $customer_id, string $subscripti
 }
 
 /**
+ * Whether trial attribution / payload marks QA traffic (skip Meta CAPI).
+ *
+ * @param array<string, mixed> $attr Attribution and/or trial payload fields.
+ */
+function jcp_trial_is_qa_attr( array $attr ): bool {
+	return function_exists( 'jcp_is_qa_traffic' ) && jcp_is_qa_traffic( $attr );
+}
+
+/**
+ * Meta channel already finalized (sent or intentionally skipped for QA).
+ *
+ * @param object $row Conversion row.
+ */
+function jcp_trial_meta_finalized( object $row ): bool {
+	$status = (string) ( $row->meta_status ?? '' );
+	return $status === 'sent' || $status === 'skipped_qa';
+}
+
+/**
  * Send PostHog trial_started (server-side).
  *
  * @param object               $row     Conversion row.
@@ -1112,8 +1131,8 @@ function jcp_trial_send_posthog( object $row, array $trial, array $attr ): array
 		$properties['source'] = $properties['funnel_surface'];
 	}
 
-	$qa_trace = isset( $properties['qa_trace_id'] ) ? (string) $properties['qa_trace_id'] : '';
-	if ( $qa_trace !== '' && preg_match( '/^qa[_-]/i', $qa_trace ) ) {
+	// Any non-empty qa_trace_id / explicit QA markers → is_qa (PostHog kept for debugging).
+	if ( jcp_trial_is_qa_attr( $properties ) || jcp_trial_is_qa_attr( $attr ) || jcp_trial_is_qa_attr( $trial ) ) {
 		$properties['is_qa'] = true;
 		$properties['$set']  = array_merge(
 			isset( $properties['$set'] ) && is_array( $properties['$set'] ) ? $properties['$set'] : [],
@@ -1281,14 +1300,20 @@ function jcp_trial_deliver_side_effects( object $row, string $channel = 'both' )
 		}
 	}
 
-	if ( $do_meta && (string) $row->meta_status !== 'sent' ) {
-		$meta = jcp_trial_send_meta( $row, $trial, $attr );
-		if ( $meta['ok'] ) {
-			jcp_trial_update_conversion( (int) $row->id, [ 'meta_status' => 'sent' ] );
-			$row->meta_status = 'sent';
+	if ( $do_meta && ! jcp_trial_meta_finalized( $row ) ) {
+		// QA trials stay in PostHog but must never reach Meta CAPI StartTrial.
+		if ( jcp_trial_is_qa_attr( $attr ) || jcp_trial_is_qa_attr( $trial ) ) {
+			jcp_trial_update_conversion( (int) $row->id, [ 'meta_status' => 'skipped_qa' ] );
+			$row->meta_status = 'skipped_qa';
 		} else {
-			jcp_trial_update_conversion( (int) $row->id, [ 'meta_status' => 'failed', 'last_error' => $meta['error'] ] );
-			$errors[] = 'meta:' . $meta['error'];
+			$meta = jcp_trial_send_meta( $row, $trial, $attr );
+			if ( $meta['ok'] ) {
+				jcp_trial_update_conversion( (int) $row->id, [ 'meta_status' => 'sent' ] );
+				$row->meta_status = 'sent';
+			} else {
+				jcp_trial_update_conversion( (int) $row->id, [ 'meta_status' => 'failed', 'last_error' => $meta['error'] ] );
+				$errors[] = 'meta:' . $meta['error'];
+			}
 		}
 	}
 
@@ -1374,16 +1399,16 @@ function jcp_trial_process_qualified( array $event, array $sub ): array {
 
 	if ( $row ) {
 		$ph_sent   = (string) $row->posthog_status === 'sent';
-		$meta_sent = (string) $row->meta_status === 'sent';
+		$meta_done = jcp_trial_meta_finalized( $row );
 
-		if ( $ph_sent && $meta_sent ) {
+		if ( $ph_sent && $meta_done ) {
 			// Stripe retry after both channels finalized — no-op.
 		} elseif ( $attr_status === 'matched' ) {
 			// Attribution already known (lead or prior CDP bridge): send both now.
 			jcp_trial_deliver_side_effects( $row, 'both' );
 		} else {
 			// Meta must not wait on PostHog enrichment — Stripe-authoritative, exactly once.
-			if ( ! $meta_sent ) {
+			if ( ! $meta_done ) {
 				jcp_trial_deliver_side_effects( $row, 'meta' );
 			}
 			if ( ! $ph_sent ) {
@@ -1490,10 +1515,10 @@ function jcp_trial_enrich_and_deliver( string $conversion_id ): void {
 	}
 
 	$ph_sent   = (string) $row->posthog_status === 'sent';
-	$meta_sent = (string) $row->meta_status === 'sent';
+	$meta_done = jcp_trial_meta_finalized( $row );
 
 	// Already finalized both channels — never send a second trial_started / StartTrial.
-	if ( $ph_sent && $meta_sent ) {
+	if ( $ph_sent && $meta_done ) {
 		return;
 	}
 
@@ -1533,7 +1558,7 @@ function jcp_trial_enrich_and_deliver( string $conversion_id ): void {
 	$expired = ! jcp_trial_enrichment_window_open( $row );
 
 	// Safety: Meta must never disappear if Stripe ingest somehow skipped it.
-	if ( (string) $row->meta_status !== 'sent' ) {
+	if ( ! jcp_trial_meta_finalized( $row ) ) {
 		jcp_trial_deliver_side_effects( $row, 'meta' );
 		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		$row = $wpdb->get_row(

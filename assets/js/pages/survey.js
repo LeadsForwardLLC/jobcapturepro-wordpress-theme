@@ -268,20 +268,19 @@
   const DEMO_SURVEY_VERSION = '1';
 
   const isQaSession = () => {
+    const attr = getAttributionPayload();
     try {
-      if (window.JCPPostHog && typeof window.JCPPostHog.isQaTraffic === 'function' && window.JCPPostHog.isQaTraffic()) {
-        return true;
+      if (window.JCPPostHog && typeof window.JCPPostHog.isQaTraffic === 'function') {
+        return !!window.JCPPostHog.isQaTraffic(attr);
       }
     } catch (eQa) {}
     try {
       const q = new URLSearchParams(location.search);
       if (q.get('jcp_qa') === '1' || q.get('jcp_internal') === '1') return true;
-      const trace = q.get('qa_trace_id') || '';
-      if (trace && /^qa[_-]/i.test(trace)) return true;
+      if (String(q.get('qa_trace_id') || '').trim()) return true;
       if (String(q.get('utm_source') || '').toLowerCase() === 'qa') return true;
     } catch (eQ) {}
-    const attr = getAttributionPayload();
-    if (attr.qa_trace_id && /^qa[_-]/i.test(String(attr.qa_trace_id))) return true;
+    if (String(attr.qa_trace_id || '').trim()) return true;
     if (String(attr.utm_source || '').toLowerCase() === 'qa') return true;
     return false;
   };
@@ -1108,6 +1107,15 @@
   // GTM → Meta Lead: fires once when step 3 validates and they click Continue to demo.
   const pushDemoOptInDataLayer = () => {
     try {
+      // QA sessions must not reach Meta Lead via GTM demo_opt_in.
+      try {
+        if (window.JCPPostHog && typeof window.JCPPostHog.isQaTraffic === 'function') {
+          const attrQa = typeof getAttributionPayload === 'function' ? getAttributionPayload() : {};
+          if (window.JCPPostHog.isQaTraffic(attrQa)) return;
+        }
+      } catch (eQaGate) {
+        /* continue */
+      }
       if (sessionStorage.getItem('jcp_datalayer_demo_opt_in')) return;
       window.dataLayer = window.dataLayer || [];
       const bizType = getBusinessTypeValue();

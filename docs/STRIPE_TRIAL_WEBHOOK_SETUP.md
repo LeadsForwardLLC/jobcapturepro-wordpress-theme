@@ -28,8 +28,8 @@ Environment-variable equivalents with the same names are also accepted.
 ## Architecture (event-driven)
 
 1. Stripe `customer.subscription.created` → durable conversion row immediately.
-2. **Meta `StartTrial`** fires immediately (Stripe-authoritative, `event_id = jcp_trial_<subscription_id>`). PostHog enrichment failure must never suppress Meta.
-3. **PostHog `trial_started`** waits for `signup_completed` CDP push → `/posthog-signup-bridge` → email match wake.
+2. **Meta `StartTrial`** fires immediately for non-QA trials (Stripe-authoritative, `event_id = jcp_trial_<subscription_id>`). QA attribution (`qa_trace_id` / `jcp_qa` / `utm_source=qa` / `is_qa`) sets `meta_status=skipped_qa` and does **not** call CAPI. PostHog enrichment failure must never suppress Meta for real traffic.
+3. **PostHog `trial_started`** waits for `signup_completed` CDP push → `/posthog-signup-bridge` → email match wake. QA trials still emit with `is_qa=true` + `qa_trace_id` for debugging.
 4. If CDP wake fails within **300s**, finalize PostHog as unmatched (exactly once). Bounded WP-Cron safety net only — no HogQL polling loop / shutdown sleeps.
 
 Matching hierarchy on bridge wake:

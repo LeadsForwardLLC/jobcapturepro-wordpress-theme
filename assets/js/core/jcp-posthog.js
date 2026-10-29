@@ -111,12 +111,44 @@
     return id;
   }
 
+  /**
+   * Canonical client QA detection (aligned with PHP jcp_is_qa_traffic).
+   * qa_trace_id is QA-exclusive — any non-empty value counts.
+   */
   function isQaTraffic(props) {
+    props = props || {};
     try {
+      if (
+        props.is_qa === true ||
+        props.is_qa === 1 ||
+        props.is_qa === '1' ||
+        props.is_qa === 'true'
+      ) {
+        return true;
+      }
+      var attr = {};
+      try {
+        if (window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function') {
+          attr = window.JCPLeadAttribution.getPayload() || {};
+        }
+      } catch (eAttr) {}
       var q = new URLSearchParams(location.search);
-      var trace = (props && props.qa_trace_id) || q.get('qa_trace_id') || '';
-      if (trace && /^qa[_-]/i.test(String(trace))) return true;
-      if (q.get('jcp_qa') === '1' || q.get('jcp_internal') === '1') return true;
+      var trace =
+        String(props.qa_trace_id || attr.qa_trace_id || q.get('qa_trace_id') || '').trim();
+      if (trace) return true;
+      if (
+        q.get('jcp_qa') === '1' ||
+        q.get('jcp_internal') === '1' ||
+        String(props.jcp_qa || '') === '1' ||
+        String(props.jcp_internal || '') === '1' ||
+        String(attr.jcp_qa || '') === '1'
+      ) {
+        return true;
+      }
+      var utm = String(
+        props.utm_source || attr.utm_source || q.get('utm_source') || ''
+      ).toLowerCase();
+      if (utm === 'qa') return true;
       var host = String(location.hostname || '');
       if (host.indexOf('local') !== -1 || host.indexOf('localhost') !== -1) return true;
     } catch (e) {}
@@ -229,8 +261,8 @@
     capture: capture,
     register: register,
     getDistinctId: getDistinctId,
-    isQaTraffic: function () {
-      return isQaTraffic({});
+    isQaTraffic: function (props) {
+      return isQaTraffic(props || {});
     },
   };
 

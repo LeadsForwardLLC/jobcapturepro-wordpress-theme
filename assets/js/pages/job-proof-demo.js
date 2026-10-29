@@ -288,6 +288,12 @@
 
   function pushDemoOptInDataLayer(bizType) {
     try {
+      // QA sessions must not reach Meta Lead via GTM demo_opt_in.
+      try {
+        if (window.JCPPostHog && typeof window.JCPPostHog.isQaTraffic === 'function') {
+          if (window.JCPPostHog.isQaTraffic(attrPayload())) return;
+        }
+      } catch (eQaGate) {}
       if (sessionStorage.getItem('jcp_datalayer_demo_opt_in')) return;
       window.dataLayer = window.dataLayer || [];
       var attr = attrPayload();
@@ -924,9 +930,11 @@
       var qQa = new URLSearchParams(location.search);
       var isQa =
         qQa.get('jcp_qa') === '1' ||
+        qQa.get('jcp_internal') === '1' ||
         String(qQa.get('utm_source') || '').toLowerCase() === 'qa' ||
-        !!(attr.qa_trace_id && /^qa[_-]/i.test(String(attr.qa_trace_id))) ||
-        String(attr.utm_source || '').toLowerCase() === 'qa';
+        !!String(attr.qa_trace_id || qQa.get('qa_trace_id') || '').trim() ||
+        String(attr.utm_source || '').toLowerCase() === 'qa' ||
+        (window.JCPPostHog && typeof window.JCPPostHog.isQaTraffic === 'function' && window.JCPPostHog.isQaTraffic(attr));
       if (isQa) {
         body.is_qa = true;
         body.jcp_qa = '1';

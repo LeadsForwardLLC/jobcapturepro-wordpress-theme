@@ -465,18 +465,20 @@
 
   function isQaSession() {
     try {
-      if (window.JCPPostHog && typeof window.JCPPostHog.isQaTraffic === 'function' && window.JCPPostHog.isQaTraffic()) {
-        return true;
+      if (window.JCPPostHog && typeof window.JCPPostHog.isQaTraffic === 'function') {
+        return !!window.JCPPostHog.isQaTraffic(attrPayload());
       }
     } catch (eQa) {}
     try {
       var q = new URLSearchParams(location.search);
       if (q.get('jcp_qa') === '1' || q.get('jcp_internal') === '1') return true;
-      var trace = q.get('qa_trace_id') || '';
-      if (trace && /^qa[_-]/i.test(trace)) return true;
+      if (String(q.get('qa_trace_id') || '').trim()) return true;
+      if (String(q.get('utm_source') || '').toLowerCase() === 'qa') return true;
     } catch (eQ) {}
     var attr = attrPayload();
-    if (attr.qa_trace_id && /^qa[_-]/i.test(String(attr.qa_trace_id))) return true;
+    if (attr.is_qa === true || attr.is_qa === 1 || attr.is_qa === '1' || attr.is_qa === 'true') return true;
+    if (String(attr.qa_trace_id || '').trim()) return true;
+    if (String(attr.utm_source || '').toLowerCase() === 'qa') return true;
     return false;
   }
 
@@ -1733,6 +1735,8 @@
 
   function pushAcquisitionLead(eventId) {
     try {
+      // QA sessions must not reach Meta Lead via GTM demo_opt_in.
+      if (isQaSession()) return;
       if (sessionStorage.getItem('jcp_datalayer_pg_opt_in')) return;
       window.dataLayer = window.dataLayer || [];
       var attr = attrPayload();
