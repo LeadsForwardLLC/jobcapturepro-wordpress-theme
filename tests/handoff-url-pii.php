@@ -11,9 +11,19 @@ declare(strict_types=1);
 
 $root = dirname( __DIR__ );
 $js   = file_get_contents( $root . '/assets/js/pages/proof-gap.js' );
+$handoff = file_get_contents( $root . '/assets/js/core/jcp-onboarding-handoff.js' );
+$rocket  = file_get_contents( $root . '/inc/wp-rocket.php' );
 
 if ( $js === false ) {
 	fwrite( STDERR, "FAIL: could not read proof-gap.js\n" );
+	exit( 1 );
+}
+if ( $handoff === false ) {
+	fwrite( STDERR, "FAIL: could not read jcp-onboarding-handoff.js\n" );
+	exit( 1 );
+}
+if ( $rocket === false ) {
+	fwrite( STDERR, "FAIL: could not read wp-rocket.php\n" );
 	exit( 1 );
 }
 
@@ -41,6 +51,16 @@ assert_true( str_contains( $js, 'max-age=604800' ), 'prefill cookie expires in 7
 assert_true( str_contains( $js, 'weekly_job_volume' ), 'survey weekly volume rides in prefill cookie' );
 assert_true( str_contains( $js, 'photo_workflow' ), 'survey workflow rides in prefill cookie' );
 assert_true( str_contains( $js, 'marketing_usage' ), 'survey marketing usage rides in prefill cookie' );
+
+// Shared handoff decorator must scrub AFTER merge (decorateAll / click capture).
+assert_true( str_contains( $handoff, 'HANDOFF_URL_PII_KEYS' ), 'handoff.js lists PII keys' );
+assert_true( str_contains( $handoff, 'scrubHandoffUrlPii' ), 'handoff.js defines scrubber' );
+assert_true( str_contains( $handoff, "'email'" ), 'handoff.js strips email' );
+assert_true( str_contains( $handoff, 'scrubHandoffUrlPii(u)' ), 'handoff.js scrubs URL object before return' );
+$scrub_pos = strpos( $handoff, 'scrubHandoffUrlPii(u)' );
+$return_pos = $scrub_pos !== false ? strpos( $handoff, 'return u.toString()', $scrub_pos ) : false;
+assert_true( $scrub_pos !== false && $return_pos !== false && $scrub_pos < $return_pos, 'handoff scrub runs before decorateHref return' );
+assert_true( str_contains( $rocket, 'onboarding-handoff-pii-scrub-v2' ), 'Rocket bust bumped for handoff scrub' );
 
 if ( $failures > 0 ) {
 	fwrite( STDERR, "\n$failures failure(s)\n" );

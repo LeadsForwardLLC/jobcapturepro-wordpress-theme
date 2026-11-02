@@ -43,6 +43,47 @@
     'qa_trace_id',
   ];
 
+  /**
+   * Never put identity / survey answers on app onboarding URLs.
+   * Prefer jcp_pg_prefill cookie + opaque pg_handoff (proof-gap.js).
+   * decorateAll() / click capture must not undo proof-gap scrubHandoffUrlPii.
+   */
+  const HANDOFF_URL_PII_KEYS = [
+    'email',
+    'first_name',
+    'last_name',
+    'full_name',
+    'fullName',
+    'name',
+    'phone',
+    'mobile',
+    'mobile_phone',
+    'company',
+    'organization_name',
+    'organizationName',
+    'business_type',
+    'business_niche',
+    'industry',
+    'industryId',
+    'industry_id',
+    'service_industry',
+    'serviceIndustry',
+    'weekly_job_volume',
+    'jobs_per_week_bucket',
+    'photo_workflow',
+    'current_workflow',
+    'marketing_usage',
+    'public_proof_percentage',
+    'estimated_jobs_per_year',
+    'potentially_unused_percent',
+  ];
+
+  const scrubHandoffUrlPii = (urlObj) => {
+    HANDOFF_URL_PII_KEYS.forEach((k) => {
+      urlObj.searchParams.delete(k);
+    });
+  };
+
   const safeJson = (raw) => {
     try {
       return JSON.parse(raw);
@@ -352,6 +393,9 @@
         const livePh = readPhDistinctId();
         if (livePh) u.searchParams.set('ph_distinct_id', livePh);
       }
+
+      // Always strip identity / survey PII — click + decorateAll must not undo page scrubs.
+      scrubHandoffUrlPii(u);
 
       return u.toString();
     } catch (e) {
