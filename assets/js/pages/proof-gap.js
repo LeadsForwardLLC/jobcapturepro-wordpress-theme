@@ -1638,40 +1638,20 @@
       };
       if (state.handoff_token) handoffExtra.pg_handoff = state.handoff_token;
       if (state.session_id) handoffExtra.survey_session_id = state.session_id;
+      // Email / name stay in jcp_pg_prefill cookie + opaque pg_handoff — not URL query params.
       if (state.email) {
-        handoffExtra.email = state.email;
-        var first = deriveFirstName(state.email);
-        if (first) handoffExtra.first_name = first;
+        try {
+          persistPrefillCookie({
+            email: state.email,
+            firstName: deriveFirstName(state.email),
+            niche: state.trade || '',
+            trade: state.trade || '',
+            industry: mapTradeToIndustry(state.trade) || '',
+          });
+        } catch (ePrefill) {}
       }
-      if (state.trade) {
-        handoffExtra.business_type = state.trade;
-        handoffExtra.business_niche = state.trade;
-        var industry = mapTradeToIndustry(state.trade);
-        if (industry) {
-          handoffExtra.industry = industry;
-          handoffExtra.industryId = industry;
-          handoffExtra.industry_id = industry;
-        }
-      }
-      // Proof Gap survey answers for app → GHL signup upsert (first-touch).
-      if (state.jobs_per_week_bucket) {
-        handoffExtra.weekly_job_volume = state.jobs_per_week_bucket;
-        handoffExtra.jobs_per_week_bucket = state.jobs_per_week_bucket;
-      }
-      if (state.current_workflow) {
-        handoffExtra.photo_workflow = state.current_workflow;
-        handoffExtra.current_workflow = state.current_workflow;
-      }
-      if (state.public_proof_percentage) {
-        handoffExtra.marketing_usage = state.public_proof_percentage;
-        handoffExtra.public_proof_percentage = state.public_proof_percentage;
-      }
-      try {
-        var estJobs = typeof estimatedJobsPerYearValue === 'function' ? estimatedJobsPerYearValue() : '';
-        if (estJobs) handoffExtra.estimated_jobs_per_year = String(estJobs);
-        var unusedPct = typeof potentiallyUnusedPercentValue === 'function' ? potentiallyUnusedPercentValue() : '';
-        if (unusedPct) handoffExtra.potentially_unused_percent = String(unusedPct);
-      } catch (eEst) {}
+      // Survey answers stay in jcp_pg_prefill cookie (and opaque pg_handoff server-side),
+      // not in the CTA query string (Meta autocapture / referrer hygiene).
 
       // Identity continuity for PostHog across marketing → app subdomain.
       try {
@@ -1709,15 +1689,8 @@
         href = u.toString();
       }
 
-      // Force email onto the trial URL even if decorate only fills missing keys.
-      if (state.email) {
-        var parsed = new URL(href, window.location.origin);
-        parsed.searchParams.set('email', state.email);
-        if (!parsed.searchParams.get('first_name')) {
-          parsed.searchParams.set('first_name', deriveFirstName(state.email));
-        }
-        href = parsed.toString();
-      }
+      // Scrub any PII that decorateHref may have merged from demoUser / extras.
+      href = scrubHandoffUrlPii(href);
       a.href = href;
     } catch (e) {
       a.href = base;
@@ -1770,7 +1743,59 @@
       if (state.other_trade_text) user.other_trade_text = state.other_trade_text;
       if (state.other_workflow_text) user.other_workflow_text = state.other_workflow_text;
       localStorage.setItem('demoUser', JSON.stringify(user));
+      // Cross-subdomain prefill for app onboarding — keep email out of the CTA href
+      // so Meta autocapture / referrers / history do not store PII in query strings.
+      persistPrefillCookie(user);
     } catch (e) {}
+  }
+
+  /**
+   * Keys that must never appear on app.jobcapturepro.com/onboarding URLs.
+   * Identity + survey answers ride in jcp_pg_prefill / opaque pg_handoff instead.
+   */
+  var HANDOFF_URL_PII_KEYS = [
+    'email', 'first_name', 'last_name', 'full_name', 'fullName', 'name',
+    'phone', 'mobile', 'mobile_phone', 'company', 'organization_name', 'organizationName',
+    'business_type', 'business_niche', 'industry', 'industryId', 'industry_id',
+    'service_industry', 'serviceIndustry',
+    'weekly_job_volume', 'jobs_per_week_bucket',
+    'photo_workflow', 'current_workflow',
+    'marketing_usage', 'public_proof_percentage',
+    'estimated_jobs_per_year', 'potentially_unused_percent',
+  ];
+
+  function persistPrefillCookie(user) {
+    try {
+      if (!user || !user.email) return;
+      var payload = {
+        email: String(user.email || '').trim(),
+        first_name: String(user.firstName || '').trim(),
+        business_type: String(user.niche || user.trade || '').trim(),
+        industry: String(user.industry || '').trim(),
+        source: 'proof_gap_survey',
+        v: 1,
+      };
+      if (state.jobs_per_week_bucket) payload.weekly_job_volume = state.jobs_per_week_bucket;
+      if (state.current_workflow) payload.photo_workflow = state.current_workflow;
+      if (state.public_proof_percentage) payload.marketing_usage = state.public_proof_percentage;
+      if (state.handoff_token) payload.pg_handoff = state.handoff_token;
+      var raw = encodeURIComponent(JSON.stringify(payload));
+      document.cookie =
+        'jcp_pg_prefill=' + raw +
+        '; path=/; domain=.jobcapturepro.com; max-age=604800; SameSite=Lax; Secure';
+    } catch (eCookie) {}
+  }
+
+  function scrubHandoffUrlPii(href) {
+    try {
+      var u = new URL(href, window.location.origin);
+      HANDOFF_URL_PII_KEYS.forEach(function (k) {
+        u.searchParams.delete(k);
+      });
+      return u.toString();
+    } catch (eScrub) {
+      return href;
+    }
   }
 
   function resolvePhDistinctId(attr) {

@@ -51,12 +51,22 @@ Proof Sprint does not collect email on the marketing site. After Stripe creates 
 **PostHog CDP destination** (Data pipelines → Destinations → HTTP Webhook):
 
 - Filter: event `signup_completed`
-- URL: `https://jobcapturepro.com/index.php?rest_route=/jcp/v1/posthog-signup-bridge` (PostHog CDN IPs reach this path reliably; `/wp-json/...` was intermittently SiteGround-captcha'd; bare `.php` returned 403)
-- Header: `X-JCP-Bridge-Secret: <same as JCP_POSTHOG_SIGNUP_BRIDGE_SECRET>`
+- **Preferred URL (outside SiteGround WAF):** `https://app.jobcapturepro.com/api/webhooks/posthog-signup-bridge`  
+  App relays to WordPress with the same secret. PostHog AWS IPs are SiteGround-captcha'd on `jobcapturepro.com` (HTTP 202 + `sgcaptcha`) including `/jcp-signup-bridge.php` and `index.php?rest_route=…`.
+- Legacy WP URLs (only after SiteGround Anti-Bot exclusion):  
+  `https://jobcapturepro.com/jcp-signup-bridge.php` or  
+  `https://jobcapturepro.com/index.php?rest_route=/jcp/v1/posthog-signup-bridge`
+- Header: `X-JCP-Bridge-Secret: <same as JCP_POSTHOG_SIGNUP_BRIDGE_SECRET>` (also set `JCP_WP_SIGNUP_BRIDGE_SECRET` on the app)
 - Body JSON includes email, `current_url`, `distinct_id`, `ph_distinct_id`, UTMs, `qa_trace_id`, `lp_variant`, `funnel_surface`, `source`
 - Hog must treat `position()` as **1-based** (0 = not found) and accept JSON object `body.received == true` (not only a string search for `"received":true`)
 
-**SiteGround Anti-Bot:** Prefer the `index.php?rest_route=/jcp/v1/posthog-signup-bridge` URL for CDP. Optionally exclude `/wp-json/jcp/v1/*` from Anti-Bot AI.
+**Primary wake path (preferred):** JCP-API calls WP bridge server-side on successful onboarding (`scheduleWordpressSignupBridgeNotify`) — does not depend on PostHog CDP timing.
+
+**SiteGround Anti-Bot (ops):** In Site Tools → Security → Anti-Bot AI, exclude:
+- `/jcp-signup-bridge.php`
+- `/index.php` with `rest_route=/jcp/v1/posthog-signup-bridge`
+- `/wp-json/jcp/v1/*`  
+  Or whitelist PostHog/AWS egress if SiteGround supports IP allowlists. Until excluded, rely on App relay + app→WP notify + HogQL fallback when `JCP_POSTHOG_PERSONAL_API_KEY` is set.
 
 ## Stripe Dashboard steps
 

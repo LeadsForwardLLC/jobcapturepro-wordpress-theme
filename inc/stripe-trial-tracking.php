@@ -745,10 +745,12 @@ function jcp_trial_find_attr_via_posthog_signup( string $email_norm ): array {
 		return $local;
 	}
 
-	if ( ! defined( 'JCP_POSTHOG_HOGQL_FALLBACK' ) || ! JCP_POSTHOG_HOGQL_FALLBACK ) {
+	// Recover Path B attribution when PostHog CDP → WP is SiteGround-captcha'd.
+	// Auto-enable whenever JCP_POSTHOG_PERSONAL_API_KEY is set. Explicit
+	// JCP_POSTHOG_HOGQL_FALLBACK=false disables the pull even if a key exists.
+	if ( defined( 'JCP_POSTHOG_HOGQL_FALLBACK' ) && ! JCP_POSTHOG_HOGQL_FALLBACK ) {
 		return [];
 	}
-
 	$token = jcp_trial_secret( 'JCP_POSTHOG_PERSONAL_API_KEY' );
 	if ( $token === '' ) {
 		return [];
