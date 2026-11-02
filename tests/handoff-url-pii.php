@@ -34,6 +34,13 @@ assert_true( str_contains( $js, 'HANDOFF_URL_PII_KEYS' ), 'lists PII keys to str
 assert_true( ! str_contains( $js, "parsed.searchParams.set('email'" ), 'does not force email into CTA URL' );
 assert_true( ! str_contains( $js, "searchParams.set('email', state.email)" ), 'does not set email query from state' );
 assert_true( str_contains( $js, 'scrubHandoffUrlPii(href)' ), 'scrubs href before assigning CTA' );
+assert_true( str_contains( $js, 'domain=.jobcapturepro.com' ), 'prefill cookie scoped to registrable domain' );
+assert_true( str_contains( $js, 'SameSite=Lax' ), 'prefill cookie SameSite=Lax for top-level handoff' );
+assert_true( str_contains( $js, 'Secure' ), 'prefill cookie marked Secure' );
+assert_true( str_contains( $js, 'max-age=604800' ), 'prefill cookie expires in 7 days' );
+assert_true( str_contains( $js, 'weekly_job_volume' ), 'survey weekly volume rides in prefill cookie' );
+assert_true( str_contains( $js, 'photo_workflow' ), 'survey workflow rides in prefill cookie' );
+assert_true( str_contains( $js, 'marketing_usage' ), 'survey marketing usage rides in prefill cookie' );
 
 if ( $failures > 0 ) {
 	fwrite( STDERR, "\n$failures failure(s)\n" );
