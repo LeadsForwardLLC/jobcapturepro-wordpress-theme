@@ -36,14 +36,22 @@ $assert( str_contains( $css, 'pg-welcome-secondary' ), 'welcome-secondary CSS pr
 
 // Trial bridge.
 $assert( str_contains( $content, 'Start turning unused jobs into marketing.' ), 'trial headline reconnects unused work' );
-$assert( str_contains( $content, '14-day free trial. No credit card.' ), 'trial sub leads with free + no CC' );
+$assert( str_contains( $content, '14 days free. No credit card.' ), 'trial sub leads with free + no CC' );
+$assert( str_contains( $content, 'Free First-Job Setup Session included' ), 'trial offers free setup session' );
+$assert( str_contains( $content, 'pg-plan-days' ), 'trial shows 14-day plan structure' );
 $assert( str_contains( $content, 'id="pgPlanHero"' ), 'plan hero unused-jobs slot present' );
 $assert( str_contains( $content, '<details class="pg-trial-previews"' ), 'channel previews collapsed by default' );
 $assert( str_contains( $content, 'Optional: preview sample outputs' ), 'preview framed as optional' );
+$assert( str_contains( $content, 'Prefer to start the free trial now' ), 'secondary direct-trial path present' );
+$assert( str_contains( $content, 'Unlock a personalized example' ) || str_contains( $content, 'unlock a personalized example' ), 'email promise clarified' );
 $assert( str_contains( $js, 'Check my job visibility \\u2192' ) || str_contains( $js, 'Check my job visibility →' ) || str_contains( $js, "Check my job visibility \u2192" ), 'JS welcome CTA fallback updated' );
-$assert( str_contains( $js, '14 days free' ) && str_contains( $js, 'No credit card' ), 'JS trial CTA sublabel updated' );
+$assert( str_contains( $js, 'Free setup session' ) || str_contains( $js, 'Free Setup Session' ) || str_contains( $js, 'free setup session' ), 'JS trial CTA sublabel mentions setup session' );
+$assert( str_contains( $js, 'bindDirectTrialLinks' ), 'JS binds secondary direct-trial links' );
+$assert( str_contains( $js, 'skip_assessment' ), 'direct-trial clicks tagged skip_assessment' );
 $assert( str_contains( $js, 'cta_visually_on_screen' ), 'trial_cta_viewed records sticky CTA visibility' );
 $assert( str_contains( $js, 'pgPlanUnused' ), 'JS fills unused-jobs hero' );
 $assert( str_contains( $js, "details.open" ) || str_contains( $js, 'details.open' ), 'ProductRevealStarted deferred until preview open' );
+$assert( str_contains( $css, 'pg-direct-trial-link' ), 'direct-trial link CSS present' );
+$assert( str_contains( $css, 'pg-plan-setup-session' ), 'setup session callout CSS present' );
 
 exit( $fail > 0 ? 1 : 0 );

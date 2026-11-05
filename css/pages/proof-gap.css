@@ -4628,6 +4628,60 @@ body.jcp-proof-gap .pg-welcome-secondary {
   border-top: 1px solid rgba(15, 23, 42, 0.08);
 }
 
+body.jcp-proof-gap .pg-bottom-action__alt,
+body.jcp-proof-gap .pg-direct-trial-inline {
+  margin: 0.55rem 0 0;
+  text-align: center;
+}
+
+body.jcp-proof-gap .pg-direct-trial-link {
+  color: var(--pg-muted, #64748b);
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+body.jcp-proof-gap .pg-direct-trial-link:hover,
+body.jcp-proof-gap .pg-direct-trial-link:focus-visible {
+  color: var(--pg-ink, #0f172a);
+}
+
+body.jcp-proof-gap .pg-plan-days {
+  margin: 0.85rem 0 0;
+  padding: 0.75rem 0.85rem 0.75rem 1.35rem;
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.03);
+  list-style: decimal;
+}
+
+body.jcp-proof-gap .pg-plan-days li {
+  margin: 0.35rem 0;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--pg-ink, #0f172a);
+}
+
+body.jcp-proof-gap .pg-plan-setup-session {
+  margin-top: 0.85rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 0.75rem;
+}
+
+body.jcp-proof-gap .pg-plan-setup-session__title {
+  margin: 0 0 0.25rem;
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+
+body.jcp-proof-gap .pg-plan-setup-session__body {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: var(--pg-muted, #64748b);
+}
+
 @media (max-width: 767px) {
   body.jcp-proof-gap.pg-has-bottom-action .pg-entry-shell--control .pg-welcome-secondary {
     margin-top: max(2.75rem, calc(100dvh - var(--pg-bottom-pad, 5.5rem) - 18.5rem));

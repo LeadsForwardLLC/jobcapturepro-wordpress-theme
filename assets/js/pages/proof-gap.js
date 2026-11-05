@@ -182,12 +182,67 @@
       micro.hidden = true;
       micro.textContent = '';
     }
+    setBottomAltVisible(false);
     if (bar) {
       bar.hidden = true;
       bar.classList.remove('is-entering');
     }
     document.body.classList.remove('pg-has-bottom-action');
     syncBottomPad();
+  }
+
+  function setBottomAltVisible(show) {
+    var alt = document.getElementById('pgBottomAlt');
+    if (!alt) return;
+    alt.hidden = !show;
+  }
+
+  function directTrialHref() {
+    return (
+      (window.JCP_ONBOARDING && window.JCP_ONBOARDING.url) ||
+      boot.trialBase ||
+      'https://app.jobcapturepro.com/onboarding'
+    );
+  }
+
+  function bindDirectTrialLinks() {
+    document.querySelectorAll('[data-pg-direct-trial]').forEach(function (link) {
+      if (link.getAttribute('data-pg-direct-bound')) return;
+      link.setAttribute('data-pg-direct-bound', '1');
+      try {
+        var extras = {
+          lp_variant: LP_VARIANT,
+          jcp_pg_variant: LP_VARIANT,
+          funnel_version: FUNNEL_VERSION,
+          cta_source: link.getAttribute('data-pg-direct-trial') || 'welcome_direct_trial',
+        };
+        var href = directTrialHref();
+        if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.decorateHref === 'function') {
+          href = window.JCPOnboardingHandoff.decorateHref(href, extras, 'proof_gap_direct_trial') || href;
+        }
+        if (typeof scrubHandoffUrlPii === 'function') {
+          href = scrubHandoffUrlPii(href);
+        }
+        link.href = href;
+      } catch (eHref) {
+        link.href = directTrialHref();
+      }
+      link.addEventListener('click', function () {
+        var source = link.getAttribute('data-pg-direct-trial') || 'welcome_direct_trial';
+        track('TrialCTAClicked', {
+          trade: state.trade || '',
+          current_workflow: state.current_workflow || '',
+          jobs_per_week_bucket: state.jobs_per_week_bucket || '',
+          cta_source: source,
+          skip_assessment: true,
+        });
+        track('trial_cta_clicked', {
+          source: 'proof_gap_direct',
+          cta_source: source,
+          skip_assessment: true,
+        });
+      });
+    });
   }
 
   function setBottomAction(opts) {
@@ -264,6 +319,7 @@
 
   function syncBottomActionForState(id) {
     if (id === 'welcome') {
+      setBottomAltVisible(true);
       // Reuse server-rendered CTA — avoid wipe/rebuild CLS on first paint.
       var existingCta = document.getElementById('pgWelcomeCta');
       var existingBar = document.getElementById('pgBottomAction');
@@ -305,18 +361,21 @@
           goTo('trade');
         },
       });
+      setBottomAltVisible(true);
       return;
     }
 
     if (id === 'welcome_direct' || id === 'trade' || id === 'current_workflow' || id === 'jobs_per_week' || id === 'public_proof_percentage') {
+      setBottomAltVisible(false);
       clearBottomAction();
       return;
     }
 
     if (id === 'result_email') {
+      setBottomAltVisible(false);
       setBottomAction({
         id: 'pgEmailSubmit',
-        label: 'Build My Job Example \u2192',
+        label: 'Unlock My Job Example \u2192',
         type: 'submit',
         form: 'pgEmailForm',
         animate: false,
@@ -330,11 +389,12 @@
     }
 
     if (id === 'trial_bridge') {
+      setBottomAltVisible(false);
       setBottomAction({
         id: 'pgTrialCta',
         label: 'Start My Free 14-Day Trial \u2192',
         href: (boot.trialBase || 'https://app.jobcapturepro.com/onboarding'),
-        sublabel: '14 days free \u00b7 No credit card \u00b7 Cancel anytime',
+        sublabel: 'Free \u00b7 No credit card \u00b7 Free setup session',
         animate: false,
         onClick: function (ev) {
           if (ev && typeof ev.preventDefault === 'function') ev.preventDefault();
@@ -1631,15 +1691,15 @@
 
     if (firstWin) {
       if (state.current_workflow === 'housecall_pro') {
-        firstWin.textContent = 'In the free trial: connect Housecall Pro, pull one completed job, and publish it.';
+        firstWin.textContent = 'Connect Housecall Pro, publish one completed job, then book your Free First-Job Setup Session if you want live help.';
       } else if (state.current_workflow === 'companycam') {
-        firstWin.textContent = 'In the free trial: connect CompanyCam, pull one completed job, and publish the proof.';
+        firstWin.textContent = 'Connect CompanyCam, publish one completed job, then book your Free First-Job Setup Session if you want live help.';
       } else if (state.current_workflow === 'phones_camera_roll') {
-        firstWin.textContent = 'In the free trial: upload photos from one completed job and publish them as marketing.';
+        firstWin.textContent = 'Upload photos from one completed job, publish them, then book your Free First-Job Setup Session if you want live help.';
       } else if (state.current_workflow === 'other_crm') {
-        firstWin.textContent = 'In the free trial: connect your workflow if supported, or upload one completed job and publish it.';
+        firstWin.textContent = 'Connect your workflow or upload one completed job, publish it, then book your Free First-Job Setup Session if you want live help.';
       } else {
-        firstWin.textContent = 'In the free trial: capture one completed job and publish it to website, Google, or social.';
+        firstWin.textContent = 'Capture one completed job, publish it to website/Google/social, then book your Free First-Job Setup Session if you want live help.';
       }
     }
     updateTrialHref();
@@ -2275,6 +2335,7 @@
     }
 
     bind();
+    bindDirectTrialLinks();
     initChoices();
 
     var startState = IS_DIRECT_ENTRY ? 'welcome_direct' : 'welcome';
