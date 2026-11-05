@@ -4568,9 +4568,34 @@ body.jcp-proof-gap .pg-result__unused-value {
 
 /* ─── v11: Trial previews (dest tabs inside trial_bridge) ─── */
 body.jcp-proof-gap .pg-trial-previews {
-  margin-top: 1.75rem;
+  margin-top: 1.35rem;
   border-top: 1px solid rgba(15, 23, 42, 0.08);
-  padding-top: 1.25rem;
+  padding-top: 0.85rem;
+}
+body.jcp-proof-gap .pg-trial-previews__summary {
+  list-style: none;
+  cursor: pointer;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.15rem 0.65rem;
+  font-weight: 750;
+  color: var(--pg-ink);
+}
+body.jcp-proof-gap .pg-trial-previews__summary::-webkit-details-marker {
+  display: none;
+}
+body.jcp-proof-gap .pg-trial-previews__summary-title {
+  font-size: clamp(0.95rem, 2.4vw, 1.05rem);
+  line-height: 1.3;
+}
+body.jcp-proof-gap .pg-trial-previews__summary-hint {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--pg-muted);
+  line-height: 1.35;
+}
+body.jcp-proof-gap .pg-trial-previews[open] .pg-trial-previews__summary {
+  margin-bottom: 0.55rem;
 }
 body.jcp-proof-gap .pg-trial-previews .pg-dest-tabs {
   margin-top: 0.25rem;
@@ -4594,6 +4619,37 @@ body.jcp-proof-gap .pg-trial-previews .pg-reveal-subline {
   font-size: 0.88rem;
   color: var(--pg-muted);
   line-height: 1.4;
+}
+
+/* Conversion rescue: keep control brochure below sticky CTA on mobile first paint. */
+body.jcp-proof-gap .pg-welcome-secondary {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+@media (max-width: 767px) {
+  body.jcp-proof-gap.pg-has-bottom-action .pg-entry-shell--control .pg-welcome-secondary {
+    margin-top: max(2.75rem, calc(100dvh - var(--pg-bottom-pad, 5.5rem) - 18.5rem));
+    padding-bottom: 0.5rem;
+  }
+
+  body.jcp-proof-gap .pg-entry-shell--direct .pg-title--welcome {
+    margin-bottom: 0.55rem;
+  }
+
+  body.jcp-proof-gap .pg-entry-shell--direct .pg-sub {
+    margin-bottom: 0.45rem;
+  }
+
+  body.jcp-proof-gap .pg-entry-shell--direct .pg-dq-trust {
+    margin-bottom: 0.7rem;
+  }
+
+  /* Keep plan hero + CTA above the optional preview drawer. */
+  body.jcp-proof-gap .pg-state--trial .pg-review-slot--trial {
+    margin-bottom: 0.35rem;
+  }
 }
 
 /* Hide empty insight cards (legacy markup safety) */
