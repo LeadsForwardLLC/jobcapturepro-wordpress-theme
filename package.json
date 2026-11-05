@@ -8,7 +8,8 @@
     "test:qa-traffic": "php tests/qa-traffic.php",
     "test:meta-p1": "php tests/stripe-trial-meta-p1.php",
     "test:handoff-pii": "php tests/handoff-url-pii.php",
-    "test:trial-tracking": "php tests/qa-traffic.php && php tests/stripe-trial-meta-p1.php && php tests/handoff-url-pii.php"
+    "test:trial-tracking": "php tests/qa-traffic.php && php tests/stripe-trial-meta-p1.php && php tests/handoff-url-pii.php",
+    "test:proof-gap-conversion-rescue": "php tests/proof-gap-conversion-rescue.php"
   },
   "devDependencies": {
     "playwright": "1.49.1"

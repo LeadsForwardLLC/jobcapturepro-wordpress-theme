@@ -182,12 +182,78 @@
       micro.hidden = true;
       micro.textContent = '';
     }
+    setBottomAltVisible(false);
     if (bar) {
       bar.hidden = true;
       bar.classList.remove('is-entering');
     }
     document.body.classList.remove('pg-has-bottom-action');
     syncBottomPad();
+  }
+
+  function setBottomAltVisible(show) {
+    var alt = document.getElementById('pgBottomAlt');
+    if (!alt) return;
+    alt.hidden = !show;
+  }
+
+  function directTrialHref() {
+    return (
+      (window.JCP_ONBOARDING && window.JCP_ONBOARDING.url) ||
+      boot.trialBase ||
+      'https://app.jobcapturepro.com/onboarding'
+    );
+  }
+
+  function bindDirectTrialLinks() {
+    document.querySelectorAll('[data-pg-direct-trial]').forEach(function (link) {
+      if (link.getAttribute('data-pg-direct-bound')) return;
+      link.setAttribute('data-pg-direct-bound', '1');
+      try {
+        var extras = {
+          lp_variant: LP_VARIANT,
+          jcp_pg_variant: LP_VARIANT,
+          funnel_version: FUNNEL_VERSION,
+          cta_source: link.getAttribute('data-pg-direct-trial') || 'welcome_direct_trial',
+          skip_assessment: '1',
+          entry_path: 'direct_trial_skip',
+        };
+        var href = directTrialHref();
+        if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.decorateHref === 'function') {
+          href = window.JCPOnboardingHandoff.decorateHref(href, extras, 'proof_gap_direct_trial') || href;
+        }
+        if (typeof scrubHandoffUrlPii === 'function') {
+          href = scrubHandoffUrlPii(href);
+        }
+        link.href = href;
+      } catch (eHref) {
+        link.href = directTrialHref();
+      }
+      link.addEventListener('click', function () {
+        var source = link.getAttribute('data-pg-direct-trial') || 'welcome_direct_trial';
+        // Distinct event for trials originating from the secondary skip path.
+        track('DirectTrialSkipClicked', {
+          cta_source: source,
+          skip_assessment: true,
+          entry_path: 'direct_trial_skip',
+          jcp_surface: 'proof_gap_direct_trial',
+        });
+        track('TrialCTAClicked', {
+          trade: state.trade || '',
+          current_workflow: state.current_workflow || '',
+          jobs_per_week_bucket: state.jobs_per_week_bucket || '',
+          cta_source: source,
+          skip_assessment: true,
+          entry_path: 'direct_trial_skip',
+        });
+        track('trial_cta_clicked', {
+          source: 'proof_gap_direct',
+          cta_source: source,
+          skip_assessment: true,
+          entry_path: 'direct_trial_skip',
+        });
+      });
+    });
   }
 
   function setBottomAction(opts) {
@@ -264,6 +330,7 @@
 
   function syncBottomActionForState(id) {
     if (id === 'welcome') {
+      setBottomAltVisible(true);
       // Reuse server-rendered CTA — avoid wipe/rebuild CLS on first paint.
       var existingCta = document.getElementById('pgWelcomeCta');
       var existingBar = document.getElementById('pgBottomAction');
@@ -295,7 +362,7 @@
       }
       setBottomAction({
         id: 'pgWelcomeCta',
-        label: 'See What Your Jobs Could Be Doing \u2192',
+        label: 'Check my job visibility \u2192',
         micro: '4 quick questions \u00b7 About 60 seconds \u00b7 No phone \u00b7 No credit card',
         animate: false,
         onClick: function () {
@@ -305,18 +372,21 @@
           goTo('trade');
         },
       });
+      setBottomAltVisible(true);
       return;
     }
 
     if (id === 'welcome_direct' || id === 'trade' || id === 'current_workflow' || id === 'jobs_per_week' || id === 'public_proof_percentage') {
+      setBottomAltVisible(false);
       clearBottomAction();
       return;
     }
 
     if (id === 'result_email') {
+      setBottomAltVisible(false);
       setBottomAction({
         id: 'pgEmailSubmit',
-        label: 'Build My Job Example \u2192',
+        label: 'Unlock My Job Example \u2192',
         type: 'submit',
         form: 'pgEmailForm',
         animate: false,
@@ -330,11 +400,12 @@
     }
 
     if (id === 'trial_bridge') {
+      setBottomAltVisible(false);
       setBottomAction({
         id: 'pgTrialCta',
         label: 'Start My Free 14-Day Trial \u2192',
         href: (boot.trialBase || 'https://app.jobcapturepro.com/onboarding'),
-        sublabel: 'No credit card required',
+        sublabel: 'Free \u00b7 No credit card \u00b7 Free setup session',
         animate: false,
         onClick: function (ev) {
           if (ev && typeof ev.preventDefault === 'function') ev.preventDefault();
@@ -520,6 +591,8 @@
       funnel_id: 'proof_gap',
       funnel_version: FUNNEL_VERSION,
       experiment: 'proof_gap_entry_v1',
+      allocation_scheme:
+        (window.JCP_PG_ENTRY && window.JCP_PG_ENTRY.allocationScheme) || 'dq_80_control_20',
       survey_version: state.survey_version,
       trade: state.trade || undefined,
       workflow: state.current_workflow || undefined,
@@ -1471,13 +1544,22 @@
       ? state.other_trade_text
       : trades[state.trade] || state.trade || 'field';
     var title = document.getElementById('pgRevealTitle');
-    if (title) title.textContent = 'See what one finished ' + tradeLabel + ' job can become.';
+    var sub = document.getElementById('pgRevealSubline');
+    if (title) title.textContent = 'Optional: preview sample ' + tradeLabel + ' outputs';
+    if (sub) sub.textContent = 'Website, Google, social, reviews, directory';
+    // Previews stay collapsed in <details> so the sticky trial CTA stays the primary action.
+    // Init tabs once opened (or immediately so first open is ready).
     setDestTab('website', { fromUser: false, animate: false });
     bindDestTabs();
     showDestTabsHint();
-    if (!milestoneViewed.reveal) {
-      milestoneViewed.reveal = true;
-      track('ProductRevealStarted', { trade: state.trade, current_workflow: state.current_workflow, cta_source: 'trial_bridge' });
+    var details = document.getElementById('pgTrialPreviews');
+    if (details && !details.getAttribute('data-pg-reveal-bound')) {
+      details.setAttribute('data-pg-reveal-bound', '1');
+      details.addEventListener('toggle', function () {
+        if (!details.open || milestoneViewed.reveal) return;
+        milestoneViewed.reveal = true;
+        track('ProductRevealStarted', { trade: state.trade, current_workflow: state.current_workflow, cta_source: 'trial_bridge' });
+      });
     }
   }
 
@@ -1589,7 +1671,26 @@
   function renderTrialSummary() {
     var list = document.getElementById('pgTrialSummary');
     var firstWin = document.getElementById('pgTrialFirstWin');
+    var hero = document.getElementById('pgPlanHero');
+    var unusedEl = document.getElementById('pgPlanUnused');
+    var titleEl = document.getElementById('pgTrialTitle');
     if (!list) return;
+
+    var unusedLabel = formatUnusedRange();
+    if (hero && unusedEl) {
+      if (unusedLabel) {
+        unusedEl.textContent = unusedLabel;
+        hero.hidden = false;
+        if (titleEl) {
+          titleEl.textContent = 'Start turning ' + unusedLabel + ' unused jobs into marketing.';
+        }
+      } else {
+        hero.hidden = true;
+        if (titleEl) {
+          titleEl.textContent = 'Start turning unused jobs into marketing.';
+        }
+      }
+    }
 
     var tradeChip = (state.trade === 'other' && state.other_trade_text)
       ? escapeHtml(state.other_trade_text)
@@ -1603,15 +1704,15 @@
 
     if (firstWin) {
       if (state.current_workflow === 'housecall_pro') {
-        firstWin.textContent = 'Connect Housecall Pro, pull in one completed job, and publish the work your crew already captured.';
+        firstWin.textContent = 'Connect Housecall Pro, publish one completed job, then book your Free First-Job Setup Session if you want live help.';
       } else if (state.current_workflow === 'companycam') {
-        firstWin.textContent = 'Connect CompanyCam, pull in photos from one completed job, and turn them into marketing proof.';
+        firstWin.textContent = 'Connect CompanyCam, publish one completed job, then book your Free First-Job Setup Session if you want live help.';
       } else if (state.current_workflow === 'phones_camera_roll') {
-        firstWin.textContent = 'Upload photos from one completed job and let JobCapturePro turn them into marketing proof.';
+        firstWin.textContent = 'Upload photos from one completed job, publish them, then book your Free First-Job Setup Session if you want live help.';
       } else if (state.current_workflow === 'other_crm') {
-        firstWin.textContent = 'Connect your field workflow if supported, or upload one completed job and publish the proof.';
+        firstWin.textContent = 'Connect your workflow or upload one completed job, publish it, then book your Free First-Job Setup Session if you want live help.';
       } else {
-        firstWin.textContent = 'Capture one completed job and publish it to website, Google, social, reviews, or directory.';
+        firstWin.textContent = 'Capture one completed job, publish it to website/Google/social, then book your Free First-Job Setup Session if you want live help.';
       }
     }
     updateTrialHref();
@@ -2093,12 +2194,27 @@
       initTrialPreviews();
       if (!milestoneViewed.trial_view) {
         milestoneViewed.trial_view = true;
-        track('TrialCTAViewed', { trade: state.trade, cta_source: 'trial_bridge' });
+        // Fires on state enter (sticky CTA is in the bottom bar). Visibility of channel
+        // previews is separate — those stay collapsed behind <details> until opened.
+        var sticky = document.getElementById('pgBottomAction');
+        var stickyRect = sticky ? sticky.getBoundingClientRect() : null;
+        var ctaVisuallyOnScreen = !!(
+          stickyRect &&
+          stickyRect.height > 0 &&
+          stickyRect.top < (window.innerHeight || 0) &&
+          stickyRect.bottom > 0
+        );
+        track('TrialCTAViewed', {
+          trade: state.trade,
+          cta_source: 'trial_bridge',
+          cta_visually_on_screen: ctaVisuallyOnScreen,
+        });
         track('trial_cta_viewed', {
           source: 'proof_gap',
           trade: state.trade,
           workflow: state.current_workflow,
           jobs_per_week: state.jobs_per_week_bucket,
+          cta_visually_on_screen: ctaVisuallyOnScreen,
         });
       }
     }
@@ -2232,6 +2348,7 @@
     }
 
     bind();
+    bindDirectTrialLinks();
     initChoices();
 
     var startState = IS_DIRECT_ENTRY ? 'welcome_direct' : 'welcome';

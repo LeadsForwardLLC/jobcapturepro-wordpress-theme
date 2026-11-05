@@ -3,6 +3,10 @@
  * Must run before paint; excluded from WP Rocket delay/defer/minify.
  * Canonical: cookie/localStorage jcp_pg_entry_variant = control | direct_question.
  * PostHog must NOT assign.
+ *
+ * Allocation (new visitors only; sticky cookie/LS honored for 30 days):
+ *   direct_question 80% · control 20% holdout
+ * Cutover: 2026-11-05 conversion rescue (was 50/50).
  */
 (function () {
   'use strict';
@@ -10,6 +14,9 @@
   var LS = 'jcp_pg_entry_variant';
   var DAYS = 30;
   var VALID = { control: 1, direct_question: 1 };
+  /** Uint8 threshold: values < CONTROL_MAX_EXCLUSIVE → control. 256 * 0.20 = 51.2 → 51. */
+  var CONTROL_MAX_EXCLUSIVE = 51;
+  var ALLOCATION = { control: 0.2, direct_question: 0.8, scheme: 'dq_80_control_20' };
 
   function readCookie(name) {
     try {
@@ -65,10 +72,10 @@
       if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
         var buf = new Uint8Array(1);
         window.crypto.getRandomValues(buf);
-        return buf[0] < 128 ? 'control' : 'direct_question';
+        return buf[0] < CONTROL_MAX_EXCLUSIVE ? 'control' : 'direct_question';
       }
     } catch (e) {}
-    return Math.random() < 0.5 ? 'control' : 'direct_question';
+    return Math.random() < ALLOCATION.control ? 'control' : 'direct_question';
   }
 
   function resolve() {
@@ -117,5 +124,7 @@
     experiment: 'proof_gap_entry_v1',
     variant: variant,
     funnelVersion: 'proof_gap_survey_v1',
+    allocation: ALLOCATION,
+    allocationScheme: ALLOCATION.scheme,
   };
 })();

@@ -4568,9 +4568,34 @@ body.jcp-proof-gap .pg-result__unused-value {
 
 /* ─── v11: Trial previews (dest tabs inside trial_bridge) ─── */
 body.jcp-proof-gap .pg-trial-previews {
-  margin-top: 1.75rem;
+  margin-top: 1.35rem;
   border-top: 1px solid rgba(15, 23, 42, 0.08);
-  padding-top: 1.25rem;
+  padding-top: 0.85rem;
+}
+body.jcp-proof-gap .pg-trial-previews__summary {
+  list-style: none;
+  cursor: pointer;
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.55rem 0.15rem 0.65rem;
+  font-weight: 750;
+  color: var(--pg-ink);
+}
+body.jcp-proof-gap .pg-trial-previews__summary::-webkit-details-marker {
+  display: none;
+}
+body.jcp-proof-gap .pg-trial-previews__summary-title {
+  font-size: clamp(0.95rem, 2.4vw, 1.05rem);
+  line-height: 1.3;
+}
+body.jcp-proof-gap .pg-trial-previews__summary-hint {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--pg-muted);
+  line-height: 1.35;
+}
+body.jcp-proof-gap .pg-trial-previews[open] .pg-trial-previews__summary {
+  margin-bottom: 0.55rem;
 }
 body.jcp-proof-gap .pg-trial-previews .pg-dest-tabs {
   margin-top: 0.25rem;
@@ -4594,6 +4619,96 @@ body.jcp-proof-gap .pg-trial-previews .pg-reveal-subline {
   font-size: 0.88rem;
   color: var(--pg-muted);
   line-height: 1.4;
+}
+
+/* Conversion rescue: keep control brochure below sticky CTA on mobile first paint. */
+body.jcp-proof-gap .pg-welcome-secondary {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+body.jcp-proof-gap .pg-bottom-action__alt,
+body.jcp-proof-gap .pg-direct-trial-inline {
+  margin: 1rem 0 0;
+  padding-top: 0.65rem;
+  text-align: center;
+}
+
+body.jcp-proof-gap .pg-direct-trial-inline {
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+body.jcp-proof-gap .pg-direct-trial-link {
+  color: var(--pg-muted, #64748b);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+}
+
+body.jcp-proof-gap .pg-direct-trial-link:hover,
+body.jcp-proof-gap .pg-direct-trial-link:focus-visible {
+  color: var(--pg-ink, #0f172a);
+}
+
+body.jcp-proof-gap .pg-plan-days {
+  margin: 0.85rem 0 0;
+  padding: 0.75rem 0.85rem 0.75rem 1.35rem;
+  border-radius: 0.75rem;
+  background: rgba(15, 23, 42, 0.03);
+  list-style: decimal;
+}
+
+body.jcp-proof-gap .pg-plan-days li {
+  margin: 0.35rem 0;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--pg-ink, #0f172a);
+}
+
+body.jcp-proof-gap .pg-plan-setup-session {
+  margin-top: 0.85rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  border-radius: 0.75rem;
+}
+
+body.jcp-proof-gap .pg-plan-setup-session__title {
+  margin: 0 0 0.25rem;
+  font-size: 0.92rem;
+  font-weight: 750;
+}
+
+body.jcp-proof-gap .pg-plan-setup-session__body {
+  margin: 0;
+  font-size: 0.86rem;
+  line-height: 1.4;
+  color: var(--pg-muted, #64748b);
+}
+
+@media (max-width: 767px) {
+  body.jcp-proof-gap.pg-has-bottom-action .pg-entry-shell--control .pg-welcome-secondary {
+    margin-top: max(2.75rem, calc(100dvh - var(--pg-bottom-pad, 5.5rem) - 18.5rem));
+    padding-bottom: 0.5rem;
+  }
+
+  body.jcp-proof-gap .pg-entry-shell--direct .pg-title--welcome {
+    margin-bottom: 0.55rem;
+  }
+
+  body.jcp-proof-gap .pg-entry-shell--direct .pg-sub {
+    margin-bottom: 0.45rem;
+  }
+
+  body.jcp-proof-gap .pg-entry-shell--direct .pg-dq-trust {
+    margin-bottom: 0.7rem;
+  }
+
+  /* Keep plan hero + CTA above the optional preview drawer. */
+  body.jcp-proof-gap .pg-state--trial .pg-review-slot--trial {
+    margin-bottom: 0.35rem;
+  }
 }
 
 /* Hide empty insight cards (legacy markup safety) */
