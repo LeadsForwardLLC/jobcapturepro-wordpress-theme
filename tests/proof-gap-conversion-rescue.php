@@ -48,7 +48,15 @@ $assert( str_contains( $js, 'Check my job visibility \\u2192' ) || str_contains(
 $assert( str_contains( $js, 'Free setup session' ) || str_contains( $js, 'Free Setup Session' ) || str_contains( $js, 'free setup session' ), 'JS trial CTA sublabel mentions setup session' );
 $assert( str_contains( $js, 'bindDirectTrialLinks' ), 'JS binds secondary direct-trial links' );
 $assert( str_contains( $js, 'skip_assessment' ), 'direct-trial clicks tagged skip_assessment' );
+$assert( str_contains( $js, 'DirectTrialSkipClicked' ), 'distinct DirectTrialSkipClicked event for skip path' );
+$assert( str_contains( $js, "entry_path: 'direct_trial_skip'" ) || str_contains( $js, 'entry_path: "direct_trial_skip"' ), 'skip path sets entry_path direct_trial_skip' );
 $assert( str_contains( $js, 'cta_visually_on_screen' ), 'trial_cta_viewed records sticky CTA visibility' );
+
+$ab = file_get_contents( $root . '/assets/js/pages/proof-gap-entry-ab.js' );
+$assert( is_string( $ab ) && $ab !== '', 'proof-gap-entry-ab.js readable' );
+$assert( str_contains( (string) $ab, 'CONTROL_MAX_EXCLUSIVE = 51' ), 'AB control threshold is 51/256 (~20%)' );
+$assert( str_contains( (string) $ab, "scheme: 'dq_80_control_20'" ), 'AB documents dq_80_control_20 scheme' );
+$assert( str_contains( (string) $ab, 'direct_question: 0.8' ), 'AB allocates 80% to direct_question' );
 $assert( str_contains( $js, 'pgPlanUnused' ), 'JS fills unused-jobs hero' );
 $assert( str_contains( $js, "details.open" ) || str_contains( $js, 'details.open' ), 'ProductRevealStarted deferred until preview open' );
 $assert( str_contains( $css, 'pg-direct-trial-link' ), 'direct-trial link CSS present' );

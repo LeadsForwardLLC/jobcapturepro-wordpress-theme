@@ -173,9 +173,6 @@ $render_case = static function (): void {
 				<h1 class="pg-title pg-title--welcome"><?php esc_html_e( 'You finish the job. Does anyone see the work?', 'jcp-core' ); ?></h1>
 				<p class="pg-sub"><?php esc_html_e( 'In about 60 seconds, estimate how many finished jobs never reach your website, Google, or social.', 'jcp-core' ); ?></p>
 				<p class="pg-trust-line pg-dq-trust"><?php esc_html_e( 'About 60 seconds · No phone · No credit card', 'jcp-core' ); ?></p>
-				<p class="pg-direct-trial-inline">
-					<a class="pg-direct-trial-link" href="https://app.jobcapturepro.com/onboarding" data-pg-direct-trial="welcome_direct"><?php esc_html_e( 'Prefer to start the free trial now →', 'jcp-core' ); ?></a>
-				</p>
 
 				<p class="pg-eyebrow pg-dq-step"><?php esc_html_e( '1 of 4', 'jcp-core' ); ?></p>
 				<h2 class="pg-title pg-title--sm" id="pg-trade-title-dq"><?php esc_html_e( 'What kind of work does your company do most?', 'jcp-core' ); ?></h2>
@@ -188,6 +185,9 @@ $render_case = static function (): void {
 						<button type="button" class="pg-other-skip" data-pg-other-skip="trade"><?php esc_html_e( 'Skip', 'jcp-core' ); ?></button>
 					</div>
 				</div>
+				<p class="pg-direct-trial-inline">
+					<a class="pg-direct-trial-link" href="https://app.jobcapturepro.com/onboarding" data-pg-direct-trial="welcome_direct"><?php esc_html_e( 'Prefer to start the free trial now →', 'jcp-core' ); ?></a>
+				</p>
 			</div>
 		</section>
 

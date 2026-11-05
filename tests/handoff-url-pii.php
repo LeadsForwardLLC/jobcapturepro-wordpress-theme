@@ -60,7 +60,7 @@ assert_true( str_contains( $handoff, 'scrubHandoffUrlPii(u)' ), 'handoff.js scru
 $scrub_pos = strpos( $handoff, 'scrubHandoffUrlPii(u)' );
 $return_pos = $scrub_pos !== false ? strpos( $handoff, 'return u.toString()', $scrub_pos ) : false;
 assert_true( $scrub_pos !== false && $return_pos !== false && $scrub_pos < $return_pos, 'handoff scrub runs before decorateHref return' );
-assert_true( str_contains( $rocket, 'onboarding-handoff-pii-scrub-v2' ), 'Rocket bust bumped for handoff scrub' );
+assert_true( str_contains( $rocket, 'proof-gap-conversion-rescue-dq80' ), 'Rocket bust bumped for conversion rescue + DQ80' );
 
 if ( $failures > 0 ) {
 	fwrite( STDERR, "\n$failures failure(s)\n" );

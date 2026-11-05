@@ -215,6 +215,8 @@
           jcp_pg_variant: LP_VARIANT,
           funnel_version: FUNNEL_VERSION,
           cta_source: link.getAttribute('data-pg-direct-trial') || 'welcome_direct_trial',
+          skip_assessment: '1',
+          entry_path: 'direct_trial_skip',
         };
         var href = directTrialHref();
         if (window.JCPOnboardingHandoff && typeof window.JCPOnboardingHandoff.decorateHref === 'function') {
@@ -229,17 +231,26 @@
       }
       link.addEventListener('click', function () {
         var source = link.getAttribute('data-pg-direct-trial') || 'welcome_direct_trial';
+        // Distinct event for trials originating from the secondary skip path.
+        track('DirectTrialSkipClicked', {
+          cta_source: source,
+          skip_assessment: true,
+          entry_path: 'direct_trial_skip',
+          jcp_surface: 'proof_gap_direct_trial',
+        });
         track('TrialCTAClicked', {
           trade: state.trade || '',
           current_workflow: state.current_workflow || '',
           jobs_per_week_bucket: state.jobs_per_week_bucket || '',
           cta_source: source,
           skip_assessment: true,
+          entry_path: 'direct_trial_skip',
         });
         track('trial_cta_clicked', {
           source: 'proof_gap_direct',
           cta_source: source,
           skip_assessment: true,
+          entry_path: 'direct_trial_skip',
         });
       });
     });
@@ -580,6 +591,8 @@
       funnel_id: 'proof_gap',
       funnel_version: FUNNEL_VERSION,
       experiment: 'proof_gap_entry_v1',
+      allocation_scheme:
+        (window.JCP_PG_ENTRY && window.JCP_PG_ENTRY.allocationScheme) || 'dq_80_control_20',
       survey_version: state.survey_version,
       trade: state.trade || undefined,
       workflow: state.current_workflow || undefined,

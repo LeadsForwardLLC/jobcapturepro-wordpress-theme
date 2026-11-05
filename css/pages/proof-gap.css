@@ -4630,14 +4630,19 @@ body.jcp-proof-gap .pg-welcome-secondary {
 
 body.jcp-proof-gap .pg-bottom-action__alt,
 body.jcp-proof-gap .pg-direct-trial-inline {
-  margin: 0.55rem 0 0;
+  margin: 1rem 0 0;
+  padding-top: 0.65rem;
   text-align: center;
+}
+
+body.jcp-proof-gap .pg-direct-trial-inline {
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 body.jcp-proof-gap .pg-direct-trial-link {
   color: var(--pg-muted, #64748b);
-  font-size: 0.86rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 500;
   text-decoration: underline;
   text-underline-offset: 0.12em;
 }
