@@ -2464,7 +2464,7 @@ function setScreen(screenId) {
 updateTourFloating();
 
 
-if (['login-screen','home-screen','new-screen','edit-screen','profile-screen','edit-profile-screen','change-password-screen','review-request-options-screen','request-review-screen'].includes(screenId)) {
+if (['login-screen','home-screen','new-screen','edit-screen','profile-screen','edit-profile-screen','change-password-screen','review-request-options-screen'].includes(screenId)) {
   applyFocalPoint();
 }
 
@@ -5252,7 +5252,6 @@ function getDemoAppScrollParents() {
   const scrollableScreens = new Set([
     'edit-screen',
     'new-screen',
-    'request-review-screen',
     'review-request-options-screen',
   ]);
 
@@ -5643,29 +5642,64 @@ function closeScanReviewSheet() {
   overlay.setAttribute('aria-hidden', 'true');
 }
 
-function showReviewToast(message) {
-  const btn = $('btnSendReviewLink');
+function initScanReviewSheet() {
+  const overlay = $('scan-review-sheet-overlay');
+  if (overlay) {
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closeScanReviewSheet();
+    });
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && overlay && overlay.classList.contains('is-open')) {
+      closeScanReviewSheet();
+    }
+  });
+}
+
+function showReviewToast(message, anchor) {
+  const trigger = (anchor && typeof anchor.getBoundingClientRect === 'function')
+    ? anchor
+    : $('btnSendReviewLink');
   document.querySelectorAll('.demo-review-toast').forEach((el) => el.remove());
   const toast = document.createElement('div');
   toast.className = 'demo-review-toast';
+  toast.setAttribute('role', 'status');
   toast.textContent = message;
   document.body.appendChild(toast);
-  const rect = btn ? btn.getBoundingClientRect() : null;
-  toast.style.top = `${Math.max(8, (rect ? rect.top : window.innerHeight / 2) - toast.offsetHeight - 8)}px`;
+
+  const margin = 8;
+  const rect = trigger ? trigger.getBoundingClientRect() : null;
+  const width = toast.offsetWidth;
+  const height = toast.offsetHeight;
+  let left = rect
+    ? rect.left + (rect.width / 2) - (width / 2)
+    : (window.innerWidth - width) / 2;
+  let top = rect
+    ? rect.top - height - margin
+    : (window.innerHeight - height) / 2;
+  if (rect && top < margin) top = rect.bottom + margin;
+
+  const maxLeft = Math.max(margin, window.innerWidth - width - margin);
+  const maxTop = Math.max(margin, window.innerHeight - height - margin);
+  left = Math.min(Math.max(margin, left), maxLeft);
+  top = Math.min(Math.max(margin, top), maxTop);
+  toast.style.left = `${left}px`;
+  toast.style.top = `${top}px`;
+
   setTimeout(() => {
     toast.style.opacity = '0';
     setTimeout(() => toast.remove(), 200);
   }, 2000);
 }
 
-async function sendReviewLink() {
+async function sendReviewLink(anchor) {
   const messageEl = $('request-review-message');
   const text = (messageEl && messageEl.value.trim()) || DEFAULT_REVIEW_MESSAGE;
   const payload = `${text}\n\n${DEMO_REVIEW_URL}`;
 
   if (isDemoMode) {
     // Demo never uses the OS share sheet — toast only.
-    showReviewToast('Link ready — sharing is simulated in the demo');
+    showReviewToast('Link ready — sharing is simulated in the demo', anchor);
     if (isGuidedDemoRun() && tour.stepKey === 'step5') {
       await wait(900);
       await completeGuidedReviewFlow();
@@ -5680,9 +5714,9 @@ async function sendReviewLink() {
   }
   try {
     await navigator.clipboard.writeText(payload);
-    showReviewToast('Review link copied');
+    showReviewToast('Review link copied', anchor);
   } catch (e) {
-    showReviewToast('Copy this message to send your review link');
+    showReviewToast('Copy this message to send your review link', anchor);
   }
 }
 
@@ -6128,6 +6162,7 @@ function init() {
 
   initTagSelector();
   initRegenerateModal();
+  initScanReviewSheet();
 
   // Prototype page: start on app home screen, no tour, no Start Demo; all controls active
   if (isPrototype) {

@@ -1919,9 +1919,7 @@
         }
         .demo-review-toast {
             position: fixed;
-            left: 50%;
-            transform: translateX(-50%);
-            max-width: 90vw;
+            max-width: min(280px, calc(100vw - 16px));
             text-align: center;
             background: #1f2937;
             color: #fff;
@@ -6436,7 +6434,6 @@ body.jcp-publish-modal-open .guided-coach-backdrop {
 }
 
 /* Review animations on home */
-.demo-review-toast,
 .demo-review-received {
   margin-top: 14px;
   padding: 14px;
@@ -6451,18 +6448,15 @@ body.jcp-publish-modal-open .guided-coach-backdrop {
   transition: opacity 0.28s ease, transform 0.28s ease;
 }
 
-.demo-review-toast[hidden],
 .demo-review-received[hidden] {
   display: none !important;
 }
 
-.demo-review-toast.is-visible,
 .demo-review-received.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-.demo-review-toast strong,
 .demo-review-received strong {
   display: block;
   font-size: 14px;
@@ -6470,7 +6464,6 @@ body.jcp-publish-modal-open .guided-coach-backdrop {
   margin-bottom: 2px;
 }
 
-.demo-review-toast span,
 .demo-review-received p {
   margin: 0;
   font-size: 13px;
