@@ -325,7 +325,8 @@ function isGuidedDemoRun() {
 
 // Features disabled in demo mode
 const demoRestrictions = {
-  profileAccess: true,      // Profile button/navigation
+  // Soft limits: Profile is reachable; Log Out / Offline soft-block inside Profile.
+  profileAccess: false,
   accountSettings: true,    // Settings access
   destructiveActions: true, // Delete, archive, etc.
   locationSwitcher: true,   // Location switching (visible but disabled)
@@ -3263,13 +3264,9 @@ function initCreateActionSheet() {
 }
 
 function goToProfile() {
-  if (isDemoMode) {
-    const el = document.querySelector('[data-action="profile"]');
-    if (el) showDemoRestrictionTooltip(el, 'Profile access is disabled in demo mode');
-    return;
-  }
   setScreen('profile-screen');
   updateProfilePersonalization();
+  syncProfileToggles();
 }
 
 /* ---------------------------
