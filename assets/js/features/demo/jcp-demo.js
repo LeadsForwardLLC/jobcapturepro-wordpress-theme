@@ -37,8 +37,31 @@ function isPlaceholderDemoBusiness(name) {
 }
 
 function isPlaceholderDemoPerson(firstName, lastName) {
-  return String(firstName || '').trim() === DEFAULT_DEMO_IDENTITY.firstName
-    && String(lastName || '').trim() === DEFAULT_DEMO_IDENTITY.lastName;
+  const first = String(firstName || '').trim().toLowerCase();
+  const last = String(lastName || '').trim().toLowerCase();
+  return first === DEFAULT_DEMO_IDENTITY.firstName.toLowerCase()
+    && last === DEFAULT_DEMO_IDENTITY.lastName.toLowerCase();
+}
+
+/**
+ * A custom first name is a real person. Drop a leftover default surname and
+ * the placeholder email so handoff does not submit them with that name.
+ */
+function clearPlaceholderIdentityForCustomFirstName(record, firstName) {
+  if (!record || typeof record !== 'object') return record;
+  const next = String(firstName || '').trim();
+  record.firstName = next;
+  if (!next || next.toLowerCase() === DEFAULT_DEMO_IDENTITY.firstName.toLowerCase()) {
+    return record;
+  }
+  const last = String(record.lastName || '').trim().toLowerCase();
+  if (last === DEFAULT_DEMO_IDENTITY.lastName.toLowerCase()) {
+    record.lastName = '';
+  }
+  if (isPlaceholderDemoEmail(record.email)) {
+    record.email = '';
+  }
+  return record;
 }
 
 const baseUrl = window.JCP_CONFIG && window.JCP_CONFIG.baseUrl
@@ -3004,11 +3027,15 @@ function confirmChangePassword() {
 function saveEditProfile() {
   const input = $('edit-profile-name');
   if (input && input.value.trim()) {
-    demoUser.firstName = input.value.trim();
+    clearPlaceholderIdentityForCustomFirstName(demoUser, input.value.trim());
     try {
       const stored = localStorage.getItem('demoUser');
-      const parsed = stored ? JSON.parse(stored) : {};
-      localStorage.setItem('demoUser', JSON.stringify({ ...parsed, firstName: demoUser.firstName }));
+      const parsedRaw = stored ? JSON.parse(stored) : {};
+      const parsed = parsedRaw && typeof parsedRaw === 'object' && !Array.isArray(parsedRaw)
+        ? parsedRaw
+        : {};
+      clearPlaceholderIdentityForCustomFirstName(parsed, demoUser.firstName);
+      localStorage.setItem('demoUser', JSON.stringify(parsed));
     } catch (e) {}
     updateProfilePersonalization();
     const greeting = document.querySelector('.greeting');
@@ -4825,12 +4852,15 @@ function persistDemoUserPhone(phone) {
 function persistDemoUserFirstName(name) {
   const cleaned = String(name || '').trim();
   try {
-    demoUser.firstName = cleaned;
-    const stored = JSON.parse(localStorage.getItem('demoUser') || '{}') || {};
-    stored.firstName = cleaned;
+    clearPlaceholderIdentityForCustomFirstName(demoUser, cleaned);
+    const storedRaw = JSON.parse(localStorage.getItem('demoUser') || '{}') || {};
+    const stored = storedRaw && typeof storedRaw === 'object' && !Array.isArray(storedRaw)
+      ? storedRaw
+      : {};
+    clearPlaceholderIdentityForCustomFirstName(stored, cleaned);
     localStorage.setItem('demoUser', JSON.stringify(stored));
   } catch (e) {
-    demoUser.firstName = cleaned;
+    clearPlaceholderIdentityForCustomFirstName(demoUser, cleaned);
   }
   try {
     const greeting = document.querySelector('.greeting');
