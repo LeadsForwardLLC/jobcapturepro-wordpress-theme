@@ -9,12 +9,37 @@
 /* =========================
    Personalization (Survey)
 ========================= */
-let demoUser = {
-  firstName: '',
-  lastName: '',
-  businessName: 'Your Business',
-  niche: 'plumbing'
+const DEFAULT_DEMO_IDENTITY = {
+  firstName: 'Alex',
+  lastName: 'Rivera',
+  businessName: 'Business Name',
+  email: 'alex@example.com',
+  niche: 'plumbing',
+  roleLabel: 'Field Tech',
 };
+
+let demoUser = {
+  firstName: DEFAULT_DEMO_IDENTITY.firstName,
+  lastName: DEFAULT_DEMO_IDENTITY.lastName,
+  businessName: DEFAULT_DEMO_IDENTITY.businessName,
+  niche: DEFAULT_DEMO_IDENTITY.niche,
+  email: DEFAULT_DEMO_IDENTITY.email,
+};
+
+/** Display-only placeholder — never treat as a captured lead. */
+function isPlaceholderDemoEmail(email) {
+  return String(email || '').trim().toLowerCase() === DEFAULT_DEMO_IDENTITY.email.toLowerCase();
+}
+
+function isPlaceholderDemoBusiness(name) {
+  const biz = String(name || '').trim().toLowerCase();
+  return !biz || biz === 'your business' || biz === DEFAULT_DEMO_IDENTITY.businessName.toLowerCase();
+}
+
+function isPlaceholderDemoPerson(firstName, lastName) {
+  return String(firstName || '').trim() === DEFAULT_DEMO_IDENTITY.firstName
+    && String(lastName || '').trim() === DEFAULT_DEMO_IDENTITY.lastName;
+}
 
 const baseUrl = window.JCP_CONFIG && window.JCP_CONFIG.baseUrl
   ? window.JCP_CONFIG.baseUrl
@@ -141,21 +166,26 @@ function jcpDemoOnboardingHandoffQuery(utmContent) {
     jcp_surface: utmContent || 'demo_handoff'
   };
   try {
-    if (demoUser && typeof demoUser.email === 'string' && demoUser.email.trim()) {
-      extra.email = demoUser.email.trim();
+    const email = demoUser && typeof demoUser.email === 'string' ? demoUser.email.trim() : '';
+    const emailIsPlaceholder = !email || isPlaceholderDemoEmail(email);
+    if (email && !emailIsPlaceholder) {
+      extra.email = email;
     }
     const fn = (demoUser.firstName || '').trim();
     const ln = (demoUser.lastName || '').trim();
-    if (fn) extra.first_name = fn;
-    if (ln) extra.last_name = ln;
-    const fullName = [demoUser.firstName, demoUser.lastName].filter(Boolean).join(' ').trim();
+    const nameIsPlaceholder = emailIsPlaceholder && isPlaceholderDemoPerson(fn, ln);
+    if (!nameIsPlaceholder) {
+      if (fn) extra.first_name = fn;
+      if (ln) extra.last_name = ln;
+    }
+    const fullName = nameIsPlaceholder ? '' : [fn, ln].filter(Boolean).join(' ').trim();
     if (fullName) {
       extra.full_name = fullName;
       extra.fullName = fullName;
       extra.name = fullName;
     }
     const company = (demoUser.businessName || '').trim();
-    if (company && company.toLowerCase() !== 'your business') {
+    if (!isPlaceholderDemoBusiness(company)) {
       extra.company = company;
       extra.organization_name = company;
       extra.organizationName = company;
@@ -449,7 +479,7 @@ function getDemoSessionId() {
 function getDemoContactPayload() {
   try {
     const user = JSON.parse(localStorage.getItem('demoUser') || 'null');
-    if (!user || !user.email) return {};
+    if (!user || !user.email || isPlaceholderDemoEmail(user.email)) return {};
     const attribution = window.JCPLeadAttribution && typeof window.JCPLeadAttribution.getPayload === 'function'
       ? window.JCPLeadAttribution.getPayload()
       : {};
@@ -468,7 +498,7 @@ function getDemoContactPayload() {
       demo_goals: Array.isArray(user.goals) ? user.goals : undefined,
       ...attribution,
     };
-    if (company && company.toLowerCase() !== 'your business') {
+    if (!isPlaceholderDemoBusiness(company)) {
       payload.company = company;
     }
     const phone = String(user.phone || '').trim();
@@ -631,11 +661,11 @@ function getDemoUserFromUrl() {
     const email = params.get('email');
     if (name || lastName || business || niche || email) {
       return {
-        firstName: decodeURIComponent(name || '').trim() || demoUser.firstName,
-        lastName: decodeURIComponent(lastName || '').trim() || demoUser.lastName,
-        businessName: decodeURIComponent(business || '').trim() || demoUser.businessName,
-        niche: decodeURIComponent(niche || '').trim() || demoUser.niche,
-        email: decodeURIComponent(email || '').trim() || ''
+        firstName: decodeURIComponent(name || '').trim(),
+        lastName: decodeURIComponent(lastName || '').trim(),
+        businessName: decodeURIComponent(business || '').trim(),
+        niche: decodeURIComponent(niche || '').trim(),
+        email: decodeURIComponent(email || '').trim()
       };
     }
   } catch (e) {
@@ -648,24 +678,38 @@ try {
   // Marketing /onboarding/ hub uses fixed generic identity — never inherit demo localStorage/URL PII.
   if (window.JCP_IS_ONBOARDING_HUB === true) {
     demoUser = {
-      ...demoUser,
-      firstName: 'User',
-      lastName: '',
-      businessName: 'Company Name',
-      email: 'company@gmail.com',
+      firstName: DEFAULT_DEMO_IDENTITY.firstName,
+      lastName: DEFAULT_DEMO_IDENTITY.lastName,
+      businessName: DEFAULT_DEMO_IDENTITY.businessName,
+      niche: DEFAULT_DEMO_IDENTITY.niche,
+      email: DEFAULT_DEMO_IDENTITY.email,
     };
   } else {
     const fromUrl = getDemoUserFromUrl();
     if (fromUrl) {
+      const capturedBusiness = fromUrl.businessName && !isPlaceholderDemoBusiness(fromUrl.businessName)
+        ? fromUrl.businessName
+        : '';
+      const capturedEmail = fromUrl.email && !isPlaceholderDemoEmail(fromUrl.email)
+        ? fromUrl.email
+        : '';
+      const hasCapturedPerson = !!(fromUrl.firstName || fromUrl.lastName);
+      const hasCapturedIdentity = hasCapturedPerson || !!capturedBusiness || !!capturedEmail;
       demoUser = {
-        firstName: fromUrl.firstName || demoUser.firstName,
-        lastName: fromUrl.lastName || demoUser.lastName,
-        businessName: fromUrl.businessName || demoUser.businessName,
+        firstName: hasCapturedPerson ? fromUrl.firstName : (hasCapturedIdentity ? '' : demoUser.firstName),
+        lastName: hasCapturedPerson ? fromUrl.lastName : (hasCapturedIdentity ? '' : demoUser.lastName),
+        businessName: capturedBusiness || demoUser.businessName,
         niche: fromUrl.niche || demoUser.niche,
-        email: fromUrl.email || demoUser.email || ''
+        email: capturedEmail || (hasCapturedIdentity ? '' : demoUser.email)
       };
       try {
-        localStorage.setItem('demoUser', JSON.stringify(demoUser));
+        localStorage.setItem('demoUser', JSON.stringify({
+          firstName: fromUrl.firstName || '',
+          lastName: fromUrl.lastName || '',
+          businessName: capturedBusiness,
+          niche: fromUrl.niche || demoUser.niche,
+          email: capturedEmail
+        }));
       } catch (e) {
         // ignore
       }
@@ -673,17 +717,25 @@ try {
       const stored = localStorage.getItem('demoUser');
       if (stored) {
         const parsed = JSON.parse(stored);
+        const storedFirst = Object.prototype.hasOwnProperty.call(parsed, 'firstName')
+          ? String(parsed.firstName || '').trim()
+          : '';
+        const storedLast = Object.prototype.hasOwnProperty.call(parsed, 'lastName')
+          ? String(parsed.lastName || '').trim()
+          : '';
+        const hasPersonName = !!(storedFirst || storedLast);
+        const storedBusiness = String(parsed.businessName || '').trim();
+        const hasRealBusiness = !isPlaceholderDemoBusiness(storedBusiness);
+        const storedEmail = String(parsed.email || '').trim();
+        const hasRealEmail = storedEmail && !isPlaceholderDemoEmail(storedEmail);
+        const hasRealIdentity = hasPersonName || hasRealBusiness || hasRealEmail;
 
         demoUser = {
-          firstName: Object.prototype.hasOwnProperty.call(parsed, 'firstName')
-            ? String(parsed.firstName || '').trim()
-            : demoUser.firstName,
-          lastName: Object.prototype.hasOwnProperty.call(parsed, 'lastName')
-            ? String(parsed.lastName || '').trim()
-            : demoUser.lastName,
-          businessName: String(parsed.businessName || '').trim() || demoUser.businessName,
+          firstName: hasPersonName ? storedFirst : (hasRealIdentity ? '' : demoUser.firstName),
+          lastName: hasPersonName ? storedLast : (hasRealIdentity ? '' : demoUser.lastName),
+          businessName: hasRealBusiness ? storedBusiness : demoUser.businessName,
           niche: parsed.niche || demoUser.niche,
-          email: parsed.email || ''
+          email: hasRealEmail ? storedEmail : (hasRealIdentity ? '' : demoUser.email)
         };
       }
     }
@@ -765,7 +817,7 @@ function getDemoPrepCopy() {
   const nicheLabel = niche
     ? niche.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
     : '';
-  const realBiz = biz && !/^your business$/i.test(biz);
+  const realBiz = !isPlaceholderDemoBusiness(biz);
   let sub = 'Getting your JobCapturePro demo ready.';
   if (nicheLabel && realBiz) {
     sub = `Loading a personalized ${nicheLabel} workflow for ${biz}.`;
@@ -1285,12 +1337,14 @@ function applyPersonalization() {
 function updateProfilePersonalization() {
   const nameEl = $('profile-name');
   const emailEl = $('profile-email');
+  const defaultName = `${DEFAULT_DEMO_IDENTITY.firstName} ${DEFAULT_DEMO_IDENTITY.lastName}`;
   if (isOnboardingHub()) {
-    if (nameEl) nameEl.textContent = 'User';
-    if (emailEl) emailEl.textContent = 'company@gmail.com';
+    if (nameEl) nameEl.textContent = defaultName;
+    if (emailEl) emailEl.textContent = DEFAULT_DEMO_IDENTITY.email;
     return;
   }
-  if (nameEl) nameEl.textContent = demoUser.firstName || demoUser.businessName || 'User';
+  const fullName = [demoUser.firstName, demoUser.lastName].filter(Boolean).join(' ').trim();
+  if (nameEl) nameEl.textContent = fullName || demoUser.businessName || defaultName;
   if (emailEl) {
     const email = demoUser.email || `${(demoUser.firstName || 'user').toLowerCase()}@${(demoUser.businessName || 'company').replace(/\s+/g, '').toLowerCase()}.com`;
     emailEl.textContent = email;
@@ -1310,11 +1364,11 @@ function getLocationDisplay(loc) {
 }
 
 function getOrgSwitcherLabel() {
-  if (isOnboardingHub()) return 'Company Name';
+  if (isOnboardingHub()) return DEFAULT_DEMO_IDENTITY.businessName;
   if (isPrototype) {
     const biz = (demoUser.businessName || '').trim();
-    if (biz && biz !== 'Your Business') return biz;
-    return 'LeadsForward';
+    if (biz && !isPlaceholderDemoBusiness(biz)) return biz;
+    return DEFAULT_DEMO_IDENTITY.businessName;
   }
   return getLocationDisplay(getActiveLocation());
 }
@@ -2322,12 +2376,13 @@ function applyPrototypeAppLabels() {
   if (!isPrototype) return;
 
   if (isOnboardingHub()) {
-    demoUser.firstName = 'User';
-    demoUser.lastName = '';
-    demoUser.businessName = 'Company Name';
-    demoUser.email = 'company@gmail.com';
-  } else if (!demoUser.businessName || demoUser.businessName === 'Your Business') {
-    demoUser.businessName = 'LeadsForward';
+    demoUser.firstName = DEFAULT_DEMO_IDENTITY.firstName;
+    demoUser.lastName = DEFAULT_DEMO_IDENTITY.lastName;
+    demoUser.businessName = DEFAULT_DEMO_IDENTITY.businessName;
+    demoUser.niche = DEFAULT_DEMO_IDENTITY.niche;
+    demoUser.email = DEFAULT_DEMO_IDENTITY.email;
+  } else if (isPlaceholderDemoBusiness(demoUser.businessName)) {
+    demoUser.businessName = DEFAULT_DEMO_IDENTITY.businessName;
   }
   updateLocationUI();
   updateProfilePersonalization();
@@ -4790,7 +4845,7 @@ function persistDemoUserFirstName(name) {
 
 function enrichContactWithPhone(phone, firstNameOverride) {
   const email = (demoUser && demoUser.email) || '';
-  if (!email || !phone) return;
+  if (!email || !phone || isPlaceholderDemoEmail(email)) return;
   const surveyUrl =
     (window.JCP_DEMO_SURVEY && window.JCP_DEMO_SURVEY.rest_url) ||
     `${(window.JCP_CONFIG && window.JCP_CONFIG.baseUrl) || window.location.origin}/wp-json/jcp/v1/demo-survey-submit`;
@@ -4813,10 +4868,9 @@ function enrichContactWithPhone(phone, firstNameOverride) {
     phone,
     first_name: firstName,
     last_name: (demoUser.lastName || '').trim(),
-    company:
-      demoUser.businessName && String(demoUser.businessName).toLowerCase() !== 'your business'
-        ? String(demoUser.businessName).trim()
-        : '',
+    company: isPlaceholderDemoBusiness(demoUser.businessName)
+      ? ''
+      : String(demoUser.businessName).trim(),
     business_type: (demoUser.niche || '').trim(),
     survey_session_id: surveySessionId,
     funnel_version: attr.funnel_version || 'demo_survey_v1',
@@ -6014,7 +6068,7 @@ function postDemoEscClose(e) {
    Email demo link (basic stub)
 ---------------------------------- */
 function emailDemoLink() {
-  if (!demoUser.email) {
+  if (!demoUser.email || isPlaceholderDemoEmail(demoUser.email)) {
     alert('We don’t have an email on file for this demo.');
     return;
   }
