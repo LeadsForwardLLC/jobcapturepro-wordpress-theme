@@ -428,8 +428,13 @@ function applyDemoRestrictions() {
   }
 
   // Archived tab: disabled in demo (setHomeTab shows tooltip on click)
-  const tabArchived = document.getElementById('tab-archived');
-  if (tabArchived && isDemoMode) tabArchived.classList.add('is-demo-disabled');
+  // Soft-disabled controls (visible; click shows a tooltip via softBlockDemoAction in each handler)
+  if (isDemoMode) {
+    ['tab-team', 'tab-archived', 'btnLogOut'].forEach((id) => {
+      document.getElementById(id)?.classList.add('is-demo-disabled');
+    });
+    document.getElementById('toggleOfflineMode')?.closest('.profile-toggle')?.classList.add('is-demo-disabled');
+  }
   
   // Add CSS for demo disabled state
   const style = document.createElement('style');
@@ -1528,7 +1533,7 @@ function renderLocationList(searchQuery) {
   listEl.querySelectorAll('.location-sheet-item').forEach((btn) => {
     btn.addEventListener('click', () => {
       if (isDemoMode) {
-        showDemoRestrictionTooltip(btn, 'Switching locations is disabled in demo');
+        softBlockDemoAction(btn, 'Switching locations is disabled in demo');
         return;
       }
       const id = btn.getAttribute('data-location-id');
@@ -2039,7 +2044,9 @@ function updateMobileStepperLabel() {
     const step = tour.stepKey ? demoGuideContent[tour.stepKey] : null;
     const hintText = (tour.stepKey === 'step4' && tour.step4Hint)
       ? tour.step4Hint
-      : (step?.interactHint || '');
+      : (tour.stepKey === 'step5' && tour.step5Hint)
+        ? tour.step5Hint
+        : (step?.interactHint || '');
     hint.textContent = hintText;
     hint.hidden = !hideNext || !hintText;
   }
@@ -2056,6 +2063,7 @@ const tour = {
   // This is the ONLY thing that should control what the tooltip says
   stepKey: 'step1',
   step4Hint: '',
+  step5Hint: '',
 
     anchors: {
       step1: '#btnStartDemo',
@@ -2138,6 +2146,7 @@ function setTourStep(stepKey) {
       tourEl.classList.toggle('final-step', state.isFinalStep);
     }
   tour.stepKey = stepKey;
+  resetStep5ReviewTarget();
   if (stepKey !== 'step4') {
     tour.step4Hint = '';
     clearStep4SeoBeatTimers();
@@ -2215,9 +2224,15 @@ function setTourStep(stepKey) {
   scrollGuidedStepTarget(stepKey);
 }
 
+/** Step 5 spotlight moves Request Review → Send Link once the review options screen is open. */
+function resetStep5ReviewTarget() {
+  tour.anchors.step5 = '#btnRequestReview';
+  tour.step5Hint = '';
+}
+
 function getNextLabelForStep(stepKey) {
   if (stepKey === 'step4') return 'Publish →';
-  if (stepKey === 'step5') return 'Preview Review →';
+  if (stepKey === 'step5') return 'Request Review →';
   if (stepKey === 'step6') return 'Start My Free 14-Day Trial';
   return 'Next →';
 }
@@ -3312,11 +3327,12 @@ function writeBoolPref(key, val) {
 }
 
 function getOfflineMode() {
+  if (isDemoMode) return false;
   return readBoolPref(OFFLINE_MODE_KEY, false);
 }
 
-function setOfflineMode(on) {
-  writeBoolPref(OFFLINE_MODE_KEY, on);
+function setOfflineMode(on, persist = true) {
+  if (persist) writeBoolPref(OFFLINE_MODE_KEY, on);
   window.JCP_OFFLINE_MODE = !!on;
   document.body.classList.toggle('is-offline-mode', !!on);
   if (typeof window.CustomEvent !== 'undefined') {
@@ -3410,7 +3426,7 @@ function wireProfileControls() {
   bind('toggleNotifEmail', (e) => writeBoolPref(NOTIF_EMAIL_KEY, e.target.checked));
   bind('toggleOfflineMode', (e) => {
     if (isDemoMode) {
-      e.target.checked = getOfflineMode();
+      e.target.checked = false;
       softBlockDemoAction(e.target.closest('.profile-toggle') || e.target, 'Offline mode is not available in the demo');
       return;
     }
@@ -3422,7 +3438,8 @@ function wireProfileControls() {
     if (mq.addEventListener) mq.addEventListener('change', onChange);
   }
   applyColorMode(readStoredColorMode());
-  setOfflineMode(isDemoMode ? false : getOfflineMode());
+  if (isDemoMode) setOfflineMode(false, false); // demo: apply state without clobbering the saved pref
+  else setOfflineMode(getOfflineMode());
   syncProfileToggles();
 }
 
@@ -5953,8 +5970,9 @@ const DEFAULT_REVIEW_MESSAGE = 'We loved working with you! If you have a moment 
 
 function goToRequestReview() {
   if (isGuidedDemoRun() && tour.stepKey === 'step5') {
-    openDemoReviewModal();
-    return;
+    tour.anchors.step5 = '#btnSendReviewLink';
+    tour.step5Hint = 'Tap Send Link to send the review request.';
+    updateMobileStepperLabel();
   }
   goToReviewRequestOptions('edit-screen');
 }
@@ -6100,6 +6118,8 @@ function getCurrentCheckinForReview() {
 }
 
 function goBackToEdit() {
+  resetStep5ReviewTarget();
+  updateMobileStepperLabel();
   setScreen('edit-screen');
 }
 
@@ -6135,9 +6155,9 @@ function archiveCheckin() {
 }
 
 function setHomeTab(tab) {
-  if (isDemoMode && tab === 'archived') {
-    const tabEl = document.getElementById('tab-archived');
-    if (tabEl) showDemoRestrictionTooltip(tabEl, 'Archived list is disabled in the demo');
+  if (isDemoMode && (tab === 'archived' || tab === 'team')) {
+    const tabEl = document.getElementById(tab === 'team' ? 'tab-team' : 'tab-archived');
+    softBlockDemoAction(tabEl, tab === 'team' ? 'Team view is disabled in the demo' : 'Archived list is disabled in the demo');
     return;
   }
   state.homeActiveTab = tab;
@@ -6178,7 +6198,7 @@ function advanceDemo() {
       break;
 
     case 'step5':
-      openDemoReviewModal();
+      goToRequestReview();
       break;
 
     case 'step6':
