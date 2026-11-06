@@ -2443,8 +2443,10 @@ function applyPrototypeAppLabels() {
   const note = document.getElementById('uploadIntegrationsNote');
   if (note) note.hidden = true;
 
+  // Keep Send Review Request visible on /onboarding and prototype (+ sheet).
+  // Guided demo still soft-limits it at step2 via syncCreateSheetDemoState().
   const createReview = document.getElementById('create-action-review');
-  if (createReview) createReview.hidden = true;
+  if (createReview) createReview.hidden = false;
 
   const step4 = document.getElementById('step4');
   if (step4) step4.hidden = true;
