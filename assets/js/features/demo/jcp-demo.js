@@ -5586,31 +5586,104 @@ function deleteArchivedCheckin() {
   goToHome();
 }
 
+const DEMO_REVIEW_URL = 'https://jobcapturepro.com/demo-review';
+const DEFAULT_REVIEW_MESSAGE = 'We loved working with you! If you have a moment to leave us a review, it would be greatly appreciated.';
+
 function goToRequestReview() {
   if (isGuidedDemoRun() && tour.stepKey === 'step5') {
     openDemoReviewModal();
     return;
   }
-  const checkin = getCurrentCheckinForReview();
-  const subtitle = $('request-review-subtitle');
-  const addressEl = $('request-review-address');
-  const locationEl = $('request-review-location');
-  const messageEl = $('request-review-message');
-  const photosEl = $('request-review-photos');
-  if (subtitle) subtitle.textContent = checkin ? `${checkin.address || getCanonicalStreet()}, ${checkin.location || getCanonicalCityState()}` : getCanonicalStreet() + ', ' + getCanonicalCityState();
-  if (addressEl) addressEl.textContent = checkin?.address || getCanonicalStreet();
-  if (locationEl) locationEl.textContent = checkin?.location || getCanonicalCityState();
-  if (messageEl) messageEl.value = 'We loved working with you! If you have a moment to leave a review, it would mean a lot to us.';
-  if (photosEl) {
-    const imgSrc = checkin?.image || demoPhotos[0];
-    photosEl.innerHTML = `<img src="${imgSrc}" alt="Job" class="request-review-photo-thumb">`;
-  }
-  setScreen('request-review-screen');
+  goToReviewRequestOptions('edit-screen');
 }
 
 function goToReviewRequestOptions(fromScreen = 'home-screen') {
   state.reviewMethodBackScreen = fromScreen;
+  const messageEl = $('request-review-message');
+  if (messageEl) messageEl.value = DEFAULT_REVIEW_MESSAGE;
+  closeScanReviewSheet();
   setScreen('review-request-options-screen');
+}
+
+/** Decorative QR-style SVG seeded from the fake demo URL (not a scannable code). */
+function renderDemoReviewQr(container, seedText) {
+  if (!container) return;
+  const n = 25;
+  let h = 2166136261;
+  for (let i = 0; i < seedText.length; i++) { h ^= seedText.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+  const rand = () => { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; return h / 4294967296; };
+  const inFinder = (x, y) => (x < 8 && y < 8) || (x >= n - 8 && y < 8) || (x < 8 && y >= n - 8);
+  let d = '';
+  for (let y = 0; y < n; y++) {
+    for (let x = 0; x < n; x++) {
+      if (!inFinder(x, y) && rand() > 0.5) d += `M${x} ${y}h1v1h-1z`;
+    }
+  }
+  const finder = (ox, oy) =>
+    `<rect x="${ox + 0.5}" y="${oy + 0.5}" width="6" height="6" fill="none" stroke="#111" stroke-width="1"/>` +
+    `<rect x="${ox + 2}" y="${oy + 2}" width="3" height="3" fill="#111"/>`;
+  container.innerHTML =
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges" aria-hidden="true">` +
+    `<path d="${d}" fill="#111"/>${finder(0, 0)}${finder(n - 7, 0)}${finder(0, n - 7)}</svg>`;
+}
+
+function openScanReviewSheet() {
+  const overlay = $('scan-review-sheet-overlay');
+  if (!overlay) return;
+  const qr = $('scan-review-qr');
+  if (qr && !qr.firstElementChild) renderDemoReviewQr(qr, DEMO_REVIEW_URL);
+  overlay.classList.add('is-open');
+  overlay.setAttribute('aria-hidden', 'false');
+}
+
+function closeScanReviewSheet() {
+  const overlay = $('scan-review-sheet-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('is-open');
+  overlay.setAttribute('aria-hidden', 'true');
+}
+
+function showReviewToast(message) {
+  const btn = $('btnSendReviewLink');
+  document.querySelectorAll('.demo-review-toast').forEach((el) => el.remove());
+  const toast = document.createElement('div');
+  toast.className = 'demo-review-toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  const rect = btn ? btn.getBoundingClientRect() : null;
+  toast.style.top = `${Math.max(8, (rect ? rect.top : window.innerHeight / 2) - toast.offsetHeight - 8)}px`;
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 200);
+  }, 2000);
+}
+
+async function sendReviewLink() {
+  const messageEl = $('request-review-message');
+  const text = (messageEl && messageEl.value.trim()) || DEFAULT_REVIEW_MESSAGE;
+  const payload = `${text}\n\n${DEMO_REVIEW_URL}`;
+
+  if (isDemoMode) {
+    // Demo never uses the OS share sheet — toast only.
+    showReviewToast('Link ready — sharing is simulated in the demo');
+    if (isGuidedDemoRun() && tour.stepKey === 'step5') {
+      await wait(900);
+      await completeGuidedReviewFlow();
+    }
+    return;
+  }
+  if (navigator.share) {
+    try {
+      await navigator.share({ text: payload });
+      return;
+    } catch (e) { /* user cancelled or failed */ }
+  }
+  try {
+    await navigator.clipboard.writeText(payload);
+    showReviewToast('Review link copied');
+  } catch (e) {
+    showReviewToast('Copy this message to send your review link');
+  }
 }
 
 function goBackFromReviewMethod() {
@@ -6437,6 +6510,9 @@ window.setPublishingState = setPublishingState;
 window.openPublishingSheet = openPublishingSheet;
 window.closePublishingSheet = closePublishingSheet;
 window.goToReviewRequestOptions = goToReviewRequestOptions;
+window.openScanReviewSheet = openScanReviewSheet;
+window.closeScanReviewSheet = closeScanReviewSheet;
+window.sendReviewLink = sendReviewLink;
 window.goBackFromReviewMethod = goBackFromReviewMethod;
 window.goBackToEdit = goBackToEdit;
 window.submitReviewRequestFromScreen = submitReviewRequestFromScreen;

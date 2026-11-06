@@ -302,51 +302,19 @@
                         </div>
                     </div>
 
-                    <!-- Request Review Method Screen -->
+                    <!-- Request Review Screen (message + Scan QR / Send Link) -->
                     <div class="app-screen" id="review-request-options-screen">
                         <div class="app-header">
                             <div class="app-header__left"><button type="button" class="back-btn" onclick="goBackFromReviewMethod()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
-                            <p class="app-header__title">Request Review</h1>
+                            <p class="app-header__title">Request Review</p>
                             <div class="app-header__right"></div>
                         </div>
                         <div class="content-area review-request-options">
                             <p class="request-review-subtitle">Choose how you want to ask for a review.</p>
                             <div class="section-title">Include a message</div>
-                            <textarea class="input-field request-review-message" rows="4" placeholder="Add a personal note (optional)">We loved working with you! If you have a moment to leave a review, it would mean a lot to us.</textarea>
-                            <button type="button" class="btn btn-secondary btn-full review-method-btn"><img src="../../shared/assets/icons/lucide/qr-code.svg" class="lucide-icon lucide-icon-sm" alt=""> Scan QR</button>
-                            <button type="button" class="btn btn-primary btn-full review-method-btn"><img src="../../shared/assets/icons/lucide/link.svg" class="lucide-icon lucide-icon-sm" alt=""> Send Link</button>
-                        </div>
-                    </div>
-
-                    <!-- Request Review Link Screen -->
-                    <div class="app-screen" id="request-review-screen">
-                        <div class="app-header">
-                            <div class="app-header__left"><button type="button" class="back-btn" onclick="goBackToEdit()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
-                            <p class="app-header__title">Request Review</h1>
-                            <div class="app-header__right"></div>
-                        </div>
-                        <div class="content-area">
-                            <p class="request-review-subtitle" id="request-review-subtitle">1242 Mason Rd, Austin, TX</p>
-                            <div class="section-title">Include a message</div>
-                            <textarea class="input-field request-review-message" id="request-review-message" rows="4" placeholder="Add a personal note (optional)">We loved working with you! If you have a moment to leave a review, it would mean a lot to us.</textarea>
-                            <div class="section-title">Job details</div>
-                            <div class="location-card request-review-location">
-                                <div class="location-header">
-                                    <div class="map-thumb">
-                                        <img src="../../shared/assets/icons/lucide/map-pin.svg" class="lucide-icon lucide-icon-lg" alt="">
-                                    </div>
-                                    <div class="location-info">
-                                        <h3 id="request-review-address">1242 Mason Rd</h3>
-                                        <p id="request-review-location">Austin, TX</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="section-title">Photos</div>
-                            <div class="request-review-photos" id="request-review-photos">
-                                <!-- Filled by JS from current check-in -->
-                            </div>
-                            <button type="button" class="btn btn-secondary btn-full review-method-btn"><img src="../../shared/assets/icons/lucide/qr-code.svg" class="lucide-icon lucide-icon-sm" alt=""> Scan QR</button>
-                            <button type="button" class="btn btn-primary btn-full review-method-btn"><img src="../../shared/assets/icons/lucide/link.svg" class="lucide-icon lucide-icon-sm" alt=""> Send Link</button>
+                            <textarea class="input-field request-review-message" id="request-review-message" rows="4" placeholder="Add a personal note (optional)">We loved working with you! If you have a moment to leave us a review, it would be greatly appreciated.</textarea>
+                            <button type="button" class="btn btn-secondary btn-full review-method-btn" id="btnScanReviewQr" onclick="openScanReviewSheet()"><img src="../../shared/assets/icons/lucide/scan-qr-code.svg" class="lucide-icon lucide-icon-sm" alt=""> Scan QR</button>
+                            <button type="button" class="btn btn-primary btn-full review-method-btn" id="btnSendReviewLink" onclick="sendReviewLink()"><img src="../../shared/assets/icons/lucide/link.svg" class="lucide-icon lucide-icon-sm" alt=""> Send Link</button>
                         </div>
                     </div>
 
@@ -516,6 +484,22 @@
                             </div>
                             <div class="location-sheet-list" id="tag-sheet-list" role="listbox">
                                 <!-- Filled by JS: dummy tags -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scan & Review – QR sheet (appearance only; fake demo URL) -->
+                    <div class="location-sheet-overlay" id="scan-review-sheet-overlay" aria-hidden="true">
+                        <div class="location-sheet" id="scan-review-sheet" role="dialog" aria-labelledby="scan-review-sheet-title">
+                            <div class="location-sheet-header">
+                                <h2 id="scan-review-sheet-title" class="location-sheet-title">Scan &amp; Review</h2>
+                                <button type="button" class="location-sheet-close" id="scan-review-sheet-close" aria-label="Close" onclick="closeScanReviewSheet()">
+                                    <img src="../../shared/assets/icons/lucide/x.svg" class="lucide-icon lucide-icon-sm" alt="">
+                                </button>
+                            </div>
+                            <div class="location-sheet-body scan-review-body">
+                                <p class="location-sheet-description">Customer can scan to access review page.</p>
+                                <div class="scan-review-qr" id="scan-review-qr" role="img" aria-label="QR code for review page"></div>
                             </div>
                         </div>
                     </div>
