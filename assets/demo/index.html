@@ -636,6 +636,22 @@
                         </div>
                     </div>
 
+                    <!-- Pending uploads sheet -->
+                    <div class="location-sheet-overlay" id="pending-uploads-sheet-overlay" aria-hidden="true">
+                        <div class="location-sheet pending-uploads-sheet" id="pending-uploads-sheet" role="dialog" aria-labelledby="pending-uploads-sheet-title">
+                            <div class="location-sheet-header">
+                                <div>
+                                    <h2 id="pending-uploads-sheet-title" class="location-sheet-title">Pending uploads.</h2>
+                                    <p class="pending-uploads-sheet__sub">Stored on this device until you go back online.</p>
+                                </div>
+                                <button type="button" class="location-sheet-close" id="pending-uploads-sheet-close" aria-label="Close">
+                                    <img src="../../shared/assets/icons/lucide/x.svg" class="lucide-icon lucide-icon-sm" alt="">
+                                </button>
+                            </div>
+                            <div class="pending-uploads-list" id="pending-uploads-list" role="list"></div>
+                        </div>
+                    </div>
+
                     <!-- Smart Location Prompt (prototype only, contained in app screen) -->
                     <div class="location-prompt-overlay" id="location-prompt-overlay" aria-hidden="true">
                         <div class="location-prompt-modal" id="location-prompt-modal" role="dialog" aria-labelledby="location-prompt-title">

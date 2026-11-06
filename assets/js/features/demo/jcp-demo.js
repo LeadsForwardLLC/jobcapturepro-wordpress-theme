@@ -2673,27 +2673,71 @@ function renderCheckinCard(checkin, index, fromArchived) {
   return item;
 }
 
-/** Task 7 fills this in (pending uploads sheet). */
-function openPendingUploadsSheet() { /* Task 7 */ }
+const PENDING_UPLOADS_KEY = 'jcpPendingUploads';
+let pendingUploads = [];
 
-function getPendingUploadCount() {
+function loadPendingUploads() {
   try {
-    const raw = localStorage.getItem('jcpPendingUploads');
+    const raw = localStorage.getItem(PENDING_UPLOADS_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed.length : 0;
+    pendingUploads = Array.isArray(parsed) ? parsed : [];
   } catch (e) {
-    return 0;
+    pendingUploads = [];
   }
+  return pendingUploads;
 }
 
-function updatePendingUploadsBanner() {
+function savePendingUploads() {
+  try {
+    localStorage.setItem(PENDING_UPLOADS_KEY, JSON.stringify(pendingUploads));
+  } catch (e) { /* ignore */ }
+}
+
+function makePendingUploadFixture() {
+  const sample = (typeof getCanonicalSampleJob === 'function') ? getCanonicalSampleJob() : null;
+  return {
+    id: `pending-${Date.now()}`,
+    title: (sample && sample.street) || '1242 Mason Rd',
+    subtitle: (sample && sample.cityState) || 'Austin, TX',
+    meta: '1 photo · Just now',
+    thumb: (sample && sample.photo) || '',
+  };
+}
+
+function ensureOfflinePendingFixture() {
+  if (isDemoMode) return;
+  loadPendingUploads();
+  if (pendingUploads.length) return;
+  pendingUploads.push(makePendingUploadFixture());
+  savePendingUploads();
+}
+
+function clearPendingUploadsIfOnline() {
+  if (isDemoMode) return;
+  if (getOfflineMode()) return;
+  loadPendingUploads();
+  if (!pendingUploads.length) return;
+  pendingUploads = [];
+  savePendingUploads();
+}
+
+function getPendingUploadCount() {
+  loadPendingUploads();
+  return pendingUploads.length;
+}
+
+function syncPendingUploadsBanner() {
   const banner = $('pending-uploads-banner');
   if (!banner) return;
   const count = getPendingUploadCount();
   banner.hidden = count < 1;
   const title = $('pending-uploads-banner-title');
   const badge = $('pending-uploads-banner-count');
-  if (title) title.textContent = `${count} check-in${count === 1 ? '' : 's'} waiting to upload`;
+  if (title) {
+    title.textContent = count === 1
+      ? '1 check-in waiting to upload'
+      : `${count} check-ins waiting to upload`;
+  }
   if (badge) badge.textContent = String(count);
   if (!banner.dataset.bound) {
     banner.dataset.bound = '1';
@@ -2703,6 +2747,130 @@ function updatePendingUploadsBanner() {
     });
   }
 }
+
+function updatePendingUploadsBanner() {
+  syncPendingUploadsBanner();
+}
+
+function renderPendingUploadsList() {
+  const list = $('pending-uploads-list');
+  if (!list) return;
+  loadPendingUploads();
+  list.innerHTML = '';
+  if (!pendingUploads.length) {
+    const empty = document.createElement('p');
+    empty.className = 'pending-uploads-empty';
+    empty.textContent = 'Nothing waiting to upload.';
+    list.appendChild(empty);
+    return;
+  }
+  pendingUploads.forEach((item, index) => {
+    const row = document.createElement('div');
+    row.className = 'pending-upload-item';
+    row.setAttribute('role', 'listitem');
+
+    const thumb = document.createElement('div');
+    thumb.className = 'pending-upload-item__thumb';
+    if (item.thumb) {
+      const img = document.createElement('img');
+      img.src = item.thumb;
+      img.alt = '';
+      thumb.appendChild(img);
+    } else {
+      const icon = document.createElement('img');
+      icon.src = '../../shared/assets/icons/lucide/image.svg';
+      icon.className = 'lucide-icon';
+      icon.alt = '';
+      thumb.appendChild(icon);
+    }
+
+    const copy = document.createElement('div');
+    copy.className = 'pending-upload-item__copy';
+    const title = document.createElement('strong');
+    title.textContent = item.title || 'Pending check-in';
+    const meta = document.createElement('span');
+    meta.textContent = item.meta || '1 photo · Just now';
+    copy.append(title, meta);
+
+    const pill = document.createElement('span');
+    pill.className = 'pending-upload-item__pill';
+    pill.textContent = 'Pending';
+
+    const actions = document.createElement('div');
+    actions.className = 'pending-upload-item__actions';
+
+    const uploadBtn = document.createElement('button');
+    uploadBtn.type = 'button';
+    uploadBtn.className = 'pending-upload-item__action pending-upload-item__action--upload';
+    uploadBtn.setAttribute('aria-label', 'Upload now');
+    uploadBtn.innerHTML = '<img src="../../shared/assets/icons/lucide/cloud-upload.svg" class="lucide-icon lucide-icon-sm" alt="">';
+    uploadBtn.addEventListener('click', () => {
+      if (getOfflineMode() && !isDemoMode) {
+        softBlockDemoAction(uploadBtn, 'Go back online to upload');
+        return;
+      }
+      pendingUploads.splice(index, 1);
+      savePendingUploads();
+      renderPendingUploadsList();
+      syncPendingUploadsBanner();
+      showReviewToast('Uploaded', uploadBtn);
+    });
+
+    const trashBtn = document.createElement('button');
+    trashBtn.type = 'button';
+    trashBtn.className = 'pending-upload-item__action pending-upload-item__action--trash';
+    trashBtn.setAttribute('aria-label', 'Delete pending upload');
+    trashBtn.innerHTML = '<img src="../../shared/assets/icons/lucide/trash-2.svg" class="lucide-icon lucide-icon-sm" alt="">';
+    trashBtn.addEventListener('click', () => {
+      if (isDemoMode) {
+        softBlockDemoAction(trashBtn, 'Deleting pending uploads is disabled in the demo');
+        return;
+      }
+      pendingUploads.splice(index, 1);
+      savePendingUploads();
+      renderPendingUploadsList();
+      syncPendingUploadsBanner();
+    });
+
+    actions.append(uploadBtn, trashBtn);
+    row.append(thumb, copy, pill, actions);
+    list.appendChild(row);
+  });
+}
+
+function closePendingUploadsSheet() {
+  const overlay = $('pending-uploads-sheet-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('is-open');
+  overlay.setAttribute('aria-hidden', 'true');
+}
+
+function openPendingUploadsSheet() {
+  loadPendingUploads();
+  renderPendingUploadsList();
+  const overlay = $('pending-uploads-sheet-overlay');
+  if (!overlay) return;
+  overlay.classList.add('is-open');
+  overlay.setAttribute('aria-hidden', 'false');
+  if (!overlay.dataset.bound) {
+    overlay.dataset.bound = '1';
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) closePendingUploadsSheet();
+    });
+    const closeBtn = $('pending-uploads-sheet-close');
+    if (closeBtn) closeBtn.addEventListener('click', closePendingUploadsSheet);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closePendingUploadsSheet();
+    });
+  }
+}
+
+window.addEventListener('jcp-offline-mode-change', (e) => {
+  const offline = !!(e && e.detail && e.detail.offline);
+  if (offline) ensureOfflinePendingFixture();
+  else clearPendingUploadsIfOnline();
+  syncPendingUploadsBanner();
+});
 
 function renderHomeCheckins() {
   updatePendingUploadsBanner();
@@ -6722,6 +6890,9 @@ window.softBlockDemoAction = softBlockDemoAction;
 window.openAppInfo = openAppInfo;
 window.getOfflineMode = getOfflineMode;
 window.setOfflineMode = setOfflineMode;
+window.openPendingUploadsSheet = openPendingUploadsSheet;
+window.closePendingUploadsSheet = closePendingUploadsSheet;
+window.syncPendingUploadsBanner = syncPendingUploadsBanner;
 window.saveEditProfile = saveEditProfile;
 window.goToChangePassword = goToChangePassword;
 window.confirmChangePassword = confirmChangePassword;
