@@ -417,10 +417,10 @@ function jcp_media_industry_phone_cards( string $trade_label = '' ): array {
 	$published = $trade !== ''
 		? sprintf(
 			/* translators: %s: trade name */
-			__( '%s proof published', 'jcp-core' ),
+			__( '%s proof ready', 'jcp-core' ),
 			$trade
 		)
-		: __( 'Published everywhere', 'jcp-core' );
+		: __( 'Ready to publish', 'jcp-core' );
 
 	return [
 		[
@@ -435,7 +435,7 @@ function jcp_media_industry_phone_cards( string $trade_label = '' ): array {
 		],
 		[
 			'title'    => $published,
-			'subtitle' => __( 'Google Maps • Website • Social', 'jcp-core' ),
+			'subtitle' => __( 'Website · Google · Social', 'jcp-core' ),
 			'icon'     => 'globe',
 		],
 	];

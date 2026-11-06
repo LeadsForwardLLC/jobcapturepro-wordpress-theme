@@ -129,10 +129,16 @@ function jcp_core_seo_directory_schema(): void {
         ]
     );
     foreach ( $companies as $c ) {
+        if ( function_exists( 'jcp_directory_listing_is_temporarily_hidden' ) && jcp_directory_listing_is_temporarily_hidden( $c ) ) {
+            continue;
+        }
         $listings[] = home_url( '/directory/' . get_post_field( 'post_name', $c->ID ) . '/' );
     }
     if ( function_exists( 'jcp_core_get_demo_companies' ) ) {
         foreach ( jcp_core_get_demo_companies() as $row ) {
+            if ( function_exists( 'jcp_directory_listing_is_temporarily_hidden' ) && jcp_directory_listing_is_temporarily_hidden( $row ) ) {
+                continue;
+            }
             $id = isset( $row['id'] ) ? $row['id'] : '';
             if ( $id !== '' ) {
                 $listings[] = home_url( '/directory/' . $id . '/' );

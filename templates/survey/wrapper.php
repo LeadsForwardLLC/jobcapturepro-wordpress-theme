@@ -1,11 +1,11 @@
 <?php
 /**
- * Survey wrapper: overlay, card, progress, steps, deck
+ * Survey wrapper: single-screen gate → live demo (deck skipped by default).
  * Used when /demo is loaded without ?mode=run (survey view).
  *
  * @package JCP_Core
  */
-$logo_url = esc_url( 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCapturePro-Logo-Dark.png' );
+$logo_url = esc_url( get_template_directory_uri() . '/assets/brand/jcp-logo-dark-320.webp' );
 ?>
 <div class="survey-overlay">
   <button class="survey-close" id="surveyClose" type="button" aria-label="<?php esc_attr_e( 'Close demo', 'jcp-core' ); ?>">
@@ -14,29 +14,41 @@ $logo_url = esc_url( 'https://jobcapturepro.com/wp-content/uploads/2025/11/JobCa
     </svg>
   </button>
 
-  <p class="survey-step-indicator" id="surveyStepIndicator" aria-live="polite" hidden>Step 1/3</p>
+  <p class="survey-step-indicator" id="surveyStepIndicator" aria-live="polite" hidden></p>
 
-  <div class="survey-card">
+  <div class="survey-card survey-card--gate">
     <div class="survey-brand">
-      <img src="<?php echo $logo_url; ?>" alt="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>" width="180" height="40" />
+      <img
+        src="<?php echo $logo_url; ?>"
+        alt="<?php esc_attr_e( 'JobCapturePro', 'jcp-core' ); ?>"
+        width="160"
+        height="36"
+        decoding="async"
+        fetchpriority="high"
+        data-no-lazy=""
+      />
     </div>
 
     <?php get_template_part( 'templates/survey/step-1' ); ?>
     <?php get_template_part( 'templates/survey/step-2' ); ?>
-    <?php get_template_part( 'templates/survey/step-3' ); ?>
-    <?php get_template_part( 'templates/survey/deck' ); ?>
-    <?php get_template_part( 'templates/survey/desktop-handoff' ); ?>
+    <?php
+    // Deck is optional (?deck=1). Default gate skips it so large campaign images
+    // are not downloaded before the user enters the interactive demo.
+    $include_deck = isset( $_GET['deck'] ) && (string) $_GET['deck'] === '1'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+    if ( $include_deck ) {
+      get_template_part( 'templates/survey/deck' );
+    }
+    get_template_part( 'templates/survey/desktop-handoff' );
+    ?>
 
-    <div class="survey-progress" id="surveyProgress">
+    <div class="survey-progress is-hidden" id="surveyProgress" hidden aria-hidden="true">
       <div class="survey-progress-track" aria-hidden="true">
         <span class="survey-progress-fill" id="surveyProgressFill"></span>
       </div>
       <div class="survey-progress-row">
-        <span class="survey-progress-label" id="surveyProgressText">Step 1 of 3</span>
+        <span class="survey-progress-label" id="surveyProgressText"></span>
         <div class="survey-stepper" role="tablist" aria-label="<?php esc_attr_e( 'Survey steps', 'jcp-core' ); ?>">
-          <button class="stepper-step is-active" type="button" data-step="0">1</button>
-          <button class="stepper-step" type="button" data-step="1">2</button>
-          <button class="stepper-step" type="button" data-step="2">3</button>
+          <button class="stepper-step is-active" type="button" data-step="0" hidden aria-hidden="true">1</button>
         </div>
       </div>
     </div>

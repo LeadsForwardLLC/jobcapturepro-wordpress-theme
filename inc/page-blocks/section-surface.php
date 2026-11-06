@@ -61,9 +61,18 @@ function jcp_section_surface_resolve( array $layout ): array {
  * @param array<string, mixed> $layout Block layout.
  * @return array{class: string, style: string, data: array<string, string>}
  */
-function jcp_section_surface_block_attrs( array $layout ): array {
+function jcp_section_surface_block_attrs( array $layout, string $block_type = '' ): array {
 	$surface = jcp_section_surface_resolve( $layout );
 	$preset  = (string) $surface['preset'];
+
+	// Authority is a designed dark band — never apply light surface washes.
+	if ( $block_type === 'authority' ) {
+		return [
+			'class' => '',
+			'style' => '',
+			'data'  => [],
+		];
+	}
 
 	if ( $preset === 'default' ) {
 		return [

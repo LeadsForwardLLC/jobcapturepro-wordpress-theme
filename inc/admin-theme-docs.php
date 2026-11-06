@@ -41,6 +41,15 @@ function jcp_theme_docs_render_page(): void {
 	<div class="wrap jcp-theme-docs">
 		<h1><?php esc_html_e( 'JCP Page System — Standard Operating Procedure', 'jcp-core' ); ?></h1>
 
+		<p class="description" style="margin: 8px 0 0; max-width: 52rem;">
+			<?php
+			esc_html_e(
+				'Developer ownership & deploy rules live in the theme repo: docs/WEBSITE_OWNERSHIP_HANDOFF.md (primary owner: Abdul). Pushing to main auto-deploys production — use feature branches + PRs.',
+				'jcp-core'
+			);
+			?>
+		</p>
+
 		<div class="notice notice-info jcp-theme-docs__start-here" style="margin: 16px 0 20px; padding: 16px 20px;">
 			<h2 style="margin: 0 0 10px; font-size: 1.15em;"><?php esc_html_e( 'Start here — what are you adding?', 'jcp-core' ); ?></h2>
 			<table class="widefat striped" style="background: #fff; margin-top: 12px;">

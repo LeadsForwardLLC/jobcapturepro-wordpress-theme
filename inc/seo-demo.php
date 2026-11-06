@@ -13,7 +13,7 @@
  */
 function jcp_core_get_demo_page(): ?WP_Post {
 	$page = get_page_by_path( 'demo', OBJECT, 'page' );
-	if ( $page instanceof WP_Post && $page->post_status === 'publish' ) {
+	if ( $page instanceof WP_Post && $page->post_status === 'publish' && (int) $page->post_parent === 0 ) {
 		return $page;
 	}
 	return null;
@@ -25,6 +25,12 @@ function jcp_core_get_demo_page(): ?WP_Post {
  * @return bool
  */
 function jcp_core_is_demo_request(): bool {
+	if ( function_exists( 'jcp_job_proof_demo_run_is_current' ) && jcp_job_proof_demo_run_is_current() ) {
+		return false;
+	}
+	if ( function_exists( 'jcp_job_proof_demo_is_run_path' ) && jcp_job_proof_demo_is_run_path() ) {
+		return false;
+	}
 	if ( get_query_var( 'jcp_route', '' ) === 'demo' ) {
 		return true;
 	}
@@ -38,7 +44,7 @@ function jcp_core_is_demo_request(): bool {
 		return true;
 	}
 
-	return is_page_template( 'page-demo.php' ) || is_page( 'demo' );
+	return is_page_template( 'page-demo.php' ) || ( is_page( 'demo' ) && (int) get_queried_object_id() > 0 && (int) ( get_post( get_queried_object_id() )->post_parent ?? 0 ) === 0 );
 }
 
 /**

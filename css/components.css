@@ -436,6 +436,47 @@ body.mobile-menu-open .jcp-top-banner {
   transform: scaleX(1);
 }
 
+/* Whole-card link (benefits): stretched hit target over the card */
+.ranking-factor-card--linked {
+  cursor: pointer;
+}
+
+.ranking-factor-card__link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+  text-decoration: none;
+  color: inherit;
+}
+
+body.jcp-inline-editing .ranking-factor-card__link {
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.jcp-inline-editing .ranking-factor-card[data-jcp-card-link-path].is-card-link-target {
+  outline: 2px solid var(--jcp-color-primary, #ff503e);
+  outline-offset: 2px;
+}
+
+body.jcp-inline-editing .ranking-factor-card[data-jcp-card-link-path].ranking-factor-card--linked::after {
+  content: 'Linked';
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  z-index: 3;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--jcp-color-primary, #ff503e);
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+}
+
 /* ============================================================
    HERO COMPONENT
    ============================================================ */
@@ -1235,6 +1276,55 @@ body.mobile-menu-open .jcp-top-banner {
 
 .jcp-footer-powered a:hover {
   color: var(--jcp-color-primary);
+}
+
+.jcp-footer-apps {
+  margin-top: var(--jcp-space-xl);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--jcp-space-sm);
+  max-width: 320px;
+}
+
+.jcp-footer-apps-label {
+  margin: 0;
+  font-size: 11px;
+  font-weight: var(--jcp-font-weight-semibold);
+  color: var(--jcp-color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.jcp-footer-apps-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.jcp-footer-app-badge {
+  display: inline-flex;
+  line-height: 0;
+  text-decoration: none;
+  border-radius: 5px;
+  transition: opacity var(--jcp-transition-base), transform 0.15s ease;
+}
+
+.jcp-footer-app-badge:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+}
+
+.jcp-footer-app-badge:focus-visible {
+  outline: 2px solid var(--jcp-color-primary);
+  outline-offset: 3px;
+}
+
+.jcp-footer-app-badge img {
+  display: block;
+  height: 40px;
+  width: auto;
 }
 
 /* ============================================================

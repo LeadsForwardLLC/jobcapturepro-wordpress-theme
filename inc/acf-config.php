@@ -133,19 +133,32 @@ function jcp_core_early_access_default_why_interested_options(): array {
 }
 
 /**
- * Default "How did you hear about us?" options for Early Access form (exact labels for GHL).
+ * Default "How did you hear about us?" options (exact labels for GHL).
+ * Shared by Early Access and Demo Survey.
  *
  * @return array List of [ 'label' => string, 'value' => string ]
  */
 function jcp_core_early_access_default_referral_options(): array {
     $labels = [
         'Google Search',
-        'Google Maps',
-        'Facebook / Instagram',
-        'Referral (another contractor)',
-        'YouTube / Video',
+        'Google Ads',
+        'Google Maps / Business Profile',
+        'Facebook',
+        'Instagram',
+        'Facebook / Instagram Ads',
+        'YouTube',
+        'TikTok',
+        'LinkedIn',
         'Podcast',
-        'Industry Event',
+        'Email / Newsletter',
+        'Blog or article',
+        'Industry event / trade show',
+        'Referral from another contractor',
+        'Referral from a friend or colleague',
+        'Software partner (CompanyCam, Jobber, Housecall Pro, etc.)',
+        'ChatGPT / AI assistant',
+        'Reddit or online forum',
+        'Saw it on a contractor website',
         'Other',
     ];
     $out = [];
@@ -153,6 +166,29 @@ function jcp_core_early_access_default_referral_options(): array {
         $out[] = [ 'label' => $label, 'value' => $label ];
     }
     return $out;
+}
+
+/**
+ * Render <option> markup for referral source select.
+ *
+ * @param bool $include_placeholder Whether to include an empty placeholder option.
+ */
+function jcp_core_render_referral_source_select_options( bool $include_placeholder = true ): void {
+    if ( $include_placeholder ) {
+        echo '<option value="">' . esc_html__( 'Select one…', 'jcp-core' ) . '</option>';
+    }
+    foreach ( jcp_core_early_access_default_referral_options() as $opt ) {
+        $value = (string) ( $opt['value'] ?? '' );
+        $label = (string) ( $opt['label'] ?? $value );
+        if ( $value === '' ) {
+            continue;
+        }
+        printf(
+            '<option value="%s">%s</option>',
+            esc_attr( $value ),
+            esc_html( $label )
+        );
+    }
 }
 
 /**
@@ -283,6 +319,30 @@ function jcp_core_early_access_default_business_type_options(): array {
  */
 function jcp_core_business_type_other_value(): string {
     return 'other';
+}
+
+/**
+ * Flat list of business type options for selects and typeahead comboboxes.
+ *
+ * @return list<array{value:string,label:string,group:string}>
+ */
+function jcp_core_business_type_flat_options(): array {
+    $flat = [];
+    foreach ( jcp_core_early_access_default_business_type_options() as $group ) {
+        $group_label = isset( $group['label'] ) ? (string) $group['label'] : '';
+        $options     = isset( $group['options'] ) && is_array( $group['options'] ) ? $group['options'] : [];
+        foreach ( $options as $opt ) {
+            if ( empty( $opt['value'] ) || ! isset( $opt['label'] ) ) {
+                continue;
+            }
+            $flat[] = [
+                'value' => (string) $opt['value'],
+                'label' => (string) $opt['label'],
+                'group' => $group_label,
+            ];
+        }
+    }
+    return $flat;
 }
 
 /**
