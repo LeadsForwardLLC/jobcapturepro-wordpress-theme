@@ -1274,7 +1274,7 @@ const demoGuideContent = {
     pill: 'Step 4',
     title: 'Ask for the Review While the Job Is Fresh.',
     body: 'Your crew can show the customer a simple review request before leaving.',
-    interactHint: 'Tap Preview Review Request.'
+    interactHint: 'Tap Request Review.'
   },
   step6: {
     pill: 'Step 5',
@@ -3666,6 +3666,8 @@ function handleEditSave() {
     saveArchivedCheckinEdits();
     return;
   }
+  // saveCheckin() disables the hook on first run; bail so guided publish can't re-run.
+  if ($('btnSavePublish')?.disabled) return;
   saveCheckin();
 }
 
@@ -3812,6 +3814,7 @@ if (publishBtn) {
     state.activeCheckinFromArchived = false;
   } else {
     // Create new
+    if (isGuidedDemoRun()) setPublishingState('published');
     const desc = descField ? descField.value : 'Replaced water heater.';
     state.savedCheckins.push({
       title: getDemoJobTitle(),
