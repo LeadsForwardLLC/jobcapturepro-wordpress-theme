@@ -229,56 +229,70 @@
                     <div class="app-screen" id="edit-screen">
                         <div class="app-header">
                             <div class="app-header__left"><button class="back-btn" id="btnEditBack" onclick="goToHome()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
-                            <p class="app-header__title">Edit Check-in</h1>
-                            <div class="app-header__right"></div>
+                            <p class="app-header__title">Edit Check-In</p>
+                            <div class="app-header__right"><button type="button" class="edit-header-save" id="btnEditSave" onclick="handleEditSave()">Save</button></div>
                         </div>
                         <div class="content-area edit-content">
-                            <div class="status-pill"><img src="../../shared/assets/icons/lucide/clock.svg" class="lucide-icon lucide-icon-sm" alt=""> Not Published</div>
-                            <div class="section-title">LOCATION</div>
-                            <div class="location-card" id="edit-location-card">
-                                <div class="location-header">
-                                    <div class="map-thumb map-thumb--pin">
-                                        <img src="../../shared/assets/icons/lucide/map-pin.svg" class="lucide-icon lucide-icon-lg" alt="">
-                                    </div>
-                                    <div class="location-info">
-                                        <p class="location-current-label">CURRENT LOCATION</p>
-                                        <h3 class="location-street">1242 Mason Rd</h3>
-                                        <p class="location-city">Austin, TX 78704</p>
-                                        <button type="button" class="edit-action-link" id="btnEditEditAddress"><img src="../../shared/assets/icons/lucide/pencil.svg" class="lucide-icon lucide-icon-sm" alt=""> Edit Address</button>
-                                    </div>
+                            <div class="edit-meta-row">
+                                <button type="button" class="publish-status-badge" id="publish-status-badge" data-state="not_published" aria-haspopup="dialog" aria-label="Publishing status: Not Published. Change"><img src="../../shared/assets/icons/lucide/shield.svg" class="lucide-icon lucide-icon-sm publish-status-badge__icon" alt="" aria-hidden="true"><span class="publish-status-badge__label" id="publish-status-badge-label">Not Published</span><img src="../../shared/assets/icons/lucide/pencil.svg" class="lucide-icon lucide-icon-xs publish-status-badge__edit" alt="" aria-hidden="true"></button>
+                                <span class="edit-meta-author" id="edit-meta-author">Alex Rivera · a moment ago</span>
+                            </div>
+
+                            <div class="edit-details-card" id="edit-details-card">
+                                <h3 class="edit-details-card__title">Details</h3>
+                                <button type="button" class="edit-detail-row" id="edit-location-card">
+                                    <span class="edit-detail-row__icon"><img src="../../shared/assets/icons/lucide/map.svg" class="lucide-icon" alt="" aria-hidden="true"></span>
+                                    <span class="edit-detail-row__text">
+                                        <span class="edit-detail-row__label">Location</span>
+                                        <span class="edit-detail-row__value location-street">1242 Mason Rd</span>
+                                        <span class="edit-detail-row__sub location-city">Austin, TX 78704</span>
+                                    </span>
+                                    <img src="../../shared/assets/icons/lucide/chevron-right.svg" class="lucide-icon edit-detail-row__chevron" alt="" aria-hidden="true">
+                                </button>
+                                <div class="edit-detail-row edit-detail-row--static" id="edit-date-row">
+                                    <span class="edit-detail-row__icon"><img src="../../shared/assets/icons/lucide/calendar.svg" class="lucide-icon" alt="" aria-hidden="true"></span>
+                                    <span class="edit-detail-row__text">
+                                        <span class="edit-detail-row__label">Date</span>
+                                        <span class="edit-detail-row__value" id="edit-date-day">Friday</span>
+                                        <span class="edit-detail-row__sub" id="edit-date-full">Nov 6, 2026</span>
+                                    </span>
                                 </div>
                             </div>
 
                             <div id="edit-photos-block">
-                            <div class="section-title">PHOTOS</div>
-                            <div class="photo-grid" id="edit-photo-grid"></div>
-                            <button type="button" class="edit-action-link" id="btnAddMedia"><img src="../../shared/assets/icons/lucide/plus.svg" class="lucide-icon lucide-icon-sm" alt=""> Add Media</button>
+                                <div class="edit-section-label">PHOTOS <span class="edit-count-pill" id="edit-photo-count">0</span></div>
+                                <div class="edit-photo-row">
+                                    <div class="photo-grid" id="edit-photo-grid"></div>
+                                    <button type="button" class="edit-add-photo" id="btnAddMedia" aria-label="Add photo"><img src="../../shared/assets/icons/lucide/plus.svg" class="lucide-icon" alt="" aria-hidden="true"><span>Add</span></button>
+                                </div>
                             </div>
 
-                            <div id="edit-description-block">
-                            <div class="section-title">DESCRIPTION</div>
-                            <div class="description-header">
-                                <p class="description-header-label"><img src="../../shared/assets/icons/lucide/zap.svg" class="lucide-icon lucide-icon-sm" alt=""> AI-generated description</p>
-                                <button type="button" class="edit-action-link" id="btnRegenerateDescription" aria-label="Regenerate description"><img src="../../shared/assets/icons/lucide/refresh-cw.svg" class="lucide-icon lucide-icon-sm" alt=""> Regenerate</button>
-                            </div>
-                            <textarea id="description-field">Water heater replacement at 1242 Mason Rd, Austin TX 78704. Installed a high-efficiency unit, verified venting, and tested T&amp;P relief. Local, geotagged job proof ready for your website and Google — optimized for nearby search.</textarea>
-                            <div class="auto-save-note"><img src="../../shared/assets/icons/lucide/check.svg" class="lucide-icon lucide-icon-xs" alt=""> Saved Automatically</div>
+                            <div id="edit-description-block" class="edit-description-card">
+                                <div class="description-header">
+                                    <p class="description-header-label"><span class="edit-section-label edit-section-label--inline">DESCRIPTION</span><span class="edit-ai-pill"><img src="../../shared/assets/icons/lucide/zap.svg" class="lucide-icon lucide-icon-xs" alt="" aria-hidden="true"> AI</span></p>
+                                    <button type="button" class="edit-action-link" id="btnRegenerateDescription" aria-label="Regenerate description"><img src="../../shared/assets/icons/lucide/refresh-cw.svg" class="lucide-icon lucide-icon-sm" alt=""> Regenerate</button>
+                                </div>
+                                <textarea id="description-field">Water heater replacement at 1242 Mason Rd, Austin TX 78704. Installed a high-efficiency unit, verified venting, and tested T&amp;P relief. Local, geotagged job proof ready for your website and Google — optimized for nearby search.</textarea>
                             </div>
 
                             <div id="edit-tags-block">
-                            <div class="section-title">TAGS</div>
-                            <div class="tag-pills-wrap" id="edit-tag-pills"></div>
-                            <button type="button" class="location-switcher" id="tag-selector-trigger" aria-label="Select tags">
-                                <img src="../../shared/assets/icons/lucide/tag.svg" class="location-switcher__icon" alt="" aria-hidden="true">
-                                <span class="location-switcher__label" id="tag-selector-label">Add tags…</span>
-                                <img src="../../shared/assets/icons/lucide/chevron-down.svg" class="location-switcher__chevron" alt="" aria-hidden="true">
-                            </button>
+                                <div class="edit-section-label">TAGS</div>
+                                <div class="tag-pills-wrap" id="edit-tag-pills"></div>
+                                <button type="button" class="location-switcher" id="tag-selector-trigger" aria-label="Select tags">
+                                    <img src="../../shared/assets/icons/lucide/tag.svg" class="location-switcher__icon" alt="" aria-hidden="true">
+                                    <span class="location-switcher__label" id="tag-selector-label">Add tags…</span>
+                                    <img src="../../shared/assets/icons/lucide/chevron-down.svg" class="location-switcher__chevron" alt="" aria-hidden="true">
+                                </button>
                             </div>
 
-                            <div class="action-buttons action-buttons--normal" id="edit-screen-buttons-normal">
-                                <button class="btn btn-primary" id="btnSavePublish" onclick="saveCheckin()"><img src="../../shared/assets/icons/lucide/upload.svg" class="lucide-icon lucide-icon-sm" alt=""> Publish Everywhere</button>
-                                <button type="button" class="btn btn-warning" id="btnArchiveCheckin"><img src="../../shared/assets/icons/lucide/archive.svg" class="lucide-icon lucide-icon-sm" alt=""> <span id="btnArchiveCheckinLabel">Archive</span></button>
-                                <button class="btn btn-primary action-buttons__item--spaced" id="btnRequestReview" onclick="goToRequestReview()"><img src="../../shared/assets/icons/lucide/star.svg" class="lucide-icon lucide-icon-sm" alt=""> Preview Review Request</button>
+                            <div class="edit-footer-actions action-buttons--normal" id="edit-screen-buttons-normal">
+                                <button type="button" class="btn btn-primary" id="btnRequestReview" onclick="goToRequestReview()"><img src="../../shared/assets/icons/lucide/star.svg" class="lucide-icon lucide-icon-sm" alt=""> Request Review</button>
+                                <button type="button" class="btn-icon" id="btnEditMore" aria-label="More" aria-haspopup="menu" aria-expanded="false"><img src="../../shared/assets/icons/lucide/ellipsis.svg" class="lucide-icon" alt="" aria-hidden="true"></button>
+                                <div class="edit-more-menu" id="edit-more-menu" role="menu" hidden>
+                                    <button type="button" class="btn btn-secondary btn-archive-float" id="btnArchiveCheckin" role="menuitem"><img src="../../shared/assets/icons/lucide/archive.svg" class="lucide-icon lucide-icon-sm" alt=""> <span id="btnArchiveCheckinLabel">Archive Check-In</span></button>
+                                </div>
+                                <!-- Tour / saveCheckin hook: kept in DOM, visually hidden. Not user-facing. -->
+                                <button type="button" class="edit-publish-hook" id="btnSavePublish" onclick="saveCheckin()" tabindex="-1" aria-hidden="true">Save</button>
                             </div>
                             <div class="action-buttons action-buttons--archived" id="edit-screen-buttons-archived" style="display: none;">
                                 <button type="button" class="btn btn-secondary" id="btnArchivedSave" onclick="saveArchivedCheckinEdits()"><img src="../../shared/assets/icons/lucide/check.svg" class="lucide-icon lucide-icon-sm" alt=""> Save</button>
@@ -523,6 +537,30 @@
                             <div class="location-sheet-actions">
                                 <button type="button" class="btn btn-primary" id="regenerate-sheet-submit"><img src="../../shared/assets/icons/lucide/refresh-cw.svg" class="lucide-icon lucide-icon-sm" alt=""> Regenerate</button>
                                 <button type="button" class="btn btn-secondary" id="regenerate-sheet-cancel">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Publishing sheet -->
+                    <div class="location-sheet-overlay" id="publishing-sheet-overlay" aria-hidden="true">
+                        <div class="location-sheet publishing-sheet" id="publishing-sheet" role="dialog" aria-labelledby="publishing-sheet-title">
+                            <div class="publishing-sheet__body">
+                                <h2 id="publishing-sheet-title" class="publishing-sheet__title">Publishing</h2>
+                                <button type="button" class="publish-option" data-publish-state="published">
+                                    <span class="publish-option__icon"><img src="../../shared/assets/icons/lucide/globe.svg" class="lucide-icon" alt="" aria-hidden="true"></span>
+                                    <span class="publish-option__text"><span class="publish-option__title">Published</span><span class="publish-option__desc">Shows on your website and Google Business Profile.</span></span>
+                                    <span class="publish-option__check" aria-hidden="true"><img src="../../shared/assets/icons/lucide/check.svg" class="lucide-icon lucide-icon-sm" alt=""></span>
+                                </button>
+                                <button type="button" class="publish-option is-selected" data-publish-state="not_published">
+                                    <span class="publish-option__icon"><img src="../../shared/assets/icons/lucide/shield.svg" class="lucide-icon" alt="" aria-hidden="true"></span>
+                                    <span class="publish-option__text"><span class="publish-option__title">Not published</span><span class="publish-option__desc">Stays internal. Only your team can see it.</span></span>
+                                    <span class="publish-option__check" aria-hidden="true"><img src="../../shared/assets/icons/lucide/check.svg" class="lucide-icon lucide-icon-sm" alt=""></span>
+                                </button>
+                                <div class="publish-ai-card">
+                                    <span class="edit-ai-pill"><img src="../../shared/assets/icons/lucide/zap.svg" class="lucide-icon lucide-icon-xs" alt="" aria-hidden="true"> AI</span>
+                                    <p>AI auto-publishing can set this for you. Turn it on or off on the admin dashboard.</p>
+                                </div>
+                                <button type="button" class="btn btn-secondary btn-full" id="publishing-sheet-close">Close</button>
                             </div>
                         </div>
                     </div>

@@ -1268,7 +1268,7 @@ const demoGuideContent = {
     pill: 'Step 3',
     title: 'Watch the check-in get built',
     body: 'One job photo becomes usable marketing proof.',
-    interactHint: 'Follow the highlight, then tap Publish Everywhere.'
+    interactHint: 'Follow the highlight, then set Publishing to Published.'
   },
   step5: {
     pill: 'Step 4',
@@ -1561,7 +1561,7 @@ function initLocationSwitcher() {
       openLocationSheet();
     });
   }
-  ['btnNewEditAddress', 'btnEditEditAddress'].forEach((id) => {
+  ['btnNewEditAddress', 'edit-location-card'].forEach((id) => {
     const btn = $(id);
     if (!btn) return;
     btn.addEventListener('click', (e) => {
@@ -2052,7 +2052,7 @@ const tour = {
       step1: '#btnStartDemo',
       step2: '#fabNewCheckin',
       step3: '#uploadBtnCamera',
-      step4: '#btnSavePublish',
+      step4: '#publish-status-badge',
       step5: '#btnRequestReview',
       step6: '#demoOutcomesModal',
     }
@@ -2427,11 +2427,6 @@ function applyPrototypeAppLabels() {
     processingSub.hidden = true;
   }
 
-  const statusPill = document.querySelector('#edit-screen .status-pill');
-  if (statusPill) statusPill.hidden = true;
-
-  const requestReviewBtn = document.getElementById('btnRequestReview');
-  if (requestReviewBtn) requestReviewBtn.hidden = true;
 }
 
 /** Guided demo keeps longer marketing processing copy. */
@@ -3469,17 +3464,18 @@ function showEditScreen() {
   }
 
   updateArchiveButtonUI();
+  // #btnSavePublish stays in the DOM (visually hidden) as a saveCheckin hook.
   const publishBtn = $('btnSavePublish');
   if (publishBtn) {
     publishBtn.disabled = false;
     publishBtn.classList.remove('is-disabled');
-    if (isPrototype) {
-      publishBtn.innerHTML = `<img src="${assetBase}/shared/assets/icons/lucide/check.svg" class="lucide-icon lucide-icon-sm" alt=""> Save`;
-    } else {
-      publishBtn.innerHTML = `<img src="${assetBase}/shared/assets/icons/lucide/upload.svg" class="lucide-icon lucide-icon-sm" alt=""> Publish Everywhere`;
-    }
     publishBtn.onclick = saveCheckin;
   }
+  const editedCheckin = state.activeCheckinIndex !== null ? state.savedCheckins[state.activeCheckinIndex] : null;
+  setPublishingState(editedCheckin && editedCheckin.publishState === 'published' ? 'published' : 'not_published');
+  updateEditMeta(editedCheckin);
+  closePublishingSheet();
+  closeEditMoreMenu();
   setScreen('edit-screen');
   setTourStep('step4');
 
@@ -3488,7 +3484,7 @@ function showEditScreen() {
 }
 
 /**
- * Step 4 beat: spotlight Location → Description → Publish Everywhere (skip photos/tags noise).
+ * Step 4 beat: spotlight Location → Description → Publishing badge (skip photos/tags noise).
  */
 function clearStep4SeoBeatTimers() {
   window.clearTimeout(runStep4SeoAppreciationBeat._timer);
@@ -3505,7 +3501,7 @@ function runStep4SeoAppreciationBeat() {
   clearStep4SeoBeatTimers();
 
   const scroller = document.querySelector('#edit-screen .content-area');
-  const publishBtn = document.getElementById('btnSavePublish');
+  const publishBadge = document.getElementById('publish-status-badge');
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   // Fewer beats → slightly longer hold so Location + Description land before Publish.
   const holdMs = reduceMotion ? 180 : 1600;
@@ -3515,7 +3511,7 @@ function runStep4SeoAppreciationBeat() {
   const sequence = [
     { sel: '#edit-location-card', hint: 'Location is attached for local context.' },
     { sel: '#edit-description-block', hint: 'AI wrote job content from the photo.' },
-    { sel: '#btnSavePublish', hint: 'Tap Publish Everywhere to continue.' },
+    { sel: '#publish-status-badge', hint: 'Tap Not Published, then choose Published to continue.' },
   ];
 
   const scrollToEl = (el, offset = 24) => {
@@ -3543,7 +3539,7 @@ function runStep4SeoAppreciationBeat() {
     el.classList.add('is-demo-seo-spotlight');
     tour.anchors.step4 = item.sel;
 
-    scrollToEl(el, item.sel === '#btnSavePublish' ? 48 : 20);
+    scrollToEl(el, item.sel === '#publish-status-badge' ? 48 : 20);
 
     if (item.hint) {
       tour.step4Hint = item.hint;
@@ -3554,7 +3550,7 @@ function runStep4SeoAppreciationBeat() {
     if (isGuidedDemoRun()) {
       updateTourFloating();
       requestAnimationFrame(() => {
-        scrollGuidedControlIntoView(el, item.sel === '#btnSavePublish' ? 10 : 16);
+        scrollGuidedControlIntoView(el, item.sel === '#publish-status-badge' ? 10 : 16);
         positionMobileSpotlight();
       });
       setTimeout(() => positionMobileSpotlight(), settleMs);
@@ -3568,8 +3564,8 @@ function runStep4SeoAppreciationBeat() {
       return;
     }
     if (index >= sequence.length) {
-      tour.anchors.step4 = '#btnSavePublish';
-      publishBtn?.classList.add('is-demo-seo-spotlight');
+      tour.anchors.step4 = '#publish-status-badge';
+      publishBadge?.classList.add('is-demo-seo-spotlight');
       positionMobileSpotlight();
       return;
     }
@@ -3585,6 +3581,134 @@ function runStep4SeoAppreciationBeat() {
   runStep4SeoAppreciationBeat._timer = start;
 }
 
+
+/* =========================================================
+   Edit Check-In: publishing state, sheet, meta, overflow menu
+========================================================= */
+
+let publishingState = 'not_published';
+
+function getPublishingState() { return publishingState; }
+
+function setPublishingState(next) {
+  publishingState = next === 'published' ? 'published' : 'not_published';
+  const label = publishingState === 'published' ? 'Published' : 'Not Published';
+  const badge = document.getElementById('publish-status-badge');
+  if (badge) {
+    badge.dataset.state = publishingState;
+    badge.setAttribute('aria-label', `Publishing status: ${label}. Change`);
+    const text = document.getElementById('publish-status-badge-label');
+    if (text) text.textContent = label;
+    else badge.textContent = label;
+  }
+  document.querySelectorAll('.publish-option').forEach((btn) => {
+    btn.classList.toggle('is-selected', btn.dataset.publishState === publishingState);
+  });
+}
+
+function openPublishingSheet() {
+  const overlay = document.getElementById('publishing-sheet-overlay');
+  if (!overlay) return;
+  closeEditMoreMenu();
+  overlay.classList.add('is-open');
+  overlay.setAttribute('aria-hidden', 'false');
+}
+
+function closePublishingSheet() {
+  const overlay = document.getElementById('publishing-sheet-overlay');
+  if (!overlay) return;
+  overlay.classList.remove('is-open');
+  overlay.setAttribute('aria-hidden', 'true');
+}
+
+function closeEditMoreMenu() {
+  const menu = document.getElementById('edit-more-menu');
+  const btn = document.getElementById('btnEditMore');
+  if (menu) menu.hidden = true;
+  if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+function toggleEditMoreMenu() {
+  const menu = document.getElementById('edit-more-menu');
+  const btn = document.getElementById('btnEditMore');
+  if (!menu) return;
+  const open = menu.hidden;
+  menu.hidden = !open;
+  if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function formatEditRelativeTime(time) {
+  const t = String(time || '').trim();
+  if (!t || /^just now$/i.test(t)) return 'a moment ago';
+  return t;
+}
+
+/** Author · relative time, plus the Details date row. Fake identity only. */
+function updateEditMeta(checkin) {
+  const first = (demoUser && demoUser.firstName) || DEFAULT_DEMO_IDENTITY.firstName;
+  const last = (demoUser && demoUser.lastName) || DEFAULT_DEMO_IDENTITY.lastName;
+  const author = $('edit-meta-author');
+  if (author) author.textContent = `${`${first} ${last}`.trim()} · ${formatEditRelativeTime(checkin && checkin.time)}`;
+
+  const now = new Date();
+  safeText('edit-date-day', now.toLocaleDateString('en-US', { weekday: 'long' }));
+  safeText('edit-date-full', now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }));
+}
+
+function updateEditPhotoCount() {
+  const grid = $('edit-photo-grid');
+  safeText('edit-photo-count', String(grid ? grid.querySelectorAll('.photo-item').length : 0));
+}
+
+/** Header Save: archived check-ins persist edits only; otherwise reuse saveCheckin(). */
+function handleEditSave() {
+  if (state.activeCheckinFromArchived) {
+    saveArchivedCheckinEdits();
+    return;
+  }
+  saveCheckin();
+}
+
+function initPublishingSheet() {
+  const badge = $('publish-status-badge');
+  const overlay = $('publishing-sheet-overlay');
+  const closeBtn = $('publishing-sheet-close');
+  if (badge) badge.addEventListener('click', (e) => { e.preventDefault(); openPublishingSheet(); });
+  if (closeBtn) closeBtn.addEventListener('click', closePublishingSheet);
+  if (overlay) overlay.addEventListener('click', (e) => { if (e.target === overlay) closePublishingSheet(); });
+  document.querySelectorAll('.publish-option').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const next = btn.dataset.publishState === 'published' ? 'published' : 'not_published';
+      setPublishingState(next);
+      closePublishingSheet();
+      // Guided demo: choosing Published is the publish beat — run the existing save/publish flow once.
+      if (isGuidedDemoRun() && next === 'published' && tour.stepKey === 'step4') {
+        const hook = $('btnSavePublish');
+        if (!hook || !hook.disabled) saveCheckin();
+      }
+    });
+  });
+
+  const moreBtn = $('btnEditMore');
+  if (moreBtn) moreBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleEditMoreMenu(); });
+  document.addEventListener('click', (e) => {
+    const menu = $('edit-more-menu');
+    if (menu && !menu.hidden && !menu.contains(e.target) && e.target !== moreBtn && !moreBtn?.contains(e.target)) {
+      closeEditMoreMenu();
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    closePublishingSheet();
+    closeEditMoreMenu();
+  });
+
+  const grid = $('edit-photo-grid');
+  if (grid && typeof MutationObserver !== 'undefined') {
+    new MutationObserver(updateEditPhotoCount).observe(grid, { childList: true });
+  }
+  updateEditPhotoCount();
+}
 
 function regenerateDescription() {
   state.currentDescriptionIndex = (state.currentDescriptionIndex + 1) % descriptions.length;
@@ -3671,6 +3795,7 @@ if (publishBtn) {
     if (existing) {
       existing.summary = descField ? descField.value : existing.summary;
       existing.time = 'Just now';
+      existing.publishState = publishingState;
     }
     persistCheckins();
     state.activeCheckinIndex = null;
@@ -3680,6 +3805,7 @@ if (publishBtn) {
     if (existing) {
       existing.summary = descField ? descField.value : existing.summary;
       existing.time = 'Just now';
+      existing.publishState = publishingState;
     }
     persistCheckins();
     state.activeCheckinIndex = null;
@@ -3694,7 +3820,8 @@ if (publishBtn) {
       summary: desc,
       customer: getCanonicalSampleJob().customer,
       time: 'Just now',
-      image: demoPhotos[0]
+      image: demoPhotos[0],
+      publishState: isGuidedDemoRun() ? 'published' : publishingState
     });
     persistCheckins();
 
@@ -5375,15 +5502,16 @@ function openCheckinForEdit(index, fromArchived = false) {
     }
   }
 
-  const status = document.querySelector('.status-pill');
-  if (status) status.innerHTML = `<img src="${assetBase}/shared/assets/icons/lucide/badge-check.svg" class="lucide-icon lucide-icon-sm" alt=""> Ready`;
+  setPublishingState(checkin.publishState === 'published' ? 'published' : 'not_published');
+  updateEditMeta(checkin);
+  closePublishingSheet();
+  closeEditMoreMenu();
 
   const publishBtn = $('btnSavePublish');
   if (publishBtn) {
-    publishBtn.disabled = true;
-    publishBtn.classList.add('is-disabled');
-    publishBtn.textContent = 'Ready';
-    publishBtn.onclick = null;
+    publishBtn.disabled = false;
+    publishBtn.classList.remove('is-disabled');
+    publishBtn.onclick = saveCheckin;
   }
 
   updateArchiveButtonUI();
@@ -5401,12 +5529,12 @@ function updateArchiveButtonUI() {
     btn.disabled = false;
     btn.classList.remove('is-disabled');
   } else if (isNew) {
-    label.textContent = 'Archive';
+    label.textContent = 'Archive Check-In';
     btn.title = 'Publish first to archive';
     btn.disabled = true;
     btn.classList.add('is-disabled');
   } else {
-    label.textContent = 'Archive';
+    label.textContent = 'Archive Check-In';
     btn.title = '';
     btn.disabled = false;
     btn.classList.remove('is-disabled');
@@ -5620,9 +5748,12 @@ function resetGuidedEditScreen() {
   if (publishBtn) {
     publishBtn.disabled = false;
     publishBtn.classList.remove('is-disabled');
-    publishBtn.innerHTML = `<img src="${assetBase}/shared/assets/icons/lucide/upload.svg" class="lucide-icon lucide-icon-sm" alt=""> Publish Everywhere`;
+    publishBtn.textContent = 'Save';
     publishBtn.onclick = saveCheckin;
   }
+  setPublishingState('not_published');
+  closePublishingSheet();
+  closeEditMoreMenu();
   state.photoCount = 0;
   state.activeCheckinIndex = null;
   state.activeCheckinFromArchived = false;
@@ -5786,7 +5917,11 @@ function wireControls() {
     });
   }
 
-  $('btnArchiveCheckin')?.addEventListener('click', () => archiveCheckin());
+  $('btnArchiveCheckin')?.addEventListener('click', () => {
+    archiveCheckin();
+    if (!isDemoMode) closeEditMoreMenu();
+  });
+  initPublishingSheet();
 
   document.querySelectorAll('.fab').forEach((fab) => {
     fab.addEventListener('click', (e) => {
@@ -6293,6 +6428,11 @@ window.saveEditProfile = saveEditProfile;
 window.goToChangePassword = goToChangePassword;
 window.confirmChangePassword = confirmChangePassword;
 window.goToRequestReview = goToRequestReview;
+window.handleEditSave = handleEditSave;
+window.getPublishingState = getPublishingState;
+window.setPublishingState = setPublishingState;
+window.openPublishingSheet = openPublishingSheet;
+window.closePublishingSheet = closePublishingSheet;
 window.goToReviewRequestOptions = goToReviewRequestOptions;
 window.goBackFromReviewMethod = goBackFromReviewMethod;
 window.goBackToEdit = goBackToEdit;
