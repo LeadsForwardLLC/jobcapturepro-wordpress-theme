@@ -2366,19 +2366,59 @@
             margin-bottom: 16px;
         }
 
-        body.jcp-prototype-page .upload-btn-label {
-            display: none;
-        }
-
-        body.jcp-prototype-page .upload-buttons {
+        /* New Check-in: two large circular coral media actions */
+        .new-media-actions {
+            display: flex;
             justify-content: center;
-            gap: 20px;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 28px;
         }
 
-        body.jcp-prototype-page .upload-btn {
-            width: 72px;
-            height: 72px;
-            border-radius: 999px;
+        .new-media-btn {
+            width: 84px;
+            height: 84px;
+            flex: 0 0 84px;
+            padding: 0;
+            border: none;
+            border-radius: 50%;
+            background: #FF503E;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(255, 80, 62, 0.28);
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .new-media-btn:hover {
+            background: #e94836;
+        }
+
+        .new-media-btn:active {
+            transform: scale(0.96);
+        }
+
+        .new-media-btn .lucide-icon {
+            width: 34px;
+            height: 34px;
+            opacity: 1 !important;
+            filter: brightness(0) invert(1) contrast(1.4) !important;
+        }
+
+        /* Visually hidden; aria-label carries the accessible name */
+        .new-media-btn__label {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0 0 0 0);
+            white-space: nowrap;
+        }
+
+        body.jcp-prototype-page .upload-hint {
+            margin-bottom: 20px;
         }
 
         .change-link {
