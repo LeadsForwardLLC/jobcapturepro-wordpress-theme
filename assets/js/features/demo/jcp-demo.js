@@ -1400,6 +1400,8 @@ function updateLocationUI() {
   const loc = getActiveLocation();
   const label = document.querySelector('.location-switcher .location-switcher__label');
   if (label) label.textContent = getOrgSwitcherLabel();
+  const addressEl = document.getElementById('org-switcher-address');
+  if (addressEl) addressEl.textContent = `${CANONICAL_SAMPLE_JOB.street}, ${CANONICAL_SAMPLE_JOB.city}, ${CANONICAL_SAMPLE_JOB.state} ${CANONICAL_SAMPLE_JOB.zip}`;
   const cityLine = getLocationDisplay(loc);
   document.querySelectorAll('.location-city').forEach((el) => {
     el.textContent = cityLine;
@@ -2619,20 +2621,46 @@ function setHomeEmptyState({ title, body, mode, showHint }) {
   emptyState.style.display = 'block';
 }
 
+function getCheckinAuthorName(checkin) {
+  const explicit = checkin && typeof checkin.author === 'string' ? checkin.author.trim() : '';
+  if (explicit) return explicit;
+  const full = [demoUser.firstName, demoUser.lastName].map((p) => String(p || '').trim()).filter(Boolean).join(' ');
+  return full || [DEFAULT_DEMO_IDENTITY.firstName, DEFAULT_DEMO_IDENTITY.lastName].join(' ');
+}
+
+function formatRelativeTime(ts) {
+  const t = typeof ts === 'number' ? ts : Date.parse(ts);
+  if (!Number.isFinite(t)) return '';
+  const mins = Math.max(0, Math.floor((Date.now() - t) / 60000));
+  if (mins < 1) return 'Just now';
+  if (mins < 60) return `${mins} minute${mins === 1 ? '' : 's'} ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} hour${hrs === 1 ? '' : 's'} ago`;
+  const days = Math.floor(hrs / 24);
+  return `${days} day${days === 1 ? '' : 's'} ago`;
+}
+
+function getCheckinRelativeTime(checkin) {
+  const fromStamp = checkin && (checkin.createdAt || checkin.timestamp) ? formatRelativeTime(checkin.createdAt || checkin.timestamp) : '';
+  return fromStamp || (checkin && checkin.time) || 'Just now';
+}
+
 function renderCheckinCard(checkin, index, fromArchived) {
   const item = document.createElement('div');
   item.className = 'home-checkin-item';
   item.innerHTML = `
-    <div class="home-checkin-left">
-      <h3>${checkin.address || getCanonicalStreet()}</h3>
-      <div class="home-checkin-location">${checkin.location || ''}</div>
-      <div class="home-checkin-desc">${excerptText(checkin.summary || 'Replaced water heater.', 10)}</div>
-      <div class="home-checkin-meta">
-        <span class="home-checkin-user">${isOnboardingHub() ? 'User' : (checkin.customer || 'John Doe')}</span>
-        <span class="home-checkin-time">${checkin.time || '2h ago'}</span>
+    <div class="home-checkin-body">
+      <div class="home-checkin-left">
+        <h3>${checkin.address || getCanonicalStreet()}</h3>
+        <div class="home-checkin-location">${checkin.location || ''}</div>
+        <div class="home-checkin-desc">${excerptText(checkin.summary || 'Replaced water heater.', 10)}</div>
       </div>
+      <div class="home-checkin-thumb"><img src="${checkin.image}" alt="Job photo"></div>
     </div>
-    <div class="home-checkin-thumb"><img src="${checkin.image}" alt="Job photo"></div>
+    <div class="home-checkin-meta">
+      <span class="home-checkin-user">${escapeHtml(getCheckinAuthorName(checkin))}</span>
+      <span class="home-checkin-time">${escapeHtml(getCheckinRelativeTime(checkin))}</span>
+    </div>
   `;
   item.onclick = () => {
     if (isDemoMode) { showDemoRestrictionTooltip(item, 'Check-in editing is disabled in the demo'); return; }
@@ -2641,7 +2669,39 @@ function renderCheckinCard(checkin, index, fromArchived) {
   return item;
 }
 
+/** Task 7 fills this in (pending uploads sheet). */
+function openPendingUploadsSheet() { /* Task 7 */ }
+
+function getPendingUploadCount() {
+  try {
+    const raw = localStorage.getItem('jcpPendingUploads');
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.length : 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+function updatePendingUploadsBanner() {
+  const banner = $('pending-uploads-banner');
+  if (!banner) return;
+  const count = getPendingUploadCount();
+  banner.hidden = count < 1;
+  const title = $('pending-uploads-banner-title');
+  const badge = $('pending-uploads-banner-count');
+  if (title) title.textContent = `${count} check-in${count === 1 ? '' : 's'} waiting to upload`;
+  if (badge) badge.textContent = String(count);
+  if (!banner.dataset.bound) {
+    banner.dataset.bound = '1';
+    banner.addEventListener('click', (e) => {
+      e.preventDefault();
+      openPendingUploadsSheet();
+    });
+  }
+}
+
 function renderHomeCheckins() {
+  updatePendingUploadsBanner();
   const list = $('home-checkin-list');
   const emptyState = document.querySelector('#home-screen .empty-state');
   if (!list) return;
@@ -2706,17 +2766,19 @@ function renderHomeCheckins() {
     const item = document.createElement('div');
     item.className = 'home-checkin-item pending-job-item';
     item.innerHTML = `
-      <div class="home-checkin-left">
-        <div class="pending-pill">Next job ready</div>
-        <h3>${job.address}</h3>
-        <div class="home-checkin-location">${job.city}</div>
-        <div class="home-checkin-desc">${job.scopeSummary.service} · ${job.scopeSummary.scope}</div>
-        <div class="home-checkin-meta">
-          <span class="home-checkin-user">${job.status}</span>
-          <span class="home-checkin-time">Tap to start</span>
+      <div class="home-checkin-body">
+        <div class="home-checkin-left">
+          <div class="pending-pill">Next job ready</div>
+          <h3>${job.address}</h3>
+          <div class="home-checkin-location">${job.city}</div>
+          <div class="home-checkin-desc">${job.scopeSummary.service} · ${job.scopeSummary.scope}</div>
         </div>
+        <div class="home-checkin-thumb"><div class="pending-icon"><i class="fas fa-clipboard-check"></i></div></div>
       </div>
-      <div class="home-checkin-thumb"><div class="pending-icon"><i class="fas fa-clipboard-check"></i></div></div>
+      <div class="home-checkin-meta">
+        <span class="home-checkin-user">${job.status}</span>
+        <span class="home-checkin-time">Tap to start</span>
+      </div>
     `;
     item.onclick = () => startPendingJob(job, index);
     list.appendChild(item);

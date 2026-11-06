@@ -42,16 +42,22 @@
                     </div>
                     <!-- Home Screen -->
                     <div class="app-screen active" id="home-screen">
-                        <div class="app-header app-header--org">
+                        <div class="app-header app-header--org app-header--home">
+                            <div class="app-header--home__top">
+                                <h1 class="home-title">Check-Ins</h1>
+                                <button type="button" class="home-help-btn" id="btnHomeHelp" aria-label="Help">
+                                    <img src="../../shared/assets/icons/lucide/circle-question-mark.svg" class="lucide-icon" alt="">
+                                </button>
+                            </div>
                             <button type="button" class="org-switcher location-switcher" id="location-switcher" data-action="switch-location" aria-label="Switch location">
                                 <span class="org-switcher__mark" aria-hidden="true">
                                     <img src="../../shared/assets/icons/lucide/map-pin.svg" class="org-switcher__mark-icon" alt="">
                                 </span>
-                                <span class="location-switcher__label org-switcher__label">Business Name</span>
+                                <span class="org-switcher__text">
+                                    <span class="location-switcher__label org-switcher__label">Business Name</span>
+                                    <span class="org-switcher__address" id="org-switcher-address">1242 Mason Rd, Austin, TX 78704</span>
+                                </span>
                                 <img src="../../shared/assets/icons/lucide/chevron-down.svg" class="location-switcher__chevron org-switcher__chevron" alt="" aria-hidden="true">
-                            </button>
-                            <button type="button" class="home-help-btn" id="btnHomeHelp" aria-label="Help">
-                                <img src="../../shared/assets/icons/lucide/circle-question-mark.svg" class="lucide-icon" alt="">
                             </button>
                         </div>
                         <div class="content-area">
@@ -72,6 +78,18 @@
                                     <span>Archive</span>
                                 </button>
                             </div>
+
+                            <button type="button" class="pending-uploads-banner" id="pending-uploads-banner" hidden>
+                                <span class="pending-uploads-banner__icon" aria-hidden="true">
+                                    <img src="../../shared/assets/icons/lucide/cloud-upload.svg" class="lucide-icon" alt="">
+                                </span>
+                                <span class="pending-uploads-banner__copy">
+                                    <strong id="pending-uploads-banner-title">1 check-in waiting to upload</strong>
+                                    <small>Saved on this device &middot; Tap to review.</small>
+                                </span>
+                                <span class="pending-uploads-banner__badge" id="pending-uploads-banner-count">1</span>
+                                <img src="../../shared/assets/icons/lucide/chevron-right.svg" class="pending-uploads-banner__chevron" alt="" aria-hidden="true">
+                            </button>
 
                             <div class="home-toolbar">
                                 <label class="home-search" for="home-search-input">
