@@ -1364,6 +1364,7 @@ function updateProfilePersonalization() {
   if (isOnboardingHub()) {
     if (nameEl) nameEl.textContent = defaultName;
     if (emailEl) emailEl.textContent = DEFAULT_DEMO_IDENTITY.email;
+    updateProfileExtras();
     return;
   }
   const fullName = [demoUser.firstName, demoUser.lastName].filter(Boolean).join(' ').trim();
@@ -1372,6 +1373,14 @@ function updateProfilePersonalization() {
     const email = demoUser.email || `${(demoUser.firstName || 'user').toLowerCase()}@${(demoUser.businessName || 'company').replace(/\s+/g, '').toLowerCase()}.com`;
     emailEl.textContent = email;
   }
+  updateProfileExtras();
+}
+
+function updateProfileExtras() {
+  const badge = $('profile-role-badge');
+  if (badge) badge.textContent = DEFAULT_DEMO_IDENTITY.roleLabel;
+  const locName = $('profile-location-name');
+  if (locName) locName.textContent = getOrgSwitcherLabel();
 }
 
 /* ---------------------------
@@ -2464,7 +2473,7 @@ function setScreen(screenId) {
 updateTourFloating();
 
 
-if (['login-screen','home-screen','new-screen','edit-screen','profile-screen','edit-profile-screen','change-password-screen','review-request-options-screen'].includes(screenId)) {
+if (['login-screen','home-screen','new-screen','edit-screen','profile-screen','color-mode-screen','notifications-screen','edit-profile-screen','change-password-screen','review-request-options-screen'].includes(screenId)) {
   applyFocalPoint();
 }
 
@@ -3061,6 +3070,175 @@ function goToProfile() {
   }
   setScreen('profile-screen');
   updateProfilePersonalization();
+}
+
+/* ---------------------------
+   Profile: Color Mode, Notifications, Offline, Log Out
+---------------------------- */
+const COLOR_MODE_KEY = 'jcpPrototypeColorMode';
+const NOTIF_PUSH_KEY = 'jcpPrototypePushPref';
+const NOTIF_EMAIL_KEY = 'jcpPrototypeEmailPref';
+const OFFLINE_MODE_KEY = 'offlineMode';
+
+function readStoredColorMode() {
+  try {
+    const v = localStorage.getItem(COLOR_MODE_KEY);
+    if (v === 'system' || v === 'light' || v === 'dark') return v;
+  } catch (e) {}
+  return 'system';
+}
+
+function goToColorMode() {
+  setScreen('color-mode-screen');
+  applyColorMode(readStoredColorMode());
+}
+
+function applyColorMode(mode) {
+  if (mode !== 'system' && mode !== 'light' && mode !== 'dark') mode = 'system';
+  const root = document.querySelector('.phone-wrapper') || document.getElementById('jcp-app');
+  const prefersDark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const resolved = mode === 'system' ? (prefersDark ? 'dark' : 'light') : mode;
+  if (root) root.dataset.colorMode = resolved;
+  try { localStorage.setItem(COLOR_MODE_KEY, mode); } catch (e) {}
+  document.querySelectorAll('.color-mode-option').forEach((row) => {
+    row.classList.toggle('is-selected', row.dataset.colorMode === mode);
+  });
+  const valueEl = $('profile-color-mode-value');
+  if (valueEl) valueEl.textContent = mode.charAt(0).toUpperCase() + mode.slice(1);
+  const heroTitle = $('color-mode-hero-title');
+  if (heroTitle) heroTitle.textContent = `${resolved === 'dark' ? 'Dark' : 'Light'} Theme`;
+  const heroIcon = $('color-mode-hero-icon');
+  if (heroIcon) {
+    heroIcon.src = heroIcon.src.replace(/\/(sun|moon)\.svg(\?.*)?$/, `/${resolved === 'dark' ? 'moon' : 'sun'}.svg`);
+  }
+}
+
+function readBoolPref(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    if (v === '1') return true;
+    if (v === '0') return false;
+  } catch (e) {}
+  return fallback;
+}
+
+function writeBoolPref(key, val) {
+  try { localStorage.setItem(key, val ? '1' : '0'); } catch (e) {}
+}
+
+function getOfflineMode() {
+  return readBoolPref(OFFLINE_MODE_KEY, false);
+}
+
+function setOfflineMode(on) {
+  writeBoolPref(OFFLINE_MODE_KEY, on);
+  window.JCP_OFFLINE_MODE = !!on;
+  document.body.classList.toggle('is-offline-mode', !!on);
+  if (typeof window.CustomEvent !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('jcp-offline-mode-change', { detail: { offline: !!on } }));
+  }
+}
+
+function syncProfileToggles() {
+  const push = readBoolPref(NOTIF_PUSH_KEY, true);
+  const email = readBoolPref(NOTIF_EMAIL_KEY, true);
+  const set = (id, val) => { const el = $(id); if (el) el.checked = val; };
+  set('toggleProfileNotifications', push);
+  set('toggleNotifPush', push);
+  set('toggleNotifEmail', email);
+  set('toggleOfflineMode', getOfflineMode());
+}
+
+function renderNotificationsRecent() {
+  const list = $('notifications-recent-list');
+  if (!list) return;
+  const biz = getOrgSwitcherLabel();
+  const personalized = !!biz && !isPlaceholderDemoBusiness(biz);
+  const items = [
+    { title: 'Check-in published', body: 'Your latest check-in is live on your website.', time: '2h ago' },
+    { title: 'Review request sent', body: 'A review link was sent to your customer.', time: 'Yesterday' },
+    personalized
+      ? { title: 'New team member', body: `Jordan Lee joined ${biz}.`, time: '2d ago' }
+      : { title: 'New team member', body: 'A teammate joined your business.', time: '2d ago' },
+  ];
+  list.innerHTML = '';
+  items.forEach((item) => {
+    const row = document.createElement('div');
+    row.className = 'profile-row profile-row--static';
+    const dot = document.createElement('span');
+    dot.className = 'notif-item__dot';
+    const text = document.createElement('span');
+    text.className = 'profile-row__text';
+    const t = document.createElement('span');
+    t.className = 'profile-row__title';
+    t.textContent = item.title;
+    const b = document.createElement('span');
+    b.className = 'profile-row__subtitle';
+    b.textContent = item.body;
+    text.append(t, b);
+    const time = document.createElement('span');
+    time.className = 'profile-row__value';
+    time.textContent = item.time;
+    row.append(dot, text, time);
+    list.appendChild(row);
+  });
+}
+
+function goToNotifications() {
+  setScreen('notifications-screen');
+  syncProfileToggles();
+  renderNotificationsRecent();
+}
+
+function openAppInfo(anchor) {
+  showReviewToast('JobCapturePro · Prototype', anchor || $('btnProfileAppInfo'));
+}
+
+function softBlockDemoAction(el, message) {
+  showDemoRestrictionTooltip(el, message || 'This action is disabled in the demo');
+}
+
+function prototypeLogOut() {
+  if (isDemoMode) {
+    softBlockDemoAction($('btnLogOut'), 'Not available in the demo');
+    return;
+  }
+  goToHome();
+  showReviewToast('Signed out of prototype session', $('fabNewCheckin'));
+}
+
+function wireProfileControls() {
+  const bind = (id, fn) => {
+    const el = $(id);
+    if (!el || el.dataset.bound === '1') return;
+    el.dataset.bound = '1';
+    el.addEventListener('change', fn);
+  };
+  bind('toggleProfileNotifications', (e) => {
+    writeBoolPref(NOTIF_PUSH_KEY, e.target.checked);
+    syncProfileToggles();
+  });
+  bind('toggleNotifPush', (e) => {
+    writeBoolPref(NOTIF_PUSH_KEY, e.target.checked);
+    syncProfileToggles();
+  });
+  bind('toggleNotifEmail', (e) => writeBoolPref(NOTIF_EMAIL_KEY, e.target.checked));
+  bind('toggleOfflineMode', (e) => {
+    if (isDemoMode) {
+      e.target.checked = getOfflineMode();
+      softBlockDemoAction(e.target.closest('.profile-toggle') || e.target, 'Offline mode is not available in the demo');
+      return;
+    }
+    setOfflineMode(e.target.checked);
+  });
+  if (window.matchMedia) {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => { if (readStoredColorMode() === 'system') applyColorMode('system'); };
+    if (mq.addEventListener) mq.addEventListener('change', onChange);
+  }
+  applyColorMode(readStoredColorMode());
+  setOfflineMode(isDemoMode ? false : getOfflineMode());
+  syncProfileToggles();
 }
 
 function goToEditProfile() {
@@ -6144,6 +6322,7 @@ function init() {
   }
 
   updateProfilePersonalization();
+  wireProfileControls();
 
   // Wire UI
   wireControls();
@@ -6535,6 +6714,14 @@ window.openCreateActionSheet = openCreateActionSheet;
 window.closeCreateActionSheet = closeCreateActionSheet;
 window.goToProfile = goToProfile;
 window.goToEditProfile = goToEditProfile;
+window.goToColorMode = goToColorMode;
+window.goToNotifications = goToNotifications;
+window.applyColorMode = applyColorMode;
+window.prototypeLogOut = prototypeLogOut;
+window.softBlockDemoAction = softBlockDemoAction;
+window.openAppInfo = openAppInfo;
+window.getOfflineMode = getOfflineMode;
+window.setOfflineMode = setOfflineMode;
 window.saveEditProfile = saveEditProfile;
 window.goToChangePassword = goToChangePassword;
 window.confirmChangePassword = confirmChangePassword;

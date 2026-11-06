@@ -320,48 +320,71 @@
 
                     <!-- Profile Screen -->
                     <div class="app-screen" id="profile-screen">
-                        <div class="app-header">
-                            <div class="app-header__left"></div>
-                            <p class="app-header__title">Profile</p>
-                            <div class="app-header__right"></div>
+                        <div class="app-header app-header--org profile-header">
+                            <div class="app-header--home__top">
+                                <h1 class="home-title">Profile</h1>
+                                <button type="button" class="home-help-btn" id="btnProfileNotifications" onclick="goToNotifications()" aria-label="Notifications">
+                                    <img src="../../shared/assets/icons/lucide/bell.svg" class="lucide-icon" alt="">
+                                </button>
+                            </div>
                         </div>
                         <div class="content-area profile-content">
-                            <div class="profile-card">
-                                <div class="profile-card__avatar" id="profile-avatar" aria-hidden="true">
+                            <button type="button" class="profile-identity" id="profile-identity-card" onclick="goToEditProfile()" aria-label="Edit profile">
+                                <span class="profile-identity__avatar" id="profile-avatar" aria-hidden="true">
                                     <img src="../../shared/assets/icons/lucide/user.svg" class="lucide-icon" alt="">
-                                </div>
-                                <div class="profile-card__info">
-                                    <div class="profile-card__name" id="profile-name">Alex Rivera</div>
-                                    <div class="profile-card__email" id="profile-email">alex@example.com</div>
+                                </span>
+                                <span class="profile-identity__info">
+                                    <span class="profile-identity__name" id="profile-name">Alex Rivera</span>
+                                    <span class="profile-identity__email" id="profile-email">alex@example.com</span>
+                                    <span class="profile-identity__badge" id="profile-role-badge">Field Tech</span>
+                                </span>
+                                <img src="../../shared/assets/icons/lucide/chevron-right.svg" class="lucide-icon profile-identity__chevron" alt="" aria-hidden="true">
+                            </button>
+
+                            <h2 class="profile-section-label">Account</h2>
+                            <div class="profile-group">
+                                <button type="button" class="profile-row" id="btnProfileColorMode" onclick="goToColorMode()">
+                                    <span class="profile-row__icon"><img src="../../shared/assets/icons/lucide/sun-moon.svg" class="lucide-icon" alt=""></span>
+                                    <span class="profile-row__text"><span class="profile-row__title">Color Mode</span></span>
+                                    <span class="profile-row__value" id="profile-color-mode-value">System</span>
+                                    <img src="../../shared/assets/icons/lucide/chevron-right.svg" class="lucide-icon profile-row__chevron" alt="" aria-hidden="true">
+                                </button>
+                                <button type="button" class="profile-row" id="btnProfileAppInfo" onclick="openAppInfo(this)">
+                                    <span class="profile-row__icon"><img src="../../shared/assets/icons/lucide/info.svg" class="lucide-icon" alt=""></span>
+                                    <span class="profile-row__text"><span class="profile-row__title">App Info</span></span>
+                                    <img src="../../shared/assets/icons/lucide/chevron-right.svg" class="lucide-icon profile-row__chevron" alt="" aria-hidden="true">
+                                </button>
+                                <div class="profile-row profile-row--static" id="profile-location-row">
+                                    <span class="profile-row__icon"><img src="../../shared/assets/icons/lucide/map-pin.svg" class="lucide-icon" alt=""></span>
+                                    <span class="profile-row__text">
+                                        <span class="profile-row__title" id="profile-location-name">Business Name</span>
+                                        <span class="profile-row__subtitle">1234 Main Street, Springfield, USA 00000</span>
+                                    </span>
                                 </div>
                             </div>
 
-                            <h2 class="profile-section-title">Account Settings</h2>
-                            <div class="profile-settings">
-                                <div class="profile-setting-card">
-                                    <div class="profile-setting-card__text">
-                                        <span class="profile-setting-card__title">App Theme</span>
-                                        <span class="profile-setting-card__subtitle">Light Mode</span>
-                                    </div>
-                                    <label class="profile-toggle" aria-label="App theme">
-                                        <input type="checkbox" class="profile-toggle__input" disabled>
+                            <h2 class="profile-section-label">Preferences</h2>
+                            <div class="profile-group">
+                                <div class="profile-row profile-row--static">
+                                    <span class="profile-row__icon"><img src="../../shared/assets/icons/lucide/bell.svg" class="lucide-icon" alt=""></span>
+                                    <span class="profile-row__text"><span class="profile-row__title">Notifications</span></span>
+                                    <label class="profile-toggle" aria-label="Notifications">
+                                        <input type="checkbox" class="profile-toggle__input" id="toggleProfileNotifications" checked>
                                         <span class="profile-toggle__track" aria-hidden="true"></span>
                                     </label>
                                 </div>
-                                <button type="button" class="profile-setting-card profile-setting-card--action">
-                                    <div class="profile-setting-card__text">
-                                        <span class="profile-setting-card__title">App Settings</span>
-                                        <span class="profile-setting-card__subtitle">Manage your app preferences.</span>
-                                    </div>
-                                    <img src="../../shared/assets/icons/lucide/settings.svg" class="lucide-icon profile-setting-card__icon" alt="">
-                                </button>
+                                <div class="profile-row profile-row--static">
+                                    <span class="profile-row__icon"><img src="../../shared/assets/icons/lucide/wifi-off.svg" class="lucide-icon" alt=""></span>
+                                    <span class="profile-row__text"><span class="profile-row__title">Offline Mode</span></span>
+                                    <label class="profile-toggle" aria-label="Offline mode">
+                                        <input type="checkbox" class="profile-toggle__input" id="toggleOfflineMode">
+                                        <span class="profile-toggle__track" aria-hidden="true"></span>
+                                    </label>
+                                </div>
                             </div>
 
                             <div class="profile-actions">
-                                <button type="button" class="btn btn-secondary btn-full" id="btnChangePassword" onclick="goToChangePassword()">Change Password</button>
-                                <button type="button" class="btn btn-secondary btn-full" id="btnEditProfile" onclick="goToEditProfile()">Edit Profile</button>
-                                <button type="button" class="btn btn-primary btn-full">Log Out</button>
-                                <button type="button" class="btn btn-warning btn-full">Delete Account</button>
+                                <button type="button" class="btn btn-primary btn-full" id="btnLogOut" onclick="prototypeLogOut()">Log Out</button>
                             </div>
                         </div>
                         <div class="tab-bar">
@@ -374,6 +397,70 @@
                                 <div class="tab-icon"><img src="../../shared/assets/icons/lucide/user.svg" class="lucide-icon" alt=""></div>
                                 Profile
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Color Mode Screen -->
+                    <div class="app-screen" id="color-mode-screen">
+                        <div class="app-header">
+                            <div class="app-header__left"><button type="button" class="back-btn" onclick="goToProfile()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
+                            <p class="app-header__title">Color Mode</p>
+                            <div class="app-header__right"></div>
+                        </div>
+                        <div class="content-area color-mode-content">
+                            <div class="color-mode-hero">
+                                <span class="color-mode-hero__icon"><img src="../../shared/assets/icons/lucide/sun.svg" class="lucide-icon" id="color-mode-hero-icon" alt=""></span>
+                                <h2 class="color-mode-hero__title" id="color-mode-hero-title">Light Theme</h2>
+                            </div>
+                            <div class="profile-group color-mode-list">
+                                <button type="button" class="profile-row color-mode-option" data-color-mode="system" onclick="applyColorMode('system')">
+                                    <span class="profile-row__icon"><img src="../../shared/assets/icons/lucide/smartphone.svg" class="lucide-icon" alt=""></span>
+                                    <span class="profile-row__text"><span class="profile-row__title">System</span><span class="profile-row__subtitle">Matches your device setting</span></span>
+                                    <img src="../../shared/assets/icons/lucide/check.svg" class="lucide-icon color-mode-option__check" alt="" aria-hidden="true">
+                                </button>
+                                <button type="button" class="profile-row color-mode-option" data-color-mode="light" onclick="applyColorMode('light')">
+                                    <span class="profile-row__icon"><img src="../../shared/assets/icons/lucide/sun.svg" class="lucide-icon" alt=""></span>
+                                    <span class="profile-row__text"><span class="profile-row__title">Light</span><span class="profile-row__subtitle">Always use the light appearance</span></span>
+                                    <img src="../../shared/assets/icons/lucide/check.svg" class="lucide-icon color-mode-option__check" alt="" aria-hidden="true">
+                                </button>
+                                <button type="button" class="profile-row color-mode-option" data-color-mode="dark" onclick="applyColorMode('dark')">
+                                    <span class="profile-row__icon"><img src="../../shared/assets/icons/lucide/moon.svg" class="lucide-icon" alt=""></span>
+                                    <span class="profile-row__text"><span class="profile-row__title">Dark</span><span class="profile-row__subtitle">Always use the dark appearance</span></span>
+                                    <img src="../../shared/assets/icons/lucide/check.svg" class="lucide-icon color-mode-option__check" alt="" aria-hidden="true">
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Notifications Screen -->
+                    <div class="app-screen" id="notifications-screen">
+                        <div class="app-header">
+                            <div class="app-header__left"><button type="button" class="back-btn" onclick="goToProfile()" aria-label="Back"><img src="../../shared/assets/icons/lucide/arrow-left.svg" class="lucide-icon" alt=""></button></div>
+                            <p class="app-header__title">Notifications</p>
+                            <div class="app-header__right"></div>
+                        </div>
+                        <div class="content-area notifications-content">
+                            <h2 class="profile-section-label">Preferences</h2>
+                            <div class="profile-group">
+                                <div class="profile-row profile-row--static">
+                                    <span class="profile-row__icon"><img src="../../shared/assets/icons/lucide/bell.svg" class="lucide-icon" alt=""></span>
+                                    <span class="profile-row__text"><span class="profile-row__title">Push Notifications</span><span class="profile-row__subtitle">Alerts on this device</span></span>
+                                    <label class="profile-toggle" aria-label="Push notifications">
+                                        <input type="checkbox" class="profile-toggle__input" id="toggleNotifPush" checked>
+                                        <span class="profile-toggle__track" aria-hidden="true"></span>
+                                    </label>
+                                </div>
+                                <div class="profile-row profile-row--static">
+                                    <span class="profile-row__icon"><img src="../../shared/assets/icons/lucide/mail.svg" class="lucide-icon" alt=""></span>
+                                    <span class="profile-row__text"><span class="profile-row__title">Email Notifications</span><span class="profile-row__subtitle">Updates sent to your inbox</span></span>
+                                    <label class="profile-toggle" aria-label="Email notifications">
+                                        <input type="checkbox" class="profile-toggle__input" id="toggleNotifEmail" checked>
+                                        <span class="profile-toggle__track" aria-hidden="true"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <h2 class="profile-section-label">Recent</h2>
+                            <div class="profile-group" id="notifications-recent-list"></div>
                         </div>
                     </div>
 

@@ -1384,131 +1384,177 @@
         }
 
         /* Profile Screen */
-        #profile-screen .app-header {
-            display: none;
+        #profile-screen .profile-header {
+            padding-bottom: 12px;
         }
 
-        #profile-screen .profile-content {
+        #profile-screen .profile-content,
+        #color-mode-screen .color-mode-content,
+        #notifications-screen .notifications-content {
             background: #f5f5f7;
             padding: 20px 16px 24px;
         }
 
-        .profile-card {
+        .profile-identity {
             display: flex;
             align-items: center;
             gap: 14px;
-            background: #fff;
-            border: 1px solid #e8e8ed;
-            border-radius: 18px;
-            padding: 16px;
-            margin-bottom: 22px;
+            width: 100%;
+            margin: 0 0 22px;
+            padding: 18px 16px;
+            border: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #ff503e 0%, #ff7a59 100%);
+            color: #fff;
+            text-align: left;
+            font: inherit;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(255, 80, 62, 0.25);
         }
 
-        .profile-card__avatar {
+        .profile-identity__avatar {
             width: 56px;
             height: 56px;
             border-radius: 50%;
-            background: #fff;
-            border: 1.5px solid #d1d5db;
+            background: rgba(255, 255, 255, 0.95);
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .profile-card__avatar .lucide-icon {
+        .profile-identity__avatar .lucide-icon {
             width: 26px;
             height: 26px;
-            color: #111827;
             filter: brightness(0) saturate(100%);
         }
 
-        .profile-card__info {
+        .profile-identity__info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 3px;
             min-width: 0;
+            flex: 1;
         }
 
-        .profile-card__name {
-            font-size: 17px;
+        .profile-identity__name {
+            font-size: 18px;
             font-weight: 700;
-            color: #111827;
             letter-spacing: -0.01em;
             line-height: 1.25;
         }
 
-        .profile-card__email {
+        .profile-identity__email {
             font-size: 13px;
-            color: #8e8e93;
-            margin-top: 3px;
-            line-height: 1.3;
+            opacity: 0.92;
             word-break: break-word;
         }
 
-        .profile-section-title {
-            font-size: 15px;
+        .profile-identity__badge {
+            margin-top: 4px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.25);
+            font-size: 11px;
             font-weight: 700;
-            color: #111827;
-            margin: 0 0 10px 2px;
-            letter-spacing: -0.01em;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
         }
 
-        .profile-settings {
+        .profile-identity__chevron {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            filter: brightness(0) invert(1);
+        }
+
+        .profile-section-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #8e8e93;
+            margin: 0 0 8px 4px;
+        }
+
+        .profile-group {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin-bottom: 18px;
-        }
-
-        .profile-setting-card {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            width: 100%;
             background: #fff;
             border: 1px solid #e8e8ed;
-            border-radius: 16px;
+            border-radius: 18px;
+            margin-bottom: 22px;
+            overflow: hidden;
+        }
+
+        .profile-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
             padding: 14px 16px;
+            background: transparent;
+            border: 0;
+            border-bottom: 1px solid #e8e8ed;
             text-align: left;
             font: inherit;
             color: inherit;
-            cursor: default;
-        }
-
-        button.profile-setting-card--action {
             cursor: pointer;
-            transition: background 0.15s ease;
         }
 
-        button.profile-setting-card--action:hover {
-            background: #fafafa;
+        .profile-row:last-child { border-bottom: 0; }
+        .profile-row--static { cursor: default; }
+        button.profile-row:hover { background: #fafafa; }
+
+        .profile-row__icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #f3f4f6;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
         }
 
-        .profile-setting-card__text {
+        .profile-row__icon .lucide-icon {
+            width: 18px;
+            height: 18px;
+            filter: brightness(0) saturate(100%);
+        }
+
+        .profile-row__text {
             display: flex;
             flex-direction: column;
             gap: 2px;
             min-width: 0;
+            flex: 1;
         }
 
-        .profile-setting-card__title {
+        .profile-row__title {
             font-size: 15px;
             font-weight: 700;
             color: #111827;
             letter-spacing: -0.01em;
         }
 
-        .profile-setting-card__subtitle {
+        .profile-row__subtitle {
             font-size: 13px;
             color: #8e8e93;
             line-height: 1.35;
         }
 
-        .profile-setting-card__icon {
-            width: 20px;
-            height: 20px;
+        .profile-row__value {
+            font-size: 14px;
+            color: #8e8e93;
+        }
+
+        .profile-row__chevron {
+            width: 16px;
+            height: 16px;
+            color: #9ca3af;
             flex-shrink: 0;
-            color: #111827;
-            filter: brightness(0) saturate(100%);
         }
 
         .profile-toggle {
@@ -1517,7 +1563,7 @@
             flex-shrink: 0;
             width: 48px;
             height: 28px;
-            cursor: default;
+            cursor: pointer;
         }
 
         .profile-toggle__input {
@@ -1570,25 +1616,85 @@
             font-weight: 700;
             min-height: 52px;
             padding: 14px 18px;
-        }
-
-        #profile-screen .profile-actions .btn-secondary {
-            border-width: 1px;
-            border-color: #e8e8ed;
-            background: #fff;
-        }
-
-        #profile-screen .profile-actions .btn-primary {
             border: none;
         }
 
-        #profile-screen .profile-actions .btn-warning {
-            border-width: 1px;
-            margin-top: 2px;
-            font-size: 15px;
-            font-weight: 700;
-            min-height: 48px;
+        /* Color Mode */
+        .color-mode-hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin: 4px 0 24px;
         }
+
+        .color-mode-hero__icon {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: #e9eaee;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .color-mode-hero__icon .lucide-icon {
+            width: 34px;
+            height: 34px;
+            filter: brightness(0) saturate(100%);
+        }
+
+        .color-mode-hero__title {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800;
+            color: #111827;
+        }
+
+        .color-mode-option__check {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            opacity: 0;
+            filter: invert(40%) sepia(90%) saturate(2800%) hue-rotate(335deg);
+        }
+
+        .color-mode-option.is-selected .color-mode-option__check { opacity: 1; }
+
+        /* Notifications */
+        .notif-item__dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff503e;
+            flex-shrink: 0;
+        }
+
+        /* Dark appearance for Profile-area screens (prototype) */
+        [data-color-mode="dark"] #profile-screen .profile-content,
+        [data-color-mode="dark"] #color-mode-screen .color-mode-content,
+        [data-color-mode="dark"] #notifications-screen .notifications-content { background: #0f1115; }
+        [data-color-mode="dark"] #profile-screen .app-header,
+        [data-color-mode="dark"] #color-mode-screen .app-header,
+        [data-color-mode="dark"] #notifications-screen .app-header { background: #16181d; border-bottom-color: #2a2d34; }
+        [data-color-mode="dark"] #profile-screen .home-title,
+        [data-color-mode="dark"] #color-mode-screen .app-header__title,
+        [data-color-mode="dark"] #notifications-screen .app-header__title,
+        [data-color-mode="dark"] .profile-row__title,
+        [data-color-mode="dark"] .color-mode-hero__title { color: #f3f4f6; }
+        [data-color-mode="dark"] .profile-group { background: #1a1d23; border-color: #2a2d34; }
+        [data-color-mode="dark"] .profile-row { border-bottom-color: #2a2d34; }
+        [data-color-mode="dark"] button.profile-row:hover { background: #20242b; }
+        [data-color-mode="dark"] .profile-row__icon,
+        [data-color-mode="dark"] .color-mode-hero__icon,
+        [data-color-mode="dark"] #profile-screen .home-help-btn { background: #272b33; }
+        [data-color-mode="dark"] .profile-row__icon .lucide-icon,
+        [data-color-mode="dark"] .color-mode-hero__icon .lucide-icon,
+        [data-color-mode="dark"] #profile-screen .home-help-btn .lucide-icon,
+        [data-color-mode="dark"] #color-mode-screen .back-btn .lucide-icon,
+        [data-color-mode="dark"] #notifications-screen .back-btn .lucide-icon { filter: brightness(0) invert(0.92); }
+        [data-color-mode="dark"] .profile-toggle__track { background: #3a3d45; }
+        [data-color-mode="dark"] .profile-toggle__input:checked + .profile-toggle__track { background: #ff503e; }
 
         /* Edit Profile Screen */
         .edit-profile-photo-wrap {
