@@ -1367,17 +1367,16 @@ function updateProfilePersonalization() {
   const nameEl = $('profile-name');
   const emailEl = $('profile-email');
   const defaultName = `${DEFAULT_DEMO_IDENTITY.firstName} ${DEFAULT_DEMO_IDENTITY.lastName}`;
-  if (isOnboardingHub()) {
-    if (nameEl) nameEl.textContent = defaultName;
-    if (emailEl) emailEl.textContent = DEFAULT_DEMO_IDENTITY.email;
-    updateProfileExtras();
-    return;
-  }
   const fullName = [demoUser.firstName, demoUser.lastName].filter(Boolean).join(' ').trim();
   if (nameEl) nameEl.textContent = fullName || demoUser.businessName || defaultName;
   if (emailEl) {
-    const email = demoUser.email || `${(demoUser.firstName || 'user').toLowerCase()}@${(demoUser.businessName || 'company').replace(/\s+/g, '').toLowerCase()}.com`;
-    emailEl.textContent = email;
+    if (isOnboardingHub() && isPlaceholderDemoEmail(demoUser.email || '')) {
+      emailEl.textContent = DEFAULT_DEMO_IDENTITY.email;
+    } else if (demoUser.email) {
+      emailEl.textContent = demoUser.email;
+    } else {
+      emailEl.textContent = isOnboardingHub() ? DEFAULT_DEMO_IDENTITY.email : '';
+    }
   }
   updateProfileExtras();
 }
@@ -1387,6 +1386,10 @@ function updateProfileExtras() {
   if (badge) badge.textContent = DEFAULT_DEMO_IDENTITY.roleLabel;
   const locName = $('profile-location-name');
   if (locName) locName.textContent = getOrgSwitcherLabel();
+  const locAddr = $('profile-location-address');
+  if (locAddr) {
+    locAddr.textContent = `${CANONICAL_SAMPLE_JOB.street}, ${CANONICAL_SAMPLE_JOB.city}, ${CANONICAL_SAMPLE_JOB.state} ${CANONICAL_SAMPLE_JOB.zip}`;
+  }
 }
 
 /* ---------------------------
@@ -3462,16 +3465,21 @@ function saveEditProfile() {
   const input = $('edit-profile-name');
   if (input && input.value.trim()) {
     clearPlaceholderIdentityForCustomFirstName(demoUser, input.value.trim());
-    try {
-      const stored = localStorage.getItem('demoUser');
-      const parsedRaw = stored ? JSON.parse(stored) : {};
-      const parsed = parsedRaw && typeof parsedRaw === 'object' && !Array.isArray(parsedRaw)
-        ? parsedRaw
-        : {};
-      clearPlaceholderIdentityForCustomFirstName(parsed, demoUser.firstName);
-      localStorage.setItem('demoUser', JSON.stringify(parsed));
-    } catch (e) {}
+    // Onboarding hub keeps edits in memory only — never write demoUser to storage
+    // (would leak into /demo personalization on the same origin).
+    if (!isOnboardingHub()) {
+      try {
+        const stored = localStorage.getItem('demoUser');
+        const parsedRaw = stored ? JSON.parse(stored) : {};
+        const parsed = parsedRaw && typeof parsedRaw === 'object' && !Array.isArray(parsedRaw)
+          ? parsedRaw
+          : {};
+        clearPlaceholderIdentityForCustomFirstName(parsed, demoUser.firstName);
+        localStorage.setItem('demoUser', JSON.stringify(parsed));
+      } catch (e) {}
+    }
     updateProfilePersonalization();
+    try { renderHomeCheckins(); } catch (e) {}
     const greeting = document.querySelector('.greeting');
     if (greeting) {
       greeting.innerHTML = formatDemoGreetingHtml();
@@ -6070,31 +6078,42 @@ function showReviewToast(message, anchor) {
   }, 2000);
 }
 
+let sendReviewLinkInFlight = false;
+
 async function sendReviewLink(anchor) {
+  if (sendReviewLinkInFlight) return;
+  const btn = $('btnSendReviewLink');
   const messageEl = $('request-review-message');
   const text = (messageEl && messageEl.value.trim()) || DEFAULT_REVIEW_MESSAGE;
   const payload = `${text}\n\n${DEMO_REVIEW_URL}`;
 
-  if (isDemoMode) {
-    // Demo never uses the OS share sheet — toast only.
-    showReviewToast('Link ready — sharing is simulated in the demo', anchor);
-    if (isGuidedDemoRun() && tour.stepKey === 'step5') {
-      await wait(900);
-      await completeGuidedReviewFlow();
-    }
-    return;
-  }
-  if (navigator.share) {
-    try {
-      await navigator.share({ text: payload });
-      return;
-    } catch (e) { /* user cancelled or failed */ }
-  }
+  sendReviewLinkInFlight = true;
+  if (btn) btn.disabled = true;
   try {
-    await navigator.clipboard.writeText(payload);
-    showReviewToast('Review link copied', anchor);
-  } catch (e) {
-    showReviewToast('Copy this message to send your review link', anchor);
+    if (isDemoMode) {
+      // Demo never uses the OS share sheet — toast only.
+      showReviewToast('Link ready — sharing is simulated in the demo', anchor);
+      if (isGuidedDemoRun() && tour.stepKey === 'step5') {
+        await wait(900);
+        await completeGuidedReviewFlow();
+      }
+      return;
+    }
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: payload });
+        return;
+      } catch (e) { /* user cancelled or failed */ }
+    }
+    try {
+      await navigator.clipboard.writeText(payload);
+      showReviewToast('Review link copied', anchor);
+    } catch (e) {
+      showReviewToast('Copy this message to send your review link', anchor);
+    }
+  } finally {
+    sendReviewLinkInFlight = false;
+    if (btn) btn.disabled = false;
   }
 }
 
