@@ -2673,12 +2673,19 @@ function renderCheckinCard(checkin, index, fromArchived) {
   return item;
 }
 
-const PENDING_UPLOADS_KEY = 'jcpPendingUploads';
+function getPendingUploadsKey() {
+  return isDemoMode ? 'jcpPendingUploadsDemo' : 'jcpPendingUploads';
+}
 let pendingUploads = [];
+
+function lucideIconSrc(name) {
+  const base = assetBase || '../..';
+  return `${base}/shared/assets/icons/lucide/${name}.svg`;
+}
 
 function loadPendingUploads() {
   try {
-    const raw = localStorage.getItem(PENDING_UPLOADS_KEY);
+    const raw = localStorage.getItem(getPendingUploadsKey());
     const parsed = raw ? JSON.parse(raw) : [];
     pendingUploads = Array.isArray(parsed) ? parsed : [];
   } catch (e) {
@@ -2689,7 +2696,7 @@ function loadPendingUploads() {
 
 function savePendingUploads() {
   try {
-    localStorage.setItem(PENDING_UPLOADS_KEY, JSON.stringify(pendingUploads));
+    localStorage.setItem(getPendingUploadsKey(), JSON.stringify(pendingUploads));
   } catch (e) { /* ignore */ }
 }
 
@@ -2778,7 +2785,7 @@ function renderPendingUploadsList() {
       thumb.appendChild(img);
     } else {
       const icon = document.createElement('img');
-      icon.src = '../../shared/assets/icons/lucide/image.svg';
+      icon.src = lucideIconSrc('image');
       icon.className = 'lucide-icon';
       icon.alt = '';
       thumb.appendChild(icon);
@@ -2790,7 +2797,13 @@ function renderPendingUploadsList() {
     title.textContent = item.title || 'Pending check-in';
     const meta = document.createElement('span');
     meta.textContent = item.meta || '1 photo · Just now';
-    copy.append(title, meta);
+    if (item.subtitle) {
+      const sub = document.createElement('span');
+      sub.textContent = item.subtitle;
+      copy.append(title, sub, meta);
+    } else {
+      copy.append(title, meta);
+    }
 
     const pill = document.createElement('span');
     pill.className = 'pending-upload-item__pill';
@@ -2803,10 +2816,14 @@ function renderPendingUploadsList() {
     uploadBtn.type = 'button';
     uploadBtn.className = 'pending-upload-item__action pending-upload-item__action--upload';
     uploadBtn.setAttribute('aria-label', 'Upload now');
-    uploadBtn.innerHTML = '<img src="../../shared/assets/icons/lucide/cloud-upload.svg" class="lucide-icon lucide-icon-sm" alt="">';
+    uploadBtn.innerHTML = `<img src="${lucideIconSrc('cloud-upload')}" class="lucide-icon lucide-icon-sm" alt="">`;
     uploadBtn.addEventListener('click', () => {
-      if (getOfflineMode() && !isDemoMode) {
-        softBlockDemoAction(uploadBtn, 'Go back online to upload');
+      if (isDemoMode) {
+        softBlockDemoAction(uploadBtn, 'Uploading is simulated in the demo');
+        return;
+      }
+      if (getOfflineMode()) {
+        showReviewToast('Go back online to upload', uploadBtn);
         return;
       }
       pendingUploads.splice(index, 1);
@@ -2820,7 +2837,7 @@ function renderPendingUploadsList() {
     trashBtn.type = 'button';
     trashBtn.className = 'pending-upload-item__action pending-upload-item__action--trash';
     trashBtn.setAttribute('aria-label', 'Delete pending upload');
-    trashBtn.innerHTML = '<img src="../../shared/assets/icons/lucide/trash-2.svg" class="lucide-icon lucide-icon-sm" alt="">';
+    trashBtn.innerHTML = `<img src="${lucideIconSrc('trash-2')}" class="lucide-icon lucide-icon-sm" alt="">`;
     trashBtn.addEventListener('click', () => {
       if (isDemoMode) {
         softBlockDemoAction(trashBtn, 'Deleting pending uploads is disabled in the demo');
