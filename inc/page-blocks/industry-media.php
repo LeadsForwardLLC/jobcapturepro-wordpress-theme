@@ -78,7 +78,7 @@ function jcp_page_industry_media_props_for( string $page_key, string $legacy_key
 			'media_text' => [
 				'headline'       => __( 'Every completed plumbing job should bring in the next call', 'jcp-core' ),
 				'subheadline'    => __( 'Turn real service calls into proof homeowners trust before they dial.', 'jcp-core' ),
-				'body'           => __( 'Your plumbers already take job photos. JobCapturePro turns those into check-ins, Google updates, website proof, and review requests — without adding admin work to the office or the truck.', 'jcp-core' ),
+				'body'           => __( 'Your plumbers already take job photos. JobCapturePro turns those into check-ins, Google updates, and website proof — and makes it easy to request a review on site with a QR code.', 'jcp-core' ),
 				'media_type'     => 'image',
 				'media_url'      => '',
 				'media_alt'      => __( 'Plumber capturing job photos on site', 'jcp-core' ),

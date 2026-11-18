@@ -2,17 +2,19 @@
 .DS_Store
 Thumbs.db
 
-# IDE
+# IDE / local agent
 .idea/
 .vscode/
+.cursor/
 *.sublime-*
 
 # Logs and temp
 *.log
 *.tmp
 .cache/
+.tmp/
 
-# Node (if used for build)
+# Node (Playwright capture scripts only — not runtime)
 node_modules/
 npm-debug.log*
 yarn-debug.log*
@@ -23,3 +25,6 @@ yarn-error.log*
 
 # Internal completion notes (do not ship to theme library)
 PHASE_*.md
+
+# Local agent / SDD workspace (not part of the theme runtime)
+.superpowers/

@@ -76,6 +76,9 @@ function jcp_page_is_content_page( ?int $post_id = null ): bool {
 		if ( jcp_page_uses_block_template( $id ) ) {
 			return true;
 		}
+		if ( function_exists( 'jcp_page_is_simple_editable' ) && jcp_page_is_simple_editable( $id ) ) {
+			return true;
+		}
 		if ( get_page_template_slug( $id ) === 'page-home.php' || (int) get_option( 'page_on_front' ) === $id ) {
 			return (bool) get_post_meta( $id, jcp_page_content_meta_key(), true );
 		}
@@ -197,8 +200,20 @@ function jcp_page_default_content( int $post_id ): array {
 	if ( $slug === 'referral-program' || get_page_template_slug( $post_id ) === 'page-referral-program.php' ) {
 		return jcp_page_load_preset( 'referral-program' );
 	}
+	if ( $slug === 'contractor-demo' ) {
+		return jcp_page_load_preset( 'campaign' );
+	}
+	if ( $slug === 'home-preview' ) {
+		return jcp_page_load_preset( 'home_v2' );
+	}
 	if ( get_page_template_slug( $post_id ) === 'page-home.php' || (int) get_option( 'page_on_front' ) === $post_id ) {
 		return jcp_page_load_preset( 'home' );
+	}
+	if ( function_exists( 'jcp_simple_editable_default_content' ) ) {
+		$simple = jcp_simple_editable_default_content( [], $post_id );
+		if ( ! empty( $simple ) ) {
+			return $simple;
+		}
 	}
 	return [];
 }
@@ -289,6 +304,30 @@ function jcp_page_get_content( int $post_id ): array {
 	$cleaned = jcp_page_sanitize_content_document( $content );
 	$upgraded = jcp_page_upgrade_industry_media_blocks( $cleaned, $post_id );
 	$upgraded = jcp_page_upgrade_embedded_demo_blocks( $upgraded, $post_id );
+	if ( function_exists( 'jcp_page_upgrade_case_study_form_modal' ) ) {
+		$upgraded = jcp_page_upgrade_case_study_form_modal( $upgraded, $post_id );
+	}
+	if ( function_exists( 'jcp_page_upgrade_home_testimonials' ) ) {
+		$upgraded = jcp_page_upgrade_home_testimonials( $upgraded, $post_id );
+	}
+	if ( function_exists( 'jcp_page_upgrade_home_authority' ) ) {
+		$upgraded = jcp_page_upgrade_home_authority( $upgraded, $post_id );
+	}
+	if ( function_exists( 'jcp_page_upgrade_campaign_authority' ) ) {
+		$upgraded = jcp_page_upgrade_campaign_authority( $upgraded, $post_id );
+	}
+	if ( function_exists( 'jcp_page_upgrade_campaign_story_moments' ) ) {
+		$upgraded = jcp_page_upgrade_campaign_story_moments( $upgraded, $post_id );
+	}
+	if ( function_exists( 'jcp_page_upgrade_campaign_funnel_order' ) ) {
+		$upgraded = jcp_page_upgrade_campaign_funnel_order( $upgraded, $post_id );
+	}
+	if ( function_exists( 'jcp_page_upgrade_start_free_trial_cta_labels' ) ) {
+		$upgraded = jcp_page_upgrade_start_free_trial_cta_labels( $upgraded, $post_id );
+	}
+	if ( function_exists( 'jcp_page_ensure_canonical_testimonial_reviews' ) ) {
+		$upgraded = jcp_page_ensure_canonical_testimonial_reviews( $upgraded, $post_id );
+	}
 	if ( wp_json_encode( $upgraded ) !== wp_json_encode( $cleaned ) ) {
 		jcp_page_save_content( $post_id, $upgraded );
 		$cleaned = $upgraded;
@@ -413,6 +452,10 @@ function jcp_page_legacy_to_blocks( array $legacy, int $post_id ): array {
 			}
 			if ( ! empty( $props['rotating_words'] ) ) {
 				$block_layout['hero_variant'] = 'home';
+			}
+			// home_v2 sales-deck preview: fixed headline, no rotating suffix.
+			if ( $preset === 'home_v2' ) {
+				$block_layout['hero_variant'] = 'split';
 			}
 		} else {
 			$block_layout = jcp_block_default_layout( (string) $type, $page_kind );

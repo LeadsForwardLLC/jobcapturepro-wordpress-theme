@@ -210,7 +210,7 @@ body.admin-bar .jcp-header-stack {
   top: var(--jcp-adminbar-offset, 0px);
 }
 
-/* Header stack height is measured by jcp-earlybird-banner.js (and inline header script).
+/* Header stack height is measured by jcp-site-banner.js (and inline header script).
    Do not set --jcp-header-stack-height on body — it overrides the JS value inherited from :root. */
 
 body.admin-bar {

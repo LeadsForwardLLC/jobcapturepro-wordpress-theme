@@ -20,13 +20,13 @@ function jcp_niche_resolve_cta( array $cta, string $niche_key ): array {
 		return jcp_global_resolve_cta( $label, $url, 'industry_' . $niche_key );
 	}
 
-	if ( $url === '' && stripos( $label, 'trial' ) !== false ) {
+	if ( $url === '' && preg_match( '/trial|sign\s*up|get\s*started|claim|start\s+for\s+free|start\s+free/i', $label ) ) {
 		$utm = function_exists( 'jcp_core_onboarding_utm_defaults' )
 			? jcp_core_onboarding_utm_defaults( 'industry_' . $niche_key )
 			: [ 'utm_content' => 'industry_' . $niche_key ];
 		$url = function_exists( 'jcp_core_onboarding_app_url_raw' )
 			? jcp_core_onboarding_app_url_raw( $utm )
-			: home_url( '/demo' );
+			: 'https://app.jobcapturepro.com/onboarding';
 	}
 
 	if ( $url === '' ) {
