@@ -50,6 +50,15 @@ function jcp_proof_gap_register_rest_routes(): void {
 						return is_email( $value );
 					},
 				],
+				'first_name'        => [
+					'required'          => false,
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				],
+				'is_qa'             => [
+					'required'          => false,
+					'type'              => 'boolean',
+				],
 				'business_type'     => [
 					'required'          => false,
 					'type'              => 'string',
@@ -519,6 +528,60 @@ function jcp_proof_gap_build_use_case( array $survey ): string {
 }
 
 /**
+ * Create an onboarding session on JCP app API (server-to-server).
+ *
+ * The JCP API stores the survey data, returns a sessionId, and replaces
+ * the pg_handoff token and jcp_pg_prefill cookie.
+ *
+ * @param array<string, mixed> $session_data Survey key-value pairs.
+ * @return string|null Session ID returned by app, or null on failure.
+ */
+function jcp_proof_gap_create_api_session( array $session_data ): ?string {
+	$secret = defined( 'JCP_SIGNUP_SESSION_SECRET' ) ? (string) JCP_SIGNUP_SESSION_SECRET : (string) get_option( 'jcp_signup_session_secret', '' );
+	if ( $secret === '' ) {
+		error_log( 'jcp_proof_gap_create_api_session: JCP_SIGNUP_SESSION_SECRET is not configured.' );
+		return null;
+	}
+
+	$url = 'https://app.jobcapturepro.com/api/onboarding/session';
+
+	$response = wp_remote_post(
+		$url,
+		[
+			'timeout' => 15,
+			'headers' => [
+				'Content-Type'            => 'application/json',
+				'x-signup-session-secret' => $secret,
+			],
+			'body'    => wp_json_encode( $session_data ),
+		]
+	);
+
+	if ( is_wp_error( $response ) ) {
+		error_log( 'jcp_proof_gap_create_api_session WP_Error: ' . $response->get_error_message() );
+		return null;
+	}
+
+	$code = wp_remote_retrieve_response_code( $response );
+	$body = wp_remote_retrieve_body( $response );
+
+	if ( $code < 200 || $code >= 300 ) {
+		error_log( sprintf( 'jcp_proof_gap_create_api_session HTTP %d: %s', $code, $body ) );
+		return null;
+	}
+
+	$json = json_decode( $body, true );
+	if ( ! is_array( $json ) ) {
+		error_log( 'jcp_proof_gap_create_api_session: Invalid JSON response: ' . $body );
+		return null;
+	}
+
+	$session_id = $json['sessionId'] ?? $json['session_id'] ?? $json['id'] ?? ( $json['data']['sessionId'] ?? ( $json['data']['session_id'] ?? null ) );
+
+	return ! empty( $session_id ) ? (string) $session_id : null;
+}
+
+/**
  * Handle Proof Gap email capture: durable persist + async GHL (Proof Gap webhook only).
  *
  * @param WP_REST_Request $request Request.
@@ -639,6 +702,52 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 
 	$lp_for_handoff = (string) $params['lp_variant'];
 
+	// Derive first name for onboarding session data.
+	$client_first_name = sanitize_text_field( (string) $request->get_param( 'first_name' ) );
+	$api_first_name    = $client_first_name;
+	if ( $api_first_name === '' && $email !== '' ) {
+		$parts          = explode( '@', $email );
+		$local          = preg_replace( '/[._-]+/', ' ', $parts[0] ?? '' );
+		$api_first_name = ucwords( trim( (string) $local ) );
+	}
+
+	$ph_distinct_id = ! empty( $params['ph_distinct_id'] ) ? trim( (string) $params['ph_distinct_id'] ) : trim( (string) $request->get_param( 'ph_distinct_id' ) );
+	$utm_source_val = ! empty( $params['utm_source'] ) ? trim( (string) $params['utm_source'] ) : trim( (string) $request->get_param( 'utm_source' ) );
+
+	$api_session_data = [
+		'email'             => $email,
+		'first_name'        => $api_first_name,
+		'ph_distinct_id'    => $ph_distinct_id,
+		'utm_source'        => $utm_source_val,
+		'business_niche'    => $business_type,
+		'weekly_job_volume' => $jobs_bucket,
+		'is_qa'             => (bool) $is_qa,
+	];
+
+	if ( $workflow !== '' ) {
+		$api_session_data['photo_workflow'] = $workflow;
+	}
+	if ( $proof_pct !== '' ) {
+		$api_session_data['marketing_usage'] = $proof_pct;
+	}
+	if ( ! empty( $params['utm_medium'] ) ) {
+		$api_session_data['utm_medium'] = trim( (string) $params['utm_medium'] );
+	}
+	if ( ! empty( $params['utm_campaign'] ) ) {
+		$api_session_data['utm_campaign'] = trim( (string) $params['utm_campaign'] );
+	}
+	if ( ! empty( $params['utm_content'] ) ) {
+		$api_session_data['utm_content'] = trim( (string) $params['utm_content'] );
+	}
+	if ( ! empty( $params['utm_term'] ) ) {
+		$api_session_data['utm_term'] = trim( (string) $params['utm_term'] );
+	}
+	if ( $session_id !== '' ) {
+		$api_session_data['survey_session_id'] = $session_id;
+	}
+
+	$api_session_id = jcp_proof_gap_create_api_session( $api_session_data );
+
 	// Idempotent: same client event_id must not create a second GHL fire.
 	$existing = $event_id !== '' ? jcp_proof_gap_find_lead_by_event_id( $event_id ) : null;
 	if ( $existing ) {
@@ -679,6 +788,8 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 				'ghl_skipped_qa'  => $skipped_qa || $is_qa,
 				'lead_id'         => (int) $existing->id,
 				'event_id'        => $event_id,
+				'sessionId'       => $api_session_id,
+				'session_id'      => $api_session_id,
 				'handoff_token'   => $handoff,
 				'dedupe'          => true,
 				'webhook_payload' => $preview,
@@ -757,6 +868,8 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 				'ghl_skipped_qa'  => true,
 				'lead_id'         => $lead_id ? (int) $lead_id : 0,
 				'event_id'        => $event_id,
+				'sessionId'       => $api_session_id,
+				'session_id'      => $api_session_id,
 				'handoff_token'   => $handoff,
 				'webhook_payload' => $payload_preview,
 			],
@@ -811,6 +924,8 @@ function jcp_proof_gap_survey_submit_handler( WP_REST_Request $request ): WP_RES
 			'ghl_skipped_qa'  => false,
 			'lead_id'         => (int) $lead_id,
 			'event_id'        => $event_id,
+			'sessionId'       => $api_session_id,
+			'session_id'      => $api_session_id,
 			'handoff_token'   => $handoff,
 			'webhook_payload' => $payload_preview,
 		],

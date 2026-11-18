@@ -475,6 +475,7 @@
       email_captured: false,
       trial_cta_clicked: false,
       handoff_token: '',
+      api_session_id: '',
       other_trade_text: '',
       other_workflow_text: '',
       attribution: {},
@@ -1726,6 +1727,13 @@
   function updateTrialHref() {
     var a = document.getElementById('pgTrialCta');
     if (!a) return;
+
+    // Direct API onboarding session handoff: redirect to signup with only sessionId.
+    if (state.api_session_id) {
+      a.href = 'https://app.jobcapturepro.com/onboarding?sessionId=' + encodeURIComponent(state.api_session_id);
+      return;
+    }
+
     var base =
       (window.JCP_ONBOARDING && window.JCP_ONBOARDING.url) ||
       boot.trialBase ||
@@ -1867,6 +1875,11 @@
 
   function persistPrefillCookie(user) {
     try {
+      if (state.api_session_id) {
+        // Handed off via API session id — clear old prefill cookie and return.
+        document.cookie = 'jcp_pg_prefill=; path=/; domain=.jobcapturepro.com; max-age=0; SameSite=Lax; Secure';
+        return;
+      }
       if (!user || !user.email) return;
       var payload = {
         email: String(user.email || '').trim(),
@@ -1966,6 +1979,7 @@
     var restEndpoint = boot.restUrl || '/wp-json/jcp/v1/proof-gap-survey-submit';
     var body = {
       email: email,
+      first_name: deriveFirstName(email),
       business_type: state.trade || '',
       survey_session_id: state.session_id,
       survey_version: state.survey_version,
@@ -2040,6 +2054,9 @@
         }
         state.email = email;
         state.email_captured = true;
+        if (result.json && (result.json.sessionId || result.json.session_id)) {
+          state.api_session_id = result.json.sessionId || result.json.session_id;
+        }
         state.handoff_token = (result.json && result.json.handoff_token) || '';
         markCompleted('result_email');
         persistDemoUser(email);

@@ -92,6 +92,24 @@
     }
   };
 
+  /**
+   * Normalize a phone string to E.164 format for GHL compatibility.
+   * Strips formatting chars, prepends +1 for 10-digit US numbers.
+   * Returns empty string if the input is not a valid phone.
+   */
+  const normalizePhoneE164 = (raw) => {
+    if (!raw) return '';
+    let digits = String(raw).replace(/\D/g, '');
+    // Strip leading 1 from 11-digit US numbers (1XXXXXXXXXX).
+    if (digits.length === 11 && digits.charAt(0) === '1') {
+      digits = digits.slice(1);
+    }
+    if (digits.length === 10) return '+1' + digits;
+    // Already E.164-ish with country code (11+ digits).
+    if (digits.length >= 11) return '+' + digits;
+    return '';
+  };
+
   const readDemoUser = () => {
     if (typeof window === 'undefined') return null;
     const raw = window.localStorage ? window.localStorage.getItem('demoUser') : null;
@@ -259,7 +277,7 @@
       const last = (u.lastName || '').trim();
       const email = (u.email || '').trim();
       const company = (u.businessName || '').trim();
-      const phone = (u.phone || '').trim();
+      const phone = normalizePhoneE164((u.phone || '').trim());
       const businessType = (u.niche || '').trim();
       const fullName = [first, last].filter(Boolean).join(' ').trim();
 
